@@ -1,0 +1,45 @@
+# Node
+node_modules/
+npm-debug.log
+yarn-error.log
+package-lock.json
+
+# Laravel
+heavy-api/vendor/
+heavy-api/.env
+heavy-api/storage/*.key
+heavy-api/.phpunit.result.cache
+heavy-api/bootstrap/cache/*
+heavy-api/storage/framework/cache/*
+heavy-api/storage/framework/sessions/*
+heavy-api/storage/framework/views/*
+heavy-api/storage/logs/*
+
+# Angular
+heavy-front/dist/
+heavy-front/.angular/
+heavy-front/coverage/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*.sublime-*
+
+# OS
+.DS_Store
+Thumbs.db
+*.log
+
+# Build
+heavy-api/public/storage
+heavy-api/public/hot
+
+# Docker
+.docker/data/
+
+# Environment
+.env
+.env.local
+.env.*.local
