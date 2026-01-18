@@ -1,47 +1,74 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { RippleModule } from 'primeng/ripple';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
-import { Product, ProductService } from '../../service/product.service';
+import { Pedido } from '../../../core/models/pedido.model';
+import { selectAllPedidos } from '../../../store/pedidos/selectors/pedidos.selectors';
+import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
 
 @Component({
     standalone: true,
     selector: 'app-recent-sales-widget',
-    imports: [CommonModule, TableModule, ButtonModule, RippleModule],
+    imports: [CommonModule, TableModule, ButtonModule, RippleModule, TagModule],
     template: `<div class="card mb-8!">
-        <div class="font-semibold text-xl mb-4">Recent Sales</div>
-        <p-table [value]="products" [paginator]="true" [rows]="5" responsiveLayout="scroll">
-            <ng-template #header>
+        <div class="font-semibold text-xl mb-4">Pedidos Recientes</div>
+        <p-table [value]="recentPedidos$ | async" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+            <ng-template pTemplate="header">
                 <tr>
-                    <th>Image</th>
-                    <th pSortableColumn="name">Name <p-sortIcon field="name"></p-sortIcon></th>
-                    <th pSortableColumn="price">Price <p-sortIcon field="price"></p-sortIcon></th>
-                    <th>View</th>
+                    <th>ID</th>
+                    <th>Cliente</th>
+                    <th>Estado</th>
+                    <th>Fecha</th>
+                    <th>Acciones</th>
                 </tr>
             </ng-template>
-            <ng-template #body let-product>
+            <ng-template pTemplate="body" let-pedido>
                 <tr>
-                    <td style="width: 15%; min-width: 5rem;">
-                        <img src="https://primefaces.org/cdn/primevue/images/product/{{ product.image }}" class="shadow-lg" alt="{{ product.name }}" width="50" />
+                    <td>#{{ pedido.id }}</td>
+                    <td>{{ pedido.tercero?.nombre || 'Sin cliente' }}</td>
+                    <td>
+                        <p-tag [value]="pedido.estado" [severity]="getEstadoSeverity(pedido.estado)"></p-tag>
                     </td>
-                    <td style="width: 35%; min-width: 7rem;">{{ product.name }}</td>
-                    <td style="width: 35%; min-width: 8rem;">{{ product.price | currency: 'USD' }}</td>
-                    <td style="width: 15%;">
-                        <button pButton pRipple type="button" icon="pi pi-search" class="p-button p-component p-button-text p-button-icon-only"></button>
+                    <td>{{ pedido.created_at | date: 'dd/MM/yyyy' }}</td>
+                    <td>
+                        <button pButton pRipple type="button" icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="verDetalle(pedido.id)"></button>
                     </td>
                 </tr>
             </ng-template>
         </p-table>
-    </div>`,
-    providers: [ProductService]
+    </div>`
 })
-export class RecentSalesWidget {
-    products!: Product[];
+export class RecentSalesWidget implements OnInit {
+    private readonly store = inject(Store);
+    private readonly router = inject(Router);
 
-    constructor(private productService: ProductService) {}
+    recentPedidos$!: Observable<Pedido[]>;
 
-    ngOnInit() {
-        this.productService.getProductsSmall().then((data) => (this.products = data));
+    ngOnInit(): void {
+        this.store.dispatch(loadPedidos({ params: { per_page: 10, sort: 'created_at', order: 'desc' } }));
+        this.recentPedidos$ = this.store.select(selectAllPedidos).pipe(
+            map(pedidos => pedidos.slice(0, 5))
+        );
+    }
+
+    verDetalle(id: number): void {
+        this.router.navigate(['/pedidos', id]);
+    }
+
+    getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
+        const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
+            'pendiente': 'warn',
+            'en_proceso': 'info',
+            'completado': 'success',
+            'cancelado': 'danger',
+            'entregado': 'success'
+        };
+        return severityMap[estado] || 'info';
     }
 }
