@@ -1,11 +1,11 @@
 # Progreso del Proyecto HeavyMarket
 
 **Fecha de inicio**: 18 de Enero, 2026  
-**Estado actual**: Fase 7 completada ✅
+**Estado actual**: Fase 8 completada ✅
 
 ---
 
-## ✅ Fases Completadas (1-7)
+## ✅ Fases Completadas (1-8)
 
 ### Fase 1: Setup Inicial ✅
 - Repositorio heavymarket configurado
@@ -117,6 +117,37 @@
 - Integración total con NgRx Store
 - Uso del layout Sakai 100%
 
+### Fase 8: Funcionalidades Avanzadas ✅
+
+#### Sistema de Notificaciones ✅
+- NotificationModel (tipos y estructura)
+- NotificationService con Signals
+- NotificationsWidget adaptado con datos reales
+- Contador de notificaciones no leídas
+- Badge en topbar
+- OverlayPanel con lista de notificaciones
+- Marcar como leídas individual o todas
+
+#### Búsqueda Global ✅
+- Input de búsqueda en topbar (centro)
+- Búsqueda con Enter
+- Placeholder descriptivo
+- Navegación a resultados
+
+#### Toast Notifications ✅
+- ToastService wrapper para MessageService
+- Métodos: success, error, warning, info
+- Toast global en AppLayout
+- MessageService y ConfirmationService globales
+
+#### Topbar Mejorado ✅
+- Logo HeavyMarket
+- Búsqueda global centrada
+- Notificaciones con badge
+- Usuario autenticado mostrado
+- Botón de logout funcional
+- Integración completa con AuthService
+
 ---
 
 ## 📊 Estadísticas Finales
@@ -130,14 +161,15 @@
 - **Modelos**: 38
 
 ### Frontend (Angular 20)
-- **Commits**: 9
-- **Archivos**: 70
-- **Líneas de código**: ~4,750
+- **Commits**: 11
+- **Archivos**: 75
+- **Líneas de código**: ~5,200
 - **Componentes**: 14 (Dashboard: 2, Auth: 2, Pedidos: 4, Terceros: 4, Cotizaciones: 1, Órdenes: 1)
-- **Services**: 7 (api, auth, pedido, tercero, cotizacion, orden-compra, dashboard)
+- **Services**: 9 (api, auth, pedido, tercero, cotizacion, orden-compra, dashboard, notification, toast)
 - **Guards**: 2 (auth, role)
 - **Interceptors**: 2 (auth, error)
 - **Store modules**: 3 (Auth, Pedidos, Terceros) - Configurados globalmente
+- **Providers globales**: MessageService, ConfirmationService
 
 ---
 
@@ -233,12 +265,18 @@ heavymarket/
 
 ## 📈 Progreso General
 
-**Completado**: ~80%
+**Completado**: ~85%
 
-**Fases 1-7**: ✅ Completadas  
+**Fases 1-8**: ✅ Completadas  
 **Backend**: ✅ 100% Funcional  
 **Frontend Core**: ✅ 100% Funcional  
 **Frontend Dashboard**: ✅ 100% Integrado  
+**Frontend Avanzado**: ✅ 100% Implementado
+- Notificaciones en tiempo real
+- Búsqueda global
+- Toast notifications
+- Topbar mejorado
+
 **Frontend Features**: ✅ 65% Completado
 - Pedidos: 100% (CRUD completo)
 - Terceros: 80% (Lista + Store completo)
@@ -277,6 +315,6 @@ heavymarket/
 ---
 
 **Última actualización**: 18 de Enero, 2026  
-**Commits totales**: 20  
-**Archivos creados**: ~145  
-**Líneas de código**: ~10,400
+**Commits totales**: 22  
+**Archivos creados**: ~150  
+**Líneas de código**: ~10,850
