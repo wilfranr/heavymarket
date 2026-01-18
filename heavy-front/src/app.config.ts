@@ -5,6 +5,7 @@ import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScroll
 import { provideStore } from '@ngrx/store';
 import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
 import { providePrimeNG } from 'primeng/config';
 import { appRoutes } from './app.routes';
@@ -29,6 +30,8 @@ export const appConfig: ApplicationConfig = {
             terceros: tercerosReducer
         }),
         provideEffects([AuthEffects, PedidosEffects, TercerosEffects]),
-        provideStoreDevtools({ maxAge: 25, logOnly: false })
+        provideStoreDevtools({ maxAge: 25, logOnly: false }),
+        MessageService,
+        ConfirmationService
     ]
 };
