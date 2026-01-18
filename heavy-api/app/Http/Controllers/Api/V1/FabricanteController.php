@@ -1,49 +1,47 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Fabricante;
+use Illuminate\Http\{JsonResponse, Request};
 
 class FabricanteController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $fabricantes = Fabricante::orderBy('nombre')
+            ->paginate($request->input('per_page', 15));
+
+        return response()->json(['data' => $fabricantes->items(), 'total' => $fabricantes->total()]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $validated = $request->validate(['nombre' => ['required', 'string', 'max:255', 'unique:fabricantes,nombre']]);
+        $fabricante = Fabricante::create($validated);
+
+        return response()->json(['data' => $fabricante, 'message' => 'Fabricante creado exitosamente'], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(Fabricante $fabricante): JsonResponse
     {
-        //
+        return response()->json(['data' => $fabricante]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, Fabricante $fabricante): JsonResponse
     {
-        //
+        $validated = $request->validate(['nombre' => ['sometimes', 'string', 'max:255']]);
+        $fabricante->update($validated);
+
+        return response()->json(['data' => $fabricante, 'message' => 'Fabricante actualizado']);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(Fabricante $fabricante): JsonResponse
     {
-        //
+        $fabricante->delete();
+        return response()->json(['message' => 'Fabricante eliminado'], 204);
     }
 }

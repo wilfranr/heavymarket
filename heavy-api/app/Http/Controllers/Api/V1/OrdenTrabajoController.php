@@ -1,49 +1,85 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\OrdenTrabajo;
+use Illuminate\Http\{JsonResponse, Request};
 
+/**
+ * Controlador API para gestión de Órdenes de Trabajo
+ */
 class OrdenTrabajoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request): JsonResponse
     {
-        //
+        $query = OrdenTrabajo::query()->with(['user', 'referencias']);
+
+        if ($request->filled('estado')) {
+            $query->where('estado', $request->input('estado'));
+        }
+
+        $ordenes = $query->orderBy('created_at', 'desc')
+            ->paginate($request->input('per_page', 15));
+
+        return response()->json([
+            'data' => $ordenes->items(),
+            'meta' => [
+                'current_page' => $ordenes->currentPage(),
+                'last_page' => $ordenes->lastPage(),
+                'total' => $ordenes->total(),
+            ],
+        ]);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
-        //
+        $validated = $request->validate([
+            'descripcion' => ['required', 'string'],
+            'estado' => ['nullable', 'string'],
+        ]);
+
+        $ordenTrabajo = OrdenTrabajo::create(array_merge(
+            $validated,
+            ['user_id' => $request->user()->id]
+        ));
+
+        return response()->json([
+            'data' => $ordenTrabajo,
+            'message' => 'Orden de trabajo creada exitosamente',
+        ], 201);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
+    public function show(OrdenTrabajo $ordenTrabajo): JsonResponse
     {
-        //
+        return response()->json([
+            'data' => $ordenTrabajo->load(['user', 'referencias']),
+        ]);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
+    public function update(Request $request, OrdenTrabajo $ordenTrabajo): JsonResponse
     {
-        //
+        $validated = $request->validate([
+            'descripcion' => ['sometimes', 'string'],
+            'estado' => ['sometimes', 'string'],
+        ]);
+
+        $ordenTrabajo->update($validated);
+
+        return response()->json([
+            'data' => $ordenTrabajo,
+            'message' => 'Orden de trabajo actualizada exitosamente',
+        ]);
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+    public function destroy(OrdenTrabajo $ordenTrabajo): JsonResponse
     {
-        //
+        $ordenTrabajo->delete();
+
+        return response()->json([
+            'message' => 'Orden de trabajo eliminada exitosamente',
+        ], 204);
     }
 }
