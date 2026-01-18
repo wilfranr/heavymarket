@@ -15,6 +15,7 @@
         </ng-template>
 
         <p-table
+            #dt
             [value]="(terceros$ | async) || []"
             [loading]="loading$ | async"
             [paginator]="true"
@@ -22,7 +23,7 @@
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} terceros"
             [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['nombre', 'documento', 'email', 'telefono']"
+            [globalFilterFields]="['razon_social', 'documento', 'email', 'telefono']"
             responsiveLayout="scroll"
             styleClass="p-datatable-sm">
             
@@ -98,7 +99,7 @@
                             </p-button>
                             <p-button
                                 icon="pi pi-pencil"
-                                severity="warning"
+                                severity="warn"
                                 [text]="true"
                                 [rounded]="true"
                                 (onClick)="editarTercero(tercero)"

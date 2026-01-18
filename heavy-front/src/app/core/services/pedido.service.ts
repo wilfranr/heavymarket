@@ -55,7 +55,7 @@ export class PedidoService extends ApiService {
   /**
    * Eliminar un pedido
    */
-  delete(id: number): Observable<any> {
+  deletePedido(id: number): Observable<any> {
     return this.http.delete(`${this.API_URL}/${this.endpoint}/${id}`);
   }
 

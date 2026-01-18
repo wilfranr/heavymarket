@@ -55,7 +55,7 @@ export class TerceroService extends ApiService {
   /**
    * Eliminar un tercero
    */
-  delete(id: number): Observable<any> {
+  deleteTercero(id: number): Observable<any> {
     return this.http.delete(`${this.API_URL}/${this.endpoint}/${id}`);
   }
 

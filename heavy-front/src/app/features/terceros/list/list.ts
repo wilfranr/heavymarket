@@ -1,10 +1,10 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
 
-import { TableModule } from 'primeng/table';
+import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
@@ -40,6 +40,8 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
     styleUrl: './list.scss'
 })
 export class ListComponent implements OnInit {
+    @ViewChild('dt') dt!: Table;
+    
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -73,7 +75,7 @@ export class ListComponent implements OnInit {
      */
     eliminarTercero(tercero: Tercero): void {
         this.confirmationService.confirm({
-            message: `¿Está seguro de eliminar a ${tercero.nombre}?`,
+            message: `¿Está seguro de eliminar a ${tercero.razon_social}?`,
             header: 'Confirmar Eliminación',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Sí, eliminar',

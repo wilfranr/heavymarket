@@ -8,8 +8,7 @@ import { Observable, filter, take } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
-import { DropdownModule } from 'primeng/dropdown';
+import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
@@ -34,8 +33,8 @@ import { TerceroService } from '../../../core/services/tercero.service';
         CardModule,
         ButtonModule,
         InputTextModule,
-        InputTextareaModule,
-        DropdownModule,
+        InputTextModule,
+        SelectModule,
         ToastModule,
         DividerModule,
         SkeletonModule
@@ -139,7 +138,7 @@ export class EditComponent implements OnInit {
             .subscribe({
                 next: (response) => {
                     this.terceros = response.data.map(t => ({
-                        label: t.nombre,
+                        label: t.razon_social || t.nombre_comercial || `Tercero ${t.id}`,
                         value: t.id
                     }));
                 },
@@ -164,7 +163,7 @@ export class EditComponent implements OnInit {
             
             this.store.dispatch(updatePedido({ 
                 id: this.pedidoId(), 
-                pedido: pedidoData 
+                changes: pedidoData 
             }));
             
             this.messageService.add({

@@ -106,11 +106,11 @@ export class PedidosEffects {
   /**
    * Effect: Delete Pedido
    */
-  deletePedido$ = createEffect(() =>
-    this.actions$.pipe(
-      ofType(PedidosActions.deletePedido),
-      switchMap(({ id }) =>
-        this.pedidoService.delete(id).pipe(
+    deletePedido$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(PedidosActions.deletePedido),
+            switchMap(({ id }) =>
+                this.pedidoService.deletePedido(id).pipe(
           map(() => PedidosActions.deletePedidoSuccess({ id })),
           catchError(error =>
             of(PedidosActions.deletePedidoFailure({

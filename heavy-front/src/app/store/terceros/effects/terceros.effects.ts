@@ -41,8 +41,8 @@ export class TercerosEffects {
             ofType(TercerosActions.createTercero),
             switchMap(({ tercero }) =>
                 this.terceroService.create(tercero).pipe(
-                    map((createdTercero) =>
-                        TercerosActions.createTerceroSuccess({ tercero: createdTercero })
+                    map((response) =>
+                        TercerosActions.createTerceroSuccess({ tercero: response.data })
                     ),
                     catchError((error) =>
                         of(TercerosActions.createTerceroFailure({ error }))
@@ -60,8 +60,8 @@ export class TercerosEffects {
             ofType(TercerosActions.updateTercero),
             switchMap(({ id, tercero }) =>
                 this.terceroService.update(id, tercero).pipe(
-                    map((updatedTercero) =>
-                        TercerosActions.updateTerceroSuccess({ tercero: updatedTercero })
+                    map((response) =>
+                        TercerosActions.updateTerceroSuccess({ tercero: response.data })
                     ),
                     catchError((error) =>
                         of(TercerosActions.updateTerceroFailure({ error }))
@@ -78,7 +78,7 @@ export class TercerosEffects {
         this.actions$.pipe(
             ofType(TercerosActions.deleteTercero),
             switchMap(({ id }) =>
-                this.terceroService.delete(id).pipe(
+                this.terceroService.deleteTercero(id).pipe(
                     map(() =>
                         TercerosActions.deleteTerceroSuccess({ id })
                     ),

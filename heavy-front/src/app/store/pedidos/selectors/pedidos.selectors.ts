@@ -1,5 +1,5 @@
 import { createFeatureSelector, createSelector } from '@ngrx/store';
-import { PedidosState, selectAllPedidos, selectPedidoEntities } from '../reducers/pedidos.reducer';
+import { PedidosState, selectAllPedidos as selectAllPedidosFromAdapter, selectPedidoEntities as selectPedidoEntitiesFromAdapter } from '../reducers/pedidos.reducer';
 
 /**
  * Selectors de Pedidos
@@ -9,14 +9,20 @@ import { PedidosState, selectAllPedidos, selectPedidoEntities } from '../reducer
 export const selectPedidosState = createFeatureSelector<PedidosState>('pedidos');
 
 // Selectors de Entity Adapter
-export const selectPedidos = createSelector(
+export const selectAllPedidos = createSelector(
   selectPedidosState,
-  selectAllPedidos
+  selectAllPedidosFromAdapter
 );
 
 export const selectPedidosEntities = createSelector(
   selectPedidosState,
-  selectPedidoEntities
+  selectPedidoEntitiesFromAdapter
+);
+
+// Selector para obtener un pedido por ID
+export const selectPedidoById = (id: number) => createSelector(
+  selectPedidosEntities,
+  (entities) => entities[id]
 );
 
 // Selectors básicos
@@ -54,19 +60,19 @@ export const selectSelectedPedido = createSelector(
 
 // Selector: filtrar pedidos por estado
 export const selectPedidosByEstado = (estado: string) =>
-  createSelector(selectPedidos, (pedidos) =>
+  createSelector(selectAllPedidos, (pedidos) =>
     pedidos.filter((pedido) => pedido.estado === estado)
   );
 
 // Selector: filtrar pedidos por tercero
 export const selectPedidosByTercero = (terceroId: number) =>
-  createSelector(selectPedidos, (pedidos) =>
+  createSelector(selectAllPedidos, (pedidos) =>
     pedidos.filter((pedido) => pedido.tercero_id === terceroId)
   );
 
 // Selector: contar pedidos por estado
 export const selectPedidosCountByEstado = createSelector(
-  selectPedidos,
+  selectAllPedidos,
   (pedidos) => {
     const counts: Record<string, number> = {};
     pedidos.forEach((pedido) => {

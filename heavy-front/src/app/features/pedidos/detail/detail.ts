@@ -11,7 +11,7 @@ import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TabViewModule } from 'primeng/tabview';
+import { TabsModule } from 'primeng/tabs';
 import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 
@@ -34,7 +34,7 @@ import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/s
         DividerModule,
         SkeletonModule,
         ToastModule,
-        TabViewModule,
+        TabsModule,
         DataViewModule,
         PanelModule
     ],
