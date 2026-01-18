@@ -14,7 +14,8 @@ export const appRoutes: Routes = [
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes') },
             { path: 'documentation', component: Documentation },
             { path: 'pages', loadChildren: () => import('./app/pages/pages.routes') },
-            { path: 'pedidos', loadChildren: () => import('./app/features/pedidos/pedidos.routes').then(m => m.pedidosRoutes) }
+            { path: 'pedidos', loadChildren: () => import('./app/features/pedidos/pedidos.routes').then(m => m.pedidosRoutes) },
+            { path: 'terceros', loadChildren: () => import('./app/features/terceros/terceros.routes').then(m => m.tercerosRoutes) }
         ]
     },
     { path: 'landing', component: Landing },

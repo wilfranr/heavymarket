@@ -1,0 +1,132 @@
+<p-toast />
+<p-confirmDialog />
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Terceros (Clientes y Proveedores)</h2>
+                <p-button
+                    label="Nuevo Tercero"
+                    icon="pi pi-plus"
+                    (onClick)="crearTercero()">
+                </p-button>
+            </div>
+        </ng-template>
+
+        <p-table
+            [value]="(terceros$ | async) || []"
+            [loading]="loading$ | async"
+            [paginator]="true"
+            [rows]="10"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} terceros"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [globalFilterFields]="['nombre', 'documento', 'email', 'telefono']"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm">
+            
+            <ng-template pTemplate="caption">
+                <div class="flex">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-search"></i>
+                        <input
+                            pInputText
+                            type="text"
+                            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="Buscar terceros..."
+                            class="w-full" />
+                    </span>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
+                    <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+                    <th pSortableColumn="documento">Documento <p-sortIcon field="documento"></p-sortIcon></th>
+                    <th>Contacto</th>
+                    <th pSortableColumn="tipo">Tipo <p-sortIcon field="tipo"></p-sortIcon></th>
+                    <th pSortableColumn="estado">Estado <p-sortIcon field="estado"></p-sortIcon></th>
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-tercero>
+                <tr>
+                    <td>{{ tercero.id }}</td>
+                    <td>
+                        <span class="font-semibold">{{ tercero.nombre }}</span>
+                    </td>
+                    <td>
+                        <span class="text-sm">
+                            {{ tercero.tipo_documento }} {{ tercero.documento }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="flex flex-col text-sm">
+                            @if (tercero.email) {
+                                <span><i class="pi pi-envelope mr-1"></i>{{ tercero.email }}</span>
+                            }
+                            @if (tercero.telefono) {
+                                <span><i class="pi pi-phone mr-1"></i>{{ tercero.telefono }}</span>
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <p-tag
+                            [value]="tercero.tipo"
+                            [severity]="getTipoSeverity(tercero.tipo)">
+                        </p-tag>
+                    </td>
+                    <td>
+                        <p-tag
+                            [value]="tercero.estado"
+                            [severity]="getEstadoSeverity(tercero.estado)">
+                        </p-tag>
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button
+                                icon="pi pi-eye"
+                                severity="info"
+                                [text]="true"
+                                [rounded]="true"
+                                (onClick)="verDetalle(tercero)"
+                                pTooltip="Ver detalle"
+                                tooltipPosition="top">
+                            </p-button>
+                            <p-button
+                                icon="pi pi-pencil"
+                                severity="warning"
+                                [text]="true"
+                                [rounded]="true"
+                                (onClick)="editarTercero(tercero)"
+                                pTooltip="Editar"
+                                tooltipPosition="top">
+                            </p-button>
+                            <p-button
+                                icon="pi pi-trash"
+                                severity="danger"
+                                [text]="true"
+                                [rounded]="true"
+                                (onClick)="eliminarTercero(tercero)"
+                                pTooltip="Eliminar"
+                                tooltipPosition="top">
+                            </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="7" class="text-center py-8">
+                        <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">No se encontraron terceros</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
+</div>
