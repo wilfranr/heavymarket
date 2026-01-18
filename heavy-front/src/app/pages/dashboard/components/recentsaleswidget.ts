@@ -52,7 +52,7 @@ export class RecentSalesWidget implements OnInit {
     recentPedidos$!: Observable<Pedido[]>;
 
     ngOnInit(): void {
-        this.store.dispatch(loadPedidos({ queryParams: { per_page: 10, sort: '-created_at' } }));
+        this.store.dispatch(loadPedidos({ params: { per_page: 10, sort: '-created_at' } }));
         this.recentPedidos$ = this.store.select(selectAllPedidos).pipe(
             map(pedidos => (pedidos || []).slice(0, 5))
         );

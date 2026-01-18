@@ -48,13 +48,13 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
               placeholder="Buscar..." />
           </span>
           
-          <p-dropdown
+          <p-select
             [options]="estadosOptions"
             [(ngModel)]="selectedEstado"
             (onChange)="onEstadoChange()"
             placeholder="Filtrar por estado"
             [showClear]="true">
-          </p-dropdown>
+          </p-select>
         </div>
         
         <p-button 
@@ -108,7 +108,7 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
                 icon="pi pi-pencil"
                 [rounded]="true"
                 [text]="true"
-                severity="warning"
+                severity="warn"
                 (onClick)="onEditPedido(pedido.id)">
               </p-button>
               <p-button 
@@ -205,12 +205,12 @@ export class PedidosListComponent implements OnInit {
     });
   }
 
-  getEstadoSeverity(estado: string): 'success' | 'info' | 'warning' | 'danger' {
-    const severityMap: Record<string, 'success' | 'info' | 'warning' | 'danger'> = {
+  getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
+    const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
       'Nuevo': 'info',
       'Enviado': 'info',
-      'En_Costeo': 'warning',
-      'Cotizado': 'warning',
+      'En_Costeo': 'warn',
+      'Cotizado': 'warn',
       'Aprobado': 'success',
       'Entregado': 'success',
       'Rechazado': 'danger',

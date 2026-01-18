@@ -100,7 +100,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
             </div>
         </div>
 
-        <p-overlayPanel #notificationsPanel [style]="{'width': '400px', 'max-height': '500px', 'overflow-y': 'auto'}">
+        <p-popover #notificationsPanel [style]="{'width': '400px', 'max-height': '500px', 'overflow-y': 'auto'}">
             <ng-template pTemplate="content">
                 <div class="p-3">
                     <div class="flex justify-between items-center mb-3">
@@ -143,7 +143,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
                     }
                 </div>
             </ng-template>
-        </p-overlayPanel>
+        </p-popover>
     </div>`
 })
 export class AppTopbar {

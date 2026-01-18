@@ -24,7 +24,7 @@
                         <label for="tercero_id" class="block mb-2 font-semibold">
                             Cliente <span class="text-red-500">*</span>
                         </label>
-                        <p-dropdown
+                        <p-select
                             id="tercero_id"
                             formControlName="tercero_id"
                             [options]="terceros"
@@ -35,7 +35,7 @@
                             styleClass="w-full"
                             [class.ng-invalid]="isFieldInvalid('tercero_id')"
                             [class.ng-dirty]="isFieldInvalid('tercero_id')">
-                        </p-dropdown>
+                        </p-select>
                         @if (isFieldInvalid('tercero_id')) {
                             <small class="text-red-500">El cliente es requerido</small>
                         }
@@ -46,7 +46,7 @@
                         <label for="estado" class="block mb-2 font-semibold">
                             Estado <span class="text-red-500">*</span>
                         </label>
-                        <p-dropdown
+                        <p-select
                             id="estado"
                             formControlName="estado"
                             [options]="estadosOptions"
@@ -54,7 +54,7 @@
                             styleClass="w-full"
                             [class.ng-invalid]="isFieldInvalid('estado')"
                             [class.ng-dirty]="isFieldInvalid('estado')">
-                        </p-dropdown>
+                        </p-select>
                         @if (isFieldInvalid('estado')) {
                             <small class="text-red-500">El estado es requerido</small>
                         }

@@ -74,66 +74,60 @@
 
             <p-divider></p-divider>
 
-            <!-- Tabs para referencias, artículos, etc -->
-            <p-tabView>
-                @if (pedido.referencias && pedido.referencias.length > 0) {
-                    <p-tabPanel header="Referencias ({{ pedido.referencias.length }})">
-                        <div class="grid gap-3">
-                            @for (referencia of pedido.referencias; track referencia.id) {
-                                <p-panel [header]="referencia.referencia || 'Referencia #' + referencia.id">
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                        @if (referencia.cantidad) {
-                                            <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
-                                        }
-                                        @if (referencia.precio) {
-                                            <p><strong>Precio:</strong> {{ referencia.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
-                                        }
-                                        @if (referencia.estado) {
-                                            <p><strong>Estado:</strong> 
-                                                <p-tag [value]="referencia.estado" [severity]="'info'"></p-tag>
-                                            </p>
-                                        }
-                                    </div>
-                                </p-panel>
-                            }
-                        </div>
-                    </p-tabPanel>
-                }
-
-                @if (pedido.articulos && pedido.articulos.length > 0) {
-                    <p-tabPanel header="Artículos ({{ pedido.articulos.length }})">
-                        <div class="grid gap-3">
-                            @for (articulo of pedido.articulos; track articulo.id) {
-                                <p-panel [header]="articulo.nombre || 'Artículo #' + articulo.id">
-                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                        @if (articulo.referencia) {
-                                            <p><strong>Referencia:</strong> {{ articulo.referencia }}</p>
-                                        }
-                                        @if (articulo.precio) {
-                                            <p><strong>Precio:</strong> {{ articulo.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
-                                        }
-                                    </div>
-                                </p-panel>
-                            }
-                        </div>
-                    </p-tabPanel>
-                }
-
-                @if (pedido.referencias_proveedor && pedido.referencias_proveedor.length > 0) {
-                    <p-tabPanel header="Referencias Proveedor ({{ pedido.referencias_proveedor.length }})">
-                        <div class="grid gap-3">
-                            @for (refProv of pedido.referencias_proveedor; track refProv.id) {
-                                <p-panel [header]="'Proveedor: ' + (refProv.proveedor?.nombre || 'N/A')">
-                                    <p><strong>Referencia:</strong> {{ refProv.referencia_proveedor }}</p>
-                                    @if (refProv.precio) {
-                                        <p><strong>Precio:</strong> {{ refProv.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
-                                    }
-                                </p-panel>
-                            }
-                        </div>
-                    </p-tabPanel>
-                }
-            </p-tabView>
+            <!-- Tabs para referencias y artículos -->
+            <p-tabs value="0">
+                <p-tablist>
+                    <p-tab value="0">Referencias ({{ pedido.referencias?.length || 0 }})</p-tab>
+                    <p-tab value="1">Artículos ({{ pedido.articulos?.length || 0 }})</p-tab>
+                </p-tablist>
+                <p-tabpanels>
+                    <p-tabpanel value="0">
+                        @if (pedido.referencias && pedido.referencias.length > 0) {
+                            <div class="grid gap-3">
+                                @for (referencia of pedido.referencias; track referencia.id) {
+                                    <p-panel [header]="referencia.referencia || 'Referencia #' + referencia.id">
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            @if (referencia.cantidad) {
+                                                <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
+                                            }
+                                            @if (referencia.precio) {
+                                                <p><strong>Precio:</strong> {{ referencia.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                            }
+                                            @if (referencia.estado) {
+                                                <p><strong>Estado:</strong> 
+                                                    <p-tag [value]="referencia.estado" [severity]="'info'"></p-tag>
+                                                </p>
+                                            }
+                                        </div>
+                                    </p-panel>
+                                }
+                            </div>
+                        } @else {
+                            <p class="text-muted-color">No hay referencias registradas.</p>
+                        }
+                    </p-tabpanel>
+                    <p-tabpanel value="1">
+                        @if (pedido.articulos && pedido.articulos.length > 0) {
+                            <div class="grid gap-3">
+                                @for (articulo of pedido.articulos; track articulo.id) {
+                                    <p-panel [header]="articulo.nombre || 'Artículo #' + articulo.id">
+                                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                            @if (articulo.referencia) {
+                                                <p><strong>Referencia:</strong> {{ articulo.referencia }}</p>
+                                            }
+                                            @if (articulo.precio) {
+                                                <p><strong>Precio:</strong> {{ articulo.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                            }
+                                        </div>
+                                    </p-panel>
+                                }
+                            </div>
+                        } @else {
+                            <p class="text-muted-color">No hay artículos registrados.</p>
+                        }
+                    </p-tabpanel>
+                </p-tabpanels>
+            </p-tabs>
 
             <ng-template pTemplate="footer">
                 <div class="flex justify-between">
