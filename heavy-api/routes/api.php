@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\V1\{
+    AuthController,
     PedidoController,
     TerceroController,
     CotizacionController,
@@ -39,9 +40,25 @@ Route::prefix('v1')->group(function () {
     });
 
     /**
+     * Rutas de autenticación (sin protección)
+     */
+    Route::post('/register', [AuthController::class, 'register']);
+    Route::post('/login', [AuthController::class, 'login']);
+
+    /**
      * Rutas protegidas con autenticación Sanctum
      */
     Route::middleware('auth:sanctum')->group(function () {
+        
+        /**
+         * Gestión de autenticación (requiere estar autenticado)
+         */
+        Route::post('/logout', [AuthController::class, 'logout']);
+        Route::post('/logout-all', [AuthController::class, 'logoutAll']);
+        Route::get('/me', [AuthController::class, 'me']);
+        Route::post('/refresh', [AuthController::class, 'refresh']);
+        Route::get('/tokens', [AuthController::class, 'tokens']);
+        Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
         
         /**
          * Información del usuario autenticado
