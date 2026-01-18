@@ -1,0 +1,178 @@
+<p-toast />
+
+<div class="container mx-auto p-4">
+    @if (loading$ | async) {
+        <!-- Skeleton mientras carga -->
+        <p-card>
+            <p-skeleton height="2rem" styleClass="mb-3"></p-skeleton>
+            <p-skeleton height="1rem" styleClass="mb-2"></p-skeleton>
+            <p-skeleton height="1rem" styleClass="mb-2"></p-skeleton>
+            <p-skeleton height="1rem" styleClass="mb-2"></p-skeleton>
+        </p-card>
+    } @else if (pedido$ | async; as pedido) {
+        <!-- Encabezado del pedido -->
+        <p-card>
+            <ng-template pTemplate="header">
+                <div class="flex justify-between items-center p-4">
+                    <h2 class="text-2xl font-bold">Pedido #{{ pedido.id }}</h2>
+                    <p-tag 
+                        [value]="pedido.estado" 
+                        [severity]="getEstadoSeverity(pedido.estado)">
+                    </p-tag>
+                </div>
+            </ng-template>
+
+            <!-- Información general -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <h3 class="font-semibold mb-2">Información del Cliente</h3>
+                    @if (pedido.tercero) {
+                        <p><strong>Cliente:</strong> {{ pedido.tercero.nombre }}</p>
+                        <p><strong>Documento:</strong> {{ pedido.tercero.tipo_documento }} {{ pedido.tercero.documento }}</p>
+                        @if (pedido.tercero.telefono) {
+                            <p><strong>Teléfono:</strong> {{ pedido.tercero.telefono }}</p>
+                        }
+                        @if (pedido.tercero.email) {
+                            <p><strong>Email:</strong> {{ pedido.tercero.email }}</p>
+                        }
+                    }
+                </div>
+
+                <div>
+                    <h3 class="font-semibold mb-2">Información del Pedido</h3>
+                    <p><strong>Fecha:</strong> {{ pedido.created_at | date: 'dd/MM/yyyy HH:mm' }}</p>
+                    @if (pedido.user) {
+                        <p><strong>Creado por:</strong> {{ pedido.user.name }}</p>
+                    }
+                    @if (pedido.maquina) {
+                        <p><strong>Máquina:</strong> {{ pedido.maquina.nombre }}</p>
+                    }
+                    @if (pedido.fabricante) {
+                        <p><strong>Fabricante:</strong> {{ pedido.fabricante.nombre }}</p>
+                    }
+                </div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Dirección y comentario -->
+            <div class="mb-4">
+                @if (pedido.direccion) {
+                    <div class="mb-3">
+                        <h3 class="font-semibold mb-2">Dirección de Envío</h3>
+                        <p>{{ pedido.direccion }}</p>
+                    </div>
+                }
+                
+                @if (pedido.comentario) {
+                    <div class="mb-3">
+                        <h3 class="font-semibold mb-2">Comentarios</h3>
+                        <p class="text-gray-600">{{ pedido.comentario }}</p>
+                    </div>
+                }
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Tabs para referencias, artículos, etc -->
+            <p-tabView>
+                @if (pedido.referencias && pedido.referencias.length > 0) {
+                    <p-tabPanel header="Referencias ({{ pedido.referencias.length }})">
+                        <div class="grid gap-3">
+                            @for (referencia of pedido.referencias; track referencia.id) {
+                                <p-panel [header]="referencia.referencia || 'Referencia #' + referencia.id">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        @if (referencia.cantidad) {
+                                            <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
+                                        }
+                                        @if (referencia.precio) {
+                                            <p><strong>Precio:</strong> {{ referencia.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                        }
+                                        @if (referencia.estado) {
+                                            <p><strong>Estado:</strong> 
+                                                <p-tag [value]="referencia.estado" [severity]="'info'"></p-tag>
+                                            </p>
+                                        }
+                                    </div>
+                                </p-panel>
+                            }
+                        </div>
+                    </p-tabPanel>
+                }
+
+                @if (pedido.articulos && pedido.articulos.length > 0) {
+                    <p-tabPanel header="Artículos ({{ pedido.articulos.length }})">
+                        <div class="grid gap-3">
+                            @for (articulo of pedido.articulos; track articulo.id) {
+                                <p-panel [header]="articulo.nombre || 'Artículo #' + articulo.id">
+                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                                        @if (articulo.referencia) {
+                                            <p><strong>Referencia:</strong> {{ articulo.referencia }}</p>
+                                        }
+                                        @if (articulo.precio) {
+                                            <p><strong>Precio:</strong> {{ articulo.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                        }
+                                    </div>
+                                </p-panel>
+                            }
+                        </div>
+                    </p-tabPanel>
+                }
+
+                @if (pedido.referencias_proveedor && pedido.referencias_proveedor.length > 0) {
+                    <p-tabPanel header="Referencias Proveedor ({{ pedido.referencias_proveedor.length }})">
+                        <div class="grid gap-3">
+                            @for (refProv of pedido.referencias_proveedor; track refProv.id) {
+                                <p-panel [header]="'Proveedor: ' + (refProv.proveedor?.nombre || 'N/A')">
+                                    <p><strong>Referencia:</strong> {{ refProv.referencia_proveedor }}</p>
+                                    @if (refProv.precio) {
+                                        <p><strong>Precio:</strong> {{ refProv.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                    }
+                                </p-panel>
+                            }
+                        </div>
+                    </p-tabPanel>
+                }
+            </p-tabView>
+
+            <ng-template pTemplate="footer">
+                <div class="flex justify-between">
+                    <p-button 
+                        label="Volver" 
+                        icon="pi pi-arrow-left" 
+                        severity="secondary"
+                        (onClick)="volver()">
+                    </p-button>
+                    
+                    <div class="flex gap-2">
+                        <p-button 
+                            label="Imprimir" 
+                            icon="pi pi-print" 
+                            severity="secondary"
+                            (onClick)="imprimirPedido()">
+                        </p-button>
+                        <p-button 
+                            label="Editar" 
+                            icon="pi pi-pencil" 
+                            (onClick)="editarPedido()">
+                        </p-button>
+                    </div>
+                </div>
+            </ng-template>
+        </p-card>
+    } @else {
+        <!-- No se encontró el pedido -->
+        <p-card>
+            <div class="text-center py-8">
+                <i class="pi pi-exclamation-triangle text-6xl text-orange-500 mb-4"></i>
+                <h2 class="text-2xl font-bold mb-2">Pedido no encontrado</h2>
+                <p class="text-gray-600 mb-4">El pedido que buscas no existe o fue eliminado.</p>
+                <p-button 
+                    label="Volver a pedidos" 
+                    icon="pi pi-arrow-left"
+                    (onClick)="volver()">
+                </p-button>
+            </div>
+        </p-card>
+    }
+</div>

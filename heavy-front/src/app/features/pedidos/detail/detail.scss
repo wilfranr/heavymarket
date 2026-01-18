@@ -1,0 +1,19 @@
+:host {
+    display: block;
+    min-height: 100vh;
+    background-color: #f8f9fa;
+}
+
+.container {
+    max-width: 1200px;
+}
+
+@media print {
+    :host {
+        background-color: white;
+    }
+    
+    p-button {
+        display: none;
+    }
+}
