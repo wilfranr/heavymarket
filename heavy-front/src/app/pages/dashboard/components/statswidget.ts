@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -11,6 +11,7 @@ import { loadTerceros } from '../../../store/terceros/actions/terceros.actions';
     standalone: true,
     selector: 'app-stats-widget',
     imports: [CommonModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `
         <div class="col-span-12 lg:col-span-6 xl:col-span-3">
             <div class="card mb-0">

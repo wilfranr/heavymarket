@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -16,6 +16,7 @@ import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
     standalone: true,
     selector: 'app-recent-sales-widget',
     imports: [CommonModule, TableModule, ButtonModule, RippleModule, TagModule],
+    changeDetection: ChangeDetectionStrategy.OnPush,
     template: `<div class="card mb-8!">
         <div class="font-semibold text-xl mb-4">Pedidos Recientes</div>
         <p-table [value]="recentPedidos$ | async" [paginator]="true" [rows]="5" responsiveLayout="scroll">
