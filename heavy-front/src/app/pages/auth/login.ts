@@ -22,7 +22,6 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                     <div class="w-full bg-surface-0 dark:bg-surface-900 py-20 px-8 sm:px-20" style="border-radius: 53px">
                         <div class="text-center mb-8">
                             <img src="assets/images/logo.svg" alt="CYH Heavy Market" class="mb-8 w-64 shrink-0 mx-auto" />
-                            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">HeavyMarket</div>
                             <span class="text-muted-color font-medium">Inicia sesión para continuar</span>
                         </div>
 
@@ -40,13 +39,8 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                                 </div>
                                 <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">¿Olvidaste tu contraseña?</span>
                             </div>
-                            <p-button 
-                                label="Iniciar Sesión" 
-                                styleClass="w-full" 
-                                (onClick)="onLogin()"
-                                [loading]="isLoading()">
-                            </p-button>
-                            
+                            <p-button label="Iniciar Sesión" styleClass="w-full" (onClick)="onLogin()" [loading]="isLoading()"> </p-button>
+
                             <div class="text-center mt-4">
                                 <span class="text-muted-color font-medium">¿No tienes cuenta? </span>
                                 <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer text-primary">Regístrate</a>
@@ -84,8 +78,19 @@ export class Login {
             },
             error: (error) => {
                 this.isLoading.set(false);
-                const message = error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
-                this.toastService.error(message);
+                
+                // Manejar errores de validación de Laravel (422)
+                if (error.status === 422 && error.error?.errors) {
+                    // Obtener el primer mensaje de error de validación
+                    const errors = error.error.errors;
+                    const firstError = Object.values(errors)[0] as string[];
+                    const message = firstError[0] || 'Error de validación';
+                    this.toastService.error(message);
+                } else {
+                    // Otros errores
+                    const message = error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+                    this.toastService.error(message);
+                }
             }
         });
     }
