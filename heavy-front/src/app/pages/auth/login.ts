@@ -6,6 +6,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
+import { ToastModule } from 'primeng/toast';
 import { AuthService } from '../../core/auth/services/auth.service';
 import { ToastService } from '../../core/services/toast.service';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
@@ -13,8 +14,9 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
 @Component({
     selector: 'app-login',
     standalone: true,
-    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator],
+    imports: [ButtonModule, CheckboxModule, InputTextModule, PasswordModule, FormsModule, RouterModule, RippleModule, AppFloatingConfigurator, ToastModule],
     template: `
+        <p-toast position="top-right" [life]="5000"></p-toast>
         <app-floating-configurator />
         <div class="bg-surface-50 dark:bg-surface-950 flex items-center justify-center min-h-screen min-w-screen overflow-hidden">
             <div class="flex flex-col items-center justify-center">
@@ -79,18 +81,27 @@ export class Login {
             error: (error) => {
                 this.isLoading.set(false);
                 
+                let errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
+                
                 // Manejar errores de validación de Laravel (422)
-                if (error.status === 422 && error.error?.errors) {
-                    // Obtener el primer mensaje de error de validación
-                    const errors = error.error.errors;
-                    const firstError = Object.values(errors)[0] as string[];
-                    const message = firstError[0] || 'Error de validación';
-                    this.toastService.error(message);
-                } else {
-                    // Otros errores
-                    const message = error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
-                    this.toastService.error(message);
+                if (error.status === 422) {
+                    if (error.error?.errors) {
+                        // Obtener el primer mensaje de error de validación
+                        const errors = error.error.errors;
+                        const firstErrorKey = Object.keys(errors)[0];
+                        if (firstErrorKey && Array.isArray(errors[firstErrorKey])) {
+                            errorMessage = errors[firstErrorKey][0] || errorMessage;
+                        } else if (typeof errors[firstErrorKey] === 'string') {
+                            errorMessage = errors[firstErrorKey];
+                        }
+                    } else if (error.error?.message) {
+                        errorMessage = error.error.message;
+                    }
+                } else if (error.error?.message) {
+                    errorMessage = error.error.message;
                 }
+                
+                this.toastService.error(errorMessage);
             }
         });
     }
