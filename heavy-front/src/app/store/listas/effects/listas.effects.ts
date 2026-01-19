@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, switchMap, take } from 'rxjs/operators';
 import { ListaService } from '../../../core/services/lista.service';
 import { ToastService } from '../../../core/services/toast.service';
 import * as ListasActions from '../actions/listas.actions';
@@ -75,7 +75,9 @@ export class ListasEffects {
       ofType(ListasActions.loadListasByTipo),
       switchMap(({ tipo }) => {
         // Verificar cache primero
-        return this.store.select(selectListasByTipo(tipo)).pipe(
+        const cachedListas$ = this.store.select(selectListasByTipo(tipo));
+        
+        return cachedListas$.pipe(
           switchMap((cachedListas) => {
             // Si ya están en cache, no hacer la llamada
             if (cachedListas && cachedListas.length > 0) {
@@ -92,7 +94,9 @@ export class ListasEffects {
                 return of(ListasActions.loadListasByTipoFailure({ error: message }));
               })
             );
-          })
+          }),
+          // Tomar solo el primer valor para evitar múltiples llamadas
+          take(1)
         );
       })
     )
