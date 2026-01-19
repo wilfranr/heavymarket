@@ -84,7 +84,6 @@ import { AuthService } from '../../core/auth/services/auth.service';
                         *ngIf="isAuthenticated()">
                         <i class="pi pi-user"></i>
                         <span>{{ currentUser()?.name || 'Usuario' }}</span>
-                        <i class="pi pi-chevron-down ml-2"></i>
                     </button>
                 </div>
             </div>
@@ -202,8 +201,16 @@ export class AppTopbar {
     }
 
     logout(): void {
-        this.authService.logout();
-        this.router.navigate(['/auth/login']);
+        this.authService.logout().subscribe({
+            next: () => {
+                this.router.navigate(['/auth/login']);
+            },
+            error: (error) => {
+                // Si hay error, limpiar datos localmente y redirigir de todas formas
+                console.error('Error al cerrar sesión:', error);
+                this.router.navigate(['/auth/login']);
+            }
+        });
     }
 
     getTimeAgo(dateString: string): string {
