@@ -26,11 +26,13 @@ interface MenuChangeEvent {
     providedIn: 'root'
 })
 export class LayoutService {
+    private readonly DARK_THEME_KEY = 'heavymarket_dark_theme';
+
     _config: layoutConfig = {
         preset: 'Aura',
         primary: 'yellow',
         surface: null,
-        darkTheme: false,
+        darkTheme: this.loadDarkThemePreference(),
         menuMode: 'static'
     };
 
@@ -83,6 +85,7 @@ export class LayoutService {
             const config = this.layoutConfig();
             if (config) {
                 this.onConfigUpdate();
+                this.saveDarkThemePreference(config.darkTheme || false);
             }
         });
 
@@ -96,6 +99,30 @@ export class LayoutService {
 
             this.handleDarkModeTransition(config);
         });
+    }
+
+    /**
+     * Cargar preferencia de tema oscuro desde localStorage
+     */
+    private loadDarkThemePreference(): boolean {
+        try {
+            const stored = localStorage.getItem(this.DARK_THEME_KEY);
+            return stored ? JSON.parse(stored) : false;
+        } catch (error) {
+            console.error('Error al cargar preferencia de tema:', error);
+            return false;
+        }
+    }
+
+    /**
+     * Guardar preferencia de tema oscuro en localStorage
+     */
+    private saveDarkThemePreference(darkTheme: boolean): void {
+        try {
+            localStorage.setItem(this.DARK_THEME_KEY, JSON.stringify(darkTheme));
+        } catch (error) {
+            console.error('Error al guardar preferencia de tema:', error);
+        }
     }
 
     private handleDarkModeTransition(config: layoutConfig): void {
