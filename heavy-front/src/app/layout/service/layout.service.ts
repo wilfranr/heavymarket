@@ -81,6 +81,9 @@ export class LayoutService {
     private initialized = false;
 
     constructor() {
+        // Aplicar el tema guardado inmediatamente al inicializar
+        this.toggleDarkMode(this._config);
+
         effect(() => {
             const config = this.layoutConfig();
             if (config) {
