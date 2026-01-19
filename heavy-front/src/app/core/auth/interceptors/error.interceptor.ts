@@ -18,6 +18,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
+      // Manejar errores de autenticación
       if (error.status === 401) {
         // Token inválido o expirado - redirigir al login
         authService.logout().subscribe();
@@ -26,14 +27,19 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         });
       }
 
+      // Solo loggear errores que no sean de validación (422)
+      // Los 422 deben ser manejados por el componente
       if (error.status === 403) {
         console.error('Acceso denegado:', error.error?.message);
-        // Aquí se podría mostrar un toast o mensaje
       }
 
       if (error.status === 500) {
         console.error('Error del servidor:', error.error?.message);
-        // Aquí se podría mostrar un toast o mensaje
+      }
+
+      // No loggear errores 422 (validación) ya que se manejan en los componentes
+      if (error.status !== 422) {
+        console.error('Error HTTP:', error.status, error.message);
       }
 
       return throwError(() => error);

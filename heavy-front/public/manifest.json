@@ -1,0 +1,17 @@
+{
+  "name": "HeavyMarket",
+  "short_name": "HeavyMarket",
+  "description": "Sistema de gestión de pedidos, cotizaciones y órdenes de compra para CYH Heavy Market",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#eab308",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "48x48",
+      "type": "image/x-icon"
+    }
+  ]
+}
