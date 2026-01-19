@@ -30,10 +30,10 @@
 - [x] Se puede acceder a `/auth/login`
 - [x] El formulario se muestra correctamente
 - [x] Validaciones funcionan (campos requeridos)
-- [ ] Login con credenciales válidas funciona
+- [x] Login con credenciales válidas funciona
 - [x] Login con credenciales inválidas muestra error (toast rojo)
-- [ ] Redirección al dashboard después de login exitoso
-- [ ] Token se guarda en localStorage
+- [x] Redirección al dashboard después de login exitoso
+- [x] Token se guarda en localStorage
 
 ### ✅ 4. Register
 - [ ] Se puede acceder a `/auth/register`
@@ -44,10 +44,11 @@
 - [ ] Redirección al dashboard después de registro
 
 ### ✅ 5. Logout
-- [ ] El botón de logout se muestra en el topbar
-- [ ] Logout funciona correctamente
-- [ ] Token se elimina de localStorage
-- [ ] Redirección a login después de logout
+- [x] El botón de logout se muestra en el topbar (dropdown de perfil)
+- [x] Dropdown del perfil se despliega correctamente
+- [x] Logout funciona correctamente
+- [x] Token se elimina de localStorage
+- [x] Redirección a login después de logout
 
 ---
 
@@ -251,8 +252,8 @@
 ## 📈 Resumen de Estado
 
 **Total de pruebas**: 120+ verificaciones  
-**Completadas**: 16  
-**Pendientes**: 104+  
+**Completadas**: 23  
+**Pendientes**: 97+  
 **Bloqueadas**: 0
 
 ---
