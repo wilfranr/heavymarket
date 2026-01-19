@@ -19,7 +19,7 @@ import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
     changeDetection: ChangeDetectionStrategy.OnPush,
     template: `<div class="card mb-8!">
         <div class="font-semibold text-xl mb-4">Pedidos Recientes</div>
-        <p-table [value]="recentPedidos$ | async" [paginator]="true" [rows]="5" responsiveLayout="scroll">
+        <p-table [value]="(recentPedidos$ | async) || []" [paginator]="true" [rows]="5" responsiveLayout="scroll">
             <ng-template pTemplate="header">
                 <tr>
                     <th>ID</th>

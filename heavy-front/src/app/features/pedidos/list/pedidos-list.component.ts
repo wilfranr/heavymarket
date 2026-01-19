@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { TableModule } from 'primeng/table';
@@ -23,6 +24,7 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
   standalone: true,
   imports: [
     CommonModule,
+    FormsModule,
     RouterModule,
     TableModule,
     ButtonModule,
@@ -51,7 +53,7 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
           <p-select
             [options]="estadosOptions"
             [(ngModel)]="selectedEstado"
-            (onChange)="onEstadoChange()"
+            (ngModelChange)="onEstadoChange($event)"
             placeholder="Filtrar por estado"
             [showClear]="true">
           </p-select>
@@ -155,7 +157,7 @@ export class PedidosListComponent implements OnInit {
     this.loadPedidos();
 
     // Suscribirse al store
-    this.store.select(PedidosSelectors.selectPedidos).subscribe(pedidos => {
+      this.store.select(PedidosSelectors.selectAllPedidos).subscribe(pedidos => {
       this.pedidos.set(pedidos);
     });
 
@@ -177,9 +179,8 @@ export class PedidosListComponent implements OnInit {
     this.loadPedidos({ search });
   }
 
-  onEstadoChange() {
-    const estado = this.selectedEstado;
-    this.loadPedidos(estado ? { estado } : {});
+  onEstadoChange(value: any) {
+    this.loadPedidos(value ? { estado: value } : {});
   }
 
   onCreatePedido() {
