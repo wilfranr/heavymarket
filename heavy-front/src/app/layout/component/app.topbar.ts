@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, ViewChild } from '@angular/core';
 import { MenuItem } from 'primeng/api';
 import { Router, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { StyleClassModule } from 'primeng/styleclass';
 import { BadgeModule } from 'primeng/badge';
 import { PopoverModule } from 'primeng/popover';
+import { MenuModule } from 'primeng/menu';
 import { InputTextModule } from 'primeng/inputtext';
 import { AppConfigurator } from './app.configurator';
 import { LayoutService } from '../service/layout.service';
@@ -15,7 +16,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, InputTextModule, AppConfigurator],
+    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule, AppConfigurator],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -75,13 +76,21 @@ import { AuthService } from '../../core/auth/services/auth.service';
                         <i class="pi pi-sign-in"></i>
                         <span>Iniciar Sesión</span>
                     </button>
-                    <button type="button" class="layout-topbar-action" (click)="logout()" *ngIf="isAuthenticated()">
+                    <button 
+                        type="button" 
+                        class="layout-topbar-action" 
+                        #profileMenuButton
+                        (click)="profileMenu.toggle($event)"
+                        *ngIf="isAuthenticated()">
                         <i class="pi pi-user"></i>
                         <span>{{ currentUser()?.name || 'Usuario' }}</span>
+                        <i class="pi pi-chevron-down ml-2"></i>
                     </button>
                 </div>
             </div>
         </div>
+
+        <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
 
         <p-popover #notificationsPanel [style]="{'width': '400px', 'max-height': '500px', 'overflow-y': 'auto'}">
             <ng-template pTemplate="content">
@@ -135,6 +144,8 @@ export class AppTopbar {
     private readonly router = inject(Router);
     public readonly layoutService = inject(LayoutService);
 
+    @ViewChild('profileMenu') profileMenu: any;
+
     notifications = this.notificationService.notifications;
     unreadCount = this.notificationService.unreadCount;
     currentUser = this.authService.currentUser;
@@ -142,6 +153,35 @@ export class AppTopbar {
 
     searchQuery = '';
     items!: MenuItem[];
+
+    profileMenuItems: MenuItem[] = [
+        {
+            label: 'Mi Perfil',
+            icon: 'pi pi-user',
+            command: () => {
+                // TODO: Navegar a página de perfil cuando esté implementada
+                console.log('Ir a perfil');
+            }
+        },
+        {
+            label: 'Configuración',
+            icon: 'pi pi-cog',
+            command: () => {
+                // TODO: Navegar a página de configuración cuando esté implementada
+                console.log('Ir a configuración');
+            }
+        },
+        {
+            separator: true
+        },
+        {
+            label: 'Cerrar Sesión',
+            icon: 'pi pi-sign-out',
+            command: () => {
+                this.logout();
+            }
+        }
+    ];
 
     toggleDarkMode(): void {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
