@@ -15,9 +15,11 @@ import { errorInterceptor } from './app/core/auth/interceptors/error.interceptor
 import { authReducer } from './app/store/auth/reducers/auth.reducer';
 import { pedidosReducer } from './app/store/pedidos/reducers/pedidos.reducer';
 import { tercerosReducer } from './app/store/terceros/reducers/terceros.reducer';
+import { listasReducer } from './app/store/listas/reducers/listas.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
+import { ListasEffects } from './app/store/listas/effects/listas.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -33,9 +35,10 @@ export const appConfig: ApplicationConfig = {
         provideStore({
             auth: authReducer,
             pedidos: pedidosReducer,
-            terceros: tercerosReducer
+            terceros: tercerosReducer,
+            listas: listasReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService

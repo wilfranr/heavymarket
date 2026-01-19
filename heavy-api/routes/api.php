@@ -17,7 +17,8 @@ use App\Http\Controllers\Api\V1\{
     FabricanteController,
     SistemaController,
     MaquinaController,
-    CategoriaController
+    CategoriaController,
+    ListaController
 };
 
 /**
@@ -93,6 +94,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('sistemas', SistemaController::class);
         Route::apiResource('maquinas', MaquinaController::class);
         Route::apiResource('categorias', CategoriaController::class);
+        Route::apiResource('listas', ListaController::class);
+        Route::get('listas/tipo/{tipo}', [ListaController::class, 'getByTipo'])->name('listas.by-tipo');
         
         /**
          * Gestión de usuarios (solo admin)

@@ -41,6 +41,12 @@ export class AppMenu {
                 ]
             },
             {
+                label: 'Catálogos',
+                items: [
+                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/listas'] }
+                ]
+            },
+            {
                 separator: true
             },
             {
