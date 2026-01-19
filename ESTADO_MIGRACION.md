@@ -165,26 +165,67 @@
 
 ---
 
-## 🎯 Plan de Migración Realista
+## 🎯 Plan de Migración Realista (ORDEN CORRECTO)
 
-### Fase 1: Completar Módulo de Pedidos (Prioridad Alta)
+### ⚠️ ORDEN CORRECTO DE IMPLEMENTACIÓN
+
+**NO se puede completar Pedidos sin los módulos de soporte primero.**
+
+### Fase 1: Módulos de Soporte Base (PRIORIDAD CRÍTICA)
+**Estos son PREREQUISITOS para Pedidos:**
+
+1. **Listas** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: Se usa para tipos de máquinas, marcas, estados, etc.
+   - **Dependencias**: Ninguna
+
+2. **Fabricantes** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: Se usa en Pedidos y Máquinas
+   - **Dependencias**: Ninguna
+
+3. **Sistemas** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: Se relaciona con Listas y Máquinas
+   - **Dependencias**: Listas
+
+4. **Referencias** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: CRÍTICO - Pedidos usa Referencia::find() en el repeater
+   - **Dependencias**: Listas (para marcas)
+
+5. **Máquinas** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: Se asocia a Pedidos
+   - **Dependencias**: Listas (tipo), Fabricantes
+
+6. **Articulos** (CRUD completo)
+   - ✅ Backend ya existe
+   - ❌ Frontend: 0%
+   - **Razón**: Se agregan a Pedidos
+   - **Dependencias**: Referencias, Categorias
+
+### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1)
+**Solo cuando los módulos de soporte estén listos:**
+
 - [ ] Implementar Wizard de creación (3 pasos)
-- [ ] Implementar gestión de Referencias con Repeater
+  - Paso 1: Cliente (usa Terceros - ✅ ya existe)
+  - Paso 2: Referencias (usa Referencias - ❌ necesita Fase 1)
+  - Paso 3: Artículos (usa Articulos - ❌ necesita Fase 1)
+- [ ] Implementar gestión de Referencias con Repeater (usa Referencias)
 - [ ] Implementar gestión de Proveedores por Referencia
 - [ ] Implementar comparación de proveedores
 - [ ] Implementar selección masiva
 - [ ] Implementar filtros avanzados
-- [ ] Implementar gestión de Artículos
+- [ ] Implementar gestión de Artículos (usa Articulos)
 - [ ] Implementar estados avanzados
-- [ ] Implementar relación con Máquinas
-- [ ] Implementar relación con Fabricantes
-
-### Fase 2: Módulos de Soporte (Prioridad Alta)
-- [ ] Referencias (CRUD completo)
-- [ ] Articulos (CRUD completo)
-- [ ] Maquinas (CRUD completo)
-- [ ] Sistemas (CRUD completo)
-- [ ] Fabricantes (CRUD completo)
+- [ ] Implementar relación con Máquinas (usa Máquinas)
+- [ ] Implementar relación con Fabricantes (usa Fabricantes)
 
 ### Fase 3: Completar Módulos Principales
 - [ ] Cotizaciones (completo)
