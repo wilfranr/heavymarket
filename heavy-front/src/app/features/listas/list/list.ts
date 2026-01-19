@@ -130,13 +130,13 @@ export class ListComponent implements OnInit {
     /**
      * Obtiene el severity del tag según el tipo
      */
-    getTipoSeverity(tipo: string): string {
-        const severityMap: { [key: string]: string } = {
+    getTipoSeverity(tipo: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
+        const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
             'Marca': 'success',
             'Tipo de Máquina': 'info',
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',
-            'Tipo de Medida': 'help',
+            'Tipo de Medida': 'info',
             'Nombre de Medida': 'contrast',
         };
         return severityMap[tipo] || 'secondary';

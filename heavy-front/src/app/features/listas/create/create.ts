@@ -7,7 +7,7 @@ import { Store } from '@ngrx/store';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
-import { InputTextareaModule } from 'primeng/inputtextarea';
+import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
@@ -30,7 +30,7 @@ import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
         CardModule,
         ButtonModule,
         InputTextModule,
-        InputTextareaModule,
+        TextareaModule,
         SelectModule,
         ToastModule,
         DividerModule
