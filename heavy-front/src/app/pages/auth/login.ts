@@ -1,12 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
 import { RippleModule } from 'primeng/ripple';
 import { AppFloatingConfigurator } from '../../layout/component/app.floatingconfigurator';
+import { AuthService } from '../../core/auth/services/auth.service';
+import { ToastService } from '../../core/services/toast.service';
 
 @Component({
     selector: 'app-login',
@@ -36,25 +38,35 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
                                     />
                                 </g>
                             </svg>
-                            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">Welcome to PrimeLand!</div>
-                            <span class="text-muted-color font-medium">Sign in to continue</span>
+                            <div class="text-surface-900 dark:text-surface-0 text-3xl font-medium mb-4">HeavyMarket</div>
+                            <span class="text-muted-color font-medium">Inicia sesión para continuar</span>
                         </div>
 
                         <div>
                             <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="text" placeholder="Email address" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
+                            <input pInputText id="email1" type="email" placeholder="correo@ejemplo.com" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
 
-                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Password</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Password" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
+                            <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Contraseña</label>
+                            <p-password id="password1" [(ngModel)]="password" placeholder="Contraseña" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
                                     <p-checkbox [(ngModel)]="checked" id="rememberme1" binary class="mr-2"></p-checkbox>
-                                    <label for="rememberme1">Remember me</label>
+                                    <label for="rememberme1">Recordarme</label>
                                 </div>
-                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">Forgot password?</span>
+                                <span class="font-medium no-underline ml-2 text-right cursor-pointer text-primary">¿Olvidaste tu contraseña?</span>
                             </div>
-                            <p-button label="Sign In" styleClass="w-full" routerLink="/"></p-button>
+                            <p-button 
+                                label="Iniciar Sesión" 
+                                styleClass="w-full" 
+                                (onClick)="onLogin()"
+                                [loading]="isLoading()">
+                            </p-button>
+                            
+                            <div class="text-center mt-4">
+                                <span class="text-muted-color font-medium">¿No tienes cuenta? </span>
+                                <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer text-primary">Regístrate</a>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -63,9 +75,34 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
     `
 })
 export class Login {
+    private authService = inject(AuthService);
+    private router = inject(Router);
+    private toastService = inject(ToastService);
+
     email: string = '';
-
     password: string = '';
-
     checked: boolean = false;
+    isLoading = signal(false);
+
+    onLogin(): void {
+        if (!this.email || !this.password) {
+            this.toastService.warning('Por favor ingresa tu email y contraseña');
+            return;
+        }
+
+        this.isLoading.set(true);
+
+        this.authService.login({ email: this.email, password: this.password }).subscribe({
+            next: () => {
+                this.isLoading.set(false);
+                this.toastService.success('Inicio de sesión exitoso');
+                this.router.navigate(['/']);
+            },
+            error: (error) => {
+                this.isLoading.set(false);
+                const message = error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
+                this.toastService.error(message);
+            }
+        });
+    }
 }

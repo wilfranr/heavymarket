@@ -6,9 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { MessagesModule } from 'primeng/messages';
-import { Message } from 'primeng/api';
+import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 /**
  * Componente de Login
@@ -27,7 +27,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
     CheckboxModule,
     InputTextModule,
     PasswordModule,
-    MessagesModule
+    MessageModule
   ],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss']
@@ -36,10 +36,10 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   // Signals para manejo de estado
   isLoading = signal(false);
-  errorMessages = signal<Message[]>([]);
 
   // Formulario reactivo
   loginForm: FormGroup;
@@ -58,17 +58,18 @@ export class LoginComponent {
   onSubmit(): void {
     if (this.loginForm.invalid) {
       this.markFormGroupTouched(this.loginForm);
+      this.toastService.warning('Por favor completa todos los campos requeridos');
       return;
     }
 
     this.isLoading.set(true);
-    this.errorMessages.set([]);
 
     const { email, password } = this.loginForm.value;
 
     this.authService.login({ email, password }).subscribe({
       next: (response) => {
         this.isLoading.set(false);
+        this.toastService.success('Inicio de sesión exitoso');
         
         // Redirigir al dashboard o returnUrl
         const returnUrl = this.getReturnUrl();
@@ -78,12 +79,7 @@ export class LoginComponent {
         this.isLoading.set(false);
         
         const message = error.error?.message || 'Error al iniciar sesión. Verifica tus credenciales.';
-        
-        this.errorMessages.set([{
-          severity: 'error',
-          summary: 'Error',
-          detail: message
-        }]);
+        this.toastService.error(message);
       }
     });
   }

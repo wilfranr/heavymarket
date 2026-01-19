@@ -6,9 +6,9 @@ import { ButtonModule } from 'primeng/button';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { PasswordModule } from 'primeng/password';
-import { MessagesModule } from 'primeng/messages';
-import { Message } from 'primeng/api';
+import { MessageModule } from 'primeng/message';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { ToastService } from '../../../core/services/toast.service';
 
 /**
  * Componente de Registro
@@ -27,7 +27,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
     CheckboxModule,
     InputTextModule,
     PasswordModule,
-    MessagesModule
+    MessageModule
   ],
   templateUrl: './register.component.html',
   styleUrls: ['./register.component.scss']
@@ -36,10 +36,10 @@ export class RegisterComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private toastService = inject(ToastService);
 
   // Signals para manejo de estado
   isLoading = signal(false);
-  errorMessages = signal<Message[]>([]);
 
   // Formulario reactivo
   registerForm: FormGroup;
@@ -76,11 +76,11 @@ export class RegisterComponent {
   onSubmit(): void {
     if (this.registerForm.invalid) {
       this.markFormGroupTouched(this.registerForm);
+      this.toastService.warning('Por favor completa todos los campos requeridos');
       return;
     }
 
     this.isLoading.set(true);
-    this.errorMessages.set([]);
 
     const { name, email, password, password_confirmation } = this.registerForm.value;
 
@@ -92,9 +92,10 @@ export class RegisterComponent {
     }).subscribe({
       next: (response) => {
         this.isLoading.set(false);
+        this.toastService.success('Registro exitoso. Bienvenido!');
         
         // Redirigir al dashboard después del registro exitoso
-        this.router.navigate(['/dashboard']);
+        this.router.navigate(['/']);
       },
       error: (error) => {
         this.isLoading.set(false);
@@ -102,25 +103,15 @@ export class RegisterComponent {
         // Manejar errores de validación del backend
         if (error.error?.errors) {
           const errors = error.error.errors;
-          const messages: Message[] = [];
           
           Object.keys(errors).forEach(key => {
             errors[key].forEach((msg: string) => {
-              messages.push({
-                severity: 'error',
-                summary: 'Error de validación',
-                detail: msg
-              });
+              this.toastService.error(msg);
             });
           });
-          
-          this.errorMessages.set(messages);
         } else {
-          this.errorMessages.set([{
-            severity: 'error',
-            summary: 'Error',
-            detail: error.error?.message || 'Error al registrar usuario'
-          }]);
+          const message = error.error?.message || 'Error al registrar usuario';
+          this.toastService.error(message);
         }
       }
     });

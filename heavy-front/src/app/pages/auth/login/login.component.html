@@ -7,16 +7,6 @@
                     <span class="text-600 font-medium">Inicia sesión para continuar</span>
                 </div>
 
-                <!-- Mensajes de error -->
-                @if (errorMessages().length > 0) {
-                    <p-messages 
-                        [value]="errorMessages()" 
-                        [enableService]="false" 
-                        [closable]="true"
-                        class="mb-3">
-                    </p-messages>
-                }
-
                 <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
                     <div>
                         <!-- Email -->
