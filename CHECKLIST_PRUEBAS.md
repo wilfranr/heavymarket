@@ -8,17 +8,19 @@
 ## 🎯 Fase 1: Verificación Básica
 
 ### ✅ 1. Compilación y Arranque
-- [ ] El proyecto compila sin errores (`npm start`)
-- [ ] La aplicación se carga en `http://localhost:4200`
-- [ ] No hay errores en la consola del navegador
-- [ ] El diseño se muestra correctamente (layout Sakai)
+- [x] El proyecto compila sin errores (`npm start`)
+- [x] La aplicación se carga en `http://localhost:4200`
+- [x] No hay errores en la consola del navegador
+- [x] El diseño se muestra correctamente (layout Sakai)
+- [x] Spinner de carga en color amarillo
 
 ### ✅ 2. Layout y Navegación Base
-- [ ] El logo "HeavyMarket" se muestra correctamente
-- [ ] El menú lateral se abre/cierra correctamente
-- [ ] El toggle de tema claro/oscuro funciona
-- [ ] El topbar muestra correctamente
-- [ ] El footer se muestra correctamente
+- [x] Redirige correctamente a `/auth/login` cuando no está autenticado
+- [x] URL limpia sin bucles infinitos de redirección
+- [x] El color primario es amarillo en toda la aplicación
+- [x] El toggle de tema claro/oscuro funciona
+- [x] La preferencia de tema persiste en localStorage
+- [x] Solo aparece el botón de sol/luna (panel de colores oculto)
 
 ---
 
@@ -249,16 +251,16 @@
 ## 📈 Resumen de Estado
 
 **Total de pruebas**: 120+ verificaciones  
-**Completadas**: 0  
-**Pendientes**: 120+  
+**Completadas**: 11  
+**Pendientes**: 109+  
 **Bloqueadas**: 0
 
 ---
 
 ## 🚀 Siguiente Paso
 
-Empezaremos con la **Fase 1: Verificación Básica**
+Continuaremos con la **Fase 2: Autenticación - Login**
 
 ---
 
-**Última actualización**: 19/01/2026 01:00
+**Última actualización**: 19/01/2026 02:00
