@@ -27,11 +27,11 @@
 ## 🔐 Fase 2: Autenticación
 
 ### ✅ 3. Login
-- [ ] Se puede acceder a `/auth/login`
-- [ ] El formulario se muestra correctamente
-- [ ] Validaciones funcionan (campos requeridos)
+- [x] Se puede acceder a `/auth/login`
+- [x] El formulario se muestra correctamente
+- [x] Validaciones funcionan (campos requeridos)
 - [ ] Login con credenciales válidas funciona
-- [ ] Login con credenciales inválidas muestra error
+- [x] Login con credenciales inválidas muestra error (toast rojo)
 - [ ] Redirección al dashboard después de login exitoso
 - [ ] Token se guarda en localStorage
 
@@ -251,8 +251,8 @@
 ## 📈 Resumen de Estado
 
 **Total de pruebas**: 120+ verificaciones  
-**Completadas**: 11  
-**Pendientes**: 109+  
+**Completadas**: 16  
+**Pendientes**: 104+  
 **Bloqueadas**: 0
 
 ---
