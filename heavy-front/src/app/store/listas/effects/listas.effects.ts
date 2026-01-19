@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Store } from '@ngrx/store';
 import { of } from 'rxjs';
-import { catchError, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { ListaService } from '../../../core/services/lista.service';
 import { ToastService } from '../../../core/services/toast.service';
 import * as ListasActions from '../actions/listas.actions';
@@ -73,21 +73,25 @@ export class ListasEffects {
   loadListasByTipo$ = createEffect(() =>
     this.actions$.pipe(
       ofType(ListasActions.loadListasByTipo),
-      withLatestFrom(this.store.select(selectListasByTipo)),
-      switchMap(([{ tipo }, cachedListas]) => {
-        // Si ya están en cache, no hacer la llamada
-        if (cachedListas && cachedListas.length > 0) {
-          return of(ListasActions.loadListasByTipoSuccess({ tipo, listas: cachedListas }));
-        }
+      switchMap(({ tipo }) => {
+        // Verificar cache primero
+        return this.store.select(selectListasByTipo(tipo)).pipe(
+          switchMap((cachedListas) => {
+            // Si ya están en cache, no hacer la llamada
+            if (cachedListas && cachedListas.length > 0) {
+              return of(ListasActions.loadListasByTipoSuccess({ tipo, listas: cachedListas }));
+            }
 
-        return this.listaService.getByTipo(tipo).pipe(
-          map((listas) => {
-            return ListasActions.loadListasByTipoSuccess({ tipo, listas });
-          }),
-          catchError((error) => {
-            const message = error.error?.message || `Error al cargar listas de tipo ${tipo}`;
-            this.toastService.error(message);
-            return of(ListasActions.loadListasByTipoFailure({ error: message }));
+            return this.listaService.getByTipo(tipo).pipe(
+              map((listas) => {
+                return ListasActions.loadListasByTipoSuccess({ tipo, listas });
+              }),
+              catchError((error) => {
+                const message = error.error?.message || `Error al cargar listas de tipo ${tipo}`;
+                this.toastService.error(message);
+                return of(ListasActions.loadListasByTipoFailure({ error: message }));
+              })
+            );
           })
         );
       })
