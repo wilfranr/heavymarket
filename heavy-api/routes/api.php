@@ -119,6 +119,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('empresas', EmpresaController::class);
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class);
+        Route::apiResource('direcciones', DireccionController::class);
         
         /**
          * Gestión de usuarios (solo admin)
