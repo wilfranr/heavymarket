@@ -44,7 +44,7 @@ class SubcategoriaLanding extends Model
         $imagenValue = $this->getRawOriginal('imagen');
         
         // Si hay imagen guardada en BD (archivo subido en storage)
-        if ($imagenValue && \Illuminate\Support\Str::startsWith($imagenValue, 'images/')) {
+        if ($imagenValue && (\Illuminate\Support\Str::startsWith($imagenValue, 'images/') || \Illuminate\Support\Str::startsWith($imagenValue, 'landing/'))) {
             // Es una imagen subida, usar storage
             return \Illuminate\Support\Facades\Storage::disk('public')->url($imagenValue);
         }

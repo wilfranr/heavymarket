@@ -23,7 +23,7 @@ import { TRM } from '../../../core/models/trm.model';
   template: `
     <div class="card">
       <div class="flex justify-content-between align-items-center mb-4">
-        <h2>TRM: ${{ trm()?.trm | number:'1.2-2' }}</h2>
+        <h2>TRM: @if (trm()) { ${{ trm()!.trm | number:'1.2-2' }} }</h2>
         <div class="flex gap-2">
           <p-button
             label="Editar"
