@@ -127,11 +127,33 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
                   <ng-template pTemplate="body" let-item>
                     <tr>
                       <td>{{ item.id }}</td>
-                      <td>{{ item.pedido_referencia_proveedor?.tercero?.razon_social || 'N/A' }}</td>
-                      <td>{{ item.pedido_referencia_proveedor?.referencia?.referencia || 'N/A' }}</td>
-                      <td>{{ item.pedido_referencia_proveedor?.cantidad || 'N/A' }}</td>
-                      <td>{{ item.pedido_referencia_proveedor?.valor_unidad | currency:'COP':'symbol':'1.0-0' || 'N/A' }}</td>
-                      <td>{{ item.pedido_referencia_proveedor?.valor_total | currency:'COP':'symbol':'1.0-0' || 'N/A' }}</td>
+                      <td>
+                        {{ item.pedido_referencia_proveedor?.tercero?.razon_social || 'N/A' }}
+                      </td>
+                      <td>
+                        {{ item.pedido_referencia_proveedor?.referencia?.referencia || 'N/A' }}
+                      </td>
+                      <td>
+                        @if (item.pedido_referencia_proveedor?.cantidad) {
+                          {{ item.pedido_referencia_proveedor.cantidad }}
+                        } @else {
+                          N/A
+                        }
+                      </td>
+                      <td>
+                        @if (item.pedido_referencia_proveedor?.valor_unidad) {
+                          {{ item.pedido_referencia_proveedor.valor_unidad | currency:'COP':'symbol':'1.0-0' }}
+                        } @else {
+                          N/A
+                        }
+                      </td>
+                      <td>
+                        @if (item.pedido_referencia_proveedor?.valor_total) {
+                          {{ item.pedido_referencia_proveedor.valor_total | currency:'COP':'symbol':'1.0-0' }}
+                        } @else {
+                          N/A
+                        }
+                      </td>
                     </tr>
                   </ng-template>
                 </p-table>
