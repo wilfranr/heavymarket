@@ -68,9 +68,11 @@ import { OrdenCompra } from '../../../core/models/orden-compra.model';
                   <p><strong>Estado:</strong>
                     @if (ordenCompra()?.estado) {
                       <p-tag
-                        [value]="ordenCompra()!.estado"
-                        [severity]="getEstadoSeverity(ordenCompra()!.estado)">
+                        [value]="ordenCompra()!.estado || 'N/A'"
+                        [severity]="getEstadoSeverity(ordenCompra()!.estado || 'Pendiente')">
                       </p-tag>
+                    } @else {
+                      N/A
                     }
                   </p>
                 </div>
