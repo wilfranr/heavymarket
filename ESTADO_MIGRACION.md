@@ -249,7 +249,10 @@
   - Backend: Filtros por maquina_id y user_id ✅
   - Frontend: UI con múltiples filtros combinables ✅
   - Botón limpiar filtros ✅
-- [ ] Implementar gestión de Artículos (usa Articulos)
+- [x] Implementar gestión de Artículos (usa Articulos) ✅
+  - Backend: Endpoints CRUD completos ✅
+  - Frontend: UI de gestión con lista de artículos ✅
+  - Integración con ArticuloService ✅
 - [x] Implementar estados avanzados (transiciones de estado con validaciones) ✅
   - Validación de transiciones válidas ✅
   - Mapa de transiciones por estado ✅
