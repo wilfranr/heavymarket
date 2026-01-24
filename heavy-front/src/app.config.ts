@@ -80,6 +80,7 @@ import { categoriasReducer } from './app/store/categorias/reducers/categorias.re
 import { contactosReducer } from './app/store/contactos/reducers/contactos.reducer';
 import { direccionesReducer } from './app/store/direcciones/reducers/direcciones.reducer';
 import { transportadorasReducer } from './app/store/transportadoras/reducers/transportadoras.reducer';
+import { trmsReducer } from './app/store/trms/reducers/trms.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
