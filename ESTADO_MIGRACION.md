@@ -332,7 +332,15 @@
   - Rutas configuradas ✅
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
-- [ ] Transportadoras
+- [x] Transportadoras (completo) ✅
+  - Backend: Modelo Transportadora con relaciones completas ✅
+  - Backend: Controller, Resources, FormRequest completos ✅
+  - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
+  - Frontend: Componentes list, create, edit y detail completos ✅
+  - Frontend: Gestión completa de información de transportadoras ✅
+  - Rutas configuradas ✅
+  - Integración completa con servicios y NgRx ✅
+  - Módulo 100% funcional y compilando sin errores ✅
 - [ ] TRM
 
 ### Fase 5: Funcionalidades Avanzadas
