@@ -262,7 +262,11 @@
 - [x] Implementar relación con Fabricantes (usa Fabricantes) ✅
 
 ### Fase 3: Completar Módulos Principales
-- [ ] Cotizaciones (completo)
+- [x] Cotizaciones (completo) ✅
+  - Backend: Modelo, Controller, Resources, FormRequest completos ✅
+  - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
+  - Frontend: Componentes list y create completos ✅
+  - Pendiente: Componentes edit y detail (estructura básica creada) ⏳
 - [ ] Órdenes de Compra (completo)
 - [ ] Órdenes de Trabajo (completo)
 - ✅ Listas (completo)
