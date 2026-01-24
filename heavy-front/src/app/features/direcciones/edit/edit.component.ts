@@ -123,7 +123,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
             <div class="col-12">
               <label for="principal" class="block mb-2">Dirección Principal</label>
               <p-toggleSwitch formControlName="principal"></p-toggleSwitch>
-              <label class="ml-2">{{ direccionForm.get('principal')?.value') ? 'Sí' : 'No' }}</label>
+              <label class="ml-2">{{ direccionForm.get('principal')?.value ? 'Sí' : 'No' }}</label>
             </div>
           </div>
 
