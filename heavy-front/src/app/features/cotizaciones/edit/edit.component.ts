@@ -10,7 +10,6 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { CalendarModule } from 'primeng/calendar';
 import { updateCotizacion, loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
 import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/cotizacion.model';
@@ -31,7 +30,6 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
     TextareaModule,
     SelectModule,
     ToastModule,
-    CalendarModule,
   ],
   providers: [MessageService],
   template: `
@@ -58,13 +56,12 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
 
             <div class="col-12 md:col-6">
               <label for="fecha_vencimiento" class="block mb-2">Fecha de Vencimiento</label>
-              <p-calendar
+              <input
+                type="date"
                 formControlName="fecha_vencimiento"
-                [showIcon]="true"
-                dateFormat="yy-mm-dd"
-                [minDate]="minDate"
+                pInputText
+                [min]="minDate.toISOString().split('T')[0]"
                 styleClass="w-full">
-              </p-calendar>
             </div>
 
             <div class="col-12">
