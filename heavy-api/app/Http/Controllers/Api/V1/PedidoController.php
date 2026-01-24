@@ -52,6 +52,16 @@ class PedidoController extends Controller
             $query->where('fabricante_id', $request->input('fabricante_id'));
         }
 
+        // Filtro por máquina
+        if ($request->filled('maquina_id')) {
+            $query->where('maquina_id', $request->input('maquina_id'));
+        }
+
+        // Filtro por vendedor (user_id)
+        if ($request->filled('user_id')) {
+            $query->where('user_id', $request->input('user_id'));
+        }
+
         // Búsqueda en comentarios
         if ($request->filled('search')) {
             $search = $request->input('search');

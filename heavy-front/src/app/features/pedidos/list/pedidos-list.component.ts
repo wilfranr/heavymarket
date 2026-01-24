@@ -39,31 +39,73 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
       <h2>Gestión de Pedidos</h2>
       
       <!-- Filtros y Acciones -->
-      <div class="flex justify-content-between mb-3">
-        <div class="flex gap-2">
-          <span class="p-input-icon-left">
-            <i class="pi pi-search"></i>
-            <input 
-              pInputText 
-              type="text" 
-              (input)="onSearch($event)" 
-              placeholder="Buscar..." />
-          </span>
+      <div class="mb-4">
+        <div class="flex justify-content-between mb-3">
+          <div class="flex gap-2 flex-wrap">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <input 
+                pInputText 
+                type="text" 
+                (input)="onSearch($event)" 
+                placeholder="Buscar..." />
+            </span>
+            
+            <p-select
+              [options]="estadosOptions"
+              [(ngModel)]="selectedEstado"
+              (ngModelChange)="onEstadoChange($event)"
+              placeholder="Estado"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+
+            <p-select
+              [options]="terceros"
+              [(ngModel)]="selectedTercero"
+              (ngModelChange)="onTerceroChange($event)"
+              placeholder="Cliente"
+              [filter]="true"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+
+            <p-select
+              [options]="maquinas"
+              [(ngModel)]="selectedMaquina"
+              (ngModelChange)="onMaquinaChange($event)"
+              placeholder="Máquina"
+              [filter]="true"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+
+            <p-select
+              [options]="fabricantes"
+              [(ngModel)]="selectedFabricante"
+              (ngModelChange)="onFabricanteChange($event)"
+              placeholder="Fabricante"
+              [filter]="true"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+          </div>
           
-          <p-select
-            [options]="estadosOptions"
-            [(ngModel)]="selectedEstado"
-            (ngModelChange)="onEstadoChange($event)"
-            placeholder="Filtrar por estado"
-            [showClear]="true">
-          </p-select>
+          <div class="flex gap-2">
+            <p-button 
+              label="Limpiar Filtros" 
+              icon="pi pi-filter-slash"
+              severity="secondary"
+              [text]="true"
+              (onClick)="limpiarFiltros()">
+            </p-button>
+            <p-button 
+              label="Nuevo Pedido" 
+              icon="pi pi-plus"
+              (onClick)="onCreatePedido()">
+            </p-button>
+          </div>
         </div>
-        
-        <p-button 
-          label="Nuevo Pedido" 
-          icon="pi pi-plus"
-          (onClick)="onCreatePedido()">
-        </p-button>
       </div>
       
       <!-- Tabla de Pedidos -->
@@ -134,12 +176,26 @@ export class PedidosListComponent implements OnInit {
   private store = inject(Store);
   private router = inject(Router);
   private confirmationService = inject(ConfirmationService);
+  private terceroService = inject(TerceroService);
+  private maquinaService = inject(MaquinaService);
+  private fabricanteService = inject(FabricanteService);
+  // private userService = inject(UserService); // TODO: Implementar cuando esté disponible
 
   // Signals para estado local
   pedidos = signal<Pedido[]>([]);
   loading = signal(false);
   total = signal(0);
   selectedEstado: string | null = null;
+  selectedTercero: number | null = null;
+  selectedVendedor: number | null = null;
+  selectedMaquina: number | null = null;
+  selectedFabricante: number | null = null;
+  
+  // Opciones para filtros
+  terceros: any[] = [];
+  vendedores: any[] = [];
+  maquinas: any[] = [];
+  fabricantes: any[] = [];
 
   estadosOptions: Array<{label: string; value: PedidoEstado}> = [
     { label: 'Nuevo', value: 'Nuevo' },
@@ -153,11 +209,14 @@ export class PedidosListComponent implements OnInit {
   ];
 
   ngOnInit() {
+    // Cargar datos para filtros
+    this.loadFilterOptions();
+    
     // Cargar pedidos inicial
     this.loadPedidos();
 
     // Suscribirse al store
-      this.store.select(PedidosSelectors.selectAllPedidos).subscribe(pedidos => {
+    this.store.select(PedidosSelectors.selectAllPedidos).subscribe(pedidos => {
       this.pedidos.set(pedidos);
     });
 
@@ -170,8 +229,68 @@ export class PedidosListComponent implements OnInit {
     });
   }
 
-  loadPedidos(params = {}) {
-    this.store.dispatch(PedidosActions.loadPedidos({ params }));
+  /**
+   * Carga las opciones para los filtros
+   */
+  private loadFilterOptions(): void {
+    // Cargar terceros (clientes)
+    this.terceroService.list({ per_page: 200, es_cliente: true }).subscribe({
+      next: (response) => {
+        this.terceros = response.data.map(t => ({
+          label: t.razon_social || t.nombre_comercial || `Tercero ${t.id}`,
+          value: t.id
+        }));
+      }
+    });
+
+    // Cargar máquinas
+    this.maquinaService.getAll({ per_page: 200 }).subscribe({
+      next: (response) => {
+        this.maquinas = response.data.map(m => ({
+          label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+          value: m.id
+        }));
+      }
+    });
+
+    // Cargar fabricantes
+    this.fabricanteService.getAll({ per_page: 200 }).subscribe({
+      next: (response) => {
+        this.fabricantes = response.data.map(f => ({
+          label: f.nombre,
+          value: f.id
+        }));
+      }
+    });
+
+    // Cargar usuarios (vendedores) - si existe el servicio
+    // TODO: Implementar cuando esté disponible el servicio de usuarios
+  }
+
+  loadPedidos(params: any = {}) {
+    // Construir parámetros de filtro
+    const filterParams: any = {};
+    
+    if (this.selectedEstado) {
+      filterParams.estado = this.selectedEstado;
+    }
+    if (this.selectedTercero) {
+      filterParams.tercero_id = this.selectedTercero;
+    }
+    if (this.selectedVendedor) {
+      filterParams.user_id = this.selectedVendedor;
+    }
+    if (this.selectedMaquina) {
+      filterParams.maquina_id = this.selectedMaquina;
+    }
+    if (this.selectedFabricante) {
+      filterParams.fabricante_id = this.selectedFabricante;
+    }
+    
+    // Combinar con otros parámetros (búsqueda, paginación, etc.)
+    const finalParams = { ...filterParams, ...params };
+    
+    this.store.dispatch(PedidosActions.loadPedidos({ params: finalParams }));
   }
 
   onSearch(event: any) {
@@ -180,7 +299,37 @@ export class PedidosListComponent implements OnInit {
   }
 
   onEstadoChange(value: any) {
-    this.loadPedidos(value ? { estado: value } : {});
+    this.selectedEstado = value;
+    this.loadPedidos();
+  }
+
+  onTerceroChange(value: any) {
+    this.selectedTercero = value;
+    this.loadPedidos();
+  }
+
+  onVendedorChange(value: any) {
+    this.selectedVendedor = value;
+    this.loadPedidos();
+  }
+
+  onMaquinaChange(value: any) {
+    this.selectedMaquina = value;
+    this.loadPedidos();
+  }
+
+  onFabricanteChange(value: any) {
+    this.selectedFabricante = value;
+    this.loadPedidos();
+  }
+
+  limpiarFiltros(): void {
+    this.selectedEstado = null;
+    this.selectedTercero = null;
+    this.selectedVendedor = null;
+    this.selectedMaquina = null;
+    this.selectedFabricante = null;
+    this.loadPedidos();
   }
 
   onCreatePedido() {
