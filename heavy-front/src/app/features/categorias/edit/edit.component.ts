@@ -55,15 +55,15 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
             <div class="col-12">
               <label for="terceros" class="block mb-2">Proveedores</label>
-              <p-select
-                formControlName="terceros"
-                [options]="proveedores"
-                placeholder="Seleccione proveedores"
-                [filter]="true"
-                [multiple]="true"
-                [showClear]="true"
-                styleClass="w-full">
-              </p-select>
+            <p-select
+              formControlName="terceros"
+              [options]="proveedores"
+              placeholder="Seleccione proveedores"
+              [filter]="true"
+              multiple="true"
+              [showClear]="true"
+              styleClass="w-full">
+            </p-select>
             </div>
           </div>
 
