@@ -13,6 +13,9 @@ import { ConfirmationService } from 'primeng/api';
 import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
+import { TerceroService } from '../../../core/services/tercero.service';
+import { MaquinaService } from '../../../core/services/maquina.service';
+import { FabricanteService } from '../../../core/services/fabricante.service';
 
 /**
  * Componente de Lista de Pedidos
