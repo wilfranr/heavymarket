@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\ArticuloController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoriaController;
 use App\Http\Controllers\Api\V1\CotizacionController;
+use App\Http\Controllers\Api\V1\EmpresaController;
 use App\Http\Controllers\Api\V1\FabricanteController;
 use App\Http\Controllers\Api\V1\ListaController;
 use App\Http\Controllers\Api\V1\MaquinaController;
@@ -109,6 +110,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('listas', ListaController::class);
         Route::get('listas/tipo/{tipo}', [ListaController::class, 'getByTipo'])->name('listas.by-tipo');
+
+        /**
+         * Módulos auxiliares
+         */
+        Route::apiResource('empresas', EmpresaController::class);
 
         /**
          * Gestión de usuarios (solo admin)
