@@ -29,7 +29,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
-    MultiSelect,
+    MultiSelectModule,
     ToastModule,
   ],
   providers: [MessageService],
