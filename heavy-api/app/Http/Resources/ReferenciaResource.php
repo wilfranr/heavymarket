@@ -9,29 +9,32 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * API Resource para el modelo Referencia
+ *
+ * Transforma los datos de referencias en una respuesta JSON estructurada.
+ *
+ * @property \App\Models\Referencia $resource
  */
 class ReferenciaResource extends JsonResource
 {
     /**
      * Transforma el recurso en un array.
-     * 
-     * @param Request $request
+     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
     {
         return [
             'id' => $this->id,
-            'codigo' => $this->codigo,
-            'descripcion' => $this->descripcion,
-            'fabricante_id' => $this->fabricante_id,
-            'sistema_id' => $this->sistema_id,
-            'precio' => $this->precio,
+            'referencia' => $this->referencia,
+            'marca_id' => $this->marca_id,
+            'comentario' => $this->comentario,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            
-            'fabricante' => $this->whenLoaded('fabricante'),
-            'sistema' => $this->whenLoaded('sistema'),
+
+            // Relaciones opcionales
+            'marca' => $this->whenLoaded('marca'),
+            'articulos' => $this->whenLoaded('articulos'),
+            'categoria' => $this->whenLoaded('categoria'),
         ];
     }
 }

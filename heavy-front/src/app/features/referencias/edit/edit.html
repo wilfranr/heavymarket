@@ -1,0 +1,110 @@
+<p-toast />
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Editar Referencia</h2>
+                <p-button
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="cancelar()">
+                </p-button>
+            </div>
+        </ng-template>
+
+        @if (referencia$ | async; as referencia) {
+            <form [formGroup]="referenciaForm" (ngSubmit)="onSubmit()">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Referencia -->
+                    <div class="field">
+                        <label for="referencia" class="block text-sm font-medium mb-2">
+                            Referencia <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            pInputText
+                            id="referencia"
+                            formControlName="referencia"
+                            placeholder="Código de referencia"
+                            class="w-full"
+                            [class.ng-invalid]="referenciaForm.get('referencia')?.invalid && referenciaForm.get('referencia')?.touched" />
+                        @if (referenciaForm.get('referencia')?.invalid && referenciaForm.get('referencia')?.touched) {
+                            <small class="p-error">
+                                @if (referenciaForm.get('referencia')?.errors?.['required']) {
+                                    La referencia es requerida
+                                } @else if (referenciaForm.get('referencia')?.errors?.['maxlength']) {
+                                    La referencia no puede exceder 255 caracteres
+                                }
+                            </small>
+                        }
+                    </div>
+
+                    <!-- Marca -->
+                    <div class="field">
+                        <label for="marca_id" class="block text-sm font-medium mb-2">
+                            Marca
+                        </label>
+                        <p-select
+                            id="marca_id"
+                            formControlName="marca_id"
+                            [options]="marcas"
+                            optionLabel="nombre"
+                            optionValue="id"
+                            placeholder="Seleccione una marca"
+                            [showClear]="true"
+                            styleClass="w-full">
+                        </p-select>
+                    </div>
+
+                    <!-- Comentario -->
+                    <div class="field md:col-span-2">
+                        <label for="comentario" class="block text-sm font-medium mb-2">
+                            Comentario
+                        </label>
+                        <textarea
+                            pTextarea
+                            id="comentario"
+                            formControlName="comentario"
+                            placeholder="Comentarios sobre la referencia"
+                            [rows]="4"
+                            class="w-full"
+                            [class.ng-invalid]="referenciaForm.get('comentario')?.invalid && referenciaForm.get('comentario')?.touched">
+                        </textarea>
+                        @if (referenciaForm.get('comentario')?.invalid && referenciaForm.get('comentario')?.touched) {
+                            <small class="p-error">
+                                El comentario no puede exceder 500 caracteres
+                            </small>
+                        }
+                    </div>
+                </div>
+
+                <p-divider />
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <p-button
+                        label="Cancelar"
+                        icon="pi pi-times"
+                        severity="secondary"
+                        [text]="true"
+                        (onClick)="cancelar()"
+                        [disabled]="loading">
+                    </p-button>
+                    <p-button
+                        label="Actualizar Referencia"
+                        icon="pi pi-check"
+                        type="submit"
+                        [loading]="loading"
+                        [disabled]="referenciaForm.invalid">
+                    </p-button>
+                </div>
+            </form>
+        } @else {
+            <div class="text-center py-8">
+                <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
+                <p class="text-gray-600 mt-4">Cargando referencia...</p>
+            </div>
+        }
+    </p-card>
+</div>
