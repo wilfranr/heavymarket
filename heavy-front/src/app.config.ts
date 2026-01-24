@@ -84,6 +84,7 @@ import { ReferenciasEffects } from './app/store/referencias/effects/referencias.
 import { MaquinasEffects } from './app/store/maquinas/effects/maquinas.effects';
 import { ArticulosEffects } from './app/store/articulos/effects/articulos.effects';
 import { CotizacionesEffects } from './app/store/cotizaciones/effects/cotizaciones.effects';
+import { OrdenesCompraEffects } from './app/store/ordenes-compra/effects/ordenes-compra.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
