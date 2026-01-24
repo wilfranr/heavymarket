@@ -9,27 +9,43 @@ import { OrdenCompra, CreateOrdenCompraDto, UpdateOrdenCompraDto } from '../mode
 @Injectable({
     providedIn: 'root'
 })
-export class OrdenCompraService {
-    private readonly api = inject(ApiService);
-    private readonly endpoint = '/ordenes-compra';
-
-    list(params?: QueryParams): Observable<PaginatedResponse<OrdenCompra>> {
-        return this.api.get<PaginatedResponse<OrdenCompra>>(this.endpoint, params);
+export class OrdenCompraService extends ApiService {
+    protected getBaseUrl(): string {
+        return `${this.API_URL}/ordenes-compra`;
     }
 
-    getById(id: number): Observable<OrdenCompra> {
-        return this.api.get<OrdenCompra>(`${this.endpoint}/${id}`);
+    /**
+     * Obtener todas las órdenes de compra con filtros
+     */
+    getAll(params?: QueryParams): Observable<PaginatedResponse<OrdenCompra>> {
+        return this.get<PaginatedResponse<OrdenCompra>>(this.getBaseUrl(), params);
     }
 
-    create(orden: CreateOrdenCompraDto): Observable<OrdenCompra> {
-        return this.api.post<OrdenCompra>(this.endpoint, orden);
+    /**
+     * Obtener una orden de compra por ID
+     */
+    getById(id: number): Observable<{ data: OrdenCompra }> {
+        return this.get<{ data: OrdenCompra }>(`${this.getBaseUrl()}/${id}`);
     }
 
-    update(id: number, orden: UpdateOrdenCompraDto): Observable<OrdenCompra> {
-        return this.api.put<OrdenCompra>(`${this.endpoint}/${id}`, orden);
+    /**
+     * Crear una nueva orden de compra
+     */
+    create(orden: CreateOrdenCompraDto): Observable<{ data: OrdenCompra }> {
+        return this.post<{ data: OrdenCompra }>(this.getBaseUrl(), orden);
     }
 
-    delete(id: number): Observable<void> {
-        return this.api.delete<void>(`${this.endpoint}/${id}`);
+    /**
+     * Actualizar una orden de compra
+     */
+    update(id: number, orden: UpdateOrdenCompraDto): Observable<{ data: OrdenCompra }> {
+        return this.put<{ data: OrdenCompra }>(`${this.getBaseUrl()}/${id}`, orden);
+    }
+
+    /**
+     * Eliminar una orden de compra
+     */
+    deleteOrdenCompra(id: number): Observable<void> {
+        return this.delete<void>(`${this.getBaseUrl()}/${id}`);
     }
 }

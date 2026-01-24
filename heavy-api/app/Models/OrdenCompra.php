@@ -4,13 +4,53 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\OrdenCompraReferencia;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+/**
+ * Modelo OrdenCompra
+ *
+ * Representa una orden de compra generada a partir de un pedido o cotización.
+ * Una orden de compra puede tener múltiples referencias asociadas.
+ *
+ * @property int $id
+ * @property int|null $user_id
+ * @property int|null $tercero_id
+ * @property int|null $pedido_id
+ * @property int|null $cotizacion_id
+ * @property int $proveedor_id
+ * @property string|null $estado
+ * @property int|null $pedido_referencia_id
+ * @property \Illuminate\Support\Carbon|null $fecha_expedicion
+ * @property \Illuminate\Support\Carbon|null $fecha_entrega
+ * @property string|null $observaciones
+ * @property int|null $cantidad
+ * @property string|null $direccion
+ * @property string|null $telefono
+ * @property float|null $valor_unitario
+ * @property float|null $valor_total
+ * @property float|null $valor_iva
+ * @property float|null $valor_descuento
+ * @property string|null $guia
+ * @property string|null $color
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \App\Models\User|null $user
+ * @property-read \App\Models\Tercero|null $tercero
+ * @property-read \App\Models\Tercero $proveedor
+ * @property-read \App\Models\Pedido|null $pedido
+ * @property-read \App\Models\Cotizacion|null $cotizacion
+ * @property-read \App\Models\PedidoReferencia|null $pedidoReferencia
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Referencia[] $referencias
+ */
 class OrdenCompra extends Model
 {
     use HasFactory;
 
+    protected $table = 'orden_compras';
+
     protected $fillable = [
+        'user_id',
         'tercero_id',
         'pedido_id',
         'cotizacion_id',
@@ -31,42 +71,79 @@ class OrdenCompra extends Model
         'color',
     ];
 
-    public function tercero()
+    protected $casts = [
+        'fecha_expedicion' => 'datetime',
+        'fecha_entrega' => 'datetime',
+        'cantidad' => 'integer',
+        'valor_unitario' => 'decimal:2',
+        'valor_total' => 'decimal:2',
+        'valor_iva' => 'decimal:2',
+        'valor_descuento' => 'decimal:2',
+    ];
+
+    /**
+     * Relación con el usuario que creó la orden
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Relación con el tercero (cliente)
+     */
+    public function tercero(): BelongsTo
     {
         return $this->belongsTo(Tercero::class);
     }
 
-    public function proveedor()
+    /**
+     * Relación con el proveedor (también es un Tercero)
+     */
+    public function proveedor(): BelongsTo
     {
         return $this->belongsTo(Tercero::class, 'proveedor_id');
     }
 
-    public function pedido()
+    /**
+     * Relación con el pedido origen
+     */
+    public function pedido(): BelongsTo
     {
         return $this->belongsTo(Pedido::class);
     }
 
-    public function cotizacion()
+    /**
+     * Relación con la cotización origen
+     */
+    public function cotizacion(): BelongsTo
     {
-        return $this->belongsTo(Cotizacion::class, 'cotizaciones_id');
+        return $this->belongsTo(Cotizacion::class, 'cotizacion_id');
     }
 
-    public function referencias()
-    {
-        return $this->belongsToMany(Referencia::class, 'orden_compra_referencia')
-            ->using(OrdenCompraReferencia::class)
-            ->withPivot('cantidad', 'valor_unitario', 'valor_total');
-    }
-
-    public function pedidoReferencia()
+    /**
+     * Relación con la referencia del pedido
+     */
+    public function pedidoReferencia(): BelongsTo
     {
         return $this->belongsTo(PedidoReferencia::class);
     }
 
     /**
+     * Relación many-to-many con Referencias
+     */
+    public function referencias(): BelongsToMany
+    {
+        return $this->belongsToMany(Referencia::class, 'orden_compra_referencia')
+            ->using(OrdenCompraReferencia::class)
+            ->withPivot('cantidad', 'valor_unitario', 'valor_total')
+            ->withTimestamps();
+    }
+
+    /**
      * Agregar una referencia a la orden de compra
      */
-    public function addReferencia($referenciaId, $cantidad, $valorUnitario, $valorTotal)
+    public function addReferencia(int $referenciaId, int $cantidad, float $valorUnitario, float $valorTotal): void
     {
         $this->referencias()->attach($referenciaId, [
             'cantidad' => $cantidad,
@@ -78,8 +155,8 @@ class OrdenCompra extends Model
     /**
      * Obtener el total de todas las referencias
      */
-    public function getTotalReferencias()
+    public function getTotalReferencias(): float
     {
-        return $this->referencias()->sum('valor_total');
+        return (float) $this->referencias()->sum('valor_total');
     }
 }

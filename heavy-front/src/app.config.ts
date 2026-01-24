@@ -73,6 +73,7 @@ import { referenciasReducer } from './app/store/referencias/reducers/referencias
 import { maquinasReducer } from './app/store/maquinas/reducers/maquinas.reducer';
 import { articulosReducer } from './app/store/articulos/reducers/articulos.reducer';
 import { cotizacionesReducer } from './app/store/cotizaciones/reducers/cotizaciones.reducer';
+import { ordenesCompraReducer } from './app/store/ordenes-compra/reducers/ordenes-compra.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
@@ -105,9 +106,10 @@ export const appConfig: ApplicationConfig = {
             referencias: referenciasReducer,
             maquinas: maquinasReducer,
             articulos: articulosReducer,
-            cotizaciones: cotizacionesReducer
+            cotizaciones: cotizacionesReducer,
+            ordenesCompra: ordenesCompraReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
