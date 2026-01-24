@@ -27,7 +27,7 @@ export interface Pedido {
   fabricante?: any;
   contacto?: any;
   referencias?: PedidoReferencia[];
-  articulos?: any[];
+  articulos?: PedidoArticulo[];
   
   // Contadores
   total_referencias?: number;
@@ -55,6 +55,25 @@ export interface PedidoReferencia {
   sistema?: any;
   marca?: any;
   proveedores?: PedidoReferenciaProveedor[];
+}
+
+/**
+ * Modelo de PedidoArticulo (relación entre Pedido y Articulo)
+ */
+export interface PedidoArticulo {
+  id: number;
+  pedido_id: number;
+  articulo_id: number;
+  cantidad: number;
+  comentario: string | null;
+  sistema_id: number | null;
+  imagen: string | null;
+  created_at: string;
+  updated_at: string;
+  
+  // Relaciones
+  articulo?: any;
+  sistema?: any;
 }
 
 /**
@@ -105,6 +124,28 @@ export interface CreatePedidoDto {
   maquina_id?: number;
   fabricante_id?: number;
   referencias?: CreatePedidoReferenciaDto[];
+  articulos?: CreatePedidoArticuloDto[];
+}
+
+/**
+ * Datos para crear un artículo en un pedido
+ */
+export interface CreatePedidoArticuloDto {
+  articulo_id: number;
+  cantidad: number;
+  comentario?: string;
+  sistema_id?: number;
+  imagen?: string;
+}
+
+/**
+ * Datos para actualizar un artículo de un pedido
+ */
+export interface UpdatePedidoArticuloDto {
+  cantidad?: number;
+  comentario?: string;
+  sistema_id?: number;
+  imagen?: string;
 }
 
 /**

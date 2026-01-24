@@ -6,20 +6,24 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\TerceroResource;
+use App\Http\Resources\PedidoReferenciaResource;
+use App\Http\Resources\PedidoArticuloResource;
 
 /**
  * API Resource para el modelo Pedido
- *
+ * 
  * Transforma los datos del modelo Pedido en una respuesta JSON
  * estructurada para el API REST.
- *
+ * 
  * @property \App\Models\Pedido $resource
  */
 class PedidoResource extends JsonResource
 {
     /**
      * Transforma el recurso en un array.
-     *
+     * 
+     * @param Request $request
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -38,7 +42,7 @@ class PedidoResource extends JsonResource
             'comentarios_rechazo' => $this->comentarios_rechazo,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-
+            
             // Relaciones (solo si están cargadas)
             'user' => $this->whenLoaded('user', function () {
                 return [
@@ -47,25 +51,25 @@ class PedidoResource extends JsonResource
                     'email' => $this->user->email,
                 ];
             }),
-
+            
             'tercero' => $this->whenLoaded('tercero', function () {
                 return new TerceroResource($this->tercero);
             }),
-
+            
             'maquina' => $this->whenLoaded('maquina', function () {
                 return [
                     'id' => $this->maquina->id,
                     'nombre' => $this->maquina->nombre,
                 ];
             }),
-
+            
             'fabricante' => $this->whenLoaded('fabricante', function () {
                 return [
                     'id' => $this->fabricante->id,
                     'nombre' => $this->fabricante->nombre,
                 ];
             }),
-
+            
             'contacto' => $this->whenLoaded('contacto', function () {
                 return [
                     'id' => $this->contacto->id,
@@ -74,15 +78,15 @@ class PedidoResource extends JsonResource
                     'email' => $this->contacto->email,
                 ];
             }),
-
+            
             'referencias' => $this->whenLoaded('referencias', function () {
                 return PedidoReferenciaResource::collection($this->referencias);
             }),
-
+            
             'articulos' => $this->whenLoaded('articulos', function () {
                 return ArticuloResource::collection($this->articulos);
             }),
-
+            
             // Contadores útiles
             'total_referencias' => $this->whenCounted('referencias'),
             'total_articulos' => $this->whenCounted('articulos'),

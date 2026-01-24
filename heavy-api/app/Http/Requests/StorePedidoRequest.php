@@ -67,7 +67,9 @@ class StorePedidoRequest extends FormRequest
             'articulos' => ['nullable', 'array'],
             'articulos.*.articulo_id' => ['required_with:articulos', 'integer', 'exists:articulos,id'],
             'articulos.*.cantidad' => ['required_with:articulos', 'integer', 'min:1'],
-            'articulos.*.precio_unitario' => ['nullable', 'numeric', 'min:0'],
+            'articulos.*.comentario' => ['nullable', 'string'],
+            'articulos.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'articulo.*.imagen' => ['nullable', 'string', 'max:255'],
         ];
     }
 

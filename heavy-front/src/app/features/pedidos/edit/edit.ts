@@ -33,7 +33,9 @@ import { ListaService } from '../../../core/services/lista.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-referencia-proveedor.service';
-import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto } from '../../../core/models/pedido.model';
+import { PedidoArticuloService } from '../../../core/services/pedido-articulo.service';
+import { ArticuloService } from '../../../core/services/articulo.service';
+import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoArticulo, CreatePedidoArticuloDto } from '../../../core/models/pedido.model';
 
 /**
  * Componente de edición de pedido
@@ -94,6 +96,7 @@ export class EditComponent implements OnInit {
     fabricantes: any[] = [];
     referencias: any[] = [];
     proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
+    articulos: any[] = []; // Lista de artículos disponibles
     
     // Mapa de proveedores por referencia
     proveedoresPorReferencia: Map<number, PedidoReferenciaProveedor[]> = new Map();
@@ -218,6 +221,9 @@ export class EditComponent implements OnInit {
 
         // Cargar proveedores (terceros tipo Proveedor)
         this.loadProveedores();
+
+        // Cargar artículos disponibles
+        this.loadArticulos();
     }
 
     /**
@@ -229,6 +235,20 @@ export class EditComponent implements OnInit {
                 this.referencias = response.data.map(r => ({
                     label: r.referencia,
                     value: r.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga los artículos disponibles
+     */
+    private loadArticulos(): void {
+        this.articuloService.getAll({ per_page: 200 }).subscribe({
+            next: (response) => {
+                this.articulos = response.data.map(a => ({
+                    label: a.descripcionEspecifica || a.definicion || `Artículo ${a.id}`,
+                    value: a.id
                 }));
             }
         });
@@ -294,6 +314,11 @@ export class EditComponent implements OnInit {
                                     this.proveedoresPorReferencia.set(ref.id, ref.proveedores);
                                 }
                             });
+                        }
+
+                        // Cargar artículos del pedido
+                        if (pedido.articulos && pedido.articulos.length > 0) {
+                            this.articulosPedido = pedido.articulos;
                         }
                     }
                 });
@@ -741,10 +766,66 @@ export class EditComponent implements OnInit {
                             summary: 'Error',
                             detail: error.error?.message || 'Error al eliminar el proveedor'
                         });
+            }
+        });
+    }
+
+    /**
+     * Agrega un artículo al pedido
+     */
+    agregarArticulo(articulo: CreatePedidoArticuloDto): void {
+        this.pedidoArticuloService.addArticulo(this.pedidoId(), articulo).subscribe({
+            next: (response) => {
+                this.articulosPedido.push(response.data);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Éxito',
+                    detail: 'Artículo agregado correctamente'
+                });
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'Error al agregar el artículo'
+                });
+            }
+        });
+    }
+
+    /**
+     * Elimina un artículo del pedido
+     */
+    eliminarArticulo(articuloId: number): void {
+        this.confirmationService.confirm({
+            message: '¿Está seguro de eliminar este artículo del pedido?',
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.pedidoArticuloService.deleteArticulo(this.pedidoId(), articuloId).subscribe({
+                    next: () => {
+                        const index = this.articulosPedido.findIndex(a => a.id === articuloId);
+                        if (index > -1) {
+                            this.articulosPedido.splice(index, 1);
+                        }
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Artículo eliminado correctamente'
+                        });
+                    },
+                    error: (error) => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: error.error?.message || 'Error al eliminar el artículo'
+                        });
                     }
                 });
             }
         });
+    }
+});
     }
 
     /**

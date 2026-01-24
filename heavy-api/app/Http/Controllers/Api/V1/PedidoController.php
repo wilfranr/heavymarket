@@ -178,7 +178,8 @@ class PedidoController extends Controller
             'contacto',
             'referencias.referencia',
             'referencias.proveedores.tercero',
-            'articulos.articulo'
+            'articulos.articulo',
+            'articulos.sistema'
         ]);
 
         return response()->json([
@@ -459,6 +460,99 @@ class PedidoController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Agregar un artículo a un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return JsonResponse
+     */
+    public function addArticulo(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'articulo_id' => ['required', 'integer', 'exists:articulos,id'],
+            'cantidad' => ['required', 'integer', 'min:1'],
+            'comentario' => ['nullable', 'string'],
+            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'imagen' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $pedidoArticulo = $pedido->articulos()->create($validated);
+            $pedidoArticulo->load(['articulo', 'sistema']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoArticuloResource($pedidoArticulo),
+                'message' => 'Artículo agregado exitosamente',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al agregar el artículo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualizar un artículo de un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $articuloId
+     * @return JsonResponse
+     */
+    public function updateArticulo(Request $request, Pedido $pedido, int $articuloId): JsonResponse
+    {
+        $pedidoArticulo = $pedido->articulos()->findOrFail($articuloId);
+
+        $validated = $request->validate([
+            'cantidad' => ['sometimes', 'integer', 'min:1'],
+            'comentario' => ['nullable', 'string'],
+            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'imagen' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        try {
+            $pedidoArticulo->update($validated);
+            $pedidoArticulo->load(['articulo', 'sistema']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoArticuloResource($pedidoArticulo),
+                'message' => 'Artículo actualizado exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el artículo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar un artículo de un pedido
+     *
+     * @param Pedido $pedido
+     * @param int $articuloId
+     * @return JsonResponse
+     */
+    public function deleteArticulo(Pedido $pedido, int $articuloId): JsonResponse
+    {
+        try {
+            $pedidoArticulo = $pedido->articulos()->findOrFail($articuloId);
+            $pedidoArticulo->delete();
+
+            return response()->json([
+                'message' => 'Artículo eliminado exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el artículo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+}
 
     /**
      * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
