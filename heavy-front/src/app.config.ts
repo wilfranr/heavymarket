@@ -12,17 +12,17 @@ import { definePreset } from '@primeuix/themes';
 import { providePrimeNG } from 'primeng/config';
 
 const brandPalette = {
-    50: '#fff9ea',
-    100: '#ffefc9',
-    200: '#ffdf8f',
-    300: '#ffcf54',
-    400: '#ffbf24',
+    50: '#fffaf0',
+    100: '#fff3d6',
+    200: '#ffe6a8',
+    300: '#ffd87a',
+    400: '#ffca4d',
     500: '#fdb831',
-    600: '#e49a1d',
-    700: '#c07d15',
-    800: '#9c6211',
-    900: '#7e4e0f',
-    950: '#492a06'
+    600: '#e69d1a',
+    700: '#cc830d',
+    800: '#a6670b',
+    900: '#8a530e',
+    950: '#4d2b00'
 };
 
 const MyPreset = definePreset(Aura, {
@@ -72,6 +72,7 @@ import { sistemasReducer } from './app/store/sistemas/reducers/sistemas.reducer'
 import { referenciasReducer } from './app/store/referencias/reducers/referencias.reducer';
 import { maquinasReducer } from './app/store/maquinas/reducers/maquinas.reducer';
 import { articulosReducer } from './app/store/articulos/reducers/articulos.reducer';
+import { cotizacionesReducer } from './app/store/cotizaciones/reducers/cotizaciones.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';

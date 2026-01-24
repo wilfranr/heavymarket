@@ -8,7 +8,7 @@ import { BadgeModule } from 'primeng/badge';
 import { PopoverModule } from 'primeng/popover';
 import { MenuModule } from 'primeng/menu';
 import { InputTextModule } from 'primeng/inputtext';
-import { AppConfigurator } from './app.configurator';
+
 import { LayoutService } from '../service/layout.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/services/auth.service';
@@ -16,7 +16,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule, AppConfigurator],
+    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -45,20 +45,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
-                <div class="relative">
-                    <button
-                        class="layout-topbar-action layout-topbar-action-highlight"
-                        pStyleClass="@next"
-                        enterFromClass="hidden"
-                        enterActiveClass="animate-scalein"
-                        leaveToClass="hidden"
-                        leaveActiveClass="animate-fadeout"
-                        [hideOnOutsideClick]="true"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <app-configurator />
-                </div>
+
             </div>
 
             <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
