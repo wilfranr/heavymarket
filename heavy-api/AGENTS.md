@@ -1,5 +1,7 @@
 # Contexto y Guía para Agentes de IA - HeavyMarket (Backend API)
 
+> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser en **ESPAÑOL**. Ver `AGENTS.md` en la raíz para reglas completas.
+
 ## Stack Tecnológico
 - **Framework**: Laravel 12.
 - **Lenguaje**: PHP 8.2+ (Tipado estricto).

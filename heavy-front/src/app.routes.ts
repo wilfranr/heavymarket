@@ -24,7 +24,8 @@ export const appRoutes: Routes = [
             { path: 'fabricantes', loadChildren: () => import('./app/features/fabricantes/fabricantes.routes').then(m => m.fabricantesRoutes) },
             { path: 'sistemas', loadChildren: () => import('./app/features/sistemas/sistemas.routes').then(m => m.sistemasRoutes) },
             { path: 'referencias', loadChildren: () => import('./app/features/referencias/referencias.routes').then(m => m.referenciasRoutes) },
-            { path: 'maquinas', loadChildren: () => import('./app/features/maquinas/maquinas.routes').then(m => m.maquinasRoutes) }
+            { path: 'maquinas', loadChildren: () => import('./app/features/maquinas/maquinas.routes').then(m => m.maquinasRoutes) },
+            { path: 'articulos', loadChildren: () => import('./app/features/articulos/articulos.routes').then(m => m.articulosRoutes) }
         ]
     },
     { path: 'landing', component: Landing },

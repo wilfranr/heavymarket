@@ -1,5 +1,7 @@
 # Contexto y Guía para Agentes de IA - HeavyMarket (Frontend)
 
+> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser en **ESPAÑOL**. Ver `AGENTS.md` en la raíz para reglas completas.
+
 ## Stack Tecnológico
 - **Framework**: Angular 20 (Última versión).
 - **UI Kit**: PrimeNG 20 + TailwindCSS (vía tailwindcss-primeui).

@@ -10,7 +10,15 @@ Este repositorio funciona como un monorepo que contiene:
 - `docker-compose.yml`: Orquestación local.
 
 ## Reglas Generales de Desarrollo
-1. **Idioma**: El código, comentarios y commits deben estar preferiblemente en Español (o Inglés si se mantiene consistencia, pero la documentación actual está en Español).
+## Comportamiento del Agente (Reglas Estrictas)
+1. **Idioma**: ESPAÑOL OBLIGATORIO.
+   - **Respuestas de Chat**: Siempre en español.
+   - **Artefactos**: Todos los documentos generados (task.md, planes, walkthroughs) deben estar en español.
+   - **Estado del Agente**: Los campos `TaskStatus` y `TaskSummary` en `task_boundary` deben redactarse siempre en español.
+2. **Mentalidad**: Actuar como un desarrollador senior experto en el stack del proyecto.
+
+## Reglas Generales de Desarrollo
+1. **Idioma del Código**: El código, comentarios y commits deben estar preferiblemente en Español.
 2. **Commits**: Usar Conventional Commits.
    - `feat: nueva funcionalidad`
    - `fix: corrección de error`
