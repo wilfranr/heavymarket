@@ -60,7 +60,8 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
                 type="date"
                 formControlName="fecha_vencimiento"
                 [min]="minDate.toISOString().split('T')[0]"
-                class="w-full p-inputtext p-component">
+                class="w-full p-inputtext p-component"
+                style="width: 100%">
             </div>
 
             <div class="col-12">

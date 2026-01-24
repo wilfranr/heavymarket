@@ -64,10 +64,12 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
                 </div>
                 <div class="col-12 md:col-6">
                   <p><strong>Estado:</strong>
-                    <p-tag
-                      [value]="cotizacion()?.estado"
-                      [severity]="getEstadoSeverity(cotizacion()?.estado || 'Pendiente')">
-                    </p-tag>
+                    @if (cotizacion()?.estado) {
+                      <p-tag
+                        [value]="cotizacion()!.estado"
+                        [severity]="getEstadoSeverity(cotizacion()!.estado)">
+                      </p-tag>
+                    }
                   </p>
                 </div>
                 <div class="col-12 md:col-6">
@@ -170,7 +172,7 @@ export class DetailComponent implements OnInit {
     this.router.navigate(['/app/cotizaciones']);
   }
 
-  getEstadoSeverity(estado: string): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | null {
+  getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (estado) {
       case 'Aprobada':
         return 'success';
@@ -178,7 +180,7 @@ export class DetailComponent implements OnInit {
       case 'En_Proceso':
         return 'info';
       case 'Pendiente':
-        return 'warning';
+        return 'warn';
       case 'Rechazada':
       case 'Vencida':
         return 'danger';
