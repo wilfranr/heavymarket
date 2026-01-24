@@ -130,7 +130,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
             <td>
               <p-tag
                 [value]="cotizacion.estado"
-                [severity]="getEstadoSeverity(cotizacion.estado) || 'secondary'">
+                [severity]="getEstadoSeverity(cotizacion.estado)">
               </p-tag>
             </td>
             <td>{{ cotizacion.fecha_emision | date:'short' }}</td>
@@ -314,7 +314,7 @@ export class ListComponent implements OnInit {
     });
   }
 
-  getEstadoSeverity(estado: CotizacionEstado): 'success' | 'info' | 'warning' | 'danger' | 'secondary' | null {
+  getEstadoSeverity(estado: CotizacionEstado): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (estado) {
       case 'Aprobada':
         return 'success';
@@ -322,7 +322,7 @@ export class ListComponent implements OnInit {
       case 'En_Proceso':
         return 'info';
       case 'Pendiente':
-        return 'warning';
+        return 'warn';
       case 'Rechazada':
       case 'Vencida':
         return 'danger';
