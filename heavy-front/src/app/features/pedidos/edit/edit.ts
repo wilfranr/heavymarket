@@ -772,6 +772,8 @@ export class EditComponent implements OnInit {
                             summary: 'Error',
                             detail: error.error?.message || 'Error al eliminar el proveedor'
                         });
+                    }
+                });
             }
         });
     }
