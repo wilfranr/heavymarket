@@ -28,7 +28,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
-    ToggleButtonModule,
+    ToggleSwitchModule,
     ToastModule,
   ],
   providers: [MessageService],
@@ -115,12 +115,8 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
           <div class="col-12">
             <label for="principal" class="block mb-2">Contacto Principal</label>
-            <p-toggleButton
-              formControlName="principal"
-              onLabel="Sí"
-              offLabel="No"
-              styleClass="w-full md:w-14rem">
-            </p-toggleButton>
+            <p-toggleSwitch formControlName="principal"></p-toggleSwitch>
+            <label class="ml-2">{{ contactoForm.get('principal')?.value ? 'Sí' : 'No' }}</label>
           </div>
         </div>
 
