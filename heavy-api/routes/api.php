@@ -22,7 +22,8 @@ use App\Http\Controllers\Api\V1\{
     EmpresaController,
     ContactoController,
     DireccionController,
-    TransportadoraController
+    TransportadoraController,
+    TRMController
 };
 
 /**
@@ -123,6 +124,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class);
         Route::apiResource('transportadoras', TransportadoraController::class);
+        Route::apiResource('trms', TRMController::class);
+        Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
         
         /**
          * Gestión de usuarios (solo admin)

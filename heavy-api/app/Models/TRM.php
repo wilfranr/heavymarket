@@ -10,6 +10,4 @@ class TRM extends Model
     use HasFactory;
 
     protected $fillable = ['trm'];
-
-    
 }
