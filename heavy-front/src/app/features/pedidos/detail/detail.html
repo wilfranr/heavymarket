@@ -93,11 +93,9 @@
                                             @if (referencia.cantidad) {
                                                 <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
                                             }
-                                            @if (referencia.estado) {
-                                                <p><strong>Estado:</strong> 
-                                                    <p-tag [value]="referencia.estado" [severity]="'info'"></p-tag>
-                                                </p>
-                                            }
+                                            <p><strong>Estado:</strong> 
+                                                <p-tag [value]="referencia.estado ? 'Activa' : 'Inactiva'" [severity]="referencia.estado ? 'success' : 'danger'"></p-tag>
+                                            </p>
                                         </div>
                                     </p-panel>
                                 }
