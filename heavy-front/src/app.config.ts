@@ -112,9 +112,10 @@ export const appConfig: ApplicationConfig = {
             articulos: articulosReducer,
             cotizaciones: cotizacionesReducer,
             ordenesCompra: ordenesCompraReducer,
-            ordenesTrabajo: ordenesTrabajoReducer
+            ordenesTrabajo: ordenesTrabajoReducer,
+            empresas: empresasReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService

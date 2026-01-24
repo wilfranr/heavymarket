@@ -25,6 +25,7 @@ export const appRoutes: Routes = [
             { path: 'cotizaciones', loadChildren: () => import('./app/features/cotizaciones/cotizaciones.routes').then(m => m.cotizacionesRoutes) },
             { path: 'ordenes-compra', loadChildren: () => import('./app/features/ordenes-compra/ordenes-compra.routes').then(m => m.ordenesCompraRoutes) },
             { path: 'ordenes-trabajo', loadChildren: () => import('./app/features/ordenes-trabajo/ordenes-trabajo.routes').then(m => m.ordenesTrabajoRoutes) },
+            { path: 'empresas', loadChildren: () => import('./app/features/empresas/empresas.routes').then(m => m.empresasRoutes) },
             { path: 'listas', loadChildren: () => import('./app/features/listas/listas.routes').then(m => m.default) },
             { path: 'fabricantes', loadChildren: () => import('./app/features/fabricantes/fabricantes.routes').then(m => m.fabricantesRoutes) },
             { path: 'sistemas', loadChildren: () => import('./app/features/sistemas/sistemas.routes').then(m => m.sistemasRoutes) },
