@@ -1,7 +1,7 @@
 # Estado Real de la Migración CYH → HeavyMarket
 
-**Fecha**: 19 de Enero, 2026  
-**Progreso Real**: ~15-20% (no 30% como pensaba)
+**Fecha**: 24 de Enero, 2026  
+**Progreso Real**: ~20-25% (mejora significativa con módulos de soporte)
 
 ---
 
@@ -103,15 +103,30 @@
    - Tema amarillo
    - Modo oscuro/claro
 
-#### ❌ NO Implementado (Falta ~80-85%):
+6. **Listas** - ✅ Completo
+   - ✅ Backend: API completa con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
+   - ✅ Rutas y menú configurados
+
+7. **Fabricantes** - ✅ Completo
+   - ✅ Backend: API mejorada con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
+   - ✅ Rutas y menú configurados
+
+8. **Sistemas** - ✅ Completo
+   - ✅ Backend: API mejorada con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
+   - ✅ Rutas y menú configurados
+
+#### ❌ NO Implementado (Falta ~75-80%):
 
 1. **Módulos Completos Faltantes**:
    - ❌ Articulos (0%)
    - ❌ Referencias (0%)
    - ❌ Maquinas (0%)
-   - ❌ Sistemas (0%)
-   - ❌ Fabricantes (0%)
-   - ❌ Listas (0%)
    - ❌ OrdenTrabajo (0%)
    - ❌ Empresa (0%)
    - ❌ Categorias (0%)
@@ -174,21 +189,24 @@
 ### Fase 1: Módulos de Soporte Base (PRIORIDAD CRÍTICA)
 **Estos son PREREQUISITOS para Pedidos:**
 
-1. **Listas** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
+1. **Listas** (CRUD completo) - ✅ COMPLETO
+   - ✅ Backend: API completa con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
    - **Razón**: Se usa para tipos de máquinas, marcas, estados, etc.
    - **Dependencias**: Ninguna
 
-2. **Fabricantes** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
+2. **Fabricantes** (CRUD completo) - ✅ COMPLETO
+   - ✅ Backend: API mejorada con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
    - **Razón**: Se usa en Pedidos y Máquinas
    - **Dependencias**: Ninguna
 
-3. **Sistemas** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
+3. **Sistemas** (CRUD completo) - ✅ COMPLETO
+   - ✅ Backend: API mejorada con FormRequests y Resources
+   - ✅ Frontend: CRUD completo (list, create, edit, detail)
+   - ✅ NgRx Store completo
    - **Razón**: Se relaciona con Listas y Máquinas
    - **Dependencias**: Listas
 
@@ -231,7 +249,7 @@
 - [ ] Cotizaciones (completo)
 - [ ] Órdenes de Compra (completo)
 - [ ] Órdenes de Trabajo (completo)
-- [ ] Listas (completo)
+- ✅ Listas (completo)
 
 ### Fase 4: Módulos Auxiliares
 - [ ] Empresa
@@ -264,10 +282,16 @@
 | Cotizaciones | 0% | ❌ Placeholder |
 | Órdenes de Compra | 0% | ❌ Placeholder |
 | Órdenes de Trabajo | 0% | ❌ No existe |
-| Módulos de Soporte | 0% | ❌ No existen |
+| **Módulos de Soporte** | **50%** | ⚠️ **3 de 6 completos** |
+| - Listas | 100% | ✅ Completo |
+| - Fabricantes | 100% | ✅ Completo |
+| - Sistemas | 100% | ✅ Completo |
+| - Referencias | 0% | ❌ Pendiente |
+| - Máquinas | 0% | ❌ Pendiente |
+| - Articulos | 0% | ❌ Pendiente |
 | Funcionalidades Avanzadas | 0% | ❌ No existen |
 
-**Progreso General**: ~15-20%
+**Progreso General**: ~20-25%
 
 ---
 
@@ -283,11 +307,28 @@
 
 ## ✅ Próximos Pasos Recomendados
 
-1. **Priorizar**: Completar módulo de Pedidos con TODAS sus funcionalidades
-2. **Migrar**: Módulos de soporte necesarios (Referencias, Articulos, Maquinas)
-3. **Implementar**: Funcionalidades avanzadas una por una
-4. **Probar**: Cada módulo completamente antes de pasar al siguiente
+1. **Continuar Fase 1**: Completar módulos de soporte restantes
+   - ⏳ Referencias (CRUD completo) - **PRÓXIMO**
+   - ⏳ Máquinas (CRUD completo)
+   - ⏳ Articulos (CRUD completo)
+2. **Fase 2**: Completar módulo de Pedidos con TODAS sus funcionalidades (después de Fase 1)
+3. **Fase 3**: Completar módulos principales (Cotizaciones, Órdenes)
+4. **Implementar**: Funcionalidades avanzadas una por una
+5. **Probar**: Cada módulo completamente antes de pasar al siguiente
 
 ---
 
-**Última actualización**: 19/01/2026 02:45
+## 📝 Notas de Implementación Reciente
+
+**24 de Enero, 2026:**
+- ✅ Completado módulo **Listas** (Backend + Frontend completo)
+- ✅ Completado módulo **Fabricantes** (Backend mejorado + Frontend completo)
+- ✅ Completado módulo **Sistemas** (Backend mejorado + Frontend completo)
+- ✅ Todos los módulos siguen el patrón establecido:
+  - FormRequests y Resources en backend
+  - NgRx Store completo (actions, reducers, effects, selectors)
+  - Componentes CRUD completos (list, create, edit, detail)
+  - Rutas lazy-loaded configuradas
+  - Integrados en menú de navegación
+
+**Última actualización**: 24/01/2026 14:15
