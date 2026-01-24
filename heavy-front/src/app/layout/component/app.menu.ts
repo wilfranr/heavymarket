@@ -46,7 +46,8 @@ export class AppMenu {
                     { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/listas'] },
                     { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/fabricantes'] },
                     { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/sistemas'] },
-                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/referencias'] }
+                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/referencias'] },
+                    { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/maquinas'] }
                 ]
             },
             {

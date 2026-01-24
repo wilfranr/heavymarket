@@ -45,9 +45,10 @@ export const appConfig: ApplicationConfig = {
             listas: listasReducer,
             fabricantes: fabricantesReducer,
             sistemas: sistemasReducer,
-            referencias: referenciasReducer
+            referencias: referenciasReducer,
+            maquinas: maquinasReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
