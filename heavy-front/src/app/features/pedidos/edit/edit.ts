@@ -833,8 +833,6 @@ export class EditComponent implements OnInit {
             }
         });
     }
-});
-    }
 
     /**
      * Abre el modal de comparación de proveedores
