@@ -1,139 +1,145 @@
 <div class="navbar-wrapper">
     <div class="navbar-content">
-        <div class="navbar-logo">
-            <a routerLink="/">
-                <img src="/images/logo.svg" alt="HEAVYMarket.NET" class="logo-image">
-            </a>
-        </div>
-        <div class="navbar-frame">
-            <div class="navbar-column">
-                <div class="navbar-link-frame products-menu-wrapper" (mouseenter)="onMouseEnter()"
-                    (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen">
-                    <a routerLink="/productos" class="navbar-link products-link">
-                        <span class="link-text">Nuestros productos</span>
-                    </a>
-                    <!-- Menú desplegable -->
-                    <div class="dropdown-menu" [class.active]="isMenuOpen">
-                        <!-- Frame 6 - Contenido principal -->
-                        <div class="dropdown-main-content">
-                            <!-- Menu - Sidebar izquierdo -->
-                            <div class="dropdown-menu-sidebar">
-                                <div class="dropdown-menu-inner">
-                                    <h3 class="dropdown-menu-title">Productos por categorías</h3>
-                                    <ul class="dropdown-menu-list">
-                                        @for (category of categories; track category.slug) {
-                                        <li class="dropdown-menu-item" [class.active]="activeCategory === category.slug"
-                                            (mouseenter)="setActiveCategory(category.slug)">
-                                            <a href="#" class="dropdown-menu-link" (click)="$event.preventDefault()">{{
-                                                category.nombre }}</a>
-                                        </li>
-                                        }
-                                    </ul>
-                                </div>
-                            </div>
-                            <!-- Frame 10 - Contenido de artículos -->
-                            <div class="dropdown-articles-wrapper">
-                                @for (category of categories; track category.slug) {
-                                <div class="dropdown-articles-content category-content"
-                                    [style.display]="activeCategory === category.slug ? 'flex' : 'none'">
-                                    <div class="dropdown-articles-inner">
-                                        <div class="dropdown-articles-header">
-                                            <h4 class="dropdown-articles-title">{{ category.nombre }}</h4>
-                                        </div>
-                                        <div class="dropdown-articles-grid">
-                                            @if (category.subcategorias && category.subcategorias.length > 0) {
-                                            <div class="dropdown-articles-column">
-                                                @for (sub of category.subcategorias |
-                                                slice:0:getHalf(category.subcategorias.length); track sub.slug) {
-                                                <div class="dropdown-blog-item"
-                                                    [routerLink]="['/productos', category.slug, sub.slug]">
-                                                    <div class="dropdown-blog-image">
-                                                        <img [src]="sub.imagen_url" [alt]="sub.nombre">
-                                                    </div>
-                                                    <div class="dropdown-blog-content">
-                                                        <div class="dropdown-blog-text">
-                                                            <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
-                                                            <p class="dropdown-blog-description">{{ sub.descripcion }}
-                                                            </p>
-                                                        </div>
-                                                        <button class="dropdown-blog-button">
-                                                            <span class="dropdown-button-text">Saber más</span>
-                                                            <svg class="dropdown-arrow-icon" width="16" height="16"
-                                                                viewBox="0 0 16 16" fill="none">
-                                                                <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
-                                                                    stroke-width="2" stroke-linecap="round"
-                                                                    stroke-linejoin="round" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                }
-                                            </div>
-                                            <div class="dropdown-articles-column">
-                                                @for (sub of category.subcategorias |
-                                                slice:getHalf(category.subcategorias.length); track sub.slug) {
-                                                <div class="dropdown-blog-item"
-                                                    [routerLink]="['/productos', category.slug, sub.slug]">
-                                                    <div class="dropdown-blog-image">
-                                                        <img [src]="sub.imagen_url" [alt]="sub.nombre">
-                                                    </div>
-                                                    <div class="dropdown-blog-content">
-                                                        <div class="dropdown-blog-text">
-                                                            <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
-                                                            <p class="dropdown-blog-description">{{ sub.descripcion }}
-                                                            </p>
-                                                        </div>
-                                                        <button class="dropdown-blog-button">
-                                                            <span class="dropdown-button-text">Saber más</span>
-                                                            <svg class="dropdown-arrow-icon" width="16" height="16"
-                                                                viewBox="0 0 16 16" fill="none">
-                                                                <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
-                                                                    stroke-width="2" stroke-linecap="round"
-                                                                    stroke-linejoin="round" />
-                                                            </svg>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                                }
-                                            </div>
+        <div class="navbar-inner-container">
+            <div class="navbar-logo">
+                <a routerLink="/">
+                    <img src="/images/logo.svg" alt="HEAVYMarket.NET" class="logo-image">
+                </a>
+            </div>
+            <div class="navbar-frame">
+                <div class="navbar-column">
+                    <div class="navbar-link-frame products-menu-wrapper" (mouseenter)="onMouseEnter()"
+                        (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen">
+                        <a routerLink="/productos" class="navbar-link products-link">
+                            <span class="link-text">Nuestros productos</span>
+                        </a>
+                        <!-- Menú desplegable -->
+                        <div class="dropdown-menu" [class.active]="isMenuOpen">
+                            <!-- Frame 6 - Contenido principal -->
+                            <div class="dropdown-main-content">
+                                <!-- Menu - Sidebar izquierdo -->
+                                <div class="dropdown-menu-sidebar">
+                                    <div class="dropdown-menu-inner">
+                                        <h3 class="dropdown-menu-title">Productos por categorías</h3>
+                                        <ul class="dropdown-menu-list">
+                                            @for (category of categories; track category.slug) {
+                                            <li class="dropdown-menu-item"
+                                                [class.active]="activeCategory === category.slug"
+                                                (mouseenter)="setActiveCategory(category.slug)">
+                                                <a href="#" class="dropdown-menu-link"
+                                                    (click)="$event.preventDefault()">{{
+                                                    category.nombre }}</a>
+                                            </li>
                                             }
-                                        </div>
+                                        </ul>
                                     </div>
                                 </div>
-                                }
+                                <!-- Frame 10 - Contenido de artículos -->
+                                <div class="dropdown-articles-wrapper">
+                                    @for (category of categories; track category.slug) {
+                                    <div class="dropdown-articles-content category-content"
+                                        [style.display]="activeCategory === category.slug ? 'flex' : 'none'">
+                                        <div class="dropdown-articles-inner">
+                                            <div class="dropdown-articles-header">
+                                                <h4 class="dropdown-articles-title">{{ category.nombre }}</h4>
+                                            </div>
+                                            <div class="dropdown-articles-grid">
+                                                @if (category.subcategorias && category.subcategorias.length > 0) {
+                                                <div class="dropdown-articles-column">
+                                                    @for (sub of category.subcategorias |
+                                                    slice:0:getHalf(category.subcategorias.length); track sub.slug) {
+                                                    <div class="dropdown-blog-item"
+                                                        [routerLink]="['/productos', category.slug, sub.slug]">
+                                                        <div class="dropdown-blog-image">
+                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre">
+                                                        </div>
+                                                        <div class="dropdown-blog-content">
+                                                            <div class="dropdown-blog-text">
+                                                                <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
+                                                                <p class="dropdown-blog-description">{{ sub.descripcion
+                                                                    }}
+                                                                </p>
+                                                            </div>
+                                                            <button class="dropdown-blog-button">
+                                                                <span class="dropdown-button-text">Saber más</span>
+                                                                <svg class="dropdown-arrow-icon" width="16" height="16"
+                                                                    viewBox="0 0 16 16" fill="none">
+                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
+                                                                        stroke-width="2" stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    }
+                                                </div>
+                                                <div class="dropdown-articles-column">
+                                                    @for (sub of category.subcategorias |
+                                                    slice:getHalf(category.subcategorias.length); track sub.slug) {
+                                                    <div class="dropdown-blog-item"
+                                                        [routerLink]="['/productos', category.slug, sub.slug]">
+                                                        <div class="dropdown-blog-image">
+                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre">
+                                                        </div>
+                                                        <div class="dropdown-blog-content">
+                                                            <div class="dropdown-blog-text">
+                                                                <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
+                                                                <p class="dropdown-blog-description">{{ sub.descripcion
+                                                                    }}
+                                                                </p>
+                                                            </div>
+                                                            <button class="dropdown-blog-button">
+                                                                <span class="dropdown-button-text">Saber más</span>
+                                                                <svg class="dropdown-arrow-icon" width="16" height="16"
+                                                                    viewBox="0 0 16 16" fill="none">
+                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
+                                                                        stroke-width="2" stroke-linecap="round"
+                                                                        stroke-linejoin="round" />
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    }
+                                                </div>
+                                                }
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="navbar-link-frame">
+                        <a routerLink="/cotizar" class="navbar-link">
+                            <span class="link-text">Cotiza ahora</span>
+                        </a>
+                    </div>
+                    <div class="navbar-link-frame">
+                        <a href="#quienes-somos" class="navbar-link">
+                            <span class="link-text">Quienes somos</span>
+                        </a>
+                    </div>
+                    <div class="navbar-link-frame">
+                        <a href="#contacto" class="navbar-link">
+                            <span class="link-text">Contáctanos</span>
+                        </a>
+                    </div>
                 </div>
-                <div class="navbar-link-frame">
-                    <a routerLink="/cotizar" class="navbar-link">
-                        <span class="link-text">Cotiza ahora</span>
+                <div class="navbar-actions">
+                    <a routerLink="/app" class="navbar-button"
+                        style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.5rem; padding: 0.5rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                            <circle cx="12" cy="7" r="4"></circle>
+                        </svg>
+                    </a>
+                    <a href="https://wa.me/573208400279" target="_blank" class="navbar-button"
+                        style="text-decoration: none; display: inline-block;">
+                        <span class="button-text">WhatsApp</span>
                     </a>
                 </div>
-                <div class="navbar-link-frame">
-                    <a href="#quienes-somos" class="navbar-link">
-                        <span class="link-text">Quienes somos</span>
-                    </a>
-                </div>
-                <div class="navbar-link-frame">
-                    <a href="#contacto" class="navbar-link">
-                        <span class="link-text">Contáctanos</span>
-                    </a>
-                </div>
-            </div>
-            <div class="navbar-actions">
-                <a routerLink="/app" class="navbar-button"
-                    style="text-decoration: none; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.5rem; padding: 0.5rem;">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </a>
-                <a href="https://wa.me/573208400279" target="_blank" class="navbar-button"
-                    style="text-decoration: none; display: inline-block;">
-                    <span class="button-text">WhatsApp</span>
-                </a>
             </div>
         </div>
     </div>

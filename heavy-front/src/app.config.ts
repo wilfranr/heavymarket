@@ -8,7 +8,58 @@ import { provideEffects } from '@ngrx/effects';
 import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
+import { definePreset } from '@primeuix/themes';
 import { providePrimeNG } from 'primeng/config';
+
+const brandPalette = {
+    50: '#fff9ea',
+    100: '#ffefc9',
+    200: '#ffdf8f',
+    300: '#ffcf54',
+    400: '#ffbf24',
+    500: '#fdb831',
+    600: '#e49a1d',
+    700: '#c07d15',
+    800: '#9c6211',
+    900: '#7e4e0f',
+    950: '#492a06'
+};
+
+const MyPreset = definePreset(Aura, {
+    semantic: {
+        primary: brandPalette,
+        colorScheme: {
+            light: {
+                primary: {
+                    color: '{primary.500}',
+                    contrastColor: '#ffffff',
+                    hoverColor: '{primary.600}',
+                    activeColor: '{primary.700}'
+                },
+                highlight: {
+                    background: '{primary.50}',
+                    focusBackground: '{primary.100}',
+                    color: '{primary.700}',
+                    focusColor: '{primary.800}'
+                }
+            },
+            dark: {
+                primary: {
+                    color: '{primary.500}',
+                    contrastColor: '{surface.900}',
+                    hoverColor: '{primary.400}',
+                    activeColor: '{primary.300}'
+                },
+                highlight: {
+                    background: 'color-mix(in srgb, {primary.500}, transparent 84%)',
+                    focusBackground: 'color-mix(in srgb, {primary.500}, transparent 76%)',
+                    color: 'rgba(255,255,255,.87)',
+                    focusColor: 'rgba(255,255,255,.87)'
+                }
+            }
+        }
+    }
+});
 import { appRoutes } from './app.routes';
 import { authInterceptor } from './app/core/auth/interceptors/auth.interceptor';
 import { errorInterceptor } from './app/core/auth/interceptors/error.interceptor';
@@ -41,7 +92,7 @@ export const appConfig: ApplicationConfig = {
         ),
         provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor])),
         provideAnimationsAsync(),
-        providePrimeNG({ theme: { preset: Aura, options: { darkModeSelector: '.app-dark' } } }),
+        providePrimeNG({ theme: { preset: MyPreset, options: { darkModeSelector: '.app-dark' } } }),
         provideStore({
             auth: authReducer,
             pedidos: pedidosReducer,

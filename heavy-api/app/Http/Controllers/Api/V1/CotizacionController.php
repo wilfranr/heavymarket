@@ -5,13 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\CotizacionResource;
 use App\Models\Cotizacion;
 use App\Services\CotizacionService;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Controlador API para gestión de Cotizaciones
- * 
+ *
  * Maneja todas las operaciones CRUD de cotizaciones y
  * operaciones especiales como aprobar, rechazar y cálculos.
  */
@@ -23,9 +25,6 @@ class CotizacionController extends Controller
 
     /**
      * Listar todas las cotizaciones con filtros
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -57,7 +56,7 @@ class CotizacionController extends Controller
         $cotizaciones = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $cotizaciones->items(),
+            'data' => CotizacionResource::collection($cotizaciones->items()),
             'meta' => [
                 'current_page' => $cotizaciones->currentPage(),
                 'last_page' => $cotizaciones->lastPage(),
@@ -69,9 +68,6 @@ class CotizacionController extends Controller
 
     /**
      * Crear una nueva cotización
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function store(Request $request): JsonResponse
     {
@@ -82,7 +78,7 @@ class CotizacionController extends Controller
 
         try {
             $pedido = \App\Models\Pedido::findOrFail($request->input('pedido_id'));
-            
+
             $cotizacion = $this->cotizacionService->crearDesdePedido(
                 $pedido,
                 ['user_id' => $request->user()->id]
@@ -103,46 +99,54 @@ class CotizacionController extends Controller
 
     /**
      * Mostrar una cotización específica
-     * 
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function show(Cotizacion $cotizacion): JsonResponse
     {
-        $cotizacion->load(['pedido', 'tercero', 'user', 'referencias']);
+        $cotizacion->load([
+            'pedido',
+            'pedido.referencias',
+            'pedido.referencias.proveedores',
+            'tercero',
+            'user',
+            'referenciasProveedores',
+            'referenciasProveedores.pedidoReferenciaProveedor',
+        ]);
 
-        // Calcular totales
-        $total = $this->cotizacionService->calcularPrecioTotal($cotizacion);
-        $impuestos = $this->cotizacionService->calcularConImpuestos($total);
+        // Calcular totales si no están calculados
+        if (! $cotizacion->total) {
+            $total = $this->cotizacionService->calcularPrecioTotal($cotizacion);
+            $cotizacion->update(['total' => $total]);
+        }
+
+        $impuestos = $this->cotizacionService->calcularConImpuestos($cotizacion->total ?? 0);
 
         return response()->json([
-            'data' => array_merge(
-                $cotizacion->toArray(),
-                ['totales' => $impuestos]
-            ),
+            'data' => new CotizacionResource($cotizacion),
+            'totales' => $impuestos,
         ]);
     }
 
     /**
      * Actualizar una cotización
-     * 
-     * @param Request $request
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function update(Request $request, Cotizacion $cotizacion): JsonResponse
     {
         $validated = $request->validate([
-            'estado' => ['sometimes', 'string'],
-            'fecha_vencimiento' => ['sometimes', 'date'],
-            'observaciones' => ['nullable', 'string'],
+            'estado' => [
+                'sometimes',
+                'string',
+                \Illuminate\Validation\Rule::in(['Pendiente', 'Enviada', 'Aprobada', 'Rechazada', 'Vencida', 'En_Proceso']),
+            ],
+            'fecha_vencimiento' => ['sometimes', 'date', 'after:today'],
+            'observaciones' => ['nullable', 'string', 'max:1000'],
         ]);
 
         try {
             $cotizacion->update($validated);
+            $cotizacion->load(['pedido', 'tercero', 'user', 'referenciasProveedores']);
 
             return response()->json([
-                'data' => $cotizacion,
+                'data' => new CotizacionResource($cotizacion),
                 'message' => 'Cotización actualizada exitosamente',
             ]);
 
@@ -156,9 +160,6 @@ class CotizacionController extends Controller
 
     /**
      * Eliminar una cotización
-     * 
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function destroy(Cotizacion $cotizacion): JsonResponse
     {

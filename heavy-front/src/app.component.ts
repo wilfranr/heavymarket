@@ -19,13 +19,23 @@ export class AppComponent implements OnInit {
     }
 
     private applyYellowTheme() {
-        const yellowPalette = Aura.primitive?.yellow;
-        
-        if (!yellowPalette) return;
-        
+        const brandPalette = {
+            50: '#fff9ea',
+            100: '#ffefc9',
+            200: '#ffdf8f',
+            300: '#ffcf54',
+            400: '#ffbf24',
+            500: '#fdb831',
+            600: '#e49a1d',
+            700: '#c07d15',
+            800: '#9c6211',
+            900: '#7e4e0f',
+            950: '#492a06'
+        };
+
         const themeConfig = {
             semantic: {
-                primary: yellowPalette,
+                primary: brandPalette,
                 colorScheme: {
                     light: {
                         primary: {
@@ -43,14 +53,14 @@ export class AppComponent implements OnInit {
                     },
                     dark: {
                         primary: {
-                            color: '{primary.400}',
+                            color: '{primary.500}',
                             contrastColor: '{surface.900}',
-                            hoverColor: '{primary.300}',
-                            activeColor: '{primary.200}'
+                            hoverColor: '{primary.400}',
+                            activeColor: '{primary.300}'
                         },
                         highlight: {
-                            background: 'color-mix(in srgb, {primary.400}, transparent 84%)',
-                            focusBackground: 'color-mix(in srgb, {primary.400}, transparent 76%)',
+                            background: 'color-mix(in srgb, {primary.500}, transparent 84%)',
+                            focusBackground: 'color-mix(in srgb, {primary.500}, transparent 76%)',
                             color: 'rgba(255,255,255,.87)',
                             focusColor: 'rgba(255,255,255,.87)'
                         }

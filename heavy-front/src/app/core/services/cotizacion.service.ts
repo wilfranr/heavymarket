@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService, PaginatedResponse, QueryParams } from './api.service';
 import { Cotizacion, CreateCotizacionDto, UpdateCotizacionDto } from '../models/cotizacion.model';
 
@@ -9,27 +10,43 @@ import { Cotizacion, CreateCotizacionDto, UpdateCotizacionDto } from '../models/
 @Injectable({
     providedIn: 'root'
 })
-export class CotizacionService {
-    private readonly api = inject(ApiService);
-    private readonly endpoint = '/cotizaciones';
-
-    list(params?: QueryParams): Observable<PaginatedResponse<Cotizacion>> {
-        return this.api.get<PaginatedResponse<Cotizacion>>(this.endpoint, params);
+export class CotizacionService extends ApiService {
+    protected getBaseUrl(): string {
+        return `${this.API_URL}/cotizaciones`;
     }
 
-    getById(id: number): Observable<Cotizacion> {
-        return this.api.get<Cotizacion>(`${this.endpoint}/${id}`);
+    /**
+     * Obtener todas las cotizaciones con filtros
+     */
+    getAll(params?: QueryParams): Observable<PaginatedResponse<Cotizacion>> {
+        return this.get<PaginatedResponse<Cotizacion>>(this.getBaseUrl(), params);
     }
 
-    create(cotizacion: CreateCotizacionDto): Observable<Cotizacion> {
-        return this.api.post<Cotizacion>(this.endpoint, cotizacion);
+    /**
+     * Obtener una cotización por ID
+     */
+    getById(id: number): Observable<{ data: Cotizacion; totales?: any }> {
+        return this.get<{ data: Cotizacion; totales?: any }>(`${this.getBaseUrl()}/${id}`);
     }
 
-    update(id: number, cotizacion: UpdateCotizacionDto): Observable<Cotizacion> {
-        return this.api.put<Cotizacion>(`${this.endpoint}/${id}`, cotizacion);
+    /**
+     * Crear una nueva cotización
+     */
+    create(cotizacion: CreateCotizacionDto): Observable<{ data: Cotizacion }> {
+        return this.post<{ data: Cotizacion }>(this.getBaseUrl(), cotizacion);
     }
 
+    /**
+     * Actualizar una cotización
+     */
+    update(id: number, cotizacion: UpdateCotizacionDto): Observable<{ data: Cotizacion }> {
+        return this.put<{ data: Cotizacion }>(`${this.getBaseUrl()}/${id}`, cotizacion);
+    }
+
+    /**
+     * Eliminar una cotización
+     */
     delete(id: number): Observable<void> {
-        return this.api.delete<void>(`${this.endpoint}/${id}`);
+        return this.delete<void>(`${this.getBaseUrl()}/${id}`);
     }
 }
