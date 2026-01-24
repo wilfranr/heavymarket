@@ -110,8 +110,12 @@
                                 @for (articulo of pedido.articulos; track articulo.id) {
                                     <p-panel [header]="articulo.articulo?.descripcionEspecifica || 'Artículo #' + articulo.id">
                                         <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                            @if (articulo.articulo?.referencias) {
-                                                <p><strong>Referencias:</strong> {{ articulo.articulo.referencias.map((r: any) => r.referencia).join(', ') }}</p>
+                                            @if (articulo.articulo?.referencias && articulo.articulo.referencias.length > 0) {
+                                                <p><strong>Referencias:</strong> 
+                                                    @for (ref of articulo.articulo.referencias; track ref.id) {
+                                                        {{ ref.referencia }}{{ !$last ? ', ' : '' }}
+                                                    }
+                                                </p>
                                             }
                                             @if (articulo.cantidad) {
                                                 <p><strong>Cantidad:</strong> {{ articulo.cantidad }}</p>
