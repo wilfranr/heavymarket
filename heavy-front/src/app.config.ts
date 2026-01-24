@@ -92,6 +92,7 @@ import { OrdenesCompraEffects } from './app/store/ordenes-compra/effects/ordenes
 import { OrdenesTrabajoEffects } from './app/store/ordenes-trabajo/effects/ordenes-trabajo.effects';
 import { EmpresasEffects } from './app/store/empresas/effects/empresas.effects';
 import { CategoriasEffects } from './app/store/categorias/effects/categorias.effects';
+import { ContactosEffects } from './app/store/contactos/effects/contactos.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
