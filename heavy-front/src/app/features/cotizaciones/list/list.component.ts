@@ -130,7 +130,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
             <td>
               <p-tag
                 [value]="cotizacion.estado"
-                [severity]="getEstadoSeverity(cotizacion.estado)">
+                [severity]="getEstadoSeverity(cotizacion.estado) || 'secondary'">
               </p-tag>
             </td>
             <td>{{ cotizacion.fecha_emision | date:'short' }}</td>
