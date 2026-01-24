@@ -10,7 +10,6 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { DatePickerModule } from 'primeng/datepicker';
 import { createCotizacion } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import { CreateCotizacionDto, CotizacionEstado } from '../../../core/models/cotizacion.model';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -32,7 +31,6 @@ import { PedidoService } from '../../../core/services/pedido.service';
     TextareaModule,
     SelectModule,
     ToastModule,
-    DatePickerModule,
   ],
   providers: [MessageService],
   template: `
