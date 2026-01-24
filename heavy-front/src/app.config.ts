@@ -78,6 +78,7 @@ import { ordenesTrabajoReducer } from './app/store/ordenes-trabajo/reducers/orde
 import { empresasReducer } from './app/store/empresas/reducers/empresas.reducer';
 import { categoriasReducer } from './app/store/categorias/reducers/categorias.reducer';
 import { contactosReducer } from './app/store/contactos/reducers/contactos.reducer';
+import { direccionesReducer } from './app/store/direcciones/reducers/direcciones.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
