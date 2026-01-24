@@ -76,13 +76,13 @@ export class Login {
             next: () => {
                 this.isLoading.set(false);
                 this.toastService.success('Inicio de sesión exitoso');
-                this.router.navigate(['/']);
+                this.router.navigate(['/app']);
             },
             error: (error) => {
                 this.isLoading.set(false);
-                
+
                 let errorMessage = 'Error al iniciar sesión. Verifica tus credenciales.';
-                
+
                 // Manejar errores de validación de Laravel (422)
                 if (error.status === 422) {
                     if (error.error?.errors) {
@@ -100,7 +100,7 @@ export class Login {
                 } else if (error.error?.message) {
                     errorMessage = error.error.message;
                 }
-                
+
                 this.toastService.error(errorMessage);
             }
         });

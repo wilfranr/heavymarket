@@ -22,7 +22,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <a class="layout-topbar-logo" routerLink="/">
+            <a class="layout-topbar-logo" routerLink="/app">
                 <img src="assets/images/logo.svg" alt="CYH Heavy Market" style="height: 35px; width: auto;" />
             </a>
         </div>
@@ -217,7 +217,7 @@ export class AppTopbar {
         const date = new Date(dateString);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
-        
+
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);

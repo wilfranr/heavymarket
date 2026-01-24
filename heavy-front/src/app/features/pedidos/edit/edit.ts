@@ -17,6 +17,8 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -27,6 +29,8 @@ import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
+import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-referencia-proveedor.service';
+import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto } from '../../../core/models/pedido.model';
 
 /**
  * Componente de edición de pedido
@@ -49,7 +53,9 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
         SkeletonModule,
         ToggleButtonModule,
         InputNumberModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        TagModule,
+        TooltipModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -68,6 +74,7 @@ export class EditComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
+    private readonly proveedorService = inject(PedidoReferenciaProveedorService);
 
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
@@ -80,6 +87,11 @@ export class EditComponent implements OnInit {
     maquinas: any[] = [];
     fabricantes: any[] = [];
     referencias: any[] = [];
+    proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
+    
+    // Mapa de proveedores por referencia
+    proveedoresPorReferencia: Map<number, PedidoReferenciaProveedor[]> = new Map();
+    referenciasExpandidas: Set<number> = new Set();
     
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
@@ -172,6 +184,9 @@ export class EditComponent implements OnInit {
 
         // Cargar referencias
         this.loadReferencias();
+
+        // Cargar proveedores (terceros tipo Proveedor)
+        this.loadProveedores();
     }
 
     /**
@@ -183,6 +198,24 @@ export class EditComponent implements OnInit {
                 this.referencias = response.data.map(r => ({
                     label: r.referencia,
                     value: r.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga los proveedores disponibles (terceros tipo Proveedor)
+     */
+    private loadProveedores(): void {
+        this.terceroService.list({ per_page: 200, tipo: 'Proveedor' }).subscribe({
+            next: (response) => {
+                this.proveedores = response.data.map(p => ({
+                    label: p.razon_social || p.nombre_comercial || `Proveedor ${p.id}`,
+                    value: p.id,
+                    ubicacion: p.country_id === 48 ? 'Nacional' : 'Internacional',
+                    dias_entrega: p.dias_entrega || 0,
+                    costo_unidad: p.costo_unidad || 0,
+                    utilidad: p.utilidad || 0
                 }));
             }
         });
@@ -223,6 +256,13 @@ export class EditComponent implements OnInit {
                         // Cargar referencias del pedido
                         if (pedido.referencias && pedido.referencias.length > 0) {
                             this.cargarReferenciasAlFormArray(pedido.referencias);
+                            
+                            // Cargar proveedores de cada referencia
+                            pedido.referencias.forEach(ref => {
+                                if (ref.proveedores && ref.proveedores.length > 0) {
+                                    this.proveedoresPorReferencia.set(ref.id, ref.proveedores);
+                                }
+                            });
                         }
                     }
                 });
@@ -401,5 +441,187 @@ export class EditComponent implements OnInit {
     isFieldInvalid(field: string): boolean {
         const control = this.pedidoForm.get(field);
         return !!(control && control.invalid && control.touched);
+    }
+
+    /**
+     * Obtiene los proveedores de una referencia
+     */
+    getProveedoresReferencia(referenciaId: number | null): PedidoReferenciaProveedor[] {
+        if (!referenciaId) return [];
+        return this.proveedoresPorReferencia.get(referenciaId) || [];
+    }
+
+    /**
+     * Verifica si una referencia está expandida
+     */
+    isReferenciaExpandida(index: number): boolean {
+        const referenciaControl = this.referenciasFormArray.at(index);
+        const referenciaId = referenciaControl.get('id')?.value;
+        return this.referenciasExpandidas.has(referenciaId || index);
+    }
+
+    /**
+     * Alterna la expansión de una referencia y muestra formulario de proveedor
+     */
+    toggleReferenciaExpandida(index: number): void {
+        const referenciaControl = this.referenciasFormArray.at(index);
+        const referenciaId = referenciaControl.get('id')?.value;
+        
+        if (!referenciaId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Advertencia',
+                detail: 'Debe guardar la referencia primero antes de agregar proveedores'
+            });
+            return;
+        }
+
+        if (this.referenciaIndexParaProveedor === index && this.nuevoProveedorForm) {
+            // Cerrar formulario
+            this.nuevoProveedorForm = null;
+            this.referenciaIndexParaProveedor = null;
+        } else {
+            // Abrir formulario
+            this.referenciaIndexParaProveedor = index;
+            this.initNuevoProveedorForm();
+        }
+    }
+
+    /**
+     * Inicializa el formulario para nuevo proveedor
+     */
+    private initNuevoProveedorForm(): void {
+        this.nuevoProveedorForm = this.fb.group({
+            tercero_id: [null, [Validators.required]],
+            marca_id: [null],
+            dias_entrega: [0, [Validators.required, Validators.min(0)]],
+            costo_unidad: [0, [Validators.required, Validators.min(0)]],
+            utilidad: [0, [Validators.required, Validators.min(0)]],
+            cantidad: [1, [Validators.required, Validators.min(1)]],
+            ubicacion: ['Nacional', [Validators.required]],
+            estado: [true]
+        });
+
+        // Auto-completar datos cuando se selecciona un proveedor
+        this.nuevoProveedorForm.get('tercero_id')?.valueChanges.subscribe(terceroId => {
+            const proveedor = this.proveedores.find(p => p.value === terceroId);
+            if (proveedor) {
+                this.nuevoProveedorForm?.patchValue({
+                    ubicacion: proveedor.ubicacion,
+                    dias_entrega: proveedor.dias_entrega,
+                    costo_unidad: proveedor.costo_unidad,
+                    utilidad: proveedor.utilidad
+                });
+            }
+        });
+    }
+
+    /**
+     * Guarda el nuevo proveedor
+     */
+    guardarProveedor(): void {
+        if (!this.nuevoProveedorForm || this.nuevoProveedorForm.invalid || this.referenciaIndexParaProveedor === null) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Formulario inválido',
+                detail: 'Por favor complete todos los campos requeridos'
+            });
+            return;
+        }
+
+        const referenciaControl = this.referenciasFormArray.at(this.referenciaIndexParaProveedor);
+        const referenciaId = referenciaControl.get('id')?.value;
+
+        if (!referenciaId) {
+            return;
+        }
+
+        const proveedorData: CreatePedidoReferenciaProveedorDto = this.nuevoProveedorForm.value;
+        this.agregarProveedor(this.referenciaIndexParaProveedor, proveedorData);
+        
+        // Limpiar formulario
+        this.nuevoProveedorForm = null;
+        this.referenciaIndexParaProveedor = null;
+    }
+
+    /**
+     * Agrega un proveedor a una referencia
+     */
+    private agregarProveedor(referenciaIndex: number, proveedor: CreatePedidoReferenciaProveedorDto): void {
+        const referenciaControl = this.referenciasFormArray.at(referenciaIndex);
+        const referenciaId = referenciaControl.get('id')?.value;
+
+        if (!referenciaId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Advertencia',
+                detail: 'Debe guardar la referencia primero antes de agregar proveedores'
+            });
+            return;
+        }
+
+        this.proveedorService.addProveedor(this.pedidoId(), referenciaId, proveedor).subscribe({
+            next: (response) => {
+                const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
+                proveedores.push(response.data);
+                this.proveedoresPorReferencia.set(referenciaId, proveedores);
+                
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Éxito',
+                    detail: 'Proveedor agregado correctamente'
+                });
+            },
+            error: (error) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'Error al agregar el proveedor'
+                });
+            }
+        });
+    }
+
+    /**
+     * Elimina un proveedor de una referencia
+     */
+    eliminarProveedor(referenciaIndex: number, proveedorId: number): void {
+        const referenciaControl = this.referenciasFormArray.at(referenciaIndex);
+        const referenciaId = referenciaControl.get('id')?.value;
+
+        if (!referenciaId) {
+            return;
+        }
+
+        this.confirmationService.confirm({
+            message: '¿Está seguro de eliminar este proveedor?',
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.proveedorService.deleteProveedor(this.pedidoId(), referenciaId, proveedorId).subscribe({
+                    next: () => {
+                        const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
+                        const index = proveedores.findIndex(p => p.id === proveedorId);
+                        if (index > -1) {
+                            proveedores.splice(index, 1);
+                            this.proveedoresPorReferencia.set(referenciaId, proveedores);
+                        }
+                        
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Proveedor eliminado correctamente'
+                        });
+                    },
+                    error: (error) => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: error.error?.message || 'Error al eliminar el proveedor'
+                        });
+                    }
+                });
+            }
+        });
     }
 }

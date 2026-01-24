@@ -93,17 +93,17 @@ export class RegisterComponent {
       next: (response) => {
         this.isLoading.set(false);
         this.toastService.success('Registro exitoso. Bienvenido!');
-        
+
         // Redirigir al dashboard después del registro exitoso
-        this.router.navigate(['/']);
+        this.router.navigate(['/app']);
       },
       error: (error) => {
         this.isLoading.set(false);
-        
+
         // Manejar errores de validación del backend
         if (error.error?.errors) {
           const errors = error.error.errors;
-          
+
           Object.keys(errors).forEach(key => {
             errors[key].forEach((msg: string) => {
               this.toastService.error(msg);
