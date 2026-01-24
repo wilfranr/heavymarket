@@ -58,6 +58,8 @@ import { TerceroService } from '../../../core/services/tercero.service';
               formControlName="terceros"
               [options]="proveedores"
               placeholder="Seleccione proveedores (opcional)"
+              optionLabel="label"
+              optionValue="value"
               [filter]="true"
               [showClear]="true"
               styleClass="w-full">
