@@ -58,7 +58,10 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto } from '.
         InputNumberModule,
         ConfirmDialogModule,
         TagModule,
-        TooltipModule
+        TooltipModule,
+        DialogModule,
+        TableModule,
+        CurrencyPipe
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
