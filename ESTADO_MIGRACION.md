@@ -302,7 +302,16 @@
   - Rutas configuradas ✅
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
-- [ ] Categorias
+- [x] Categorias (completo) ✅
+  - Backend: Modelo Categoria con relaciones completas ✅
+  - Backend: Controller, Resources, FormRequest completos ✅
+  - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
+  - Frontend: Componentes list, create, edit y detail completos ✅
+  - Frontend: Gestión de proveedores asociados (many-to-many) ✅
+  - Frontend: Visualización de referencias asociadas ✅
+  - Rutas configuradas ✅
+  - Integración completa con servicios y NgRx ✅
+  - Módulo 100% funcional y compilando sin errores ✅
 - [ ] Contactos
 - [ ] Direcciones
 - [ ] Transportadoras
