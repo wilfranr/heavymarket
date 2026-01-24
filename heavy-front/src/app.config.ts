@@ -97,6 +97,7 @@ import { CategoriasEffects } from './app/store/categorias/effects/categorias.eff
 import { ContactosEffects } from './app/store/contactos/effects/contactos.effects';
 import { DireccionesEffects } from './app/store/direcciones/effects/direcciones.effects';
 import { TransportadorasEffects } from './app/store/transportadoras/effects/transportadoras.effects';
+import { TRMsEffects } from './app/store/trms/effects/trms.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -126,9 +127,10 @@ export const appConfig: ApplicationConfig = {
             categorias: categoriasReducer,
             contactos: contactosReducer,
             direcciones: direccionesReducer,
-            transportadoras: transportadorasReducer
+            transportadoras: transportadorasReducer,
+            trms: trmsReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects, ContactosEffects, DireccionesEffects, TransportadorasEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects, ContactosEffects, DireccionesEffects, TransportadorasEffects, TRMsEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
