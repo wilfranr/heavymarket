@@ -179,7 +179,6 @@ export class PedidosListComponent implements OnInit {
   private terceroService = inject(TerceroService);
   private maquinaService = inject(MaquinaService);
   private fabricanteService = inject(FabricanteService);
-  // private userService = inject(UserService); // TODO: Implementar cuando esté disponible
 
   // Signals para estado local
   pedidos = signal<Pedido[]>([]);
