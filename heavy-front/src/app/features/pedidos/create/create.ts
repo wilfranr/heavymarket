@@ -14,8 +14,7 @@ import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
-import { RepeaterModule } from 'primeng/repeater';
-import { ToggleModule } from 'primeng/toggle';
+import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
@@ -241,7 +240,7 @@ export class CreateComponent implements OnInit {
         const referenciasParaProcesar: Array<{ cantidad: number; codigo: string }> = [];
 
         // Primero, parsear todas las líneas
-        lineas.forEach(linea => {
+        lineas.forEach((linea: string) => {
             const trimmed = linea.trim();
             if (!trimmed) return;
 

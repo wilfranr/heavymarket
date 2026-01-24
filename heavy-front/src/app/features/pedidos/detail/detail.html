@@ -90,8 +90,8 @@
                                             @if (referencia.cantidad) {
                                                 <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
                                             }
-                                            @if (referencia.precio) {
-                                                <p><strong>Precio:</strong> {{ referencia.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                            @if (referencia.cantidad) {
+                                                <p><strong>Cantidad:</strong> {{ referencia.cantidad }}</p>
                                             }
                                             @if (referencia.estado) {
                                                 <p><strong>Estado:</strong> 
@@ -115,8 +115,8 @@
                                             @if (articulo.referencia) {
                                                 <p><strong>Referencia:</strong> {{ articulo.referencia }}</p>
                                             }
-                                            @if (articulo.precio) {
-                                                <p><strong>Precio:</strong> {{ articulo.precio | currency: 'COP' : 'symbol-narrow' : '1.0-0' }}</p>
+                                            @if (articulo.cantidad) {
+                                                <p><strong>Cantidad:</strong> {{ articulo.cantidad }}</p>
                                             }
                                         </div>
                                     </p-panel>

@@ -18,7 +18,7 @@ import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
-import { updatePedido, loadPedidoById } from '../../../store/pedidos/actions/pedidos.actions';
+import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -198,7 +198,7 @@ export class EditComponent implements OnInit {
             const pedidoId = parseInt(id, 10);
             this.pedidoId.set(pedidoId);
             
-            this.store.dispatch(loadPedidoById({ id: pedidoId }));
+            this.store.dispatch(loadPedido({ id: pedidoId }));
             
             this.pedido$ = this.store.select(selectPedidoById(pedidoId));
             this.loading$ = this.store.select(selectPedidosLoading);
