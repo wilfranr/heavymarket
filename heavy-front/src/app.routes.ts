@@ -2,13 +2,17 @@ import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
 import { Dashboard } from './app/pages/dashboard/dashboard';
 import { Documentation } from './app/pages/documentation/documentation';
-import { Landing } from './app/pages/landing/landing';
+import { Landing } from './app/landing/landing';
 import { Notfound } from './app/pages/notfound/notfound';
 import { authGuard } from './app/core/auth/guards/auth.guard';
 
 export const appRoutes: Routes = [
     {
         path: '',
+        component: Landing,
+    },
+    {
+        path: 'app',
         component: AppLayout,
         canActivate: [authGuard],
         children: [
@@ -28,7 +32,7 @@ export const appRoutes: Routes = [
             { path: 'articulos', loadChildren: () => import('./app/features/articulos/articulos.routes').then(m => m.articulosRoutes) }
         ]
     },
-    { path: 'landing', component: Landing },
+    // { path: 'landing', component: Landing },
     { path: 'notfound', component: Notfound },
     { path: 'auth', loadChildren: () => import('./app/pages/auth/auth.routes') },
     { path: '**', redirectTo: '/notfound' }

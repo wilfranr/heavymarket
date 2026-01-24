@@ -1,4 +1,5 @@
 <p-toast />
+<p-confirmDialog />
 
 <div class="container mx-auto p-4">
     @if (loading$ | async) {
@@ -14,11 +15,19 @@
             <ng-template pTemplate="header">
                 <div class="flex justify-between items-center p-4">
                     <h2 class="text-2xl font-bold">Editar Pedido #{{ pedidoId() }}</h2>
+                    <p-button
+                        label="Cancelar"
+                        icon="pi pi-times"
+                        severity="secondary"
+                        [text]="true"
+                        (onClick)="cancelar()">
+                    </p-button>
                 </div>
             </ng-template>
 
             <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Información Básica -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <!-- Cliente (Tercero) -->
                     <div class="col-span-1 md:col-span-2">
                         <label for="tercero_id" class="block mb-2 font-semibold">
@@ -33,8 +42,7 @@
                             filterBy="label"
                             [showClear]="true"
                             styleClass="w-full"
-                            [class.ng-invalid]="isFieldInvalid('tercero_id')"
-                            [class.ng-dirty]="isFieldInvalid('tercero_id')">
+                            [class.ng-invalid]="isFieldInvalid('tercero_id')">
                         </p-select>
                         @if (isFieldInvalid('tercero_id')) {
                             <small class="text-red-500">El cliente es requerido</small>
@@ -52,12 +60,43 @@
                             [options]="estadosOptions"
                             placeholder="Seleccione un estado"
                             styleClass="w-full"
-                            [class.ng-invalid]="isFieldInvalid('estado')"
-                            [class.ng-dirty]="isFieldInvalid('estado')">
+                            [class.ng-invalid]="isFieldInvalid('estado')">
                         </p-select>
                         @if (isFieldInvalid('estado')) {
                             <small class="text-red-500">El estado es requerido</small>
                         }
+                    </div>
+
+                    <!-- Máquina -->
+                    <div>
+                        <label for="maquina_id" class="block mb-2 font-semibold">
+                            Máquina (Opcional)
+                        </label>
+                        <p-select
+                            id="maquina_id"
+                            formControlName="maquina_id"
+                            [options]="maquinas"
+                            placeholder="Seleccione una máquina"
+                            [filter]="true"
+                            [showClear]="true"
+                            styleClass="w-full">
+                        </p-select>
+                    </div>
+
+                    <!-- Fabricante -->
+                    <div>
+                        <label for="fabricante_id" class="block mb-2 font-semibold">
+                            Fabricante (Opcional)
+                        </label>
+                        <p-select
+                            id="fabricante_id"
+                            formControlName="fabricante_id"
+                            [options]="fabricantes"
+                            placeholder="Seleccione un fabricante"
+                            [filter]="true"
+                            [showClear]="true"
+                            styleClass="w-full">
+                        </p-select>
                     </div>
 
                     <!-- Dirección -->
@@ -71,14 +110,7 @@
                             pInputText
                             formControlName="direccion"
                             placeholder="Ingrese la dirección de envío"
-                            class="w-full"
-                            [class.ng-invalid]="isFieldInvalid('direccion')"
-                            [class.ng-dirty]="isFieldInvalid('direccion')" />
-                        @if (isFieldInvalid('direccion')) {
-                            <small class="text-red-500">
-                                La dirección no puede exceder 500 caracteres
-                            </small>
-                        }
+                            class="w-full" />
                     </div>
 
                     <!-- Comentario -->
@@ -88,26 +120,166 @@
                         </label>
                         <textarea
                             id="comentario"
-                            pInputTextarea
+                            pTextarea
                             formControlName="comentario"
                             placeholder="Ingrese comentarios adicionales"
                             rows="4"
-                            class="w-full"
-                            [class.ng-invalid]="isFieldInvalid('comentario')"
-                            [class.ng-dirty]="isFieldInvalid('comentario')">
+                            class="w-full">
                         </textarea>
-                        @if (isFieldInvalid('comentario')) {
-                            <small class="text-red-500">
-                                El comentario no puede exceder 1000 caracteres
-                            </small>
-                        }
                     </div>
                 </div>
 
-                <p-divider></p-divider>
+                <p-divider />
+
+                <!-- Gestión de Referencias -->
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">Referencias del Pedido</h3>
+                        <div class="flex gap-2">
+                            <p-button
+                                label="Seleccionar Todas"
+                                icon="pi pi-check-square"
+                                severity="success"
+                                size="small"
+                                [text]="true"
+                                (onClick)="selectAllReferencias()">
+                            </p-button>
+                            <p-button
+                                label="Deseleccionar Todas"
+                                icon="pi pi-square"
+                                severity="secondary"
+                                size="small"
+                                [text]="true"
+                                (onClick)="deselectAllReferencias()">
+                            </p-button>
+                            <p-button
+                                label="Agregar Referencia"
+                                icon="pi pi-plus"
+                                severity="success"
+                                size="small"
+                                (onClick)="addReferencia()">
+                            </p-button>
+                        </div>
+                    </div>
+
+                    @if (referenciasFormArray.length === 0) {
+                        <div class="text-center py-8 bg-gray-50 rounded">
+                            <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600">No hay referencias agregadas</p>
+                            <p class="text-sm text-gray-500 mt-2">Haga clic en "Agregar Referencia" para comenzar</p>
+                        </div>
+                    } @else {
+                        <div class="space-y-4">
+                            @for (referencia of referenciasFormArray.controls; track $index) {
+                                <p-card>
+                                    <ng-template pTemplate="header">
+                                        <div class="flex justify-between items-center p-3">
+                                            <div class="flex items-center gap-2">
+                                                <p-toggleButton
+                                                    [formControl]="$any(referencia).controls['estado']"
+                                                    onLabel="Activa"
+                                                    offLabel="Inactiva"
+                                                    onIcon="pi pi-check"
+                                                    offIcon="pi pi-times"
+                                                    styleClass="w-auto">
+                                                </p-toggleButton>
+                                                <span class="font-semibold">Referencia #{{ $index + 1 }}</span>
+                                            </div>
+                                            <p-button
+                                                icon="pi pi-trash"
+                                                severity="danger"
+                                                [text]="true"
+                                                [rounded]="true"
+                                                size="small"
+                                                (onClick)="removeReferencia($index)"
+                                                pTooltip="Eliminar referencia">
+                                            </p-button>
+                                        </div>
+                                    </ng-template>
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <!-- Sistema -->
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium">Sistema</label>
+                                            <p-select
+                                                [formControl]="$any(referencia).controls['sistema_id']"
+                                                [options]="sistemas"
+                                                placeholder="Seleccione un sistema"
+                                                [showClear]="true"
+                                                styleClass="w-full">
+                                            </p-select>
+                                        </div>
+
+                                        <!-- Referencia -->
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium">
+                                                Referencia <span class="text-red-500">*</span>
+                                            </label>
+                                            <p-select
+                                                [formControl]="$any(referencia).controls['referencia_id']"
+                                                [options]="referencias"
+                                                placeholder="Seleccione una referencia"
+                                                [filter]="true"
+                                                filterBy="label"
+                                                [showClear]="true"
+                                                styleClass="w-full"
+                                                [class.ng-invalid]="$any(referencia).controls['referencia_id'].invalid && $any(referencia).controls['referencia_id'].touched">
+                                            </p-select>
+                                            @if ($any(referencia).controls['referencia_id'].invalid && $any(referencia).controls['referencia_id'].touched) {
+                                                <small class="text-red-500">La referencia es requerida</small>
+                                            }
+                                        </div>
+
+                                        <!-- Marca -->
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium">Marca</label>
+                                            <p-select
+                                                [formControl]="$any(referencia).controls['marca_id']"
+                                                [options]="marcas"
+                                                placeholder="Seleccione una marca"
+                                                [showClear]="true"
+                                                styleClass="w-full">
+                                            </p-select>
+                                        </div>
+
+                                        <!-- Cantidad -->
+                                        <div>
+                                            <label class="block mb-2 text-sm font-medium">
+                                                Cantidad <span class="text-red-500">*</span>
+                                            </label>
+                                            <p-inputNumber
+                                                [formControl]="$any(referencia).controls['cantidad']"
+                                                [min]="1"
+                                                [showButtons]="true"
+                                                styleClass="w-full">
+                                            </p-inputNumber>
+                                            @if ($any(referencia).controls['cantidad'].invalid && $any(referencia).controls['cantidad'].touched) {
+                                                <small class="text-red-500">La cantidad debe ser mayor a 0</small>
+                                            }
+                                        </div>
+
+                                        <!-- Comentario -->
+                                        <div class="col-span-1 md:col-span-2">
+                                            <label class="block mb-2 text-sm font-medium">Comentario</label>
+                                            <textarea
+                                                [formControl]="$any(referencia).controls['comentario']"
+                                                pTextarea
+                                                placeholder="Comentarios sobre esta referencia"
+                                                rows="2"
+                                                class="w-full">
+                                            </textarea>
+                                        </div>
+                                    </div>
+                                </p-card>
+                            }
+                        </div>
+                    }
+                </div>
+
+                <p-divider />
 
                 <!-- Botones -->
-                <div class="flex justify-end gap-2">
+                <div class="flex justify-end gap-2 mt-4">
                     <p-button
                         label="Cancelar"
                         severity="secondary"
@@ -120,7 +292,7 @@
                         icon="pi pi-save"
                         type="submit"
                         [loading]="submitting"
-                        [disabled]="pedidoForm.invalid || pedidoForm.pristine">
+                        [disabled]="pedidoForm.invalid">
                     </p-button>
                 </div>
             </form>

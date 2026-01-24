@@ -2,33 +2,31 @@
 
 declare(strict_types=1);
 
+use App\Http\Controllers\Api\V1\ArticuloController;
+use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\CategoriaController;
+use App\Http\Controllers\Api\V1\CotizacionController;
+use App\Http\Controllers\Api\V1\FabricanteController;
+use App\Http\Controllers\Api\V1\ListaController;
+use App\Http\Controllers\Api\V1\MaquinaController;
+use App\Http\Controllers\Api\V1\OrdenCompraController;
+use App\Http\Controllers\Api\V1\OrdenTrabajoController;
+use App\Http\Controllers\Api\V1\PedidoController;
+use App\Http\Controllers\Api\V1\ReferenciaController;
+use App\Http\Controllers\Api\V1\SistemaController;
+use App\Http\Controllers\Api\V1\TerceroController;
+use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\V1\{
-    AuthController,
-    PedidoController,
-    TerceroController,
-    CotizacionController,
-    OrdenCompraController,
-    OrdenTrabajoController,
-    ArticuloController,
-    ReferenciaController,
-    UserController,
-    FabricanteController,
-    SistemaController,
-    MaquinaController,
-    CategoriaController,
-    ListaController
-};
 
 /**
  * Rutas API versión 1
- * 
+ *
  * Todas las rutas están protegidas con autenticación Sanctum
  * y agrupadas bajo el prefijo /api/v1
  */
 Route::prefix('v1')->group(function () {
-    
+
     /**
      * Ruta de prueba sin autenticación
      */
@@ -50,7 +48,7 @@ Route::prefix('v1')->group(function () {
      * Rutas protegidas con autenticación Sanctum
      */
     Route::middleware('auth:sanctum')->group(function () {
-        
+
         /**
          * Gestión de autenticación (requiere estar autenticado)
          */
@@ -60,7 +58,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::get('/tokens', [AuthController::class, 'tokens']);
         Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
-        
+
         /**
          * Información del usuario autenticado
          */
@@ -80,11 +78,16 @@ Route::prefix('v1')->group(function () {
          * Recursos principales del sistema
          */
         Route::apiResource('pedidos', PedidoController::class);
+
+        // Rutas adicionales para gestión de referencias en pedidos
+        Route::post('pedidos/{pedido}/referencias', [PedidoController::class, 'addReferencia'])->name('pedidos.referencias.store');
+        Route::put('pedidos/{pedido}/referencias/{referencia}', [PedidoController::class, 'updateReferencia'])->name('pedidos.referencias.update');
+        Route::delete('pedidos/{pedido}/referencias/{referencia}', [PedidoController::class, 'deleteReferencia'])->name('pedidos.referencias.destroy');
         Route::apiResource('terceros', TerceroController::class);
         Route::apiResource('cotizaciones', CotizacionController::class);
         Route::apiResource('ordenes-compra', OrdenCompraController::class);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);
-        
+
         /**
          * Catálogos y referencias
          */
@@ -96,7 +99,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('categorias', CategoriaController::class);
         Route::apiResource('listas', ListaController::class);
         Route::get('listas/tipo/{tipo}', [ListaController::class, 'getByTipo'])->name('listas.by-tipo');
-        
+
         /**
          * Gestión de usuarios (solo admin)
          */

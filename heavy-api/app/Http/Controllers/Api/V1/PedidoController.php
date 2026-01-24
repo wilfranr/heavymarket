@@ -218,4 +218,91 @@ class PedidoController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Agregar una referencia a un pedido
+     */
+    public function addReferencia(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'referencia_id' => ['required', 'integer', 'exists:referencias,id'],
+            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'definicion' => ['nullable', 'string', 'max:255'],
+            'cantidad' => ['required', 'integer', 'min:1'],
+            'comentario' => ['nullable', 'string'],
+            'imagen' => ['nullable', 'string', 'max:255'],
+            'mostrar_referencia' => ['nullable', 'boolean'],
+            'estado' => ['nullable', 'boolean'],
+        ]);
+
+        try {
+            $pedidoReferencia = $pedido->referencias()->create($validated);
+            $pedidoReferencia->load(['referencia', 'sistema', 'marca']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoReferenciaResource($pedidoReferencia),
+                'message' => 'Referencia agregada exitosamente',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al agregar la referencia',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualizar una referencia de un pedido
+     */
+    public function updateReferencia(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
+    {
+        $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+
+        $validated = $request->validate([
+            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'definicion' => ['nullable', 'string', 'max:255'],
+            'cantidad' => ['sometimes', 'integer', 'min:1'],
+            'comentario' => ['nullable', 'string'],
+            'imagen' => ['nullable', 'string', 'max:255'],
+            'mostrar_referencia' => ['nullable', 'boolean'],
+            'estado' => ['nullable', 'boolean'],
+        ]);
+
+        try {
+            $pedidoReferencia->update($validated);
+            $pedidoReferencia->load(['referencia', 'sistema', 'marca']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoReferenciaResource($pedidoReferencia),
+                'message' => 'Referencia actualizada exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar la referencia',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar una referencia de un pedido
+     */
+    public function deleteReferencia(Pedido $pedido, int $referenciaId): JsonResponse
+    {
+        try {
+            $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+            $pedidoReferencia->delete();
+
+            return response()->json([
+                'message' => 'Referencia eliminada exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar la referencia',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
