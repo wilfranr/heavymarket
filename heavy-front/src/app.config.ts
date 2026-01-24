@@ -17,11 +17,13 @@ import { pedidosReducer } from './app/store/pedidos/reducers/pedidos.reducer';
 import { tercerosReducer } from './app/store/terceros/reducers/terceros.reducer';
 import { listasReducer } from './app/store/listas/reducers/listas.reducer';
 import { fabricantesReducer } from './app/store/fabricantes/reducers/fabricantes.reducer';
+import { sistemasReducer } from './app/store/sistemas/reducers/sistemas.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
 import { ListasEffects } from './app/store/listas/effects/listas.effects';
 import { FabricantesEffects } from './app/store/fabricantes/effects/fabricantes.effects';
+import { SistemasEffects } from './app/store/sistemas/effects/sistemas.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
