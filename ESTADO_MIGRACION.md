@@ -228,7 +228,7 @@
    - **Razón**: Se agregan a Pedidos
    - **Dependencias**: Referencias, Categorias
 
-### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ EN PROGRESO (~75%)
+### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ EN PROGRESO (~85%)
 **Todos los módulos de soporte están completos. Se puede proceder con Pedidos:**
 
 - [x] Implementar Wizard de creación (3 pasos) ✅
@@ -250,7 +250,11 @@
   - Frontend: UI con múltiples filtros combinables ✅
   - Botón limpiar filtros ✅
 - [ ] Implementar gestión de Artículos (usa Articulos)
-- [ ] Implementar estados avanzados (transiciones de estado con validaciones)
+- [x] Implementar estados avanzados (transiciones de estado con validaciones) ✅
+  - Validación de transiciones válidas ✅
+  - Mapa de transiciones por estado ✅
+  - Campo motivo_rechazo requerido para Rechazado ✅
+  - Advertencias para estados que requieren proveedores ✅
 - [x] Implementar relación con Máquinas (usa Máquinas) ✅
 - [x] Implementar relación con Fabricantes (usa Fabricantes) ✅
 
