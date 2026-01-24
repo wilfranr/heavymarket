@@ -135,8 +135,20 @@ import { PedidoService } from '../../../core/services/pedido.service';
               </p-tag>
             </td>
             <td>{{ orden.transportadora?.nombre || 'N/A' }}</td>
-            <td>{{ orden.fecha_ingreso | date:'short' }}</td>
-            <td>{{ orden.fecha_entrega | date:'short' || 'N/A' }}</td>
+            <td>
+              @if (orden.fecha_ingreso) {
+                {{ orden.fecha_ingreso | date:'short' }}
+              } @else {
+                N/A
+              }
+            </td>
+            <td>
+              @if (orden.fecha_entrega) {
+                {{ orden.fecha_entrega | date:'short' }}
+              } @else {
+                N/A
+              }
+            </td>
             <td>{{ orden.guia || 'N/A' }}</td>
             <td>
               <p-button
