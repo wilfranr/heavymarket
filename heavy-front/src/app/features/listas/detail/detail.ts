@@ -20,16 +20,9 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-detail',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        CardModule,
-        ButtonModule,
-        TagModule,
-        DividerModule
-    ],
-    templateUrl: './detail.html',
-    styleUrl: './detail.scss'
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule],
+    templateUrl: './detail.html'
+    // styleUrl: './detail.scss'
 })
 export class DetailComponent implements OnInit {
     private readonly store = inject(Store);
@@ -40,7 +33,7 @@ export class DetailComponent implements OnInit {
     listaId!: number;
 
     ngOnInit(): void {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.listaId = +params['id'];
             this.store.dispatch(loadListaById({ id: this.listaId }));
             this.lista$ = this.store.select(selectListaById(this.listaId));
@@ -66,12 +59,12 @@ export class DetailComponent implements OnInit {
      */
     getTipoSeverity(tipo: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
         const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
-            'Marca': 'success',
+            Marca: 'success',
             'Tipo de Máquina': 'info',
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
-            'Nombre de Medida': 'contrast',
+            'Nombre de Medida': 'contrast'
         };
         return severityMap[tipo] || 'secondary';
     }

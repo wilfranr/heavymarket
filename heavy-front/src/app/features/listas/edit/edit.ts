@@ -25,21 +25,10 @@ import { UpdateListaDto, ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-edit',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        CardModule,
-        ButtonModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        ToastModule,
-        DividerModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
     providers: [MessageService],
-    templateUrl: './edit.html',
-    styleUrl: './edit.scss'
+    templateUrl: './edit.html'
+    // styleUrl: './edit.scss'
 })
 export class EditComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -51,25 +40,25 @@ export class EditComponent implements OnInit {
     listaForm!: FormGroup;
     lista$!: Observable<any>;
     listaId!: number;
-    
+
     tiposOptions = [
         { label: 'Marca', value: 'Marca' as ListaTipo },
         { label: 'Tipo de Máquina', value: 'Tipo de Máquina' as ListaTipo },
         { label: 'Tipo de Artículo', value: 'Tipo de Artículo' as ListaTipo },
         { label: 'Unidad de Medida', value: 'Unidad de Medida' as ListaTipo },
         { label: 'Tipo de Medida', value: 'Tipo de Medida' as ListaTipo },
-        { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo },
+        { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo }
     ];
 
     loading = false;
 
     ngOnInit(): void {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.listaId = +params['id'];
             this.store.dispatch(loadListaById({ id: this.listaId }));
             this.lista$ = this.store.select(selectListaById(this.listaId));
-            
-            this.lista$.subscribe(lista => {
+
+            this.lista$.subscribe((lista) => {
                 if (lista) {
                     this.initForm(lista);
                 }
@@ -114,20 +103,22 @@ export class EditComponent implements OnInit {
             definicion: formValue.definicion || undefined,
             foto: formValue.foto || undefined,
             fotoMedida: formValue.fotoMedida || undefined,
-            sistema_id: formValue.sistema_id || undefined,
+            sistema_id: formValue.sistema_id || undefined
         };
 
         this.store.dispatch(updateLista({ id: this.listaId, data }));
 
         // Escuchar el resultado de la acción
-        this.store.select(state => (state as any).listas).subscribe((listasState: any) => {
-            if (!listasState.loading && !listasState.error && this.loading) {
-                this.loading = false;
-                this.router.navigate(['/listas', this.listaId]);
-            } else if (!listasState.loading && listasState.error && this.loading) {
-                this.loading = false;
-            }
-        });
+        this.store
+            .select((state) => (state as any).listas)
+            .subscribe((listasState: any) => {
+                if (!listasState.loading && !listasState.error && this.loading) {
+                    this.loading = false;
+                    this.router.navigate(['/listas', this.listaId]);
+                } else if (!listasState.loading && listasState.error && this.loading) {
+                    this.loading = false;
+                }
+            });
     }
 
     /**
@@ -141,7 +132,7 @@ export class EditComponent implements OnInit {
      * Marca todos los campos del formulario como touched
      */
     private markFormGroupTouched(formGroup: FormGroup): void {
-        Object.keys(formGroup.controls).forEach(key => {
+        Object.keys(formGroup.controls).forEach((key) => {
             const control = formGroup.get(key);
             control?.markAsTouched();
 

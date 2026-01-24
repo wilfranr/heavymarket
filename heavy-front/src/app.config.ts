@@ -39,9 +39,10 @@ export const appConfig: ApplicationConfig = {
             pedidos: pedidosReducer,
             terceros: tercerosReducer,
             listas: listasReducer,
-            fabricantes: fabricantesReducer
+            fabricantes: fabricantesReducer,
+            sistemas: sistemasReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService

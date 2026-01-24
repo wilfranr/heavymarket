@@ -117,6 +117,7 @@
 - Integración total con NgRx Store
 - Uso del layout Sakai 100%
 
+
 ### Fase 8: Funcionalidades Avanzadas ✅
 
 #### Sistema de Notificaciones ✅

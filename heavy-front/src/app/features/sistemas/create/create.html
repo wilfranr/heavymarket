@@ -1,0 +1,93 @@
+<p-toast />
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Crear Nuevo Sistema</h2>
+                <p-button
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="cancelar()">
+                </p-button>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="sistemaForm" (ngSubmit)="onSubmit()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nombre -->
+                <div class="field">
+                    <label for="nombre" class="block text-sm font-medium mb-2">
+                        Nombre <span class="text-red-500">*</span>
+                    </label>
+                    <input
+                        pInputText
+                        id="nombre"
+                        formControlName="nombre"
+                        placeholder="Nombre del sistema"
+                        class="w-full"
+                        [class.ng-invalid]="sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched" />
+                    @if (sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched) {
+                        <small class="p-error">
+                            @if (sistemaForm.get('nombre')?.errors?.['required']) {
+                                El nombre es requerido
+                            } @else if (sistemaForm.get('nombre')?.errors?.['maxlength']) {
+                                El nombre no puede exceder 255 caracteres
+                            }
+                        </small>
+                    }
+                </div>
+
+                <!-- Imagen -->
+                <div class="field">
+                    <label for="imagen" class="block text-sm font-medium mb-2">
+                        Imagen (URL)
+                    </label>
+                    <input
+                        pInputText
+                        id="imagen"
+                        formControlName="imagen"
+                        placeholder="URL de la imagen"
+                        class="w-full" />
+                </div>
+
+                <!-- Descripción -->
+                <div class="field md:col-span-2">
+                    <label for="descripcion" class="block text-sm font-medium mb-2">
+                        Descripción
+                    </label>
+                    <textarea
+                        pTextarea
+                        id="descripcion"
+                        formControlName="descripcion"
+                        placeholder="Descripción del sistema"
+                        [rows]="4"
+                        class="w-full">
+                    </textarea>
+                </div>
+            </div>
+
+            <p-divider />
+
+            <div class="flex justify-end gap-2 mt-4">
+                <p-button
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="cancelar()"
+                    [disabled]="loading">
+                </p-button>
+                <p-button
+                    label="Crear Sistema"
+                    icon="pi pi-check"
+                    type="submit"
+                    [loading]="loading"
+                    [disabled]="sistemaForm.invalid">
+                </p-button>
+            </div>
+        </form>
+    </p-card>
+</div>

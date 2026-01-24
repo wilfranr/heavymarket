@@ -8,25 +8,22 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
-import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 
-import { createLista } from '../../../store/listas/actions/listas.actions';
-import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
+import { createFabricante } from '../../../store/fabricantes/actions/fabricantes.actions';
+import { CreateFabricanteDto } from '../../../core/models/fabricante.model';
 
 /**
- * Componente de creación de lista
- * Formulario para crear un nuevo catálogo (marca, tipo de máquina, etc.)
+ * Componente de creación de fabricante
  */
 @Component({
-    selector: 'app-lista-create',
+    selector: 'app-fabricante-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule],
     providers: [MessageService],
     templateUrl: './create.html'
-    // styleUrl: './create.scss'
 })
 export class CreateComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -34,17 +31,7 @@ export class CreateComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
 
-    listaForm!: FormGroup;
-
-    tiposOptions = [
-        { label: 'Marca', value: 'Marca' as ListaTipo },
-        { label: 'Tipo de Máquina', value: 'Tipo de Máquina' as ListaTipo },
-        { label: 'Tipo de Artículo', value: 'Tipo de Artículo' as ListaTipo },
-        { label: 'Unidad de Medida', value: 'Unidad de Medida' as ListaTipo },
-        { label: 'Tipo de Medida', value: 'Tipo de Medida' as ListaTipo },
-        { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo }
-    ];
-
+    fabricanteForm!: FormGroup;
     loading = false;
 
     ngOnInit(): void {
@@ -55,13 +42,10 @@ export class CreateComponent implements OnInit {
      * Inicializa el formulario con validaciones
      */
     private initForm(): void {
-        this.listaForm = this.fb.group({
-            tipo: [null, [Validators.required]],
+        this.fabricanteForm = this.fb.group({
             nombre: ['', [Validators.required, Validators.maxLength(255)]],
-            definicion: ['', [Validators.maxLength(1000)]],
-            foto: [null],
-            fotoMedida: [null],
-            sistema_id: [null]
+            descripcion: ['', [Validators.required, Validators.maxLength(500)]],
+            logo: [null]
         });
     }
 
@@ -69,8 +53,8 @@ export class CreateComponent implements OnInit {
      * Maneja el envío del formulario
      */
     onSubmit(): void {
-        if (this.listaForm.invalid) {
-            this.markFormGroupTouched(this.listaForm);
+        if (this.fabricanteForm.invalid) {
+            this.markFormGroupTouched(this.fabricanteForm);
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Validación',
@@ -81,26 +65,23 @@ export class CreateComponent implements OnInit {
 
         this.loading = true;
 
-        const formValue = this.listaForm.value;
-        const data: CreateListaDto = {
-            tipo: formValue.tipo,
+        const formValue = this.fabricanteForm.value;
+        const data: CreateFabricanteDto = {
             nombre: formValue.nombre,
-            definicion: formValue.definicion || undefined,
-            foto: formValue.foto || undefined,
-            fotoMedida: formValue.fotoMedida || undefined,
-            sistema_id: formValue.sistema_id || undefined
+            descripcion: formValue.descripcion,
+            logo: formValue.logo || undefined
         };
 
-        this.store.dispatch(createLista({ data }));
+        this.store.dispatch(createFabricante({ data }));
 
         // Escuchar el resultado de la acción
         this.store
-            .select((state) => (state as any).listas)
-            .subscribe((listasState: any) => {
-                if (!listasState.loading && !listasState.error && this.loading) {
+            .select((state) => (state as any).fabricantes)
+            .subscribe((fabricantesState: any) => {
+                if (!fabricantesState.loading && !fabricantesState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/listas']);
-                } else if (!listasState.loading && listasState.error && this.loading) {
+                    this.router.navigate(['/fabricantes']);
+                } else if (!fabricantesState.loading && fabricantesState.error && this.loading) {
                     this.loading = false;
                 }
             });
@@ -110,7 +91,7 @@ export class CreateComponent implements OnInit {
      * Cancela y regresa a la lista
      */
     cancelar(): void {
-        this.router.navigate(['/listas']);
+        this.router.navigate(['/fabricantes']);
     }
 
     /**

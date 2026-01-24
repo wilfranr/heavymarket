@@ -20,7 +20,9 @@ export const appRoutes: Routes = [
             { path: 'terceros', loadChildren: () => import('./app/features/terceros/terceros.routes').then(m => m.tercerosRoutes) },
             { path: 'cotizaciones', loadChildren: () => import('./app/features/cotizaciones/cotizaciones.routes').then(m => m.cotizacionesRoutes) },
             { path: 'ordenes-compra', loadChildren: () => import('./app/features/ordenes-compra/ordenes-compra.routes').then(m => m.ordenesCompraRoutes) },
-            { path: 'listas', loadChildren: () => import('./app/features/listas/listas.routes').then(m => m.default) }
+            { path: 'listas', loadChildren: () => import('./app/features/listas/listas.routes').then(m => m.default) },
+            { path: 'fabricantes', loadChildren: () => import('./app/features/fabricantes/fabricantes.routes').then(m => m.fabricantesRoutes) },
+            { path: 'sistemas', loadChildren: () => import('./app/features/sistemas/sistemas.routes').then(m => m.sistemasRoutes) }
         ]
     },
     { path: 'landing', component: Landing },

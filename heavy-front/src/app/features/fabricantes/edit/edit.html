@@ -1,0 +1,110 @@
+<p-toast />
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Editar Fabricante</h2>
+                <p-button
+                    label="Cancelar"
+                    icon="pi pi-times"
+                    severity="secondary"
+                    [text]="true"
+                    (onClick)="cancelar()">
+                </p-button>
+            </div>
+        </ng-template>
+
+        @if (fabricante$ | async; as fabricante) {
+            <form [formGroup]="fabricanteForm" (ngSubmit)="onSubmit()">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Nombre -->
+                    <div class="field">
+                        <label for="nombre" class="block text-sm font-medium mb-2">
+                            Nombre <span class="text-red-500">*</span>
+                        </label>
+                        <input
+                            pInputText
+                            id="nombre"
+                            formControlName="nombre"
+                            placeholder="Nombre del fabricante"
+                            class="w-full"
+                            [class.ng-invalid]="fabricanteForm.get('nombre')?.invalid && fabricanteForm.get('nombre')?.touched" />
+                        @if (fabricanteForm.get('nombre')?.invalid && fabricanteForm.get('nombre')?.touched) {
+                            <small class="p-error">
+                                @if (fabricanteForm.get('nombre')?.errors?.['required']) {
+                                    El nombre es requerido
+                                } @else if (fabricanteForm.get('nombre')?.errors?.['maxlength']) {
+                                    El nombre no puede exceder 255 caracteres
+                                }
+                            </small>
+                        }
+                    </div>
+
+                    <!-- Logo -->
+                    <div class="field">
+                        <label for="logo" class="block text-sm font-medium mb-2">
+                            Logo (URL)
+                        </label>
+                        <input
+                            pInputText
+                            id="logo"
+                            formControlName="logo"
+                            placeholder="URL del logo"
+                            class="w-full" />
+                    </div>
+
+                    <!-- Descripción -->
+                    <div class="field md:col-span-2">
+                        <label for="descripcion" class="block text-sm font-medium mb-2">
+                            Descripción <span class="text-red-500">*</span>
+                        </label>
+                        <textarea
+                            pTextarea
+                            id="descripcion"
+                            formControlName="descripcion"
+                            placeholder="Descripción del fabricante"
+                            [rows]="4"
+                            class="w-full"
+                            [class.ng-invalid]="fabricanteForm.get('descripcion')?.invalid && fabricanteForm.get('descripcion')?.touched">
+                        </textarea>
+                        @if (fabricanteForm.get('descripcion')?.invalid && fabricanteForm.get('descripcion')?.touched) {
+                            <small class="p-error">
+                                @if (fabricanteForm.get('descripcion')?.errors?.['required']) {
+                                    La descripción es requerida
+                                } @else if (fabricanteForm.get('descripcion')?.errors?.['maxlength']) {
+                                    La descripción no puede exceder 500 caracteres
+                                }
+                            </small>
+                        }
+                    </div>
+                </div>
+
+                <p-divider />
+
+                <div class="flex justify-end gap-2 mt-4">
+                    <p-button
+                        label="Cancelar"
+                        icon="pi pi-times"
+                        severity="secondary"
+                        [text]="true"
+                        (onClick)="cancelar()"
+                        [disabled]="loading">
+                    </p-button>
+                    <p-button
+                        label="Actualizar Fabricante"
+                        icon="pi pi-check"
+                        type="submit"
+                        [loading]="loading"
+                        [disabled]="fabricanteForm.invalid">
+                    </p-button>
+                </div>
+            </form>
+        } @else {
+            <div class="text-center py-8">
+                <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
+                <p class="text-gray-600 mt-4">Cargando fabricante...</p>
+            </div>
+        }
+    </p-card>
+</div>
