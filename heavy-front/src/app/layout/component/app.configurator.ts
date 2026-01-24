@@ -275,6 +275,23 @@ export class AppConfigurator {
         const colors = ['emerald', 'green', 'lime', 'orange', 'amber', 'yellow', 'teal', 'cyan', 'sky', 'blue', 'indigo', 'violet', 'purple', 'fuchsia', 'pink', 'rose'];
         const palettes: SurfacesType[] = [{ name: 'noir', palette: {} }];
 
+        palettes.push({
+            name: 'heavy',
+            palette: {
+                50: '#fffaf0',
+                100: '#fff3d6',
+                200: '#ffe6a8',
+                300: '#ffd87a',
+                400: '#ffca4d',
+                500: '#fdb831',
+                600: '#e69d1a',
+                700: '#cc830d',
+                800: '#a6670b',
+                900: '#8a530e',
+                950: '#4d2b00'
+            }
+        });
+
         colors.forEach((color) => {
             palettes.push({
                 name: color,
