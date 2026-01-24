@@ -37,6 +37,18 @@ body {
     overflow-x: hidden;
 }
 
+app-navbar,
+app-carousel,
+app-brands-section,
+app-quote-section,
+app-steps-section,
+app-systems-section,
+app-footer-section,
+app-banner {
+    display: block;
+    width: 100%;
+}
+
 /* Frame 56 */
 .page-wrapper::before {
     content: "";
@@ -60,17 +72,16 @@ body {
 .navbar-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     padding: 0px;
     position: absolute;
     width: 100%;
-    height: 134px;
+    height: auto;
     left: 0px;
-    /* top: 52px; */
-    background: #ffffff;
+    background: transparent;
     flex: none;
     flex-grow: 0;
-    z-index: 1;
+    z-index: 10;
 }
 
 /* Content - Contenedor principal del navbar */
@@ -401,6 +412,8 @@ app-banner {
     align-items: center;
     gap: 10px;
     width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
     height: 100%;
 }
 
@@ -748,7 +761,7 @@ app-banner {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 80px 64px;
+    padding: 80px 5%;
     gap: 24px;
     width: 100%;
     height: 736px;
@@ -784,7 +797,7 @@ app-banner {
     align-items: center;
     gap: 24px;
     width: 100%;
-    max-width: 12oopx;
+    max-width: 1312px;
     margin: 0 auto;
 }
 
@@ -795,7 +808,8 @@ app-banner {
     align-items: center;
     padding: 0px;
     gap: 24px;
-    width: 1312px;
+    width: 100%;
+    max-width: 1312px;
     height: 146px;
     flex: none;
     align-self: stretch;
@@ -826,7 +840,7 @@ app-banner {
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    padding: 80px 82px;
+    padding: 80px 5%;
     gap: 24px;
     width: 100%;
     background: #000000;
@@ -1141,7 +1155,7 @@ app-banner {
     flex-direction: row;
     align-items: center;
     justify-content: center;
-    padding: 200px 286px;
+    padding: 100px 5%;
     gap: 80px;
     width: 100%;
     max-width: 100%;
@@ -1363,10 +1377,11 @@ app-banner {
 .footer-top-wrapper {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
+    align-items: center;
     padding: 52px 54px 0px;
-    width: 1440px;
-    height: 270px;
+    width: 100%;
+    max-width: 1440px;
+    height: auto;
     flex: none;
     flex-grow: 0;
 }
@@ -1377,11 +1392,12 @@ app-banner {
     align-items: center;
     padding: 0px;
     gap: 46px;
-    width: 1332px;
-    height: 282px;
+    width: 100%;
+    max-width: 1332px;
+    height: auto;
     flex: none;
     align-self: stretch;
-    flex-grow: 0;
+    flex-grow: 1;
 }
 
 .footer-top-content {
@@ -1390,11 +1406,12 @@ app-banner {
     align-items: center;
     padding: 0px;
     gap: 46px;
-    width: 1332px;
-    height: 282px;
+    width: 100%;
+    max-width: 1332px;
+    height: auto;
     flex: none;
     align-self: stretch;
-    flex-grow: 0;
+    flex-grow: 1;
 }
 
 .footer-subscription {
@@ -1897,15 +1914,11 @@ app-banner {
     display: none;
     flex-direction: column;
     align-items: center;
-    padding-top: 134px;
-    margin-top: -134px;
-    position: absolute;
+    position: fixed;
     width: 100%;
-    max-width: 1440px;
-    height: 477px;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 0px;
+    height: auto;
+    left: 0;
+    top: 72px;
     background: transparent;
     z-index: 1000;
     pointer-events: none;
@@ -1916,8 +1929,8 @@ app-banner {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0px 12px 0px 0px;
-    width: 1440px;
+    padding: 0px;
+    width: 100%;
     height: 343px;
     background: #ffffff;
     flex: none;
@@ -1925,7 +1938,6 @@ app-banner {
     flex-grow: 0;
     pointer-events: all;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-top: 134px;
 }
 
 /* Mostrar el menú cuando tiene la clase active (hover) */

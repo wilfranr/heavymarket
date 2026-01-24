@@ -475,6 +475,73 @@
 
                 <p-divider />
 
+                <!-- Gestión de Artículos -->
+                <div class="mt-6">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-semibold">
+                            Artículos del Pedido
+                            <span class="text-sm text-gray-500">({{ articulosPedido.length }})</span>
+                        </h3>
+                        <p-button
+                            [label]="mostrarArticulos ? 'Ocultar Artículos' : 'Mostrar Artículos'"
+                            [icon]="mostrarArticulos ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                            severity="info"
+                            size="small"
+                            [text]="true"
+                            (onClick)="mostrarArticulos = !mostrarArticulos">
+                        </p-button>
+                    </div>
+
+                    @if (mostrarArticulos) {
+                        @if (articulosPedido.length === 0) {
+                            <div class="text-center py-8 bg-gray-50 rounded">
+                                <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+                                <p class="text-gray-600">No hay artículos agregados</p>
+                            </div>
+                        } @else {
+                            <div class="space-y-3">
+                                @for (articulo of articulosPedido; track articulo.id) {
+                                    <div class="p-3 bg-gray-50 rounded border">
+                                        <div class="flex justify-between items-start">
+                                            <div class="flex-1">
+                                                <p class="font-semibold">{{ articulo.articulo?.descripcionEspecifica || 'Artículo' }}</p>
+                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
+                                                    <div>
+                                                        <span class="text-gray-600">Cantidad:</span>
+                                                        <span class="font-medium ml-2">{{ articulo.cantidad }}</span>
+                                                    </div>
+                                                    @if (articulo.sistema) {
+                                                        <div>
+                                                            <span class="text-gray-600">Sistema:</span>
+                                                            <span class="font-medium ml-2">{{ articulo.sistema.nombre }}</span>
+                                                        </div>
+                                                    }
+                                                    @if (articulo.comentario) {
+                                                        <div class="col-span-1 md:col-span-2">
+                                                            <span class="text-gray-600">Comentario:</span>
+                                                            <p class="text-sm mt-1">{{ articulo.comentario }}</p>
+                                                        </div>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <p-button
+                                                icon="pi pi-trash"
+                                                severity="danger"
+                                                [text]="true"
+                                                [rounded]="true"
+                                                size="small"
+                                                (onClick)="eliminarArticulo(articulo.id)">
+                                            </p-button>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                    }
+                </div>
+
+                <p-divider />
+
                 <!-- Botones -->
                 <div class="flex justify-end gap-2 mt-4">
                     <p-button
