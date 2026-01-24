@@ -96,6 +96,7 @@ import { EmpresasEffects } from './app/store/empresas/effects/empresas.effects';
 import { CategoriasEffects } from './app/store/categorias/effects/categorias.effects';
 import { ContactosEffects } from './app/store/contactos/effects/contactos.effects';
 import { DireccionesEffects } from './app/store/direcciones/effects/direcciones.effects';
+import { TransportadorasEffects } from './app/store/transportadoras/effects/transportadoras.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
