@@ -16,10 +16,12 @@ import { authReducer } from './app/store/auth/reducers/auth.reducer';
 import { pedidosReducer } from './app/store/pedidos/reducers/pedidos.reducer';
 import { tercerosReducer } from './app/store/terceros/reducers/terceros.reducer';
 import { listasReducer } from './app/store/listas/reducers/listas.reducer';
+import { fabricantesReducer } from './app/store/fabricantes/reducers/fabricantes.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
 import { ListasEffects } from './app/store/listas/effects/listas.effects';
+import { FabricantesEffects } from './app/store/fabricantes/effects/fabricantes.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -36,9 +38,10 @@ export const appConfig: ApplicationConfig = {
             auth: authReducer,
             pedidos: pedidosReducer,
             terceros: tercerosReducer,
-            listas: listasReducer
+            listas: listasReducer,
+            fabricantes: fabricantesReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
