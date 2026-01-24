@@ -26,6 +26,7 @@ export type ListaTipo =
   | 'Marca'
   | 'Tipo de Máquina'
   | 'Tipo de Artículo'
+  | 'Pieza Estandar'
   | 'Unidad de Medida'
   | 'Tipo de Medida'
   | 'Nombre de Medida';
