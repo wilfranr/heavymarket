@@ -116,6 +116,21 @@ export class EditComponent implements OnInit {
         { label: 'Cancelado', value: 'Cancelado' as PedidoEstado }
     ];
 
+    // Estado actual del pedido (para validar transiciones)
+    estadoActual: PedidoEstado = 'Nuevo';
+    
+    // Mapa de transiciones válidas
+    transicionesValidas: Record<PedidoEstado, PedidoEstado[]> = {
+        'Nuevo': ['Enviado', 'En_Costeo', 'Cancelado'],
+        'Enviado': ['En_Costeo', 'Cancelado'],
+        'En_Costeo': ['Cotizado', 'Rechazado', 'Cancelado'],
+        'Cotizado': ['Aprobado', 'Rechazado', 'Cancelado'],
+        'Aprobado': ['Entregado', 'Cancelado'],
+        'Entregado': [],
+        'Rechazado': [],
+        'Cancelado': []
+    };
+
     submitting = false;
 
     ngOnInit(): void {
@@ -136,7 +151,8 @@ export class EditComponent implements OnInit {
             maquina_id: [null],
             fabricante_id: [null],
             contacto_id: [null],
-            referencias: this.fb.array([])
+            referencias: this.fb.array([]),
+            motivo_rechazo: ['']
         });
     }
 
@@ -284,7 +300,7 @@ export class EditComponent implements OnInit {
                 summary: 'Error',
                 detail: 'ID de pedido inválido'
             });
-            this.router.navigate(['/pedidos']);
+            this.router.navigate(['/app/pedidos']);
         }
     }
 
@@ -389,6 +405,83 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Valida si una transición de estado es válida
+     */
+    validarTransicionEstado(estadoAnterior: PedidoEstado, estadoNuevo: PedidoEstado): boolean {
+        if (estadoAnterior === estadoNuevo) {
+            return true; // No hay cambio
+        }
+
+        const transicionesPermitidas = this.transicionesValidas[estadoAnterior] || [];
+        return transicionesPermitidas.includes(estadoNuevo);
+    }
+
+    /**
+     * Obtiene los estados disponibles según el estado actual
+     */
+    getEstadosDisponibles(): Array<{label: string; value: PedidoEstado}> {
+        const transicionesPermitidas = this.transicionesValidas[this.estadoActual] || [];
+        
+        // Incluir el estado actual y las transiciones permitidas
+        const estadosDisponibles = [
+            { label: this.estadosOptions.find(e => e.value === this.estadoActual)?.label || this.estadoActual, value: this.estadoActual },
+            ...transicionesPermitidas.map(e => this.estadosOptions.find(o => o.value === e)).filter(Boolean) as Array<{label: string; value: PedidoEstado}>
+        ];
+
+        return estadosDisponibles;
+    }
+
+    /**
+     * Maneja el cambio de estado con validación
+     */
+    onEstadoChange(): void {
+        const nuevoEstado = this.pedidoForm.get('estado')?.value;
+        
+        if (!this.validarTransicionEstado(this.estadoActual, nuevoEstado)) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Transición inválida',
+                detail: `No se puede cambiar de "${this.estadoActual}" a "${nuevoEstado}". Transiciones válidas: ${this.transicionesValidas[this.estadoActual]?.join(', ') || 'ninguna'}`
+            });
+            
+            // Revertir al estado anterior
+            this.pedidoForm.patchValue({ estado: this.estadoActual });
+            return;
+        }
+
+        // Si se rechaza, requerir motivo
+        if (nuevoEstado === 'Rechazado') {
+            const motivoControl = this.pedidoForm.get('motivo_rechazo');
+            if (motivoControl) {
+                motivoControl.setValidators([Validators.required, Validators.minLength(10)]);
+                motivoControl.updateValueAndValidity();
+            }
+        } else {
+            // Si no es rechazado, limpiar validación de motivo
+            const motivoControl = this.pedidoForm.get('motivo_rechazo');
+            if (motivoControl) {
+                motivoControl.clearValidators();
+                motivoControl.updateValueAndValidity();
+            }
+        }
+
+        // Validaciones adicionales según el estado
+        if (nuevoEstado === 'En_Costeo' || nuevoEstado === 'Cotizado') {
+            // Verificar que haya referencias con proveedores
+            const tieneProveedores = Array.from(this.proveedoresPorReferencia.values())
+                .some(proveedores => proveedores.length > 0);
+            
+            if (!tieneProveedores) {
+                this.messageService.add({
+                    severity: 'warn',
+                    summary: 'Advertencia',
+                    detail: 'Se recomienda tener al menos una referencia con proveedores antes de cambiar a este estado'
+                });
+            }
+        }
+    }
+
+    /**
      * Envía el formulario para actualizar el pedido
      */
     onSubmit(): void {
@@ -404,9 +497,21 @@ export class EditComponent implements OnInit {
             return;
         }
 
+        const formValue = this.pedidoForm.value;
+        const nuevoEstado = formValue.estado;
+
+        // Validar transición antes de enviar
+        if (!this.validarTransicionEstado(this.estadoActual, nuevoEstado)) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Transición inválida',
+                detail: `No se puede cambiar de "${this.estadoActual}" a "${nuevoEstado}"`
+            });
+            return;
+        }
+
         this.submitting = true;
         
-        const formValue = this.pedidoForm.value;
         const pedidoData: UpdatePedidoDto = {
             tercero_id: formValue.tercero_id,
             direccion: formValue.direccion || undefined,
@@ -414,7 +519,8 @@ export class EditComponent implements OnInit {
             maquina_id: formValue.maquina_id || undefined,
             fabricante_id: formValue.fabricante_id || undefined,
             contacto_id: formValue.contacto_id || undefined,
-            estado: formValue.estado
+            estado: nuevoEstado,
+            motivo_rechazo: nuevoEstado === 'Rechazado' ? formValue.motivo_rechazo : undefined
         };
         
         this.store.dispatch(updatePedido({ 
@@ -426,13 +532,14 @@ export class EditComponent implements OnInit {
         this.store.select((state: any) => state.pedidos).subscribe((pedidosState: any) => {
             if (!pedidosState.loading && !pedidosState.error && this.submitting) {
                 this.submitting = false;
+                this.estadoActual = nuevoEstado; // Actualizar estado actual
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Éxito',
                     detail: 'Pedido actualizado correctamente'
                 });
                 setTimeout(() => {
-                    this.router.navigate(['/pedidos', this.pedidoId()]);
+                    this.router.navigate(['/app/pedidos', this.pedidoId()]);
                 }, 1500);
             } else if (!pedidosState.loading && pedidosState.error && this.submitting) {
                 this.submitting = false;

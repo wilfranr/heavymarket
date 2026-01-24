@@ -457,7 +457,7 @@ export class CreateComponent implements OnInit {
                     detail: 'Pedido creado correctamente'
                 });
                 setTimeout(() => {
-                    this.router.navigate(['/pedidos']);
+                    this.router.navigate(['/app/pedidos']);
                 }, 1500);
             } else if (!pedidosState.loading && pedidosState.error && this.loading) {
                 this.loading = false;
@@ -469,7 +469,7 @@ export class CreateComponent implements OnInit {
      * Cancela y vuelve a la lista
      */
     cancelar(): void {
-        this.router.navigate(['/pedidos']);
+        this.router.navigate(['/app/pedidos']);
     }
 
     /**

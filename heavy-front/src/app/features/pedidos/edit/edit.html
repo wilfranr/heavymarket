@@ -57,15 +57,42 @@
                         <p-select
                             id="estado"
                             formControlName="estado"
-                            [options]="estadosOptions"
+                            [options]="getEstadosDisponibles()"
                             placeholder="Seleccione un estado"
                             styleClass="w-full"
+                            (ngModelChange)="onEstadoChange()"
                             [class.ng-invalid]="isFieldInvalid('estado')">
                         </p-select>
                         @if (isFieldInvalid('estado')) {
                             <small class="text-red-500">El estado es requerido</small>
                         }
+                        <small class="text-gray-500 text-xs mt-1 block">
+                            Estado actual: <strong>{{ estadoActual }}</strong>
+                        </small>
                     </div>
+
+                    <!-- Motivo de Rechazo (solo si el estado es Rechazado) -->
+                    @if (pedidoForm.get('estado')?.value === 'Rechazado') {
+                        <div class="col-span-1 md:col-span-2">
+                            <label for="motivo_rechazo" class="block mb-2 font-semibold">
+                                Motivo de Rechazo <span class="text-red-500">*</span>
+                            </label>
+                            <textarea
+                                id="motivo_rechazo"
+                                pTextarea
+                                formControlName="motivo_rechazo"
+                                placeholder="Ingrese el motivo del rechazo (mínimo 10 caracteres)"
+                                rows="3"
+                                class="w-full"
+                                [class.ng-invalid]="isFieldInvalid('motivo_rechazo')">
+                            </textarea>
+                            @if (isFieldInvalid('motivo_rechazo')) {
+                                <small class="text-red-500">
+                                    El motivo de rechazo es requerido y debe tener al menos 10 caracteres
+                                </small>
+                            }
+                        </div>
+                    }
 
                     <!-- Máquina -->
                     <div>

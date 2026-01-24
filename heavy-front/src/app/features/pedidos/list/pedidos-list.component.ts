@@ -333,15 +333,15 @@ export class PedidosListComponent implements OnInit {
   }
 
   onCreatePedido() {
-    this.router.navigate(['/pedidos/create']);
+    this.router.navigate(['/app/pedidos/create']);
   }
 
   onViewPedido(id: number) {
-    this.router.navigate(['/pedidos', id]);
+    this.router.navigate(['/app/pedidos', id]);
   }
 
   onEditPedido(id: number) {
-    this.router.navigate(['/pedidos', id, 'edit']);
+    this.router.navigate(['/app/pedidos', id, 'edit']);
   }
 
   onDeletePedido(pedido: Pedido) {
