@@ -21,6 +21,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
+import { CurrencyPipe } from '@angular/common';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -696,5 +697,27 @@ export class EditComponent implements OnInit {
         return this.proveedoresComparacion.reduce((mejor, actual) => {
             return actual.dias_entrega < mejor.dias_entrega ? actual : mejor;
         });
+    }
+
+    /**
+     * Elimina un proveedor desde el modal de comparación
+     */
+    eliminarProveedorDesdeComparacion(proveedorId: number): void {
+        if (!this.referenciaComparacion?.referenciaIndex) {
+            return;
+        }
+
+        this.eliminarProveedor(this.referenciaComparacion.referenciaIndex, proveedorId);
+        
+        // Actualizar lista de comparación
+        const index = this.proveedoresComparacion.findIndex(p => p.id === proveedorId);
+        if (index > -1) {
+            this.proveedoresComparacion.splice(index, 1);
+        }
+
+        // Si quedan menos de 2 proveedores, cerrar el modal
+        if (this.proveedoresComparacion.length < 2) {
+            this.cerrarComparacion();
+        }
     }
 }

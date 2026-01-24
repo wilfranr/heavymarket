@@ -413,14 +413,14 @@
                                                                             <span class="text-gray-600">Días entrega:</span>
                                                                             <span class="font-medium">{{ proveedor.dias_entrega }}</span>
                                                                         </div>
-                                                                        <div>
-                                                                            <span class="text-gray-600">Costo unidad:</span>
-                                                                            <span class="font-medium">${{ proveedor.costo_unidad | number:'1.0-0' }}</span>
-                                                                        </div>
-                                                                        <div>
-                                                                            <span class="text-gray-600">Valor total:</span>
-                                                                            <span class="font-medium text-green-600">${{ proveedor.valor_total | number:'1.0-0' }}</span>
-                                                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Costo unidad:</span>
+                                            <span class="font-medium">{{ proveedor.costo_unidad | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                                        </div>
+                                        <div>
+                                            <span class="text-gray-600">Valor total:</span>
+                                            <span class="font-medium text-green-600">{{ proveedor.valor_total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                                        </div>
                                                                     </div>
                                                                 </div>
                                                                 <p-button
@@ -529,19 +529,19 @@
                         </div>
                     </td>
                     <td>
-                        <span class="font-medium">${{ proveedor.costo_unidad | number:'1.0-2' }}</span>
+                        <span class="font-medium">{{ proveedor.costo_unidad | currency:'COP':'symbol-narrow':'1.0-2' }}</span>
                     </td>
                     <td>
                         <span>{{ proveedor.utilidad }}%</span>
                     </td>
                     <td>
-                        <span class="font-medium">${{ proveedor.valor_unidad | number:'1.0-0' }}</span>
+                        <span class="font-medium">{{ proveedor.valor_unidad | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
                     </td>
                     <td>
                         <div class="flex items-center gap-2">
                             <span class="font-bold text-lg" 
                                   [class.text-green-600]="getMejorProveedor()?.id === proveedor.id">
-                                ${{ proveedor.valor_total | number:'1.0-0' }}
+                                {{ proveedor.valor_total | currency:'COP':'symbol-narrow':'1.0-0' }}
                             </span>
                             @if (getMejorProveedor()?.id === proveedor.id) {
                                 <i class="pi pi-check-circle text-green-600 text-xl" pTooltip="Mejor precio"></i>
@@ -555,7 +555,7 @@
                             [text]="true"
                             [rounded]="true"
                             size="small"
-                            (onClick)="eliminarProveedor(referenciaComparacion?.referenciaIndex, proveedor.id)"
+                            (onClick)="eliminarProveedorDesdeComparacion(proveedor.id)"
                             pTooltip="Eliminar proveedor">
                         </p-button>
                     </td>
