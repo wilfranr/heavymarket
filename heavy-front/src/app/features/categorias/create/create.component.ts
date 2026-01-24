@@ -27,6 +27,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
+    MultiSelectModule,
     ToastModule,
   ],
   providers: [MessageService],
@@ -53,15 +54,14 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
           <div class="col-12">
             <label for="terceros" class="block mb-2">Proveedores (opcional)</label>
-            <p-select
+            <p-multiSelect
               formControlName="terceros"
               [options]="proveedores"
               placeholder="Seleccione proveedores (opcional)"
               [filter]="true"
-              [multiple]="true"
               [showClear]="true"
               styleClass="w-full">
-            </p-select>
+            </p-multiSelect>
           </div>
         </div>
 

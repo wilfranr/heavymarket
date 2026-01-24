@@ -7,6 +7,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { updateCategoria, loadCategoriaById } from '../../../store/categorias/actions/categorias.actions';
@@ -28,6 +29,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
+    MultiSelectModule,
     ToastModule,
   ],
   providers: [MessageService],
@@ -55,15 +57,14 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
             <div class="col-12">
               <label for="terceros" class="block mb-2">Proveedores</label>
-            <p-select
+            <p-multiSelect
               formControlName="terceros"
               [options]="proveedores"
               placeholder="Seleccione proveedores"
               [filter]="true"
-              multiple="true"
               [showClear]="true"
               styleClass="w-full">
-            </p-select>
+            </p-multiSelect>
             </div>
           </div>
 
