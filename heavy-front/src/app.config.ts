@@ -88,6 +88,7 @@ import { ArticulosEffects } from './app/store/articulos/effects/articulos.effect
 import { CotizacionesEffects } from './app/store/cotizaciones/effects/cotizaciones.effects';
 import { OrdenesCompraEffects } from './app/store/ordenes-compra/effects/ordenes-compra.effects';
 import { OrdenesTrabajoEffects } from './app/store/ordenes-trabajo/effects/ordenes-trabajo.effects';
+import { EmpresasEffects } from './app/store/empresas/effects/empresas.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
