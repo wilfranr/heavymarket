@@ -269,7 +269,13 @@
   - Rutas configuradas ✅
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
-- [ ] Órdenes de Compra (completo)
+- [x] Órdenes de Compra (completo) ✅
+  - Backend: Modelo, Controller, Resources, FormRequest completos ✅
+  - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
+  - Frontend: Componentes list, create, edit y detail completos ✅
+  - Rutas configuradas ✅
+  - Integración completa con servicios y NgRx ✅
+  - Módulo 100% funcional y compilando sin errores ✅
 - [ ] Órdenes de Trabajo (completo)
 - ✅ Listas (completo)
 
