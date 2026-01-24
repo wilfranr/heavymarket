@@ -26,7 +26,7 @@ import { OrdenCompra } from '../../../core/models/orden-compra.model';
     TagModule,
     DividerModule,
     TableModule,
-    TooltipModule,
+    Tooltip,
   ],
   template: `
     <div class="card">

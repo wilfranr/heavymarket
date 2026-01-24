@@ -23,7 +23,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
                 <i class="pi pi-bars"></i>
             </button>
             <a class="layout-topbar-logo" routerLink="/app">
-                <img src="assets/images/logo.svg" alt="CYH Heavy Market" style="height: 35px; width: auto;" />
+                <img [src]="layoutService.isDarkTheme() ? 'assets/images/logo.svg' : 'assets/images/logo-black.svg'" alt="CYH Heavy Market" style="height: 35px; width: auto;" />
             </a>
         </div>
 
