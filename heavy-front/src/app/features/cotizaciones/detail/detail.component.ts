@@ -134,21 +134,21 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
                         {{ item.pedido_referencia_proveedor?.referencia?.referencia || 'N/A' }}
                       </td>
                       <td>
-                        @if (item.pedido_referencia_proveedor?.cantidad) {
+                        @if (item.pedido_referencia_proveedor?.cantidad !== undefined && item.pedido_referencia_proveedor?.cantidad !== null) {
                           {{ item.pedido_referencia_proveedor.cantidad }}
                         } @else {
                           N/A
                         }
                       </td>
                       <td>
-                        @if (item.pedido_referencia_proveedor?.valor_unidad) {
+                        @if (item.pedido_referencia_proveedor?.valor_unidad !== undefined && item.pedido_referencia_proveedor?.valor_unidad !== null) {
                           {{ item.pedido_referencia_proveedor.valor_unidad | currency:'COP':'symbol':'1.0-0' }}
                         } @else {
                           N/A
                         }
                       </td>
                       <td>
-                        @if (item.pedido_referencia_proveedor?.valor_total) {
+                        @if (item.pedido_referencia_proveedor?.valor_total !== undefined && item.pedido_referencia_proveedor?.valor_total !== null) {
                           {{ item.pedido_referencia_proveedor.valor_total | currency:'COP':'symbol':'1.0-0' }}
                         } @else {
                           N/A
