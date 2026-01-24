@@ -282,13 +282,25 @@
                                                         ({{ getProveedoresReferencia($any(referencia).controls['id'].value).length }})
                                                     </span>
                                                 </h4>
-                                                <p-button
-                                                    [label]="referenciaIndexParaProveedor === $index ? 'Cancelar' : 'Agregar Proveedor'"
-                                                    [icon]="referenciaIndexParaProveedor === $index ? 'pi pi-times' : 'pi pi-plus'"
-                                                    [severity]="referenciaIndexParaProveedor === $index ? 'secondary' : 'success'"
-                                                    size="small"
-                                                    (onClick)="toggleReferenciaExpandida($index)">
-                                                </p-button>
+                                                <div class="flex gap-2">
+                                                    @if (getProveedoresReferencia($any(referencia).controls['id'].value).length > 1) {
+                                                        <p-button
+                                                            label="Comparar Proveedores"
+                                                            icon="pi pi-chart-bar"
+                                                            severity="info"
+                                                            size="small"
+                                                            [text]="true"
+                                                            (onClick)="abrirComparacionProveedores($index)">
+                                                        </p-button>
+                                                    }
+                                                    <p-button
+                                                        [label]="referenciaIndexParaProveedor === $index ? 'Cancelar' : 'Agregar Proveedor'"
+                                                        [icon]="referenciaIndexParaProveedor === $index ? 'pi pi-times' : 'pi pi-plus'"
+                                                        [severity]="referenciaIndexParaProveedor === $index ? 'secondary' : 'success'"
+                                                        size="small"
+                                                        (onClick)="toggleReferenciaExpandida($index)">
+                                                    </p-button>
+                                                </div>
                                             </div>
 
                                             <!-- Formulario para nuevo proveedor -->
@@ -457,3 +469,111 @@
         </p-card>
     }
 </div>
+
+<!-- Modal de Comparación de Proveedores -->
+<p-dialog
+    [(visible)]="mostrarComparacion"
+    [modal]="true"
+    [style]="{ width: '90vw', maxWidth: '1200px' }"
+    [draggable]="false"
+    [resizable]="false"
+    header="Comparación de Proveedores"
+    (onHide)="cerrarComparacion()">
+    
+    @if (proveedoresComparacion.length > 0) {
+        <div class="mb-4">
+            <p class="text-sm text-gray-600">
+                <strong>Cantidad:</strong> {{ referenciaComparacion?.cantidad || 1 }} unidades
+            </p>
+        </div>
+
+        <p-table [value]="proveedoresComparacion" styleClass="p-datatable-sm">
+            <ng-template pTemplate="header">
+                <tr>
+                    <th>Proveedor</th>
+                    <th>Ubicación</th>
+                    <th>Días Entrega</th>
+                    <th>Costo Unidad</th>
+                    <th>Utilidad %</th>
+                    <th>Valor Unidad</th>
+                    <th>Valor Total</th>
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+            
+            <ng-template pTemplate="body" let-proveedor>
+                <tr [class.bg-green-50]="getMejorProveedor()?.id === proveedor.id"
+                    [class.bg-blue-50]="getMejorTiempoEntrega()?.id === proveedor.id && getMejorProveedor()?.id !== proveedor.id">
+                    <td>
+                        <div class="font-semibold">
+                            {{ proveedor.tercero?.razon_social || 'Proveedor' }}
+                        </div>
+                        @if (proveedor.marca) {
+                            <div class="text-sm text-gray-600">
+                                Marca: {{ proveedor.marca?.nombre || 'N/A' }}
+                            </div>
+                        }
+                    </td>
+                    <td>
+                        <p-tag 
+                            [value]="proveedor.ubicacion" 
+                            [severity]="proveedor.ubicacion === 'Nacional' ? 'success' : 'info'">
+                        </p-tag>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <span>{{ proveedor.dias_entrega }}</span>
+                            @if (getMejorTiempoEntrega()?.id === proveedor.id) {
+                                <i class="pi pi-star-fill text-yellow-500" pTooltip="Mejor tiempo de entrega"></i>
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <span class="font-medium">${{ proveedor.costo_unidad | number:'1.0-2' }}</span>
+                    </td>
+                    <td>
+                        <span>{{ proveedor.utilidad }}%</span>
+                    </td>
+                    <td>
+                        <span class="font-medium">${{ proveedor.valor_unidad | number:'1.0-0' }}</span>
+                    </td>
+                    <td>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-lg" 
+                                  [class.text-green-600]="getMejorProveedor()?.id === proveedor.id">
+                                ${{ proveedor.valor_total | number:'1.0-0' }}
+                            </span>
+                            @if (getMejorProveedor()?.id === proveedor.id) {
+                                <i class="pi pi-check-circle text-green-600 text-xl" pTooltip="Mejor precio"></i>
+                            }
+                        </div>
+                    </td>
+                    <td>
+                        <p-button
+                            icon="pi pi-trash"
+                            severity="danger"
+                            [text]="true"
+                            [rounded]="true"
+                            size="small"
+                            (onClick)="eliminarProveedor(referenciaComparacion?.referenciaIndex, proveedor.id)"
+                            pTooltip="Eliminar proveedor">
+                        </p-button>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+
+        <div class="mt-4 p-3 bg-gray-50 rounded">
+            <div class="flex gap-4 text-sm">
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-green-50 border border-green-300"></div>
+                    <span>Mejor precio</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-4 h-4 bg-blue-50 border border-blue-300"></div>
+                    <span>Mejor tiempo de entrega</span>
+                </div>
+            </div>
+        </div>
+    }
+</p-dialog>

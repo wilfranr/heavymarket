@@ -19,6 +19,8 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -96,6 +98,11 @@ export class EditComponent implements OnInit {
     // Formulario para nuevo proveedor
     nuevoProveedorForm: FormGroup | null = null;
     referenciaIndexParaProveedor: number | null = null;
+    
+    // Modal de comparación de proveedores
+    mostrarComparacion = false;
+    proveedoresComparacion: PedidoReferenciaProveedor[] = [];
+    referenciaComparacion: any = null;
     
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
@@ -626,6 +633,68 @@ export class EditComponent implements OnInit {
                     }
                 });
             }
+        });
+    }
+
+    /**
+     * Abre el modal de comparación de proveedores
+     */
+    abrirComparacionProveedores(referenciaIndex: number): void {
+        const referenciaControl = this.referenciasFormArray.at(referenciaIndex);
+        const referenciaId = referenciaControl.get('id')?.value;
+
+        if (!referenciaId) {
+            return;
+        }
+
+        const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
+        
+        if (proveedores.length < 2) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Advertencia',
+                detail: 'Se necesitan al menos 2 proveedores para comparar'
+            });
+            return;
+        }
+
+        this.proveedoresComparacion = proveedores;
+        this.referenciaComparacion = {
+            referencia: referenciaControl.get('referencia_id')?.value,
+            cantidad: referenciaControl.get('cantidad')?.value,
+            referenciaIndex: referenciaIndex
+        };
+        this.mostrarComparacion = true;
+    }
+
+    /**
+     * Cierra el modal de comparación
+     */
+    cerrarComparacion(): void {
+        this.mostrarComparacion = false;
+        this.proveedoresComparacion = [];
+        this.referenciaComparacion = null;
+    }
+
+    /**
+     * Obtiene el proveedor con mejor precio
+     */
+    getMejorProveedor(): PedidoReferenciaProveedor | null {
+        if (this.proveedoresComparacion.length === 0) return null;
+        
+        return this.proveedoresComparacion.reduce((mejor, actual) => {
+            return actual.valor_total < mejor.valor_total ? actual : mejor;
+        });
+    }
+
+    /**
+     * Obtiene el proveedor con mejor tiempo de entrega
+     */
+    getMejorTiempoEntrega(): PedidoReferenciaProveedor | null {
+        if (this.proveedoresComparacion.length === 0) return null;
+        
+        return this.proveedoresComparacion.reduce((mejor, actual) => {
+            return actual.dias_entrega < mejor.dias_entrega ? actual : mejor;
         });
     }
 }

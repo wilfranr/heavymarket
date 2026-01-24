@@ -29,26 +29,26 @@ export class AppMenu {
             {
                 label: 'Ventas',
                 items: [
-                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/pedidos'] },
-                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/cotizaciones'] },
-                    { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/terceros'] }
+                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
+                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
+                    { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] }
                 ]
             },
             {
                 label: 'Compras',
                 items: [
-                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/ordenes-compra'] }
+                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }
                 ]
             },
             {
                 label: 'Catálogos',
                 items: [
-                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/listas'] },
-                    { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/fabricantes'] },
-                    { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/sistemas'] },
-                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/referencias'] },
-                    { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/maquinas'] },
-                    { label: 'Artículos', icon: 'pi pi-fw pi-cube', routerLink: ['/articulos'] }
+                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] },
+                    { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/app/fabricantes'] },
+                    { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
+                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/app/referencias'] },
+                    { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
+                    { label: 'Artículos', icon: 'pi pi-fw pi-cube', routerLink: ['/app/articulos'] }
                 ]
             },
             {
@@ -57,9 +57,9 @@ export class AppMenu {
             {
                 label: 'Componentes UI (Demo)',
                 items: [
-                    { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/uikit/formlayout'] },
-                    { label: 'Table', icon: 'pi pi-fw pi-table', routerLink: ['/uikit/table'] },
-                    { label: 'Charts', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/uikit/charts'] }
+                    { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/uikit/formlayout'] },
+                    { label: 'Table', icon: 'pi pi-fw pi-table', routerLink: ['/app/uikit/table'] },
+                    { label: 'Charts', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/app/uikit/charts'] }
                 ]
             }
         ];
