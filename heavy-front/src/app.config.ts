@@ -81,6 +81,7 @@ import { SistemasEffects } from './app/store/sistemas/effects/sistemas.effects';
 import { ReferenciasEffects } from './app/store/referencias/effects/referencias.effects';
 import { MaquinasEffects } from './app/store/maquinas/effects/maquinas.effects';
 import { ArticulosEffects } from './app/store/articulos/effects/articulos.effects';
+import { CotizacionesEffects } from './app/store/cotizaciones/effects/cotizaciones.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -102,9 +103,10 @@ export const appConfig: ApplicationConfig = {
             sistemas: sistemasReducer,
             referencias: referenciasReducer,
             maquinas: maquinasReducer,
-            articulos: articulosReducer
+            articulos: articulosReducer,
+            cotizaciones: cotizacionesReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
