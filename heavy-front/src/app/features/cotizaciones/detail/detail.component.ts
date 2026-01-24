@@ -110,10 +110,10 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
           </div>
 
           <!-- Referencias y Proveedores -->
-          @if (cotizacion()?.referencias_proveedores && cotizacion()!.referencias_proveedores.length > 0) {
+          @if (cotizacion()?.referencias_proveedores && cotizacion()!.referencias_proveedores!.length > 0) {
             <div class="col-12">
               <p-card header="Referencias y Proveedores">
-                <p-table [value]="cotizacion()!.referencias_proveedores" styleClass="p-datatable-sm">
+                <p-table [value]="cotizacion()!.referencias_proveedores!" styleClass="p-datatable-sm">
                   <ng-template pTemplate="header">
                     <tr>
                       <th>ID</th>
