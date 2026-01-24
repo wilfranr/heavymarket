@@ -26,12 +26,58 @@ export interface Pedido {
   maquina?: any;
   fabricante?: any;
   contacto?: any;
-  referencias?: any[];
+  referencias?: PedidoReferencia[];
   articulos?: any[];
   
   // Contadores
   total_referencias?: number;
   total_articulos?: number;
+}
+
+/**
+ * Modelo de PedidoReferencia (relación entre Pedido y Referencia)
+ */
+export interface PedidoReferencia {
+  id: number;
+  pedido_id: number;
+  referencia_id: number;
+  sistema_id: number | null;
+  marca_id: number | null;
+  definicion: string | null;
+  cantidad: number;
+  comentario: string | null;
+  imagen: string | null;
+  mostrar_referencia: boolean;
+  estado: boolean;
+  
+  // Relaciones
+  referencia?: any;
+  sistema?: any;
+  marca?: any;
+  proveedores?: PedidoReferenciaProveedor[];
+}
+
+/**
+ * Modelo de PedidoReferenciaProveedor (proveedores por referencia)
+ */
+export interface PedidoReferenciaProveedor {
+  id: number;
+  pedido_referencia_id: number;
+  referencia_id: number;
+  tercero_id: number;
+  marca_id: number | null;
+  dias_entrega: number;
+  costo_unidad: number;
+  utilidad: number;
+  valor_unidad: number;
+  valor_total: number;
+  ubicacion: 'Nacional' | 'Internacional';
+  estado: boolean;
+  cantidad: number;
+  
+  // Relaciones
+  tercero?: any;
+  marca?: any;
 }
 
 /**
@@ -58,16 +104,37 @@ export interface CreatePedidoDto {
   estado?: PedidoEstado;
   maquina_id?: number;
   fabricante_id?: number;
-  referencias?: {
-    referencia_id: number;
-    cantidad: number;
-    precio_unitario?: number;
-  }[];
-  articulos?: {
-    articulo_id: number;
-    cantidad: number;
-    precio_unitario?: number;
-  }[];
+  referencias?: CreatePedidoReferenciaDto[];
+}
+
+/**
+ * Datos para crear una referencia en un pedido
+ */
+export interface CreatePedidoReferenciaDto {
+  referencia_id: number;
+  sistema_id?: number;
+  marca_id?: number;
+  definicion?: string;
+  cantidad: number;
+  comentario?: string;
+  imagen?: string;
+  mostrar_referencia?: boolean;
+  estado?: boolean;
+  proveedores?: CreatePedidoReferenciaProveedorDto[];
+}
+
+/**
+ * Datos para crear un proveedor para una referencia
+ */
+export interface CreatePedidoReferenciaProveedorDto {
+  tercero_id: number;
+  marca_id?: number;
+  dias_entrega: number;
+  costo_unidad: number;
+  utilidad: number;
+  cantidad: number;
+  ubicacion: 'Nacional' | 'Internacional';
+  estado?: boolean;
 }
 
 /**
