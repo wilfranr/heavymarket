@@ -19,6 +19,7 @@ import { listasReducer } from './app/store/listas/reducers/listas.reducer';
 import { fabricantesReducer } from './app/store/fabricantes/reducers/fabricantes.reducer';
 import { sistemasReducer } from './app/store/sistemas/reducers/sistemas.reducer';
 import { referenciasReducer } from './app/store/referencias/reducers/referencias.reducer';
+import { maquinasReducer } from './app/store/maquinas/reducers/maquinas.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
@@ -26,6 +27,7 @@ import { ListasEffects } from './app/store/listas/effects/listas.effects';
 import { FabricantesEffects } from './app/store/fabricantes/effects/fabricantes.effects';
 import { SistemasEffects } from './app/store/sistemas/effects/sistemas.effects';
 import { ReferenciasEffects } from './app/store/referencias/effects/referencias.effects';
+import { MaquinasEffects } from './app/store/maquinas/effects/maquinas.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
