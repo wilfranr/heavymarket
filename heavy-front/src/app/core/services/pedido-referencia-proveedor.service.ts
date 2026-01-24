@@ -1,5 +1,4 @@
-import { Injectable, inject } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService } from './api.service';
 import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, UpdatePedidoReferenciaProveedorDto } from '../models/pedido.model';
@@ -11,10 +10,8 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, UpdatePe
     providedIn: 'root'
 })
 export class PedidoReferenciaProveedorService extends ApiService {
-    private http = inject(HttpClient);
-
     protected override getBaseUrl(): string {
-        return `${this.apiUrl}/pedidos`;
+        return `${this.API_URL}/pedidos`;
     }
 
     /**

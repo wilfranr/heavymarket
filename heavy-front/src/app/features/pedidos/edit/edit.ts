@@ -93,6 +93,10 @@ export class EditComponent implements OnInit {
     proveedoresPorReferencia: Map<number, PedidoReferenciaProveedor[]> = new Map();
     referenciasExpandidas: Set<number> = new Set();
     
+    // Formulario para nuevo proveedor
+    nuevoProveedorForm: FormGroup | null = null;
+    referenciaIndexParaProveedor: number | null = null;
+    
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
@@ -207,7 +211,7 @@ export class EditComponent implements OnInit {
      * Carga los proveedores disponibles (terceros tipo Proveedor)
      */
     private loadProveedores(): void {
-        this.terceroService.list({ per_page: 200, tipo: 'Proveedor' }).subscribe({
+        this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe({
             next: (response) => {
                 this.proveedores = response.data.map(p => ({
                     label: p.razon_social || p.nombre_comercial || `Proveedor ${p.id}`,
