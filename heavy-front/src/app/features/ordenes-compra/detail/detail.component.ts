@@ -86,8 +86,7 @@ import { OrdenCompra } from '../../../core/models/orden-compra.model';
                         [style.border-radius]="'50%'"
                         [style.display]="'inline-block'"
                         [style.margin-left]="'8px'"
-                        [pTooltip]="getColorTooltip(ordenCompra()!.color!)"
-                        tooltipPosition="top">
+                        [title]="getColorTooltip(ordenCompra()!.color!)">
                       </div>
                     }
                   </p>
@@ -187,7 +186,6 @@ import { OrdenCompra } from '../../../core/models/orden-compra.model';
         </div>
       }
     </div>
-    <p-tooltip></p-tooltip>
   `,
   styles: [],
 })

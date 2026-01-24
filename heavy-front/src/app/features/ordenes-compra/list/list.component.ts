@@ -34,7 +34,6 @@ import { PedidoService } from '../../../core/services/pedido.service';
     SelectModule,
     TagModule,
     ConfirmDialogModule,
-    TooltipModule,
   ],
   providers: [ConfirmationService, MessageService],
   template: `
@@ -152,8 +151,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
                 [style.width]="'20px'"
                 [style.height]="'20px'"
                 [style.border-radius]="'50%'"
-                [pTooltip]="getColorTooltip(orden.color || '#FFFF00')"
-                tooltipPosition="top">
+                [title]="getColorTooltip(orden.color || '#FFFF00')">
               </div>
             </td>
             <td>{{ orden.fecha_expedicion | date:'short' }}</td>
@@ -188,7 +186,6 @@ import { PedidoService } from '../../../core/services/pedido.service';
     </div>
 
     <p-confirmDialog></p-confirmDialog>
-    <p-tooltip></p-tooltip>
   `,
   styles: [],
 })
