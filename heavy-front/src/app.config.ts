@@ -77,6 +77,7 @@ import { ordenesCompraReducer } from './app/store/ordenes-compra/reducers/ordene
 import { ordenesTrabajoReducer } from './app/store/ordenes-trabajo/reducers/ordenes-trabajo.reducer';
 import { empresasReducer } from './app/store/empresas/reducers/empresas.reducer';
 import { categoriasReducer } from './app/store/categorias/reducers/categorias.reducer';
+import { contactosReducer } from './app/store/contactos/reducers/contactos.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
@@ -117,9 +118,10 @@ export const appConfig: ApplicationConfig = {
             ordenesCompra: ordenesCompraReducer,
             ordenesTrabajo: ordenesTrabajoReducer,
             empresas: empresasReducer,
-            categorias: categoriasReducer
+            categorias: categoriasReducer,
+            contactos: contactosReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects, ContactosEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
