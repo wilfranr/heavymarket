@@ -83,6 +83,8 @@ export class EditComponent implements OnInit {
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
     private readonly proveedorService = inject(PedidoReferenciaProveedorService);
+    private readonly articuloService = inject(ArticuloService);
+    private readonly pedidoArticuloService = inject(PedidoArticuloService);
 
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
