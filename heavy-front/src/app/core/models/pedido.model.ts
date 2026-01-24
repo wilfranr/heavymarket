@@ -138,6 +138,19 @@ export interface CreatePedidoReferenciaProveedorDto {
 }
 
 /**
+ * Datos para actualizar un proveedor de una referencia
+ */
+export interface UpdatePedidoReferenciaProveedorDto {
+  marca_id?: number;
+  dias_entrega?: number;
+  costo_unidad?: number;
+  utilidad?: number;
+  cantidad?: number;
+  ubicacion?: 'Nacional' | 'Internacional';
+  estado?: boolean;
+}
+
+/**
  * Datos para actualizar un pedido
  */
 export interface UpdatePedidoDto {

@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePedidoRequest;
-use App\Http\Requests\UpdatePedidoRequest;
-use App\Http\Resources\PedidoResource;
+use App\Http\Requests\{StorePedidoRequest, UpdatePedidoRequest};
+use App\Http\Resources\{PedidoResource, PedidoCollection};
 use App\Models\Pedido;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
 
 /**
  * Controlador API para gestión de Pedidos
- *
+ * 
  * Maneja todas las operaciones CRUD de pedidos a través del API REST.
  * Implementa filtros, búsqueda, paginación y manejo de relaciones.
  */
@@ -23,8 +21,10 @@ class PedidoController extends Controller
 {
     /**
      * Listar todos los pedidos con filtros opcionales
-     *
-     *
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     * 
      * @queryParam page int Número de página. Example: 1
      * @queryParam per_page int Elementos por página. Example: 15
      * @queryParam estado string Filtrar por estado. Example: Nuevo
@@ -83,6 +83,9 @@ class PedidoController extends Controller
 
     /**
      * Crear un nuevo pedido
+     * 
+     * @param StorePedidoRequest $request
+     * @return JsonResponse
      */
     public function store(StorePedidoRequest $request): JsonResponse
     {
@@ -141,7 +144,7 @@ class PedidoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
+            
             return response()->json([
                 'message' => 'Error al crear el pedido',
                 'error' => $e->getMessage(),
@@ -151,6 +154,9 @@ class PedidoController extends Controller
 
     /**
      * Mostrar un pedido específico
+     * 
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function show(Pedido $pedido): JsonResponse
     {
@@ -161,7 +167,8 @@ class PedidoController extends Controller
             'fabricante',
             'contacto',
             'referencias.referencia',
-            'articulos.articulo',
+            'referencias.proveedores.tercero',
+            'articulos.articulo'
         ]);
 
         return response()->json([
@@ -171,6 +178,10 @@ class PedidoController extends Controller
 
     /**
      * Actualizar un pedido existente
+     * 
+     * @param UpdatePedidoRequest $request
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
@@ -194,12 +205,15 @@ class PedidoController extends Controller
 
     /**
      * Eliminar un pedido
+     * 
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function destroy(Pedido $pedido): JsonResponse
     {
         try {
             // Verificar permisos
-            if (! auth()->user()->can('delete', $pedido)) {
+            if (!auth()->user()->can('delete', $pedido)) {
                 return response()->json([
                     'message' => 'No autorizado para eliminar este pedido',
                 ], 403);
@@ -221,6 +235,10 @@ class PedidoController extends Controller
 
     /**
      * Agregar una referencia a un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function addReferencia(Request $request, Pedido $pedido): JsonResponse
     {
@@ -254,6 +272,11 @@ class PedidoController extends Controller
 
     /**
      * Actualizar una referencia de un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
      */
     public function updateReferencia(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
     {
@@ -288,6 +311,10 @@ class PedidoController extends Controller
 
     /**
      * Eliminar una referencia de un pedido
+     *
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
      */
     public function deleteReferencia(Pedido $pedido, int $referenciaId): JsonResponse
     {
@@ -304,5 +331,174 @@ class PedidoController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Agregar un proveedor a una referencia de pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
+     */
+    public function addProveedor(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
+    {
+        $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+
+        $validated = $request->validate([
+            'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'dias_entrega' => ['required', 'integer', 'min:0'],
+            'costo_unidad' => ['required', 'numeric', 'min:0'],
+            'utilidad' => ['required', 'numeric', 'min:0'],
+            'cantidad' => ['required', 'integer', 'min:1'],
+            'ubicacion' => ['required', 'string', 'in:Nacional,Internacional'],
+            'estado' => ['nullable', 'boolean'],
+        ]);
+
+        try {
+            // Calcular valores automáticamente
+            $valores = $this->calcularValores($validated, $pedidoReferencia);
+            $validated = array_merge($validated, $valores);
+
+            $proveedor = $pedidoReferencia->proveedores()->create($validated);
+            $proveedor->load(['tercero', 'marca']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor),
+                'message' => 'Proveedor agregado exitosamente',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al agregar el proveedor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Actualizar un proveedor de una referencia de pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @param int $proveedorId
+     * @return JsonResponse
+     */
+    public function updateProveedor(Request $request, Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
+    {
+        $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+        $proveedor = $pedidoReferencia->proveedores()->findOrFail($proveedorId);
+
+        $validated = $request->validate([
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'dias_entrega' => ['sometimes', 'integer', 'min:0'],
+            'costo_unidad' => ['sometimes', 'numeric', 'min:0'],
+            'utilidad' => ['sometimes', 'numeric', 'min:0'],
+            'cantidad' => ['sometimes', 'integer', 'min:1'],
+            'ubicacion' => ['sometimes', 'string', 'in:Nacional,Internacional'],
+            'estado' => ['nullable', 'boolean'],
+        ]);
+
+        try {
+            // Recalcular valores si cambió costo, utilidad, cantidad o ubicación
+            if (isset($validated['costo_unidad']) || isset($validated['utilidad']) || 
+                isset($validated['cantidad']) || isset($validated['ubicacion'])) {
+                $datosCompletos = array_merge($proveedor->toArray(), $validated);
+                $valores = $this->calcularValores($datosCompletos, $pedidoReferencia);
+                $validated = array_merge($validated, $valores);
+            }
+
+            $proveedor->update($validated);
+            $proveedor->load(['tercero', 'marca']);
+
+            return response()->json([
+                'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor),
+                'message' => 'Proveedor actualizado exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al actualizar el proveedor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Eliminar un proveedor de una referencia de pedido
+     *
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @param int $proveedorId
+     * @return JsonResponse
+     */
+    public function deleteProveedor(Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
+    {
+        try {
+            $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+            $proveedor = $pedidoReferencia->proveedores()->findOrFail($proveedorId);
+            $proveedor->delete();
+
+            return response()->json([
+                'message' => 'Proveedor eliminado exitosamente',
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al eliminar el proveedor',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
+     *
+     * @param array $datos
+     * @param \App\Models\PedidoReferencia $pedidoReferencia
+     * @return array
+     */
+    private function calcularValores(array $datos, \App\Models\PedidoReferencia $pedidoReferencia): array
+    {
+        $costo_unidad = (float) ($datos['costo_unidad'] ?? 0);
+        $utilidad = (float) ($datos['utilidad'] ?? 0);
+        $cantidad = (int) ($datos['cantidad'] ?? 1);
+        $ubicacion = $datos['ubicacion'] ?? 'Nacional';
+
+        if ($ubicacion === 'Internacional') {
+            // Obtener empresa activa para TRM y flete
+            $empresa = \App\Models\Empresa::where('estado', 1)->first();
+            $trm = $empresa?->trm ?? 1;
+            $flete = $empresa?->flete ?? 0;
+
+            // Obtener peso del artículo (necesitamos la referencia)
+            $referencia = $pedidoReferencia->referencia;
+            $peso = 0; // Por defecto, se puede obtener de la relación articulo->medidas
+
+            // Convertir peso de gramos a libras (1 libra = 453.592 gramos)
+            $peso_libras = $peso / 453.592;
+
+            // Calcular: costo_base_usd = (peso_libras * flete) + costo_unidad
+            $costo_base_usd = ($peso_libras * $flete) + $costo_unidad;
+            $costo_base_cop = $costo_base_usd * $trm;
+
+            // Aplicar utilidad
+            $valor_unidad = $costo_base_cop + ($utilidad * $costo_base_cop / 100);
+
+            // Redondear a centenas
+            $valor_unidad = round($valor_unidad, -2);
+        } else {
+            // Lógica para proveedores nacionales
+            $valor_unidad = $costo_unidad + ($costo_unidad * $utilidad / 100);
+            // Redondear a enteros
+            $valor_unidad = round($valor_unidad);
+        }
+
+        // Calcular valor total
+        $valor_total = $valor_unidad * $cantidad;
+
+        return [
+            'valor_unidad' => $valor_unidad,
+            'valor_total' => $valor_total,
+        ];
     }
 }

@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\PedidoReferenciaProveedorResource;
 
 /**
  * API Resource para el modelo PedidoReferencia
@@ -42,7 +43,9 @@ class PedidoReferenciaResource extends JsonResource
             'referencia' => $this->whenLoaded('referencia'),
             'sistema' => $this->whenLoaded('sistema'),
             'marca' => $this->whenLoaded('marca'),
-            'proveedores' => $this->whenLoaded('proveedores'),
+            'proveedores' => $this->whenLoaded('proveedores', function () {
+                return PedidoReferenciaProveedorResource::collection($this->proveedores);
+            }),
         ];
     }
 }

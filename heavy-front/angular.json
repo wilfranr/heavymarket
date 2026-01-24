@@ -33,7 +33,9 @@
                             "src/assets"
                         ],
                         "styles": [
-                            "src/assets/styles.scss"
+                            "src/assets/styles.scss",
+                            "src/assets/css/landing.css",
+                            "src/assets/css/cotizador.css"
                         ],
                         "scripts": []
                     },
@@ -90,6 +92,6 @@
         }
     },
     "cli": {
-      "analytics": false
+        "analytics": false
     }
 }
