@@ -270,9 +270,13 @@
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
 - [x] Órdenes de Compra (completo) ✅
-  - Backend: Modelo, Controller, Resources, FormRequest completos ✅
+  - Backend: Modelo OrdenCompra con relaciones completas ✅
+  - Backend: Controller, Resources, FormRequest completos ✅
+  - Backend: Gestión de referencias con pivot OrdenCompraReferencia ✅
   - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
   - Frontend: Componentes list, create, edit y detail completos ✅
+  - Frontend: Filtros por estado, color, proveedor y pedido ✅
+  - Frontend: Visualización de color de estado con tooltip ✅
   - Rutas configuradas ✅
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
