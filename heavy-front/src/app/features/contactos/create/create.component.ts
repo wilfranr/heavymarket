@@ -28,7 +28,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
-    ToggleSwitchModule,
+    ToggleSwitch,
     ToastModule,
   ],
   providers: [MessageService],

@@ -7,7 +7,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { ToggleSwitch } from 'primeng/toggleswitch';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { updateContacto, loadContactoById } from '../../../store/contactos/actions/contactos.actions';
@@ -29,7 +29,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     ButtonModule,
     InputTextModule,
     SelectModule,
-    ToggleSwitchModule,
+    ToggleSwitch,
     ToastModule,
   ],
   providers: [MessageService],
