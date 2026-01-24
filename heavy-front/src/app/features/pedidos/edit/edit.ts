@@ -216,10 +216,10 @@ export class EditComponent implements OnInit {
                 this.proveedores = response.data.map(p => ({
                     label: p.razon_social || p.nombre_comercial || `Proveedor ${p.id}`,
                     value: p.id,
-                    ubicacion: p.country_id === 48 ? 'Nacional' : 'Internacional',
-                    dias_entrega: p.dias_entrega || 0,
-                    costo_unidad: p.costo_unidad || 0,
-                    utilidad: p.utilidad || 0
+                    ubicacion: (p as any).pais === 'Colombia' || (p as any).country_id === 48 ? 'Nacional' : 'Internacional',
+                    dias_entrega: (p as any).dias_entrega || 0,
+                    costo_unidad: (p as any).costo_unidad || 0,
+                    utilidad: (p as any).utilidad || 0
                 }));
             }
         });

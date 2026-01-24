@@ -10,7 +10,7 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, UpdatePe
     providedIn: 'root'
 })
 export class PedidoReferenciaProveedorService extends ApiService {
-    protected override getBaseUrl(): string {
+    protected getBaseUrl(): string {
         return `${this.API_URL}/pedidos`;
     }
 
