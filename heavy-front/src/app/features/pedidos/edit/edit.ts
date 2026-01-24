@@ -111,6 +111,10 @@ export class EditComponent implements OnInit {
     proveedoresComparacion: PedidoReferenciaProveedor[] = [];
     referenciaComparacion: any = null;
     
+    // Artículos del pedido
+    articulosPedido: PedidoArticulo[] = [];
+    mostrarArticulos = false;
+    
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
