@@ -93,6 +93,7 @@ import { OrdenesTrabajoEffects } from './app/store/ordenes-trabajo/effects/orden
 import { EmpresasEffects } from './app/store/empresas/effects/empresas.effects';
 import { CategoriasEffects } from './app/store/categorias/effects/categorias.effects';
 import { ContactosEffects } from './app/store/contactos/effects/contactos.effects';
+import { DireccionesEffects } from './app/store/direcciones/effects/direcciones.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -120,9 +121,10 @@ export const appConfig: ApplicationConfig = {
             ordenesTrabajo: ordenesTrabajoReducer,
             empresas: empresasReducer,
             categorias: categoriasReducer,
-            contactos: contactosReducer
+            contactos: contactosReducer,
+            direcciones: direccionesReducer
         }),
-        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects, ContactosEffects]),
+        provideEffects([AuthEffects, PedidosEffects, TercerosEffects, ListasEffects, FabricantesEffects, SistemasEffects, ReferenciasEffects, MaquinasEffects, ArticulosEffects, CotizacionesEffects, OrdenesCompraEffects, OrdenesTrabajoEffects, EmpresasEffects, CategoriasEffects, ContactosEffects, DireccionesEffects]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService
