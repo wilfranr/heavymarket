@@ -20,6 +20,7 @@ import { fabricantesReducer } from './app/store/fabricantes/reducers/fabricantes
 import { sistemasReducer } from './app/store/sistemas/reducers/sistemas.reducer';
 import { referenciasReducer } from './app/store/referencias/reducers/referencias.reducer';
 import { maquinasReducer } from './app/store/maquinas/reducers/maquinas.reducer';
+import { articulosReducer } from './app/store/articulos/reducers/articulos.reducer';
 import { AuthEffects } from './app/store/auth/effects/auth.effects';
 import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
 import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
@@ -28,12 +29,13 @@ import { FabricantesEffects } from './app/store/fabricantes/effects/fabricantes.
 import { SistemasEffects } from './app/store/sistemas/effects/sistemas.effects';
 import { ReferenciasEffects } from './app/store/referencias/effects/referencias.effects';
 import { MaquinasEffects } from './app/store/maquinas/effects/maquinas.effects';
+import { ArticulosEffects } from './app/store/articulos/effects/articulos.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideRouter(
-            appRoutes, 
-            withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), 
+            appRoutes,
+            withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }),
             withEnabledBlockingInitialNavigation(),
             withPreloading(CustomPreloadStrategy)
         ),
