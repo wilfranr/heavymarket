@@ -228,7 +228,7 @@
    - **Razón**: Se agregan a Pedidos
    - **Dependencias**: Referencias, Categorias
 
-### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ EN PROGRESO (~60%)
+### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ EN PROGRESO (~75%)
 **Todos los módulos de soporte están completos. Se puede proceder con Pedidos:**
 
 - [x] Implementar Wizard de creación (3 pasos) ✅
@@ -240,11 +240,17 @@
   - Backend: Endpoints CRUD completos ✅
   - Frontend: UI de gestión con formulario ✅
   - Cálculos automáticos (nacional vs internacional) ✅
-- [ ] Implementar comparación de proveedores (cuadro comparativo)
+- [x] Implementar comparación de proveedores (cuadro comparativo modal) ✅
+  - Modal con tabla comparativa ✅
+  - Resaltado de mejor precio y mejor tiempo ✅
+  - Indicadores visuales ✅
 - [x] Implementar selección masiva (selectAll/deselectAll) ✅
-- [ ] Implementar filtros avanzados (por estado, vendedor, cliente, máquina, fabricante)
+- [x] Implementar filtros avanzados (por estado, vendedor, cliente, máquina, fabricante) ✅
+  - Backend: Filtros por maquina_id y user_id ✅
+  - Frontend: UI con múltiples filtros combinables ✅
+  - Botón limpiar filtros ✅
 - [ ] Implementar gestión de Artículos (usa Articulos)
-- [ ] Implementar estados avanzados (transiciones de estado)
+- [ ] Implementar estados avanzados (transiciones de estado con validaciones)
 - [x] Implementar relación con Máquinas (usa Máquinas) ✅
 - [x] Implementar relación con Fabricantes (usa Fabricantes) ✅
 
