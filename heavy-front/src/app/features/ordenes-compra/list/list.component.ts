@@ -34,6 +34,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
     SelectModule,
     TagModule,
     ConfirmDialogModule,
+    TooltipModule,
   ],
   providers: [ConfirmationService, MessageService],
   template: `
