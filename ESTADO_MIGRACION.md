@@ -341,7 +341,16 @@
   - Rutas configuradas ✅
   - Integración completa con servicios y NgRx ✅
   - Módulo 100% funcional y compilando sin errores ✅
-- [ ] TRM
+- [x] TRM (completo) ✅
+  - Backend: Modelo TRM con documentación completa ✅
+  - Backend: Controller, Resources, FormRequest completos ✅
+  - Backend: Endpoint latest para obtener TRM más reciente ✅
+  - Frontend: Store NgRx completo (actions, reducers, effects, selectors) ✅
+  - Frontend: Componentes list, create, edit y detail completos ✅
+  - Frontend: Formulario numérico con validación ✅
+  - Rutas configuradas ✅
+  - Integración completa con servicios y NgRx ✅
+  - Módulo 100% funcional y compilando sin errores ✅
 
 ### Fase 5: Funcionalidades Avanzadas
 - [ ] Importación Excel
