@@ -228,22 +228,25 @@
    - **Razón**: Se agregan a Pedidos
    - **Dependencias**: Referencias, Categorias
 
-### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ LISTO PARA INICIAR
+### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ⏳ EN PROGRESO (~60%)
 **Todos los módulos de soporte están completos. Se puede proceder con Pedidos:**
 
-- [ ] Implementar Wizard de creación (3 pasos)
-  - Paso 1: Cliente (usa Terceros - ✅ ya existe)
-  - Paso 2: Referencias (usa Referencias - ❌ necesita Fase 1)
-  - Paso 3: Artículos (usa Articulos - ❌ necesita Fase 1)
-- [ ] Implementar gestión de Referencias con Repeater (usa Referencias)
-- [ ] Implementar gestión de Proveedores por Referencia
-- [ ] Implementar comparación de proveedores
-- [ ] Implementar selección masiva
-- [ ] Implementar filtros avanzados
+- [x] Implementar Wizard de creación (3 pasos) ✅
+  - Paso 1: Cliente (usa Terceros - ✅ completo)
+  - Paso 2: Referencias Masivas (usa Referencias - ✅ completo)
+  - Paso 3: Referencias Detalladas (usa Referencias - ✅ completo)
+- [x] Implementar gestión de Referencias con Repeater (usa Referencias) ✅
+- [x] Implementar gestión de Proveedores por Referencia ✅
+  - Backend: Endpoints CRUD completos ✅
+  - Frontend: UI de gestión con formulario ✅
+  - Cálculos automáticos (nacional vs internacional) ✅
+- [ ] Implementar comparación de proveedores (cuadro comparativo)
+- [x] Implementar selección masiva (selectAll/deselectAll) ✅
+- [ ] Implementar filtros avanzados (por estado, vendedor, cliente, máquina, fabricante)
 - [ ] Implementar gestión de Artículos (usa Articulos)
-- [ ] Implementar estados avanzados
-- [ ] Implementar relación con Máquinas (usa Máquinas)
-- [ ] Implementar relación con Fabricantes (usa Fabricantes)
+- [ ] Implementar estados avanzados (transiciones de estado)
+- [x] Implementar relación con Máquinas (usa Máquinas) ✅
+- [x] Implementar relación con Fabricantes (usa Fabricantes) ✅
 
 ### Fase 3: Completar Módulos Principales
 - [ ] Cotizaciones (completo)
