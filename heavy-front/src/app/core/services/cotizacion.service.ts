@@ -46,7 +46,7 @@ export class CotizacionService extends ApiService {
     /**
      * Eliminar una cotización
      */
-    delete(id: number): Observable<void> {
+    deleteCotizacion(id: number): Observable<void> {
         return this.delete<void>(`${this.getBaseUrl()}/${id}`);
     }
 }

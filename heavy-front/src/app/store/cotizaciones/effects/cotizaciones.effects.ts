@@ -144,8 +144,8 @@ export class CotizacionesEffects {
   deleteCotizacion$ = createEffect(() =>
     this.actions$.pipe(
       ofType(CotizacionesActions.deleteCotizacion),
-      switchMap(({ id }) =>
-        this.cotizacionService.delete(id).pipe(
+        switchMap(({ id }) =>
+          this.cotizacionService.deleteCotizacion(id).pipe(
           map(() => {
             this.messageService.add({
               severity: 'success',
