@@ -82,10 +82,22 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
                   <p><strong>Fecha de Emisión:</strong> {{ cotizacion()?.fecha_emision | date:'short' }}</p>
                 </div>
                 <div class="col-12 md:col-6">
-                  <p><strong>Fecha de Vencimiento:</strong> {{ cotizacion()?.fecha_vencimiento | date:'short' || 'N/A' }}</p>
+                  <p><strong>Fecha de Vencimiento:</strong>
+                    @if (cotizacion()?.fecha_vencimiento) {
+                      {{ cotizacion()!.fecha_vencimiento | date:'short' }}
+                    } @else {
+                      N/A
+                    }
+                  </p>
                 </div>
                 <div class="col-12 md:col-6">
-                  <p><strong>Total:</strong> {{ cotizacion()?.total | currency:'COP':'symbol':'1.0-0' || 'N/A' }}</p>
+                  <p><strong>Total:</strong>
+                    @if (cotizacion()?.total) {
+                      {{ cotizacion()!.total | currency:'COP':'symbol':'1.0-0' }}
+                    } @else {
+                      N/A
+                    }
+                  </p>
                 </div>
                 @if (cotizacion()?.observaciones) {
                   <div class="col-12">
