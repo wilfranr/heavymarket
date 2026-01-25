@@ -57,16 +57,26 @@ import { TRM } from '../../../core/models/trm.model';
                 </div>
                 <div class="col-12 md:col-6">
                   <p><strong>TRM (USD/COP):</strong>
-                    <span class="text-2xl font-bold text-primary ml-2">
-                      ${{ trm()?.trm | number:'1.2-2' }}
-                    </span>
+                    @if (trm()) {
+                      <span class="text-2xl font-bold text-primary ml-2">
+                        ${{ trm()!.trm | number:'1.2-2' }}
+                      </span>
+                    }
                   </p>
                 </div>
                 <div class="col-12 md:col-6">
-                  <p><strong>Fecha de Creación:</strong> {{ trm()?.created_at | date:'full' }}</p>
+                  <p><strong>Fecha de Creación:</strong>
+                    @if (trm()) {
+                      {{ trm()!.created_at | date:'full' }}
+                    }
+                  </p>
                 </div>
                 <div class="col-12 md:col-6">
-                  <p><strong>Última Actualización:</strong> {{ trm()?.updated_at | date:'full' }}</p>
+                  <p><strong>Última Actualización:</strong>
+                    @if (trm()) {
+                      {{ trm()!.updated_at | date:'full' }}
+                    }
+                  </p>
                 </div>
               </div>
             </p-card>
