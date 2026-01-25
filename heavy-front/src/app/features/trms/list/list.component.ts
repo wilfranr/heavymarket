@@ -66,7 +66,7 @@ import * as TRMsSelectors from '../../../store/trms/selectors/trms.selectors';
         <ng-template pTemplate="body" let-trm>
           <tr>
             <td>
-              <strong class="text-xl">${{ trm.trm | number:'1.2-2' }}</strong>
+              <strong class="text-xl">{{ trm.trm | number:'1.2-2' }}</strong>
             </td>
             <td>{{ trm.created_at | date:'short' }}</td>
             <td>{{ trm.updated_at | date:'short' }}</td>
