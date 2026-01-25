@@ -23,7 +23,13 @@ import { TRM } from '../../../core/models/trm.model';
   template: `
     <div class="card">
       <div class="flex justify-content-between align-items-center mb-4">
-        <h2>TRM: @if (trm()) { ${{ trm()!.trm | number:'1.2-2' }} }</h2>
+        <h2>
+          @if (trm()) {
+            TRM: ${{ trm()!.trm | number:'1.2-2' }}
+          } @else {
+            TRM
+          }
+        </h2>
         <div class="flex gap-2">
           <p-button
             label="Editar"
@@ -52,32 +58,24 @@ import { TRM } from '../../../core/models/trm.model';
           <div class="col-12">
             <p-card header="Información de la TRM">
               <div class="grid">
-                <div class="col-12 md:col-6">
-                  <p><strong>ID:</strong> {{ trm()!.id }}</p>
-                </div>
-                <div class="col-12 md:col-6">
-                  <p><strong>TRM (USD/COP):</strong>
-                    @if (trm()) {
+                @if (trm()) {
+                  <div class="col-12 md:col-6">
+                    <p><strong>ID:</strong> {{ trm()!.id }}</p>
+                  </div>
+                  <div class="col-12 md:col-6">
+                    <p><strong>TRM (USD/COP):</strong>
                       <span class="text-2xl font-bold text-primary ml-2">
                         ${{ trm()!.trm | number:'1.2-2' }}
                       </span>
-                    }
-                  </p>
-                </div>
-                <div class="col-12 md:col-6">
-                  <p><strong>Fecha de Creación:</strong>
-                    @if (trm()) {
-                      {{ trm()!.created_at | date:'full' }}
-                    }
-                  </p>
-                </div>
-                <div class="col-12 md:col-6">
-                  <p><strong>Última Actualización:</strong>
-                    @if (trm()) {
-                      {{ trm()!.updated_at | date:'full' }}
-                    }
-                  </p>
-                </div>
+                    </p>
+                  </div>
+                  <div class="col-12 md:col-6">
+                    <p><strong>Fecha de Creación:</strong> {{ trm()!.created_at | date:'full' }}</p>
+                  </div>
+                  <div class="col-12 md:col-6">
+                    <p><strong>Última Actualización:</strong> {{ trm()!.updated_at | date:'full' }}</p>
+                  </div>
+                }
               </div>
             </p-card>
           </div>
