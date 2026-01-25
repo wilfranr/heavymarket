@@ -3,6 +3,8 @@ import { AppLayout } from './app/layout/component/app.layout';
 import { Dashboard } from './app/pages/dashboard/dashboard';
 import { Documentation } from './app/pages/documentation/documentation';
 import { Landing } from './app/landing/landing';
+import { Products } from './app/pages/products/products';
+import { ProductDetail } from './app/pages/products/product-detail/product-detail';
 import { Notfound } from './app/pages/notfound/notfound';
 import { authGuard } from './app/core/auth/guards/auth.guard';
 
@@ -10,6 +12,14 @@ export const appRoutes: Routes = [
     {
         path: '',
         component: Landing,
+    },
+    {
+        path: 'productos',
+        component: Products,
+    },
+    {
+        path: 'productos/:category/:subcategory',
+        component: ProductDetail,
     },
     {
         path: 'app',

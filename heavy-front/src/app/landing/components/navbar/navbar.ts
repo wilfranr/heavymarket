@@ -15,6 +15,7 @@ export class Navbar implements OnInit {
   activeCategory: string = '';
   isMenuOpen: boolean = false;
   hoverTimeout: any;
+  closeTimeout: any;
 
   constructor(private landingService: LandingService) { }
 
@@ -32,20 +33,31 @@ export class Navbar implements OnInit {
   }
 
   onMouseEnter() {
+    // Si iba a cerrarse, cancelar el cierre
+    if (this.closeTimeout) {
+      clearTimeout(this.closeTimeout);
+    }
+
+    // Delay para abrir y evitar aperturas accidentales al pasar rápido
     if (this.hoverTimeout) {
       clearTimeout(this.hoverTimeout);
     }
-    // Delay opening
+
     this.hoverTimeout = setTimeout(() => {
       this.isMenuOpen = true;
-    }, 200);
+    }, 150);
   }
 
   onMouseLeave() {
+    // Cancelar apertura pendiente si sale antes de tiempo
     if (this.hoverTimeout) {
       clearTimeout(this.hoverTimeout);
     }
-    this.isMenuOpen = false;
+
+    // Dar un margen de 300ms antes de cerrar para permitir re-entrada
+    this.closeTimeout = setTimeout(() => {
+      this.isMenuOpen = false;
+    }, 300);
   }
 
   setActiveCategory(slug: string) {

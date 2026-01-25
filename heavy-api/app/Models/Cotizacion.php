@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property float|null $total
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \App\Models\User $user
  * @property-read \App\Models\Tercero $tercero
  * @property-read \App\Models\Pedido $pedido
@@ -54,6 +55,8 @@ class Cotizacion extends Model
 
     /**
      * Relación con el usuario que creó la cotización
+     *
+     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -62,6 +65,8 @@ class Cotizacion extends Model
 
     /**
      * Relación con el tercero (cliente)
+     *
+     * @return BelongsTo
      */
     public function tercero(): BelongsTo
     {
@@ -70,6 +75,8 @@ class Cotizacion extends Model
 
     /**
      * Relación con el pedido origen
+     *
+     * @return BelongsTo
      */
     public function pedido(): BelongsTo
     {
@@ -78,6 +85,8 @@ class Cotizacion extends Model
 
     /**
      * Relación con las referencias y proveedores de la cotización
+     *
+     * @return HasMany
      */
     public function referenciasProveedores(): HasMany
     {

@@ -8,8 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTransportadoraRequest;
 use App\Http\Resources\TransportadoraResource;
 use App\Models\Transportadora;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -106,7 +105,7 @@ class TransportadoraController extends Controller
     {
         $validated = $request->validate([
             'nombre' => ['sometimes', 'string', 'max:255'],
-            'nit' => ['nullable', 'string', 'max:50', 'unique:transportadoras,nit,'.$transportadora->id],
+            'nit' => ['nullable', 'string', 'max:50', 'unique:transportadoras,nit,' . $transportadora->id],
             'telefono' => ['nullable', 'string', 'max:50'],
             'direccion' => ['nullable', 'string', 'max:500'],
             'city_id' => ['nullable', 'integer', 'exists:cities,id'],

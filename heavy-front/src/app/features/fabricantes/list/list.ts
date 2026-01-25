@@ -2,10 +2,14 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
@@ -24,7 +28,7 @@ import { selectAllFabricantes, selectFabricantesLoading, selectFabricantesPagina
 @Component({
     selector: 'app-fabricantes-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, ToolbarModule, IconFieldModule, InputIconModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -45,13 +49,33 @@ export class ListComponent implements OnInit {
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
+    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
         this.fabricantes$ = this.store.select(selectAllFabricantes);
         this.loading$ = this.store.select(selectFabricantesLoading);
         this.pagination$ = this.store.select(selectFabricantesPagination);
 
+        // Configurar búsqueda con debounce
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(query => {
+            this.searchTerm = query;
+            this.currentPage = 1;
+            this.first = 0;
+            this.cargarFabricantes();
+        });
+
         this.cargarFabricantes();
+    }
+
+    /**
+     * Maneja la búsqueda global
+     */
+    onSearch(event: Event): void {
+        const value = (event.target as HTMLInputElement).value;
+        this.searchSubject.next(value);
     }
 
     /**
@@ -116,7 +140,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteFabricante({ id: fabricante.id }));
-                
+
                 // Recargar después de eliminar
                 setTimeout(() => {
                     this.cargarFabricantes();

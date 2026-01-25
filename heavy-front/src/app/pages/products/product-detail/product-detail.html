@@ -1,0 +1,68 @@
+<div class="product-detail-wrapper">
+    <div style="width: 100%; position: absolute; top: 0; z-index: 100;">
+        <app-navbar></app-navbar>
+    </div>
+
+    @if (loading) {
+    <div class="flex justify-center items-center h-screen" style="padding-top: 100px;">
+        <p>Cargando producto...</p>
+    </div>
+    } @else if (error) {
+    <div class="flex flex-col justify-center items-center h-screen" style="padding-top: 100px;">
+        <h2 class="text-2xl font-bold mb-4">Producto no encontrado</h2>
+        <button class="product-detail-button secondary" routerLink="/productos">
+            <span class="button-text">Volver a productos</span>
+        </button>
+    </div>
+    } @else {
+    <!-- Contenido principal -->
+    <div class="product-detail-content">
+        <div class="product-detail-container">
+            <!-- Título -->
+            <h1 class="product-detail-title" id="product-title">{{ subCategory?.nombre }}</h1>
+
+            <!-- Primera sección -->
+            <div class="product-detail-section">
+                <!-- Texto izquierdo -->
+                <div class="product-detail-text">
+                    <p class="product-detail-description">
+                        {{ subCategory?.descripcion }}
+                    </p>
+                </div>
+                <!-- Imagen derecha -->
+                <div class="product-detail-image">
+                    <img [src]="subCategory?.imagen_url || '/images/no-image.png'" [alt]="subCategory?.nombre"
+                        onerror="this.onerror=null; this.src='/images/no-image.png';">
+                </div>
+            </div>
+
+            <!-- Segunda sección -->
+            <div class="product-detail-section reverse">
+                <!-- Imagen izquierda -->
+                <div class="product-detail-image">
+                    <img [src]="subCategory?.imagen_url || '/images/no-image.png'" [alt]="subCategory?.nombre"
+                        onerror="this.onerror=null; this.src='/images/no-image.png';">
+                </div>
+                <!-- Texto y botones derecho -->
+                <div class="product-detail-text">
+                    <p class="product-detail-description">
+                        {{ categoryDescription }}
+                    </p>
+                    <!-- Actions - Botones -->
+                    <div class="product-detail-actions">
+                        <button class="product-detail-button primary" routerLink="/cotizar">
+                            <span class="button-text">Cotizar ahora</span>
+                        </button>
+                        <button class="product-detail-button secondary" (click)="goBack()">
+                            <span class="button-text">Volver</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    }
+
+    <!-- Footer -->
+    <app-footer-section></app-footer-section>
+</div>

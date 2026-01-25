@@ -3,8 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -24,57 +29,50 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
     RouterModule,
     TableModule,
     ButtonModule,
+    ToolbarModule,
+    IconFieldModule,
+    InputIconModule,
     InputTextModule,
     ConfirmDialogModule,
   ],
   providers: [ConfirmationService, MessageService],
   template: `
     <div class="card">
-      <h2>Gestión de Categorías</h2>
+      <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+          <p-button label="Nueva Categoría" icon="pi pi-plus" class="mr-2" (onClick)="onCreateCategoria()" />
+        </ng-template>
+      </p-toolbar>
 
-      <!-- Filtros y Acciones -->
-      <div class="mb-4">
-        <div class="flex justify-content-between mb-3">
-          <div class="flex gap-2 flex-wrap">
-            <span class="p-input-icon-left">
-              <i class="pi pi-search"></i>
-              <input
-                pInputText
-                type="text"
-                (input)="onSearch($event)"
-                placeholder="Buscar..." />
-            </span>
-          </div>
-
-          <div class="flex gap-2">
-            <p-button
-              label="Nueva Categoría"
-              icon="pi pi-plus"
-              (onClick)="onCreateCategoria()">
-            </p-button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Tabla de Categorías -->
       <p-table
         [value]="categorias()"
         [loading]="loading()"
         [paginator]="true"
         [rows]="15"
         [totalRecords]="total()"
-        styleClass="p-datatable-gridlines">
+        [rowHover]="true"
+        responsiveLayout="scroll"
+      >
+        <ng-template #caption>
+          <div class="flex items-center justify-between">
+            <h5 class="m-0">Gestión de Categorías</h5>
+            <p-iconfield>
+              <p-inputicon styleClass="pi pi-search" />
+              <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
+            </p-iconfield>
+          </div>
+        </ng-template>
 
-        <ng-template pTemplate="header">
+        <ng-template #header>
           <tr>
-            <th>Nombre</th>
+            <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
             <th>Proveedores</th>
             <th>Referencias</th>
             <th>Acciones</th>
           </tr>
         </ng-template>
 
-        <ng-template pTemplate="body" let-categoria>
+        <ng-template #body let-categoria>
           <tr>
             <td>{{ categoria.nombre }}</td>
             <td>
@@ -92,34 +90,25 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
               }
             </td>
             <td>
-              <p-button
-                icon="pi pi-eye"
-                [rounded]="true"
-                [text]="true"
-                severity="info"
-                (onClick)="onViewCategoria(categoria.id)">
-              </p-button>
-              <p-button
-                icon="pi pi-pencil"
-                [rounded]="true"
-                [text]="true"
-                severity="warn"
-                (onClick)="onEditCategoria(categoria.id)">
-              </p-button>
-              <p-button
-                icon="pi pi-trash"
-                [rounded]="true"
-                [text]="true"
-                severity="danger"
-                (onClick)="onDeleteCategoria(categoria)">
-              </p-button>
+              <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onViewCategoria(categoria.id)" />
+              <p-button icon="pi pi-pencil" severity="warn" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onEditCategoria(categoria.id)" />
+              <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="onDeleteCategoria(categoria)" />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="4" class="text-center py-8">
+              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+              <p class="text-gray-600">No se encontraron categorías</p>
             </td>
           </tr>
         </ng-template>
       </p-table>
     </div>
 
-    <p-confirmDialog></p-confirmDialog>
+    <p-confirmDialog />
   `,
   styles: [],
 })
@@ -129,13 +118,24 @@ export class ListComponent implements OnInit {
   private confirmationService = inject(ConfirmationService);
 
   // Signals para estado local
+  // Signals para estado local
   categorias = signal<Categoria[]>([]);
   loading = signal(false);
   total = signal(0);
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
 
   ngOnInit() {
-    // Cargar categorías inicial
     this.loadCategorias();
+
+    // Configurar búsqueda con debounce
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchTerm = query;
+      this.loadCategorias({ search: query });
+    });
 
     // Suscribirse al store
     this.store.select(CategoriasSelectors.selectAllCategorias).subscribe((categorias) => {
@@ -157,9 +157,7 @@ export class ListComponent implements OnInit {
 
   onSearch(event: any) {
     const search = event.target.value;
-    if (search.length === 0 || search.length >= 3) {
-      this.loadCategorias({ search });
-    }
+    this.searchSubject.next(search);
   }
 
   onCreateCategoria() {

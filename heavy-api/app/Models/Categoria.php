@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string $nombre
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tercero[] $terceros
  * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Referencia[] $referencias
  */
@@ -30,6 +31,8 @@ class Categoria extends Model
 
     /**
      * Relación many-to-many con Terceros (proveedores)
+     *
+     * @return BelongsToMany
      */
     public function terceros(): BelongsToMany
     {
@@ -38,6 +41,8 @@ class Categoria extends Model
 
     /**
      * Relación one-to-many con Referencias
+     *
+     * @return HasMany
      */
     public function referencias(): HasMany
     {

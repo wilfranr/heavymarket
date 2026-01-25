@@ -5,6 +5,7 @@ import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface SubCategory {
+  id: number;
   nombre: string;
   slug: string;
   imagen_url: string;
@@ -14,6 +15,7 @@ export interface SubCategory {
 export interface Category {
   nombre: string;
   slug: string;
+  descripcion_general?: string;
   subcategorias: SubCategory[];
 }
 

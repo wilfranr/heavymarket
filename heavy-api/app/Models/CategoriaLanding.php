@@ -14,6 +14,8 @@ class CategoriaLanding extends Model
     
     protected $fillable = ['nombre', 'descripcion_general'];
 
+    protected $appends = ['slug'];
+
     /**
      * Relación: una categoría tiene muchas subcategorías
      */

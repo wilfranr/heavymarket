@@ -1,0 +1,142 @@
+<div class="products-page-wrapper">
+    <div style="width: 100%; position: absolute; top: 0; z-index: 100;">
+        <app-navbar></app-navbar>
+    </div>
+
+    <!-- Hero Section con búsqueda -->
+    <div class="products-hero-section">
+        <div class="products-hero-content">
+            <div class="products-hero-overlay"></div>
+            <div class="products-hero-inner">
+                <div class="products-categories-tabs-wrapper">
+                    <button class="products-category-arrow products-category-arrow-left"
+                        [style.display]="showLeftArrow ? 'flex' : 'none'" (click)="scrollTabs('left')">
+                        <svg width="41" height="41" viewBox="0 0 41 41" fill="none">
+                            <path d="M25 10L15 20.5L25 31" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                    <div class="products-categories-tabs" #tabsContainer (scroll)="onTabsScroll()">
+                        <div class="products-category-tag" [class.active]="currentCategory === 'all'"
+                            (click)="setCategory('all')">Todas</div>
+                        @for (category of categories; track category.slug) {
+                        <div class="products-category-tag" [class.active]="currentCategory === category.slug"
+                            (click)="setCategory(category.slug)">{{ category.nombre }}</div>
+                        }
+                    </div>
+                    <button class="products-category-arrow products-category-arrow-right"
+                        [style.display]="showRightArrow ? 'flex' : 'none'" (click)="scrollTabs('right')">
+                        <svg width="41" height="41" viewBox="0 0 41 41" fill="none">
+                            <path d="M15 10L25 20.5L15 31" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" />
+                        </svg>
+                    </button>
+                </div>
+                <div class="products-search-container">
+                    <div class="products-search-box">
+                        <div class="products-search-filter">
+                            <span class="products-search-filter-text">Categoría</span>
+                            <span class="products-search-category-name">{{ getCategoryName(currentCategory) }}</span>
+                        </div>
+                        <div class="products-search-input-wrapper">
+                            <div class="products-search-input-inner">
+                                <input type="text" class="products-search-input" placeholder="Buscar productos..."
+                                    [(ngModel)]="currentSearchTerm" (input)="onSearchChange()"
+                                    aria-label="Buscar productos">
+                                <span class="products-search-close"
+                                    [style.display]="currentSearchTerm ? 'flex' : 'none'"
+                                    (click)="clearSearch()">×</span>
+                            </div>
+                            <button class="products-search-button" (click)="filterProducts()">
+                                <span>Buscar</span>
+                                <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                                    <path
+                                        d="M9 2C12.866 2 16 5.134 16 9C16 10.7 15.4 12.3 14.4 13.5L17.7 16.8C18.1 17.2 18.1 17.8 17.7 18.2C17.3 18.6 16.7 18.6 16.3 18.2L13 14.9C11.8 15.9 10.2 16.5 8.5 16.5C4.634 16.5 1.5 13.366 1.5 9.5C1.5 5.634 4.634 2.5 8.5 2.5H9V2Z"
+                                        fill="#FFFFFF" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="products-main-content">
+        <!-- Header de productos -->
+        <div class="products-header">
+            <h1 class="products-title">Nuestros productos</h1>
+            <p class="products-breadcrumb">Categorías / Productos</p>
+        </div>
+
+        <!-- Descripción -->
+        <div class="products-description">
+            <p id="categoria-descripcion">{{ getCategoryDescription(currentCategory) }}</p>
+        </div>
+
+        <!-- Grid de productos -->
+        <div class="products-grid" id="products-grid">
+            @for (item of filteredProducts; track item.category + '-' + item.subCategory.id) {
+            <div class="product-card fade-in" [routerLink]="['/productos', item.category, item.subCategory.slug]"
+                #productCard>
+                <div class="product-card-inner">
+                    <div class="product-image">
+                        <img [src]="item.subCategory.imagen_url || '/images/no-image.png'"
+                            [alt]="item.subCategory.nombre" loading="lazy"
+                            onerror="this.onerror=null; this.src='/images/no-image.png';">
+                    </div>
+                    <div class="product-info">
+                        <div class="product-header-info">
+                            <div class="product-name-wrapper">
+                                <h3 class="product-name">{{ item.subCategory.nombre }}</h3>
+                                <span class="product-category-tag">{{ getCategoryName(item.category) }}</span>
+                            </div>
+                        </div>
+                        <p class="product-description">{{ item.subCategory.descripcion }}</p>
+                        <button class="product-button">
+                            <span class="button-text">Saber más</span>
+                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                <path d="M6 3L11 8L6 13" stroke="#000000" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            }
+
+            @if (filteredProducts.length === 0) {
+            <div class="no-results-message">
+                <p style="text-align: center; padding: 40px; font-size: 18px; color: #666;">
+                    No se encontraron productos que coincidan con tu búsqueda.
+                </p>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Sección CTA -->
+    <div class="products-cta-section">
+        <div class="products-cta-content">
+            <div class="products-cta-column">
+                <h2 class="products-cta-title">Obtén cotizaciones rápidas para piezas de maquinaria</h2>
+            </div>
+            <div class="products-cta-column">
+                <p class="products-cta-description">Nuestra plataforma te permite solicitar cotizaciones en solo tres
+                    pasos sencillos. Ahorra tiempo y obtén las mejores ofertas para tus necesidades de maquinaria.</p>
+                <div class="products-cta-actions">
+                    <button class="products-cta-button-primary" routerLink="/cotizar">
+                        <span>Cotizar ahora</span>
+                    </button>
+                    <button class="products-cta-button-secondary">
+                        <span>Aprender más</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <app-footer-section></app-footer-section>
+</div>

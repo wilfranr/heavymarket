@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\OrdenCompraReferencia;
 
 /**
  * Modelo OrdenCompra
@@ -35,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property string|null $color
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \App\Models\User|null $user
  * @property-read \App\Models\Tercero|null $tercero
  * @property-read \App\Models\Tercero $proveedor
@@ -83,6 +85,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con el usuario que creó la orden
+     *
+     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -91,6 +95,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con el tercero (cliente)
+     *
+     * @return BelongsTo
      */
     public function tercero(): BelongsTo
     {
@@ -99,6 +105,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con el proveedor (también es un Tercero)
+     *
+     * @return BelongsTo
      */
     public function proveedor(): BelongsTo
     {
@@ -107,6 +115,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con el pedido origen
+     *
+     * @return BelongsTo
      */
     public function pedido(): BelongsTo
     {
@@ -115,6 +125,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con la cotización origen
+     *
+     * @return BelongsTo
      */
     public function cotizacion(): BelongsTo
     {
@@ -123,6 +135,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación con la referencia del pedido
+     *
+     * @return BelongsTo
      */
     public function pedidoReferencia(): BelongsTo
     {
@@ -131,6 +145,8 @@ class OrdenCompra extends Model
 
     /**
      * Relación many-to-many con Referencias
+     *
+     * @return BelongsToMany
      */
     public function referencias(): BelongsToMany
     {
@@ -142,6 +158,12 @@ class OrdenCompra extends Model
 
     /**
      * Agregar una referencia a la orden de compra
+     *
+     * @param int $referenciaId
+     * @param int $cantidad
+     * @param float $valorUnitario
+     * @param float $valorTotal
+     * @return void
      */
     public function addReferencia(int $referenciaId, int $cantidad, float $valorUnitario, float $valorTotal): void
     {
@@ -154,6 +176,8 @@ class OrdenCompra extends Model
 
     /**
      * Obtener el total de todas las referencias
+     *
+     * @return float
      */
     public function getTotalReferencias(): float
     {

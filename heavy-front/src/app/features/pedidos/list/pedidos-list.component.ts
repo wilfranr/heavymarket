@@ -3,13 +3,19 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { ConfirmationService } from 'primeng/api';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { TooltipModule } from 'primeng/tooltip';
 import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
@@ -31,147 +37,93 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
     RouterModule,
     TableModule,
     ButtonModule,
+    ToolbarModule,
+    IconFieldModule,
+    InputIconModule,
     InputTextModule,
     SelectModule,
     TagModule,
-    ConfirmDialogModule
+    ConfirmDialogModule,
+    TooltipModule
   ],
-  providers: [ConfirmationService],
+  providers: [ConfirmationService, MessageService],
   template: `
     <div class="card">
-      <h2>Gestión de Pedidos</h2>
-      
-      <!-- Filtros y Acciones -->
-      <div class="mb-4">
-        <div class="flex justify-content-between mb-3">
-          <div class="flex gap-2 flex-wrap">
-            <span class="p-input-icon-left">
-              <i class="pi pi-search"></i>
-              <input 
-                pInputText 
-                type="text" 
-                (input)="onSearch($event)" 
-                placeholder="Buscar..." />
-            </span>
-            
-            <p-select
-              [options]="estadosOptions"
-              [(ngModel)]="selectedEstado"
-              (ngModelChange)="onEstadoChange($event)"
-              placeholder="Estado"
-              [showClear]="true"
-              styleClass="w-48">
-            </p-select>
+      <p-toolbar styleClass="mb-6">
+        <ng-template #start>
+          <p-button label="Nuevo Pedido" icon="pi pi-plus" class="mr-2" (onClick)="onCreatePedido()" />
+          <p-button label="Limpiar Filtros" icon="pi pi-filter-slash" severity="secondary" outlined (onClick)="limpiarFiltros()" />
+        </ng-template>
 
-            <p-select
-              [options]="terceros"
-              [(ngModel)]="selectedTercero"
-              (ngModelChange)="onTerceroChange($event)"
-              placeholder="Cliente"
-              [filter]="true"
-              [showClear]="true"
-              styleClass="w-48">
-            </p-select>
-
-            <p-select
-              [options]="maquinas"
-              [(ngModel)]="selectedMaquina"
-              (ngModelChange)="onMaquinaChange($event)"
-              placeholder="Máquina"
-              [filter]="true"
-              [showClear]="true"
-              styleClass="w-48">
-            </p-select>
-
-            <p-select
-              [options]="fabricantes"
-              [(ngModel)]="selectedFabricante"
-              (ngModelChange)="onFabricanteChange($event)"
-              placeholder="Fabricante"
-              [filter]="true"
-              [showClear]="true"
-              styleClass="w-48">
-            </p-select>
-          </div>
-          
+        <ng-template #end>
           <div class="flex gap-2">
-            <p-button 
-              label="Limpiar Filtros" 
-              icon="pi pi-filter-slash"
-              severity="secondary"
-              [text]="true"
-              (onClick)="limpiarFiltros()">
-            </p-button>
-            <p-button 
-              label="Nuevo Pedido" 
-              icon="pi pi-plus"
-              (onClick)="onCreatePedido()">
-            </p-button>
+            <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-40" />
+            <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48" />
+            <p-select [options]="maquinas" [(ngModel)]="selectedMaquina" (ngModelChange)="onMaquinaChange($event)" placeholder="Máquina" [filter]="true" [showClear]="true" styleClass="w-48" />
+            <p-select [options]="fabricantes" [(ngModel)]="selectedFabricante" (ngModelChange)="onFabricanteChange($event)" placeholder="Fabricante" [filter]="true" [showClear]="true" styleClass="w-48" />
           </div>
-        </div>
-      </div>
-      
-      <!-- Tabla de Pedidos -->
-      <p-table 
-        [value]="pedidos()" 
+        </ng-template>
+      </p-toolbar>
+
+      <p-table
+        [value]="pedidos()"
         [loading]="loading()"
         [paginator]="true"
         [rows]="15"
         [totalRecords]="total()"
-        styleClass="p-datatable-gridlines">
-        
-        <ng-template pTemplate="header">
+        [rowHover]="true"
+        responsiveLayout="scroll"
+      >
+        <ng-template #caption>
+          <div class="flex items-center justify-between">
+            <h5 class="m-0">Gestión de Pedidos</h5>
+            <p-iconfield>
+              <p-inputicon styleClass="pi pi-search" />
+              <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
+            </p-iconfield>
+          </div>
+        </ng-template>
+
+        <ng-template #header>
           <tr>
-            <th>ID</th>
-            <th>Tercero</th>
-            <th>Estado</th>
+            <th pSortableColumn="id" style="width: 5rem">ID <p-sortIcon field="id" /></th>
+            <th pSortableColumn="tercero.razon_social">Tercero <p-sortIcon field="tercero.razon_social" /></th>
+            <th pSortableColumn="estado" style="width: 10rem">Estado <p-sortIcon field="estado" /></th>
             <th>Dirección</th>
-            <th>Fecha</th>
+            <th pSortableColumn="created_at" style="width: 12rem">Fecha <p-sortIcon field="created_at" /></th>
             <th>Acciones</th>
           </tr>
         </ng-template>
-        
-        <ng-template pTemplate="body" let-pedido>
+
+        <ng-template #body let-pedido>
           <tr>
             <td>{{ pedido.id }}</td>
             <td>{{ pedido.tercero?.razon_social || 'N/A' }}</td>
             <td>
-              <p-tag 
-                [value]="pedido.estado" 
-                [severity]="getEstadoSeverity(pedido.estado)">
-              </p-tag>
+              <p-tag [value]="pedido.estado" [severity]="getEstadoSeverity(pedido.estado)" />
             </td>
             <td>{{ pedido.direccion || 'N/A' }}</td>
-            <td>{{ pedido.created_at | date:'short' }}</td>
+            <td>{{ pedido.created_at | date: 'short' }}</td>
             <td>
-              <p-button 
-                icon="pi pi-eye"
-                [rounded]="true"
-                [text]="true"
-                severity="info"
-                (onClick)="onViewPedido(pedido.id)">
-              </p-button>
-              <p-button 
-                icon="pi pi-pencil"
-                [rounded]="true"
-                [text]="true"
-                severity="warn"
-                (onClick)="onEditPedido(pedido.id)">
-              </p-button>
-              <p-button 
-                icon="pi pi-trash"
-                [rounded]="true"
-                [text]="true"
-                severity="danger"
-                (onClick)="onDeletePedido(pedido)">
-              </p-button>
+              <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onViewPedido(pedido.id)" pTooltip="Ver detalle" tooltipPosition="top" />
+              <p-button icon="pi pi-pencil" severity="warn" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onEditPedido(pedido.id)" pTooltip="Editar" tooltipPosition="top" />
+              <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="onDeletePedido(pedido)" pTooltip="Eliminar" tooltipPosition="top" />
+            </td>
+          </tr>
+        </ng-template>
+
+        <ng-template #emptymessage>
+          <tr>
+            <td colspan="6" class="text-center py-8">
+              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+              <p class="text-gray-600">No se encontraron pedidos</p>
             </td>
           </tr>
         </ng-template>
       </p-table>
     </div>
-    
-    <p-confirmDialog></p-confirmDialog>
+
+    <p-confirmDialog />
   `,
   styles: []
 })
@@ -192,14 +144,16 @@ export class PedidosListComponent implements OnInit {
   selectedVendedor: number | null = null;
   selectedMaquina: number | null = null;
   selectedFabricante: number | null = null;
-  
+  searchTerm = '';
+  private searchSubject = new Subject<string>();
+
   // Opciones para filtros
   terceros: any[] = [];
   vendedores: any[] = [];
   maquinas: any[] = [];
   fabricantes: any[] = [];
 
-  estadosOptions: Array<{label: string; value: PedidoEstado}> = [
+  estadosOptions: Array<{ label: string; value: PedidoEstado }> = [
     { label: 'Nuevo', value: 'Nuevo' },
     { label: 'Enviado', value: 'Enviado' },
     { label: 'En Costeo', value: 'En_Costeo' },
@@ -213,9 +167,18 @@ export class PedidosListComponent implements OnInit {
   ngOnInit() {
     // Cargar datos para filtros
     this.loadFilterOptions();
-    
+
     // Cargar pedidos inicial
     this.loadPedidos();
+
+    // Configurar búsqueda con debounce
+    this.searchSubject.pipe(
+      debounceTime(500),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.searchTerm = query;
+      this.loadPedidos({ search: query });
+    });
 
     // Suscribirse al store
     this.store.select(PedidosSelectors.selectAllPedidos).subscribe(pedidos => {
@@ -272,7 +235,7 @@ export class PedidosListComponent implements OnInit {
   loadPedidos(params: any = {}) {
     // Construir parámetros de filtro
     const filterParams: any = {};
-    
+
     if (this.selectedEstado) {
       filterParams.estado = this.selectedEstado;
     }
@@ -288,16 +251,16 @@ export class PedidosListComponent implements OnInit {
     if (this.selectedFabricante) {
       filterParams.fabricante_id = this.selectedFabricante;
     }
-    
+
     // Combinar con otros parámetros (búsqueda, paginación, etc.)
     const finalParams = { ...filterParams, ...params };
-    
+
     this.store.dispatch(PedidosActions.loadPedidos({ params: finalParams }));
   }
 
   onSearch(event: any) {
     const search = event.target.value;
-    this.loadPedidos({ search });
+    this.searchSubject.next(search);
   }
 
   onEstadoChange(value: any) {

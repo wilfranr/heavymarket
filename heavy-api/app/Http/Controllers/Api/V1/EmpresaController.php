@@ -8,8 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmpresaRequest;
 use App\Http\Resources\EmpresaResource;
 use App\Models\Empresa;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -107,13 +106,13 @@ class EmpresaController extends Controller
     public function update(Request $request, Empresa $empresa): JsonResponse
     {
         $validated = $request->validate([
-            'nombre' => ['sometimes', 'string', 'max:300', 'unique:empresas,nombre,'.$empresa->id],
+            'nombre' => ['sometimes', 'string', 'max:300', 'unique:empresas,nombre,' . $empresa->id],
             'siglas' => ['nullable', 'string', 'max:10'],
             'direccion' => ['sometimes', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:255'],
             'celular' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'max:255', 'unique:empresas,email,'.$empresa->id],
-            'nit' => ['sometimes', 'string', 'max:255', 'unique:empresas,nit,'.$empresa->id],
+            'email' => ['sometimes', 'email', 'max:255', 'unique:empresas,email,' . $empresa->id],
+            'nit' => ['sometimes', 'string', 'max:255', 'unique:empresas,nit,' . $empresa->id],
             'representante' => ['sometimes', 'string', 'max:255'],
             'country_id' => ['nullable', 'integer', 'exists:countries,id'],
             'state_id' => ['nullable', 'integer', 'exists:states,id'],

@@ -2,16 +2,22 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { TooltipModule } from 'primeng/tooltip';
+import { FormsModule } from '@angular/forms';
 
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
@@ -29,11 +35,16 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
         RouterModule,
         TableModule,
         ButtonModule,
+        ToolbarModule,
+        IconFieldModule,
+        InputIconModule,
         CardModule,
         InputTextModule,
         TagModule,
         ToastModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        TooltipModule,
+        FormsModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
@@ -41,7 +52,7 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
-    
+
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -50,10 +61,41 @@ export class ListComponent implements OnInit {
     terceros$!: Observable<Tercero[]>;
     loading$!: Observable<boolean>;
 
+    searchTerm = '';
+    private searchSubject = new Subject<string>();
+
     ngOnInit(): void {
-        this.store.dispatch(loadTerceros({}));
+        this.cargarTerceros();
         this.terceros$ = this.store.select(selectAllTerceros);
         this.loading$ = this.store.select(selectTercerosLoading);
+
+        // Configurar búsqueda con debounce
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(query => {
+            this.searchTerm = query;
+            this.cargarTerceros();
+        });
+    }
+
+    /**
+     * Carga los terceros
+     */
+    cargarTerceros(): void {
+        const params: any = {};
+        if (this.searchTerm) {
+            params.search = this.searchTerm;
+        }
+        this.store.dispatch(loadTerceros({ params }));
+    }
+
+    /**
+     * Maneja la búsqueda global
+     */
+    onSearch(event: Event): void {
+        const value = (event.target as HTMLInputElement).value;
+        this.searchSubject.next(value);
     }
 
     /**

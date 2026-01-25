@@ -53,7 +53,7 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [AuthController::class, 'login']);
 
     /**
-     * Rutas de Landing Page (públicas)
+     * Rutas de datos públicos para Landing Page
      */
     Route::get('/landing/categories', [LandingController::class, 'index']);
 

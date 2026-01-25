@@ -5,17 +5,15 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\StorePedidoRequest;
-use App\Http\Requests\UpdatePedidoRequest;
-use App\Http\Resources\PedidoResource;
+use App\Http\Requests\{StorePedidoRequest, UpdatePedidoRequest};
+use App\Http\Resources\{PedidoResource, PedidoCollection};
 use App\Models\Pedido;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
 
 /**
  * Controlador API para gestión de Pedidos
- *
+ * 
  * Maneja todas las operaciones CRUD de pedidos a través del API REST.
  * Implementa filtros, búsqueda, paginación y manejo de relaciones.
  */
@@ -23,8 +21,10 @@ class PedidoController extends Controller
 {
     /**
      * Listar todos los pedidos con filtros opcionales
-     *
-     *
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     * 
      * @queryParam page int Número de página. Example: 1
      * @queryParam per_page int Elementos por página. Example: 15
      * @queryParam estado string Filtrar por estado. Example: Nuevo
@@ -93,6 +93,9 @@ class PedidoController extends Controller
 
     /**
      * Crear un nuevo pedido
+     * 
+     * @param StorePedidoRequest $request
+     * @return JsonResponse
      */
     public function store(StorePedidoRequest $request): JsonResponse
     {
@@ -151,7 +154,7 @@ class PedidoController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-
+            
             return response()->json([
                 'message' => 'Error al crear el pedido',
                 'error' => $e->getMessage(),
@@ -161,6 +164,9 @@ class PedidoController extends Controller
 
     /**
      * Mostrar un pedido específico
+     * 
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function show(Pedido $pedido): JsonResponse
     {
@@ -173,7 +179,7 @@ class PedidoController extends Controller
             'referencias.referencia',
             'referencias.proveedores.tercero',
             'articulos.articulo',
-            'articulos.sistema',
+            'articulos.sistema'
         ]);
 
         return response()->json([
@@ -183,6 +189,10 @@ class PedidoController extends Controller
 
     /**
      * Actualizar un pedido existente
+     * 
+     * @param UpdatePedidoRequest $request
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
@@ -206,12 +216,15 @@ class PedidoController extends Controller
 
     /**
      * Eliminar un pedido
+     * 
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function destroy(Pedido $pedido): JsonResponse
     {
         try {
             // Verificar permisos
-            if (! auth()->user()->can('delete', $pedido)) {
+            if (!auth()->user()->can('delete', $pedido)) {
                 return response()->json([
                     'message' => 'No autorizado para eliminar este pedido',
                 ], 403);
@@ -233,6 +246,10 @@ class PedidoController extends Controller
 
     /**
      * Agregar una referencia a un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function addReferencia(Request $request, Pedido $pedido): JsonResponse
     {
@@ -266,6 +283,11 @@ class PedidoController extends Controller
 
     /**
      * Actualizar una referencia de un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
      */
     public function updateReferencia(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
     {
@@ -300,6 +322,10 @@ class PedidoController extends Controller
 
     /**
      * Eliminar una referencia de un pedido
+     *
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
      */
     public function deleteReferencia(Pedido $pedido, int $referenciaId): JsonResponse
     {
@@ -320,6 +346,11 @@ class PedidoController extends Controller
 
     /**
      * Agregar un proveedor a una referencia de pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @return JsonResponse
      */
     public function addProveedor(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
     {
@@ -358,6 +389,12 @@ class PedidoController extends Controller
 
     /**
      * Actualizar un proveedor de una referencia de pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @param int $proveedorId
+     * @return JsonResponse
      */
     public function updateProveedor(Request $request, Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
     {
@@ -376,7 +413,7 @@ class PedidoController extends Controller
 
         try {
             // Recalcular valores si cambió costo, utilidad, cantidad o ubicación
-            if (isset($validated['costo_unidad']) || isset($validated['utilidad']) ||
+            if (isset($validated['costo_unidad']) || isset($validated['utilidad']) || 
                 isset($validated['cantidad']) || isset($validated['ubicacion'])) {
                 $datosCompletos = array_merge($proveedor->toArray(), $validated);
                 $valores = $this->calcularValores($datosCompletos, $pedidoReferencia);
@@ -400,6 +437,11 @@ class PedidoController extends Controller
 
     /**
      * Eliminar un proveedor de una referencia de pedido
+     *
+     * @param Pedido $pedido
+     * @param int $referenciaId
+     * @param int $proveedorId
+     * @return JsonResponse
      */
     public function deleteProveedor(Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
     {
@@ -421,6 +463,10 @@ class PedidoController extends Controller
 
     /**
      * Agregar un artículo a un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return JsonResponse
      */
     public function addArticulo(Request $request, Pedido $pedido): JsonResponse
     {
@@ -450,6 +496,11 @@ class PedidoController extends Controller
 
     /**
      * Actualizar un artículo de un pedido
+     *
+     * @param Request $request
+     * @param Pedido $pedido
+     * @param int $articuloId
+     * @return JsonResponse
      */
     public function updateArticulo(Request $request, Pedido $pedido, int $articuloId): JsonResponse
     {
@@ -480,6 +531,10 @@ class PedidoController extends Controller
 
     /**
      * Eliminar un artículo de un pedido
+     *
+     * @param Pedido $pedido
+     * @param int $articuloId
+     * @return JsonResponse
      */
     public function deleteArticulo(Pedido $pedido, int $articuloId): JsonResponse
     {
@@ -500,6 +555,10 @@ class PedidoController extends Controller
 
     /**
      * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
+     *
+     * @param array $datos
+     * @param \App\Models\PedidoReferencia $pedidoReferencia
+     * @return array
      */
     private function calcularValores(array $datos, \App\Models\PedidoReferencia $pedidoReferencia): array
     {

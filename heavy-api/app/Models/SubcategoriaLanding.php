@@ -57,8 +57,12 @@ class SubcategoriaLanding extends Model
         
         // Fallback al mapeo del config
         $map = config('productos_imagenes');
-        $imageName = $map[$this->slug] ?? $map['default'];
-        return asset('images/' . $imageName);
+        if (is_array($map)) {
+            $imageName = $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
+            return asset('images/' . $imageName);
+        }
+        
+        return asset('images/no-image.png');
     }
     
     /**
@@ -69,7 +73,10 @@ class SubcategoriaLanding extends Model
         // Si no hay valor, usar el mapeo del config
         if (!$value) {
             $map = config('productos_imagenes');
-            return $map[$this->slug] ?? $map['default'];
+            if (is_array($map)) {
+                return $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
+            }
+            return 'no-image.png';
         }
         
         return $value;

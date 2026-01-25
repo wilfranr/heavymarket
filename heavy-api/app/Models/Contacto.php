@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $principal
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \App\Models\Tercero $tercero
  * @property-read \App\Models\Country|null $country
  */
@@ -47,6 +48,8 @@ class Contacto extends Model
 
     /**
      * Relación con Tercero
+     *
+     * @return BelongsTo
      */
     public function tercero(): BelongsTo
     {
@@ -55,6 +58,8 @@ class Contacto extends Model
 
     /**
      * Relación con Country
+     *
+     * @return BelongsTo
      */
     public function country(): BelongsTo
     {

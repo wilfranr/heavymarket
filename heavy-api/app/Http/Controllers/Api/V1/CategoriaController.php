@@ -8,8 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCategoriaRequest;
 use App\Http\Resources\CategoriaResource;
 use App\Models\Categoria;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
+use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -107,7 +106,7 @@ class CategoriaController extends Controller
     public function update(Request $request, Categoria $categoria): JsonResponse
     {
         $validated = $request->validate([
-            'nombre' => ['sometimes', 'string', 'max:255', 'unique:categorias,nombre,'.$categoria->id],
+            'nombre' => ['sometimes', 'string', 'max:255', 'unique:categorias,nombre,' . $categoria->id],
             'terceros' => ['nullable', 'array'],
             'terceros.*' => ['integer', 'exists:terceros,id'],
         ]);

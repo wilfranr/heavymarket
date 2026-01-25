@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $ciudad_texto
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \App\Models\Tercero $tercero
  * @property-read \App\Models\Country|null $country
  * @property-read \App\Models\City|null $city
@@ -60,6 +61,8 @@ class Direccion extends Model
 
     /**
      * Relación con Tercero
+     *
+     * @return BelongsTo
      */
     public function tercero(): BelongsTo
     {
@@ -68,6 +71,8 @@ class Direccion extends Model
 
     /**
      * Relación con Country
+     *
+     * @return BelongsTo
      */
     public function country(): BelongsTo
     {
@@ -76,6 +81,8 @@ class Direccion extends Model
 
     /**
      * Relación con City
+     *
+     * @return BelongsTo
      */
     public function city(): BelongsTo
     {
@@ -84,6 +91,8 @@ class Direccion extends Model
 
     /**
      * Relación con State
+     *
+     * @return BelongsTo
      */
     public function state(): BelongsTo
     {
@@ -92,6 +101,8 @@ class Direccion extends Model
 
     /**
      * Relación con Transportadora
+     *
+     * @return BelongsTo
      */
     public function transportadora(): BelongsTo
     {

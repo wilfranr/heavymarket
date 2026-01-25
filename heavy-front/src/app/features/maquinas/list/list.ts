@@ -2,10 +2,14 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
+import { ToolbarModule } from 'primeng/toolbar';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
@@ -29,7 +33,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquinas-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, ToolbarModule, IconFieldModule, InputIconModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -56,15 +60,35 @@ export class ListComponent implements OnInit {
     selectedTipoId: number | null = null;
     tipos: Lista[] = [];
     fabricantes: Fabricante[] = [];
+    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
         this.maquinas$ = this.store.select(selectAllMaquinas);
         this.loading$ = this.store.select(selectMaquinasLoading);
         this.pagination$ = this.store.select(selectMaquinasPagination);
 
+        // Configurar búsqueda con debounce
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(query => {
+            this.searchTerm = query;
+            this.currentPage = 1;
+            this.first = 0;
+            this.cargarMaquinas();
+        });
+
         this.cargarTipos();
         this.cargarFabricantes();
         this.cargarMaquinas();
+    }
+
+    /**
+     * Maneja la búsqueda global
+     */
+    onSearch(event: Event): void {
+        const value = (event.target as HTMLInputElement).value;
+        this.searchSubject.next(value);
     }
 
     /**
@@ -167,7 +191,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteMaquina({ id: maquina.id }));
-                
+
                 setTimeout(() => {
                     this.cargarMaquinas();
                 }, 500);

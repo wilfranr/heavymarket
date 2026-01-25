@@ -1,6 +1,6 @@
 # Contexto y Guía para Agentes de IA - HeavyMarket (Frontend)
 
-> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser en **ESPAÑOL**. Ver `AGENTS.md` en la raíz para reglas completas.
+> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser SIEMPRE en **ESPAÑOL**, sin excepción y sin necesidad de recordatorio. Ver `AGENTS.md` en la raíz para reglas completas.
 
 ## Stack Tecnológico
 - **Framework**: Angular 20 (Última versión).
@@ -33,7 +33,8 @@ La aplicación sigue una arquitectura basada en características (features) y ca
 - **Patrón**: Actions -> Reducers -> Selectors -> Effects.
 - Usar `createActionGroup` y `createFeature` para reducir boilerplate.
 
-### 3. Estilos (Tailwind + PrimeNG)
+### 3. Estilos y Componentes UI (Tailwind + PrimeNG)
+- **PRIORIDAD DE PLANTILLA**: Antes de implementar cualquier elemento de UI (inputs, tablas, modales), verificar SIEMPRE en `src/app/pages/uikit` si ya existe en la plantilla Sakai. **Nunca** reinventar la rueda con HTML/CSS puro si existe un componente de PrimeNG.
 - **NO escribir CSS personalizado** si se puede resolver con utilidades de Tailwind.
 - Usar las clases de utilidad de PrimeNG cuando sea necesario integrar con el tema.
 - Mantener el diseño responsive (Mobile First).

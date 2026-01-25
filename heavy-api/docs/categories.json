@@ -1,0 +1,648 @@
+{
+    "categorias": [
+        {
+            "nombre": "Motores",
+            "descripcion_general": "El Motor es el corazón de su máquina. Con nosotros encontrará desde motores completos hasta los componentes esenciales para su óptimo funcionamiento y reparación. Ofrecemos productos que transforman la energía en la potencia mecánica que necesitas. Suministramos repuestos de las mejores marcas del mercado para la mayoría de Fabricantes existentes. Componentes fabricados con materiales de alta resistencia, diseñados para soportar las más altas exigencias, asegurando rendimiento, durabilidad y la potencia necesaria. [cite: 1, 2, 3, 4, 5]",
+            "subcategorias": [
+                {
+                    "nombre": "Kits de Reparación para Motor",
+                    "descripcion": "Mantenga su motor en perfecto estado con los más completos Kits de Reparación para Motor. Desde kits con los componentes esenciales para realizar un mantenimiento preventivo básico (Conjuntos, casquetería y empaquetaduras) hasta kits completos para reparaciones más extensas (Válvulas y periféricos). Reemplaza las piezas desgastadas, asegurando que tu motor recupere su eficiencia y prolongue su vida útil con componentes garantizados. Es la solución integral para restaurar el rendimiento y la fiabilidad de tu motor. [cite: 6, 7, 8, 9, 10]"
+                },
+                {
+                    "nombre": "Pistones",
+                    "descripcion": "Tenemos una amplia gama de Pistones, tanto enteros como articulados. Fabricados generalmente en aleaciones que brindan alta resistencia. Un pistón de calidad es vital para la eficiencia de la combustión, la potencia del motor, la reducción de la fricción y la durabilidad general del motor. Suministramos pistones sueltos, kits de pistón y juegos de anillos. Tenemos para los diferentes rangos de motores Diesel para maquinaria pesada en marcas como IPD, Mahle, CTP, FP Diesel, Izumi y las marcas más confiables del mercado. [cite: 11, 12, 13, 14, 15]"
+                },
+                {
+                    "nombre": "Casquetes (Cojinetes de Motor)",
+                    "descripcion": "Los Casquetes, también conocidos como cojinetes de biela o bancada, son elementos cruciales para la longevidad y el correcto funcionamiento del motor. Estas piezas se encargan de soportar y permitir el giro suave del cigüeñal y las bielas, reduciendo la fricción entre las superficies móviles y fijas. Son elementos de desgaste diseñados para proteger componentes más costosos como el cigüeñal, por esta razón ofrecemos casquetes, bujes y axiales de la mejor calidad, en medida estándar y sobremedida para que su cigüeñal tenga el ajuste perfecto. [cite: 16, 17, 18, 19]"
+                },
+                {
+                    "nombre": "Empaquetaduras (Juntas de Motor)",
+                    "descripcion": "Encuentre los juegos de empaques y sellos que necesita para garantizar la estanqueidad perfecta en todas las uniones críticas de tu motor. Empaques de culata, sellos de válvulas y empaque de cárter, y demás piezas vitales para prevenir fugas de gases, aceites y líquidos. Empaquetaduras completas y específicas asegurarán un sellado hermético y duradero, esencial para el rendimiento y la protección del motor. [cite: 20, 21, 22, 23]"
+                },
+                {
+                    "nombre": "Válvulas",
+                    "descripcion": "Las Válvulas de Motor son componentes esenciales que controlan el flujo de gases dentro y fuera de los cilindros. Las válvulas de admisión permiten la entrada de la mezcla de aire y combustible, mientras que las válvulas de escape facilitan la salida de los gases de combustión. Su correcto funcionamiento es imprescindible para la respiración eficiente del motor y, por ende, para su potencia y rendimiento. Instale solamente válvulas de las mejores marcas que garanticen su óptimo funcionamiento. [cite: 24, 25, 26, 27, 28]"
+                },
+                {
+                    "nombre": "Cigüeñal",
+                    "descripcion": "Tenemos cigüeñales nuevos y usados listos para suplir su necesidad. Manejamos cigüeñales para motores Caterpillar, Perkins, Komatsu, Cummins, John Deere, Volvo, Doosan y otros. El Cigüeñal es una de las piezas más importantes del motor, responsable de convertir el movimiento lineal y alternativo de los pistones en un movimiento rotativo. Suministramos cigüeñales fabricados con precisión y materiales de la más alta calidad. Asegure con ellos la correcta sincronización y la transmisión eficiente de la potencia generada por el motor. [cite: 29, 30, 31, 32, 33, 34]"
+                },
+                {
+                    "nombre": "Árbol de levas",
+                    "descripcion": "Un árbol de levas de alta calidad controlará adecuadamente la apertura y el cierre de las válvulas de admisión y escape. Mediante levas de diseño específico, este eje sincroniza la secuencia de eventos dentro del motor, asegurando que la mezcla de aire y combustible entre, y los gases de escape salgan de los cilindros de manera coordinada con el movimiento de los pistones. Es una pieza clave para el rendimiento y la suavidad de funcionamiento del motor. [cite: 35, 36, 37, 38, 39]"
+                },
+                {
+                    "nombre": "Culatas",
+                    "descripcion": "Una culata de buena calidad, sellará apropiadamente el motor, formando una cámara de combustión de alta eficiencia. Generalmente fabricada en los mejores materiales, no solo cierra los cilindros, sino que también aloja componentes vitales como las válvulas. Su integridad es fundamental para evitar pérdidas de compresión y asegurar el correcto y duradero funcionamiento del motor. Esto se verá reflejado en maquinaria funcionando eficazmente durante jornadas largas de trabajo y ahorro previniendo múltiples daños de motor. Ofrecemos culatas completas y desnudas de la mejor calidad, también sus complementos como guías, asientos y empaquetaduras para la mayoría de motores del mercado. [cite: 40, 41, 42, 43, 44, 45]"
+                }
+            ]
+        },
+        {
+            "nombre": "Trenes de Rodaje",
+            "descripcion_general": "El Tren de Rodaje es la base fundamental que garantiza la movilidad, estabilidad y tracción de su maquinaria pesada. Es un sistema sometido a un desgaste constante y que representa una parte significativa de los costos operativos. Por ello, ofrecemos una gama completa de componentes de la más alta calidad, diseñados para soportar las condiciones de trabajo más severas y el abuso constante. Nuestros repuestos aseguran un funcionamiento suave, minimizan el tiempo de inactividad y prolongan la vida útil de su máquina. Suministramos piezas de alta ingeniería, fabricadas con aceros de alto rendimiento para garantizar resistencia superior, durabilidad excepcional en cualquier terreno y la máxima eficiencia en la transferencia de potencia. [cite: 46, 47, 48, 49, 50, 51]",
+            "subcategorias": [
+                {
+                    "nombre": "Cadenas",
+                    "descripcion": "Las Cadenas son el esqueleto de su sistema de rodaje. Son las responsables de soportar el peso de la máquina y transferir la potencia del motor al suelo para generar tracción. Ofrecemos cadenas selladas y lubricadas de paso estándar y largo, diseñadas para un rendimiento superior y una resistencia excepcional a la abrasión y el impacto. Asegure la máxima eficiencia de movimiento con cadenas que garantizan el paso (pitch) correcto y el ajuste perfecto con los demás componentes, lo que se traduce en menos desgaste y mayor vida útil. [cite: 52, 53, 54, 55, 56]"
+                },
+                {
+                    "nombre": "Zapatas",
+                    "descripcion": "Las Zapatas, o garras, son el punto de contacto directo con el terreno. Su diseño y estado son cruciales para la tracción, la flotación y la estabilidad operativa de su equipo. Disponemos de una amplia selección de zapatas en diversos anchos y configuraciones de garras, fabricadas con materiales resistentes para minimizar el desgaste prematuro. Seleccione la zapata adecuada para optimizar el agarre y la fuerza de empuje en cualquier aplicación, desde roca hasta lodos blandos, protegiendo su inversión. [cite: 57, 58, 59, 60, 61]"
+                },
+                {
+                    "nombre": "Rodillos",
+                    "descripcion": "Los Rodillos (inferiores y superiores) cumplen la vital función de soportar el peso de la máquina, guiar la cadena a lo largo del bastidor y mantener su tensión. Suministramos rodillos con sellos de alta calidad y lubricación de larga duración, con carcasas de acero forjado y superficies de rodadura endurecidas. Invertir en rodillos de calidad reduce drásticamente la fricción y el desgaste de la cadena, contribuyendo a la eficiencia general y la precisión de movimiento del tren de rodaje. [cite: 62, 63, 64, 65]"
+                },
+                {
+                    "nombre": "Ruedas Guía",
+                    "descripcion": "Las Ruedas Guía son esenciales para el correcto guiado de la cadena y la absorción de impactos. Junto con el tensor, mantienen la tensión adecuada de la cadena, lo cual es fundamental para prevenir el descarrilamiento y el desgaste irregular de los componentes. Ofrecemos ruedas guía de fundición robusta y diseños optimizados que mejoran el rendimiento en condiciones exigentes, asegurando una vida útil prolongada y protegiendo el resto de los componentes del tren de rodaje. [cite: 66, 67, 68, 69]"
+                },
+                {
+                    "nombre": "Sprocket y Segmentos",
+                    "descripcion": "El Sprocket (rueda dentada) o sus Segmentos son los encargados directos de transmitir el par motor y el movimiento de rotación a la cadena. La precisión de sus dientes es crítica para un engranaje suave, silencioso y eficiente. Proveemos sprockets completos y juegos de segmentos intercambiables, fabricados con acero de alta calidad y tratados térmicamente para ofrecer una resistencia superior al desgaste, asegurando una transferencia de potencia efectiva y sin deslizamientos. [cite: 70, 71, 72, 73]"
+                },
+                {
+                    "nombre": "Tornillería",
+                    "descripcion": "La Tornillería de rodaje no es un componente menor; es la garantía de que todas las piezas críticas permanezcan unidas bajo las más altas cargas, impactos y vibraciones. Suministramos tornillos de zapata, tuercas y pernos con tratamientos especiales de endurecimiento (grado 12.9 o superior), que cumplen o superan las especificaciones del fabricante. Asegure la integridad estructural de su tren de rodaje y prevenga costosas fallas por aflojamiento con tornillería de máxima resistencia a la tracción y el cizallamiento. [cite: 74, 75, 76, 77]"
+                },
+                {
+                    "nombre": "Bujes, sellos y componentes internos",
+                    "descripcion": "La durabilidad del tren de rodaje reside en los detalles internos. Ofrecemos Bujes, Sellos, Retenes y pasadores de ingeniería de precisión, vitales para proteger las articulaciones de la cadena y los rodillos. Los bujes reducen el desgaste por fricción, mientras que los sellos de flotación de alta ingeniería mantienen el lubricante dentro y los contaminantes fuera. Utilice estos componentes internos de primera calidad para prolongar los intervalos de servicio, mantener la lubricación interna y maximizar la vida útil de todo su sistema. [cite: 78, 79, 80, 81, 82]"
+                }
+            ]
+        },
+        {
+            "nombre": "Chasis y Articulaciones",
+            "descripcion_general": "El Chasis y las Articulaciones son la estructura fundamental que soporta la carga dinámica y estática, y que permite la funcionalidad precisa de los implementos de su máquina. La integridad de estos componentes es vital para la seguridad operativa, la estabilidad y la correcta distribución de fuerzas durante el trabajo pesado. Suministramos repuestos diseñados para ser el punto de máxima resistencia, fabricados con aceros de alta tenacidad y mecanizados con precisión milimétrica. Con nuestros componentes, asegurará que su maquinaria mantenga su rigidez estructural, su capacidad de carga y la fluidez de movimiento necesarias para operar al máximo rendimiento y con la mayor vida útil. [cite: 83, 84, 85, 86, 87]",
+            "subcategorias": [
+                {
+                    "nombre": "Bastidores (Frame)",
+                    "descripcion": "El Bastidor es el esqueleto central de la maquinaria pesada, la estructura principal que alberga y conecta el motor, el tren de potencia y el tren de rodaje. Ofrecemos componentes de bastidor fabricados para resistir las torsiones y tensiones extremas inherentes a las aplicaciones más exigentes. La calidad de nuestro frame asegura el soporte firme y la alineación correcta de todos los sistemas de la máquina, previniendo fallas prematuras por fatiga de material y garantizando la longevidad de su equipo. [cite: 88, 89, 90, 91]"
+                },
+                {
+                    "nombre": "Vigas",
+                    "descripcion": "Las Vigas son elementos cruciales dentro de la estructura, diseñadas para distribuir cargas pesadas y actuar como pivotes de movimiento o como soportes rígidos. Ya sean vigas de soporte para el eje o de conexión en sistemas articulados, su resistencia es indispensable. Suministramos vigas forjadas y soldadas con especificaciones rigurosas que resisten la flexión y el pandeo. Unas vigas robustas son la clave para mantener la capacidad de carga nominal de su máquina y la seguridad bajo cualquier condición de trabajo. [cite: 92, 93, 94, 95, 96]"
+                },
+                {
+                    "nombre": "Pasadores, Bujes y Sellos Guardapolvo",
+                    "descripcion": "Los Pasadores y Bujes son los puntos de unión críticos en todas las articulaciones, esenciales para el movimiento pivotante y el correcto acople de los implementos. Su desgaste es inevitable, pero su calidad define la vida útil de la articulación. Suministramos Pasadores de acero endurecido y Bujes de aleación de alta resistencia a la abrasión. Complementados con Sellos Guardapolvo de alto rendimiento que mantienen el lubricante en su sitio y los contaminantes fuera, esta trilogía de componentes asegura movimientos suaves, minimiza el juego excesivo y reduce los costosos daños en las estructuras principales. [cite: 97, 98, 99, 100, 101]"
+                },
+                {
+                    "nombre": "Rótulas",
+                    "descripcion": "Las Rótulas, o cojinetes esféricos, son un componente de alta ingeniería que permite la articulación y el movimiento multidireccional entre estructuras, como en los cilindros hidráulicos o en el chasis de equipos articulados. La precisión de su fabricación es fundamental para absorber desalineaciones y transmitir fuerzas sin fricción excesiva. Ofrecemos rótulas de alta resistencia con superficies de contacto tratadas, que garantizan una maniobrabilidad precisa y prolongan la vida útil de los cilindros y ejes a los que están conectadas. [cite: 102, 103, 104, 105]"
+                },
+                {
+                    "nombre": "Bielas y Haches",
+                    "descripcion": "Las Bielas y Haches forman parte del varillaje de accionamiento, comúnmente encontradas en el sistema de levantamiento y manipulación de implementos, como cucharones o rippers. Estas piezas transforman el movimiento lineal del cilindro hidráulico en el movimiento angular necesario para la operación. Suministramos bielas y haches fabricadas para soportar la máxima fuerza de empuje y tracción, con una geometría precisa que asegura la cinemática correcta del implemento, garantizando potencia, rapidez y control total en sus operaciones. [cite: 106, 107, 108, 109]"
+                }
+            ]
+        },
+        {
+            "nombre": "Hidráulicos",
+            "descripcion_general": "El sistema Hidráulico es el nervio central de su máquina, responsable de transformar la potencia mecánica del motor en la fuerza controlada necesaria para el movimiento, levantamiento y operación de los implementos. La eficiencia y precisión de su maquinaria dependen directamente de la calidad de sus componentes hidráulicos. Suministramos un inventario completo de piezas que garantizan el flujo, la presión y el control óptimos. Desde el corazón del sistema (bombas) hasta la precisión del control (válvulas y solenoides), ofrecemos repuestos de las mejores marcas, diseñados para soportar altas presiones y operar con la máxima fiabilidad, asegurando una respuesta rápida y potente en cada ciclo de trabajo. [cite: 110, 111, 112, 113, 114]",
+            "subcategorias": [
+                {
+                    "nombre": "Repuestos para componentes Hidráulicos",
+                    "descripcion": "Para maximizar la vida útil y restaurar el rendimiento de sus componentes hidráulicos existentes, ofrecemos un amplio surtido de repuestos de precisión. Esto incluye kits de sellos, pistones, bloques de válvulas, placas y componentes internos para bombas y motores. Utilizar repuestos de alta calidad en sus reparaciones asegura que los componentes recuperen su estanqueidad y eficiencia volumétrica original, prolongando su vida operativa a una fracción del costo de un reemplazo total. [cite: 115, 116, 117, 118]"
+                },
+                {
+                    "nombre": "Bombas Hidráulicas",
+                    "descripcion": "La Bomba Hidráulica es el corazón del sistema, la encargada de generar el flujo de aceite bajo presión para alimentar todos los actuadores. Suministramos bombas de engranajes, de paletas y de pistones (axiales y radiales) completas o cartuchos internos, fabricadas con tolerancias exactas para garantizar la máxima eficiencia volumétrica y el mínimo consumo de energía. Una bomba eficiente es esencial para mantener la velocidad, la fuerza y la capacidad de respuesta de su equipo. [cite: 119, 120, 121, 122]"
+                },
+                {
+                    "nombre": "Motores de Giro y Traslación",
+                    "descripcion": "Los Motores Hidráulicos transforman la energía hidráulica nuevamente en potencia mecánica rotativa. Ofrecemos Motores de Giro (swing motors) para la rotación de la superestructura y Motores de Traslación (travel motors) para el movimiento del tren de rodaje. Estos componentes son críticos y requieren de una ingeniería robusta para soportar altas cargas. Suministramos motores que garantizan un alto par de arranque, control de velocidad preciso y durabilidad excepcional en las condiciones de trabajo más difíciles. [cite: 123, 124, 125, 126, 127]"
+                },
+                {
+                    "nombre": "Cilindros Hidráulicos",
+                    "descripcion": "Los Cilindros Hidráulicos son los músculos que realizan el trabajo de levantamiento, empuje y articulación. Disponemos de una extensa gama de cilindros completos y los repuestos necesarios (vástagos, barriles, culatas, kits de sellado). Nuestros cilindros están fabricados con acabados de precisión en el vástago y materiales resistentes para minimizar la fricción y las fugas, asegurando una operación suave, potente y un sellado hermético bajo presiones extremas. [cite: 128, 129, 130, 131]"
+                },
+                {
+                    "nombre": "Válvulas de Control",
+                    "descripcion": "Las Válvulas de Control son los cerebros del sistema hidráulico, dirigiendo el flujo y regulando la presión hacia los diferentes actuadores. Ofrecemos válvulas principales y auxiliares, secciones de válvula y kits de reparación que garantizan una modulación precisa del flujo. El uso de válvulas de calidad asegura que el operador tenga un control fino y potente sobre cada movimiento, optimizando la productividad y la seguridad de la máquina. [cite: 132, 133, 134, 135]"
+                },
+                {
+                    "nombre": "Mangueras Hidráulicas",
+                    "descripcion": "Las Mangueras Hidráulicas son el sistema circulatorio que transporta el fluido a alta presión. Suministramos mangueras de alta resistencia multicapa, diseñadas para soportar la presión de trabajo continua, los picos de presión y las altas temperaturas. Elegir mangueras con las especificaciones correctas de presión y material evita rupturas catastróficas, minimiza las fugas y garantiza la integridad del sistema hidráulico. [cite: 136, 137, 138, 139]"
+                },
+                {
+                    "nombre": "Acoples",
+                    "descripcion": "Los Acoples (o conexiones rápidas) son vitales para facilitar el cambio de implementos y el mantenimiento del sistema sin pérdida significativa de fluido o entrada de contaminantes. Ofrecemos acoples rápidos, adaptadores y conectores de alta presión fabricados en acero resistente y diseñados para un sellado instantáneo y hermético. La calidad de los acoples previene fugas y la contaminación del costoso fluido hidráulico. [cite: 140, 141, 142, 143]"
+                },
+                {
+                    "nombre": "Solenoides y Sensores",
+                    "descripcion": "Los Solenoides y Sensores son los componentes electrónicos clave para la automatización y el control de los modernos sistemas hidráulicos. Los solenoides actúan como interruptores electromecánicos en las válvulas, mientras que los sensores monitorean la presión, la temperatura y la posición. Suministramos componentes electrónicos que garantizan una señal limpia y una actuación rápida, permitiendo que la unidad de control de la máquina optimice el rendimiento hidráulico y diagnostique fallas con precisión. [cite: 144, 145, 146, 147]"
+                }
+            ]
+        },
+        {
+            "nombre": "Orugas de Goma y Componentes de Rodaje Liviano",
+            "descripcion_general": "Las Orugas de Goma y sus componentes asociados son la solución ideal para maquinaria que requiere de una tracción superior, bajo impacto en el terreno y una reducción significativa de la vibración. Este sistema es fundamental para proteger superficies sensibles (como pavimento y concreto) sin sacrificar la movilidad o la capacidad de trabajo. Suministramos productos de ingeniería avanzada que garantizan la máxima durabilidad, una distribución de peso eficiente y un rendimiento excepcional. Ya sea que necesite el bajo peso de la goma o la resistencia pura del metal para equipos compactos, le ofrecemos las mejores soluciones para optimizar la eficiencia y reducir los costos operativos. [cite: 148, 149, 150, 151, 152]",
+            "subcategorias": [
+                {
+                    "nombre": "Orugas de Goma (Rubber Tracks)",
+                    "descripcion": "Las Orugas de Goma son esenciales para minimáquinas, mini-excavadoras y cargadores compactos que operan en entornos urbanos o sensibles. Fabricadas con compuestos de caucho de alta resistencia y reforzadas internamente con cables de acero continuo, estas orugas ofrecen una tracción excelente y una durabilidad prolongada, a la vez que protegen el pavimento y reducen el ruido. Asegure un desplazamiento suave y sin daños en el suelo con orugas que resisten el desgarro y el desgaste abrasivo. [cite: 153, 154, 155, 156]"
+                },
+                {
+                    "nombre": "Cadenas Metálicas para Equipos Compactos",
+                    "descripcion": "Para equipos compactos que requieren la máxima resistencia a la perforación y una durabilidad extrema en terrenos rocosos o con escombros, ofrecemos Cadenas Metálicas de alta calidad. Estas cadenas están diseñadas específicamente para el rodaje liviano, proporcionando una robustez superior donde las orugas de goma podrían fallar. Suministramos cadenas y zapatas que garantizan una vida útil prolongada y la máxima estabilidad bajo cargas pesadas. [cite: 157, 158, 159, 160]"
+                },
+                {
+                    "nombre": "Pads para Zapatas (Bolt-on Pads y Clip-on Pads)",
+                    "descripcion": "Los Pads de Goma son la solución perfecta para añadir versatilidad a las cadenas metálicas existentes. Permiten que una máquina con rodaje metálico opere temporalmente en superficies delicadas, ofreciendo un agarre seguro y protección contra daños. Disponemos de pads de atornillar (bolt-on) y de clip (clip-on), fabricados con caucho vulcanizado de alta resistencia, que se instalan fácilmente, permitiendo una rápida transición entre terrenos duros y sensibles. [cite: 161, 162, 163, 164]"
+                },
+                {
+                    "nombre": "Componentes de Rodaje para Equipos Livianos",
+                    "descripcion": "Más allá de las orugas y cadenas, el Rodaje para Equipos Livianos requiere de componentes internos que trabajen con precisión. Ofrecemos una gama completa de ruedas guía (idlers), rodillos y sprockets diseñados específicamente para las exigencias de excavadoras compactas y skid steers. Estos componentes están hechos con aleaciones endurecidas para asegurar la sincronización correcta y la máxima resistencia al desgaste, garantizando que el sistema de tracción mantenga su eficiencia y durabilidad. [cite: 165, 166, 167, 168]"
+                }
+            ]
+        },
+        {
+            "nombre": "Herramienta de Corte (GET - Ground Engaging Tools)",
+            "descripcion_general": "La Herramienta de Corte, o GET (Ground Engaging Tools), es el conjunto de componentes que interactúan directamente con el material, ya sea tierra, roca o escombros. La eficiencia de su excavadora, cargador o motoniveladora depende críticamente de la calidad y el diseño de estas piezas. Ofrecemos una línea completa de GET fabricados con aceros de alta especificación y tratados térmicamente para resistir la abrasión y el impacto extremo. Al utilizar nuestros componentes, usted asegura una mejor penetración, reduce la tensión en la máquina, optimiza la carga de material y minimiza los tiempos de inactividad por cambio de piezas, maximizando la productividad en cada jornada. [cite: 169, 170, 171, 172, 173]",
+            "subcategorias": [
+                {
+                    "nombre": "Dientes y Pasadores",
+                    "descripcion": "Los Dientes son la primera línea de ataque de su equipo, diseñados para romper y penetrar el material con la mínima resistencia. Suministramos una amplia variedad de puntas y adaptadores, incluyendo diseños de alto impacto, de penetración y de abrasión. Nuestros Dientes están forjados y tratados para mantener su filo por más tiempo y ofrecer una mayor vida útil. Los Pasadores y retenedores garantizan una fijación segura y un reemplazo rápido y sencillo, asegurando que la máquina vuelva a trabajar en el menor tiempo posible. [cite: 174, 175, 176, 177, 178]"
+                },
+                {
+                    "nombre": "Protectores de Baldes (Side Cutters y Protectores)",
+                    "descripcion": "Los Baldes (o cucharones) son una inversión costosa. Los Protectores de Baldes, tales como los protectores laterales (side cutters), las cantoneras y los protectores de talón (heel blocks), son esenciales para blindar las áreas de mayor desgaste. Estos componentes están diseñados para absorber el impacto y la abrasión lateral, extendiendo drásticamente la vida útil del cuerpo del balde. Al proteger su balde, reduce los costos de reparación y el tiempo que la máquina pasa en el taller. [cite: 179, 180, 181, 182]"
+                },
+                {
+                    "nombre": "Cuchillería General (para Cargadores y Excavadoras)",
+                    "descripcion": "La Cuchillería, o bordes de corte (Cutting Edges), de cargadores y excavadoras debe ofrecer la combinación perfecta de dureza y tenacidad. Ofrecemos cuchillas reversibles y de base, disponibles en aceros al boro y otros materiales de alto carbono para una resistencia superior al desgaste. La precisión de su ajuste asegura que la cuchilla mantenga un ángulo de ataque óptimo, mejorando la capacidad de llenado del balde y reduciendo el consumo de combustible. [cite: 183, 184, 185, 186]"
+                },
+                {
+                    "nombre": "Cuchillería para Motoniveladoras",
+                    "descripcion": "Las cuchillas para Motoniveladoras son cruciales para el trabajo de nivelación y el acabado fino. Estas herramientas deben ser resistentes a la abrasión constante y mantener un borde de trabajo limpio y uniforme. Suministramos cuchillas planas, curvadas y de superposición (overlays), así como cantoneras (end bits), todas fabricadas para resistir el astillamiento y el desgaste. Asegure una superficie de trabajo perfectamente nivelada con cuchillería que garantiza durabilidad y precisión. [cite: 187, 188, 189, 190, 191]"
+                },
+                {
+                    "nombre": "Puntas de Ripper",
+                    "descripcion": "Las Puntas de Ripper son componentes de demolición y desgarre diseñados para romper materiales duros como roca, pavimento o suelo compactado que no pueden ser excavados con un cucharón estándar. Fabricadas en aleaciones de acero de extrema dureza, estas puntas deben soportar fuerzas de palanca y presión concentrada masivas. Ofrecemos puntas que facilitan la máxima penetración, permitiendo que su ripper trabaje con eficiencia y minimizando la tensión sobre el vástago. [cite: 192, 193, 194, 195]"
+                }
+            ]
+        },
+        {
+            "nombre": "Electrónicos",
+            "descripcion_general": "La electrónica moderna es el sistema nervioso de su maquinaria pesada, indispensable para la eficiencia operativa, el control preciso del rendimiento del motor e implementos, y el diagnóstico rápido de fallas. Suministramos una gama completa de componentes electrónicos de alta calidad que aseguran la comunicación fluida entre todos los sistemas de su equipo. Nuestros productos están diseñados para resistir las condiciones ambientales más duras (vibración, humedad y temperatura), garantizando la fiabilidad y la precisión de la información que es crítica para el rendimiento óptimo y el ahorro de combustible de su máquina. [cite: 196, 197, 198, 199]",
+            "subcategorias": [
+                {
+                    "nombre": "Unidades de Control Electrónico (ECU)",
+                    "descripcion": "Las ECU (o Módulos de Control Electrónico) son el cerebro digital de su máquina, responsables de procesar la información de los sensores y emitir comandos a los actuadores (como inyectores y solenoides). Ofrecemos ECU nuevas y remanufacturadas, programadas para optimizar la curva de potencia, el consumo de combustible y las funciones de diagnóstico. Una ECU funcional es vital para la coordinación perfecta de todos los subsistemas del motor y la transmisión. [cite: 200, 201, 202, 203]"
+                },
+                {
+                    "nombre": "Sensores",
+                    "descripcion": "Los Sensores son los órganos sensoriales de la máquina, encargados de medir y reportar parámetros críticos en tiempo real, tales como presión, temperatura, velocidad (RPM), y posición. La precisión de los sensores es fundamental para que la ECU tome decisiones correctas. Suministramos sensores de alta fiabilidad que aseguran lecturas exactas, optimizando el rendimiento del motor y previniendo daños catastróficos por condiciones operativas inadecuadas. [cite: 204, 205, 206, 207]"
+                },
+                {
+                    "nombre": "Solenoides Eléctricos",
+                    "descripcion": "Los Solenoides Eléctricos son actuadores electromecánicos que reciben la señal de la ECU y la transforman en una acción física, generalmente abriendo o cerrando una válvula o un inyector. Son esenciales para el control del sistema hidráulico, la transmisión y la inyección de combustible. Ofrecemos solenoides con una respuesta rápida y una construcción robusta que garantizan un control instantáneo y fiable del flujo de fluidos y la activación de componentes. [cite: 208, 209, 210, 211]"
+                },
+                {
+                    "nombre": "Arneses de Cableado",
+                    "descripcion": "Los Arneses de Cableado son las autopistas por donde viaja la información y la energía eléctrica a lo largo de la máquina. Un arnés de calidad es crucial para prevenir fallas intermitentes y problemas de comunicación entre la ECU y los sensores. Suministramos arneses fabricados con aislamientos resistentes a altas temperaturas y abrasión, y conectores sellados para asegurar una conexión eléctrica estable y libre de humedad en el entorno de trabajo. [cite: 212, 213, 214, 215]"
+                },
+                {
+                    "nombre": "Paneles de Instrumentos",
+                    "descripcion": "El Panel de Instrumentos o la Pantalla de Monitoreo es la interfaz que permite al operador y al técnico visualizar el estado operativo de la máquina, incluyendo advertencias, códigos de falla y parámetros de rendimiento. Ofrecemos paneles de reemplazo que garantizan una lectura clara y precisa de todos los indicadores vitales (presión de aceite, temperatura del refrigerante, nivel de combustible). Un panel funcional es esencial para la seguridad y el monitoreo proactivo de la salud de su equipo. [cite: 216, 217, 218, 219]"
+                }
+            ]
+        },
+        {
+            "nombre": "Accesorios Motor",
+            "descripcion_general": "Los Accesorios del Motor son componentes esenciales que, si bien no generan la potencia directamente, garantizan que el corazón de su máquina funcione de manera óptima, regulada y protegida. Desde la gestión de la temperatura hasta la lubricación vital, estos sistemas accesorios aseguran que el motor opere dentro de sus parámetros de diseño, previniendo el sobrecalentamiento y el desgaste prematuro. Suministramos repuestos de alta calidad que aseguran la máxima eficiencia en el manejo de fluidos y la disipación térmica, cruciales para la durabilidad y el rendimiento sostenido de su motor. [cite: 220, 221, 222, 223]",
+            "subcategorias": [
+                {
+                    "nombre": "Bombas de Agua",
+                    "descripcion": "La Bomba de Agua es crítica para el sistema de enfriamiento, circulando el refrigerante a través del motor y el radiador. Una bomba eficiente es indispensable para evitar el sobrecalentamiento, que puede llevar a fallas graves del motor. Ofrecemos bombas de agua de precisión, fabricadas con sellos de alta calidad y diseños de impulsor optimizados que aseguran un flujo constante y potente, manteniendo la temperatura operativa ideal en las condiciones de carga más exigentes. [cite: 224, 225, 226, 227]"
+                },
+                {
+                    "nombre": "Bombas de Aceite",
+                    "descripcion": "La Bomba de Aceite es el componente más vital para la lubricación, asegurando que cada pieza móvil del motor reciba la presión y el volumen de aceite adecuados para reducir la fricción y el calor. Suministramos bombas de aceite con tolerancias precisas y materiales resistentes al desgaste, garantizando un suministro de lubricación fiable desde el momento del arranque. Una presión de aceite correcta es la base de la longevidad de su motor. [cite: 228, 229, 230, 231]"
+                },
+                {
+                    "nombre": "Piñones y Rodamientos",
+                    "descripcion": "Los Piñones y Rodamientos son esenciales en la distribución de la sincronización del motor y en el soporte de ejes rotativos (como el del cigüeñal y el árbol de levas). Estos componentes requieren de una alta precisión de mecanizado y resistencia a la carga. Ofrecemos piñones de distribución y rodamientos de alta capacidad que minimizan la fricción y el juego, asegurando una sincronización precisa y una operación silenciosa y eficiente de los sistemas auxiliares. [cite: 232, 233, 234, 235]"
+                },
+                {
+                    "nombre": "Correas y Mangueras",
+                    "descripcion": "Las Correas y Mangueras son elementos consumibles que merecen la máxima atención. Las correas transmiten potencia a los accesorios (alternador, bombas), mientras que las mangueras transportan fluidos críticos (refrigerante, aire). Suministramos correas de alta resistencia a la tensión y la temperatura, y mangueras con refuerzos internos que resisten la presión y el calor extremo. El uso de estos componentes de calidad previene fallas súbitas y costosas paradas por rotura o fuga. [cite: 236, 237, 238, 239, 240]"
+                },
+                {
+                    "nombre": "Sistema de Admisión y Escape",
+                    "descripcion": "El Sistema de Admisión y Escape optimiza el flujo de aire limpio al motor y la evacuación eficiente de los gases de combustión. Esto incluye turbocargadores, colectores y silenciadores. Ofrecemos repuestos que garantizan la máxima respiración del motor, resultando en una mejor respuesta del acelerador, mayor potencia y el cumplimiento de las normativas de emisiones y ruido. [cite: 241, 242, 243]"
+                },
+                {
+                    "nombre": "Ventiladores",
+                    "descripcion": "Los Ventiladores son cruciales para el enfriamiento, moviendo grandes volúmenes de aire a través del radiador. Suministramos ventiladores (mecánicos y de accionamiento por embrague) diseñados con palas de alta eficiencia que maximizan el flujo de aire. Un ventilador en óptimas condiciones asegura la disipación de calor adecuada, especialmente cuando la máquina trabaja a plena carga en climas cálidos. [cite: 244, 245, 246, 247]"
+                },
+                {
+                    "nombre": "Radiadores y Enfriadores",
+                    "descripcion": "Los Radiadores y Enfriadores (aceite, aire) son intercambiadores de calor diseñados para mantener los fluidos y el aire del motor a la temperatura de funcionamiento correcta. Ofrecemos radiadores y núcleos con diseños de aletas y tubos de alta transferencia térmica, que garantizan un enfriamiento superior y una resistencia a la corrosión. Un sistema de enfriamiento limpio y eficiente es vital para proteger su inversión en el motor. [cite: 248, 249, 250, 251]"
+                },
+                {
+                    "nombre": "Soportes de Motor",
+                    "descripcion": "Los Soportes de Motor (o montajes) son la interfaz que conecta el motor al chasis, absorbiendo vibraciones y choques. Están diseñados para minimizar la transferencia de vibración a la cabina y proteger el motor de movimientos excesivos. Suministramos soportes con compuestos de caucho de alta resistencia y diseños robustos que garantizan la estabilidad del motor, reduciendo la tensión en las conexiones y prolongando la vida útil de los accesorios. [cite: 252, 253, 254, 255]"
+                }
+            ]
+        },
+        {
+            "nombre": "Aire Acondicionado",
+            "descripcion_general": "El sistema de Aire Acondicionado es un componente esencial que garantiza el confort, la seguridad y la productividad sostenida del operador en la cabina. Un entorno de trabajo regulado y limpio minimiza la fatiga y permite una mayor concentración en las tareas críticas. Suministramos una línea completa de componentes de climatización de alta calidad que aseguran el enfriamiento rápido y la deshumidificación eficiente del aire. Nuestros repuestos están diseñados para resistir las vibraciones y el polvo de los entornos de maquinaria pesada, garantizando un rendimiento fiable y una vida útil prolongada del sistema de climatización. [cite: 256, 257, 258, 259, 260]",
+            "subcategorias": [
+                {
+                    "nombre": "Compresores de Aire Acondicionado",
+                    "descripcion": "El Compresor es el corazón del sistema de A/A, encargado de presurizar el refrigerante para que pueda disipar el calor. Ofrecemos compresores nuevos y remanufacturados, diseñados con tolerancias precisas y embragues magnéticos robustos que aseguran un ciclo de enfriamiento potente y consistente. Un compresor eficiente es clave para reducir el tiempo de inactividad por fallas del sistema y para mantener una temperatura confortable incluso en los días más calurosos. [cite: 261, 262, 263, 264]"
+                },
+                {
+                    "nombre": "Condensadores",
+                    "descripcion": "El Condensador es el radiador del sistema de A/A, ubicado típicamente delante del radiador del motor, donde el refrigerante caliente y presurizado disipa su calor al aire exterior. Suministramos condensadores con núcleos de alta transferencia térmica que maximizan la eficiencia de enfriamiento, incluso cuando están expuestos a suciedad y escombros. Un condensador limpio y funcional es vital para la capacidad de enfriamiento general del sistema. [cite: 265, 266, 267, 268]"
+                },
+                {
+                    "nombre": "Evaporadores",
+                    "descripcion": "El Evaporador es el componente que enfría el aire en la cabina. Es donde el refrigerante se expande y absorbe el calor del aire interior. Ofrecemos evaporadores fabricados con aletas y tubos de precisión que garantizan la máxima capacidad de absorción de calor y una deshumidificación efectiva. Un evaporador de calidad asegura que el aire que ingresa a la cabina esté frío y seco. [cite: 269, 270, 271, 272, 273]"
+                },
+                {
+                    "nombre": "Sopladores Aire Acondicionado (Blowers)",
+                    "descripcion": "Los Sopladores (o ventiladores) de aire acondicionado son los responsables de mover el aire a través del evaporador y dirigirlo hacia la cabina con la velocidad deseada. Suministramos ensambles de sopladores que incluyen motores eléctricos robustos y resistentes a la humedad, diseñados para ofrecer un flujo de aire constante y potente a través de las rejillas de ventilación, manteniendo la cabina climatizada de manera uniforme. [cite: 274, 275, 276]"
+                },
+                {
+                    "nombre": "Filtros de Cabina",
+                    "descripcion": "Los Filtros de Cabina son la defensa esencial que protege al operador del polvo, polen y contaminantes transportados por el aire. Un filtro de cabina limpio mejora la calidad del aire respirado y protege el evaporador de la acumulación de suciedad. Ofrecemos filtros de alta eficiencia de partículas (HEPA) y de carbón activado que garantizan un ambiente interior limpio y saludable, contribuyendo a la salud y el bienestar del operador. [cite: 277, 278, 279, 280]"
+                }
+            ]
+        },
+        {
+            "nombre": "Cabina",
+            "descripcion_general": "La Cabina de su maquinaria pesada es más que un simple habitáculo; es el centro de comando donde la seguridad, la ergonomía y la tecnología se unen para maximizar la productividad. Una cabina bien equipada y en perfectas condiciones es crucial para mantener al operador cómodo, concentrado y con total control de la máquina. Suministramos repuestos y accesorios de cabina que garantizan la integridad estructural, la máxima visibilidad y un entorno de trabajo ergonómico, asegurando que cada hora de operación sea lo más eficiente y segura posible. [cite: 281, 282, 283, 284, 285]",
+            "subcategorias": [
+                {
+                    "nombre": "Paneles de Control",
+                    "descripcion": "Los Paneles de Control agrupan los interruptores, joysticks y palancas que permiten al operador interactuar con los sistemas de la máquina (luces, accesorios, bloqueo de diferenciales, etc.). Ofrecemos paneles de control y consolas de alta calidad que resisten el desgaste por uso constante y la exposición a ambientes hostiles. Su diseño garantiza una interfaz intuitiva y funcional, esencial para el manejo preciso y rápido de las operaciones. [cite: 286, 287, 288, 289]"
+                },
+                {
+                    "nombre": "Relojes e Indicadores",
+                    "descripcion": "Los Relojes e Indicadores (medidores de presión, temperatura, nivel de combustible y horómetros) proporcionan información vital sobre el estado operativo de los subsistemas de la máquina. Suministramos instrumentos de precisión y de fácil lectura que permiten al operador monitorear proactivamente la salud del motor y los sistemas hidráulicos. La exactitud de estos indicadores es clave para realizar un mantenimiento preventivo oportuno y evitar fallas mayores. [cite: 290, 291, 292, 293]"
+                },
+                {
+                    "nombre": "Asientos de Operador",
+                    "descripcion": "El Asiento de Operador es el componente ergonómico más importante para reducir la fatiga y prevenir lesiones. Ofrecemos asientos con suspensión neumática o mecánica, múltiples ajustes y materiales resistentes, diseñados para absorber vibraciones y minimizar la tensión en la espalda del operador durante largas jornadas. Un asiento de calidad superior se traduce directamente en un operador más descansado y productivo. [cite: 294, 295, 296, 297]"
+                },
+                {
+                    "nombre": "Ventanas y Parabrisas",
+                    "descripcion": "Las Ventanas y Parabrisas son fundamentales para la visibilidad y, por ende, para la seguridad operativa. Suministramos vidrios de seguridad laminados y templados que cumplen con los estándares de resistencia al impacto, protegiendo al operador de escombros y garantizando la integridad de la cabina. Una visibilidad clara y sin distorsiones es imprescindible para una operación segura y precisa en el sitio de trabajo. [cite: 298, 299, 300, 301]"
+                },
+                {
+                    "nombre": "Puertas y Accesorios",
+                    "descripcion": "Las Puertas y sus Accesorios (bisagras, cerraduras, manijas y amortiguadores de gas) aseguran que la cabina permanezca sellada, protegiendo el interior del polvo y el ruido, y facilitando la entrada y salida segura. Ofrecemos repuestos de alta durabilidad que garantizan un cierre hermético y fiable, manteniendo la presurización de la cabina y prolongando la vida útil del sistema de aire acondicionado. [cite: 302, 303, 304]"
+                }
+            ]
+        },
+        {
+            "nombre": "Sistema de Dirección",
+            "descripcion_general": "El Sistema de Dirección es el mecanismo que transforma la intención del operador en el movimiento preciso de la máquina, siendo crucial para la seguridad operativa, la maniobrabilidad y la productividad en espacios reducidos o terrenos difíciles. La fiabilidad de la dirección es indispensable, y por ello ofrecemos componentes hidráulicos y mecánicos de la más alta calidad, diseñados para soportar las cargas dinámicas extremas y asegurar una respuesta suave y predecible. Nuestros repuestos garantizan el control total y la eficiencia en la dirección, minimizando el esfuerzo del operador y asegurando la precisión en cada movimiento. [cite: 305, 306, 307, 308]",
+            "subcategorias": [
+                {
+                    "nombre": "Cilindros de Dirección",
+                    "descripcion": "Los Cilindros de Dirección son los actuadores hidráulicos que generan la fuerza necesaria para articular el chasis o girar las ruedas. Estos cilindros deben ser extremadamente robustos para manejar las cargas de la máquina. Suministramos cilindros y kits de reparación con sellos de alta presión y vástagos cromados para asegurar una actuación potente, suave y un sellado hermético, garantizando un control de dirección inmediato y fiable. [cite: 309, 310, 311, 312]"
+                },
+                {
+                    "nombre": "Bomba de Dirección",
+                    "descripcion": "La Bomba de Dirección (frecuentemente parte de la bomba principal o una unidad separada) suministra el flujo de fluido hidráulico bajo presión al sistema de dirección. Es el componente que facilita la asistencia hidráulica al operador. Ofrecemos bombas de alta eficiencia volumétrica que garantizan un suministro de caudal constante, permitiendo que la dirección se sienta liviana y con una respuesta rápida bajo cualquier condición de carga. [cite: 313, 314, 315, 316]"
+                },
+                {
+                    "nombre": "Orbitroles (Unidad de Control de Dirección)",
+                    "descripcion": "El Orbitrol o Unidad de Control de Dirección es una válvula dosificadora que traduce el movimiento angular del volante en un flujo hidráulico proporcional. Es el componente que permite el control preciso de los cilindros de dirección. Suministramos orbitroles de precisión que aseguran una dirección sensitiva y con retroalimentación, manteniendo la seguridad al limitar la presión de alivio y evitar sobrecargas en el sistema. [cite: 317, 318, 319, 320]"
+                },
+                {
+                    "nombre": "Terminales y Rótulas",
+                    "descripcion": "Las Terminales y Rótulas son los puntos de articulación mecánicos que conectan los cilindros de dirección y las barras de acoplamiento a las ruedas o al chasis. Estos puntos de desgaste deben ser robustos para soportar vibraciones y cargas de impacto. Ofrecemos terminales y rótulas forjadas con sellos de calidad industrial para prevenir la entrada de contaminantes, garantizando una conexión firme y un movimiento libre de juego. [cite: 321, 322, 323, 324]"
+                },
+                {
+                    "nombre": "Volantes y Accesorios",
+                    "descripcion": "El Volante es la interfaz primaria del operador con el sistema de dirección. Ofrecemos volantes y accesorios de cabina que incluyen columnas de dirección, interruptores de bocina y cubiertas. Estos componentes no solo cumplen una función estética, sino que garantizan un agarre ergonómico y la funcionalidad de los sistemas auxiliares asociados a la columna de dirección, contribuyendo al confort y la seguridad del operador. [cite: 325, 326, 327, 328]"
+                }
+            ]
+        },
+        {
+            "nombre": "Eléctricos",
+            "descripcion_general": "El sistema Eléctrico es el encargado de proveer la energía vital para el arranque, la carga constante de la batería y la operación de todos los componentes de control, iluminación y seguridad de su máquina. La fiabilidad de estos componentes es esencial para evitar paradas inesperadas y asegurar el funcionamiento de los sistemas electrónicos modernos. Suministramos una gama completa de productos eléctricos que garantizan un suministro de energía estable y potente, diseñados para resistir las condiciones extremas de vibración, polvo y humedad del trabajo pesado. [cite: 329, 330, 331, 332]",
+            "subcategorias": [
+                {
+                    "nombre": "Alternadores",
+                    "descripcion": "Los Alternadores son la fuente principal de energía eléctrica cuando el motor está en funcionamiento, cruciales para recargar la batería y alimentar todos los sistemas (luces, ECU, sistemas hidráulicos, A/A). Ofrecemos alternadores de alta capacidad y eficiencia, con reguladores de voltaje integrados que garantizan una salida de corriente estable, incluso a bajas RPM. Un alternador de calidad asegura que su máquina siempre tenga la energía que necesita para operar. [cite: 333, 334, 335, 336]"
+                },
+                {
+                    "nombre": "Motores de Arranque (Starters)",
+                    "descripcion": "El Motor de Arranque es indispensable para encender el motor de combustión. Estos componentes deben ser extremadamente robustos para superar la alta resistencia a la compresión de los motores diésel de maquinaria pesada. Suministramos starters con alto par de torsión, diseñados para un arranque rápido y fiable incluso en condiciones de frío extremo, reduciendo la tensión en el sistema eléctrico. [cite: 337, 338, 339, 340]"
+                },
+                {
+                    "nombre": "Baterías",
+                    "descripcion": "Las Baterías son el corazón del sistema eléctrico, almacenando la energía necesaria para el arranque y estabilizando el voltaje. Ofrecemos baterías de ciclo profundo y alto amperaje de arranque en frío (CCA), diseñadas para soportar las vibraciones y las demandas de energía intermitentes de la maquinaria pesada. Una batería fiable garantiza el encendido inmediato y el soporte de los sistemas electrónicos a bordo. [cite: 341, 342, 343, 344]"
+                },
+                {
+                    "nombre": "Interruptores",
+                    "descripcion": "Los Interruptores controlan la activación o desactivación de circuitos, desde el interruptor de encendido hasta los de luces y accesorios. Suministramos interruptores de grado industrial, con sellos de protección y contactos de alta durabilidad, diseñados para resistir el uso constante y el ambiente contaminado de la cabina, asegurando un control eléctrico fiable en todo momento. [cite: 345, 346, 347]"
+                },
+                {
+                    "nombre": "Relés",
+                    "descripcion": "Los Relés actúan como interruptores operados eléctricamente que permiten que circuitos de baja corriente controlen circuitos de alta corriente (como el motor de arranque o luces potentes). Ofrecemos relés de alto rendimiento que aseguran un control rápido y seguro, protegiendo los interruptores sensibles de la cabina de las altas cargas de potencia. [cite: 348, 349, 350]"
+                },
+                {
+                    "nombre": "Fusibles y Disyuntores",
+                    "descripcion": "Los Fusibles y Disyuntores son los dispositivos de seguridad esenciales que protegen el cableado y los componentes electrónicos caros contra sobrecargas de corriente o cortocircuitos. Suministramos fusibles de las especificaciones correctas y disyuntores reajustables que garantizan una protección instantánea y fiable de todos los circuitos, minimizando el riesgo de daños por fallas eléctricas. [cite: 351, 352, 353]"
+                }
+            ]
+        },
+        {
+            "nombre": "Empaquetaduras Hidráulicas",
+            "descripcion_general": "Las Empaquetaduras Hidráulicas son los componentes que garantizan la estanqueidad perfecta del sistema, previniendo la fuga del fluido de trabajo y la crucial entrada de contaminantes. Su calidad es indispensable para mantener la eficiencia volumétrica, la presión operativa y la limpieza del aceite, protegiendo componentes costosos como bombas y cilindros. Suministramos sellos y kits fabricados con polímeros y elastómeros de alta resistencia a la temperatura, la presión y los químicos, diseñados para ofrecer una vida útil excepcional y la máxima fiabilidad en cada punto de sellado de su maquinaria. [cite: 354, 355, 356, 357]",
+            "subcategorias": [
+                {
+                    "nombre": "Empaquetadura para Cilindros",
+                    "descripcion": "La Empaquetadura para Cilindros es vital para separar las cámaras de presión y garantizar que el movimiento del vástago sea suave y potente. Ofrecemos kits completos que incluyen sellos de pistón, sellos de vástago, limpiadores (wipers) y anillos guía, diseñados para resistir la alta presión y minimizar la fricción. El uso de empaquetaduras de calidad asegura que el cilindro mantenga su fuerza máxima y previene el bypass de fluido interno. [cite: 358, 359, 360, 361]"
+                },
+                {
+                    "nombre": "Empaquetadura para Bancos de Válvulas",
+                    "descripcion": "La Empaquetadura para Bancos de Válvulas es crucial para mantener la integridad del flujo y evitar fugas entre las secciones del banco de control y los diversos puertos de conexión. Suministramos sellos y empaques internos para carretes (spools) y cubiertas, fabricados con materiales resistentes a la corrosión y la presión, que aseguran la separación limpia de los circuitos y el control preciso de la dirección del flujo. [cite: 362, 363, 364]"
+                },
+                {
+                    "nombre": "Sellos Sueltos (O-Rings, Anillos de Respaldo, Limpiadores)",
+                    "descripcion": "Ofrecemos una amplia gama de Sellos Sueltos, incluyendo O-Rings de nitrilo y vitón, anillos de respaldo (backup rings) y limpiadores (wipers) para aplicaciones específicas. Estos sellos son utilizados en diversos puntos del sistema hidráulico y neumático. Su selección precisa y la calidad del material son fundamentales para realizar reparaciones puntuales y garantizar una protección robusta contra la entrada de polvo y la pérdida de fluido en cualquier conexión o articulación. [cite: 365, 366, 367, 368]"
+                }
+            ]
+        },
+        {
+            "nombre": "Filtración",
+            "descripcion_general": "El sistema de Filtración es la defensa primordial de su maquinaria pesada contra el desgaste prematuro y las fallas catastróficas. La limpieza de los fluidos (aceite, combustible, aire y fluido hidráulico) es crucial para la longevidad y el rendimiento óptimo de los componentes de alta precisión, como inyectores, bombas y motores. Suministramos una línea completa de filtros de alta eficiencia y capacidad de retención de suciedad superior, diseñados para cumplir o exceder las especificaciones del fabricante, asegurando que solo los fluidos más limpios lleguen a los sistemas vitales de su máquina. [cite: 369, 370, 371, 372]",
+            "subcategorias": [
+                {
+                    "nombre": "Filtros de Aire",
+                    "descripcion": "Los Filtros de Aire protegen el motor de la entrada de polvo, suciedad y partículas abrasivas, asegurando que solo aire limpio y puro ingrese a la cámara de combustión. Un filtro de aire eficiente es vital para mantener la potencia y prevenir el desgaste interno del motor, garantizando una combustión limpia. Ofrecemos filtros con medios de alta calidad que maximizan el flujo de aire mientras retienen hasta las micropartículas más pequeñas. [cite: 373, 374, 375, 376]"
+                },
+                {
+                    "nombre": "Filtros de Aceite",
+                    "descripcion": "Los Filtros de Aceite eliminan los contaminantes y subproductos de la combustión del aceite lubricante, garantizando que este mantenga su capacidad protectora y sus propiedades. Suministramos filtros de aceite con medios plisados de alta densidad y carcasas robustas, diseñados para extender la vida útil del aceite y proteger los cojinetes, el cigüeñal y otras superficies críticas del motor. [cite: 377, 378, 379]"
+                },
+                {
+                    "nombre": "Filtros de Combustible",
+                    "descripcion": "Los Filtros de Combustible son cruciales para proteger los sistemas de inyección de alta precisión, eliminando agua, óxido y partículas que pueden dañar inyectores y bombas. Ofrecemos filtros de combustible primarios y separadores de agua de alta eficiencia de micrones, esenciales para el rendimiento y la durabilidad de los modernos sistemas diésel Common Rail. [cite: 380, 381, 382]"
+                },
+                {
+                    "nombre": "Filtros de Agua (Refrigerante)",
+                    "descripcion": "Los Filtros de Agua o filtros de refrigerante se utilizan para limpiar el sistema de enfriamiento y, a menudo, liberar aditivos anticavitación. Estos filtros son importantes para mantener la pureza del refrigerante, prevenir la corrosión, el sarro y la formación de depósitos en el radiador y las camisas del motor, asegurando una transferencia de calor eficiente. [cite: 383, 384, 385]"
+                },
+                {
+                    "nombre": "Filtros Hidráulicos",
+                    "descripcion": "Los Filtros Hidráulicos son la defensa más crítica del sistema hidráulico, ya que las micropartículas pueden causar erosión y fallas en válvulas y bombas. Ofrecemos filtros hidráulicos de presión, retorno y succión con índices Beta altos, diseñados para mantener el aceite hidráulico con los niveles de limpieza exigidos (código ISO). Una filtración hidráulica superior previene el desgaste de los componentes y garantiza la precisión y fiabilidad del sistema. [cite: 386, 387, 388, 389]"
+                }
+            ]
+        },
+        {
+            "nombre": "Frenos",
+            "descripcion_general": "El Sistema de Frenos es, sin duda, el sistema de seguridad más crítico de cualquier maquinaria pesada. Su capacidad para detener, controlar o inmovilizar la máquina bajo cualquier condición de carga y pendiente es indispensable para la seguridad del personal y la protección del equipo. Suministramos una línea completa de componentes de frenado diseñados para soportar las altas temperaturas y las cargas extremas, garantizando una potencia de detención consistente y fiable. Nuestros repuestos están fabricados con materiales de fricción avanzados y tolerancias de precisión para asegurar la máxima respuesta y durabilidad. [cite: 390, 391, 392, 393, 394]",
+            "subcategorias": [
+                {
+                    "nombre": "Pastillas y Discos de Freno",
+                    "descripcion": "Las Pastillas y Discos de Freno son el corazón de los sistemas de frenos de disco, comunes en ejes de alto rendimiento. Ofrecemos pastillas fabricadas con compuestos de fricción de larga duración que resisten el desvanecimiento por calor (fading), y discos ventilados y tratados térmicamente que maximizan la disipación del calor. Una combinación de calidad asegura una fuerza de frenado poderosa y controlada. [cite: 395, 396, 397, 398]"
+                },
+                {
+                    "nombre": "Zapatas y Tambores de Freno",
+                    "descripcion": "Las Zapatas y Tambores de Freno son componentes fundamentales en muchos sistemas de freno de servicio y estacionamiento. Suministramos zapatas con revestimientos de fricción de alto coeficiente y tambores fabricados con aleaciones robustas para resistir la expansión térmica. Su diseño garantiza un frenado efectivo y una larga vida útil en aplicaciones de uso rudo. [cite: 399, 400, 401, 402]"
+                },
+                {
+                    "nombre": "Cilindros de Freno",
+                    "descripcion": "Los Cilindros de Freno (de rueda y maestros) son los actuadores hidráulicos que transmiten la presión del pedal o la bomba al mecanismo de frenado. Ofrecemos cilindros fabricados con interiores mecanizados con precisión y sellos resistentes que aseguran una transferencia de presión sin pérdidas. La fiabilidad de los cilindros es vital para una respuesta de frenado inmediata. [cite: 403, 404, 405, 406]"
+                },
+                {
+                    "nombre": "Bombas de Freno (Maestras y Auxiliares)",
+                    "descripcion": "La Bomba de Freno (o cilindro maestro) es el componente que convierte la fuerza mecánica ejercida por el operador en presión hidráulica. Suministramos bombas que garantizan la generación de la presión hidráulica óptima necesaria para accionar los cilindros de freno. La calidad de la bomba es crucial para asegurar la modulación y la seguridad del sistema de frenado. [cite: 407, 408, 409, 410]"
+                },
+                {
+                    "nombre": "Válvulas de Freno",
+                    "descripcion": "Las Válvulas de Freno son los elementos de control que regulan y distribuyen la presión a los diferentes ejes o circuitos, como las válvulas proporcionales o de alivio. Ofrecemos válvulas de precisión que garantizan una distribución de frenado equilibrada y segura, adaptándose a las condiciones de carga para prevenir el bloqueo de las ruedas y optimizar la distancia de detención. [cite: 411, 412, 413]"
+                },
+                {
+                    "nombre": "Acumuladores",
+                    "descripcion": "Los Acumuladores son esenciales en los sistemas de frenos asistidos hidráulicamente o power brake, almacenando fluido bajo presión para proveer la asistencia de frenado y actuar como reserva de energía para múltiples aplicaciones de frenado, incluso con el motor apagado. Suministramos acumuladores de membrana y vejiga de alta capacidad que garantizan la seguridad y la respuesta inmediata del sistema asistido. [cite: 414, 415, 416]"
+                }
+            ]
+        },
+        {
+            "nombre": "Inyección",
+            "descripcion_general": "El sistema de Inyección es el responsable directo de la potencia, la eficiencia de combustible y el cumplimiento de las normativas de emisiones de su motor diésel. Estos componentes de alta precisión deben dosificar el combustible bajo presiones extremas y con una sincronización milimétrica. Suministramos una gama completa de piezas de inyección diseñadas para un rendimiento óptimo, garantizando una pulverización fina y atomizada del combustible que se traduce en una combustión completa, máxima potencia y mínimo consumo. [cite: 417, 418, 419, 420]",
+            "subcategorias": [
+                {
+                    "nombre": "Inyectores de Combustible",
+                    "descripcion": "Los Inyectores de Combustible son la pieza clave que pulveriza y dirige el combustible directamente a la cámara de combustión. En los sistemas modernos, deben operar bajo presiones que superan los 2000 bar. Ofrecemos inyectores nuevos y remanufacturados, probados y calibrados para garantizar la cantidad exacta y el patrón de pulverización perfecto, esencial para una combustión eficiente y la reducción de hollín. [cite: 421, 422, 423, 424]"
+                },
+                {
+                    "nombre": "Bombas de Inyección",
+                    "descripcion": "La Bomba de Inyección es la encargada de presurizar el combustible a los niveles extremos requeridos por el sistema (ya sea una bomba en línea, rotativa o de alta presión para Common Rail). Suministramos bombas de alta ingeniería que garantizan una presión constante y sostenida, manteniendo el volumen de combustible necesario para la máxima capacidad de carga del motor. Una bomba fiable es el cimiento de un motor potente. [cite: 425, 426, 427, 428]"
+                },
+                {
+                    "nombre": "Rieles (Common Rail)",
+                    "descripcion": "Los Rieles, o Common Rail, actúan como un acumulador de combustible a muy alta presión, asegurando que todos los inyectores tengan acceso a una presión uniforme para su dosificación. Ofrecemos rieles y limitadores de presión fabricados con materiales de alta resistencia, esenciales para manejar las presiones extremas sin fugas y garantizar que el sistema de inyección opere con la máxima consistencia y precisión requerida por la ECU. [cite: 429, 430, 431]"
+                },
+                {
+                    "nombre": "Tuberías de Inyección",
+                    "descripcion": "Las Tuberías de Inyección transportan el combustible de alta presión desde la bomba al inyector. Deben ser capaces de soportar pulsaciones de presión intensas y constante vibración sin fallar. Suministramos tuberías de acero de precisión, diseñadas y probadas para un ajuste perfecto, que garantizan la integridad del circuito de alta presión, previniendo fallas peligrosas y pérdidas de potencia. [cite: 432, 433, 434, 435]"
+                }
+            ]
+        },
+        {
+            "nombre": "Llantas",
+            "descripcion_general": "Las Llantas y sus componentes son el punto de contacto crucial entre su máquina y el terreno, determinando la tracción, la estabilidad y la capacidad de carga en cualquier entorno operativo. Ofrecemos soluciones integrales que van desde neumáticos de alto rendimiento hasta opciones macizas para ambientes extremos. Nuestros productos están diseñados para maximizar la vida útil, minimizar el tiempo de inactividad por pinchazos y garantizar que su maquinaria mantenga la movilidad y seguridad necesarias para cumplir con las exigencias del trabajo pesado. [cite: 436, 437, 438, 439]",
+            "subcategorias": [
+                {
+                    "nombre": "Neumáticos",
+                    "descripcion": "Los Neumáticos son la opción principal para la mayoría de equipos, ofreciendo amortiguación y versatilidad. Suministramos neumáticos radiales y diagonales, con diseños de banda de rodamiento especializados (tracción, roca, flotación) y compuestos de caucho de alta resistencia a cortes y abrasión. Elegir el neumático correcto asegura una excelente tracción y una larga vida útil en el sitio de trabajo específico. [cite: 440, 441, 442, 443]"
+                },
+                {
+                    "nombre": "Rines (Aros)",
+                    "descripcion": "Los Rines (o Aros) proporcionan la base estructural para montar y asegurar el neumático. Deben ser extremadamente resistentes para soportar las cargas estáticas y dinámicas, así como las fuerzas de impacto. Ofrecemos rines fabricados con aceros de alta resistencia y diseños que garantizan el ajuste perfecto y seguro del neumático, contribuyendo a la estabilidad de la máquina y previniendo fallas estructurales por fatiga. [cite: 444, 445, 446, 447]"
+                },
+                {
+                    "nombre": "Pernos para Ruedas",
+                    "descripcion": "Los Pernos para Ruedas son componentes de seguridad críticos que aseguran el rin y el neumático al cubo del eje. Suministramos pernos y tuercas de grado automotriz e industrial, fabricados con aleaciones de alta resistencia a la tracción, que garantizan la fijación firme bajo las vibraciones, torsiones y esfuerzos cortantes a los que están sometidos. La calidad de los pernos es indispensable para la seguridad. [cite: 448, 449, 450, 451]"
+                },
+                {
+                    "nombre": "Protectores de Llantas (Cadenas)",
+                    "descripcion": "Los Protectores de Llantas (o cadenas de protección) son una solución especializada para equipos que operan en condiciones extremas, como minas y canteras, donde el riesgo de corte o pinchazo es constante. Fabricados con mallas de acero de manganeso endurecido, estos protectores extienden drásticamente la vida útil del neumático, garantizando la continuidad operativa y protegiendo su inversión de daños catastróficos. [cite: 452, 453, 454]"
+                },
+                {
+                    "nombre": "Llantas Macizas (Sólidas)",
+                    "descripcion": "Las Llantas Macizas son la elección perfecta para ambientes donde los pinchazos son inevitables (chatarrerías, demolición, fundiciones). Eliminando la necesidad de aire, ofrecen una operación 100% libre de pinchazos y una estabilidad superior. Suministramos llantas macizas de caucho de alta resistencia, diseñadas para ofrecer una máxima capacidad de carga y una durabilidad inigualable, maximizando el tiempo de actividad de su equipo. [cite: 455, 456, 457, 458]"
+                }
+            ]
+        },
+        {
+            "nombre": "Martillos Hidráulicos",
+            "descripcion_general": "El Martillo Hidráulico es el implemento de demolición más potente, diseñado para romper concreto, rocas y otras estructuras con una fuerza de impacto controlada y masiva. La fiabilidad de estos equipos depende de la calidad de sus componentes internos, que deben soportar vibraciones extremas, presiones hidráulicas altísimas y la tensión constante del ciclo de impacto. Suministramos repuestos de alta resistencia, tratados térmicamente y mecanizados con precisión para garantizar la máxima transferencia de energía y una larga vida útil del martillo, reduciendo los costos operativos de demolición. [cite: 459, 460, 461, 462]",
+            "subcategorias": [
+                {
+                    "nombre": "Puntas de Martillo (Herramienta de Trabajo)",
+                    "descripcion": "Las Puntas de Martillo (cinceles, moiles, y puntas piramidales) son la herramienta que transfiere la energía de impacto directamente al material. Deben ser de acero de alta aleación, forjadas y endurecidas para resistir el astillamiento y la abrasión. Ofrecemos una variedad de formas de puntas para optimizar la penetración y la ruptura en diferentes aplicaciones (concreto, roca, asfalto), asegurando la máxima eficiencia de demolición. [cite: 463, 464, 465, 466]"
+                },
+                {
+                    "nombre": "Pistones",
+                    "descripcion": "El Pistón es el componente interno crucial que golpea la punta, generando el impacto. Este pistón debe moverse a alta velocidad dentro del cilindro y soportar fuerzas G masivas. Suministramos pistones fabricados con acero especial de impacto y acabados superficiales de precisión que garantizan el movimiento suave, la transferencia de energía óptima y la resistencia al desgaste por fricción y fatiga. [cite: 467, 468, 469, 470]"
+                },
+                {
+                    "nombre": "Cilindros Hidráulicos (Camisas)",
+                    "descripcion": "El Cilindro Hidráulico o camisa es el cuerpo interno que guía el pistón y soporta la presión del fluido. Su acabado interior es vital para la velocidad del ciclo de impacto. Ofrecemos camisas fabricadas con materiales robustos que mantienen la tolerancia perfecta y la alineación del pistón, lo que asegura una presurización eficiente y la máxima potencia en cada golpe. [cite: 471, 472, 473, 474]"
+                },
+                {
+                    "nombre": "Diafragmas",
+                    "descripcion": "Los Diafragmas son elementos flexibles que separan la cámara de gas (nitrógeno) de la cámara hidráulica en muchos diseños de martillos. Son esenciales para la amortiguación y acumulación de energía necesaria para el ciclo de impacto. Suministramos diafragmas de elastómeros de alta resistencia que mantienen la separación de gases y fluidos bajo alta presión y fluctuaciones extremas de temperatura. [cite: 475, 476, 477, 478]"
+                },
+                {
+                    "nombre": "Empaquetaduras y Sellos",
+                    "descripcion": "Las Empaquetaduras y Sellos son críticas en un martillo para mantener la presión de gas y evitar fugas de aceite hidráulico. Ofrecemos kits completos de sellado fabricados con materiales resistentes al calor y la abrasión, diseñados específicamente para las tolerancias y las presiones dinámicas de los martillos. Un sellado perfecto es esencial para evitar pérdidas de potencia y mantener el rendimiento del martillo. [cite: 479, 480, 481, 482]"
+                },
+                {
+                    "nombre": "Acumuladores Hidráulicos",
+                    "descripcion": "Los Acumuladores Hidráulicos en el martillo ayudan a amortiguar los picos de presión y a mantener la energía necesaria para el ciclo de impacto. Suministramos acumuladores de alta capacidad que garantizan una respuesta rápida del martillo y la protección de la bomba hidráulica de la máquina madre contra pulsaciones de presión. [cite: 483, 484, 485]"
+                }
+            ]
+        },
+        {
+            "nombre": "Montacargas",
+            "descripcion_general": "Los componentes de Montacargas son esenciales para la manipulación vertical y horizontal eficiente de materiales. El sistema de elevación y movimiento de carga es el pilar de la productividad en bodegas, puertos y centros de distribución. Suministramos repuestos de alta resistencia y precisión, diseñados para soportar cargas pesadas con la máxima estabilidad y seguridad. Al mantener su equipo con nuestros componentes, usted garantiza un levantamiento suave, un posicionamiento exacto y la máxima vida útil de sus equipos de manipulación de carga. [cite: 486, 487, 488, 489, 490]",
+            "subcategorias": [
+                {
+                    "nombre": "Mástiles",
+                    "descripcion": "Los Mástiles son la estructura vertical que permite la elevación y descenso de la carga. Deben ser fabricados con acero estructural de alta resistencia para manejar grandes momentos de flexión y cargas laterales. Ofrecemos componentes y repuestos para mástiles (rieles, carros y rodamientos) que garantizan un deslizamiento suave y preciso, fundamental para la estabilidad y seguridad durante la manipulación de cargas a gran altura. [cite: 491, 492, 493, 494]"
+                },
+                {
+                    "nombre": "Horquillas (Dientes)",
+                    "descripcion": "Las Horquillas o dientes de montacargas son el punto de contacto directo con la carga. Deben ser extremadamente resistentes al desgaste, la flexión y la fatiga. Suministramos horquillas forjadas con aceros de alto grado, que cumplen con las normativas de capacidad de carga. Ofrecemos diferentes longitudes y clases de montaje para asegurar el manejo seguro y eficiente de cualquier tipo de paleta o contenedor. [cite: 495, 496, 497, 498, 499]"
+                },
+                {
+                    "nombre": "Cilindros de Elevación (Lift y Tilt)",
+                    "descripcion": "Los Cilindros de Elevación (levante) y de inclinación (tilt) son los actuadores hidráulicos que proporcionan la fuerza para subir la carga y ajustar el ángulo del mástil. Su rendimiento es clave para la velocidad y la seguridad del levantamiento. Ofrecemos cilindros y kits de sellado de alta presión que garantizan un control hidráulico preciso, un levantamiento suave y la capacidad de sostener cargas sin deslizamiento. [cite: 500, 501, 502, 503]"
+                },
+                {
+                    "nombre": "Cadenas de Elevación (Hoisting Chains)",
+                    "descripcion": "Las Cadenas de Elevación son el componente mecánico que soporta la carga y multiplica el movimiento del cilindro. Son un elemento de seguridad vital. Suministramos cadenas de rodillos de alta resistencia a la tracción, tratadas térmicamente y probadas para garantizar la máxima fiabilidad y resistencia al desgaste por fricción constante. Unas cadenas en óptimas condiciones son la garantía de un levantamiento seguro y sin fallas. [cite: 504, 505, 506, 507]"
+                }
+            ]
+        },
+        {
+            "nombre": "Perforadores",
+            "descripcion_general": "El equipo y las herramientas de Perforadores son esenciales para la minería, la construcción y la obra civil, donde se requiere la creación de barrenos con precisión y rapidez. Estos componentes están sometidos a impactos, torsiones y abrasión extremas. Suministramos herramientas de perforación de máxima ingeniería, fabricadas con aceros de alto rendimiento y carburo de tungsteno premium. Nuestros productos garantizan una alta velocidad de penetración y una larga vida útil en los entornos geológicos más duros, optimizando el ciclo de perforación y reduciendo significativamente sus costos por metro perforado. [cite: 508, 509, 510, 511, 512]",
+            "subcategorias": [
+                {
+                    "nombre": "Brocas de Perforación (Drill Bits)",
+                    "descripcion": "Las Brocas de Perforación son la herramienta de corte final que interactúa con la roca. Ofrecemos una amplia gama de brocas (botón, cincel y cruz) con insertos de carburo de tungsteno de alta calidad y diseños optimizados de barrido de detritus. La selección de la broca correcta, diseñada para la dureza de su roca, es crucial para maximizar la tasa de penetración y reducir la vibración y el desgaste del resto de la sarta. [cite: 513, 514, 515, 516]"
+                },
+                {
+                    "nombre": "Martillos de Fondo (DTH Hammers)",
+                    "descripcion": "Los Martillos de Fondo (Down-The-Hole Hammers) utilizan aire comprimido para generar un impacto directo sobre la broca en el fondo del barreno. Suministramos martillos DTH conocidos por su alta eficiencia energética y su capacidad para operar a alta presión. Un martillo de fondo de calidad garantiza una potencia de impacto constante y una vida útil prolongada del pistón, lo que resulta en barrenos más rectos y rápidos. [cite: 517, 518, 519, 520]"
+                },
+                {
+                    "nombre": "Martillos de Cabeza (Top Hammers)",
+                    "descripcion": "Los Martillos de Cabeza (o martillos en superficie) transfieren la energía de impacto y rotación a través de la sarta de perforación. Estos martillos deben soportar la torsión y el impacto generado por la perforadora. Ofrecemos martillos de cabeza y sus componentes de impacto que garantizan una transferencia de energía óptima y minimizan las pérdidas en la sarta, lo que es vital para la perforación en roca de dureza media. [cite: 521, 522, 523, 524]"
+                },
+                {
+                    "nombre": "Barras de Perforación (Drill Rods)",
+                    "descripcion": "Las Barras de Perforación son las que conectan el martillo (de fondo o de cabeza) con la broca y transmiten la energía rotatoria e impactiva. Suministramos barras fabricadas con acero de perforación de la más alta calidad y tratamientos de superficie especializados para resistir la fatiga, la torsión y la abrasión. Barras robustas con roscas precisas aseguran la integridad de la sarta y minimizan el riesgo de fallas o de que la herramienta quede atascada en el barreno. [cite: 525, 526, 527, 528]"
+                }
+            ]
+        },
+        {
+            "nombre": "Soportes de Vibración",
+            "descripcion_general": "Los Soportes de Vibración son elementos pasivos cruciales para la maquinaria pesada, diseñados para aislar y amortiguar las vibraciones y los golpes generados por el motor, la transmisión o los implementos de trabajo. Su función es doble: proteger los componentes sensibles (electrónica, estructura, ejes) del daño por fatiga y maximizar el confort del operador al minimizar la transmisión de ruido y vibración a la cabina. Suministramos aisladores fabricados con compuestos de caucho y metales de alta ingeniería, que garantizan la amortiguación efectiva y la longevidad de su equipo. [cite: 529, 530, 531, 532]",
+            "subcategorias": [
+                {
+                    "nombre": "Silentblocks (Bloques Silenciosos)",
+                    "descripcion": "Los Silentblocks son un tipo de montaje elástico que aísla las vibraciones y el ruido de alta frecuencia, comúnmente utilizados para montar cabinas, motores y transmisiones. Están compuestos por un núcleo metálico unido a una capa de elastómero de alta durabilidad. Ofrecemos silentblocks con formulaciones de caucho que garantizan la absorción de energía óptima y la resistencia a aceites y temperaturas, manteniendo la alineación precisa de los componentes mientras absorben el movimiento. [cite: 533, 534, 535, 536]"
+                },
+                {
+                    "nombre": "Aisladores de Vibración (Montajes Antivibratorios)",
+                    "descripcion": "Los Aisladores de Vibración incluyen una gama más amplia de montajes diseñados para la suspensión de equipos específicos (como bombas, radiadores o compresores) y para proteger la electrónica. Suministramos aisladores de diferentes durezas y geometrías (cónicas, cilíndricas) que garantizan el nivel de aislamiento adecuado para la carga y la frecuencia de vibración específicas. Su uso es esencial para extender la vida útil de los componentes sensibles a la fatiga mecánica. [cite: 537, 538, 539, 540]"
+                }
+            ]
+        },
+        {
+            "nombre": "Tornillería",
+            "descripcion_general": "La Tornillería es la base de la integridad estructural y funcional de toda maquinaria pesada. Estos componentes de sujeción son responsables de unir las piezas críticas y deben resistir fuerzas de tensión, cizallamiento y vibración extremas. Suministramos una línea completa de elementos de fijación fabricados con aceros de alta resistencia (grados 8.8, 10.9 y 12.9), con tratamientos superficiales que garantizan la máxima durabilidad y resistencia a la corrosión. Utilizar nuestra tornillería asegura que sus componentes permanezcan unidos de forma segura, minimizando el riesgo de fallas por aflojamiento y prolongando la vida útil de la estructura de su equipo. [cite: 541, 542, 543, 544, 545]",
+            "subcategorias": [
+                {
+                    "nombre": "Tornillos",
+                    "descripcion": "Los Tornillos son elementos de sujeción roscados que se utilizan en conjunto con una tuerca o se insertan directamente en un agujero roscado. Ofrecemos tornillos con cabezas hexagonales, Allen y otras configuraciones, fabricados bajo estándares estrictos para soportar cargas de tensión y cizallamiento. El uso de tornillos de alta calidad y grado adecuado es fundamental para mantener la unión estructural de las partes bajo condiciones de trabajo severas. [cite: 546, 547, 548, 549]"
+                },
+                {
+                    "nombre": "Pernos",
+                    "descripcion": "Los Pernos son un tipo de fijación roscada que a menudo se distingue por su uso en aplicaciones estructurales que requieren una fuerza de sujeción excepcional. Suministramos pernos especializados, como los utilizados en rodaje o en ensamblajes de alta carga, que están diseñados para resistir la fatiga extrema y las fuerzas de impacto. Su calidad garantiza una fijación inquebrantable en los puntos críticos de la máquina. [cite: 550, 551, 552, 553]"
+                },
+                {
+                    "nombre": "Tuercas",
+                    "descripcion": "Las Tuercas son el complemento esencial de los tornillos y pernos, proporcionando el agarre roscado para generar la fuerza de apriete. Ofrecemos una variedad de tuercas, incluyendo hexagonales, de seguridad (autoblocantes) y con brida, todas fabricadas con el mismo grado de resistencia que el tornillo o perno al que acompañan. Las tuercas de seguridad son vitales para evitar el aflojamiento causado por la vibración constante. [cite: 554, 555, 556, 557]"
+                },
+                {
+                    "nombre": "Arandelas",
+                    "descripcion": "Las Arandelas son piezas planas que cumplen dos funciones primordiales: distribuir la carga de la tuerca o el tornillo sobre una superficie mayor para proteger el material, y actuar como un mecanismo de bloqueo (arandelas de presión). Suministramos arandelas planas, de presión y dentadas de alta resistencia, que garantizan la correcta distribución de la tensión y previenen el aflojamiento de la unión roscada con el tiempo. [cite: 558, 559, 560]"
+                }
+            ]
+        },
+        {
+            "nombre": "Transmisiones",
+            "descripcion_general": "El sistema de Transmisiones es el encargado de transferir y gestionar la potencia generada por el motor hacia el tren de rodaje o las ruedas, asegurando la velocidad y el par motor adecuados para cada tarea operativa. La fiabilidad y la precisión de la transmisión son fundamentales para la eficiencia del combustible y la capacidad de la máquina para trabajar bajo carga. Suministramos componentes de alta ingeniería diseñados para soportar cargas de torsión masivas, cambios de dirección constantes y el calor extremo, garantizando una transferencia de potencia suave, controlada y eficiente en todo momento. [cite: 561, 562, 563, 564]",
+            "subcategorias": [
+                {
+                    "nombre": "Cajas de Cambios (Transmisiones)",
+                    "descripcion": "Las Cajas de Cambios o transmisiones (mecánicas, powershift, o hidrostáticas) son el corazón del sistema, ajustando la relación entre la velocidad del motor y la velocidad de salida de la máquina. Ofrecemos transmisiones y sus componentes internos (engranajes, ejes y frenos) fabricados con tolerancias exactas y aceros endurecidos. Una caja de cambios en óptimas condiciones asegura la máxima tracción y la modulación de velocidad precisa necesaria para la operación. [cite: 565, 566, 567, 568]"
+                },
+                {
+                    "nombre": "Convertidores de Par",
+                    "descripcion": "Los Convertidores de Par actúan como un embrague hidráulico y un multiplicador de par, permitiendo que la máquina se mueva de manera suave desde la inmovilidad y adaptando la potencia del motor a la carga variable. Suministramos convertidores y sus turbinas, estatores y bombas con acabados de precisión que garantizan la máxima eficiencia hidráulica y la capacidad de arranque en pendiente de su equipo. [cite: 569, 570, 571, 572]"
+                },
+                {
+                    "nombre": "Embragues",
+                    "descripcion": "Los Embragues son esenciales en las transmisiones mecánicas y powershift, ya que permiten acoplar o desacoplar el motor de la transmisión. Ofrecemos discos de fricción, placas y conjuntos de embrague (secos y húmedos) fabricados con materiales resistentes al calor y al desgaste. La calidad de los embragues es vital para una transición de potencia fluida y para proteger el tren de transmisión de choques bruscos. [cite: 573, 574, 575]"
+                },
+                {
+                    "nombre": "Mandos Finales",
+                    "descripcion": "Los Mandos Finales son el último componente de reducción de velocidad y multiplicación de par antes de que la potencia llegue a las ruedas o a las orugas. Suministramos mandos finales y sus componentes (engranajes planetarios y carcasas) diseñados para soportar las cargas de torsión más altas y la abrasión. Su fiabilidad garantiza que la potencia se transmita al suelo con máxima eficiencia y durabilidad. [cite: 576, 577, 578, 579]"
+                },
+                {
+                    "nombre": "Ejes Delanteros y Traseros",
+                    "descripcion": "Los Ejes Delanteros y Traseros (portadores de la tracción y la dirección) son estructuras robustas que albergan los diferenciales, mandos finales y sistemas de freno. Ofrecemos ejes completos y semiejes fabricados para resistir la fatiga estructural y la torsión constante. Ejes de calidad son cruciales para la estabilidad, la capacidad de carga y la durabilidad general de la máquina. [cite: 580, 581, 582, 583]"
+                },
+                {
+                    "nombre": "Diferenciales",
+                    "descripcion": "Los Diferenciales son un conjunto de engranajes que permiten que las ruedas (o los mandos finales de cada lado) giren a diferentes velocidades durante un giro, manteniendo la tracción. Ofrecemos diferenciales abiertos y de deslizamiento limitado con engranajes de alta precisión y tratamiento térmico que garantizan una distribución de potencia efectiva y una tracción constante sin dañar los componentes de la línea de transmisión. [cite: 584, 585, 586]"
+                },
+                {
+                    "nombre": "Controles de Transmisión",
+                    "descripcion": "Los Controles de Transmisión (electrónicos y solenoides) son los componentes que reciben las señales del operador o de la ECU y activan los embragues y las válvulas dentro de la caja de cambios. Suministramos solenoides, sensores de velocidad y módulos de control de precisión, vitales para la modulación suave de los cambios y la optimización automática de la eficiencia de la transmisión. [cite: 587, 588, 589]"
+                }
+            ]
+        },
+        {
+            "nombre": "Turboalimentadores",
+            "descripcion_general": "El Turboalimentador es un componente de alta ingeniería esencial en los motores diésel modernos, encargado de incrementar la potencia y la eficiencia del combustible al forzar más aire en la cámara de combustión. Estos sistemas operan a velocidades extremas (más de 200,000 RPM) y a temperaturas muy elevadas. Suministramos turboalimentadores y sus componentes de precisión fabricados con materiales resistentes al calor y la fatiga, garantizando la máxima sobrealimentación y una larga vida útil que se traduce directamente en una mejor respuesta del motor, mayor par motor y menor consumo de combustible. [cite: 590, 591, 592, 593]",
+            "subcategorias": [
+                {
+                    "nombre": "Turbinas",
+                    "descripcion": "La Turbina es la sección del turbo que está impulsada por los gases de escape calientes. Su diseño aerodinámico y el material de alta aleación deben soportar temperaturas extremas para hacer girar el eje del turbo. Ofrecemos turbinas y carcasas de precisión que garantizan la máxima recuperación de energía de los gases de escape, impulsando el compresor de manera eficiente. [cite: 594, 595, 596, 597]"
+                },
+                {
+                    "nombre": "Compresores",
+                    "descripcion": "El Compresor es el encargado de tomar el aire del exterior y comprimirlo antes de introducirlo en el múltiple de admisión del motor. Las ruedas compresoras y sus carcasas están diseñadas para crear la presión de soplado óptima para el motor. Suministramos compresores de alto flujo que aseguran la densidad de aire correcta, resultando en una combustión más completa y una potencia superior. [cite: 598, 599, 600, 601]"
+                },
+                {
+                    "nombre": "Cojinetes de Turbo",
+                    "descripcion": "Los Cojinetes de Turbo (rodamientos) son críticos, ya que soportan el eje que gira a velocidades extremadamente altas. Requieren una lubricación constante y un ajuste exacto. Ofrecemos cojinetes de flotación y conjuntos de reparación de precisión que minimizan la fricción y garantizan la estabilidad del eje a altas RPM, lo cual es vital para la longevidad del turbo y la prevención de fallas catastróficas. [cite: 602, 603, 604]"
+                },
+                {
+                    "nombre": "Actuadores",
+                    "descripcion": "Los Actuadores (ya sean de tipo wastegate o de geometría variable - VGT) son componentes de control que regulan la velocidad de la turbina para mantener la presión de soplado dentro de los límites seguros y optimizar la respuesta del motor en diferentes regímenes. Suministramos actuadores (electrónicos y neumáticos) de alta precisión y respuesta rápida que aseguran el control dinámico del turbo, protegiendo el motor de sobrepresiones y maximizando el par motor a bajas RPM. [cite: 605, 606, 607]"
+                }
+            ]
+        }
+    ]
+}

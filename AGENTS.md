@@ -12,7 +12,7 @@ Este repositorio funciona como un monorepo que contiene:
 ## Reglas Generales de Desarrollo
 ## Comportamiento del Agente (Reglas Estrictas)
 1. **Idioma**: ESPAÑOL OBLIGATORIO.
-   - **Respuestas de Chat**: Siempre en español.
+   - **Respuestas de Chat**: SIEMPRE en español, en todas las sesiones, sin necesidad de recordatorio explícito.
    - **Artefactos**: Todos los documentos generados (task.md, planes, walkthroughs) deben estar en español.
    - **Estado del Agente**: Los campos `TaskStatus` y `TaskSummary` en `task_boundary` deben redactarse siempre en español.
 2. **Mentalidad**: Actuar como un desarrollador senior experto en el stack del proyecto.

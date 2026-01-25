@@ -30,6 +30,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property string|null $motivo_cancelacion
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
+ *
  * @property-read \App\Models\User|null $user
  * @property-read \App\Models\Tercero|null $tercero
  * @property-read \App\Models\Pedido|null $pedido
@@ -68,6 +69,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con el usuario que creó la orden
+     *
+     * @return BelongsTo
      */
     public function user(): BelongsTo
     {
@@ -76,6 +79,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con el tercero (cliente)
+     *
+     * @return BelongsTo
      */
     public function tercero(): BelongsTo
     {
@@ -84,6 +89,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con el pedido origen
+     *
+     * @return BelongsTo
      */
     public function pedido(): BelongsTo
     {
@@ -92,6 +99,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con la cotización origen
+     *
+     * @return BelongsTo
      */
     public function cotizacion(): BelongsTo
     {
@@ -100,6 +109,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con la transportadora
+     *
+     * @return BelongsTo
      */
     public function transportadora(): BelongsTo
     {
@@ -108,6 +119,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con la dirección
+     *
+     * @return BelongsTo
      */
     public function direccion(): BelongsTo
     {
@@ -116,6 +129,8 @@ class OrdenTrabajo extends Model
 
     /**
      * Relación con las referencias de la orden de trabajo
+     *
+     * @return HasMany
      */
     public function referencias(): HasMany
     {
