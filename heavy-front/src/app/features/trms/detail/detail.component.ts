@@ -53,7 +53,7 @@ import { TRM } from '../../../core/models/trm.model';
             <p-card header="Información de la TRM">
               <div class="grid">
                 <div class="col-12 md:col-6">
-                  <p><strong>ID:</strong> {{ trm()?.id }}</p>
+                  <p><strong>ID:</strong> {{ trm()!.id }}</p>
                 </div>
                 <div class="col-12 md:col-6">
                   <p><strong>TRM (USD/COP):</strong>
