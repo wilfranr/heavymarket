@@ -17,8 +17,17 @@
     } @else {
     <!-- Contenido principal -->
     <div class="product-detail-content">
+        <!-- Header con Breadcrumb -->
+        <div class="products-header">
+            <h1 class="products-title">Nuestros productos</h1>
+            <p class="products-breadcrumb">
+                {{ category?.nombre }} / <a routerLink="/productos" class="breadcrumb-link">Productos</a> / <strong>{{
+                    subCategory?.nombre }}</strong>
+            </p>
+        </div>
+
         <div class="product-detail-container">
-            <!-- Título -->
+            <!-- Título de detalle -->
             <h1 class="product-detail-title" id="product-title">{{ subCategory?.nombre }}</h1>
 
             <!-- Primera sección -->

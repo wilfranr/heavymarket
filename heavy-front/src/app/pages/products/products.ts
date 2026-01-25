@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../landing/components/navbar/navbar';
@@ -29,7 +29,8 @@ export class Products implements OnInit, AfterViewInit {
 
     constructor(
         private landingService: LandingService,
-        private router: Router
+        private router: Router,
+        private cdr: ChangeDetectorRef
     ) { }
 
     ngOnInit() {
@@ -37,6 +38,11 @@ export class Products implements OnInit, AfterViewInit {
             this.categories = categories;
             this.processAllProducts();
             this.filterProducts();
+            // Esperar a que el DOM se actualice
+            setTimeout(() => {
+                this.checkArrows();
+                this.cdr.detectChanges();
+            }, 100);
         });
     }
 
@@ -147,5 +153,6 @@ export class Products implements OnInit, AfterViewInit {
 
         this.showLeftArrow = container.scrollLeft > 10;
         this.showRightArrow = container.scrollLeft < (container.scrollWidth - container.clientWidth - 10);
+        this.cdr.detectChanges();
     }
 }
