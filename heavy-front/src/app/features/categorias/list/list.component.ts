@@ -48,9 +48,13 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
         [value]="categorias()"
         [loading]="loading()"
         [paginator]="true"
-        [rows]="15"
+        [rows]="rowsPerPage"
         [totalRecords]="total()"
+        [first]="first"
+        [lazy]="true"
+        (onPage)="onPageChange($event)"
         [rowHover]="true"
+        [rowsPerPageOptions]="[10, 15, 25, 50]"
         responsiveLayout="scroll"
       >
         <ng-template #caption>
@@ -118,10 +122,14 @@ export class ListComponent implements OnInit {
   private confirmationService = inject(ConfirmationService);
 
   // Signals para estado local
-  // Signals para estado local
   categorias = signal<Categoria[]>([]);
   loading = signal(false);
   total = signal(0);
+
+  // Paginación
+  currentPage = 1;
+  rowsPerPage = 15;
+  first = 0;
   searchTerm = '';
   private searchSubject = new Subject<string>();
 
@@ -134,7 +142,14 @@ export class ListComponent implements OnInit {
       distinctUntilChanged()
     ).subscribe(query => {
       this.searchTerm = query;
-      this.loadCategorias({ search: query });
+      this.currentPage = 1;
+      this.first = 0;
+      this.loadCategorias();
+    });
+
+    this.store.select(CategoriasSelectors.selectCategoriasCurrentPage).subscribe(page => {
+      this.currentPage = page;
+      this.first = (page - 1) * this.rowsPerPage;
     });
 
     // Suscribirse al store
@@ -152,7 +167,20 @@ export class ListComponent implements OnInit {
   }
 
   loadCategorias(params: any = {}) {
-    this.store.dispatch(CategoriasActions.loadCategorias(params));
+    const finalParams = {
+      ...params,
+      page: params.page || this.currentPage,
+      per_page: params.per_page || this.rowsPerPage,
+      search: params.search || this.searchTerm
+    };
+    this.store.dispatch(CategoriasActions.loadCategorias(finalParams));
+  }
+
+  onPageChange(event: any): void {
+    this.first = event.first;
+    this.rowsPerPage = event.rows;
+    this.currentPage = Math.floor(event.first / event.rows) + 1;
+    this.loadCategorias();
   }
 
   onSearch(event: any) {

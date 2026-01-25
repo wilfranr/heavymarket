@@ -94,8 +94,8 @@ export class ListComponent implements OnInit {
      */
     onPageChange(event: any): void {
         this.first = event.first;
-        this.currentPage = event.page + 1;
         this.rowsPerPage = event.rows;
+        this.currentPage = Math.floor(event.first / event.rows) + 1;
         this.cargarSistemas();
     }
 

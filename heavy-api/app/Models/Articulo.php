@@ -20,6 +20,24 @@ class Articulo extends Model
         'foto_medida',
     ];
 
+    public function getFotoDescriptivaAttribute($value): ?string
+    {
+        if (!$value || str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return asset("storage/Aplicativo/05. Articulos/{$value}");
+    }
+
+    public function getFotoMedidaAttribute($value): ?string
+    {
+        if (!$value || str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return asset("storage/Aplicativo/06. Tipos de Medida/{$value}");
+    }
+
     public function articuloReferencia(): HasMany
     {
         return $this->hasMany(ArticuloReferencia::class, 'articulo_id');

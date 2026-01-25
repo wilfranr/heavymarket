@@ -69,9 +69,13 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
         [value]="pedidos()"
         [loading]="loading()"
         [paginator]="true"
-        [rows]="15"
+        [rows]="rowsPerPage"
         [totalRecords]="total()"
+        [first]="first"
+        [lazy]="true"
+        (onPage)="onPageChange($event)"
         [rowHover]="true"
+        [rowsPerPageOptions]="[10, 15, 25, 50]"
         responsiveLayout="scroll"
       >
         <ng-template #caption>
@@ -139,6 +143,11 @@ export class PedidosListComponent implements OnInit {
   pedidos = signal<Pedido[]>([]);
   loading = signal(false);
   total = signal(0);
+
+  // Paginación
+  currentPage = 1;
+  rowsPerPage = 15;
+  first = 0;
   selectedEstado: string | null = null;
   selectedTercero: number | null = null;
   selectedVendedor: number | null = null;
@@ -191,6 +200,11 @@ export class PedidosListComponent implements OnInit {
 
     this.store.select(PedidosSelectors.selectPedidosTotal).subscribe(total => {
       this.total.set(total);
+    });
+
+    this.store.select(PedidosSelectors.selectPedidosCurrentPage).subscribe(page => {
+      this.currentPage = page;
+      this.first = (page - 1) * this.rowsPerPage;
     });
   }
 
@@ -253,9 +267,21 @@ export class PedidosListComponent implements OnInit {
     }
 
     // Combinar con otros parámetros (búsqueda, paginación, etc.)
-    const finalParams = { ...filterParams, ...params };
+    const finalParams = {
+      ...filterParams,
+      ...params,
+      page: params.page || this.currentPage,
+      per_page: params.per_page || this.rowsPerPage
+    };
 
     this.store.dispatch(PedidosActions.loadPedidos({ params: finalParams }));
+  }
+
+  onPageChange(event: any): void {
+    this.first = event.first;
+    this.currentPage = (event.first / event.rows) + 1;
+    this.rowsPerPage = event.rows;
+    this.loadPedidos();
   }
 
   onSearch(event: any) {

@@ -8,10 +8,13 @@
         </ng-template>
     </p-toolbar>
 
-    <p-table #dt [value]="(terceros$ | async) || []" [loading]="loading$ | async" [paginator]="true" [rows]="10"
-        [showCurrentPageReport]="true" currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} terceros"
-        [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['razon_social', 'documento', 'email', 'telefono']"
-        responsiveLayout="scroll" selectionMode="multiple" [rowHover]="true" dataKey="id">
+    <p-table #dt [value]="(terceros$ | async) || []" [loading]="loading$ | async" [paginator]="true"
+        [rows]="rowsPerPage" [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true"
+        (onPage)="onPageChange($event)" [showCurrentPageReport]="true"
+        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} terceros"
+        [rowsPerPageOptions]="[10, 15, 25, 50]"
+        [globalFilterFields]="['razon_social', 'documento', 'email', 'telefono']" responsiveLayout="scroll"
+        selectionMode="multiple" [rowHover]="true" dataKey="id">
         <ng-template #caption>
             <div class="flex items-center justify-between">
                 <h5 class="m-0">Terceros (Clientes y Proveedores)</h5>

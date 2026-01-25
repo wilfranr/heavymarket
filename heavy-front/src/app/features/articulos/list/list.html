@@ -42,8 +42,8 @@
                 <td>{{ articulo.id }}</td>
                 <td>
                     @if (articulo.fotoDescriptiva) {
-                    <img [src]="articulo.fotoDescriptiva" [alt]="articulo.descripcionEspecifica"
-                        class="w-16 h-16 object-cover rounded shadow-sm" />
+                    <img [src]="articulo.fotoDescriptiva" [alt]="articulo.definicion"
+                        class="w-16 h-16 object-contain bg-white p-1 rounded shadow-sm" />
                     } @else {
                     <span class="text-gray-400">-</span>
                     }

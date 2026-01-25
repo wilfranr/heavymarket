@@ -58,7 +58,8 @@
                 </td>
                 <td>
                     @if (lista.foto) {
-                    <img [src]="lista.foto" [alt]="lista.nombre" class="w-16 h-16 object-cover rounded shadow-sm" />
+                    <img [src]="lista.foto" [alt]="lista.nombre"
+                        class="w-16 h-16 object-contain bg-white p-1 rounded shadow-sm" />
                     } @else {
                     <span class="text-gray-400">-</span>
                     }

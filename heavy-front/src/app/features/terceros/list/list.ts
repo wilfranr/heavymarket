@@ -21,7 +21,7 @@ import { FormsModule } from '@angular/forms';
 
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
-import { selectAllTerceros, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
+import { selectAllTerceros, selectTercerosLoading, selectTercerosPagination } from '../../../store/terceros/selectors/terceros.selectors';
 
 /**
  * Componente de lista de terceros
@@ -60,14 +60,19 @@ export class ListComponent implements OnInit {
 
     terceros$!: Observable<Tercero[]>;
     loading$!: Observable<boolean>;
+    pagination$!: Observable<{ total: number, currentPage: number, lastPage: number }>;
 
+    // Paginación
+    currentPage = 1;
+    rowsPerPage = 15;
+    first = 0;
     searchTerm = '';
     private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
-        this.cargarTerceros();
         this.terceros$ = this.store.select(selectAllTerceros);
         this.loading$ = this.store.select(selectTercerosLoading);
+        this.pagination$ = this.store.select(selectTercerosPagination);
 
         // Configurar búsqueda con debounce
         this.searchSubject.pipe(
@@ -75,19 +80,36 @@ export class ListComponent implements OnInit {
             distinctUntilChanged()
         ).subscribe(query => {
             this.searchTerm = query;
+            this.currentPage = 1;
+            this.first = 0;
             this.cargarTerceros();
         });
+
+        this.cargarTerceros();
     }
 
     /**
      * Carga los terceros
      */
     cargarTerceros(): void {
-        const params: any = {};
+        const params: any = {
+            page: this.currentPage,
+            per_page: this.rowsPerPage
+        };
         if (this.searchTerm) {
             params.search = this.searchTerm;
         }
         this.store.dispatch(loadTerceros({ params }));
+    }
+
+    /**
+     * Maneja el cambio de página
+     */
+    onPageChange(event: any): void {
+        this.first = event.first;
+        this.currentPage = (event.first / event.rows) + 1;
+        this.rowsPerPage = event.rows;
+        this.cargarTerceros();
     }
 
     /**
