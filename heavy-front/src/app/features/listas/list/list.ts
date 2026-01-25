@@ -112,9 +112,9 @@ export class ListComponent implements OnInit {
      * Maneja el cambio de página
      */
     onPageChange(event: any): void {
-        this.currentPage = event.page + 1; // PrimeNG usa 0-based indexing
+        this.first = event.first;
         this.rowsPerPage = event.rows || this.rowsPerPage;
-        this.first = (this.currentPage - 1) * this.rowsPerPage;
+        this.currentPage = Math.floor(event.first / (event.rows || this.rowsPerPage)) + 1;
         this.loadListas();
     }
 
