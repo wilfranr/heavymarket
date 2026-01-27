@@ -1,7 +1,7 @@
 # Estado Real de la Migración CYH → HeavyMarket
 
 **Fecha**: 24 de Enero, 2026  
-**Progreso Real**: ~20-25% (mejora significativa con módulos de soporte)
+**Progreso Real**: ~85-90% (Fases 1-4 completas; solo falta Fase 5 - funcionalidades avanzadas)
 
 ---
 
@@ -210,23 +210,9 @@
    - **Razón**: Se relaciona con Listas y Máquinas
    - **Dependencias**: Listas
 
-4. **Referencias** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
-   - **Razón**: CRÍTICO - Pedidos usa Referencia::find() en el repeater
-   - **Dependencias**: Listas (para marcas)
-
-5. **Máquinas** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
-   - **Razón**: Se asocia a Pedidos
-   - **Dependencias**: Listas (tipo), Fabricantes
-
-6. **Articulos** (CRUD completo)
-   - ✅ Backend ya existe
-   - ❌ Frontend: 0%
-   - **Razón**: Se agregan a Pedidos
-   - **Dependencias**: Referencias, Categorias
+4. **Referencias** (CRUD completo) - ✅ COMPLETO
+5. **Máquinas** (CRUD completo) - ✅ COMPLETO
+6. **Articulos** (CRUD completo) - ✅ COMPLETO
 
 ### Fase 2: Completar Módulo de Pedidos (DESPUÉS de Fase 1) - ✅ COMPLETO (~98%)
 **Todos los módulos de soporte están completos. Se puede proceder con Pedidos:**
@@ -370,44 +356,33 @@
 | Autenticación | 100% | ✅ Completo |
 | Layout/UI | 100% | ✅ Completo |
 | Dashboard | 60% | ⚠️ Básico |
-| Pedidos | 15% | ❌ Muy básico |
-| Terceros | 20% | ❌ Básico |
-| Cotizaciones | 0% | ❌ Placeholder |
-| Órdenes de Compra | 0% | ❌ Placeholder |
-| Órdenes de Trabajo | 0% | ❌ No existe |
-| **Módulos de Soporte** | **100%** | ✅ **6 de 6 completos** |
-| - Listas | 100% | ✅ Completo |
-| - Fabricantes | 100% | ✅ Completo |
-| - Sistemas | 100% | ✅ Completo |
-| - Referencias | 100% | ✅ Completo |
-| - Máquinas | 100% | ✅ Completo |
-| - Articulos | 100% | ✅ Completo |
-| Funcionalidades Avanzadas | 0% | ❌ No existen |
+| Pedidos | 98% | ✅ Completo (Wizard, referencias, proveedores, filtros) |
+| Terceros | 80% | ✅ CRUD completo |
+| Cotizaciones | 100% | ✅ Completo |
+| Órdenes de Compra | 100% | ✅ Completo |
+| Órdenes de Trabajo | 100% | ✅ Completo |
+| **Módulos de Soporte (Fase 1)** | **100%** | ✅ Listas, Fabricantes, Sistemas, Referencias, Máquinas, Articulos |
+| **Módulos Auxiliares (Fase 4)** | **100%** | ✅ Empresa, Categorias, Contactos, Direcciones, Transportadoras, TRM |
+| Funcionalidades Avanzadas (Fase 5) | 0% | ❌ Pendiente (Excel, PDF, Chat, widgets, filtros por rol) |
 
-**Progreso General**: ~30-35%
+**Progreso General**: ~85-90%
 
 ---
 
-## 🚨 Problemas Identificados
+## 🚨 Pendientes / Mejoras Opcionales
 
-1. **Falta de Complejidad**: Los módulos implementados son versiones MUY simplificadas
-2. **Falta de Relaciones**: No se manejan las relaciones complejas del sistema original
-3. **Falta de Funcionalidades**: Wizards, RelationManagers, Widgets no implementados
-4. **Módulos Faltantes**: 10+ módulos completamente ausentes
-5. **UX Simplificada**: No refleja la experiencia del sistema original
+1. **Fase 5**: Importación Excel, generación PDF, chat en tiempo real, widgets avanzados, filtros/badges por rol
+2. **Terceros**: RelationManagers (Fabricantes, Sistemas) e historial por tercero (opcional)
+3. **Productos/Landing**: Rutas `productos` y `productos/:category/:subcategory` (integración backend/contenido según necesidad)
+4. **Menú**: Verificar que todos los módulos estén en el sidebar (Ordenes de Trabajo, Empresas, Categorias, Contactos, Direcciones, Transportadoras, TRM)
 
 ---
 
 ## ✅ Próximos Pasos Recomendados
 
-1. **Continuar Fase 1**: Completar módulos de soporte restantes
-   - ⏳ Referencias (CRUD completo) - **PRÓXIMO**
-   - ⏳ Máquinas (CRUD completo)
-   - ⏳ Articulos (CRUD completo)
-2. **Fase 2**: Completar módulo de Pedidos con TODAS sus funcionalidades (después de Fase 1)
-3. **Fase 3**: Completar módulos principales (Cotizaciones, Órdenes)
-4. **Implementar**: Funcionalidades avanzadas una por una
-5. **Probar**: Cada módulo completamente antes de pasar al siguiente
+1. **Fase 5** (cuando se requiera): Implementar funcionalidades avanzadas una por una (Excel, PDF, Chat, etc.)
+2. **Productos**: Completar páginas de productos si se van a usar (datos desde API o estáticos)
+3. **Probar en conjunto**: Flujo completo Pedido → Cotización → Orden Compra → Orden Trabajo y catálogos
 
 ---
 
@@ -424,13 +399,10 @@
   - Rutas lazy-loaded configuradas
   - Integrados en menú de navegación
 
-**Última actualización**: 24/01/2026 14:30
+**Última actualización**: 24/01/2026
 
-**24 de Enero, 2026 - Fase 1 COMPLETADA:**
-- ✅ Completado módulo **Referencias** (Backend corregido + Frontend completo)
-- ✅ Completado módulo **Máquinas** (Backend corregido + Frontend completo)
-- ✅ Completado módulo **Articulos** (Backend corregido + Frontend completo)
-- ✅ **Fase 1: Módulos de Soporte Base - 100% COMPLETA**
-- ✅ Todos los 6 módulos de soporte tienen CRUD completo funcional
-- ✅ Backend y Frontend completamente integrados
-- ✅ Listo para proceder con Fase 2: Completar Módulo de Pedidos
+**24 de Enero, 2026 - Estado migración:**
+- ✅ **Fases 1-4 completas**: Todos los módulos CRUD implementados (Referencias, Máquinas, Articulos, Cotizaciones, Órdenes de Compra, Órdenes de Trabajo, Empresa, Categorias, Contactos, Direcciones, Transportadoras, TRM).
+- ✅ Menú lateral actualizado con todos los módulos (Órdenes de Trabajo, Empresas, Categorías, Contactos, Direcciones, Transportadoras, TRM).
+- ✅ Documento ESTADO_MIGRACION.md actualizado: progreso real ~85-90%, tablas y próximos pasos alineados con el estado actual.
+- ⏳ Pendiente: **Fase 5** (Importación Excel, PDF, Chat, widgets avanzados, filtros por rol). Páginas Productos/Landing según necesidad.

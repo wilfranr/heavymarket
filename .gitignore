@@ -43,3 +43,6 @@ heavy-api/public/hot
 .env
 .env.local
 .env.*.local
+
+# Agent Configuration
+.agent/

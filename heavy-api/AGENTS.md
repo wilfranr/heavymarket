@@ -1,6 +1,6 @@
 # Contexto y Guía para Agentes de IA - HeavyMarket (Backend API)
 
-> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser SIEMPRE en **ESPAÑOL**, sin excepción y sin necesidad de recordatorio. Ver `AGENTS.md` en la raíz para reglas completas.
+> **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser en **ESPAÑOL**. Ver `AGENTS.md` en la raíz para reglas completas.
 
 ## Stack Tecnológico
 - **Framework**: Laravel 12.
