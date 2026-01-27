@@ -43,22 +43,22 @@ class SubcategoriaLanding extends Model
     {
         $imagenValue = $this->getRawOriginal('imagen');
         
-        // Si hay imagen guardada en BD (archivo subido en storage)
-        if ($imagenValue && (\Illuminate\Support\Str::startsWith($imagenValue, 'images/') || \Illuminate\Support\Str::startsWith($imagenValue, 'landing/'))) {
-            // Es una imagen subida, usar storage
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($imagenValue);
-        }
-        
-        // Si hay imagen en BD pero es solo nombre de archivo (legacy o del seeder)
-        if ($imagenValue) {
-            // Usar directamente desde public/images
-            return asset('images/' . $imagenValue);
+        if ($this->imagen) {
+            if (Str::startsWith($this->imagen, ['http://', 'https://'])) {
+                return $this->imagen;
+            }
+            return asset($this->imagen);
         }
         
         // Fallback al mapeo del config
         $map = config('productos_imagenes');
         if (is_array($map)) {
             $imageName = $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
+            
+            if (Str::startsWith($imageName, 'landing/')) {
+                return asset('storage/' . $imageName);
+            }
+            
             return asset('images/' . $imageName);
         }
         
@@ -66,7 +66,7 @@ class SubcategoriaLanding extends Model
     }
     
     /**
-     * Helper para obtener el nombre del archivo de imagen
+     * Accessor para obtener la imagen por defecto si es null
      */
     public function getImagenAttribute($value)
     {
@@ -74,7 +74,14 @@ class SubcategoriaLanding extends Model
         if (!$value) {
             $map = config('productos_imagenes');
             if (is_array($map)) {
-                return $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
+                $imageName = $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
+                
+                // Si la imagen del config empieza con landing/, asumir que está en storage
+                if (Str::startsWith($imageName, 'landing/')) {
+                    return 'storage/' . $imageName;
+                }
+                
+                return $imageName;
             }
             return 'no-image.png';
         }

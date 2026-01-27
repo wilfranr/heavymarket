@@ -23,8 +23,7 @@ use App\Http\Controllers\Api\V1\{
     ContactoController,
     DireccionController,
     TransportadoraController,
-    TRMController,
-    LandingController
+    TRMController
 };
 
 /**
@@ -51,11 +50,6 @@ Route::prefix('v1')->group(function () {
      */
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
-
-    /**
-     * Rutas de datos públicos para Landing Page
-     */
-    Route::get('/landing/categories', [LandingController::class, 'index']);
 
     /**
      * Rutas protegidas con autenticación Sanctum

@@ -44,42 +44,42 @@ return [
     'componentes-de-rodaje-para-equipos-livianos' => 'rodillos.png',
     
     // Herramienta de Corte (GET)
-    'dientes-y-pasadores' => 'dientes.png',
-    'protectores-de-baldes-side-cutters-y-protectores' => 'protectores.png',
-    'cuchilleria-general-para-cargadores-y-excavadoras' => 'cuchillas.png',
-    'cuchilleria-para-motoniveladoras' => 'cuchillas-moto.png',
-    'puntas-de-ripper' => 'ripper.png',
+    'dientes-y-pasadores' => 'landing/herramienta-de-corte/dientes-1.jpg',
+    'protectores-de-baldes-side-cutters-y-protectores' => 'landing/herramienta-de-corte/protector-del-balde-1.jpg',
+    'cuchilleria-general-para-cargadores-y-excavadoras' => 'landing/herramienta-de-corte/cuchillas-1.jpg',
+    'cuchilleria-para-motoniveladoras' => 'landing/herramienta-de-corte/cuchillas-motoniveladora-2.jpeg',
+    'puntas-de-ripper' => 'landing/herraminta-de-corte/punta-de-ripper.webp',
     
     // Electrónicos
-    'unidades-de-control-electronico-ecu' => 'ecu.png',
-    'sensores' => 'sensores.png',
-    'solenoides-electricos' => 'solenoides.png',
-    'arneses-de-cableado' => 'arneses.png',
-    'paneles-de-instrumentos' => 'panel-instrumentos.png',
+    'unidades-de-control-electronico-ecu' => 'landing/electronicos/ecu.png', // Placeholder, verify existence
+    'sensores' => 'landing/electronicos/sensores-1.jpg',
+    'solenoides-electricos' => 'landing/hidraulicos/solenoide-1.png',
+    'arneses-de-cableado' => 'landing/electronicos/arneses.png', // Placeholder
+    'paneles-de-instrumentos' => 'landing/cabina/panel-instrumentos.png', // Placeholder
     
     // Accesorios Motor
-    'bombas-de-agua' => 'bomba-agua.png',
-    'bombas-de-aceite' => 'bomba-aceite.png',
-    'pinones-y-rodamientos' => 'pinones.png',
-    'correas-y-mangueras' => 'correas.png',
-    'sistema-de-admision-y-escape' => 'admision.png',
-    'ventiladores' => 'ventilador.png',
-    'radiadores-y-enfriadores' => 'radiador.png',
-    'soportes-de-motor' => 'soportes.png',
+    'bombas-de-agua' => 'landing/accesorios-para-motor/bomba-de-agua.jpg',
+    'bombas-de-aceite' => 'landing/accesorios-para-motor/bomba-de-aceite.png',
+    'pinones-y-rodamientos' => 'landing/accesorios-para-motor/pinones-1.webp',
+    'correas-y-mangueras' => 'landing/accesorios-para-motor/correas-1.jpg',
+    'sistema-de-admision-y-escape' => 'landing/accesorios-para-motor/sistema-de-admision-y-escape.jpeg',
+    'ventiladores' => 'landing/accesorios-para-motor/ventilador-1.jpg',
+    'radiadores-y-enfriadores' => 'landing/accesorios-para-motor/radiador-y-enfriadores-1.jpg',
+    'soportes-de-motor' => 'landing/accesorios-para-motor/soporte-de-motor-1.jpeg',
     
     // Aire Acondicionado
-    'compresores-de-aire-acondicionado' => 'compresor-ac.png',
+    'compresores-de-aire-acondicionado' => 'landing/aire-acondicionado/compresor-de-aire-acondicionado-2.jpg',
     'condensadores' => 'condensador.png',
     'evaporadores' => 'evaporador.png',
     'sopladores-aire-acondicionado-blowers' => 'soplador.png',
     'filtros-de-cabina' => 'filtro-cabina.png',
     
     // Cabina
-    'paneles-de-control' => 'panel-control.png',
-    'relojes-e-indicadores' => 'relojes.png',
-    'asientos-de-operador' => 'asiento.png',
-    'ventanas-y-parabrisas' => 'parabrisas.png',
-    'puertas-y-accesorios' => 'puertas.png',
+    'paneles-de-control' => 'landing/cabina/panel-de-control-2.jpg',
+    'relojes-e-indicadores' => 'landing/cabina/relojes-1.jpg',
+    'asientos-de-operador' => 'landing/cabina/asientos-de-operador-1.jpg',
+    'ventanas-y-parabrisas' => 'landing/cabina/ventanas-y-parabrisas.avif',
+    'puertas-y-accesorios' => 'landing/cabina/puertas-2.avif',
     
     // Sistema de Dirección
     'cilindros-de-direccion' => 'cilindro-direccion.png',
@@ -89,12 +89,12 @@ return [
     'volantes-y-accesorios' => 'volante.png',
     
     // Eléctricos
-    'alternadores' => 'alternador.png',
-    'motores-de-arranque-starters' => 'starter.png',
-    'baterias' => 'bateria.png',
+    'alternadores' => 'landing/electricos/alternadors-2.jpg',
+    'motores-de-arranque-starters' => 'landing/electricos/motor-de-arranque-3.avif',
+    'baterias' => 'landing/electricos/baterias-1.jpg',
     'interruptores' => 'interruptor.png',
     'reles' => 'rele.png',
-    'fusibles-y-disyuntores' => 'fusibles.png',
+    'fusibles-y-disyuntores' => 'landing/electricos/fusibles-2.jpeg',
     
     // Empaquetaduras Hidráulicas
     'empaquetadura-para-cilindros' => 'landing/electricos/empaquetadura-1.jpg',
