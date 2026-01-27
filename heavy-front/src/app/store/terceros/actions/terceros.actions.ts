@@ -11,7 +11,7 @@ export const loadTerceros = createAction(
 
 export const loadTercerosSuccess = createAction(
     '[Terceros] Load Terceros Success',
-    props<{ terceros: Tercero[]; total: number; currentPage: number; lastPage: number }>()
+    props<{ terceros: Tercero[] }>()
 );
 
 export const loadTercerosFailure = createAction(

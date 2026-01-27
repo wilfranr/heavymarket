@@ -9,9 +9,6 @@ import * as TercerosActions from '../actions/terceros.actions';
 export interface TercerosState extends EntityState<Tercero> {
     loading: boolean;
     error: any;
-    total: number;
-    currentPage: number;
-    lastPage: number;
 }
 
 /**
@@ -27,10 +24,7 @@ export const tercerosAdapter: EntityAdapter<Tercero> = createEntityAdapter<Terce
  */
 export const initialState: TercerosState = tercerosAdapter.getInitialState({
     loading: false,
-    error: null,
-    total: 0,
-    currentPage: 1,
-    lastPage: 1
+    error: null
 });
 
 /**
@@ -45,14 +39,8 @@ export const tercerosReducer = createReducer(
         loading: true,
         error: null
     })),
-    on(TercerosActions.loadTercerosSuccess, (state, { terceros, total, currentPage, lastPage }) =>
-        tercerosAdapter.setAll(terceros, {
-            ...state,
-            loading: false,
-            total,
-            currentPage,
-            lastPage
-        })
+    on(TercerosActions.loadTercerosSuccess, (state, { terceros }) =>
+        tercerosAdapter.setAll(terceros, { ...state, loading: false })
     ),
     on(TercerosActions.loadTercerosFailure, (state, { error }) => ({
         ...state,

@@ -9,11 +9,12 @@ export const selectCategoriasState = createFeatureSelector<CategoriasState>('cat
 /**
  * Selectores usando EntityAdapter
  */
-const { selectAll, selectEntities, selectIds } = adapter.getSelectors(selectCategoriasState);
+const { selectAll, selectEntities, selectIds, selectTotal } = adapter.getSelectors(selectCategoriasState);
 
 export const selectAllCategorias = selectAll;
 export const selectCategoriasEntities = selectEntities;
 export const selectCategoriasIds = selectIds;
+export const selectCategoriasTotal = selectTotal;
 
 /**
  * Selector de loading
@@ -32,14 +33,6 @@ export const selectCategoriasError = createSelector(
 );
 
 /**
- * Selector de total para paginación (desde el meta de la API)
- */
-export const selectCategoriasTotal = createSelector(
-  selectCategoriasState,
-  (state: CategoriasState) => state.total
-);
-
-/**
  * Selector de paginación
  */
 export const selectCategoriasPagination = createSelector(selectCategoriasState, (state: CategoriasState) => ({
@@ -47,14 +40,6 @@ export const selectCategoriasPagination = createSelector(selectCategoriasState, 
   currentPage: state.currentPage,
   lastPage: state.lastPage,
 }));
-
-/**
- * Selector de página actual
- */
-export const selectCategoriasCurrentPage = createSelector(
-  selectCategoriasState,
-  (state: CategoriasState) => state.currentPage
-);
 
 /**
  * Selector de categoría por ID

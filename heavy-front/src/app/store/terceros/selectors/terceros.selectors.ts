@@ -52,21 +52,9 @@ export const selectTerceroById = (id: number) => createSelector(
 );
 
 /**
- * Selector para obtener el total de terceros (desde el meta del API)
+ * Selector para obtener el total de terceros
  */
 export const selectTercerosTotal = createSelector(
     selectTercerosState,
-    (state: TercerosState) => state.total
-);
-
-/**
- * Selector de paginación
- */
-export const selectTercerosPagination = createSelector(
-    selectTercerosState,
-    (state: TercerosState) => ({
-        total: state.total,
-        currentPage: state.currentPage,
-        lastPage: state.lastPage
-    })
+    selectTotal
 );

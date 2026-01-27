@@ -23,12 +23,7 @@ export class TercerosEffects {
             switchMap(({ params }) =>
                 this.terceroService.list(params).pipe(
                     map((response) =>
-                        TercerosActions.loadTercerosSuccess({
-                            terceros: response.data,
-                            total: response.meta.total,
-                            currentPage: response.meta.current_page,
-                            lastPage: response.meta.last_page
-                        })
+                        TercerosActions.loadTercerosSuccess({ terceros: response.data })
                     ),
                     catchError((error) =>
                         of(TercerosActions.loadTercerosFailure({ error }))
