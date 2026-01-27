@@ -37,7 +37,19 @@ export class AppMenu {
             {
                 label: 'Compras',
                 items: [
-                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }
+                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] },
+                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                ]
+            },
+            {
+                label: 'Configuración y Catálogos',
+                items: [
+                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
+                    { label: 'Categorías', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
+                    { label: 'Contactos', icon: 'pi pi-fw pi-envelope', routerLink: ['/app/contactos'] },
+                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
+                    { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
+                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
                 ]
             },
             {

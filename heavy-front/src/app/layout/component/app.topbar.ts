@@ -8,8 +8,6 @@ import { BadgeModule } from 'primeng/badge';
 import { PopoverModule } from 'primeng/popover';
 import { MenuModule } from 'primeng/menu';
 import { InputTextModule } from 'primeng/inputtext';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 
 import { LayoutService } from '../service/layout.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -18,7 +16,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule, IconFieldModule, InputIconModule],
+    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -30,8 +28,8 @@ import { AuthService } from '../../core/auth/services/auth.service';
         </div>
 
         <div class="flex-1 flex items-center justify-center px-4 hidden lg:flex">
-            <p-iconfield iconPosition="left" class="w-full" style="max-width: 500px;">
-                <p-inputicon styleClass="pi pi-search" />
+            <span class="p-input-icon-left" style="width: 100%; max-width: 500px;">
+                <i class="pi pi-search"></i>
                 <input 
                     type="text" 
                     pInputText 
@@ -39,7 +37,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
                     (keyup.enter)="performSearch()"
                     placeholder="Buscar pedidos, terceros, cotizaciones..." 
                     class="w-full" />
-            </p-iconfield>
+            </span>
         </div>
 
         <div class="layout-topbar-actions">
