@@ -2,8 +2,7 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -13,10 +12,6 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-// UI Modules
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
@@ -32,7 +27,7 @@ import { selectAllListas, selectListasLoading, selectListasPagination } from '..
 @Component({
     selector: 'app-listas-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, ToolbarModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
     // styleUrl: './list.scss'
@@ -70,25 +65,11 @@ export class ListComponent implements OnInit {
         { label: 'Nombre de Medida', value: 'Nombre de Medida' }
     ];
 
-    searchQuery = '';
-    private searchSubject = new Subject<string>();
-
     ngOnInit(): void {
         this.loadListas();
         this.listas$ = this.store.select(selectAllListas);
         this.loading$ = this.store.select(selectListasLoading);
         this.pagination$ = this.store.select(selectListasPagination);
-
-        // Configurar búsqueda con debounce
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(query => {
-            this.searchQuery = query;
-            this.currentPage = 1;
-            this.first = 0;
-            this.loadListas();
-        });
     }
 
     /**
@@ -97,24 +78,20 @@ export class ListComponent implements OnInit {
     onTipoChange(): void {
         this.currentPage = 1; // Reset to first page when filtering
         this.first = 0;
-        this.loadListas();
-    }
-
-    /**
-     * Maneja la búsqueda global
-     */
-    onSearch(event: Event): void {
-        const value = (event.target as HTMLInputElement).value;
-        this.searchSubject.next(value);
+        if (this.selectedTipo) {
+            this.store.dispatch(loadListas({ tipo: this.selectedTipo, page: this.currentPage, per_page: this.rowsPerPage }));
+        } else {
+            this.store.dispatch(loadListas({ page: this.currentPage, per_page: this.rowsPerPage }));
+        }
     }
 
     /**
      * Maneja el cambio de página
      */
     onPageChange(event: any): void {
-        this.first = event.first;
+        this.currentPage = event.page + 1; // PrimeNG usa 0-based indexing
         this.rowsPerPage = event.rows || this.rowsPerPage;
-        this.currentPage = Math.floor(event.first / (event.rows || this.rowsPerPage)) + 1;
+        this.first = (this.currentPage - 1) * this.rowsPerPage;
         this.loadListas();
     }
 
@@ -139,15 +116,9 @@ export class ListComponent implements OnInit {
             sort_by: this.sortField,
             sort_order: this.sortOrder === 1 ? 'asc' : 'desc'
         };
-
         if (this.selectedTipo) {
             params.tipo = this.selectedTipo;
         }
-
-        if (this.searchQuery) {
-            params.search = this.searchQuery;
-        }
-
         this.store.dispatch(loadListas(params));
     }
 

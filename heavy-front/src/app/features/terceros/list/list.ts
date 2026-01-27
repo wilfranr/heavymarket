@@ -2,26 +2,20 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { TooltipModule } from 'primeng/tooltip';
-import { FormsModule } from '@angular/forms';
 
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
-import { selectAllTerceros, selectTercerosLoading, selectTercerosPagination } from '../../../store/terceros/selectors/terceros.selectors';
+import { selectAllTerceros, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
 
 /**
  * Componente de lista de terceros
@@ -35,16 +29,11 @@ import { selectAllTerceros, selectTercerosLoading, selectTercerosPagination } fr
         RouterModule,
         TableModule,
         ButtonModule,
-        ToolbarModule,
-        IconFieldModule,
-        InputIconModule,
         CardModule,
         InputTextModule,
         TagModule,
         ToastModule,
-        ConfirmDialogModule,
-        TooltipModule,
-        FormsModule
+        ConfirmDialogModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
@@ -52,7 +41,7 @@ import { selectAllTerceros, selectTercerosLoading, selectTercerosPagination } fr
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
-
+    
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -60,64 +49,11 @@ export class ListComponent implements OnInit {
 
     terceros$!: Observable<Tercero[]>;
     loading$!: Observable<boolean>;
-    pagination$!: Observable<{ total: number, currentPage: number, lastPage: number }>;
-
-    // Paginación
-    currentPage = 1;
-    rowsPerPage = 15;
-    first = 0;
-    searchTerm = '';
-    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
+        this.store.dispatch(loadTerceros({}));
         this.terceros$ = this.store.select(selectAllTerceros);
         this.loading$ = this.store.select(selectTercerosLoading);
-        this.pagination$ = this.store.select(selectTercerosPagination);
-
-        // Configurar búsqueda con debounce
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(query => {
-            this.searchTerm = query;
-            this.currentPage = 1;
-            this.first = 0;
-            this.cargarTerceros();
-        });
-
-        this.cargarTerceros();
-    }
-
-    /**
-     * Carga los terceros
-     */
-    cargarTerceros(): void {
-        const params: any = {
-            page: this.currentPage,
-            per_page: this.rowsPerPage
-        };
-        if (this.searchTerm) {
-            params.search = this.searchTerm;
-        }
-        this.store.dispatch(loadTerceros({ params }));
-    }
-
-    /**
-     * Maneja el cambio de página
-     */
-    onPageChange(event: any): void {
-        this.first = event.first;
-        this.currentPage = (event.first / event.rows) + 1;
-        this.rowsPerPage = event.rows;
-        this.cargarTerceros();
-    }
-
-    /**
-     * Maneja la búsqueda global
-     */
-    onSearch(event: Event): void {
-        const value = (event.target as HTMLInputElement).value;
-        this.searchSubject.next(value);
     }
 
     /**

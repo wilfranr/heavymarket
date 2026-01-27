@@ -2,14 +2,10 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
@@ -28,7 +24,7 @@ import { selectAllArticulos, selectArticulosLoading, selectArticulosPagination }
 @Component({
     selector: 'app-articulos-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, ToolbarModule, IconFieldModule, InputIconModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -49,33 +45,13 @@ export class ListComponent implements OnInit {
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
-    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
         this.articulos$ = this.store.select(selectAllArticulos);
         this.loading$ = this.store.select(selectArticulosLoading);
         this.pagination$ = this.store.select(selectArticulosPagination);
 
-        // Configurar búsqueda con debounce
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(query => {
-            this.searchTerm = query;
-            this.currentPage = 1;
-            this.first = 0;
-            this.cargarArticulos();
-        });
-
         this.cargarArticulos();
-    }
-
-    /**
-     * Maneja la búsqueda global
-     */
-    onSearch(event: Event): void {
-        const value = (event.target as HTMLInputElement).value;
-        this.searchSubject.next(value);
     }
 
     /**
@@ -94,8 +70,8 @@ export class ListComponent implements OnInit {
      */
     onPageChange(event: any): void {
         this.first = event.first;
+        this.currentPage = event.page + 1;
         this.rowsPerPage = event.rows;
-        this.currentPage = Math.floor(event.first / event.rows) + 1;
         this.cargarArticulos();
     }
 
@@ -139,7 +115,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteArticulo({ id: articulo.id }));
-
+                
                 setTimeout(() => {
                     this.cargarArticulos();
                 }, 500);

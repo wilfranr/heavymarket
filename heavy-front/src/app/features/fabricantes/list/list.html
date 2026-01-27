@@ -1,78 +1,86 @@
 <p-toast />
 <p-confirmDialog />
 
-<div class="card">
-    <p-toolbar styleClass="mb-6">
-        <ng-template #start>
-            <p-button label="Nuevo Fabricante" icon="pi pi-plus" class="mr-2" (onClick)="crearFabricante()" />
-        </ng-template>
-    </p-toolbar>
-
-    <p-table #dt [value]="(fabricantes$ | async) || []" [loading]="loading$ | async" [paginator]="true"
-        [rows]="rowsPerPage" [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true"
-        [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} fabricantes"
-        [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['nombre', 'descripcion']"
-        (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll" selectionMode="multiple"
-        [rowHover]="true" dataKey="id">
-        <ng-template #caption>
-            <div class="flex items-center justify-between">
-                <h5 class="m-0">Fabricantes</h5>
-                <p-iconfield>
-                    <p-inputicon styleClass="pi pi-search" />
-                    <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                </p-iconfield>
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Fabricantes</h2>
+                <p-button label="Nuevo Fabricante" icon="pi pi-plus" (onClick)="crearFabricante()"> </p-button>
             </div>
         </ng-template>
 
-        <ng-template #header>
-            <tr>
-                <th pSortableColumn="id" style="min-width: 5rem">ID <p-sortIcon field="id" /></th>
-                <th pSortableColumn="nombre" style="min-width: 15rem">Nombre <p-sortIcon field="nombre" /></th>
-                <th>Descripción</th>
-                <th>Logo</th>
-                <th>Acciones</th>
-            </tr>
-        </ng-template>
-
-        <ng-template #body let-fabricante>
-            <tr>
-                <td>{{ fabricante.id }}</td>
-                <td>
-                    <span class="font-semibold">{{ fabricante.nombre }}</span>
-                </td>
-                <td>
-                    <span class="text-sm text-gray-600" [title]="fabricante.descripcion || ''">
-                        {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ?
-                        fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }}
+        <p-table
+            #dt
+            [value]="(fabricantes$ | async) || []"
+            [loading]="loading$ | async"
+            [paginator]="true"
+            [rows]="rowsPerPage"
+            [totalRecords]="(pagination$ | async)?.total || 0"
+            [first]="first"
+            [lazy]="true"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} fabricantes"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [globalFilterFields]="['nombre', 'descripcion']"
+            (onPage)="onPageChange($event)"
+            (onSort)="onSort($event)"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="caption">
+                <div class="flex">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar fabricantes..." class="w-full" />
                     </span>
-                </td>
-                <td>
-                    @if (fabricante.logo) {
-                    <img [src]="fabricante.logo" [alt]="fabricante.nombre"
-                        class="w-16 h-16 object-contain bg-white p-1 rounded shadow-sm" />
-                    } @else {
-                    <span class="text-gray-400">-</span>
-                    }
-                </td>
-                <td>
-                    <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" class="mr-2"
-                        (onClick)="verDetalle(fabricante)" pTooltip="Ver detalle" tooltipPosition="top" />
-                    <p-button icon="pi pi-pencil" severity="warn" [rounded]="true" [outlined]="true" class="mr-2"
-                        (onClick)="editarFabricante(fabricante)" pTooltip="Editar" tooltipPosition="top" />
-                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
-                        (onClick)="eliminarFabricante(fabricante)" pTooltip="Eliminar" tooltipPosition="top" />
-                </td>
-            </tr>
-        </ng-template>
+                </div>
+            </ng-template>
 
-        <ng-template #emptymessage>
-            <tr>
-                <td colspan="5" class="text-center py-8">
-                    <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600">No se encontraron fabricantes</p>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
+                    <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+                    <th>Descripción</th>
+                    <th>Logo</th>
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-fabricante>
+                <tr>
+                    <td>{{ fabricante.id }}</td>
+                    <td>
+                        <span class="font-semibold">{{ fabricante.nombre }}</span>
+                    </td>
+                    <td>
+                        <span class="text-sm text-gray-600" [title]="fabricante.descripcion || ''"> {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ? fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }} </span>
+                    </td>
+                    <td>
+                        @if (fabricante.logo) {
+                        <img [src]="fabricante.logo" [alt]="fabricante.nombre" class="w-16 h-16 object-cover rounded" />
+                        } @else {
+                        <span class="text-gray-400">-</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(fabricante)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarFabricante(fabricante)" pTooltip="Editar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarFabricante(fabricante)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="5" class="text-center py-8">
+                        <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">No se encontraron fabricantes</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
 </div>

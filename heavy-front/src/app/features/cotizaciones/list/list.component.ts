@@ -3,19 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
-import { TooltipModule } from 'primeng/tooltip';
 import { Cotizacion, CotizacionEstado } from '../../../core/models/cotizacion.model';
 import * as CotizacionesActions from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
@@ -36,94 +30,141 @@ import { PedidoService } from '../../../core/services/pedido.service';
     RouterModule,
     TableModule,
     ButtonModule,
-    ToolbarModule,
-    IconFieldModule,
-    InputIconModule,
     InputTextModule,
     SelectModule,
     TagModule,
     ConfirmDialogModule,
-    TooltipModule
   ],
   providers: [ConfirmationService, MessageService],
   template: `
     <div class="card">
-      <p-toolbar styleClass="mb-6">
-        <ng-template #start>
-          <p-button label="Nueva Cotización" icon="pi pi-plus" class="mr-2" (onClick)="onCreateCotizacion()" />
-          <p-button label="Limpiar Filtros" icon="pi pi-filter-slash" severity="secondary" outlined (onClick)="limpiarFiltros()" />
-        </ng-template>
+      <h2>Gestión de Cotizaciones</h2>
 
-        <ng-template #end>
-          <div class="flex gap-2">
-            <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-40" />
-            <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48" />
-            <p-select [options]="pedidos" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48" />
+      <!-- Filtros y Acciones -->
+      <div class="mb-4">
+        <div class="flex justify-content-between mb-3">
+          <div class="flex gap-2 flex-wrap">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <input
+                pInputText
+                type="text"
+                (input)="onSearch($event)"
+                placeholder="Buscar..." />
+            </span>
+
+            <p-select
+              [options]="estadosOptions"
+              [(ngModel)]="selectedEstado"
+              (ngModelChange)="onEstadoChange($event)"
+              placeholder="Estado"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+
+            <p-select
+              [options]="terceros"
+              [(ngModel)]="selectedTercero"
+              (ngModelChange)="onTerceroChange($event)"
+              placeholder="Cliente"
+              [filter]="true"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
+
+            <p-select
+              [options]="pedidos"
+              [(ngModel)]="selectedPedido"
+              (ngModelChange)="onPedidoChange($event)"
+              placeholder="Pedido"
+              [filter]="true"
+              [showClear]="true"
+              styleClass="w-48">
+            </p-select>
           </div>
-        </ng-template>
-      </p-toolbar>
 
+          <div class="flex gap-2">
+            <p-button
+              label="Limpiar Filtros"
+              icon="pi pi-filter-slash"
+              severity="secondary"
+              [text]="true"
+              (onClick)="limpiarFiltros()">
+            </p-button>
+            <p-button
+              label="Nueva Cotización"
+              icon="pi pi-plus"
+              (onClick)="onCreateCotizacion()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Cotizaciones -->
       <p-table
         [value]="cotizaciones()"
         [loading]="loading()"
         [paginator]="true"
         [rows]="15"
         [totalRecords]="total()"
-        [rowHover]="true"
-        responsiveLayout="scroll"
-      >
-        <ng-template #caption>
-          <div class="flex items-center justify-between">
-            <h5 class="m-0">Gestión de Cotizaciones</h5>
-            <p-iconfield>
-              <p-inputicon styleClass="pi pi-search" />
-              <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-            </p-iconfield>
-          </div>
-        </ng-template>
+        styleClass="p-datatable-gridlines">
 
-        <ng-template #header>
+        <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="id" style="width: 5rem">ID <p-sortIcon field="id" /></th>
-            <th pSortableColumn="tercero.razon_social">Cliente <p-sortIcon field="tercero.razon_social" /></th>
-            <th pSortableColumn="pedido_id">Pedido <p-sortIcon field="pedido_id" /></th>
-            <th pSortableColumn="estado" style="width: 10rem">Estado <p-sortIcon field="estado" /></th>
-            <th pSortableColumn="fecha_emision">Fecha Emisión <p-sortIcon field="fecha_emision" /></th>
-            <th pSortableColumn="total">Total <p-sortIcon field="total" /></th>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Pedido</th>
+            <th>Estado</th>
+            <th>Fecha Emisión</th>
+            <th>Fecha Vencimiento</th>
+            <th>Total</th>
             <th>Acciones</th>
           </tr>
         </ng-template>
 
-        <ng-template #body let-cotizacion>
+        <ng-template pTemplate="body" let-cotizacion>
           <tr>
             <td>{{ cotizacion.id }}</td>
             <td>{{ cotizacion.tercero?.razon_social || cotizacion.tercero?.nombre_comercial || 'N/A' }}</td>
             <td>#{{ cotizacion.pedido_id }}</td>
             <td>
-              <p-tag [value]="cotizacion.estado" [severity]="getEstadoSeverity(cotizacion.estado)" />
+              <p-tag
+                [value]="cotizacion.estado"
+                [severity]="getEstadoSeverity(cotizacion.estado)">
+              </p-tag>
             </td>
-            <td>{{ cotizacion.fecha_emision | date: 'short' }}</td>
-            <td>{{ cotizacion.total | currency: 'COP': 'symbol': '1.0-0' }}</td>
+            <td>{{ cotizacion.fecha_emision | date:'short' }}</td>
+            <td>{{ cotizacion.fecha_vencimiento | date:'short' }}</td>
+            <td>{{ cotizacion.total | currency:'COP':'symbol':'1.0-0' }}</td>
             <td>
-              <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onViewCotizacion(cotizacion.id)" pTooltip="Ver detalle" tooltipPosition="top" />
-              <p-button icon="pi pi-pencil" severity="warn" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onEditCotizacion(cotizacion.id)" pTooltip="Editar" tooltipPosition="top" />
-              <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="onDeleteCotizacion(cotizacion)" pTooltip="Eliminar" tooltipPosition="top" />
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="7" class="text-center py-8">
-              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-              <p class="text-gray-600">No se encontraron cotizaciones</p>
+              <p-button
+                icon="pi pi-eye"
+                [rounded]="true"
+                [text]="true"
+                severity="info"
+                (onClick)="onViewCotizacion(cotizacion.id)">
+              </p-button>
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="warn"
+                (onClick)="onEditCotizacion(cotizacion.id)">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                (onClick)="onDeleteCotizacion(cotizacion)">
+              </p-button>
             </td>
           </tr>
         </ng-template>
       </p-table>
     </div>
 
-    <p-confirmDialog />
+    <p-confirmDialog></p-confirmDialog>
   `,
   styles: [],
 })
@@ -135,15 +176,12 @@ export class ListComponent implements OnInit {
   private pedidoService = inject(PedidoService);
 
   // Signals para estado local
-  // Signals para estado local
   cotizaciones = signal<Cotizacion[]>([]);
   loading = signal(false);
   total = signal(0);
   selectedEstado: string | null = null;
   selectedTercero: number | null = null;
   selectedPedido: number | null = null;
-  searchTerm = '';
-  private searchSubject = new Subject<string>();
 
   // Opciones para filtros
   terceros: any[] = [];
@@ -164,15 +202,6 @@ export class ListComponent implements OnInit {
 
     // Cargar cotizaciones inicial
     this.loadCotizaciones();
-
-    // Configurar búsqueda con debounce
-    this.searchSubject.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(query => {
-      this.searchTerm = query;
-      this.loadCotizaciones({ search: query });
-    });
 
     // Suscribirse al store
     this.store.select(CotizacionesSelectors.selectAllCotizaciones).subscribe((cotizaciones) => {
@@ -235,7 +264,9 @@ export class ListComponent implements OnInit {
 
   onSearch(event: any) {
     const search = event.target.value;
-    this.searchSubject.next(search);
+    if (search.length === 0 || search.length >= 3) {
+      this.loadCotizaciones({ search });
+    }
   }
 
   onEstadoChange(estado: string | null) {

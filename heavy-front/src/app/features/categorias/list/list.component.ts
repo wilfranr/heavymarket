@@ -3,13 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
@@ -29,54 +24,57 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
     RouterModule,
     TableModule,
     ButtonModule,
-    ToolbarModule,
-    IconFieldModule,
-    InputIconModule,
     InputTextModule,
     ConfirmDialogModule,
   ],
   providers: [ConfirmationService, MessageService],
   template: `
     <div class="card">
-      <p-toolbar styleClass="mb-6">
-        <ng-template #start>
-          <p-button label="Nueva Categoría" icon="pi pi-plus" class="mr-2" (onClick)="onCreateCategoria()" />
-        </ng-template>
-      </p-toolbar>
+      <h2>Gestión de Categorías</h2>
 
+      <!-- Filtros y Acciones -->
+      <div class="mb-4">
+        <div class="flex justify-content-between mb-3">
+          <div class="flex gap-2 flex-wrap">
+            <span class="p-input-icon-left">
+              <i class="pi pi-search"></i>
+              <input
+                pInputText
+                type="text"
+                (input)="onSearch($event)"
+                placeholder="Buscar..." />
+            </span>
+          </div>
+
+          <div class="flex gap-2">
+            <p-button
+              label="Nueva Categoría"
+              icon="pi pi-plus"
+              (onClick)="onCreateCategoria()">
+            </p-button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tabla de Categorías -->
       <p-table
         [value]="categorias()"
         [loading]="loading()"
         [paginator]="true"
-        [rows]="rowsPerPage"
+        [rows]="15"
         [totalRecords]="total()"
-        [first]="first"
-        [lazy]="true"
-        (onPage)="onPageChange($event)"
-        [rowHover]="true"
-        [rowsPerPageOptions]="[10, 15, 25, 50]"
-        responsiveLayout="scroll"
-      >
-        <ng-template #caption>
-          <div class="flex items-center justify-between">
-            <h5 class="m-0">Gestión de Categorías</h5>
-            <p-iconfield>
-              <p-inputicon styleClass="pi pi-search" />
-              <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-            </p-iconfield>
-          </div>
-        </ng-template>
+        styleClass="p-datatable-gridlines">
 
-        <ng-template #header>
+        <ng-template pTemplate="header">
           <tr>
-            <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre" /></th>
+            <th>Nombre</th>
             <th>Proveedores</th>
             <th>Referencias</th>
             <th>Acciones</th>
           </tr>
         </ng-template>
 
-        <ng-template #body let-categoria>
+        <ng-template pTemplate="body" let-categoria>
           <tr>
             <td>{{ categoria.nombre }}</td>
             <td>
@@ -94,25 +92,34 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
               }
             </td>
             <td>
-              <p-button icon="pi pi-eye" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onViewCategoria(categoria.id)" />
-              <p-button icon="pi pi-pencil" severity="warn" [rounded]="true" [outlined]="true" class="mr-2" (onClick)="onEditCategoria(categoria.id)" />
-              <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true" (onClick)="onDeleteCategoria(categoria)" />
-            </td>
-          </tr>
-        </ng-template>
-
-        <ng-template #emptymessage>
-          <tr>
-            <td colspan="4" class="text-center py-8">
-              <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-              <p class="text-gray-600">No se encontraron categorías</p>
+              <p-button
+                icon="pi pi-eye"
+                [rounded]="true"
+                [text]="true"
+                severity="info"
+                (onClick)="onViewCategoria(categoria.id)">
+              </p-button>
+              <p-button
+                icon="pi pi-pencil"
+                [rounded]="true"
+                [text]="true"
+                severity="warn"
+                (onClick)="onEditCategoria(categoria.id)">
+              </p-button>
+              <p-button
+                icon="pi pi-trash"
+                [rounded]="true"
+                [text]="true"
+                severity="danger"
+                (onClick)="onDeleteCategoria(categoria)">
+              </p-button>
             </td>
           </tr>
         </ng-template>
       </p-table>
     </div>
 
-    <p-confirmDialog />
+    <p-confirmDialog></p-confirmDialog>
   `,
   styles: [],
 })
@@ -126,31 +133,9 @@ export class ListComponent implements OnInit {
   loading = signal(false);
   total = signal(0);
 
-  // Paginación
-  currentPage = 1;
-  rowsPerPage = 15;
-  first = 0;
-  searchTerm = '';
-  private searchSubject = new Subject<string>();
-
   ngOnInit() {
+    // Cargar categorías inicial
     this.loadCategorias();
-
-    // Configurar búsqueda con debounce
-    this.searchSubject.pipe(
-      debounceTime(500),
-      distinctUntilChanged()
-    ).subscribe(query => {
-      this.searchTerm = query;
-      this.currentPage = 1;
-      this.first = 0;
-      this.loadCategorias();
-    });
-
-    this.store.select(CategoriasSelectors.selectCategoriasCurrentPage).subscribe(page => {
-      this.currentPage = page;
-      this.first = (page - 1) * this.rowsPerPage;
-    });
 
     // Suscribirse al store
     this.store.select(CategoriasSelectors.selectAllCategorias).subscribe((categorias) => {
@@ -167,25 +152,14 @@ export class ListComponent implements OnInit {
   }
 
   loadCategorias(params: any = {}) {
-    const finalParams = {
-      ...params,
-      page: params.page || this.currentPage,
-      per_page: params.per_page || this.rowsPerPage,
-      search: params.search || this.searchTerm
-    };
-    this.store.dispatch(CategoriasActions.loadCategorias(finalParams));
-  }
-
-  onPageChange(event: any): void {
-    this.first = event.first;
-    this.rowsPerPage = event.rows;
-    this.currentPage = Math.floor(event.first / event.rows) + 1;
-    this.loadCategorias();
+    this.store.dispatch(CategoriasActions.loadCategorias(params));
   }
 
   onSearch(event: any) {
     const search = event.target.value;
-    this.searchSubject.next(search);
+    if (search.length === 0 || search.length >= 3) {
+      this.loadCategorias({ search });
+    }
   }
 
   onCreateCategoria() {

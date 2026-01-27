@@ -2,14 +2,10 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, Subject } from 'rxjs';
-import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { ToolbarModule } from 'primeng/toolbar';
-import { IconFieldModule } from 'primeng/iconfield';
-import { InputIconModule } from 'primeng/inputicon';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
@@ -31,7 +27,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-referencias-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, ToolbarModule, IconFieldModule, InputIconModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -55,34 +51,14 @@ export class ListComponent implements OnInit {
     searchTerm = '';
     selectedMarcaId: number | null = null;
     marcas: Lista[] = [];
-    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
         this.referencias$ = this.store.select(selectAllReferencias);
         this.loading$ = this.store.select(selectReferenciasLoading);
         this.pagination$ = this.store.select(selectReferenciasPagination);
 
-        // Configurar búsqueda con debounce
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(query => {
-            this.searchTerm = query;
-            this.currentPage = 1;
-            this.first = 0;
-            this.cargarReferencias();
-        });
-
         this.cargarMarcas();
         this.cargarReferencias();
-    }
-
-    /**
-     * Maneja la búsqueda global
-     */
-    onSearch(event: Event): void {
-        const value = (event.target as HTMLInputElement).value;
-        this.searchSubject.next(value);
     }
 
     /**
@@ -125,8 +101,8 @@ export class ListComponent implements OnInit {
      */
     onPageChange(event: any): void {
         this.first = event.first;
+        this.currentPage = event.page + 1;
         this.rowsPerPage = event.rows;
-        this.currentPage = Math.floor(event.first / event.rows) + 1;
         this.cargarReferencias();
     }
 
@@ -170,7 +146,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteReferencia({ id: referencia.id }));
-
+                
                 setTimeout(() => {
                     this.cargarReferencias();
                 }, 500);

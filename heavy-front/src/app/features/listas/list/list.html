@@ -1,85 +1,94 @@
 <p-toast />
 <p-confirmDialog />
 
-<div class="card">
-    <p-toolbar styleClass="mb-6">
-        <ng-template #start>
-            <p-button label="Nueva Lista" icon="pi pi-plus" class="mr-2" (onClick)="crearLista()" />
-        </ng-template>
-
-        <ng-template #end>
-            <p-select [(ngModel)]="selectedTipo" [options]="tipos" optionLabel="label" optionValue="value"
-                placeholder="Filtrar por tipo" [showClear]="true" (ngModelChange)="onTipoChange()"
-                styleClass="w-full md:w-60" />
-        </ng-template>
-    </p-toolbar>
-
-    <p-table #dt [value]="(listas$ | async) || []" [loading]="loading$ | async" [paginator]="true" [rows]="rowsPerPage"
-        [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true" [showCurrentPageReport]="true"
-        currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} listas"
-        [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['nombre', 'tipo', 'definicion']"
-        (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll" selectionMode="multiple"
-        [rowHover]="true" dataKey="id">
-        <ng-template #caption>
-            <div class="flex items-center justify-between">
-                <h5 class="m-0">Listas (Catálogos)</h5>
-                <p-iconfield>
-                    <p-inputicon styleClass="pi pi-search" />
-                    <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                </p-iconfield>
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Listas (Catálogos)</h2>
+                <p-button label="Nueva Lista" icon="pi pi-plus" (onClick)="crearLista()"> </p-button>
             </div>
         </ng-template>
 
-        <ng-template #header>
-            <tr>
-                <th pSortableColumn="id" style="min-width: 5rem">ID <p-sortIcon field="id" /></th>
-                <th pSortableColumn="tipo" style="min-width: 10rem">Tipo <p-sortIcon field="tipo" /></th>
-                <th pSortableColumn="nombre" style="min-width: 15rem">Nombre <p-sortIcon field="nombre" /></th>
-                <th>Definición</th>
-                <th>Foto</th>
-                <th>Acciones</th>
-            </tr>
-        </ng-template>
+        <div class="mb-4 flex gap-4">
+            <p-select [(ngModel)]="selectedTipo" [options]="tipos" optionLabel="label" optionValue="value" placeholder="Filtrar por tipo" [showClear]="true" (ngModelChange)="onTipoChange()" styleClass="w-full md:w-14rem"> </p-select>
+        </div>
 
-        <ng-template #body let-lista>
-            <tr>
-                <td>{{ lista.id }}</td>
-                <td>
-                    <p-tag [value]="lista.tipo" [severity]="getTipoSeverity(lista.tipo)" />
-                </td>
-                <td>
-                    <span class="font-semibold">{{ lista.nombre }}</span>
-                </td>
-                <td>
-                    <span class="text-sm text-gray-600" [title]="lista.definicion || ''">
-                        {{ lista.definicion ? (lista.definicion.length > 50 ? lista.definicion.substring(0, 50) + '...'
-                        : lista.definicion) : '-' }}
+        <p-table
+            #dt
+            [value]="(listas$ | async) || []"
+            [loading]="loading$ | async"
+            [paginator]="true"
+            [rows]="rowsPerPage"
+            [totalRecords]="(pagination$ | async)?.total || 0"
+            [first]="first"
+            [lazy]="true"
+            [showCurrentPageReport]="true"
+            currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} listas"
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [globalFilterFields]="['nombre', 'tipo', 'definicion']"
+            (onPage)="onPageChange($event)"
+            (onSort)="onSort($event)"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm"
+        >
+            <ng-template pTemplate="caption">
+                <div class="flex">
+                    <span class="p-input-icon-left w-full">
+                        <i class="pi pi-search"></i>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar listas..." class="w-full" />
                     </span>
-                </td>
-                <td>
-                    @if (lista.foto) {
-                    <img [src]="lista.foto" [alt]="lista.nombre"
-                        class="w-16 h-16 object-contain bg-white p-1 rounded shadow-sm" />
-                    } @else {
-                    <span class="text-gray-400">-</span>
-                    }
-                </td>
-                <td>
-                    <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" class="mr-2"
-                        (onClick)="editarLista(lista)" pTooltip="Editar" tooltipPosition="top" />
-                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [outlined]="true"
-                        (onClick)="eliminarLista(lista)" pTooltip="Eliminar" tooltipPosition="top" />
-                </td>
-            </tr>
-        </ng-template>
+                </div>
+            </ng-template>
 
-        <ng-template #emptymessage>
-            <tr>
-                <td colspan="6" class="text-center py-8">
-                    <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-                    <p class="text-gray-600">No se encontraron listas</p>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
+            <ng-template pTemplate="header">
+                <tr>
+                    <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
+                    <th pSortableColumn="tipo">Tipo <p-sortIcon field="tipo"></p-sortIcon></th>
+                    <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
+                    <th>Definición</th>
+                    <th>Foto</th>
+                    <th>Acciones</th>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="body" let-lista>
+                <tr>
+                    <td>{{ lista.id }}</td>
+                    <td>
+                        <p-tag [value]="lista.tipo" [severity]="getTipoSeverity(lista.tipo)"> </p-tag>
+                    </td>
+                    <td>
+                        <span class="font-semibold">{{ lista.nombre }}</span>
+                    </td>
+                    <td>
+                        <span class="text-sm text-gray-600" [title]="lista.definicion || ''"> {{ lista.definicion ? (lista.definicion.length > 50 ? lista.definicion.substring(0, 50) + '...' : lista.definicion) : '-' }} </span>
+                    </td>
+                    <td>
+                        @if (lista.foto) {
+                        <img [src]="lista.foto" [alt]="lista.nombre" class="w-16 h-16 object-cover rounded" />
+                        } @else {
+                        <span class="text-gray-400">-</span>
+                        }
+                    </td>
+                    <td>
+                        <div class="flex gap-2">
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(lista)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarLista(lista)" pTooltip="Editar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarLista(lista)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                        </div>
+                    </td>
+                </tr>
+            </ng-template>
+
+            <ng-template pTemplate="emptymessage">
+                <tr>
+                    <td colspan="6" class="text-center py-8">
+                        <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
+                        <p class="text-gray-600">No se encontraron listas</p>
+                    </td>
+                </tr>
+            </ng-template>
+        </p-table>
+    </p-card>
 </div>
