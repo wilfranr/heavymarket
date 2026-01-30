@@ -1,11 +1,12 @@
 /* Reset y estilos base */
-* {
+/* Scoped to page-wrapper to avoid affecting the main application */
+.page-wrapper * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
-body {
+.page-wrapper {
     font-family:
         'Figtree',
         -apple-system,
@@ -394,6 +395,7 @@ app-banner {
     flex: none;
     flex-grow: 0;
 }
+
 /* Text del botón */
 .button-text {
     width: 67px;
