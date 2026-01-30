@@ -22,7 +22,7 @@ export interface Lista {
 /**
  * Tipos de lista disponibles
  */
-export type ListaTipo = 'Marca' | 'Tipo de Máquina' | 'Tipo de Artículo' | 'Pieza Estandar' | 'Unidad de Medida' | 'Tipo de Medida' | 'Nombre de Medida';
+export type ListaTipo = 'Marca' | 'Tipo de Máquina' | 'Tipo de Artículo' | 'Piezas Estandar' | 'Unidad de Medida' | 'Tipo de Medida' | 'Nombre de Medida';
 
 /**
  * Datos para crear una lista

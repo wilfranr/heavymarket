@@ -56,13 +56,15 @@ export class ListComponent implements OnInit {
     // Filtros
     selectedTipo: ListaTipo | null = null;
 
-    tipos: { label: string; value: ListaTipo }[] = [
-        { label: 'Marca', value: 'Marca' },
-        { label: 'Tipo de Máquina', value: 'Tipo de Máquina' },
-        { label: 'Tipo de Artículo', value: 'Tipo de Artículo' },
-        { label: 'Unidad de Medida', value: 'Unidad de Medida' },
-        { label: 'Tipo de Medida', value: 'Tipo de Medida' },
-        { label: 'Nombre de Medida', value: 'Nombre de Medida' }
+    tipos: { label: string; value: ListaTipo | null }[] = [
+        { label: 'Todos', value: null },
+        { label: 'Marcas', value: 'Marca' },
+        { label: 'Tipos de Máquina', value: 'Tipo de Máquina' },
+        { label: 'Tipos de Artículo', value: 'Tipo de Artículo' },
+        { label: 'Unidades Medida', value: 'Unidad de Medida' },
+        { label: 'Tipos de Medida', value: 'Tipo de Medida' },
+        { label: 'Nombres de Medida', value: 'Nombre de Medida' },
+        { label: 'Piezas Estandar', value: 'Piezas Estandar' }
     ];
 
     ngOnInit(): void {
@@ -75,14 +77,11 @@ export class ListComponent implements OnInit {
     /**
      * Filtra por tipo
      */
-    onTipoChange(): void {
+    onTipoChange(tipo: ListaTipo | null): void {
+        this.selectedTipo = tipo;
         this.currentPage = 1; // Reset to first page when filtering
         this.first = 0;
-        if (this.selectedTipo) {
-            this.store.dispatch(loadListas({ tipo: this.selectedTipo, page: this.currentPage, per_page: this.rowsPerPage }));
-        } else {
-            this.store.dispatch(loadListas({ page: this.currentPage, per_page: this.rowsPerPage }));
-        }
+        this.loadListas();
     }
 
     /**
@@ -174,7 +173,8 @@ export class ListComponent implements OnInit {
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
-            'Nombre de Medida': 'contrast'
+            'Nombre de Medida': 'contrast',
+            'Piezas Estandar': 'warn'
         };
         return severityMap[tipo] || 'secondary';
     }
