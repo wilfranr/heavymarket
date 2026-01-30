@@ -101,7 +101,7 @@ export class EditComponent implements OnInit {
      * Carga los tipos de artículo disponibles
      */
     cargarTipos(): void {
-        this.listaService.getByTipo('Pieza Estandar').subscribe({
+        this.listaService.getByTipo('Piezas Estandar').subscribe({
             next: (tipos) => {
                 this.tipos = tipos;
             },

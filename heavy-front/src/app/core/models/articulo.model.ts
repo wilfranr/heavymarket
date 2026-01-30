@@ -7,7 +7,7 @@ import { Referencia } from './referencia.model';
  */
 export interface Articulo {
     id: number;
-    definicion: string; // Tipo de artículo (debe ser de tipo 'Pieza Estandar' en listas)
+    definicion: string; // Tipo de artículo (debe ser de tipo 'Piezas Estandar' en listas)
     descripcionEspecifica: string;
     peso: number | null;
     comentarios: string | null;
