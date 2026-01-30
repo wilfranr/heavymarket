@@ -83,7 +83,7 @@ class Referencia extends Model
      */
     public function marca()
     {
-        return $this->belongsTo(Lista::class, 'marca_id');
+        return $this->belongsTo(Fabricante::class, 'marca_id');
     }
 
     /**
