@@ -1,0 +1,91 @@
+<p-dialog header="Crear Máquina" [(visible)]="visible" [modal]="true" [style]="{ width: '450px' }" [draggable]="false"
+    [resizable]="false" (onHide)="closeDialog()">
+
+    <div class="mb-4 text-gray-400 text-sm">
+        Crea una nueva máquina y será asociada al tercero automáticamente
+    </div>
+
+    <form [formGroup]="createMaquinaForm" (ngSubmit)="saveMaquina()">
+
+        <div class="grid grid-cols-1 gap-4">
+
+            <!-- Tipo -->
+            <div>
+                <label for="tipo" class="block mb-2 font-semibold">Tipo<span class="text-red-500">*</span></label>
+                <div class="flex gap-2">
+                    <p-select id="tipo" formControlName="tipo" [options]="tiposMaquina" optionLabel="label"
+                        optionValue="value" placeholder="Seleccione una opción" styleClass="w-full flex-1"></p-select>
+                    <p-button icon="pi pi-plus" severity="secondary" (onClick)="openCreateTipoDialog()"></p-button>
+                </div>
+            </div>
+
+            <!-- Fabricante -->
+            <div>
+                <label for="fabricante_id" class="block mb-2 font-semibold">Fabricante<span
+                        class="text-red-500">*</span></label>
+                <div class="flex gap-2">
+                    <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
+                        optionLabel="label" optionValue="value" [filter]="true" filterBy="label"
+                        placeholder="Seleccione una opción" styleClass="w-full flex-1"></p-select>
+                    <p-button icon="pi pi-plus" severity="secondary"
+                        (onClick)="openCreateFabricanteDialog()"></p-button>
+                </div>
+            </div>
+
+            <!-- Modelo -->
+            <div>
+                <label for="modelo" class="block mb-2 font-semibold">Modelo<span class="text-red-500">*</span></label>
+                <input id="modelo" type="text" pInputText formControlName="modelo" class="w-full" />
+            </div>
+
+            <!-- Serie -->
+            <div>
+                <label for="serie" class="block mb-2 font-semibold">Serie</label>
+                <input id="serie" type="text" pInputText formControlName="serie" class="w-full" />
+            </div>
+
+            <!-- Arreglo -->
+            <div>
+                <label for="arreglo" class="block mb-2 font-semibold">Arreglo</label>
+                <input id="arreglo" type="text" pInputText formControlName="arreglo" class="w-full" />
+            </div>
+
+            <!-- Foto -->
+            <div class="border border-gray-700 rounded p-4 bg-white/5">
+                <label class="block mb-3 font-semibold">Foto</label>
+                <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false"
+                    chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'foto')">
+                    <ng-template pTemplate="content">
+                        <div class="text-center text-sm text-gray-400 py-4"
+                            *ngIf="!createMaquinaForm.get('foto')?.value">
+                            Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span>
+                        </div>
+                    </ng-template>
+                </p-fileUpload>
+            </div>
+
+            <!-- FotoId -->
+            <div class="border border-gray-700 rounded p-4 bg-white/5">
+                <label class="block mb-3 font-semibold">FotoId</label>
+                <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false"
+                    chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'fotoId')">
+                    <ng-template pTemplate="content">
+                        <div class="text-center text-sm text-gray-400 py-4"
+                            *ngIf="!createMaquinaForm.get('fotoId')?.value">
+                            Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span>
+                        </div>
+                    </ng-template>
+                </p-fileUpload>
+            </div>
+
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <p-button label="Crear" type="submit" [loading]="loading" [disabled]="createMaquinaForm.invalid"></p-button>
+            <p-button label="Crear y crear otro" severity="secondary" (onClick)="saveMaquina(true)"
+                [loading]="loading"></p-button>
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="closeDialog()"></p-button>
+        </div>
+
+    </form>
+</p-dialog>

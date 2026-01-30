@@ -5,7 +5,8 @@
         <ng-template pTemplate="header">
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Editar Artículo</h2>
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"> </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
+                </p-button>
             </div>
         </ng-template>
 
@@ -14,8 +15,11 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Definición (Tipo) -->
                 <div class="field">
-                    <label for="definicion" class="block text-sm font-medium mb-2"> Tipo (Pieza Estandar) <span class="text-red-500">*</span> </label>
-                    <p-select id="definicion" formControlName="definicion" [options]="tipos" optionLabel="nombre" optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full"> </p-select>
+                    <label for="definicion" class="block text-sm font-medium mb-2"> Tipo (Pieza Estandar) <span
+                            class="text-red-500">*</span> </label>
+                    <p-select id="definicion" formControlName="definicion" [options]="tipos" optionLabel="nombre"
+                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full">
+                    </p-select>
                     @if (articuloForm.get('definicion')?.invalid && articuloForm.get('definicion')?.touched) {
                     <small class="p-error">El tipo es requerido</small>
                     }
@@ -24,23 +28,28 @@
                 <!-- Peso -->
                 <div class="field">
                     <label for="peso" class="block text-sm font-medium mb-2"> Peso (Kg) </label>
-                    <input pInputText type="number" id="peso" formControlName="peso" placeholder="Peso en kilogramos" class="w-full" />
+                    <div class="p-inputgroup">
+                        <input pInputText type="number" id="peso" formControlName="peso"
+                            placeholder="Peso en kilogramos" class="w-full" />
+                        <button type="button" pButton icon="pi pi-calculator" (click)="abrirConversor()"
+                            pTooltip="Conversor de peso" tooltipPosition="top"></button>
+                    </div>
                 </div>
 
                 <!-- Descripción Específica -->
                 <div class="field md:col-span-2">
-                    <label for="descripcionEspecifica" class="block text-sm font-medium mb-2"> Descripción Específica <span class="text-red-500">*</span> </label>
-                    <input
-                        pInputText
-                        id="descripcionEspecifica"
-                        formControlName="descripcionEspecifica"
-                        placeholder="Descripción específica del artículo"
-                        class="w-full"
-                        [class.ng-invalid]="articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched"
-                    />
-                    @if (articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched) {
+                    <label for="descripcionEspecifica" class="block text-sm font-medium mb-2"> Descripción Específica
+                        <span class="text-red-500">*</span> </label>
+                    <input pInputText id="descripcionEspecifica" formControlName="descripcionEspecifica"
+                        placeholder="Descripción específica del artículo" class="w-full"
+                        [class.ng-invalid]="articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched" />
+                    @if (articuloForm.get('descripcionEspecifica')?.invalid &&
+                    articuloForm.get('descripcionEspecifica')?.touched) {
                     <small class="p-error">
-                        @if (articuloForm.get('descripcionEspecifica')?.errors?.['required']) { La descripción específica es requerida } @else if (articuloForm.get('descripcionEspecifica')?.errors?.['maxlength']) { La descripción específica no puede
+                        @if (articuloForm.get('descripcionEspecifica')?.errors?.['required']) { La descripción
+                        específica es requerida } @else if
+                        (articuloForm.get('descripcionEspecifica')?.errors?.['maxlength']) { La descripción específica
+                        no puede
                         exceder 500 caracteres }
                     </small>
                     }
@@ -49,27 +58,142 @@
                 <!-- Comentarios -->
                 <div class="field md:col-span-2">
                     <label for="comentarios" class="block text-sm font-medium mb-2"> Comentarios </label>
-                    <textarea pTextarea id="comentarios" formControlName="comentarios" placeholder="Comentarios sobre el artículo" [rows]="4" class="w-full"> </textarea>
+                    <textarea pTextarea id="comentarios" formControlName="comentarios"
+                        placeholder="Comentarios sobre el artículo" [rows]="4" class="w-full"> </textarea>
                 </div>
 
                 <!-- Foto Descriptiva -->
                 <div class="field">
                     <label for="fotoDescriptiva" class="block text-sm font-medium mb-2"> Foto Descriptiva (URL) </label>
-                    <input pInputText id="fotoDescriptiva" formControlName="fotoDescriptiva" placeholder="URL de la foto descriptiva" class="w-full" />
+                    <input pInputText id="fotoDescriptiva" formControlName="fotoDescriptiva"
+                        placeholder="URL de la foto descriptiva" class="w-full" />
                 </div>
 
                 <!-- Foto Medida -->
                 <div class="field">
                     <label for="foto_medida" class="block text-sm font-medium mb-2"> Foto Medida (URL) </label>
-                    <input pInputText id="foto_medida" formControlName="foto_medida" placeholder="URL de la foto de medida" class="w-full" />
+                    <input pInputText id="foto_medida" formControlName="foto_medida"
+                        placeholder="URL de la foto de medida" class="w-full" />
                 </div>
             </div>
 
             <p-divider />
 
+            <!-- Gestión de Relaciones -->
+            <div class="mt-6">
+                <h3 class="text-xl font-bold mb-4">Gestión de Relaciones</h3>
+                <p-tabs [value]="0">
+                    <p-tablist>
+                        <p-tab [value]="0"> Referencias Cruzadas </p-tab>
+                        <p-tab [value]="1"> Juegos (Kits) </p-tab>
+                        <p-tab [value]="2"> Medidas Técnicas </p-tab>
+                    </p-tablist>
+                    <p-tabpanels>
+                        <!-- Referencias Cruzadas -->
+                        <p-tabpanel [value]="0">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-lg font-semibold">Referencias Cruzadas</h4>
+                                <p-button label="Asociar Referencia" icon="pi pi-plus" size="small"
+                                    (onClick)="abrirDialogoReferencia()"> </p-button>
+                            </div>
+                            <p-table [value]="(articulo$ | async)?.referencias || []" styleClass="p-datatable-sm">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th>Marca</th>
+                                        <th class="w-24">Acciones</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-ref>
+                                    <tr>
+                                        <td><p-tag [value]="ref.referencia" severity="info"></p-tag></td>
+                                        <td>{{ ref.marca?.nombre || '-' }}</td>
+                                        <td>
+                                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true"
+                                                severity="danger" (onClick)="eliminarReferencia(ref)"
+                                                pTooltip="Desasociar"></p-button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </p-tabpanel>
+
+                        <!-- Juegos (Kits) -->
+                        <p-tabpanel [value]="1">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-lg font-semibold">Configuración de Juego</h4>
+                                <p-button label="Agregar a Juego" icon="pi pi-plus" size="small"
+                                    (onClick)="abrirDialogoJuego()"> </p-button>
+                            </div>
+                            <p-table [value]="(articulo$ | async)?.articuloJuegos || []" styleClass="p-datatable-sm">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th>Cantidad</th>
+                                        <th class="w-24">Acciones</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-juego>
+                                    <tr>
+                                        <td><p-tag [value]="juego.referencia?.referencia" severity="success"></p-tag>
+                                        </td>
+                                        <td>{{ juego.cantidad }}</td>
+                                        <td>
+                                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true"
+                                                severity="danger" (onClick)="eliminarJuego(juego)"
+                                                pTooltip="Eliminar"></p-button>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </p-tabpanel>
+
+                        <!-- Medidas Técnicas -->
+                        <p-tabpanel [value]="2">
+                            <div class="flex justify-between items-center mb-4">
+                                <h4 class="text-lg font-semibold">Especificaciones Técnicas</h4>
+                                <p-button label="Nueva Medida" icon="pi pi-plus" size="small"
+                                    (onClick)="abrirDialogoMedida()"> </p-button>
+                            </div>
+                            <p-table [value]="(articulo$ | async)?.medidas || []" styleClass="p-datatable-sm">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nombre</th>
+                                        <th>Valor</th>
+                                        <th>Unidad</th>
+                                        <th class="w-24">Acciones</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-medida>
+                                    <tr>
+                                        <td>{{ medida.identificador }}</td>
+                                        <td>{{ medida.nombre }}</td>
+                                        <td>{{ medida.valor }}</td>
+                                        <td>{{ medida.unidad }}</td>
+                                        <td>
+                                            <div class="flex">
+                                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true"
+                                                    severity="warn" (onClick)="editarMedida(medida)"></p-button>
+                                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true"
+                                                    severity="danger" (onClick)="eliminarMedida(medida)"></p-button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </p-tabpanel>
+                    </p-tabpanels>
+                </p-tabs>
+            </div>
+
+            <p-divider />
+
             <div class="flex justify-end gap-2 mt-4">
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()" [disabled]="loading"> </p-button>
-                <p-button label="Actualizar Artículo" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="articuloForm.invalid"> </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
+                    [disabled]="loading"> </p-button>
+                <p-button label="Actualizar Artículo" icon="pi pi-check" type="submit" [loading]="loading"
+                    [disabled]="articuloForm.invalid"> </p-button>
             </div>
         </form>
         } @else {
@@ -80,3 +204,113 @@
         }
     </p-card>
 </div>
+
+<!-- Diálogo Asociar Referencia -->
+<p-dialog [(visible)]="showReferenciaDialog" header="Asociar Referencia Cruzada" [modal]="true"
+    [style]="{ width: '500px' }">
+    <div class="py-4">
+        <label class="block text-sm font-medium mb-2">Seleccione una referencia</label>
+        <p-select [options]="referenciasDisponibles" [(ngModel)]="selectedReferenciaId"
+            [ngModelOptions]="{standalone: true}" optionLabel="referencia" optionValue="id" [filter]="true"
+            filterBy="referencia" placeholder="Buscar referencia..." class="w-full">
+            <ng-template let-ref pTemplate="item">
+                <div class="flex flex-col">
+                    <span class="font-bold">{{ ref.referencia }}</span>
+                    <span class="text-xs text-gray-500">{{ ref.marca?.nombre }}</span>
+                </div>
+            </ng-template>
+        </p-select>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
+            (onClick)="showReferenciaDialog = false"></p-button>
+        <p-button label="Asociar" icon="pi pi-check" (onClick)="asociarReferencia()"
+            [disabled]="!selectedReferenciaId"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Diálogo Agregar a Juego -->
+<p-dialog [(visible)]="showJuegoDialog" header="Agregar al Juego (Kit)" [modal]="true" [style]="{ width: '500px' }">
+    <div class="flex flex-col gap-4 py-4">
+        <div class="field">
+            <label class="block text-sm font-medium mb-2">Referencia</label>
+            <p-select [options]="referenciasDisponibles" [(ngModel)]="juegoData.referencia_id"
+                [ngModelOptions]="{standalone: true}" optionLabel="referencia" optionValue="id" [filter]="true"
+                filterBy="referencia" placeholder="Seleccionar referencia" class="w-full"></p-select>
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-2">Cantidad</label>
+            <p-inputNumber [(ngModel)]="juegoData.cantidad" [ngModelOptions]="{standalone: true}" [showButtons]="true"
+                [min]="1" class="w-full"></p-inputNumber>
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-2">Comentario</label>
+            <textarea pTextarea [(ngModel)]="juegoData.comentario" [ngModelOptions]="{standalone: true}" rows="2"
+                class="w-full" placeholder="Opcional..."></textarea>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
+            (onClick)="showJuegoDialog = false"></p-button>
+        <p-button label="Agregar" icon="pi pi-check" (onClick)="asociarJuego()"
+            [disabled]="!juegoData.referencia_id"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Diálogo Medida Técnica -->
+<p-dialog [(visible)]="showMedidaDialog" [header]="isEditingMedida ? 'Editar Medida' : 'Nueva Medida'" [modal]="true"
+    [style]="{ width: '600px' }">
+    <div class="grid grid-cols-2 gap-4 py-4">
+        <div class="col-span-2 field">
+            <label class="block text-sm font-medium mb-1">Identificador (ej: A, B, C)</label>
+            <input pInputText [(ngModel)]="medidaData.identificador" [ngModelOptions]="{standalone: true}"
+                class="w-full" />
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-1">Nombre</label>
+            <input pInputText [(ngModel)]="medidaData.nombre" [ngModelOptions]="{standalone: true}" class="w-full" />
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-1">Tipo</label>
+            <input pInputText [(ngModel)]="medidaData.tipo" [ngModelOptions]="{standalone: true}" class="w-full" />
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-1">Valor</label>
+            <input pInputText [(ngModel)]="medidaData.valor" [ngModelOptions]="{standalone: true}" class="w-full" />
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-1">Unidad</label>
+            <input pInputText [(ngModel)]="medidaData.unidad" [ngModelOptions]="{standalone: true}" class="w-full" />
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
+            (onClick)="showMedidaDialog = false"></p-button>
+        <p-button [label]="isEditingMedida ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="guardarMedida()"
+            [disabled]="!medidaData.identificador || !medidaData.nombre"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Diálogo Conversor de Peso -->
+<p-dialog [(visible)]="showWeightConverter" header="Conversor de Peso" [modal]="true" [style]="{ width: '400px' }">
+    <div class="flex flex-col gap-4 py-4">
+        <div class="field">
+            <label class="block text-sm font-medium mb-2">Unidad de origen</label>
+            <p-select [options]="unidadesPeso" [(ngModel)]="unidadOrigen" [ngModelOptions]="{standalone: true}"
+                placeholder="Seleccione unidad" class="w-full">
+            </p-select>
+        </div>
+        <div class="field">
+            <label class="block text-sm font-medium mb-2">Valor a convertir</label>
+            <p-inputNumber [(ngModel)]="pesoOrigen" [ngModelOptions]="{standalone: true}" placeholder="Ingrese el valor"
+                class="w-full" [showButtons]="true" [min]="0">
+            </p-inputNumber>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
+            (onClick)="showWeightConverter = false"></p-button>
+        <p-button label="Convertir" icon="pi pi-check" (onClick)="convertirPeso()"
+            [disabled]="pesoOrigen === null"></p-button>
+    </ng-template>
+</p-dialog>

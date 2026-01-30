@@ -1,3 +1,5 @@
+import { Referencia } from './referencia.model';
+
 /**
  * Modelo de Artículo
  *
@@ -15,8 +17,39 @@ export interface Articulo {
     updated_at: string;
 
     // Relaciones opcionales
-    referencias?: any[];
-    medidas?: any[];
+    referencias?: Referencia[];
+    medidas?: Medida[];
+    articuloJuegos?: ArticuloJuego[];
+}
+
+/**
+ * Modelo de Medida de Artículo
+ */
+export interface Medida {
+    id: number;
+    articulo_id: number;
+    identificador: string;
+    nombre: string;
+    unidad: string;
+    valor: string;
+    tipo: string;
+    imagen?: string;
+    created_at?: string;
+    updated_at?: string;
+}
+
+/**
+ * Modelo de Componente de Juego (Kit)
+ */
+export interface ArticuloJuego {
+    id: number;
+    articulo_id: number;
+    referencia_id: number;
+    cantidad: number;
+    comentario?: string;
+    referencia?: Referencia;
+    created_at?: string;
+    updated_at?: string;
 }
 
 /**
@@ -42,3 +75,4 @@ export interface UpdateArticuloDto {
     fotoDescriptiva?: string;
     foto_medida?: string;
 }
+

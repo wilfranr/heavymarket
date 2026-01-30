@@ -1,0 +1,112 @@
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css');
+
+.values-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    /* Center the title */
+    padding: 20px 5% 80px 5%;
+    background: #FFFFFF;
+    width: 100%;
+    box-sizing: border-box;
+    gap: 32px;
+
+    @media (max-width: 1024px) {
+        padding: 20px 20px 40px 20px;
+    }
+}
+
+.section-title {
+    width: 100%;
+    max-width: 1312px;
+    /* Match Figma frame width if consistent */
+    font-family: 'Figtree', sans-serif;
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 56px;
+    letter-spacing: -0.016em;
+    color: #0C0E0F;
+    text-align: left;
+    /* Align title to start of the container */
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 36px;
+        line-height: 44px;
+        text-align: center;
+    }
+}
+
+.cards-container {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    /* Or flex-start if you want them left aligned, but Figma screenshot implies row */
+    align-items: stretch;
+    gap: 24px;
+    flex-wrap: wrap;
+    width: 100%;
+    max-width: 1312px;
+}
+
+.value-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 32px 24px;
+    gap: 24px;
+
+    width: 200px;
+    /* Approximate based on 5 cols in 1226px */
+    flex: 1 1 180px;
+    min-width: 180px;
+
+    background: #000000;
+    border-radius: 20px;
+    border: 0.7px solid rgba(224, 224, 224, 0.3);
+
+    /* Ensure content is centered */
+    text-align: center;
+
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+    }
+}
+
+/* Icon Styles */
+.icon-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 64px;
+    height: 64px;
+}
+
+.icon-container i {
+    font-size: 48px;
+    color: #FDB831;
+    /* Yellow branding */
+}
+
+/* Text Styles */
+.card-text {
+    font-family: 'Figtree', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 14px;
+    /* Figma said 16px but condensed layout might need 14, sticking to Figma 16px if possible, but let's see */
+    font-size: 16px;
+    line-height: 22px;
+    letter-spacing: -0.007em;
+    color: #FFFFFF;
+    margin: 0;
+
+    /* Limit lines if needed */
+    display: -webkit-box;
+    -webkit-line-clamp: 5;
+    line-clamp: 5;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

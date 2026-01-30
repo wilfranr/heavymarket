@@ -34,7 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class Transportadora extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'nombre',
@@ -49,6 +49,12 @@ class Transportadora extends Model
         'celular',
         'observaciones',
         'logo',
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'direccion' => 'title',
+        'observaciones' => 'sentence',
     ];
 
     /**

@@ -32,14 +32,14 @@ export class MaquinaService extends ApiService {
     /**
      * Crear una nueva máquina
      */
-    create(data: CreateMaquinaDto): Observable<ApiResponse<Maquina>> {
+    create(data: CreateMaquinaDto | FormData): Observable<ApiResponse<Maquina>> {
         return this.post<ApiResponse<Maquina>>(this.endpoint, data);
     }
 
     /**
      * Actualizar una máquina existente
      */
-    update(id: number, data: UpdateMaquinaDto): Observable<ApiResponse<Maquina>> {
+    update(id: number, data: UpdateMaquinaDto | FormData): Observable<ApiResponse<Maquina>> {
         return this.put<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
     }
 

@@ -117,6 +117,21 @@ Route::prefix('v1')->group(function () {
          * Catálogos y referencias
          */
         Route::apiResource('articulos', ArticuloController::class);
+        Route::prefix('articulos/{articulo}')->group(function () {
+            // Referencias Cruzadas
+            Route::post('referencias', [ArticuloController::class, 'addReferencia']);
+            Route::delete('referencias/{referencia}', [ArticuloController::class, 'removeReferencia']);
+            
+            // Juegos (Kits)
+            Route::post('juegos', [ArticuloController::class, 'addJuego']);
+            Route::delete('juegos/{referencia}', [ArticuloController::class, 'removeJuego']);
+            
+            // Medidas
+            Route::post('medidas', [ArticuloController::class, 'addMedida']);
+            Route::put('medidas/{medida}', [ArticuloController::class, 'updateMedida']);
+            Route::delete('medidas/{medida}', [ArticuloController::class, 'removeMedida']);
+        });
+        
         Route::apiResource('referencias', ReferenciaController::class);
         Route::apiResource('fabricantes', FabricanteController::class);
         Route::apiResource('sistemas', SistemaController::class);

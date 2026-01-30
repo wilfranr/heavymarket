@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Articulo, CreateArticuloDto, UpdateArticuloDto } from '../models/articulo.model';
+import { Articulo, ArticuloJuego, CreateArticuloDto, Medida, UpdateArticuloDto } from '../models/articulo.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
 /**
@@ -43,10 +43,44 @@ export class ArticuloService extends ApiService {
         return this.put<ApiResponse<Articulo>>(`${this.endpoint}/${id}`, data);
     }
 
-    /**
-     * Eliminar un artículo
-     */
     deleteArticulo(id: number): Observable<any> {
         return this.delete(`${this.endpoint}/${id}`);
+    }
+
+    /**
+     * Gestión de Referencias Cruzadas
+     */
+    addReferencia(articuloId: number, referenciaId: number): Observable<ApiResponse<Articulo>> {
+        return this.post<ApiResponse<Articulo>>(`${this.endpoint}/${articuloId}/referencias`, { referencia_id: referenciaId });
+    }
+
+    removeReferencia(articuloId: number, referenciaId: number): Observable<ApiResponse<Articulo>> {
+        return this.delete(`${this.endpoint}/${articuloId}/referencias/${referenciaId}`);
+    }
+
+    /**
+     * Gestión de Juegos (Kits)
+     */
+    addJuego(articuloId: number, data: { referencia_id: number; cantidad: number; comentario?: string }): Observable<ApiResponse<Articulo>> {
+        return this.post<ApiResponse<Articulo>>(`${this.endpoint}/${articuloId}/juegos`, data);
+    }
+
+    removeJuego(articuloId: number, referenciaId: number): Observable<ApiResponse<Articulo>> {
+        return this.delete(`${this.endpoint}/${articuloId}/juegos/${referenciaId}`);
+    }
+
+    /**
+     * Gestión de Medidas Técnicas
+     */
+    addMedida(articuloId: number, data: Omit<Medida, 'id' | 'articulo_id'>): Observable<ApiResponse<Articulo>> {
+        return this.post<ApiResponse<Articulo>>(`${this.endpoint}/${articuloId}/medidas`, data);
+    }
+
+    updateMedida(articuloId: number, medidaId: number, data: Partial<Medida>): Observable<ApiResponse<Articulo>> {
+        return this.put<ApiResponse<Articulo>>(`${this.endpoint}/${articuloId}/medidas/${medidaId}`, data);
+    }
+
+    removeMedida(articuloId: number, medidaId: number): Observable<ApiResponse<Articulo>> {
+        return this.delete(`${this.endpoint}/${articuloId}/medidas/${medidaId}`);
     }
 }

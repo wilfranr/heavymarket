@@ -1,51 +1,74 @@
-<footer class="footer-section">
+<footer class="footer-section" id="contacto">
     <div class="footer-top-wrapper">
         <div class="footer-top">
+            <!-- Left Column: Contact Form -->
             <div class="footer-subscription">
-                <h3 class="subscription-title">Subscribete a nuestro newsletter</h3>
+                <h3 class="subscription-title">CONTÁCTANOS</h3>
                 <form class="subscription-form">
-                    <div class="form-input-wrapper">
-                        <input type="email" placeholder="correo@email.com" class="subscription-input" />
-                        <div class="input-underline"></div>
+                    <div class="form-group">
+                        <label class="form-label">Nombre completo</label>
+                        <input type="text" placeholder="Ej: Juan Pérez" class="contact-input" />
                     </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Empresa</label>
+                        <input type="text" placeholder="Ej: Construcciones S.A.S" class="contact-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Correo electrónico</label>
+                        <input type="email" placeholder="ejemplo@empresa.com" class="contact-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" placeholder="+57 300 123 4567" class="contact-input" />
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Motivo de Consulta</label>
+                        <textarea placeholder="Hola, estoy interesado en cotizar..."
+                            class="contact-textarea"></textarea>
+                    </div>
+
+                    <div class="form-checkbox">
+                        <input type="checkbox" id="terms" />
+                        <label for="terms">Acepto el tratamiento de mis datos personales y comerciales. <a
+                                href="#">Saber más.</a></label>
+                    </div>
+
+                    <button type="submit" class="submit-button">Enviar formulario</button>
                 </form>
             </div>
-            <div class="footer-info">
-                <h4 class="footer-section-title">INFORMACIÓN</h4>
-                <ul class="footer-list">
-                    <li><a href="#" class="footer-link">Servicios</a></li>
-                    <li><a href="#" class="footer-link">Preguntas frecuentes</a></li>
-                    <li><a href="#" class="footer-link">Blog</a></li>
-                    <li>
-                        <a href="#" class="footer-link"
-                            >Nuestra política de entrega
-                            <span class="external-icon"
-                                ><svg width="11" height="11" viewBox="0 0 11 11" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M10.5 0.5L10.5 4.5M10.5 0.5L6.5 0.5M10.5 0.5L0.5 10.5M10.5 4.5L10.5 10.5H0.5V0.5H4.5" stroke="#b2b1aa" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" /></svg></span
-                        ></a>
-                    </li>
-                </ul>
-            </div>
+
+            <!-- Right Column: Location & Info -->
             <div class="footer-location">
                 <h4 class="footer-section-title">UBÍCANOS</h4>
-                <button class="location-button">
-                    <span>Ver mapa</span>
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 13.3333L5 8.33331L6.175 7.15831L9.16667 10.15V3.33331H10.8333V10.15L13.825 7.15831L15 8.33331L10 13.3333ZM3.33333 16.6666H16.6667V15H3.33333V16.6666Z" fill="#000000" />
-                    </svg>
+
+                <button class="location-button download-catalog">
+                    <span>Descargar Catálogo</span>
+                    <i class="fas fa-download"></i>
                 </button>
-                <div class="contact-list">
+
+                <div class="contact-grid">
                     <div class="contact-item">
                         <h5 class="contact-label">CONTACTO SOPORTE</h5>
                         <p class="contact-value">+57 3208400279</p>
                     </div>
+
                     <div class="contact-item">
                         <h5 class="contact-label">SERVICIO AL CLIENTE</h5>
                         <p class="contact-value">+57 3208038810</p>
                     </div>
-                    <div class="contact-item">
+
+                    <div class="contact-item full-width">
                         <h5 class="contact-label">CORREO</h5>
                         <p class="contact-value">comercial@heavymarket.net</p>
+                    </div>
+
+                    <div class="contact-item full-width">
+                        <h5 class="contact-label">DIRECCIÓN</h5>
+                        <p class="contact-value">Calle 47 No. 14-81, C.P. 11001, Bogotá, Colombia</p>
                     </div>
                 </div>
             </div>

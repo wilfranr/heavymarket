@@ -7,13 +7,22 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Country extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'name', 'iso2', 'iso3', 'numeric_code', 'phonecode', 'capital', 
         'currency', 'currency_name', 'currency_symbol', 'tld', 'native', 
         'region', 'subregion', 'timezones', 'translations', 'latitude', 
         'longitude', 'emoji', 'emojiU', 'flag', 'is_active'
+    ];
+
+    protected $normalizableAttributes = [
+        'name' => 'title',
+        'iso2' => 'code',
+        'iso3' => 'code',
+        'currency' => 'code',
+        'region' => 'title',
+        'subregion' => 'title',
     ];
 
     public function states()

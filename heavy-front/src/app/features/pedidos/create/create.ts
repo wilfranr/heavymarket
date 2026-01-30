@@ -31,10 +31,9 @@ import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
-import { UbicacionService } from '../../../core/services/ubicacion.service';
-import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-referencia-proveedor.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
+import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 
 /**
  * Componente de creación de pedido con Wizard de 3 pasos
@@ -64,7 +63,8 @@ import { ArticuloService } from '../../../core/services/articulo.service';
         CheckboxModule,
         TooltipModule,
         TagModule,
-        SkeletonModule
+        SkeletonModule,
+        TerceroCreateModalComponent
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -81,15 +81,14 @@ export class CreateComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
-    private readonly ubicacionService = inject(UbicacionService);
     private readonly proveedorService = inject(PedidoReferenciaProveedorService);
     private readonly articuloService = inject(ArticuloService);
 
     pedidoForm!: FormGroup;
-    createTerceroForm!: FormGroup;
     activeIndex = 0;
     loading = false;
-    loadingTercero = false;
+
+    // Modal de creación de tercero
     displayCreateTerceroDialog = false;
 
     today = new Date();
@@ -120,28 +119,9 @@ export class CreateComponent implements OnInit {
         return id ? this.maquinasFull.find(m => m.id === id) : null;
     });
 
-    // Estado de proveedores por referencia (para 'Crear', se guardarán localmente antes de enviar o se manejarán como FormArrays)
+    // Estado de proveedores por referencia
     referenciaIndexParaProveedor: number | null = null;
     nuevoProveedorForm: FormGroup | null = null;
-
-    // Ubicación para creación de tercero
-    paises: Country[] = [];
-    departamentos: State[] = [];
-    ciudades: City[] = [];
-
-    tiposDocumento = [
-        { label: 'NIT', value: 'nit' },
-        { label: 'Cédula de Ciudadanía', value: 'cc' },
-        { label: 'Cédula de Extranjería', value: 'ce' },
-        { label: 'Pasaporte', value: 'pasaporte' }
-    ];
-
-    // tiposTercero ya no es necesario en la vista si lo forzamos a "Cliente", 
-    // pero lo dejamos por si acaso o lo simplificamos.
-    // El backend espera 'Cliente', 'Proveedor', 'Ambos'
-    tiposTercero = [
-        { label: 'Cliente', value: 'Cliente' }
-    ];
 
     // Items del wizard
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
@@ -149,7 +129,6 @@ export class CreateComponent implements OnInit {
     ngOnInit(): void {
         this.initForm();
         this.loadInitialData();
-        this.loadPaises();
     }
 
     /**
@@ -176,144 +155,22 @@ export class CreateComponent implements OnInit {
         // Listen for changes to update cards
         this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => this.terceroId.set(id));
         this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(id => this.maquinaId.set(id));
-
-        // Formulario para crear tercero (Cliente)
-        this.createTerceroForm = this.fb.group({
-            tipo_documento: ['nit', [Validators.required]],
-            numero_documento: ['', [Validators.required, Validators.maxLength(20)]],
-            nombre: ['', [Validators.required, Validators.maxLength(255)]], // Razón social / Nombre
-            telefono: ['', [Validators.required]], // Teléfono requerido
-            email: ['', [Validators.email]],
-            direccion: [''],
-            // Ubicación
-            country_id: [null],
-            state_id: [null],
-            city_id: [null],
-            // Campos por defecto para cliente
-            tipo: ['Cliente'],
-            estado: ['activo']
-        });
     }
 
     /**
      * Muestra el diálogo para crear un nuevo tercero
      */
     openCreateTerceroDialog(): void {
-        this.createTerceroForm.reset({
-            tipo_documento: 'nit',
-            tipo: 'Cliente',
-            estado: 'activo'
-        });
-
-        // Resetear selectores dependientes
-        this.departamentos = [];
-        this.ciudades = [];
-
         this.displayCreateTerceroDialog = true;
     }
 
     /**
-     * Carga la lista de países
+     * Maneja el evento cuando se crea un tercero exitosamente
      */
-    private loadPaises(): void {
-        this.ubicacionService.getCountries().subscribe({
-            next: (response) => {
-                this.paises = response.data;
-            }
-        });
-    }
-
-    /**
-     * Maneja el cambio de país en el formulario de tercero
-     */
-    onPaisChange(): void {
-        const countryId = this.createTerceroForm.get('country_id')?.value;
-        this.departamentos = [];
-        this.ciudades = [];
-        this.createTerceroForm.patchValue({ state_id: null, city_id: null });
-
-        if (countryId) {
-            this.ubicacionService.getStates(countryId).subscribe({
-                next: (response) => {
-                    this.departamentos = response.data;
-                    if (this.departamentos.length === 0) {
-                        this.loadCiudades(undefined, countryId);
-                    }
-                }
-            });
-        }
-    }
-
-    /**
-     * Maneja el cambio de departamento en el formulario de tercero
-     */
-    onDepartamentoChange(): void {
-        const stateId = this.createTerceroForm.get('state_id')?.value;
-        this.ciudades = [];
-        this.createTerceroForm.patchValue({ city_id: null });
-
-        if (stateId) {
-            this.loadCiudades(stateId);
-        }
-    }
-
-    /**
-     * Carga ciudades basado en estado o país
-     */
-    private loadCiudades(stateId?: number, countryId?: number): void {
-        this.ubicacionService.getCities(stateId, countryId).subscribe({
-            next: (response) => {
-                this.ciudades = response.data;
-            }
-        });
-    }
-
-    /**
-     * Cierra el diálogo de creación de tercero
-     */
-    closeCreateTerceroDialog(): void {
+    onTerceroCreated(tercero: any): void {
+        // Recargar lista de terceros y seleccionar el nuevo
+        this.loadTerceros(tercero.id);
         this.displayCreateTerceroDialog = false;
-    }
-
-    /**
-     * Guarda el nuevo tercero
-     */
-    saveTercero(): void {
-        if (this.createTerceroForm.invalid) {
-            this.createTerceroForm.markAllAsTouched();
-            return;
-        }
-
-        this.loadingTercero = true;
-        const formValue = this.createTerceroForm.value;
-
-        // Mapear al DTO incluyendo ubicaciones
-        const data = {
-            ...formValue,
-            country_id: formValue.country_id || undefined,
-            state_id: formValue.state_id || undefined,
-            city_id: formValue.city_id || undefined
-        };
-
-        this.terceroService.create(data).subscribe({
-            next: (response) => {
-                this.loadingTercero = false;
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: 'Cliente creado correctamente'
-                });
-
-                // Recargar lista de terceros y seleccionar el nuevo
-                this.loadTerceros(response.data.id);
-                this.closeCreateTerceroDialog();
-            },
-            error: (error) => {
-                this.loadingTercero = false;
-                // El servicio ya maneja errores globales, pero podemos ser específicos si es necesario
-                console.error('Error al crear tercero', error);
-            }
-        });
     }
 
     /**
@@ -682,14 +539,6 @@ export class CreateComponent implements OnInit {
      */
     isFieldInvalid(field: string): boolean {
         const control = this.pedidoForm.get(field);
-        return !!(control && control.invalid && control.touched);
-    }
-
-    /**
-     * Verifica si un campo del formulario de tercero es inválido
-     */
-    isTerceroFieldInvalid(field: string): boolean {
-        const control = this.createTerceroForm.get(field);
         return !!(control && control.invalid && control.touched);
     }
 

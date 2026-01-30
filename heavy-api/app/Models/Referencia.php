@@ -31,7 +31,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Referencia extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     /**
      * Los atributos que son asignables masivamente.
@@ -43,6 +43,11 @@ class Referencia extends Model
         'referencia',    // Código o número de referencia del artículo
         'marca_id',      // ID de la marca asociada a la referencia
         'comentario',    // Comentarios adicionales sobre la referencia
+    ];
+
+    protected $normalizableAttributes = [
+        'referencia' => 'code',
+        'comentario' => 'sentence',
     ];
 
     /**

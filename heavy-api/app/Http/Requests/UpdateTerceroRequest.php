@@ -27,29 +27,43 @@ class UpdateTerceroRequest extends FormRequest
      */
     public function rules(): array
     {
+        // Get the ID of the tercero being updated from the route (usually 'tercero')
         $terceroId = $this->route('tercero')->id;
 
         return [
-            'tipo_documento' => ['sometimes', 'required', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
-            'documento' => [
-                'sometimes',
-                'required',
-                'string',
-                'max:50',
-                Rule::unique('terceros', 'documento')->ignore($terceroId)
-            ],
-            'razon_social' => ['sometimes', 'required', 'string', 'max:255'],
-            'nombre_comercial' => ['nullable', 'string', 'max:255'],
-            'tipo_tercero' => ['sometimes', 'required', Rule::in(['Natural', 'Juridico'])],
+            'tipo_documento' => ['required', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
+            // Ignore unique rule for the current record
+            'numero_documento' => ['required', 'string', 'max:50', Rule::unique('terceros', 'numero_documento')->ignore($terceroId)],
+            'nombre' => ['required', 'string', 'max:255'],
+            'tipo' => ['required', Rule::in(['Cliente', 'Proveedor', 'Ambos'])],
+            
+            // Contact info
             'email' => ['nullable', 'email', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:50'],
-            'celular' => ['nullable', 'string', 'max:50'],
-            'direccion' => ['nullable', 'string', 'max:255'],
-            'ciudad' => ['nullable', 'string', 'max:100'],
-            'pais' => ['nullable', 'string', 'max:100'],
-            'es_cliente' => ['boolean'],
-            'es_proveedor' => ['boolean'],
+            'telefono' => ['required', 'string', 'max:50'],
+            'direccion' => ['required', 'string', 'max:255'],
+            
+            // Location keys
+            'country_id' => ['nullable', 'integer'],
+            'state_id' => ['nullable', 'integer'],
+            'city_id' => ['nullable', 'integer'],
+            
+            // Other fields
+            'forma_pago' => ['nullable', 'string'],
+            'email_factura_electronica' => ['nullable', 'email'],
+            'sitio_web' => ['nullable', 'string'],
+            'dv' => ['nullable', 'string', 'max:1'],
             'estado' => ['nullable', Rule::in(['Activo', 'Inactivo'])],
+
+            // Files (allowed to be updated, not required)
+            'rut' => ['nullable', 'file', 'max:5120'], 
+            'certificacion_bancaria' => ['nullable', 'file', 'max:5120'],
+            'camara_comercio' => ['nullable', 'file', 'max:5120'],
+            'cedula_representante_legal' => ['nullable', 'file', 'max:5120'],
+
+            // Relations
+            'maquina_id' => ['nullable', 'integer'],
+            'fabricante_id' => ['nullable', 'array'],
+            'sistema_id' => ['nullable', 'array'],
         ];
     }
 
@@ -61,9 +75,12 @@ class UpdateTerceroRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'documento.unique' => 'Ya existe un tercero con este documento',
+            'numero_documento.required' => 'El número de documento es obligatorio',
+            'numero_documento.unique' => 'Ya existe un tercero con este documento',
+            'nombre.required' => 'El nombre es obligatorio',
             'tipo_documento.in' => 'El tipo de documento no es válido',
-            'tipo_tercero.in' => 'El tipo de tercero no es válido',
+            'tipo.required' => 'El tipo de tercero es obligatorio',
+            'tipo.in' => 'El tipo de tercero no es válido',
             'email.email' => 'El email no tiene un formato válido',
         ];
     }

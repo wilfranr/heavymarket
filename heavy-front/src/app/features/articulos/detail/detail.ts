@@ -7,6 +7,11 @@ import { Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { TabsModule } from 'primeng/tabs';
+import { TableModule } from 'primeng/table';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
+import { ImageModule } from 'primeng/image';
 
 import { loadArticuloById } from '../../../store/articulos/actions/articulos.actions';
 import { selectArticuloById } from '../../../store/articulos/selectors/articulos.selectors';
@@ -18,7 +23,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 @Component({
     selector: 'app-articulo-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TabsModule, TableModule, TagModule, TooltipModule, ImageModule],
     templateUrl: './detail.html'
 })
 export class DetailComponent implements OnInit {

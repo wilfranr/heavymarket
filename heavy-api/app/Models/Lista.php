@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lista extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'tipo',
@@ -20,6 +20,11 @@ class Lista extends Model
         'foto',
         'fotoMedida',
         'sistema_id',
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'definicion' => 'title',
     ];
     
     public function sistemas(): BelongsToMany

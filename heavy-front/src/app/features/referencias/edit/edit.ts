@@ -19,6 +19,8 @@ import { selectReferenciaById } from '../../../store/referencias/selectors/refer
 import { UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { CategoriaService } from '../../../core/services/categoria.service';
+import { Categoria } from '../../../core/models/categoria.model';
 
 /**
  * Componente de edición de referencia
@@ -37,15 +39,18 @@ export class EditComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
     private readonly listaService = inject(ListaService);
+    private readonly categoriaService = inject(CategoriaService);
 
     referenciaForm!: FormGroup;
     referencia$!: Observable<any>;
     referenciaId!: number;
     loading = false;
     marcas: Lista[] = [];
+    categorias: Categoria[] = [];
 
     ngOnInit(): void {
         this.cargarMarcas();
+        this.cargarCategorias();
 
         this.route.params.subscribe((params) => {
             this.referenciaId = +params['id'];
@@ -57,6 +62,20 @@ export class EditComponent implements OnInit {
                     this.initForm(referencia);
                 }
             });
+        });
+    }
+
+    /**
+     * Carga las categorias disponibles
+     */
+    cargarCategorias(): void {
+        this.categoriaService.getAll().subscribe({
+            next: (response: any) => {
+                this.categorias = response.data;
+            },
+            error: (error) => {
+                console.error('Error al cargar categorias:', error);
+            }
         });
     }
 
@@ -81,6 +100,7 @@ export class EditComponent implements OnInit {
         this.referenciaForm = this.fb.group({
             referencia: [referencia.referencia, [Validators.required, Validators.maxLength(255)]],
             marca_id: [referencia.marca_id || null],
+            categoria_id: [referencia.categoria_id || null],
             comentario: [referencia.comentario || '', [Validators.maxLength(500)]]
         });
     }
@@ -105,6 +125,7 @@ export class EditComponent implements OnInit {
         const data: UpdateReferenciaDto = {
             referencia: formValue.referencia,
             marca_id: formValue.marca_id || undefined,
+            categoria_id: formValue.categoria_id || undefined,
             comentario: formValue.comentario || undefined
         };
 

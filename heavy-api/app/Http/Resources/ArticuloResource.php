@@ -37,6 +37,7 @@ class ArticuloResource extends JsonResource
             // Relaciones opcionales
             'referencias' => $this->whenLoaded('referencias'),
             'medidas' => $this->whenLoaded('medidas'),
+            'articuloJuegos' => $this->whenLoaded('articuloJuegos'),
         ];
     }
 }

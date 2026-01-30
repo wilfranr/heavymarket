@@ -1,0 +1,485 @@
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { InputTextModule } from 'primeng/inputtext';
+import { SelectModule } from 'primeng/select';
+import { SelectButtonModule } from 'primeng/selectbutton';
+import { ToastModule } from 'primeng/toast';
+import { MessageService, MenuItem } from 'primeng/api';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { MultiSelectModule } from 'primeng/multiselect';
+import { PanelModule } from 'primeng/panel';
+import { StepsModule } from 'primeng/steps';
+import { FileUploadModule } from 'primeng/fileupload';
+
+import { TerceroService } from '../../../core/services/tercero.service';
+import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { MaquinaService } from '../../../core/services/maquina.service';
+import { FabricanteService } from '../../../core/services/fabricante.service';
+import { SistemaService } from '../../../core/services/sistema.service';
+import { Country, State, City } from '../../../core/models/ubicacion.model';
+import { Tercero } from '../../../core/models/tercero.model'; // Added import
+import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
+
+@Component({
+    selector: 'app-tercero-create-modal',
+    standalone: true,
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        DialogModule,
+        ButtonModule,
+        InputTextModule,
+        SelectModule,
+        SelectButtonModule,
+        ToastModule,
+        InputGroupModule,
+        InputGroupAddonModule,
+        MultiSelectModule,
+        PanelModule,
+        StepsModule,
+        FileUploadModule,
+        MaquinaCreateModalComponent
+    ],
+    templateUrl: './tercero-create-modal.component.html',
+    styles: [`
+        :host ::ng-deep .p-panel .p-panel-header {
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        :host ::ng-deep .p-panel .p-panel-content {
+            padding: 1rem;
+            background: transparent;
+        }
+        :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link {
+            background: transparent;
+        }
+        
+        /* --- WIZARD STEPS OVERRIDES --- */
+
+        /* CLIENTE (Amarillo) */
+        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
+            background: #eab308 !important;
+            color: #000 !important;
+        }
+        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
+            color: #eab308 !important;
+            font-weight: bold;
+        }
+        
+        /* PROVEEDOR (Azul) */
+        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
+            background: #3b82f6 !important;
+            color: #fff !important;
+        }
+        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
+            color: #3b82f6 !important;
+            font-weight: bold;
+        }
+
+        /* AMBOS (Verde) */
+        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
+            background: #22c55e !important;
+            color: #fff !important;
+        }
+        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
+            color: #22c55e !important;
+            font-weight: bold;
+        }
+
+
+        /* --- BUTTON OVERRIDES --- */
+        /* Only target primary buttons (not secondary, text, etc) */
+
+        /* CLIENTE */
+        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+            background: #eab308 !important;
+            border-color: #eab308 !important;
+            color: #000 !important;
+        }
+        /* Focus ring for accessibility/aesthetics match */
+        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
+            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #eab308 !important; 
+        }
+
+        /* PROVEEDOR */
+        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+            background: #3b82f6 !important;
+            border-color: #3b82f6 !important;
+            color: #fff !important;
+        }
+        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
+            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #3b82f6 !important; 
+        }
+
+        /* AMBOS */
+        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+            background: #22c55e !important;
+            border-color: #22c55e !important;
+            color: #fff !important;
+        }
+        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
+            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #22c55e !important; 
+        }
+
+        /* SelectButton Text Colors - Helper classes */
+        .text-cliente { color: #eab308; font-weight: bold; }
+        .text-proveedor { color: #3b82f6; font-weight: bold; }
+        .text-ambos { color: #22c55e; font-weight: bold; }
+    `]
+})
+export class TerceroCreateModalComponent implements OnInit, OnChanges {
+    private readonly fb = inject(FormBuilder);
+    private readonly terceroService = inject(TerceroService);
+    private readonly ubicacionService = inject(UbicacionService);
+    private readonly maquinaService = inject(MaquinaService);
+    private readonly fabricanteService = inject(FabricanteService);
+    private readonly sistemaService = inject(SistemaService);
+    private readonly messageService = inject(MessageService);
+
+    @Input() visible: boolean = false;
+    @Output() visibleChange = new EventEmitter<boolean>();
+    @Output() onTerceroCreated = new EventEmitter<Tercero>();
+
+    @Input() tipoTercero: string = 'Cliente';
+    @Input() terceroToEdit: Tercero | null = null;
+    @Input() isViewMode: boolean = false;
+
+    createTerceroForm!: FormGroup;
+    loadingTercero = false;
+
+    // Sub-modals visibility
+    displayCreateMaquinaDialog = false;
+
+    // Wizard Data
+    steps: MenuItem[] = [];
+    activeIndex: number = 0;
+
+    // Location Data
+    paises: Country[] = [];
+    departamentos: State[] = [];
+    ciudades: City[] = [];
+
+    // Listas auxiliares
+    maquinas: any[] = [];
+    fabricantes: any[] = [];
+    sistemas: any[] = [];
+
+    tiposDocumento = [
+        { label: 'NIT', value: 'NIT' },
+        { label: 'Cédula de Ciudadanía', value: 'CC' },
+        { label: 'Cédula de Extranjería', value: 'CE' },
+        { label: 'Pasaporte', value: 'Pasaporte' }
+    ];
+
+    tiposTerceroOptions = [
+        { label: 'Cliente', value: 'Cliente', styleClass: 'text-cliente' },
+        { label: 'Proveedor', value: 'Proveedor', styleClass: 'text-proveedor' },
+        { label: 'Ambos', value: 'Ambos', styleClass: 'text-ambos' }
+    ];
+
+    formasPago = [
+        { label: 'Contado', value: 'contado' },
+        { label: 'Crédito', value: 'credito' }
+    ];
+
+    ngOnInit(): void {
+        this.initForm();
+        this.initSteps();
+        this.loadPaises();
+        this.loadMaquinas();
+        this.loadFabricantes();
+        this.loadSistemas();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['visible'] && changes['visible'].currentValue === true) {
+            this.resetForm();
+            if (this.terceroToEdit) {
+                this.loadTerceroData(this.terceroToEdit.id);
+            }
+        }
+        if (changes['tipoTercero'] && !this.terceroToEdit) {
+            if (this.createTerceroForm) {
+                this.createTerceroForm.patchValue({ tipo: this.tipoTercero });
+            }
+        }
+    }
+
+    private loadTerceroData(id: number): void {
+        this.loadingTercero = true;
+        this.terceroService.getById(id).subscribe({
+            next: (response) => {
+                this.loadingTercero = false;
+                this.patchForm(response.data);
+                if (this.isViewMode) {
+                    this.createTerceroForm.disable();
+                } else {
+                    this.createTerceroForm.enable();
+                }
+            },
+            error: (err) => {
+                this.loadingTercero = false;
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del tercero' });
+                this.closeDialog();
+            }
+        });
+    }
+
+    private patchForm(data: any): void {
+        this.createTerceroForm.patchValue({
+            nombre: data.nombre,
+            tipo: data.tipo,
+            tipo_documento: data.tipo_documento,
+            numero_documento: data.numero_documento,
+            dv: data.dv,
+            telefono: data.telefono,
+            email: data.email,
+            forma_pago: data.forma_pago,
+            email_factura_electronica: data.email_factura_electronica,
+            sitio_web: data.sitio_web,
+            direccion: data.direccion,
+            country_id: data.country_id,
+            state_id: data.state_id,
+            city_id: data.city_id,
+            maquina_id: data.maquinas && data.maquinas.length > 0 ? data.maquinas[0].id : null,
+            fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
+            sistema_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
+        });
+
+        if (data.country_id) {
+            this.ubicacionService.getStates(data.country_id).subscribe(r => {
+                this.departamentos = r.data;
+            });
+        }
+        if (data.state_id) {
+            this.ubicacionService.getCities(data.state_id).subscribe(r => {
+                this.ciudades = r.data;
+            });
+        }
+    }
+
+
+    private initSteps(): void {
+        this.steps = [
+            { label: 'Información general' },
+            { label: 'Ubicación' },
+            { label: 'Documentos' }
+        ];
+    }
+
+    private initForm(): void {
+        this.createTerceroForm = this.fb.group({
+            nombre: ['', [Validators.required, Validators.maxLength(255)]],
+            tipo: [this.tipoTercero, [Validators.required]],
+            tipo_documento: ['NIT', [Validators.required]],
+            numero_documento: ['', [Validators.required, Validators.maxLength(20)]],
+            dv: [''],
+            telefono: ['', [Validators.required]],
+            email: ['', [Validators.email]],
+            forma_pago: [''],
+            email_factura_electronica: ['', [Validators.email]],
+            sitio_web: [''],
+
+            maquina_id: [null],
+            fabricante_id: [[]],
+            sistema_id: [[]],
+
+            direccion: ['', [Validators.required]],
+            country_id: [null],
+            state_id: [null],
+            city_id: [null],
+
+            rut: [null],
+            certificacion_bancaria: [null],
+            camara_comercio: [null],
+            cedula_representante_legal: [null],
+
+            estado: ['activo']
+        });
+    }
+
+    get isNit(): boolean {
+        const val = this.createTerceroForm.get('tipo_documento')?.value;
+        return val === 'nit' || val === 'NIT';
+    }
+    get isCliente(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Cliente' || t === 'Ambos'; }
+    get isProveedor(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Proveedor' || t === 'Ambos'; }
+    get activeTheme(): string {
+        const tipo = this.createTerceroForm?.get('tipo')?.value;
+        if (tipo === 'Cliente') return 'theme-cliente';
+        if (tipo === 'Proveedor') return 'theme-proveedor';
+        if (tipo === 'Ambos') return 'theme-ambos';
+        return 'theme-cliente';
+    }
+
+    resetForm(): void {
+        this.activeIndex = 0;
+        if (this.createTerceroForm) {
+            this.createTerceroForm.enable();
+            this.createTerceroForm.reset({
+                tipo_documento: 'NIT',
+                tipo: this.tipoTercero,
+                estado: 'activo',
+                fabricante_id: [],
+                sistema_id: []
+            });
+            this.departamentos = [];
+            this.ciudades = [];
+        }
+    }
+
+    nextStep(): void {
+        if (this.isStepValid(this.activeIndex)) {
+            this.activeIndex++;
+        } else {
+            this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Complete los campos obligatorios para continuar' });
+            this.markStepAsTouched(this.activeIndex);
+        }
+    }
+
+    prevStep(): void {
+        if (this.activeIndex > 0) {
+            this.activeIndex--;
+        }
+    }
+
+    private isStepValid(step: number): boolean {
+        if (this.isViewMode) return true;
+
+        const controls = this.createTerceroForm.controls;
+        if (step === 0) {
+            return !controls['nombre'].invalid &&
+                !controls['tipo'].invalid &&
+                !controls['tipo_documento'].invalid &&
+                !controls['numero_documento'].invalid &&
+                !controls['telefono'].invalid;
+        }
+        if (step === 1) {
+            return !controls['direccion'].invalid;
+        }
+        return true;
+    }
+
+    private markStepAsTouched(step: number): void {
+        if (step === 0) {
+            this.createTerceroForm.get('nombre')?.markAsTouched();
+            this.createTerceroForm.get('numero_documento')?.markAsTouched();
+            this.createTerceroForm.get('telefono')?.markAsTouched();
+        }
+        if (step === 1) {
+            this.createTerceroForm.get('direccion')?.markAsTouched();
+        }
+    }
+
+    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
+    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
+    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
+    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas = r.data.map(s => ({ label: s.nombre, value: s.id })) }); }
+
+    openCreateMaquinaDialog(): void { this.displayCreateMaquinaDialog = true; }
+    onMaquinaCreated(maquina: any): void { this.loadMaquinas(); this.displayCreateMaquinaDialog = false; this.createTerceroForm.patchValue({ maquina_id: maquina.id }); }
+    openCreateFabricanteDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear fabricante próximamente' }); }
+    openCreateSistemaDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' }); }
+
+    onPaisChange(): void {
+        const countryId = this.createTerceroForm.get('country_id')?.value;
+        this.departamentos = []; this.ciudades = []; this.createTerceroForm.patchValue({ state_id: null, city_id: null });
+        if (countryId) { this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos = r.data }); }
+    }
+
+    onDepartamentoChange(): void {
+        const stateId = this.createTerceroForm.get('state_id')?.value;
+        this.ciudades = []; this.createTerceroForm.patchValue({ city_id: null });
+        if (stateId) { this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades = r.data }); }
+    }
+
+    onFileSelect(event: any, fieldName: string): void { if (event.files && event.files.length > 0) { this.createTerceroForm.patchValue({ [fieldName]: event.files[0] }); } }
+
+    closeDialog(): void { this.visible = false; this.visibleChange.emit(false); }
+
+    saveTercero(createAnother: boolean = false): void {
+        if (this.isViewMode) {
+            this.closeDialog();
+            return;
+        }
+
+        if (this.createTerceroForm.invalid) {
+            this.createTerceroForm.markAllAsTouched();
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Revise los campos obligatorios' });
+            return;
+        }
+
+        this.loadingTercero = true;
+        const formValue = this.createTerceroForm.value;
+        const formData = new FormData();
+
+        formData.append('numero_documento', formValue.numero_documento);
+        formData.append('nombre', formValue.nombre);
+        formData.append('tipo', formValue.tipo);
+        formData.append('tipo_documento', formValue.tipo_documento.toUpperCase());
+
+        formData.append('telefono', formValue.telefono);
+        formData.append('email', formValue.email || '');
+        formData.append('direccion', formValue.direccion);
+        formData.append('forma_pago', formValue.forma_pago || '');
+        formData.append('sitio_web', formValue.sitio_web || '');
+        formData.append('estado', 'Activo');
+
+        if (formValue.country_id) formData.append('country_id', formValue.country_id);
+        if (formValue.state_id) formData.append('state_id', formValue.state_id);
+        if (formValue.city_id) formData.append('city_id', formValue.city_id);
+
+        if (formValue.email_factura_electronica) formData.append('email_factura_electronica', formValue.email_factura_electronica);
+        if (formValue.dv) formData.append('dv', formValue.dv);
+
+        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id);
+
+        if (formValue.fabricante_id && Array.isArray(formValue.fabricante_id)) {
+            formValue.fabricante_id.forEach((id: any) => formData.append('fabricante_id[]', id));
+        }
+        if (formValue.sistema_id && Array.isArray(formValue.sistema_id)) {
+            formValue.sistema_id.forEach((id: any) => formData.append('sistema_id[]', id));
+        }
+
+        const fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+        fileFields.forEach(field => {
+            if (formValue[field] instanceof File) {
+                formData.append(field, formValue[field]);
+            }
+        });
+
+        let request$: any;
+        if (this.terceroToEdit) {
+            formData.append('_method', 'PUT');
+            request$ = this.terceroService.update(this.terceroToEdit.id, formData);
+        } else {
+            request$ = this.terceroService.create(formData);
+        }
+
+        request$.subscribe({
+            next: (response: any) => {
+                this.loadingTercero = false;
+                const action = this.terceroToEdit ? 'actualizado' : 'creado';
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Tercero ${action} correctamente` });
+                this.onTerceroCreated.emit(response.data);
+                if (createAnother && !this.terceroToEdit) { this.resetForm(); } else { this.closeDialog(); }
+            },
+            error: (error: any) => {
+                this.loadingTercero = false;
+                console.error('Error al guardar tercero', error);
+                const msg = error.error?.message || 'Fallo al guardar tercero';
+                if (error.error?.errors) {
+                    const errors = Object.values(error.error.errors).flat().join('. ');
+                    this.messageService.add({ severity: 'error', summary: 'Error de Validación', detail: errors });
+                } else {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            }
+        });
+    }
+}

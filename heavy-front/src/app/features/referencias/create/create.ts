@@ -17,6 +17,8 @@ import { createReferencia } from '../../../store/referencias/actions/referencias
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { CategoriaService } from '../../../core/services/categoria.service';
+import { Categoria } from '../../../core/models/categoria.model';
 
 /**
  * Componente de creación de referencia
@@ -34,14 +36,31 @@ export class CreateComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly listaService = inject(ListaService);
+    private readonly categoriaService = inject(CategoriaService);
 
     referenciaForm!: FormGroup;
     loading = false;
     marcas: Lista[] = [];
+    categorias: Categoria[] = [];
 
     ngOnInit(): void {
         this.initForm();
         this.cargarMarcas();
+        this.cargarCategorias();
+    }
+
+    /**
+     * Carga las categorias disponibles
+     */
+    cargarCategorias(): void {
+        this.categoriaService.getAll().subscribe({
+            next: (response: any) => {
+                this.categorias = response.data;
+            },
+            error: (error) => {
+                console.error('Error al cargar categorias:', error);
+            }
+        });
     }
 
     /**
@@ -65,6 +84,7 @@ export class CreateComponent implements OnInit {
         this.referenciaForm = this.fb.group({
             referencia: ['', [Validators.required, Validators.maxLength(255)]],
             marca_id: [null],
+            categoria_id: [null],
             comentario: ['', [Validators.maxLength(500)]]
         });
     }
@@ -89,6 +109,7 @@ export class CreateComponent implements OnInit {
         const data: CreateReferenciaDto = {
             referencia: formValue.referencia,
             marca_id: formValue.marca_id || undefined,
+            categoria_id: formValue.categoria_id || undefined,
             comentario: formValue.comentario || undefined
         };
 

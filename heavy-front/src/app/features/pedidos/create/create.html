@@ -214,64 +214,6 @@
     </div>
 </div>
 
-<!-- Create Client Dialog (Kept functional) -->
-<p-dialog header="Crear Nuevo Cliente" [(visible)]="displayCreateTerceroDialog" [modal]="true"
-    [style]="{ width: '70vw' }" [draggable]="false" [resizable]="false">
-    <form [formGroup]="createTerceroForm" (ngSubmit)="saveTercero()">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-                <label for="tipo_documento" class="block mb-2 font-semibold">Tipo Documento</label>
-                <p-select id="tipo_documento" formControlName="tipo_documento" [options]="tiposDocumento"
-                    styleClass="w-full"></p-select>
-            </div>
-            <div>
-                <label for="numero_documento" class="block mb-2 font-semibold">Número Documento</label>
-                <input id="numero_documento" type="text" pInputText formControlName="numero_documento" class="w-full" />
-            </div>
-            <div class="col-span-1 md:col-span-2">
-                <label for="nombre" class="block mb-2 font-semibold">Razón Social / Nombre</label>
-                <input id="nombre" type="text" pInputText formControlName="nombre" class="w-full" />
-            </div>
-            <div>
-                <label for="telefono" class="block mb-2 font-semibold">Teléfono</label>
-                <input id="telefono" type="text" pInputText formControlName="telefono" class="w-full" />
-            </div>
-            <div>
-                <label for="email" class="block mb-2 font-semibold">Email</label>
-                <input id="email" type="email" pInputText formControlName="email" class="w-full" />
-            </div>
-            <div>
-                <label for="country_id" class="block mb-2 font-semibold">País</label>
-                <p-select id="country_id" formControlName="country_id" [options]="paises" optionLabel="name"
-                    optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccionar País" styleClass="w-full"
-                    (onChange)="onPaisChange()">
-                </p-select>
-            </div>
-            <div>
-                <label for="state_id" class="block mb-2 font-semibold">Departamento/Estado</label>
-                <p-select id="state_id" formControlName="state_id" [options]="departamentos" optionLabel="name"
-                    optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccionar Departamento"
-                    styleClass="w-full" (onChange)="onDepartamentoChange()"
-                    [disabled]="!createTerceroForm.get('country_id')?.value">
-                </p-select>
-            </div>
-            <div>
-                <label for="city_id" class="block mb-2 font-semibold">Ciudad</label>
-                <p-select id="city_id" formControlName="city_id" [options]="ciudades" optionLabel="name"
-                    optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccionar Ciudad"
-                    styleClass="w-full"
-                    [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value">
-                </p-select>
-            </div>
-            <div class="col-span-1 md:col-span-2">
-                <label for="direccion" class="block mb-2 font-semibold">Dirección</label>
-                <input id="direccion" type="text" pInputText formControlName="direccion" class="w-full" />
-            </div>
-        </div>
-        <div class="flex justify-end gap-2 mt-4">
-            <p-button label="Cancelar" severity="secondary" (onClick)="closeCreateTerceroDialog()"></p-button>
-            <p-button label="Guardar Cliente" type="submit" [loading]="loadingTercero"
-                [disabled]="createTerceroForm.invalid"></p-button>
-        </div>
-    </form>
-</p-dialog>
+<!-- Create Client Dialog -->
+<app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" (onTerceroCreated)="onTerceroCreated($event)">
+</app-tercero-create-modal>

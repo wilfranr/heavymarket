@@ -28,19 +28,32 @@ class TerceroResource extends JsonResource
         return [
             'id' => $this->id,
             'tipo_documento' => $this->tipo_documento,
-            'documento' => $this->documento,
-            'razon_social' => $this->razon_social,
-            'nombre_comercial' => $this->nombre_comercial,
-            'tipo_tercero' => $this->tipo_tercero,
+            'numero_documento' => $this->numero_documento,
+            'nombre' => $this->nombre,
+            'tipo' => $this->tipo,
             'email' => $this->email,
             'telefono' => $this->telefono,
-            'celular' => $this->celular,
             'direccion' => $this->direccion,
-            'ciudad' => $this->ciudad,
-            'pais' => $this->pais,
-            'es_cliente' => (bool) $this->es_cliente,
-            'es_proveedor' => (bool) $this->es_proveedor,
+            'forma_pago' => $this->forma_pago,
+            'email_factura_electronica' => $this->email_factura_electronica,
+            'sitio_web' => $this->sitio_web,
+            'dv' => $this->dv,
             'estado' => $this->estado,
+            
+            // Files mapping if needed, or return full urls
+            'rut' => $this->rut ? \Storage::url($this->rut) : null,
+            'certificacion_bancaria' => $this->certificacion_bancaria ? \Storage::url($this->certificacion_bancaria) : null,
+            'camara_comercio' => $this->camara_comercio ? \Storage::url($this->camara_comercio) : null,
+            'cedula_representante_legal' => $this->cedula_representante_legal ? \Storage::url($this->cedula_representante_legal) : null,
+            
+            // Location
+            'country_id' => $this->country_id,
+            'state_id' => $this->state_id,
+            'city_id' => $this->city_id,
+            'country' => $this->whenLoaded('country'),
+            'state' => $this->whenLoaded('states'), // Relation in model is 'states' (bad naming? viewed in step 266: public function states()) - Careful.
+            'city' => $this->whenLoaded('city'),
+            
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
             
@@ -49,6 +62,7 @@ class TerceroResource extends JsonResource
             'direcciones' => $this->whenLoaded('direcciones'),
             'fabricantes' => $this->whenLoaded('fabricantes'),
             'sistemas' => $this->whenLoaded('sistemas'),
+            'maquinas' => $this->whenLoaded('maquinas'),
         ];
     }
 }

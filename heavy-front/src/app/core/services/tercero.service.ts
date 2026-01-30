@@ -41,14 +41,14 @@ export class TerceroService extends ApiService {
     /**
      * Crear un nuevo tercero
      */
-    create(data: CreateTerceroDto): Observable<ApiResponse<Tercero>> {
+    create(data: CreateTerceroDto | FormData): Observable<ApiResponse<Tercero>> {
         return this.post<ApiResponse<Tercero>>(this.endpoint, data);
     }
 
     /**
      * Actualizar un tercero existente
      */
-    update(id: number, data: UpdateTerceroDto): Observable<ApiResponse<Tercero>> {
+    update(id: number, data: UpdateTerceroDto | FormData): Observable<ApiResponse<Tercero>> {
         return this.put<ApiResponse<Tercero>>(`${this.endpoint}/${id}`, data);
     }
 

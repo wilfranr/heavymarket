@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
@@ -12,6 +12,8 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
 
 import { createArticulo } from '../../../store/articulos/actions/articulos.actions';
 import { CreateArticuloDto } from '../../../core/models/articulo.model';
@@ -24,7 +26,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -38,6 +40,17 @@ export class CreateComponent implements OnInit {
     articuloForm!: FormGroup;
     loading = false;
     tipos: Lista[] = [];
+
+    // Variables para el conversor de peso
+    showWeightConverter = false;
+    pesoOrigen: number | null = null;
+    unidadOrigen = 'g';
+    unidadesPeso = [
+        { label: 'Gramos (gr)', value: 'g' },
+        { label: 'Libras (lb)', value: 'lb' },
+        { label: 'Onzas (oz)', value: 'oz' },
+        { label: 'Toneladas (t)', value: 't' }
+    ];
 
     ngOnInit(): void {
         this.initForm();
@@ -70,6 +83,46 @@ export class CreateComponent implements OnInit {
             fotoDescriptiva: [null],
             foto_medida: [null]
         });
+    }
+
+    /**
+     * Abre el conversor de peso
+     */
+    abrirConversor(): void {
+        this.showWeightConverter = true;
+    }
+
+    /**
+     * Realiza la conversión de peso a Kg
+     */
+    convertirPeso(): void {
+        if (this.pesoOrigen === null) return;
+
+        let pesoKg = 0;
+        const valor = this.pesoOrigen;
+
+        switch (this.unidadOrigen) {
+            case 'g':
+                pesoKg = valor / 1000;
+                break;
+            case 'lb':
+                pesoKg = valor * 0.453592;
+                break;
+            case 'oz':
+                pesoKg = valor * 0.0283495;
+                break;
+            case 't':
+                pesoKg = valor * 1000;
+                break;
+            default:
+                pesoKg = valor;
+        }
+
+        // Redondear a 3 decimales
+        const resultado = Math.round(pesoKg * 1000) / 1000;
+        this.articuloForm.patchValue({ peso: resultado });
+        this.showWeightConverter = false;
+        this.pesoOrigen = null;
     }
 
     /**

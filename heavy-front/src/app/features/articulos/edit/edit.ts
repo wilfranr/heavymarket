@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -13,10 +13,19 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { DialogModule } from 'primeng/dialog';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { TooltipModule } from 'primeng/tooltip';
+import { TableModule } from 'primeng/table';
+import { TabsModule } from 'primeng/tabs';
+import { TagModule } from 'primeng/tag';
 
 import { loadArticuloById, updateArticulo } from '../../../store/articulos/actions/articulos.actions';
 import { selectArticuloById } from '../../../store/articulos/selectors/articulos.selectors';
-import { UpdateArticuloDto } from '../../../core/models/articulo.model';
+import { Articulo, ArticuloJuego, Medida, UpdateArticuloDto } from '../../../core/models/articulo.model';
+import { ArticuloService } from '../../../core/services/articulo.service';
+import { ReferenciaService } from '../../../core/services/referencia.service';
+import { Referencia } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 
@@ -26,7 +35,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-articulo-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -37,12 +46,39 @@ export class EditComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
     private readonly listaService = inject(ListaService);
+    private readonly articuloService = inject(ArticuloService);
+    private readonly referenciaService = inject(ReferenciaService);
 
     articuloForm!: FormGroup;
     articulo$!: Observable<any>;
     articuloId!: number;
     loading = false;
     tipos: Lista[] = [];
+    referenciasDisponibles: Referencia[] = [];
+    articuloActual: Articulo | null = null;
+
+    // Variables para diálogos de relaciones
+    showReferenciaDialog = false;
+    selectedReferenciaId: number | null = null;
+
+    showJuegoDialog = false;
+    juegoData = { referencia_id: 0, cantidad: 1, comentario: '' };
+
+    showMedidaDialog = false;
+    isEditingMedida = false;
+    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    editingMedidaId: number | null = null;
+
+    // Variables para el conversor de peso
+    showWeightConverter = false;
+    pesoOrigen: number | null = null;
+    unidadOrigen = 'g';
+    unidadesPeso = [
+        { label: 'Gramos (gr)', value: 'g' },
+        { label: 'Libras (lb)', value: 'lb' },
+        { label: 'Onzas (oz)', value: 'oz' },
+        { label: 'Toneladas (t)', value: 't' }
+    ];
 
     ngOnInit(): void {
         this.cargarTipos();
@@ -54,6 +90,7 @@ export class EditComponent implements OnInit {
 
             this.articulo$.subscribe((articulo) => {
                 if (articulo) {
+                    this.articuloActual = articulo;
                     this.initForm(articulo);
                 }
             });
@@ -86,6 +123,139 @@ export class EditComponent implements OnInit {
             fotoDescriptiva: [articulo.fotoDescriptiva || null],
             foto_medida: [articulo.foto_medida || null]
         });
+    }
+
+    /**
+     * Abre el conversor de peso
+     */
+    abrirConversor(): void {
+        this.showWeightConverter = true;
+    }
+
+    /**
+     * Realiza la conversión de peso a Kg
+     */
+    convertirPeso(): void {
+        if (this.pesoOrigen === null) return;
+
+        let pesoKg = 0;
+        const valor = this.pesoOrigen;
+
+        switch (this.unidadOrigen) {
+            case 'g':
+                pesoKg = valor / 1000;
+                break;
+            case 'lb':
+                pesoKg = valor * 0.453592;
+                break;
+            case 'oz':
+                pesoKg = valor * 0.0283495;
+                break;
+            case 't':
+                pesoKg = valor * 1000;
+                break;
+            default:
+                pesoKg = valor;
+        }
+
+        const resultado = Math.round(pesoKg * 1000) / 1000;
+        this.articuloForm.patchValue({ peso: resultado });
+        this.showWeightConverter = false;
+        this.pesoOrigen = null;
+    }
+
+    /**
+     * Gestión de Referencias Cruzadas
+     */
+    abrirDialogoReferencia(): void {
+        this.cargarReferencias();
+        this.showReferenciaDialog = true;
+    }
+
+    cargarReferencias(): void {
+        this.referenciaService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.referenciasDisponibles = response.data;
+            }
+        });
+    }
+
+    asociarReferencia(): void {
+        if (!this.selectedReferenciaId) return;
+        this.articuloService.addReferencia(this.articuloId, this.selectedReferenciaId).subscribe(() => {
+            this.reloadArticulo();
+            this.showReferenciaDialog = false;
+            this.selectedReferenciaId = null;
+        });
+    }
+
+    eliminarReferencia(ref: Referencia): void {
+        this.articuloService.removeReferencia(this.articuloId, ref.id).subscribe(() => {
+            this.reloadArticulo();
+        });
+    }
+
+    /**
+     * Gestión de Juegos (Kits)
+     */
+    abrirDialogoJuego(): void {
+        this.cargarReferencias();
+        this.juegoData = { referencia_id: 0, cantidad: 1, comentario: '' };
+        this.showJuegoDialog = true;
+    }
+
+    asociarJuego(): void {
+        if (!this.juegoData.referencia_id) return;
+        this.articuloService.addJuego(this.articuloId, this.juegoData).subscribe(() => {
+            this.reloadArticulo();
+            this.showJuegoDialog = false;
+        });
+    }
+
+    eliminarJuego(juego: ArticuloJuego): void {
+        this.articuloService.removeJuego(this.articuloId, juego.referencia_id).subscribe(() => {
+            this.reloadArticulo();
+        });
+    }
+
+    /**
+     * Gestión de Medidas Técnicas
+     */
+    abrirDialogoMedida(): void {
+        this.isEditingMedida = false;
+        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.showMedidaDialog = true;
+    }
+
+    editarMedida(medida: Medida): void {
+        this.isEditingMedida = true;
+        this.editingMedidaId = medida.id;
+        this.medidaData = { ...medida };
+        this.showMedidaDialog = true;
+    }
+
+    guardarMedida(): void {
+        if (this.isEditingMedida && this.editingMedidaId) {
+            this.articuloService.updateMedida(this.articuloId, this.editingMedidaId, this.medidaData).subscribe(() => {
+                this.reloadArticulo();
+                this.showMedidaDialog = false;
+            });
+        } else {
+            this.articuloService.addMedida(this.articuloId, this.medidaData).subscribe(() => {
+                this.reloadArticulo();
+                this.showMedidaDialog = false;
+            });
+        }
+    }
+
+    eliminarMedida(medida: Medida): void {
+        this.articuloService.removeMedida(this.articuloId, medida.id).subscribe(() => {
+            this.reloadArticulo();
+        });
+    }
+
+    private reloadArticulo(): void {
+        this.store.dispatch(loadArticuloById({ id: this.articuloId }));
     }
 
     /**

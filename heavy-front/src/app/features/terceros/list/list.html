@@ -10,24 +10,18 @@
             </div>
         </ng-template>
 
-        <p-table
-            #dt
-            [value]="(terceros$ | async) || []"
-            [loading]="loading$ | async"
-            [paginator]="true"
-            [rows]="10"
+        <p-table #dt [value]="(terceros$ | async) || []" [loading]="loading$ | async" [paginator]="true" [rows]="10"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} terceros"
             [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['razon_social', 'documento', 'email', 'telefono']"
-            responsiveLayout="scroll"
-            styleClass="p-datatable-sm"
-        >
+            [globalFilterFields]="['nombre', 'numero_documento', 'email', 'telefono']" responsiveLayout="scroll"
+            styleClass="p-datatable-sm">
             <ng-template pTemplate="caption">
                 <div class="flex">
                     <span class="p-input-icon-left w-full">
                         <i class="pi pi-search"></i>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar terceros..." class="w-full" />
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="Buscar terceros..." class="w-full" />
                     </span>
                 </div>
             </ng-template>
@@ -36,7 +30,8 @@
                 <tr>
                     <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                     <th pSortableColumn="nombre">Nombre <p-sortIcon field="nombre"></p-sortIcon></th>
-                    <th pSortableColumn="documento">Documento <p-sortIcon field="documento"></p-sortIcon></th>
+                    <th pSortableColumn="numero_documento">Documento <p-sortIcon field="numero_documento"></p-sortIcon>
+                    </th>
                     <th>Contacto</th>
                     <th pSortableColumn="tipo">Tipo <p-sortIcon field="tipo"></p-sortIcon></th>
                     <th pSortableColumn="estado">Estado <p-sortIcon field="estado"></p-sortIcon></th>
@@ -51,7 +46,7 @@
                         <span class="font-semibold">{{ tercero.nombre }}</span>
                     </td>
                     <td>
-                        <span class="text-sm"> {{ tercero.tipo_documento }} {{ tercero.documento }} </span>
+                        <span class="text-sm"> {{ tercero.tipo_documento }} {{ tercero.numero_documento }} </span>
                     </td>
                     <td>
                         <div class="flex flex-col text-sm">
@@ -70,9 +65,14 @@
                     </td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(tercero)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarTercero(tercero)" pTooltip="Editar" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarTercero(tercero)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                                (onClick)="viewDetail(tercero)" pTooltip="Ver detalle" tooltipPosition="top">
+                            </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true"
+                                (onClick)="editTercero(tercero)" pTooltip="Editar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                                (onClick)="eliminarTercero(tercero)" pTooltip="Eliminar" tooltipPosition="top">
+                            </p-button>
                         </div>
                     </td>
                 </tr>
@@ -89,3 +89,7 @@
         </p-table>
     </p-card>
 </div>
+
+<app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" [terceroToEdit]="selectedTercero"
+    [isViewMode]="isViewMode" (onTerceroCreated)="onTerceroCreated($event)">
+</app-tercero-create-modal>

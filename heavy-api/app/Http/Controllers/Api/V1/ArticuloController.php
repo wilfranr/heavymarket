@@ -9,6 +9,10 @@ use App\Http\Requests\StoreArticuloRequest;
 use App\Http\Requests\UpdateArticuloRequest;
 use App\Http\Resources\ArticuloResource;
 use App\Models\Articulo;
+use App\Models\ArticuloJuego;
+use App\Models\ArticuloReferencia;
+use App\Models\Medida;
+use App\Models\Referencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -107,6 +111,129 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Artículo eliminado exitosamente',
+        ]);
+    }
+
+    /**
+     * Asociar una referencia cruzada
+     */
+    public function addReferencia(Request $request, Articulo $articulo): JsonResponse
+    {
+        $request->validate([
+            'referencia_id' => 'required|exists:referencias,id',
+        ]);
+
+        $articulo->referencias()->syncWithoutDetaching([$request->referencia_id]);
+
+        return response()->json([
+            'message' => 'Referencia asociada exitosamente',
+            'data' => $articulo->fresh()->load('referencias'),
+        ]);
+    }
+
+    /**
+     * Desasociar una referencia cruzada
+     */
+    public function removeReferencia(Articulo $articulo, Referencia $referencia): JsonResponse
+    {
+        $articulo->referencias()->detach($referencia->id);
+
+        return response()->json([
+            'message' => 'Referencia desasociada exitosamente',
+            'data' => $articulo->fresh()->load('referencias'),
+        ]);
+    }
+
+    /**
+     * Agregar una referencia al juego (kit)
+     */
+    public function addJuego(Request $request, Articulo $articulo): JsonResponse
+    {
+        $request->validate([
+            'referencia_id' => 'required|exists:referencias,id',
+            'cantidad' => 'required|integer|min:1',
+            'comentario' => 'nullable|string',
+        ]);
+
+        $juego = $articulo->articuloJuegos()->create([
+            'referencia_id' => $request->referencia_id,
+            'cantidad' => $request->cantidad,
+            'comentario' => $request->comentario,
+        ]);
+
+        return response()->json([
+            'message' => 'Componente agregado al juego exitosamente',
+            'data' => $articulo->fresh()->load('articuloJuegos.referencia'),
+        ]);
+    }
+
+    /**
+     * Eliminar una referencia del juego (kit)
+     */
+    public function removeJuego(Articulo $articulo, $referenciaId): JsonResponse
+    {
+        $articulo->articuloJuegos()->where('referencia_id', $referenciaId)->delete();
+
+        return response()->json([
+            'message' => 'Componente eliminado del juego exitosamente',
+            'data' => $articulo->fresh()->load('articuloJuegos.referencia'),
+        ]);
+    }
+
+    /**
+     * Agregar una medida técnica
+     */
+    public function addMedida(Request $request, Articulo $articulo): JsonResponse
+    {
+        $validated = $request->validate([
+            'identificador' => 'required|string',
+            'nombre' => 'required|string',
+            'unidad' => 'required|string',
+            'valor' => 'required|string',
+            'tipo' => 'required|string',
+            'imagen' => 'nullable|string',
+        ]);
+
+        $medida = $articulo->medidas()->create($validated);
+
+        return response()->json([
+            'message' => 'Medida técnica agregada exitosamente',
+            'data' => $articulo->fresh()->load('medidas'),
+        ]);
+    }
+
+    /**
+     * Actualizar una medida técnica
+     */
+    public function updateMedida(Request $request, Articulo $articulo, Medida $medida): JsonResponse
+    {
+        $validated = $request->validate([
+            'identificador' => 'sometimes|string',
+            'nombre' => 'sometimes|string',
+            'unidad' => 'sometimes|string',
+            'valor' => 'sometimes|string',
+            'tipo' => 'sometimes|string',
+            'imagen' => 'nullable|string',
+        ]);
+
+        $medida->update($validated);
+
+        return response()->json([
+            'message' => 'Medida técnica actualizada exitosamente',
+            'data' => $articulo->fresh()->load('medidas'),
+        ]);
+    }
+
+    /**
+     * Eliminar una medida técnica
+     */
+    public function removeMedida(Articulo $articulo, Medida $medida): JsonResponse
+    {
+        $medida->delete();
+
+        return response()->json([
+            'message' => 'Medida técnica eliminada exitosamente',
+            'data' => $articulo->fresh()->load('medidas'),
         ]);
     }
 }

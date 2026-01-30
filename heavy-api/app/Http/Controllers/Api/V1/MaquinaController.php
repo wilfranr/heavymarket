@@ -11,6 +11,7 @@ use App\Http\Resources\MaquinaResource;
 use App\Models\Maquina;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Máquinas
@@ -78,7 +79,17 @@ class MaquinaController extends Controller
      */
     public function store(StoreMaquinaRequest $request): JsonResponse
     {
-        $maquina = Maquina::create($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('maquinas', 'public');
+        }
+
+        if ($request->hasFile('fotoId')) {
+            $data['fotoId'] = $request->file('fotoId')->store('maquinas/ids', 'public');
+        }
+
+        $maquina = Maquina::create($data);
 
         return response()->json([
             'message' => 'Máquina creada exitosamente',
@@ -103,7 +114,24 @@ class MaquinaController extends Controller
      */
     public function update(UpdateMaquinaRequest $request, Maquina $maquina): JsonResponse
     {
-        $maquina->update($request->validated());
+        $data = $request->validated();
+
+        if ($request->hasFile('foto')) {
+            // Eliminar foto anterior si existe
+            if ($maquina->foto) {
+                Storage::disk('public')->delete($maquina->foto);
+            }
+            $data['foto'] = $request->file('foto')->store('maquinas', 'public');
+        }
+
+        if ($request->hasFile('fotoId')) {
+             if ($maquina->fotoId) {
+                Storage::disk('public')->delete($maquina->fotoId);
+            }
+            $data['fotoId'] = $request->file('fotoId')->store('maquinas/ids', 'public');
+        }
+
+        $maquina->update($data);
 
         return response()->json([
             'message' => 'Máquina actualizada exitosamente',
@@ -116,6 +144,13 @@ class MaquinaController extends Controller
      */
     public function destroy(Maquina $maquina): JsonResponse
     {
+        if ($maquina->foto) {
+             Storage::disk('public')->delete($maquina->foto);
+        }
+        if ($maquina->fotoId) {
+             Storage::disk('public')->delete($maquina->fotoId);
+        }
+
         $maquina->delete();
 
         return response()->json([

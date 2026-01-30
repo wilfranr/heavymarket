@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fabricante extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
     protected $table = 'fabricantes';
 
     protected $fillable = [
@@ -18,6 +18,11 @@ class Fabricante extends Model
         'descripcion',
         'logo'
 
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'descripcion' => 'sentence',
     ];
 
     public function getLogoAttribute($value): ?string

@@ -30,7 +30,7 @@ class ReferenciaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Referencia::query()->with(['marca']);
+        $query = Referencia::query()->with(['marca', 'articulos']);
 
         // Búsqueda en referencia o comentario
         if ($request->filled('search')) {

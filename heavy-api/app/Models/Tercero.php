@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Model;
 use App\Models\City;
 use App\Models\Country;
@@ -57,6 +58,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  */
 class Tercero extends Model
 {
+    use HasFactory, NormalizesResources;
     /**
      * Los atributos que son asignables masivamente.
      * 
@@ -83,6 +85,13 @@ class Tercero extends Model
         'country_id',                 // ID del país del tercero
         'state_id',                   // ID del estado/provincia del tercero
         'city_id',                    // ID de la ciudad del tercero
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'direccion' => 'title',
+        'tipo_documento' => 'code',
+        'numero_documento' => 'code',
     ];
 
     /**

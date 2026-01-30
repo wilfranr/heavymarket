@@ -39,7 +39,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Empresa extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     /**
      * Los atributos que son asignables masivamente.
@@ -63,6 +63,14 @@ class Empresa extends Model
         'siglas',        // Siglas de la empresa
         'flete',         // Costo de flete por kg
         'trm',           // Tasa de cambio USD a COP
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'direccion' => 'title',
+        'representante' => 'title',
+        'siglas' => 'code',
+        'nit' => 'code',
     ];
 
     /**

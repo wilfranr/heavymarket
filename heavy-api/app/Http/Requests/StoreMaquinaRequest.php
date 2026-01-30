@@ -32,8 +32,8 @@ class StoreMaquinaRequest extends FormRequest
             'fabricante_id' => ['required', 'integer', 'exists:fabricantes,id'],
             'serie' => ['nullable', 'string', 'max:255'],
             'arreglo' => ['nullable', 'string', 'max:255'],
-            'foto' => ['nullable', 'string', 'max:255'],
-            'fotoId' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
+            'fotoId' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
         ];
     }
 
@@ -53,8 +53,10 @@ class StoreMaquinaRequest extends FormRequest
             'fabricante_id.exists' => 'El fabricante seleccionado no existe',
             'serie.max' => 'La serie no puede exceder 255 caracteres',
             'arreglo.max' => 'El arreglo no puede exceder 255 caracteres',
-            'foto.max' => 'La ruta de la foto no puede exceder 255 caracteres',
-            'fotoId.max' => 'La ruta de la foto ID no puede exceder 255 caracteres',
+            'foto.max' => 'La foto no puede exceder 10MB',
+            'foto.image' => 'El archivo debe ser una imagen',
+            'fotoId.max' => 'La foto ID no puede exceder 10MB',
+            'fotoId.image' => 'El archivo fotoId debe ser una imagen',
         ];
     }
 }

@@ -23,10 +23,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Categoria extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'nombre',
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
     ];
 
     /**

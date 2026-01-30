@@ -10,13 +10,18 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Sistema extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
     use SoftDeletes;
     
     protected $fillable = [
         'nombre',
         'descripcion',
         'imagen',
+    ];
+
+    protected $normalizableAttributes = [
+        'nombre' => 'title',
+        'descripcion' => 'sentence',
     ];
 
     public function getImagenAttribute($value): ?string

@@ -7,6 +7,7 @@ export interface Referencia {
     id: number;
     referencia: string;
     marca_id: number | null;
+    categoria_id: number | null;
     comentario: string | null;
     created_at: string;
     updated_at: string;
@@ -27,6 +28,7 @@ export interface Referencia {
 export interface CreateReferenciaDto {
     referencia: string;
     marca_id?: number;
+    categoria_id?: number;
     comentario?: string;
 }
 
@@ -36,5 +38,6 @@ export interface CreateReferenciaDto {
 export interface UpdateReferenciaDto {
     referencia?: string;
     marca_id?: number;
+    categoria_id?: number;
     comentario?: string;
 }

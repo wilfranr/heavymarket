@@ -9,6 +9,7 @@ use App\Http\Requests\{StoreTerceroRequest, UpdateTerceroRequest};
 use App\Http\Resources\TerceroResource;
 use App\Models\Tercero;
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Terceros
@@ -28,32 +29,34 @@ class TerceroController extends Controller
         $query = Tercero::query();
 
         // Filtro por tipo de tercero
-        if ($request->filled('tipo_tercero')) {
-            $query->where('tipo_tercero', $request->input('tipo_tercero'));
+        if ($request->filled('tipo')) {
+             $query->where('tipo', $request->input('tipo'));
         }
-
-        // Filtro por clientes
+        
+        // Legacy or specific filters mapping
         if ($request->filled('es_cliente')) {
-            $query->where('es_cliente', (bool) $request->input('es_cliente'));
+             if ($request->input('es_cliente')) {
+                 $query->whereIn('tipo', ['Cliente', 'Ambos']);
+             }
         }
-
-        // Filtro por proveedores
         if ($request->filled('es_proveedor')) {
-            $query->where('es_proveedor', (bool) $request->input('es_proveedor'));
+             if ($request->input('es_proveedor')) {
+                 $query->whereIn('tipo', ['Proveedor', 'Ambos']);
+             }
         }
 
         // Búsqueda por nombre o documento
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
-                $q->where('razon_social', 'like', "%{$search}%")
-                    ->orWhere('nombre_comercial', 'like', "%{$search}%")
-                    ->orWhere('documento', 'like', "%{$search}%");
+                $q->where('nombre', 'like', "%{$search}%")
+                    ->orWhere('numero_documento', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
         // Ordenamiento
-        $sortBy = $request->input('sort_by', 'razon_social');
+        $sortBy = $request->input('sort_by', 'nombre');
         $sortOrder = $request->input('sort_order', 'asc');
         $query->orderBy($sortBy, $sortOrder);
 
@@ -81,14 +84,40 @@ class TerceroController extends Controller
     public function store(StoreTerceroRequest $request): JsonResponse
     {
         try {
-            $tercero = Tercero::create($request->validated());
+            $data = $request->validated();
+            
+            // Handle Files
+            $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+            foreach ($fileFields as $field) {
+                if ($request->hasFile($field)) {
+                    $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
+                }
+            }
+
+            $tercero = Tercero::create($data);
+
+            // Handle Relationships
+            if ($request->filled('maquina_id')) {
+                // Assuming ManyToMany or OneToMany? Model says belongsToMany maquinas.
+                // If it's single selection in frontend, sync array.
+                $tercero->maquinas()->sync([$request->input('maquina_id')]);
+            }
+            
+            if ($request->filled('fabricante_id')) {
+                $tercero->fabricantes()->sync($request->input('fabricante_id'));
+            }
+            
+            if ($request->filled('sistema_id')) {
+                $tercero->sistemas()->sync($request->input('sistema_id'));
+            }
 
             return response()->json([
-                'data' => new TerceroResource($tercero),
+                'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas'])),
                 'message' => 'Tercero creado exitosamente',
             ], 201);
 
         } catch (\Exception $e) {
+            \Log::error('Error creating tercero: ' . $e->getMessage());
             return response()->json([
                 'message' => 'Error al crear el tercero',
                 'error' => $e->getMessage(),
@@ -104,7 +133,7 @@ class TerceroController extends Controller
      */
     public function show(Tercero $tercero): JsonResponse
     {
-        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas']);
+        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas', 'maquinas']);
 
         return response()->json([
             'data' => new TerceroResource($tercero),
@@ -121,7 +150,32 @@ class TerceroController extends Controller
     public function update(UpdateTerceroRequest $request, Tercero $tercero): JsonResponse
     {
         try {
-            $tercero->update($request->validated());
+            $data = $request->validated();
+            
+            // Handle Files
+            $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+            foreach ($fileFields as $field) {
+                if ($request->hasFile($field)) {
+                    // Delete old file if exists
+                    if ($tercero->{$field}) {
+                         Storage::disk('public')->delete($tercero->{$field});
+                    }
+                    $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
+                }
+            }
+
+            $tercero->update($data);
+
+             // Handle Relationships if passed (optional update logic)
+            if ($request->has('maquina_id')) { // Check existence key to allow unselecting
+                 $tercero->maquinas()->sync($request->input('maquina_id') ? [$request->input('maquina_id')] : []);
+            }
+            if ($request->has('fabricante_id')) {
+                 $tercero->fabricantes()->sync($request->input('fabricante_id'));
+            }
+            if ($request->has('sistema_id')) {
+                 $tercero->sistemas()->sync($request->input('sistema_id'));
+            }
 
             return response()->json([
                 'data' => new TerceroResource($tercero),
@@ -145,6 +199,14 @@ class TerceroController extends Controller
     public function destroy(Tercero $tercero): JsonResponse
     {
         try {
+            // Delete files
+            $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+             foreach ($fileFields as $field) {
+                if ($tercero->{$field}) {
+                     Storage::disk('public')->delete($tercero->{$field});
+                }
+            }
+            
             $tercero->delete();
 
             return response()->json([

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Maquina extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'tipo', // 'tipo' is a foreign key to the 'listas' table
@@ -20,6 +20,15 @@ class Maquina extends Model
         'arreglo',
         'foto',
         'fotoId'
+    ];
+
+    /**
+     * Attributes to be automatically normalized.
+     */
+    protected $normalizableAttributes = [
+        'modelo' => 'title',
+        'serie' => 'code',
+        'arreglo' => 'sentence',
     ];
 
     public function terceros(): BelongsToMany

@@ -47,7 +47,7 @@ use App\Models\OrdenCompraReferencia;
  */
 class OrdenCompra extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     protected $table = 'orden_compras';
 
@@ -71,6 +71,13 @@ class OrdenCompra extends Model
         'valor_descuento',
         'guia',
         'color',
+    ];
+
+    protected $normalizableAttributes = [
+        'observaciones' => 'sentence',
+        'direccion' => 'title',
+        'guia' => 'code',
+        'color' => 'title',
     ];
 
     protected $casts = [

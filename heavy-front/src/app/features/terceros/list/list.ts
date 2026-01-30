@@ -16,6 +16,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
 import { selectAllTerceros, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
+import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 
 /**
  * Componente de lista de terceros
@@ -24,7 +25,18 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
 @Component({
     selector: 'app-terceros-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule],
+    imports: [
+        CommonModule,
+        RouterModule,
+        TableModule,
+        ButtonModule,
+        CardModule,
+        InputTextModule,
+        TagModule,
+        ToastModule,
+        ConfirmDialogModule,
+        TerceroCreateModalComponent
+    ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
     styleUrl: './list.scss'
@@ -33,31 +45,53 @@ export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
 
     private readonly store = inject(Store);
-    private readonly router = inject(Router);
+    // Router no longer needed for editing/viewing but kept if needed for other navs or remove
+    // private readonly router = inject(Router); 
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
     terceros$!: Observable<Tercero[]>;
     loading$!: Observable<boolean>;
 
+    displayCreateTerceroDialog = false;
+    selectedTercero: Tercero | null = null;
+    isViewMode = false;
+
     ngOnInit(): void {
-        this.store.dispatch(loadTerceros({}));
+        this.loadTerceros();
         this.terceros$ = this.store.select(selectAllTerceros);
         this.loading$ = this.store.select(selectTercerosLoading);
     }
 
-    /**
-     * Navega al detalle del tercero
-     */
-    verDetalle(tercero: Tercero): void {
-        this.router.navigate(['/app/terceros', tercero.id]);
+    loadTerceros(): void {
+        this.store.dispatch(loadTerceros({}));
     }
 
     /**
-     * Navega al formulario de edición
+     * Abre el modal en modo visualización
      */
-    editarTercero(tercero: Tercero): void {
-        this.router.navigate(['/app/terceros', tercero.id, 'edit']);
+    viewDetail(tercero: Tercero): void {
+        this.selectedTercero = tercero;
+        this.isViewMode = true;
+        this.displayCreateTerceroDialog = true;
+    }
+
+    /**
+     * Abre el modal en modo edición
+     */
+    editTercero(tercero: Tercero): void {
+        this.selectedTercero = tercero;
+        this.isViewMode = false;
+        this.displayCreateTerceroDialog = true;
+    }
+
+    /**
+     * Abre el modal de creación
+     */
+    crearTercero(): void {
+        this.selectedTercero = null;
+        this.isViewMode = false;
+        this.displayCreateTerceroDialog = true;
     }
 
     /**
@@ -82,10 +116,11 @@ export class ListComponent implements OnInit {
     }
 
     /**
-     * Navega al formulario de creación
+     * Maneja la creación/edición exitosa
      */
-    crearTercero(): void {
-        this.router.navigate(['/app/terceros/create']);
+    onTerceroCreated(tercero: any): void {
+        this.displayCreateTerceroDialog = false;
+        this.loadTerceros();
     }
 
     /**
@@ -93,9 +128,12 @@ export class ListComponent implements OnInit {
      */
     getTipoSeverity(tipo: string): 'success' | 'info' | 'warn' {
         const severityMap: Record<string, 'success' | 'info' | 'warn'> = {
-            cliente: 'success',
-            proveedor: 'info',
-            ambos: 'warn'
+            'Cliente': 'success',
+            'Proveedor': 'info',
+            'Ambos': 'warn',
+            'cliente': 'success',
+            'proveedor': 'info',
+            'ambos': 'warn'
         };
         return severityMap[tipo] || 'info';
     }
@@ -104,6 +142,6 @@ export class ListComponent implements OnInit {
      * Obtiene el color del tag según el estado
      */
     getEstadoSeverity(estado: string): 'success' | 'danger' {
-        return estado === 'activo' ? 'success' : 'danger';
+        return (estado === 'activo' || estado === 'Activo') ? 'success' : 'danger';
     }
 }

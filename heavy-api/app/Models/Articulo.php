@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Articulo extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\NormalizesResources;
 
     protected $fillable = [
         'definicion',
@@ -18,6 +18,12 @@ class Articulo extends Model
         'peso',
         'fotoDescriptiva',
         'foto_medida',
+    ];
+
+    protected $normalizableAttributes = [
+        'definicion' => 'title',
+        'comentarios' => 'sentence',
+        'descripcionEspecifica' => 'sentence',
     ];
 
     public function getFotoDescriptivaAttribute($value): ?string

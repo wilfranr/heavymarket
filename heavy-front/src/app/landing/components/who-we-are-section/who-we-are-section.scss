@@ -1,0 +1,122 @@
+.who-we-are-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 80px 5% 20px 5%;
+    background: #FFFFFF;
+    width: 100%;
+    box-sizing: border-box;
+
+    @media (max-width: 1024px) {
+        padding: 40px 20px 0 20px;
+    }
+}
+
+.content-container {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    max-width: 1312px;
+    width: 100%;
+    justify-content: space-between;
+
+    @media (max-width: 1024px) {
+        flex-direction: column;
+        gap: 40px;
+    }
+}
+
+.text-column {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 32px;
+    flex: 1;
+    // max-width prop removed to allow full spacing fill
+    min-width: 300px;
+    width: 100%;
+}
+
+.section-title {
+    font-family: 'Figtree', sans-serif;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 48px;
+    line-height: 56px;
+    letter-spacing: -0.016em;
+    color: #0C0E0F;
+    margin: 0;
+
+    @media (max-width: 768px) {
+        font-size: 36px;
+        line-height: 44px;
+    }
+}
+
+.text-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.text-content p {
+    font-family: 'Figtree', sans-serif;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 18px;
+    line-height: 24px;
+    letter-spacing: -0.008em;
+    color: #000000;
+    margin: 0;
+}
+
+.actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+}
+
+.btn-primary {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+    width: 117px;
+    height: 40px;
+    background: #FDB831;
+    border-radius: 64px;
+    border: none;
+    cursor: pointer;
+
+    font-family: 'Figtree', sans-serif;
+    font-style: normal;
+    font-weight: 600;
+    font-size: 14px;
+    line-height: 20px;
+    letter-spacing: -0.006em;
+    color: #171D21;
+
+    transition: background-color 0.3s ease;
+
+    &:hover {
+        background-color: #e0a32b;
+    }
+}
+
+.image-column {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.feature-image {
+    width: 100%;
+    max-width: 612px;
+    height: auto;
+    object-fit: contain;
+}
