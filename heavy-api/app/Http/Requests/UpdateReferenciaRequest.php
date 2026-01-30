@@ -37,6 +37,7 @@ class UpdateReferenciaRequest extends FormRequest
                 Rule::unique('referencias', 'referencia')->ignore($referenciaId),
             ],
             'marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
+            'articulo_id' => ['nullable', 'integer', 'exists:articulos,id'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];
     }

@@ -64,16 +64,21 @@
                         </span>
                     </td>
                     <td>
-                        @if (referencia.articulos && referencia.articulos.length > 0) {
+                        @if (referencia.articulo) {
+                        <div class="flex flex-col gap-1">
+                            <a [routerLink]="['/app/articulos', referencia.articulo.id]"
+                                class="text-sm text-blue-600 hover:underline font-medium">
+                                {{ referencia.articulo.definicion }}
+                            </a>
+                            <span class="text-xs text-gray-500">{{ referencia.articulo.descripcionEspecifica |
+                                slice:0:50 }}</span>
+                        </div>
+                        } @else if (referencia.articulos && referencia.articulos.length > 0) {
                         <div class="flex flex-col gap-1">
                             @for (art of referencia.articulos.slice(0, 2); track art.id) {
                             <a [routerLink]="['/app/articulos', art.id]" class="text-xs text-blue-600 hover:underline">
-                                {{ art.definicion }} - {{ art.descripcionEspecifica | slice:0:30 }}{{
-                                art.descripcionEspecifica.length > 30 ? '...' : '' }}
+                                {{ art.definicion }} - {{ art.descripcionEspecifica | slice:0:30 }}...
                             </a>
-                            }
-                            @if (referencia.articulos.length > 2) {
-                            <span class="text-xs text-gray-500">+ {{ referencia.articulos.length - 2 }} más</span>
                             }
                         </div>
                         } @else {

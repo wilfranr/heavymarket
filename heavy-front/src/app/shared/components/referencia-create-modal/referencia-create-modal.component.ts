@@ -37,6 +37,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
 
     @Input() visible: boolean = false;
     @Input() title: string = 'Crear Nueva Referencia';
+    @Input() articuloId?: number; // Artículo al que se asociará automáticamente
 
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onReferenciaCreated = new EventEmitter<any>();
@@ -90,7 +91,10 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
         }
 
         this.loading = true;
-        const data: CreateReferenciaDto = this.referenciaForm.value;
+        const data: CreateReferenciaDto = {
+            ...this.referenciaForm.value,
+            articulo_id: this.articuloId
+        };
 
         this.referenciaService.create(data).subscribe({
             next: (response) => {

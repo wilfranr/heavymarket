@@ -15,10 +15,10 @@ import { DividerModule } from 'primeng/divider';
 
 import { createReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
-import { ListaService } from '../../../core/services/lista.service';
-import { Lista } from '../../../core/models/lista.model';
-import { CategoriaService } from '../../../core/services/categoria.service';
-import { Categoria } from '../../../core/models/categoria.model';
+import { FabricanteService } from '../../../core/services/fabricante.service';
+import { Fabricante } from '../../../core/models/fabricante.model';
+import { ArticuloService } from '../../../core/services/articulo.service';
+import { Articulo } from '../../../core/models/articulo.model';
 
 /**
  * Componente de creación de referencia
@@ -35,30 +35,30 @@ export class CreateComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
-    private readonly listaService = inject(ListaService);
-    private readonly categoriaService = inject(CategoriaService);
+    private readonly fabricanteService = inject(FabricanteService);
+    private readonly articuloService = inject(ArticuloService);
 
     referenciaForm!: FormGroup;
     loading = false;
-    marcas: Lista[] = [];
-    categorias: Categoria[] = [];
+    marcas: Fabricante[] = [];
+    articulos: Articulo[] = [];
 
     ngOnInit(): void {
         this.initForm();
         this.cargarMarcas();
-        this.cargarCategorias();
+        this.cargarArticulos();
     }
 
     /**
-     * Carga las categorias disponibles
+     * Carga los artículos disponibles
      */
-    cargarCategorias(): void {
-        this.categoriaService.getAll().subscribe({
-            next: (response: any) => {
-                this.categorias = response.data;
+    cargarArticulos(): void {
+        this.articuloService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.articulos = response.data;
             },
             error: (error) => {
-                console.error('Error al cargar categorias:', error);
+                console.error('Error al cargar artículos:', error);
             }
         });
     }
@@ -67,9 +67,9 @@ export class CreateComponent implements OnInit {
      * Carga las marcas disponibles
      */
     cargarMarcas(): void {
-        this.listaService.getByTipo('Marca').subscribe({
-            next: (marcas) => {
-                this.marcas = marcas;
+        this.fabricanteService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.marcas = response.data;
             },
             error: (error) => {
                 console.error('Error al cargar marcas:', error);
@@ -84,7 +84,7 @@ export class CreateComponent implements OnInit {
         this.referenciaForm = this.fb.group({
             referencia: ['', [Validators.required, Validators.maxLength(255)]],
             marca_id: [null],
-            categoria_id: [null],
+            articulo_id: [null],
             comentario: ['', [Validators.maxLength(500)]]
         });
     }
@@ -109,7 +109,7 @@ export class CreateComponent implements OnInit {
         const data: CreateReferenciaDto = {
             referencia: formValue.referencia,
             marca_id: formValue.marca_id || undefined,
-            categoria_id: formValue.categoria_id || undefined,
+            articulo_id: formValue.articulo_id || undefined,
             comentario: formValue.comentario || undefined
         };
 

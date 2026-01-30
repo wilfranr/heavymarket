@@ -17,10 +17,10 @@ import { DividerModule } from 'primeng/divider';
 import { loadReferenciaById, updateReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { selectReferenciaById } from '../../../store/referencias/selectors/referencias.selectors';
 import { UpdateReferenciaDto } from '../../../core/models/referencia.model';
-import { ListaService } from '../../../core/services/lista.service';
-import { Lista } from '../../../core/models/lista.model';
-import { CategoriaService } from '../../../core/services/categoria.service';
-import { Categoria } from '../../../core/models/categoria.model';
+import { FabricanteService } from '../../../core/services/fabricante.service';
+import { Fabricante } from '../../../core/models/fabricante.model';
+import { ArticuloService } from '../../../core/services/articulo.service';
+import { Articulo } from '../../../core/models/articulo.model';
 
 /**
  * Componente de edición de referencia
@@ -38,19 +38,19 @@ export class EditComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
-    private readonly listaService = inject(ListaService);
-    private readonly categoriaService = inject(CategoriaService);
+    private readonly fabricanteService = inject(FabricanteService);
+    private readonly articuloService = inject(ArticuloService);
 
     referenciaForm!: FormGroup;
     referencia$!: Observable<any>;
     referenciaId!: number;
     loading = false;
-    marcas: Lista[] = [];
-    categorias: Categoria[] = [];
+    marcas: Fabricante[] = [];
+    articulos: Articulo[] = [];
 
     ngOnInit(): void {
         this.cargarMarcas();
-        this.cargarCategorias();
+        this.cargarArticulos();
 
         this.route.params.subscribe((params) => {
             this.referenciaId = +params['id'];
@@ -66,15 +66,23 @@ export class EditComponent implements OnInit {
     }
 
     /**
-     * Carga las categorias disponibles
+     * Carga los artículos disponibles
      */
-    cargarCategorias(): void {
-        this.categoriaService.getAll().subscribe({
-            next: (response: any) => {
-                this.categorias = response.data;
+    cargarArticulos(): void {
+        this.articuloService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                // Preservar artículos que ya puedan estar en la lista (inyectados por initForm)
+                const alreadyInList = [...this.articulos];
+                this.articulos = response.data;
+
+                alreadyInList.forEach((art) => {
+                    if (!this.articulos.some((a) => a.id === art.id)) {
+                        this.articulos = [art, ...this.articulos];
+                    }
+                });
             },
             error: (error) => {
-                console.error('Error al cargar categorias:', error);
+                console.error('Error al cargar artículos:', error);
             }
         });
     }
@@ -83,9 +91,9 @@ export class EditComponent implements OnInit {
      * Carga las marcas disponibles
      */
     cargarMarcas(): void {
-        this.listaService.getByTipo('Marca').subscribe({
-            next: (marcas) => {
-                this.marcas = marcas;
+        this.fabricanteService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.marcas = response.data;
             },
             error: (error) => {
                 console.error('Error al cargar marcas:', error);
@@ -97,12 +105,20 @@ export class EditComponent implements OnInit {
      * Inicializa el formulario con los datos de la referencia
      */
     private initForm(referencia: any): void {
+        const articuloId = referencia.articulo_id ? Number(referencia.articulo_id) : null;
+        const marcaId = referencia.marca_id ? Number(referencia.marca_id) : null;
+
         this.referenciaForm = this.fb.group({
             referencia: [referencia.referencia, [Validators.required, Validators.maxLength(255)]],
-            marca_id: [referencia.marca_id || null],
-            categoria_id: [referencia.categoria_id || null],
+            marca_id: [marcaId],
+            articulo_id: [articuloId],
             comentario: [referencia.comentario || '', [Validators.maxLength(500)]]
         });
+
+        // Asegurar que el artículo asociado esté en la lista de opciones para que p-select lo encuentre
+        if (referencia.articulo && !this.articulos.some((a) => a.id === referencia.articulo.id)) {
+            this.articulos = [referencia.articulo, ...this.articulos];
+        }
     }
 
     /**
@@ -125,7 +141,7 @@ export class EditComponent implements OnInit {
         const data: UpdateReferenciaDto = {
             referencia: formValue.referencia,
             marca_id: formValue.marca_id || undefined,
-            categoria_id: formValue.categoria_id || undefined,
+            articulo_id: formValue.articulo_id || undefined,
             comentario: formValue.comentario || undefined
         };
 

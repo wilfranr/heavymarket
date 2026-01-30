@@ -27,14 +27,15 @@ class ReferenciaResource extends JsonResource
             'id' => $this->id,
             'referencia' => $this->referencia,
             'marca_id' => $this->marca_id,
+            'articulo_id' => $this->articulo_id,
             'comentario' => $this->comentario,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
+            'articulo' => new ArticuloResource($this->whenLoaded('articulo')),
             'marca' => $this->whenLoaded('marca'),
             'articulos' => $this->whenLoaded('articulos'),
-            'categoria' => $this->whenLoaded('categoria'),
         ];
     }
 }

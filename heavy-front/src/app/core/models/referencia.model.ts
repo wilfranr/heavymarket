@@ -6,20 +6,20 @@
 export interface Referencia {
     id: number;
     referencia: string;
+    articulo_id: number | null;
     marca_id: number | null;
-    categoria_id: number | null;
     comentario: string | null;
     created_at: string;
     updated_at: string;
 
     // Relaciones opcionales
+    articulo?: any;
     marca?: {
         id: number;
         nombre: string;
         tipo: string;
     };
     articulos?: any[];
-    categoria?: any;
 }
 
 /**
@@ -27,8 +27,8 @@ export interface Referencia {
  */
 export interface CreateReferenciaDto {
     referencia: string;
+    articulo_id?: number;
     marca_id?: number;
-    categoria_id?: number;
     comentario?: string;
 }
 
@@ -37,7 +37,7 @@ export interface CreateReferenciaDto {
  */
 export interface UpdateReferenciaDto {
     referencia?: string;
+    articulo_id?: number;
     marca_id?: number;
-    categoria_id?: number;
     comentario?: string;
 }

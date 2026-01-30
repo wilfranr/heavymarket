@@ -30,7 +30,7 @@ class ReferenciaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Referencia::query()->with(['marca', 'articulos']);
+        $query = Referencia::query()->with(['articulo', 'marca', 'articulos']);
 
         // Búsqueda en referencia o comentario
         if ($request->filled('search')) {
@@ -75,7 +75,7 @@ class ReferenciaController extends Controller
 
         return response()->json([
             'message' => 'Referencia creada exitosamente',
-            'data' => new ReferenciaResource($referencia->load('marca')),
+            'data' => new ReferenciaResource($referencia->load(['marca', 'articulo'])),
         ], 201);
     }
 
@@ -84,7 +84,7 @@ class ReferenciaController extends Controller
      */
     public function show(Referencia $referencia): JsonResponse
     {
-        $referencia->load(['marca', 'articulos', 'categoria']);
+        $referencia->load(['marca', 'articulos', 'articulo']);
 
         return response()->json([
             'data' => new ReferenciaResource($referencia),
@@ -100,7 +100,7 @@ class ReferenciaController extends Controller
 
         return response()->json([
             'message' => 'Referencia actualizada exitosamente',
-            'data' => new ReferenciaResource($referencia->fresh()->load('marca')),
+            'data' => new ReferenciaResource($referencia->fresh()->load(['marca', 'articulo'])),
         ]);
     }
 

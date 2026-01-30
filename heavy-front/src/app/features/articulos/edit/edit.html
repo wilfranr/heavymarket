@@ -218,6 +218,6 @@
 </app-lista-create-modal>
 
 <!-- Modal para crear nueva Referencia sobre la marcha -->
-<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia"
+<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [articuloId]="articuloId"
     (onReferenciaCreated)="onReferenciaCreada($event)">
 </app-referencia-create-modal>

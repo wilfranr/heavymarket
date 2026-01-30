@@ -41,6 +41,7 @@ class Referencia extends Model
     protected $fillable = [
         'id',
         'referencia',    // Código o número de referencia del artículo
+        'articulo_id',   // ID del artículo asociado
         'marca_id',      // ID de la marca asociada a la referencia
         'comentario',    // Comentarios adicionales sobre la referencia
     ];
@@ -58,6 +59,16 @@ class Referencia extends Model
     public function articuloReferencia()
     {
         return $this->hasMany(ArticuloReferencia::class, 'referencia_id');
+    }
+
+    /**
+     * Relación con el artículo principal. (Muchas referencias -> 1 Artículo)
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function articulo()
+    {
+        return $this->belongsTo(Articulo::class, 'articulo_id');
     }
 
     /**
