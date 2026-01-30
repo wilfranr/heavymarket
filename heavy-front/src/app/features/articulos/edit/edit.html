@@ -1,189 +1,311 @@
 <p-toast />
 
-<div class="p-6 bg-[#09090b] min-h-screen text-gray-100">
+<div class="p-8 bg-[#09090b] min-h-screen text-gray-100 pb-28">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-3xl font-bold tracking-tight">Editar Articulo</h1>
-        <div class="flex gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
-            </p-button>
+    <div class="flex justify-between items-center mb-8 bg-[#121214] p-4 rounded-xl border border-white/5 shadow-xl">
+        <div class="flex items-center gap-4">
+            <div class="w-10 h-10 rounded-lg bg-[#fdb831] flex items-center justify-center text-black">
+                <i class="pi pi-box text-xl"></i>
+            </div>
+            <h1 class="text-2xl font-bold tracking-tight">Editar Artículo</h1>
         </div>
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
+            class="text-gray-400 hover:text-white transition-all"></p-button>
     </div>
 
     @if (articuloActual) {
-    <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
-        <!-- Top row: Main Fields -->
-        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
-            <!-- Tipo -->
-            <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-gray-400">Tipo<span class="text-red-500">*</span></label>
-                <p-inputgroup>
-                    <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre" optionValue="nombre"
-                        placeholder="Seleccione un tipo" [showClear]="true" [filter]="true" filterBy="nombre"
-                        (onFilter)="onFilter($event)" class="w-full h-11 bg-transparent border-gray-800">
-                        <ng-template let-tipo pTemplate="item">
-                            <div class="flex items-center gap-3">
-                                <img [src]="tipo.foto" appFallbackImage
-                                    class="w-8 h-8 object-cover rounded shadow-sm" />
-                                <div class="flex flex-col">
-                                    <span class="font-medium text-sm">{{ tipo.nombre }}</span>
-                                    <span class="text-xs text-gray-500 truncate max-w-[200px]">{{ tipo.definicion
-                                        }}</span>
-                                </div>
-                            </div>
-                        </ng-template>
-                    </p-select>
-                    <p-inputgroup-addon class="bg-transparent border-gray-800">
-                        <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
-                            (onClick)="abrirCrearTipo()"></p-button>
-                    </p-inputgroup-addon>
-                </p-inputgroup>
-            </div>
+    <form [formGroup]="articuloForm" class="grid grid-cols-12 gap-8">
 
-            <!-- Descripción -->
-            <div class="flex flex-col gap-2 lg:col-span-1">
-                <label class="text-sm font-medium text-gray-400">Descripción</label>
-                <input pInputText formControlName="descripcionEspecifica"
-                    placeholder="Descripción específica de la Pieza Estandar"
-                    class="w-full h-11 bg-transparent border-gray-800" />
-            </div>
-
-            <!-- Peso -->
-            <div class="flex flex-col gap-2">
-                <div class="flex justify-between items-center">
-                    <label class="text-sm font-medium text-gray-400">Peso (Kg)</label>
-                    <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline"
-                        (click)="abrirConversor()">
-                        <i class="pi pi-calculator text-xs"></i>
-                        <span class="text-xs font-semibold">Conversor</span>
+        <!-- COLUMNA IZQUIERDA: Información General -->
+        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
+            <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl">
+                <div class="flex items-center gap-3 mb-8">
+                    <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                        <i class="pi pi-info-circle text-sm"></i>
                     </div>
+                    <h3 class="text-lg font-bold">Información General</h3>
                 </div>
-                <p-inputgroup>
-                    <input pInputText type="number" formControlName="peso" placeholder="Peso del articulo en Kilogramos"
-                        class="h-11 bg-transparent border-gray-800" />
-                    <p-inputgroup-addon class="bg-transparent border-gray-800 text-gray-500 font-medium">
-                        Kg
-                    </p-inputgroup-addon>
-                </p-inputgroup>
-            </div>
 
-            <!-- Comentarios -->
-            <div class="flex flex-col gap-2">
-                <label class="text-sm font-medium text-gray-400">Comentarios</label>
-                <textarea pTextarea formControlName="comentarios" placeholder="Comentarios del articulo" [rows]="1"
-                    class="w-full bg-transparent border-gray-800 resize-none h-11 overflow-hidden min-h-[2.75rem]">
-                </textarea>
-            </div>
-        </div>
-
-        <!-- Referencias Cruzadas Section -->
-        <div class="bg-[#18181b] border border-gray-800 rounded-xl p-6 flex flex-col gap-4">
-            <h3 class="text-lg font-bold">Referenicas Cruzadas</h3>
-
-            <div formArrayName="referenciasCruzadas" class="flex flex-col gap-4">
-                @for (ref of referenciasCruzadas.controls; track $index) {
-                <div [formGroupName]="$index"
-                    class="bg-[#09090b] border border-gray-800 rounded-lg p-6 relative group transition-all hover:border-[#fdb831]/30">
-                    <div
-                        class="absolute left-2 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-100 cursor-move">
-                        <i class="pi pi-sort-alt"></i>
-                    </div>
-
-                    <button type="button" (click)="eliminarReferencia($index)"
-                        class="absolute right-4 top-4 text-red-500/50 hover:text-red-500 transition-colors">
-                        <i class="pi pi-trash"></i>
-                    </button>
-
+                <div class="flex flex-col gap-6">
+                    <!-- Tipo -->
                     <div class="flex flex-col gap-2">
-                        <label class="text-sm font-medium text-gray-400">Referencia<span
+                        <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Tipo <span
                                 class="text-red-500">*</span></label>
                         <p-inputgroup>
-                            <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
-                                optionLabel="referencia" optionValue="id" placeholder="Seleccione una opción"
-                                [filter]="true" filterBy="referencia" (onFilter)="onFilterReferencias($event)"
-                                class="w-full h-11 bg-transparent border-gray-800">
-                                <ng-template let-item pTemplate="item">
-                                    <div class="flex flex-col">
-                                        <span class="font-bold">{{ item.referencia }}</span>
-                                        <span class="text-xs text-gray-500">{{ item.marca?.nombre }}</span>
+                            <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
+                                optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" [filter]="true"
+                                filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
+                                class="w-full h-12 bg-[#0c0c0e] border-white/5 rounded-xl">
+                                <ng-template let-tipo pTemplate="item">
+                                    <div class="flex items-center gap-3">
+                                        <img [src]="tipo.foto" appFallbackImage
+                                            class="w-8 h-8 object-cover rounded shadow-sm" />
+                                        <div class="flex flex-col">
+                                            <span class="font-medium text-sm">{{ tipo.nombre }}</span>
+                                            <span class="text-xs text-gray-500">{{ tipo.definicion }}</span>
+                                        </div>
                                     </div>
                                 </ng-template>
                             </p-select>
-                            <p-inputgroup-addon class="bg-transparent border-gray-800">
-                                <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
-                                    (onClick)="abrirCrearReferencia($index)"></p-button>
+                            <p-inputgroup-addon class="bg-[#0c0c0e] border-white/5 border-l-0 rounded-r-xl">
+                                <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                    (onClick)="abrirCrearTipo()"></p-button>
                             </p-inputgroup-addon>
                         </p-inputgroup>
                     </div>
-                </div>
-                }
-            </div>
 
-            <div class="flex justify-center mt-2">
-                <button type="button" (click)="agregarReferencia()"
-                    class="bg-[#18181b] border border-gray-800 hover:border-gray-700 px-6 py-2 rounded-full text-sm font-semibold transition-all">
-                    Añadir a
-                </button>
-            </div>
-        </div>
-
-        <!-- Photos & Scheme Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="flex flex-col gap-3">
-                <h4 class="text-sm font-bold text-gray-100">Foto de Referencia</h4>
-                <div (click)="triggerFileInput(fotoInput)" (drop)="onFileDropped($event, 'foto')"
-                    (dragover)="onDragOver($event)"
-                    class="bg-[#09090b] border-2 border-dashed border-gray-800 rounded-xl h-64 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 transition-all overflow-hidden relative">
-                    <input type="file" #fotoInput (change)="onFileSelected($event, 'foto')" accept="image/*"
-                        class="hidden" />
-                    <div class="flex flex-col items-center">
-                        @if (fotoPreview) {
-                        <img [src]="fotoPreview" class="h-full w-full object-contain absolute inset-0" />
-                        } @else if (articuloActual.fotoDescriptiva) {
-                        <img [src]="articuloActual.fotoDescriptiva" appFallbackImage
-                            class="h-40 w-auto object-contain mb-2 rounded shadow-lg" />
-                        <span class="text-xs text-gray-500 text-center px-4">Haz clic para cambiar la imagen</span>
-                        } @else {
-                        <p class="text-sm text-gray-400">Arrastra y suelta tus archivos o <span
-                                class="text-[#fdb831] font-semibold">Examina</span></p>
-                        }
+                    <!-- Descripción -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Descripción</label>
+                        <input pInputText formControlName="descripcionEspecifica" placeholder="Ej. 0.10"
+                            class="w-full h-12 bg-[#0c0c0e] border-white/5 rounded-xl px-4 focus:ring-1 focus:ring-[#fdb831]/50" />
                     </div>
-                </div>
-            </div>
 
-            <div class="flex flex-col gap-3">
-                <h4 class="text-sm font-bold text-gray-100">Plano Esquemático</h4>
-                <div (click)="triggerFileInput(planoInput)" (drop)="onFileDropped($event, 'plano')"
-                    (dragover)="onDragOver($event)"
-                    class="bg-[#09090b] border-2 border-dashed border-gray-800 rounded-xl h-64 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 transition-all overflow-hidden relative">
-                    <input type="file" #planoInput (change)="onFileSelected($event, 'plano')" accept="image/*"
-                        class="hidden" />
-                    <div class="flex flex-col items-center">
-                        @if (planoPreview) {
-                        <img [src]="planoPreview" class="h-full w-full object-contain absolute inset-0" />
-                        } @else if (articuloActual.foto_medida) {
-                        <img [src]="articuloActual.foto_medida" appFallbackImage
-                            class="h-40 w-auto object-contain mb-2 rounded shadow-lg" />
-                        <span class="text-xs text-gray-500 text-center px-4">Haz clic para cambiar el plano</span>
-                        } @else {
-                        <p class="text-sm text-gray-400">Arrastra y suelta tus archivos o <span
-                                class="text-[#fdb831] font-semibold">Examina</span></p>
-                        }
+                    <!-- Peso -->
+                    <div class="flex flex-col gap-2">
+                        <div class="flex justify-between items-center">
+                            <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Peso
+                                (Kg)</label>
+                            <div class="flex items-center gap-1.5 text-[#fdb831] cursor-pointer hover:opacity-80 transition-opacity"
+                                (click)="abrirConversor()">
+                                <i class="pi pi-sort-alt text-[10px]"></i>
+                                <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
+                            </div>
+                        </div>
+                        <p-inputgroup>
+                            <input pInputText type="number" formControlName="peso" placeholder="0,00"
+                                class="h-12 bg-[#0c0c0e] border-white/5 rounded-l-xl px-4" />
+                            <p-inputgroup-addon
+                                class="bg-[#0c0c0e] border-white/5 border-l-0 rounded-r-xl text-gray-500 text-sm font-medium pr-4">
+                                Kg
+                            </p-inputgroup-addon>
+                        </p-inputgroup>
+                    </div>
+
+                    <!-- Comentarios -->
+                    <div class="flex flex-col gap-2">
+                        <label
+                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Comentarios</label>
+                        <textarea pTextarea formControlName="comentarios" placeholder="Notas adicionales..." [rows]="4"
+                            class="w-full bg-[#0c0c0e] border-white/5 rounded-xl p-4 resize-none transition-all focus:ring-1 focus:ring-[#fdb831]/50">
+                        </textarea>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Form Actions -->
-        <div class="flex justify-end gap-3 mt-6">
-            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="cancelar()"></p-button>
-            <p-button label="Guardar Cambios" [loading]="loading" type="submit"
-                styleClass="bg-[#fdb831] border-none text-black font-bold px-8 py-3 rounded-lg"></p-button>
+        <!-- COLUMNA DERECHA: Referencias y Multimedia -->
+        <div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
+
+            <!-- Referencias Cruzadas -->
+            <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-8">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                            <i class="pi pi-sync text-sm"></i>
+                        </div>
+                        <h3 class="text-lg font-bold">Referencias Cruzadas</h3>
+                    </div>
+                    <div class="flex gap-2">
+                        <p-button label="Importar desde Excel" icon="pi pi-file-excel" [text]="true"
+                            styleClass="text-gray-400 hover:text-white text-xs font-semibold bg-white/5 px-4 py-2 rounded-lg"></p-button>
+                        <p-button label="Añadir Referencia" icon="pi pi-plus" (onClick)="agregarReferencia()"
+                            styleClass="bg-[#fdb831] border-none text-black text-xs font-bold px-4 py-2 rounded-lg hover:brightness-110 shadow-lg shadow-[#fdb831]/20"></p-button>
+                    </div>
+                </div>
+
+                <!-- Búsqueda / Filtro -->
+                <div class="mb-6">
+                    <div class="relative w-full max-w-sm">
+                        <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
+                        <input pInputText placeholder="Filtrar por Referencia o Marca..."
+                            [(ngModel)]="searchTermReferences" [ngModelOptions]="{standalone: true}"
+                            class="w-full h-10 bg-[#0c0c0e] border-white/5 rounded-lg pl-10 pr-4 text-sm focus:ring-1 focus:ring-[#fdb831]/30" />
+                    </div>
+                </div>
+
+                <!-- Tabla de Referencias -->
+                <div class="rounded-xl border border-white/5">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-[#0c0c0e]">
+                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
+                                    Referencia / Código</th>
+                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
+                                    Marca</th>
+                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
+                                    Comentario</th>
+                                <th
+                                    class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase text-center w-20">
+                                    Acción</th>
+                            </tr>
+                        </thead>
+                        <tbody formArrayName="referenciasCruzadas">
+                            @for (ref of referenciasCruzadas.controls; track $index) {
+                            @if (shouldShowReference(ref.value.referencia_id)) {
+                            <tr [formGroupName]="$index"
+                                class="border-t border-white/5 hover:bg-white/5 transition-colors group">
+                                <td class="px-4 py-3">
+                                    <p-inputgroup>
+                                        <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
+                                            optionLabel="referencia" optionValue="id" placeholder="Seleccione..."
+                                            [filter]="true" filterBy="referencia"
+                                            (onFilter)="onFilterReferencias($event)" appendTo="body"
+                                            class="w-full border-none bg-transparent h-10 text-sm focus:ring-0">
+                                            <ng-template let-item pTemplate="item">
+                                                <div class="flex flex-col">
+                                                    <span class="font-bold text-sm">{{ item.referencia }}</span>
+                                                    <span class="text-[10px] text-gray-500">{{ item.marca?.nombre
+                                                        }}</span>
+                                                </div>
+                                            </ng-template>
+                                        </p-select>
+                                        <p-inputgroup-addon
+                                            class="bg-transparent border-white/5 border-l-0 rounded-r-lg">
+                                            <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                                (onClick)="abrirCrearReferencia($index)"></p-button>
+                                        </p-inputgroup-addon>
+                                    </p-inputgroup>
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-400">
+                                    {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}
+                                </td>
+                                <td class="px-4 py-3 text-sm text-gray-500 italic">
+                                    {{ getReferenciaDetail(ref.value.referencia_id)?.comentario || 'Sin comentarios...'
+                                    }}
+                                </td>
+                                <td class="px-4 py-3 text-center">
+                                    <button type="button" (click)="eliminarReferencia($index)"
+                                        class="text-gray-500 hover:text-red-500 transition-colors p-2">
+                                        <i class="pi pi-trash text-sm"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            }
+                            }
+                            @if (referenciasCruzadas.length === 0) {
+                            <tr>
+                                <td colspan="4" class="px-4 py-12 text-center text-gray-600 italic text-sm">
+                                    No hay referencias cruzadas asociadas.
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-4 text-[10px] text-gray-600 italic text-center">
+                    Los cambios se guardan al confirmar la edición del artículo.
+                </p>
+            </div>
+
+            <!-- Multimedia: Foto y Plano -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Foto de Referencia -->
+                <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col gap-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                            <i class="pi pi-camera text-sm"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-gray-400 tracking-widest uppercase">Foto de Referencia</h3>
+                    </div>
+
+                    <div (click)="triggerFileInput(fotoInput)" (drop)="onFileDropped($event, 'foto')"
+                        (dragover)="onDragOver($event)"
+                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-2xl h-72 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative">
+                        <input type="file" #fotoInput (change)="onFileSelected($event, 'foto')" accept="image/*"
+                            class="hidden" />
+
+                        <div class="flex flex-col items-center p-4">
+                            @if (fotoPreview) {
+                            <img [src]="fotoPreview" class="max-h-64 max-w-full object-contain rounded-lg shadow-2xl" />
+                            <div
+                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span class="text-xs font-bold text-white uppercase tracking-wider">Cambiar
+                                    imagen</span>
+                            </div>
+                            } @else if (articuloActual.fotoDescriptiva) {
+                            <img [src]="articuloActual.fotoDescriptiva" appFallbackImage
+                                class="max-h-48 w-auto object-contain mb-4 rounded shadow-lg" />
+                            <span class="text-xs text-gray-500 group-hover:text-[#fdb831] transition-colors">Haz clic
+                                para cambiar la imagen</span>
+                            } @else {
+                            <div
+                                class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                <i class="pi pi-upload text-gray-600 group-hover:text-[#fdb831]"></i>
+                            </div>
+                            <p class="text-[11px] text-gray-500 text-center">
+                                Arrastra y suelta o <span class="text-[#fdb831] font-bold">Examina</span>
+                            </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Plano Esquemático -->
+                <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col gap-6">
+                    <div class="flex items-center gap-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                            <i class="pi pi-map text-sm"></i>
+                        </div>
+                        <h3 class="text-sm font-black text-gray-400 tracking-widest uppercase">Plano Esquemático</h3>
+                    </div>
+
+                    <div (click)="triggerFileInput(planoInput)" (drop)="onFileDropped($event, 'plano')"
+                        (dragover)="onDragOver($event)"
+                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-2xl h-72 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative">
+                        <input type="file" #planoInput (change)="onFileSelected($event, 'plano')" accept="image/*"
+                            class="hidden" />
+
+                        <div class="flex flex-col items-center p-4">
+                            @if (planoPreview) {
+                            <img [src]="planoPreview"
+                                class="max-h-64 max-w-full object-contain rounded-lg shadow-2xl" />
+                            <div
+                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span class="text-xs font-bold text-white uppercase tracking-wider">Cambiar plano</span>
+                            </div>
+                            } @else if (articuloActual.foto_medida) {
+                            <img [src]="articuloActual.foto_medida" appFallbackImage
+                                class="max-h-48 w-auto object-contain mb-4 rounded shadow-lg" />
+                            <span class="text-xs text-gray-500 group-hover:text-[#fdb831] transition-colors">Haz clic
+                                para cambiar el plano</span>
+                            } @else {
+                            <div
+                                class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
+                                <i class="pi pi-upload text-gray-600 group-hover:text-[#fdb831]"></i>
+                            </div>
+                            <p class="text-[11px] text-gray-500 text-center">
+                                Arrastra y suelta o <span class="text-[#fdb831] font-bold">Examina</span>
+                            </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </form>
+
+    <!-- Bottom Action Bar -->
+    <div
+        class="fixed bottom-0 left-0 right-0 bg-[#121214] border-t border-white/5 p-6 flex justify-end items-center gap-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.5)]">
+        <button (click)="cancelar()"
+            class="text-gray-400 hover:text-white font-bold text-sm transition-colors uppercase tracking-widest">
+            Cancelar
+        </button>
+        <p-button label="Guardar Cambios" [loading]="loading" (onClick)="onSubmit()" icon="pi pi-check"
+            styleClass="bg-[#fdb831] border-none text-black font-black px-10 py-4 rounded-xl active:scale-95 transition-all shadow-xl shadow-[#fdb831]/10 hover:shadow-[#fdb831]/20 uppercase tracking-widest text-sm">
+        </p-button>
+    </div>
+
     } @else {
-    <div class="flex justify-center items-center h-64">
+    <div class="flex flex-col justify-center items-center h-[60vh] gap-4">
         <i class="pi pi-spin pi-spinner text-4xl text-[#fdb831]"></i>
+        <p class="text-gray-500 animate-pulse text-sm font-medium">Cargando datos del artículo...</p>
     </div>
     }
 </div>

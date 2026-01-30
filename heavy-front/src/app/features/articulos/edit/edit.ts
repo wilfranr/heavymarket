@@ -100,6 +100,9 @@ export class EditComponent implements OnInit {
     fotoFile: File | null = null;
     planoFile: File | null = null;
 
+    // Término de búsqueda para referencias cruzadas
+    searchTermReferences = '';
+
     ngOnInit(): void {
         this.cargarTipos();
         this.cargarReferencias();
@@ -227,6 +230,28 @@ export class EditComponent implements OnInit {
      */
     get referenciasCruzadas(): FormArray {
         return this.articuloForm.get('referenciasCruzadas') as FormArray;
+    }
+
+    /**
+     * Obtiene el detalle de una referencia seleccionada para mostrar en la tabla
+     */
+    getReferenciaDetail(id: number): Referencia | undefined {
+        return this.referenciasDisponibles.find(r => r.id === id) ||
+            this.articuloActual?.referencias?.find(r => r.id === id);
+    }
+
+    /**
+     * Determina si una fila de referencia debe mostrarse según el término de búsqueda
+     */
+    shouldShowReference(id: number): boolean {
+        if (!this.searchTermReferences) return true;
+
+        const ref = this.getReferenciaDetail(id);
+        if (!ref) return false;
+
+        const term = this.searchTermReferences.toLowerCase();
+        return ref.referencia.toLowerCase().includes(term) ||
+            (ref.marca?.nombre?.toLowerCase().includes(term) || false);
     }
 
     /**
