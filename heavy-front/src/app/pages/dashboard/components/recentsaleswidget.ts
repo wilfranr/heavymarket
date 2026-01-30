@@ -53,9 +53,7 @@ export class RecentSalesWidget implements OnInit {
 
     ngOnInit(): void {
         this.store.dispatch(loadPedidos({ params: { per_page: 10, sort: '-created_at' } }));
-        this.recentPedidos$ = this.store.select(selectAllPedidos).pipe(
-            map(pedidos => (pedidos || []).slice(0, 5))
-        );
+        this.recentPedidos$ = this.store.select(selectAllPedidos).pipe(map((pedidos) => (pedidos || []).slice(0, 5)));
     }
 
     verDetalle(id: number): void {
@@ -64,11 +62,11 @@ export class RecentSalesWidget implements OnInit {
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
         const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
-            'pendiente': 'warn',
-            'en_proceso': 'info',
-            'completado': 'success',
-            'cancelado': 'danger',
-            'entregado': 'success'
+            pendiente: 'warn',
+            en_proceso: 'info',
+            completado: 'success',
+            cancelado: 'danger',
+            entregado: 'success'
         };
         return severityMap[estado] || 'info';
     }

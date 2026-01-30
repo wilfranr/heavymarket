@@ -58,11 +58,13 @@ export class ListComponent implements OnInit {
      * Carga los artículos desde el store
      */
     cargarArticulos(): void {
-        this.store.dispatch(loadArticulos({
-            page: this.currentPage,
-            per_page: this.rowsPerPage,
-            search: this.searchTerm || undefined
-        }));
+        this.store.dispatch(
+            loadArticulos({
+                page: this.currentPage,
+                per_page: this.rowsPerPage,
+                search: this.searchTerm || undefined
+            })
+        );
     }
 
     /**
@@ -86,21 +88,21 @@ export class ListComponent implements OnInit {
      * Navega a crear nuevo artículo
      */
     crearArticulo(): void {
-        this.router.navigate(['/articulos/create']);
+        this.router.navigate(['/app/articulos/create']);
     }
 
     /**
      * Navega a ver detalle
      */
     verDetalle(articulo: Articulo): void {
-        this.router.navigate(['/articulos', articulo.id]);
+        this.router.navigate(['/app/articulos', articulo.id]);
     }
 
     /**
      * Navega a editar
      */
     editarArticulo(articulo: Articulo): void {
-        this.router.navigate(['/articulos', articulo.id, 'edit']);
+        this.router.navigate(['/app/articulos', articulo.id, 'edit']);
     }
 
     /**
@@ -115,7 +117,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteArticulo({ id: articulo.id }));
-                
+
                 setTimeout(() => {
                     this.cargarArticulos();
                 }, 500);

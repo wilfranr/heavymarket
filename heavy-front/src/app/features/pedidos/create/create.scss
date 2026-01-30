@@ -1,13 +1,123 @@
 :host {
     display: block;
     min-height: 100vh;
-    background-color: #f8f9fa;
+    background-color: #000000;
+    /* Fondo negro absoluto según diseño */
+    font-family: 'Figtree', sans-serif;
 }
 
-.container {
-    max-width: 1000px;
+/* Colores Branding */
+$color-yellow: #FDB831;
+$color-card-bg: #343743;
+$color-text-white: #FFFFFF;
+$color-text-black: #0C0E0F;
+
+.figma-card {
+    background-color: $color-card-bg;
+    box-shadow: -2px -1px 11.9px rgba(58, 58, 58, 0.25);
+    border-radius: 8px;
+    border: none;
 }
 
-.ng-invalid.ng-dirty {
-    border-color: #ef4444;
+.text-brand-yellow {
+    color: $color-yellow !important;
+}
+
+.bg-brand-yellow {
+    background-color: $color-yellow !important;
+    color: $color-text-black !important;
+}
+
+.btn-pill {
+    border-radius: 64px;
+    font-weight: 600;
+    padding: 10px 24px;
+    border: none;
+    transition: all 0.2s;
+
+    &.btn-primary {
+        background-color: $color-yellow;
+        color: $color-text-black;
+
+        &:hover {
+            filter: brightness(1.1);
+        }
+    }
+
+    &.btn-outline {
+        background-color: transparent;
+        border: 1px solid #FFFFFF;
+        color: #FFFFFF;
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+    }
+}
+
+.action-btn-circle {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background-color: $color-yellow;
+    color: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    transition: transform 0.1s;
+    cursor: pointer;
+    border: none;
+
+    &:hover {
+        transform: scale(1.05);
+    }
+}
+
+/* Custom Input Styles to match dark theme */
+::ng-deep {
+
+    .p-inputtext,
+    .p-select,
+    .p-textarea {
+        background-color: #343743;
+        /* Mismo tono o ligeramente diferente */
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        color: #FFFFFF;
+        border-radius: 8px;
+
+        &:enabled:focus {
+            border-color: $color-yellow;
+            box-shadow: 0 0 0 1px $color-yellow;
+        }
+
+        &::placeholder {
+            color: rgba(204, 204, 204, 0.6);
+        }
+    }
+
+    .p-select-panel {
+        background-color: #343743;
+
+        .p-select-item {
+            color: #FFFFFF;
+
+            &:hover {
+                background-color: rgba(253, 184, 49, 0.2);
+                /* Yellow tint */
+            }
+
+            &.p-highlight {
+                background-color: $color-yellow;
+                color: #000000;
+            }
+        }
+    }
+}
+
+.input-label {
+    color: rgba(204, 204, 204, 0.6);
+    font-size: 0.875rem;
+    margin-bottom: 0.5rem;
+    display: block;
 }

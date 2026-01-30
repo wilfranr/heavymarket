@@ -1,0 +1,283 @@
+<div class="page-wrapper">
+    <app-navbar></app-navbar>
+
+    <div class="cotizador-page-container">
+        <div class="cotizador-container">
+            <!-- Sidebar -->
+            <div class="cotizador-sidebar">
+                <div class="cotizador-sidebar-header">
+                    <p class="cotizador-sidebar-text">Selecciona una categoría, luego elige marca, tipo y modelo de la
+                        máquina para continuar.</p>
+                </div>
+
+                <div class="cotizador-filters">
+                    <!-- Marca -->
+                    <div class="cotizador-filter-group" (clickOutside)="openBrand = false">
+                        <button class="cotizador-select" (click)="toggleBrand()">
+                            <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }}</span>
+                            <div class="cotizador-select-icon">
+                                <i class="pi pi-chevron-right"></i>
+                            </div>
+                        </button>
+                        <div class="cotizador-dropdown" *ngIf="openBrand">
+                            <div class="cotizador-dropdown-item" *ngFor="let brand of brands"
+                                (click)="selectBrand(brand)">{{ brand.nombre }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Tipo de Máquina -->
+                    <div class="cotizador-filter-group" (clickOutside)="openType = false">
+                        <button class="cotizador-select" (click)="toggleType()">
+                            <span class="cotizador-select-text">{{ selectedType || 'Tipo de máquina' }}</span>
+                            <div class="cotizador-select-icon">
+                                <i class="pi pi-chevron-right"></i>
+                            </div>
+                        </button>
+                        <div class="cotizador-dropdown" *ngIf="openType">
+                            <div class="cotizador-dropdown-item" *ngFor="let type of allTypes"
+                                (click)="selectType(type)">
+                                {{ type.nombre }}</div>
+                        </div>
+                    </div>
+
+                    <!-- Modelo -->
+                    <div class="cotizador-filter-group" (clickOutside)="openModel = false">
+                        <button class="cotizador-select" (click)="toggleModel()">
+                            <span class="cotizador-select-text">{{ selectedModel || 'Modelo (Opcional)' }}</span>
+                            <div class="cotizador-select-icon">
+                                <i class="pi pi-chevron-right"></i>
+                            </div>
+                        </button>
+                        <div class="cotizador-dropdown" *ngIf="openModel">
+                            <div class="cotizador-dropdown-item" *ngFor="let model of models"
+                                (click)="selectModel(model)">{{ model }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cotizador-actions">
+                    <button class="cotizador-btn-secondary" (click)="clearFilters()">Limpiar</button>
+                    <button class="cotizador-btn-primary" (click)="goToForm()">Continuar</button>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="cotizador-main">
+
+                <!-- VIEW 1: GRID -->
+                <ng-container *ngIf="currentView === 'grid'">
+                    <!-- Tabs -->
+                    <div class="cotizador-tabs">
+                        <div class="cotizador-tab" *ngFor="let cat of categories"
+                            [class.active]="activeTab === cat.slug" (click)="setActiveTab(cat.slug)">
+                            <span class="cotizador-tab-text">{{ cat.nombre }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Grid -->
+                    <div class="cotizador-grid-container">
+                        <div class="cotizador-grid">
+                            <ng-container *ngIf="activeCategory">
+                                <div class="cotizador-card" *ngFor="let sub of activeCategory.subcategorias"
+                                    [class.selected]="selectedCard?.id === sub.id" (click)="selectCard(sub)">
+                                    <div class="cotizador-card-image"
+                                        [style.background-image]="'url(' + sub.imagen_url + ')'"
+                                        style="background-size: cover; background-position: center">
+                                    </div>
+                                    <div class="cotizador-card-content">
+                                        <h3 class="cotizador-card-title">{{ sub.nombre }}</h3>
+                                        <div class="cotizador-card-tag"><span>{{ activeCategory.nombre }}</span></div>
+                                        <p class="cotizador-card-description">{{ sub.descripcion }}</p>
+                                        <button class="cotizador-card-btn">Seleccionar máquina</button>
+                                    </div>
+                                </div>
+                            </ng-container>
+                        </div>
+                    </div>
+                </ng-container>
+
+                <!-- VIEW 2: FORM (STEP 1 & 2) -->
+                <ng-container *ngIf="currentView === 'form'">
+                    <!-- Stepper -->
+                    <div class="cotizador-stepper">
+                        <div class="step-item" [class.active]="formStep >= 1">
+                            <div class="step-icon"><i class="pi pi-list"></i></div>
+                            <span class="step-label">Detalle de solicitud</span>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-item" [class.active]="formStep >= 2">
+                            <div class="step-icon"><i class="pi pi-user"></i></div>
+                            <span class="step-label">Datos del solicitante</span>
+                        </div>
+                        <div class="step-connector"></div>
+                        <div class="step-item" [class.active]="formStep >= 3">
+                            <div class="step-icon"><i class="pi pi-send"></i></div>
+                            <span class="step-label">Confirmar y enviar</span>
+                        </div>
+                    </div>
+
+                    <!-- Breadcrumb -->
+                    <div class="cotizador-breadcrumb">
+                        Cotización /
+                        <span class="cotizador-highlight">{{ activeCategory?.nombre || 'Categoría' }}</span> /
+                        <span class="cotizador-highlight">{{ selectedType || 'Tipo' }}</span> /
+                        <span class="cotizador-highlight">{{ selectedBrand || 'Marca' }}</span> /
+                        <span class="cotizador-highlight">{{ selectedModel || 'Modelo' }}</span> /
+                        Formulario
+                    </div>
+
+                    <!-- Step 1: Items Form -->
+                    <div class="form-step-content" *ngIf="formStep === 1">
+                        <div class="form-section-header">
+                            <h3 class="section-title">Tus ítems</h3>
+                            <button class="btn-add-list" (click)="addItem()">
+                                Agregar listado <i class="pi pi-plus"></i>
+                            </button>
+                        </div>
+
+                        <div class="items-list">
+                            <div class="form-item-row" *ngFor="let item of items; let i = index">
+                                <!-- Sistema -->
+                                <div class="form-field">
+                                    <label class="input-label">Sistema</label>
+                                    <select class="custom-input" [(ngModel)]="items[i].system">
+                                        <option value="" disabled selected>Seleccionar</option>
+                                        <option *ngFor="let sys of systems" [value]="sys.nombre">{{ sys.nombre }}
+                                        </option>
+                                    </select>
+                                    <span class="helper-text">Texto de apoyo</span>
+                                </div>
+
+                                <!-- Descripción -->
+                                <div class="form-field">
+                                    <label class="input-label">Descripción</label>
+                                    <input type="text" class="custom-input" [(ngModel)]="items[i].description"
+                                        placeholder="Ej: sello de labio">
+                                    <span class="helper-text">Texto de apoyo</span>
+                                </div>
+
+                                <!-- Cantidad -->
+                                <div class="form-field">
+                                    <label class="input-label">Cantidad</label>
+                                    <input type="number" class="custom-input" [(ngModel)]="items[i].quantity"
+                                        placeholder="Ej: 1">
+                                    <span class="helper-text">Numérico</span>
+                                </div>
+
+                                <!-- Referencia -->
+                                <div class="form-field">
+                                    <label class="input-label">Referencia</label>
+                                    <input type="text" class="custom-input" [(ngModel)]="items[i].reference"
+                                        placeholder="Ej: no definido">
+                                    <span class="helper-text">Texto de apoyo</span>
+                                </div>
+
+                                <!-- Archivos -->
+                                <div class="form-field">
+                                    <label class="input-label">Archivos adjuntos</label>
+                                    <div class="upload-box">
+                                        <i class="pi pi-image" style="color: #FDB831"></i>
+                                        <span class="upload-text">Cargar</span>
+                                    </div>
+                                </div>
+
+                                <!-- Actions -->
+                                <div class="item-actions">
+                                    <button class="action-btn btn-comment" title="Comentar"><i
+                                            class="pi pi-comment"></i></button>
+                                    <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
+                                        title="Duplicar"><i class="pi pi-copy"></i></button>
+                                    <button class="action-btn btn-delete" (click)="removeItem(i)" title="Eliminar"><i
+                                            class="pi pi-trash"></i></button>
+                                </div>
+                            </div>
+
+                            <button class="btn-add-item-row" (click)="addItem()">Agregar +</button>
+                        </div>
+
+                        <div class="form-footer">
+                            <button class="btn-cancel" (click)="goBackToGrid()">Cancelar</button>
+                            <button class="btn-continue" (click)="nextFormStep()">Continuar</button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2 Placeholder which will be implemented next -->
+                    <div class="form-step-content" *ngIf="formStep === 2">
+                        <div class="form-section-header">
+                            <h3 class="section-title">Datos del solicitante</h3>
+                        </div>
+
+                        <div class="user-data-form">
+                            <!-- Name -->
+                            <div class="form-field-row">
+                                <div class="form-field full-width">
+                                    <label class="input-label">Nombre completo *</label>
+                                    <input type="text" class="custom-input" [(ngModel)]="userData.name"
+                                        placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+
+                            <!-- Email & Phone -->
+                            <div class="form-field-row two-col">
+                                <div class="form-field">
+                                    <label class="input-label">Correo electrónico *</label>
+                                    <input type="email" class="custom-input" [(ngModel)]="userData.email"
+                                        placeholder="Ej: juan@empresa.com">
+                                </div>
+                                <div class="form-field">
+                                    <label class="input-label">Teléfono / Celular *</label>
+                                    <input type="tel" class="custom-input" [(ngModel)]="userData.phone"
+                                        placeholder="Ej: +57 300 123 4567">
+                                </div>
+                            </div>
+
+                            <!-- Company -->
+                            <div class="form-field-row">
+                                <div class="form-field full-width">
+                                    <label class="input-label">Empresa</label>
+                                    <input type="text" class="custom-input" [(ngModel)]="userData.company"
+                                        placeholder="Nombre de la empresa">
+                                </div>
+                            </div>
+
+                            <!-- Location -->
+                            <div class="form-field-row three-col">
+                                <div class="form-field">
+                                    <label class="input-label">País</label>
+                                    <select class="custom-input" [(ngModel)]="userData.country"
+                                        (change)="onCountryChange()">
+                                        <option [ngValue]="null" disabled selected>Seleccionar</option>
+                                        <option *ngFor="let c of countries" [ngValue]="c">{{ c.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label class="input-label">Departamento</label>
+                                    <select class="custom-input" [(ngModel)]="userData.state" (change)="onStateChange()"
+                                        [disabled]="!userData.country">
+                                        <option [ngValue]="null" disabled selected>Seleccionar</option>
+                                        <option *ngFor="let s of states" [ngValue]="s">{{ s.name }}</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label class="input-label">Ciudad</label>
+                                    <select class="custom-input" [(ngModel)]="userData.city"
+                                        [disabled]="!userData.state">
+                                        <option [ngValue]="null" disabled selected>Seleccionar</option>
+                                        <option *ngFor="let c of cities" [ngValue]="c">{{ c.name }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-footer">
+                            <button class="btn-cancel" (click)="prevFormStep()">Atrás</button>
+                            <button class="btn-continue" (click)="nextFormStep()">Continuar</button>
+                        </div>
+                    </div>
+                </ng-container>
+
+            </div>
+        </div>
+    </div>
+    <app-footer-section></app-footer-section>
+</div>

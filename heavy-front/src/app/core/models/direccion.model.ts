@@ -17,7 +17,7 @@ export interface Direccion {
     ciudad_texto?: string | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     tercero?: any;
     country?: any;

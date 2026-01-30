@@ -1,14 +1,7 @@
 /**
  * Tipos de notificación
  */
-export type NotificationType = 
-    | 'pedido_creado' 
-    | 'pedido_actualizado' 
-    | 'cotizacion_nueva' 
-    | 'orden_confirmada'
-    | 'tercero_nuevo'
-    | 'sistema'
-    | 'info';
+export type NotificationType = 'pedido_creado' | 'pedido_actualizado' | 'cotizacion_nueva' | 'orden_confirmada' | 'tercero_nuevo' | 'sistema' | 'info';
 
 /**
  * Modelo de Notificación

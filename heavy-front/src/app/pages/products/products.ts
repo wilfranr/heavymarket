@@ -15,8 +15,8 @@ import { Router, RouterModule } from '@angular/router';
 })
 export class Products implements OnInit, AfterViewInit {
     categories: Category[] = [];
-    filteredProducts: { category: string, subCategory: SubCategory }[] = [];
-    allProducts: { category: string, subCategory: SubCategory }[] = [];
+    filteredProducts: { category: string; subCategory: SubCategory }[] = [];
+    allProducts: { category: string; subCategory: SubCategory }[] = [];
 
     currentCategory: string = 'all';
     currentSearchTerm: string = '';
@@ -31,10 +31,10 @@ export class Products implements OnInit, AfterViewInit {
         private landingService: LandingService,
         private router: Router,
         private cdr: ChangeDetectorRef
-    ) { }
+    ) {}
 
     ngOnInit() {
-        this.landingService.getNavbarCategories().subscribe(categories => {
+        this.landingService.getNavbarCategories().subscribe((categories) => {
             this.categories = categories;
             this.processAllProducts();
             this.filterProducts();
@@ -58,8 +58,8 @@ export class Products implements OnInit, AfterViewInit {
 
     processAllProducts() {
         this.allProducts = [];
-        this.categories.forEach(cat => {
-            cat.subcategorias.forEach(sub => {
+        this.categories.forEach((cat) => {
+            cat.subcategorias.forEach((sub) => {
                 this.allProducts.push({
                     category: cat.slug,
                     subCategory: sub
@@ -70,13 +70,13 @@ export class Products implements OnInit, AfterViewInit {
 
     getCategoryName(slug: string): string {
         if (slug === 'all') return 'Todas';
-        const cat = this.categories.find(c => c.slug === slug);
+        const cat = this.categories.find((c) => c.slug === slug);
         return cat ? cat.nombre : '';
     }
 
     getCategoryDescription(slug: string): string {
         if (slug === 'all') return 'Explore nuestro catálogo completo de productos para maquinaria pesada.';
-        const cat = this.categories.find(c => c.slug === slug);
+        const cat = this.categories.find((c) => c.slug === slug);
 
         if (cat && cat.descripcion_general) {
             return cat.descripcion_general;
@@ -93,17 +93,14 @@ export class Products implements OnInit, AfterViewInit {
     filterProducts() {
         const normalizedSearch = this.normalizeText(this.currentSearchTerm);
 
-        this.filteredProducts = this.allProducts.filter(item => {
+        this.filteredProducts = this.allProducts.filter((item) => {
             const matchesCategory = this.currentCategory === 'all' || item.category === this.currentCategory;
 
             const productName = this.normalizeText(item.subCategory.nombre);
             const productDesc = this.normalizeText(item.subCategory.descripcion);
             const categoryName = this.normalizeText(this.getCategoryName(item.category));
 
-            const matchesSearch = !normalizedSearch ||
-                productName.includes(normalizedSearch) ||
-                productDesc.includes(normalizedSearch) ||
-                categoryName.includes(normalizedSearch);
+            const matchesSearch = !normalizedSearch || productName.includes(normalizedSearch) || productDesc.includes(normalizedSearch) || categoryName.includes(normalizedSearch);
 
             return matchesCategory && matchesSearch;
         });
@@ -122,7 +119,8 @@ export class Products implements OnInit, AfterViewInit {
 
     normalizeText(text: string): string {
         if (!text) return '';
-        return text.toLowerCase()
+        return text
+            .toLowerCase()
             .normalize('NFD')
             .replace(/[\u0300-\u036f]/g, '');
     }
@@ -139,7 +137,7 @@ export class Products implements OnInit, AfterViewInit {
             behavior: 'smooth'
         });
 
-        // Necesitamos esperar a qu termine el scroll para actualizar flechas, 
+        // Necesitamos esperar a qu termine el scroll para actualizar flechas,
         // pero el evento scroll del contenedor lo manejará mejor.
     }
 
@@ -152,7 +150,7 @@ export class Products implements OnInit, AfterViewInit {
         const container = this.tabsContainer.nativeElement;
 
         this.showLeftArrow = container.scrollLeft > 10;
-        this.showRightArrow = container.scrollLeft < (container.scrollWidth - container.clientWidth - 10);
+        this.showRightArrow = container.scrollLeft < container.scrollWidth - container.clientWidth - 10;
         this.cdr.detectChanges();
     }
 }

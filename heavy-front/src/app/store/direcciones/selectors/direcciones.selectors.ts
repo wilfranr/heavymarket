@@ -19,30 +19,23 @@ export const selectDireccionesTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectDireccionesLoading = createSelector(
-  selectDireccionesState,
-  (state: DireccionesState) => state.loading
-);
+export const selectDireccionesLoading = createSelector(selectDireccionesState, (state: DireccionesState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectDireccionesError = createSelector(
-  selectDireccionesState,
-  (state: DireccionesState) => state.error
-);
+export const selectDireccionesError = createSelector(selectDireccionesState, (state: DireccionesState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectDireccionesPagination = createSelector(selectDireccionesState, (state: DireccionesState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de dirección por ID
  */
-export const selectDireccionById = (id: number) =>
-  createSelector(selectDireccionesEntities, (entities) => entities[id] || null);
+export const selectDireccionById = (id: number) => createSelector(selectDireccionesEntities, (entities) => entities[id] || null);

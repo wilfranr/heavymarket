@@ -15,7 +15,7 @@ describe('AuthService', () => {
 
         service = TestBed.inject(AuthService);
         httpMock = TestBed.inject(HttpTestingController);
-        
+
         // Limpiar localStorage antes de cada test
         localStorage.clear();
     });
@@ -46,7 +46,7 @@ describe('AuthService', () => {
                 password: 'password123'
             };
 
-            service.login(credentials).subscribe(response => {
+            service.login(credentials).subscribe((response) => {
                 expect(response).toEqual(mockResponse);
                 expect(localStorage.getItem('auth_token')).toBe('test-token-123');
                 expect(service.isAuthenticated()).toBe(true);
@@ -85,7 +85,7 @@ describe('AuthService', () => {
             // Simular usuario logueado
             localStorage.setItem('auth_token', 'test-token');
             localStorage.setItem('auth_user', JSON.stringify({ id: 1, name: 'Test', email: 'test@test.com' }));
-            
+
             service.logout();
 
             expect(localStorage.getItem('auth_token')).toBeNull();
@@ -125,7 +125,7 @@ describe('AuthService', () => {
                 password_confirmation: 'password123'
             };
 
-            service.register(registerData).subscribe(response => {
+            service.register(registerData).subscribe((response) => {
                 expect(response).toEqual(mockResponse);
                 expect(localStorage.getItem('auth_token')).toBe('new-token-123');
                 expect(service.isAuthenticated()).toBe(true);
@@ -142,7 +142,7 @@ describe('AuthService', () => {
         it('should return stored token', () => {
             const token = 'test-token-123';
             localStorage.setItem('auth_token', token);
-            
+
             expect(service.getToken()).toBe(token);
         });
 

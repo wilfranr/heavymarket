@@ -21,7 +21,7 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
-import { CurrencyPipe } from '@angular/common';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -63,7 +63,7 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoAr
         TooltipModule,
         DialogModule,
         TableModule,
-        CurrencyPipe
+        CheckboxModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -89,7 +89,7 @@ export class EditComponent implements OnInit {
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
     loading$!: Observable<boolean>;
-    
+
     pedidoId = signal<number>(0);
     terceros: any[] = [];
     sistemas: any[] = [];
@@ -99,24 +99,24 @@ export class EditComponent implements OnInit {
     referencias: any[] = [];
     proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
     articulos: any[] = []; // Lista de artículos disponibles
-    
+
     // Mapa de proveedores por referencia
     proveedoresPorReferencia: Map<number, PedidoReferenciaProveedor[]> = new Map();
     referenciasExpandidas: Set<number> = new Set();
-    
+
     // Formulario para nuevo proveedor
     nuevoProveedorForm: FormGroup | null = null;
     referenciaIndexParaProveedor: number | null = null;
-    
+
     // Modal de comparación de proveedores
     mostrarComparacion = false;
     proveedoresComparacion: PedidoReferenciaProveedor[] = [];
     referenciaComparacion: any = null;
-    
+
     // Artículos del pedido
     articulosPedido: PedidoArticulo[] = [];
     mostrarArticulos = false;
-    
+
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
@@ -130,17 +130,17 @@ export class EditComponent implements OnInit {
 
     // Estado actual del pedido (para validar transiciones)
     estadoActual: PedidoEstado = 'Nuevo';
-    
+
     // Mapa de transiciones válidas
     transicionesValidas: Record<PedidoEstado, PedidoEstado[]> = {
-        'Nuevo': ['Enviado', 'En_Costeo', 'Cancelado'],
-        'Enviado': ['En_Costeo', 'Cancelado'],
-        'En_Costeo': ['Cotizado', 'Rechazado', 'Cancelado'],
-        'Cotizado': ['Aprobado', 'Rechazado', 'Cancelado'],
-        'Aprobado': ['Entregado', 'Cancelado'],
-        'Entregado': [],
-        'Rechazado': [],
-        'Cancelado': []
+        Nuevo: ['Enviado', 'En_Costeo', 'Cancelado'],
+        Enviado: ['En_Costeo', 'Cancelado'],
+        En_Costeo: ['Cotizado', 'Rechazado', 'Cancelado'],
+        Cotizado: ['Aprobado', 'Rechazado', 'Cancelado'],
+        Aprobado: ['Entregado', 'Cancelado'],
+        Entregado: [],
+        Rechazado: [],
+        Cancelado: []
     };
 
     submitting = false;
@@ -175,8 +175,8 @@ export class EditComponent implements OnInit {
         // Cargar terceros (clientes)
         this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
             next: (response) => {
-                this.terceros = response.data.map(t => ({
-                    label: t.razon_social || t.nombre_comercial || `Tercero ${t.id}`,
+                this.terceros = response.data.map((t) => ({
+                    label: t.nombre || `Tercero ${t.id}`,
                     value: t.id
                 }));
             }
@@ -185,7 +185,7 @@ export class EditComponent implements OnInit {
         // Cargar sistemas
         this.sistemaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map(s => ({
+                this.sistemas = response.data.map((s) => ({
                     label: s.nombre,
                     value: s.id
                 }));
@@ -195,7 +195,7 @@ export class EditComponent implements OnInit {
         // Cargar marcas
         this.listaService.getByTipo('Marca').subscribe({
             next: (marcas) => {
-                this.marcas = marcas.map(m => ({
+                this.marcas = marcas.map((m) => ({
                     label: m.nombre,
                     value: m.id
                 }));
@@ -205,7 +205,7 @@ export class EditComponent implements OnInit {
         // Cargar máquinas
         this.maquinaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.maquinas = response.data.map(m => ({
+                this.maquinas = response.data.map((m) => ({
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
                     value: m.id
                 }));
@@ -215,7 +215,7 @@ export class EditComponent implements OnInit {
         // Cargar fabricantes
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.fabricantes = response.data.map(f => ({
+                this.fabricantes = response.data.map((f) => ({
                     label: f.nombre,
                     value: f.id
                 }));
@@ -238,7 +238,7 @@ export class EditComponent implements OnInit {
     private loadReferencias(): void {
         this.referenciaService.getAll({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.referencias = response.data.map(r => ({
+                this.referencias = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id
                 }));
@@ -252,7 +252,7 @@ export class EditComponent implements OnInit {
     private loadArticulos(): void {
         this.articuloService.getAll({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.articulos = response.data.map(a => ({
+                this.articulos = response.data.map((a) => ({
                     label: a.descripcionEspecifica || a.definicion || `Artículo ${a.id}`,
                     value: a.id
                 }));
@@ -266,8 +266,8 @@ export class EditComponent implements OnInit {
     private loadProveedores(): void {
         this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe({
             next: (response) => {
-                this.proveedores = response.data.map(p => ({
-                    label: p.razon_social || p.nombre_comercial || `Proveedor ${p.id}`,
+                this.proveedores = response.data.map((p) => ({
+                    label: p.nombre || `Proveedor ${p.id}`,
                     value: p.id,
                     ubicacion: (p as any).pais === 'Colombia' || (p as any).country_id === 48 ? 'Nacional' : 'Internacional',
                     dias_entrega: (p as any).dias_entrega || 0,
@@ -283,22 +283,22 @@ export class EditComponent implements OnInit {
      */
     private loadPedido(): void {
         const id = this.route.snapshot.paramMap.get('id');
-        
+
         if (id) {
             const pedidoId = parseInt(id, 10);
             this.pedidoId.set(pedidoId);
-            
+
             this.store.dispatch(loadPedido({ id: pedidoId }));
-            
+
             this.pedido$ = this.store.select(selectPedidoById(pedidoId));
             this.loading$ = this.store.select(selectPedidosLoading);
-            
+
             this.pedido$
                 .pipe(
-                    filter(pedido => !!pedido),
+                    filter((pedido) => !!pedido),
                     take(1)
                 )
-                .subscribe(pedido => {
+                .subscribe((pedido) => {
                     if (pedido) {
                         this.pedidoForm.patchValue({
                             tercero_id: pedido.tercero_id,
@@ -313,9 +313,9 @@ export class EditComponent implements OnInit {
                         // Cargar referencias del pedido
                         if (pedido.referencias && pedido.referencias.length > 0) {
                             this.cargarReferenciasAlFormArray(pedido.referencias);
-                            
+
                             // Cargar proveedores de cada referencia
-                            pedido.referencias.forEach(ref => {
+                            pedido.referencias.forEach((ref) => {
                                 if (ref.proveedores && ref.proveedores.length > 0) {
                                     this.proveedoresPorReferencia.set(ref.id, ref.proveedores);
                                 }
@@ -342,7 +342,7 @@ export class EditComponent implements OnInit {
      * Carga las referencias del pedido al FormArray
      */
     private cargarReferenciasAlFormArray(referencias: PedidoReferencia[]): void {
-        referencias.forEach(ref => {
+        referencias.forEach((ref) => {
             const referenciaForm = this.fb.group({
                 id: [ref.id],
                 estado: [ref.estado ?? true],
@@ -350,7 +350,9 @@ export class EditComponent implements OnInit {
                 referencia_id: [ref.referencia_id, [Validators.required]],
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
-                comentario: [ref.comentario || '']
+                comentario: [ref.comentario || ''],
+                definicion: [ref.definicion || ''],
+                imagen: [ref.imagen || null]
             });
 
             this.referenciasFormArray.push(referenciaForm);
@@ -367,7 +369,7 @@ export class EditComponent implements OnInit {
     /**
      * Agrega una nueva referencia al FormArray
      */
-    addReferencia(): void {
+    agregarReferencia(): void {
         const referenciaForm = this.fb.group({
             id: [null],
             estado: [true],
@@ -375,7 +377,9 @@ export class EditComponent implements OnInit {
             referencia_id: [null, [Validators.required]],
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
-            comentario: ['']
+            comentario: [''],
+            definicion: [''],
+            imagen: [null]
         });
 
         this.referenciasFormArray.push(referenciaForm);
@@ -384,7 +388,7 @@ export class EditComponent implements OnInit {
     /**
      * Elimina una referencia del FormArray
      */
-    removeReferencia(index: number): void {
+    eliminarReferencia(index: number): void {
         const referencia = this.referenciasFormArray.at(index);
         const referenciaId = referencia.get('id')?.value;
 
@@ -414,7 +418,7 @@ export class EditComponent implements OnInit {
      * Selecciona todas las referencias
      */
     selectAllReferencias(): void {
-        this.referenciasFormArray.controls.forEach(control => {
+        this.referenciasFormArray.controls.forEach((control) => {
             control.get('estado')?.setValue(true);
         });
         this.messageService.add({
@@ -428,7 +432,7 @@ export class EditComponent implements OnInit {
      * Deselecciona todas las referencias
      */
     deselectAllReferencias(): void {
-        this.referenciasFormArray.controls.forEach(control => {
+        this.referenciasFormArray.controls.forEach((control) => {
             control.get('estado')?.setValue(false);
         });
         this.messageService.add({
@@ -453,13 +457,13 @@ export class EditComponent implements OnInit {
     /**
      * Obtiene los estados disponibles según el estado actual
      */
-    getEstadosDisponibles(): Array<{label: string; value: PedidoEstado}> {
+    getEstadosDisponibles(): Array<{ label: string; value: PedidoEstado }> {
         const transicionesPermitidas = this.transicionesValidas[this.estadoActual] || [];
-        
+
         // Incluir el estado actual y las transiciones permitidas
         const estadosDisponibles = [
-            { label: this.estadosOptions.find(e => e.value === this.estadoActual)?.label || this.estadoActual, value: this.estadoActual },
-            ...transicionesPermitidas.map(e => this.estadosOptions.find(o => o.value === e)).filter(Boolean) as Array<{label: string; value: PedidoEstado}>
+            { label: this.estadosOptions.find((e) => e.value === this.estadoActual)?.label || this.estadoActual, value: this.estadoActual },
+            ...(transicionesPermitidas.map((e) => this.estadosOptions.find((o) => o.value === e)).filter(Boolean) as Array<{ label: string; value: PedidoEstado }>)
         ];
 
         return estadosDisponibles;
@@ -470,14 +474,14 @@ export class EditComponent implements OnInit {
      */
     onEstadoChange(): void {
         const nuevoEstado = this.pedidoForm.get('estado')?.value;
-        
+
         if (!this.validarTransicionEstado(this.estadoActual, nuevoEstado)) {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Transición inválida',
                 detail: `No se puede cambiar de "${this.estadoActual}" a "${nuevoEstado}". Transiciones válidas: ${this.transicionesValidas[this.estadoActual]?.join(', ') || 'ninguna'}`
             });
-            
+
             // Revertir al estado anterior
             this.pedidoForm.patchValue({ estado: this.estadoActual });
             return;
@@ -502,9 +506,8 @@ export class EditComponent implements OnInit {
         // Validaciones adicionales según el estado
         if (nuevoEstado === 'En_Costeo' || nuevoEstado === 'Cotizado') {
             // Verificar que haya referencias con proveedores
-            const tieneProveedores = Array.from(this.proveedoresPorReferencia.values())
-                .some(proveedores => proveedores.length > 0);
-            
+            const tieneProveedores = Array.from(this.proveedoresPorReferencia.values()).some((proveedores) => proveedores.length > 0);
+
             if (!tieneProveedores) {
                 this.messageService.add({
                     severity: 'warn',
@@ -525,7 +528,7 @@ export class EditComponent implements OnInit {
                 summary: 'Formulario inválido',
                 detail: 'Por favor complete todos los campos requeridos'
             });
-            Object.keys(this.pedidoForm.controls).forEach(key => {
+            Object.keys(this.pedidoForm.controls).forEach((key) => {
                 this.pedidoForm.get(key)?.markAsTouched();
             });
             return;
@@ -545,7 +548,7 @@ export class EditComponent implements OnInit {
         }
 
         this.submitting = true;
-        
+
         const pedidoData: UpdatePedidoDto = {
             tercero_id: formValue.tercero_id,
             direccion: formValue.direccion || undefined,
@@ -556,36 +559,40 @@ export class EditComponent implements OnInit {
             estado: nuevoEstado,
             motivo_rechazo: nuevoEstado === 'Rechazado' ? formValue.motivo_rechazo : undefined
         };
-        
-        this.store.dispatch(updatePedido({ 
-            id: this.pedidoId(), 
-            changes: pedidoData 
-        }));
+
+        this.store.dispatch(
+            updatePedido({
+                id: this.pedidoId(),
+                changes: pedidoData
+            })
+        );
 
         // Escuchar el resultado
-        this.store.select((state: any) => state.pedidos).subscribe((pedidosState: any) => {
-            if (!pedidosState.loading && !pedidosState.error && this.submitting) {
-                this.submitting = false;
-                this.estadoActual = nuevoEstado; // Actualizar estado actual
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: 'Pedido actualizado correctamente'
-                });
-                setTimeout(() => {
-                    this.router.navigate(['/app/pedidos', this.pedidoId()]);
-                }, 1500);
-            } else if (!pedidosState.loading && pedidosState.error && this.submitting) {
-                this.submitting = false;
-            }
-        });
+        this.store
+            .select((state: any) => state.pedidos)
+            .subscribe((pedidosState: any) => {
+                if (!pedidosState.loading && !pedidosState.error && this.submitting) {
+                    this.submitting = false;
+                    this.estadoActual = nuevoEstado; // Actualizar estado actual
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Pedido actualizado correctamente'
+                    });
+                    setTimeout(() => {
+                        this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                    }, 1500);
+                } else if (!pedidosState.loading && pedidosState.error && this.submitting) {
+                    this.submitting = false;
+                }
+            });
     }
 
     /**
      * Cancela y vuelve al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/pedidos', this.pedidoId()]);
+        this.router.navigate(['/app/pedidos', this.pedidoId()]);
     }
 
     /**
@@ -619,7 +626,7 @@ export class EditComponent implements OnInit {
     toggleReferenciaExpandida(index: number): void {
         const referenciaControl = this.referenciasFormArray.at(index);
         const referenciaId = referenciaControl.get('id')?.value;
-        
+
         if (!referenciaId) {
             this.messageService.add({
                 severity: 'warn',
@@ -656,8 +663,8 @@ export class EditComponent implements OnInit {
         });
 
         // Auto-completar datos cuando se selecciona un proveedor
-        this.nuevoProveedorForm.get('tercero_id')?.valueChanges.subscribe(terceroId => {
-            const proveedor = this.proveedores.find(p => p.value === terceroId);
+        this.nuevoProveedorForm.get('tercero_id')?.valueChanges.subscribe((terceroId) => {
+            const proveedor = this.proveedores.find((p) => p.value === terceroId);
             if (proveedor) {
                 this.nuevoProveedorForm?.patchValue({
                     ubicacion: proveedor.ubicacion,
@@ -691,7 +698,7 @@ export class EditComponent implements OnInit {
 
         const proveedorData: CreatePedidoReferenciaProveedorDto = this.nuevoProveedorForm.value;
         this.agregarProveedor(this.referenciaIndexParaProveedor, proveedorData);
-        
+
         // Limpiar formulario
         this.nuevoProveedorForm = null;
         this.referenciaIndexParaProveedor = null;
@@ -718,7 +725,7 @@ export class EditComponent implements OnInit {
                 const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
                 proveedores.push(response.data);
                 this.proveedoresPorReferencia.set(referenciaId, proveedores);
-                
+
                 this.messageService.add({
                     severity: 'success',
                     summary: 'Éxito',
@@ -754,12 +761,12 @@ export class EditComponent implements OnInit {
                 this.proveedorService.deleteProveedor(this.pedidoId(), referenciaId, proveedorId).subscribe({
                     next: () => {
                         const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
-                        const index = proveedores.findIndex(p => p.id === proveedorId);
+                        const index = proveedores.findIndex((p) => p.id === proveedorId);
                         if (index > -1) {
                             proveedores.splice(index, 1);
                             this.proveedoresPorReferencia.set(referenciaId, proveedores);
                         }
-                        
+
                         this.messageService.add({
                             severity: 'success',
                             summary: 'Éxito',
@@ -812,7 +819,7 @@ export class EditComponent implements OnInit {
             accept: () => {
                 this.pedidoArticuloService.deleteArticulo(this.pedidoId(), articuloId).subscribe({
                     next: () => {
-                        const index = this.articulosPedido.findIndex(a => a.id === articuloId);
+                        const index = this.articulosPedido.findIndex((a) => a.id === articuloId);
                         if (index > -1) {
                             this.articulosPedido.splice(index, 1);
                         }
@@ -846,7 +853,7 @@ export class EditComponent implements OnInit {
         }
 
         const proveedores = this.proveedoresPorReferencia.get(referenciaId) || [];
-        
+
         if (proveedores.length < 2) {
             this.messageService.add({
                 severity: 'warn',
@@ -879,7 +886,7 @@ export class EditComponent implements OnInit {
      */
     getMejorProveedor(): PedidoReferenciaProveedor | null {
         if (this.proveedoresComparacion.length === 0) return null;
-        
+
         return this.proveedoresComparacion.reduce((mejor, actual) => {
             return actual.valor_total < mejor.valor_total ? actual : mejor;
         });
@@ -890,7 +897,7 @@ export class EditComponent implements OnInit {
      */
     getMejorTiempoEntrega(): PedidoReferenciaProveedor | null {
         if (this.proveedoresComparacion.length === 0) return null;
-        
+
         return this.proveedoresComparacion.reduce((mejor, actual) => {
             return actual.dias_entrega < mejor.dias_entrega ? actual : mejor;
         });
@@ -905,9 +912,9 @@ export class EditComponent implements OnInit {
         }
 
         this.eliminarProveedor(this.referenciaComparacion.referenciaIndex, proveedorId);
-        
+
         // Actualizar lista de comparación
-        const index = this.proveedoresComparacion.findIndex(p => p.id === proveedorId);
+        const index = this.proveedoresComparacion.findIndex((p) => p.id === proveedorId);
         if (index > -1) {
             this.proveedoresComparacion.splice(index, 1);
         }

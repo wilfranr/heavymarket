@@ -58,11 +58,13 @@ export class ListComponent implements OnInit {
      * Carga los fabricantes desde el store
      */
     cargarFabricantes(): void {
-        this.store.dispatch(loadFabricantes({
-            page: this.currentPage,
-            per_page: this.rowsPerPage,
-            search: this.searchTerm || undefined
-        }));
+        this.store.dispatch(
+            loadFabricantes({
+                page: this.currentPage,
+                per_page: this.rowsPerPage,
+                search: this.searchTerm || undefined
+            })
+        );
     }
 
     /**
@@ -87,21 +89,21 @@ export class ListComponent implements OnInit {
      * Navega a crear nuevo fabricante
      */
     crearFabricante(): void {
-        this.router.navigate(['/fabricantes/create']);
+        this.router.navigate(['/app/fabricantes/create']);
     }
 
     /**
      * Navega a ver detalle
      */
     verDetalle(fabricante: Fabricante): void {
-        this.router.navigate(['/fabricantes', fabricante.id]);
+        this.router.navigate(['/app/fabricantes', fabricante.id]);
     }
 
     /**
      * Navega a editar
      */
     editarFabricante(fabricante: Fabricante): void {
-        this.router.navigate(['/fabricantes', fabricante.id, 'edit']);
+        this.router.navigate(['/app/fabricantes', fabricante.id, 'edit']);
     }
 
     /**
@@ -116,7 +118,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteFabricante({ id: fabricante.id }));
-                
+
                 // Recargar después de eliminar
                 setTimeout(() => {
                     this.cargarFabricantes();

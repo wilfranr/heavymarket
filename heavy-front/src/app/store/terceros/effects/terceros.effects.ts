@@ -22,12 +22,8 @@ export class TercerosEffects {
             ofType(TercerosActions.loadTerceros),
             switchMap(({ params }) =>
                 this.terceroService.list(params).pipe(
-                    map((response) =>
-                        TercerosActions.loadTercerosSuccess({ terceros: response.data })
-                    ),
-                    catchError((error) =>
-                        of(TercerosActions.loadTercerosFailure({ error }))
-                    )
+                    map((response) => TercerosActions.loadTercerosSuccess({ terceros: response.data })),
+                    catchError((error) => of(TercerosActions.loadTercerosFailure({ error })))
                 )
             )
         )
@@ -41,12 +37,8 @@ export class TercerosEffects {
             ofType(TercerosActions.createTercero),
             switchMap(({ tercero }) =>
                 this.terceroService.create(tercero).pipe(
-                    map((response) =>
-                        TercerosActions.createTerceroSuccess({ tercero: response.data })
-                    ),
-                    catchError((error) =>
-                        of(TercerosActions.createTerceroFailure({ error }))
-                    )
+                    map((response) => TercerosActions.createTerceroSuccess({ tercero: response.data })),
+                    catchError((error) => of(TercerosActions.createTerceroFailure({ error })))
                 )
             )
         )
@@ -60,12 +52,8 @@ export class TercerosEffects {
             ofType(TercerosActions.updateTercero),
             switchMap(({ id, tercero }) =>
                 this.terceroService.update(id, tercero).pipe(
-                    map((response) =>
-                        TercerosActions.updateTerceroSuccess({ tercero: response.data })
-                    ),
-                    catchError((error) =>
-                        of(TercerosActions.updateTerceroFailure({ error }))
-                    )
+                    map((response) => TercerosActions.updateTerceroSuccess({ tercero: response.data })),
+                    catchError((error) => of(TercerosActions.updateTerceroFailure({ error })))
                 )
             )
         )
@@ -79,12 +67,8 @@ export class TercerosEffects {
             ofType(TercerosActions.deleteTercero),
             switchMap(({ id }) =>
                 this.terceroService.deleteTercero(id).pipe(
-                    map(() =>
-                        TercerosActions.deleteTerceroSuccess({ id })
-                    ),
-                    catchError((error) =>
-                        of(TercerosActions.deleteTerceroFailure({ error }))
-                    )
+                    map(() => TercerosActions.deleteTerceroSuccess({ id })),
+                    catchError((error) => of(TercerosActions.deleteTerceroFailure({ error })))
                 )
             )
         )

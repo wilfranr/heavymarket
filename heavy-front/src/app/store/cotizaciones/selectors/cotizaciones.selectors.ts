@@ -19,38 +19,28 @@ export const selectCotizacionesTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectCotizacionesLoading = createSelector(
-  selectCotizacionesState,
-  (state: CotizacionesState) => state.loading
-);
+export const selectCotizacionesLoading = createSelector(selectCotizacionesState, (state: CotizacionesState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectCotizacionesError = createSelector(
-  selectCotizacionesState,
-  (state: CotizacionesState) => state.error
-);
+export const selectCotizacionesError = createSelector(selectCotizacionesState, (state: CotizacionesState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectCotizacionesPagination = createSelector(selectCotizacionesState, (state: CotizacionesState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de cotización por ID
  */
-export const selectCotizacionById = (id: number) =>
-  createSelector(selectCotizacionesEntities, (entities) => entities[id] || null);
+export const selectCotizacionById = (id: number) => createSelector(selectCotizacionesEntities, (entities) => entities[id] || null);
 
 /**
  * Selector de cotizaciones por estado
  */
-export const selectCotizacionesByEstado = (estado: string) =>
-  createSelector(selectAllCotizaciones, (cotizaciones) =>
-    cotizaciones.filter((cotizacion) => cotizacion.estado === estado)
-  );
+export const selectCotizacionesByEstado = (estado: string) => createSelector(selectAllCotizaciones, (cotizaciones) => cotizaciones.filter((cotizacion) => cotizacion.estado === estado));

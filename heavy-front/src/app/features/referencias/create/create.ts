@@ -100,7 +100,7 @@ export class CreateComponent implements OnInit {
             .subscribe((referenciasState: any) => {
                 if (!referenciasState.loading && !referenciasState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/referencias']);
+                    this.router.navigate(['/app/referencias']);
                 } else if (!referenciasState.loading && referenciasState.error && this.loading) {
                     this.loading = false;
                 }
@@ -111,7 +111,7 @@ export class CreateComponent implements OnInit {
      * Cancela y regresa a la lista
      */
     cancelar(): void {
-        this.router.navigate(['/referencias']);
+        this.router.navigate(['/app/referencias']);
     }
 
     /**

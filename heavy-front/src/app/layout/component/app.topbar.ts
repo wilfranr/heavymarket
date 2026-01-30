@@ -30,13 +30,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
         <div class="flex-1 flex items-center justify-center px-4 hidden lg:flex">
             <span class="p-input-icon-left" style="width: 100%; max-width: 500px;">
                 <i class="pi pi-search"></i>
-                <input 
-                    type="text" 
-                    pInputText 
-                    [(ngModel)]="searchQuery"
-                    (keyup.enter)="performSearch()"
-                    placeholder="Buscar pedidos, terceros, cotizaciones..." 
-                    class="w-full" />
+                <input type="text" pInputText [(ngModel)]="searchQuery" (keyup.enter)="performSearch()" placeholder="Buscar pedidos, terceros, cotizaciones..." class="w-full" />
             </span>
         </div>
 
@@ -45,7 +39,6 @@ import { AuthService } from '../../core/auth/services/auth.service';
                 <button type="button" class="layout-topbar-action" (click)="toggleDarkMode()">
                     <i [ngClass]="{ 'pi ': true, 'pi-moon': layoutService.isDarkTheme(), 'pi-sun': !layoutService.isDarkTheme() }"></i>
                 </button>
-
             </div>
 
             <button class="layout-topbar-menu-button layout-topbar-action" pStyleClass="@next" enterFromClass="hidden" enterActiveClass="animate-scalein" leaveToClass="hidden" leaveActiveClass="animate-fadeout" [hideOnOutsideClick]="true">
@@ -63,12 +56,7 @@ import { AuthService } from '../../core/auth/services/auth.service';
                         <i class="pi pi-sign-in"></i>
                         <span>Iniciar Sesión</span>
                     </button>
-                    <button 
-                        type="button" 
-                        class="layout-topbar-action" 
-                        #profileMenuButton
-                        (click)="profileMenu.toggle($event)"
-                        *ngIf="isAuthenticated()">
+                    <button type="button" class="layout-topbar-action" #profileMenuButton (click)="profileMenu.toggle($event)" *ngIf="isAuthenticated()">
                         <i class="pi pi-user"></i>
                         <span>{{ currentUser()?.name || 'Usuario' }}</span>
                     </button>
@@ -78,18 +66,12 @@ import { AuthService } from '../../core/auth/services/auth.service';
 
         <p-menu #profileMenu [model]="profileMenuItems" [popup]="true"></p-menu>
 
-        <p-popover #notificationsPanel [style]="{'width': '400px', 'max-height': '500px', 'overflow-y': 'auto'}">
+        <p-popover #notificationsPanel [style]="{ width: '400px', 'max-height': '500px', 'overflow-y': 'auto' }">
             <ng-template pTemplate="content">
                 <div class="p-3">
                     <div class="flex justify-between items-center mb-3">
                         <h3 class="font-semibold m-0">Notificaciones</h3>
-                        <button 
-                            type="button" 
-                            class="p-button-text p-button-sm" 
-                            pButton 
-                            label="Marcar todas como leídas"
-                            (click)="markAllAsRead()">
-                        </button>
+                        <button type="button" class="p-button-text p-button-sm" pButton label="Marcar todas como leídas" (click)="markAllAsRead()"></button>
                     </div>
                     @if (notifications().length === 0) {
                         <div class="text-center py-4 text-muted-color">
@@ -98,12 +80,8 @@ import { AuthService } from '../../core/auth/services/auth.service';
                         </div>
                     } @else {
                         @for (notification of notifications(); track notification.id) {
-                            <div 
-                                class="flex items-start p-2 mb-2 cursor-pointer hover:bg-surface-hover rounded-border"
-                                [class.opacity-60]="notification.read"
-                                (click)="markNotificationAsRead(notification.id)">
-                                <div class="w-10 h-10 flex items-center justify-center rounded-full mr-3 shrink-0"
-                                     [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
+                            <div class="flex items-start p-2 mb-2 cursor-pointer hover:bg-surface-hover rounded-border" [class.opacity-60]="notification.read" (click)="markNotificationAsRead(notification.id)">
+                                <div class="w-10 h-10 flex items-center justify-center rounded-full mr-3 shrink-0" [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
                                     <i [class]="'pi ' + notification.icon + ' text-' + notification.iconColor + '-500'"></i>
                                 </div>
                                 <div class="flex-1">

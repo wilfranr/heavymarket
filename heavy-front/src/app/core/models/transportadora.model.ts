@@ -17,7 +17,7 @@ export interface Transportadora {
     logo?: string | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     city?: any;
     state?: any;

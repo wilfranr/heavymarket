@@ -24,24 +24,14 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
 @Component({
     selector: 'app-terceros-list',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        TableModule,
-        ButtonModule,
-        CardModule,
-        InputTextModule,
-        TagModule,
-        ToastModule,
-        ConfirmDialogModule
-    ],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
     styleUrl: './list.scss'
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
-    
+
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -60,14 +50,14 @@ export class ListComponent implements OnInit {
      * Navega al detalle del tercero
      */
     verDetalle(tercero: Tercero): void {
-        this.router.navigate(['/terceros', tercero.id]);
+        this.router.navigate(['/app/terceros', tercero.id]);
     }
 
     /**
      * Navega al formulario de edición
      */
     editarTercero(tercero: Tercero): void {
-        this.router.navigate(['/terceros', tercero.id, 'edit']);
+        this.router.navigate(['/app/terceros', tercero.id, 'edit']);
     }
 
     /**
@@ -75,7 +65,7 @@ export class ListComponent implements OnInit {
      */
     eliminarTercero(tercero: Tercero): void {
         this.confirmationService.confirm({
-            message: `¿Está seguro de eliminar a ${tercero.razon_social}?`,
+            message: `¿Está seguro de eliminar a ${tercero.nombre}?`,
             header: 'Confirmar Eliminación',
             icon: 'pi pi-exclamation-triangle',
             acceptLabel: 'Sí, eliminar',
@@ -95,7 +85,7 @@ export class ListComponent implements OnInit {
      * Navega al formulario de creación
      */
     crearTercero(): void {
-        this.router.navigate(['/terceros/create']);
+        this.router.navigate(['/app/terceros/create']);
     }
 
     /**
@@ -103,9 +93,9 @@ export class ListComponent implements OnInit {
      */
     getTipoSeverity(tipo: string): 'success' | 'info' | 'warn' {
         const severityMap: Record<string, 'success' | 'info' | 'warn'> = {
-            'cliente': 'success',
-            'proveedor': 'info',
-            'ambos': 'warn'
+            cliente: 'success',
+            proveedor: 'info',
+            ambos: 'warn'
         };
         return severityMap[tipo] || 'info';
     }

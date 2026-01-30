@@ -13,7 +13,7 @@ export interface Contacto {
     principal: boolean;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     tercero?: any;
     country?: any;

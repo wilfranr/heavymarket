@@ -41,13 +41,13 @@ export class DetailComponent implements OnInit {
      * Navega al formulario de edición
      */
     editarMaquina(): void {
-        this.router.navigate(['/maquinas', this.maquinaId, 'edit']);
+        this.router.navigate(['/app/maquinas', this.maquinaId, 'edit']);
     }
 
     /**
      * Regresa a la lista
      */
     volver(): void {
-        this.router.navigate(['/maquinas']);
+        this.router.navigate(['/app/maquinas']);
     }
 }

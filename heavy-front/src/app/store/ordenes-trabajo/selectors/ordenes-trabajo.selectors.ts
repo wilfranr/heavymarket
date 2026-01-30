@@ -19,38 +19,28 @@ export const selectOrdenesTrabajoTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectOrdenesTrabajoLoading = createSelector(
-  selectOrdenesTrabajoState,
-  (state: OrdenesTrabajoState) => state.loading
-);
+export const selectOrdenesTrabajoLoading = createSelector(selectOrdenesTrabajoState, (state: OrdenesTrabajoState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectOrdenesTrabajoError = createSelector(
-  selectOrdenesTrabajoState,
-  (state: OrdenesTrabajoState) => state.error
-);
+export const selectOrdenesTrabajoError = createSelector(selectOrdenesTrabajoState, (state: OrdenesTrabajoState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectOrdenesTrabajoPagination = createSelector(selectOrdenesTrabajoState, (state: OrdenesTrabajoState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de orden de trabajo por ID
  */
-export const selectOrdenTrabajoById = (id: number) =>
-  createSelector(selectOrdenesTrabajoEntities, (entities) => entities[id] || null);
+export const selectOrdenTrabajoById = (id: number) => createSelector(selectOrdenesTrabajoEntities, (entities) => entities[id] || null);
 
 /**
  * Selector de órdenes de trabajo por estado
  */
-export const selectOrdenesTrabajoByEstado = (estado: string) =>
-  createSelector(selectAllOrdenesTrabajo, (ordenesTrabajo) =>
-    ordenesTrabajo.filter((ordenTrabajo) => ordenTrabajo.estado === estado)
-  );
+export const selectOrdenesTrabajoByEstado = (estado: string) => createSelector(selectAllOrdenesTrabajo, (ordenesTrabajo) => ordenesTrabajo.filter((ordenTrabajo) => ordenTrabajo.estado === estado));

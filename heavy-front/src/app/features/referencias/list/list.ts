@@ -79,12 +79,14 @@ export class ListComponent implements OnInit {
      * Carga las referencias desde el store
      */
     cargarReferencias(): void {
-        this.store.dispatch(loadReferencias({
-            page: this.currentPage,
-            per_page: this.rowsPerPage,
-            search: this.searchTerm || undefined,
-            marca_id: this.selectedMarcaId || undefined
-        }));
+        this.store.dispatch(
+            loadReferencias({
+                page: this.currentPage,
+                per_page: this.rowsPerPage,
+                search: this.searchTerm || undefined,
+                marca_id: this.selectedMarcaId || undefined
+            })
+        );
     }
 
     /**
@@ -117,21 +119,21 @@ export class ListComponent implements OnInit {
      * Navega a crear nueva referencia
      */
     crearReferencia(): void {
-        this.router.navigate(['/referencias/create']);
+        this.router.navigate(['/app/referencias/create']);
     }
 
     /**
      * Navega a ver detalle
      */
     verDetalle(referencia: Referencia): void {
-        this.router.navigate(['/referencias', referencia.id]);
+        this.router.navigate(['/app/referencias', referencia.id]);
     }
 
     /**
      * Navega a editar
      */
     editarReferencia(referencia: Referencia): void {
-        this.router.navigate(['/referencias', referencia.id, 'edit']);
+        this.router.navigate(['/app/referencias', referencia.id, 'edit']);
     }
 
     /**
@@ -146,7 +148,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteReferencia({ id: referencia.id }));
-                
+
                 setTimeout(() => {
                     this.cargarReferencias();
                 }, 500);

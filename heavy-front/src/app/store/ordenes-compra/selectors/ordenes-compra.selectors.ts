@@ -19,46 +19,33 @@ export const selectOrdenesCompraTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectOrdenesCompraLoading = createSelector(
-  selectOrdenesCompraState,
-  (state: OrdenesCompraState) => state.loading
-);
+export const selectOrdenesCompraLoading = createSelector(selectOrdenesCompraState, (state: OrdenesCompraState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectOrdenesCompraError = createSelector(
-  selectOrdenesCompraState,
-  (state: OrdenesCompraState) => state.error
-);
+export const selectOrdenesCompraError = createSelector(selectOrdenesCompraState, (state: OrdenesCompraState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectOrdenesCompraPagination = createSelector(selectOrdenesCompraState, (state: OrdenesCompraState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de orden de compra por ID
  */
-export const selectOrdenCompraById = (id: number) =>
-  createSelector(selectOrdenesCompraEntities, (entities) => entities[id] || null);
+export const selectOrdenCompraById = (id: number) => createSelector(selectOrdenesCompraEntities, (entities) => entities[id] || null);
 
 /**
  * Selector de órdenes de compra por estado
  */
-export const selectOrdenesCompraByEstado = (estado: string) =>
-  createSelector(selectAllOrdenesCompra, (ordenesCompra) =>
-    ordenesCompra.filter((ordenCompra) => ordenCompra.estado === estado)
-  );
+export const selectOrdenesCompraByEstado = (estado: string) => createSelector(selectAllOrdenesCompra, (ordenesCompra) => ordenesCompra.filter((ordenCompra) => ordenCompra.estado === estado));
 
 /**
  * Selector de órdenes de compra por color
  */
-export const selectOrdenesCompraByColor = (color: string) =>
-  createSelector(selectAllOrdenesCompra, (ordenesCompra) =>
-    ordenesCompra.filter((ordenCompra) => ordenCompra.color === color)
-  );
+export const selectOrdenesCompraByColor = (color: string) => createSelector(selectAllOrdenesCompra, (ordenesCompra) => ordenesCompra.filter((ordenCompra) => ordenCompra.color === color));

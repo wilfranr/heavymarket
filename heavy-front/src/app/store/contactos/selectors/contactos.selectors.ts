@@ -19,30 +19,23 @@ export const selectContactosTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectContactosLoading = createSelector(
-  selectContactosState,
-  (state: ContactosState) => state.loading
-);
+export const selectContactosLoading = createSelector(selectContactosState, (state: ContactosState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectContactosError = createSelector(
-  selectContactosState,
-  (state: ContactosState) => state.error
-);
+export const selectContactosError = createSelector(selectContactosState, (state: ContactosState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectContactosPagination = createSelector(selectContactosState, (state: ContactosState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de contacto por ID
  */
-export const selectContactoById = (id: number) =>
-  createSelector(selectContactosEntities, (entities) => entities[id] || null);
+export const selectContactoById = (id: number) => createSelector(selectContactosEntities, (entities) => entities[id] || null);

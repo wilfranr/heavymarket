@@ -54,7 +54,9 @@
                         <span class="font-semibold">{{ fabricante.nombre }}</span>
                     </td>
                     <td>
-                        <span class="text-sm text-gray-600" [title]="fabricante.descripcion || ''"> {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ? fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }} </span>
+                        <span class="text-sm text-gray-600" [title]="fabricante.descripcion || ''">
+                            {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ? fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }}
+                        </span>
                     </td>
                     <td>
                         @if (fabricante.logo) {

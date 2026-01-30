@@ -8,4 +8,4 @@ import { Component } from '@angular/core';
         <span class="font-medium ml-2">© 2026 Todos los derechos reservados</span>
     </div>`
 })
-export class AppFooter { }
+export class AppFooter {}

@@ -31,10 +31,10 @@ export class ProductDetail implements OnInit {
         private router: Router,
         private landingService: LandingService,
         private _location: Location
-    ) { }
+    ) {}
 
     ngOnInit() {
-        this.route.params.subscribe(params => {
+        this.route.params.subscribe((params) => {
             this.categorySlug = params['category'];
             this.subCategorySlug = params['subcategory'];
             this.loadProduct();
@@ -45,10 +45,10 @@ export class ProductDetail implements OnInit {
         this.loading = true;
         this.landingService.getNavbarCategories().subscribe({
             next: (categories) => {
-                const cat = categories.find(c => c.slug === this.categorySlug);
+                const cat = categories.find((c) => c.slug === this.categorySlug);
                 if (cat) {
                     this.category = cat;
-                    const sub = cat.subcategorias.find(s => s.slug === this.subCategorySlug);
+                    const sub = cat.subcategorias.find((s) => s.slug === this.subCategorySlug);
                     if (sub) {
                         this.subCategory = sub;
                         // Simulamos la descripción general de la categoría si no viene en el API

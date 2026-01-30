@@ -21,8 +21,6 @@ export class CustomPreloadStrategy implements PreloadingStrategy {
         }
 
         // Delay de 2 segundos para no afectar la carga inicial
-        return timer(2000).pipe(
-            mergeMap(() => load())
-        );
+        return timer(2000).pipe(mergeMap(() => load()));
     }
 }

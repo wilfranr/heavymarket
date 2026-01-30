@@ -25,19 +25,7 @@ import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/s
 @Component({
     selector: 'app-pedido-detail',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        CardModule,
-        ButtonModule,
-        TagModule,
-        DividerModule,
-        SkeletonModule,
-        ToastModule,
-        TabsModule,
-        DataViewModule,
-        PanelModule
-    ],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, SkeletonModule, ToastModule, TabsModule, DataViewModule, PanelModule],
     providers: [MessageService],
     templateUrl: './detail.html',
     styleUrl: './detail.scss'
@@ -50,16 +38,16 @@ export class DetailComponent implements OnInit {
 
     pedido$!: Observable<Pedido | undefined>;
     loading$!: Observable<boolean>;
-    
+
     pedidoId = signal<number>(0);
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
-        
+
         if (id) {
             const pedidoId = parseInt(id, 10);
             this.pedidoId.set(pedidoId);
-            
+
             this.pedido$ = this.store.select(selectPedidoById(pedidoId));
             this.loading$ = this.store.select(selectPedidosLoading);
         } else {
@@ -68,7 +56,7 @@ export class DetailComponent implements OnInit {
                 summary: 'Error',
                 detail: 'ID de pedido inválido'
             });
-            this.router.navigate(['/pedidos']);
+            this.router.navigate(['/app/pedidos']);
         }
     }
 
@@ -77,11 +65,11 @@ export class DetailComponent implements OnInit {
      */
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
-            'pendiente': 'warn',
-            'en_proceso': 'info',
-            'completado': 'success',
-            'cancelado': 'danger',
-            'entregado': 'success'
+            pendiente: 'warn',
+            en_proceso: 'info',
+            completado: 'success',
+            cancelado: 'danger',
+            entregado: 'success'
         };
         return severityMap[estado] || 'secondary';
     }
@@ -90,14 +78,14 @@ export class DetailComponent implements OnInit {
      * Navega a la página de edición
      */
     editarPedido(): void {
-        this.router.navigate(['/pedidos', this.pedidoId(), 'edit']);
+        this.router.navigate(['/app/pedidos', this.pedidoId(), 'edit']);
     }
 
     /**
      * Vuelve a la lista de pedidos
      */
     volver(): void {
-        this.router.navigate(['/pedidos']);
+        this.router.navigate(['/app/pedidos']);
     }
 
     /**

@@ -41,13 +41,13 @@ export class DetailComponent implements OnInit {
      * Navega al formulario de edición
      */
     editarSistema(): void {
-        this.router.navigate(['/sistemas', this.sistemaId, 'edit']);
+        this.router.navigate(['/app/sistemas', this.sistemaId, 'edit']);
     }
 
     /**
      * Regresa a la lista
      */
     volver(): void {
-        this.router.navigate(['/sistemas']);
+        this.router.navigate(['/app/sistemas']);
     }
 }

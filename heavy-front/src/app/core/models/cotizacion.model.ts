@@ -13,7 +13,7 @@ export interface Cotizacion {
     total: number | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     user?: any;
     tercero?: any;
@@ -24,13 +24,7 @@ export interface Cotizacion {
 /**
  * Estados posibles de una cotización
  */
-export type CotizacionEstado = 
-    | 'Pendiente'
-    | 'Enviada'
-    | 'Aprobada'
-    | 'Rechazada'
-    | 'Vencida'
-    | 'En_Proceso';
+export type CotizacionEstado = 'Pendiente' | 'Enviada' | 'Aprobada' | 'Rechazada' | 'Vencida' | 'En_Proceso';
 
 /**
  * Modelo de CotizacionReferenciaProveedor
@@ -41,7 +35,7 @@ export interface CotizacionReferenciaProveedor {
     pedido_referencia_proveedor_id: number;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     cotizacion?: Cotizacion;
     pedido_referencia_proveedor?: any;

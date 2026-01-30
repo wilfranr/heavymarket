@@ -10,18 +10,18 @@ import { DetailComponent } from './detail/detail';
 export default [
     {
         path: '',
-        component: ListComponent,
+        component: ListComponent
     },
     {
         path: 'create',
-        component: CreateComponent,
+        component: CreateComponent
     },
     {
         path: ':id',
-        component: DetailComponent,
+        component: DetailComponent
     },
     {
         path: ':id/edit',
-        component: EditComponent,
-    },
+        component: EditComponent
+    }
 ] as Routes;

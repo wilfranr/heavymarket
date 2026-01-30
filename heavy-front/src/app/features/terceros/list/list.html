@@ -6,11 +6,7 @@
         <ng-template pTemplate="header">
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Terceros (Clientes y Proveedores)</h2>
-                <p-button
-                    label="Nuevo Tercero"
-                    icon="pi pi-plus"
-                    (onClick)="crearTercero()">
-                </p-button>
+                <p-button label="Nuevo Tercero" icon="pi pi-plus" (onClick)="crearTercero()"> </p-button>
             </div>
         </ng-template>
 
@@ -25,18 +21,13 @@
             [rowsPerPageOptions]="[10, 25, 50]"
             [globalFilterFields]="['razon_social', 'documento', 'email', 'telefono']"
             responsiveLayout="scroll"
-            styleClass="p-datatable-sm">
-            
+            styleClass="p-datatable-sm"
+        >
             <ng-template pTemplate="caption">
                 <div class="flex">
                     <span class="p-input-icon-left w-full">
                         <i class="pi pi-search"></i>
-                        <input
-                            pInputText
-                            type="text"
-                            (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                            placeholder="Buscar terceros..."
-                            class="w-full" />
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar terceros..." class="w-full" />
                     </span>
                 </div>
             </ng-template>
@@ -60,61 +51,28 @@
                         <span class="font-semibold">{{ tercero.nombre }}</span>
                     </td>
                     <td>
-                        <span class="text-sm">
-                            {{ tercero.tipo_documento }} {{ tercero.documento }}
-                        </span>
+                        <span class="text-sm"> {{ tercero.tipo_documento }} {{ tercero.documento }} </span>
                     </td>
                     <td>
                         <div class="flex flex-col text-sm">
                             @if (tercero.email) {
-                                <span><i class="pi pi-envelope mr-1"></i>{{ tercero.email }}</span>
-                            }
-                            @if (tercero.telefono) {
-                                <span><i class="pi pi-phone mr-1"></i>{{ tercero.telefono }}</span>
+                            <span><i class="pi pi-envelope mr-1"></i>{{ tercero.email }}</span>
+                            } @if (tercero.telefono) {
+                            <span><i class="pi pi-phone mr-1"></i>{{ tercero.telefono }}</span>
                             }
                         </div>
                     </td>
                     <td>
-                        <p-tag
-                            [value]="tercero.tipo"
-                            [severity]="getTipoSeverity(tercero.tipo)">
-                        </p-tag>
+                        <p-tag [value]="tercero.tipo" [severity]="getTipoSeverity(tercero.tipo)"> </p-tag>
                     </td>
                     <td>
-                        <p-tag
-                            [value]="tercero.estado"
-                            [severity]="getEstadoSeverity(tercero.estado)">
-                        </p-tag>
+                        <p-tag [value]="tercero.estado" [severity]="getEstadoSeverity(tercero.estado)"> </p-tag>
                     </td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button
-                                icon="pi pi-eye"
-                                severity="info"
-                                [text]="true"
-                                [rounded]="true"
-                                (onClick)="verDetalle(tercero)"
-                                pTooltip="Ver detalle"
-                                tooltipPosition="top">
-                            </p-button>
-                            <p-button
-                                icon="pi pi-pencil"
-                                severity="warn"
-                                [text]="true"
-                                [rounded]="true"
-                                (onClick)="editarTercero(tercero)"
-                                pTooltip="Editar"
-                                tooltipPosition="top">
-                            </p-button>
-                            <p-button
-                                icon="pi pi-trash"
-                                severity="danger"
-                                [text]="true"
-                                [rounded]="true"
-                                (onClick)="eliminarTercero(tercero)"
-                                pTooltip="Eliminar"
-                                tooltipPosition="top">
-                            </p-button>
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(tercero)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarTercero(tercero)" pTooltip="Editar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarTercero(tercero)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
                         </div>
                     </td>
                 </tr>

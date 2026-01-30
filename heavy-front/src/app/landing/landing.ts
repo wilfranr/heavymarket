@@ -8,19 +8,9 @@ import { SystemsSection } from './components/systems-section/systems-section';
 import { FooterSection } from './components/footer-section/footer-section';
 
 @Component({
-  selector: 'app-landing',
-  imports: [
-    Navbar,
-    Carousel,
-    BrandsSection,
-    QuoteSection,
-    StepsSection,
-    SystemsSection,
-    FooterSection
-  ],
-  templateUrl: './landing.html',
-  styles: ``,
+    selector: 'app-landing',
+    imports: [Navbar, Carousel, BrandsSection, QuoteSection, StepsSection, SystemsSection, FooterSection],
+    templateUrl: './landing.html',
+    styles: ``
 })
-export class Landing {
-
-}
+export class Landing {}

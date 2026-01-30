@@ -46,7 +46,7 @@ export class EditComponent implements OnInit {
 
     ngOnInit(): void {
         this.cargarMarcas();
-        
+
         this.route.params.subscribe((params) => {
             this.referenciaId = +params['id'];
             this.store.dispatch(loadReferenciaById({ id: this.referenciaId }));
@@ -116,7 +116,7 @@ export class EditComponent implements OnInit {
             .subscribe((referenciasState: any) => {
                 if (!referenciasState.loading && !referenciasState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/referencias', this.referenciaId]);
+                    this.router.navigate(['/app/referencias', this.referenciaId]);
                 } else if (!referenciasState.loading && referenciasState.error && this.loading) {
                     this.loading = false;
                 }
@@ -127,7 +127,7 @@ export class EditComponent implements OnInit {
      * Cancela y regresa al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/referencias', this.referenciaId]);
+        this.router.navigate(['/app/referencias', this.referenciaId]);
     }
 
     /**

@@ -58,11 +58,13 @@ export class ListComponent implements OnInit {
      * Carga los sistemas desde el store
      */
     cargarSistemas(): void {
-        this.store.dispatch(loadSistemas({
-            page: this.currentPage,
-            per_page: this.rowsPerPage,
-            search: this.searchTerm || undefined
-        }));
+        this.store.dispatch(
+            loadSistemas({
+                page: this.currentPage,
+                per_page: this.rowsPerPage,
+                search: this.searchTerm || undefined
+            })
+        );
     }
 
     /**
@@ -86,21 +88,21 @@ export class ListComponent implements OnInit {
      * Navega a crear nuevo sistema
      */
     crearSistema(): void {
-        this.router.navigate(['/sistemas/create']);
+        this.router.navigate(['/app/sistemas/create']);
     }
 
     /**
      * Navega a ver detalle
      */
     verDetalle(sistema: Sistema): void {
-        this.router.navigate(['/sistemas', sistema.id]);
+        this.router.navigate(['/app/sistemas', sistema.id]);
     }
 
     /**
      * Navega a editar
      */
     editarSistema(sistema: Sistema): void {
-        this.router.navigate(['/sistemas', sistema.id, 'edit']);
+        this.router.navigate(['/app/sistemas', sistema.id, 'edit']);
     }
 
     /**
@@ -115,7 +117,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteSistema({ id: sistema.id }));
-                
+
                 setTimeout(() => {
                     this.cargarSistemas();
                 }, 500);

@@ -7,12 +7,12 @@
 
 body {
     font-family:
-        "Figtree",
+        'Figtree',
         -apple-system,
         BlinkMacSystemFont,
-        "Segoe UI",
+        'Segoe UI',
         Roboto,
-        "Helvetica Neue",
+        'Helvetica Neue',
         Arial,
         sans-serif;
     line-height: 1.6;
@@ -50,7 +50,7 @@ app-banner {
 
 /* Frame 56 */
 .page-wrapper::before {
-    content: "";
+    content: '';
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -244,7 +244,7 @@ app-banner {
 .navbar-link-frame:nth-child(1) .link-text {
     width: 161px;
     height: 24px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
@@ -260,7 +260,7 @@ app-banner {
 .navbar-link-frame:nth-child(2) .link-text {
     width: 102px;
     height: 24px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
@@ -276,7 +276,7 @@ app-banner {
 .navbar-link-frame:nth-child(3) .link-text {
     width: 124px;
     height: 24px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
@@ -292,7 +292,7 @@ app-banner {
 .navbar-link-frame:nth-child(4) .link-text {
     width: 104px;
     height: 24px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
@@ -379,11 +379,26 @@ app-banner {
     flex-grow: 0;
 }
 
+.navbar-button-app {
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 8px;
+    width: 40px;
+    height: 40px;
+    background: transparent;
+    cursor: pointer;
+    flex: none;
+    flex-grow: 0;
+}
 /* Text del botón */
 .button-text {
     width: 67px;
     height: 20px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
@@ -431,7 +446,7 @@ app-banner {
 .banner-text {
     width: 318px;
     height: 22px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
@@ -463,7 +478,7 @@ app-banner {
 .banner-button .button-text {
     width: 125px;
     height: 20px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
@@ -494,9 +509,7 @@ app-banner {
     padding: 0px;
     width: 100%;
     height: 796px;
-    background: linear-gradient(180deg,
-            rgba(0, 0, 0, 0) 0%,
-            rgba(0, 0, 0, 0.6) 61.53%);
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0.6) 61.53%);
     flex: none;
     align-self: stretch;
     flex-grow: 0;
@@ -710,7 +723,7 @@ app-banner {
 .carousel-title {
     width: 1087.83px;
     height: 136px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 60px;
@@ -787,7 +800,7 @@ app-banner {
 .brands-heading {
     width: 992.34px;
     height: 136px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 60px;
@@ -882,7 +895,7 @@ app-banner {
 .quote-headline {
     width: 661px;
     height: 240px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 72px;
@@ -898,7 +911,7 @@ app-banner {
 .quote-description {
     width: 591px;
     height: 72px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 18px;
@@ -934,7 +947,7 @@ app-banner {
     border-radius: 64px;
     border: none;
     cursor: pointer;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
@@ -1010,7 +1023,7 @@ app-banner {
 .steps-image {
     width: 499.55px;
     height: 433.82px;
-    background: url("/images/steps-image.png");
+    background: url('/images/steps-image.png');
     border-radius: 0px 271.403px;
     flex: none;
     order: 0;
@@ -1022,7 +1035,7 @@ app-banner {
 .steps-heading {
     width: 539.45px;
     height: 136px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 60px;
@@ -1047,7 +1060,7 @@ app-banner {
 }
 
 .step-title {
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 48px;
@@ -1079,7 +1092,7 @@ app-banner {
 }
 
 .step-description {
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 24px;
@@ -1094,7 +1107,7 @@ app-banner {
 }
 
 .step-supporting-text {
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 20px;
@@ -1130,7 +1143,7 @@ app-banner {
 .systems-main-heading {
     width: 1109.95px;
     height: 240px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 72px;
@@ -1216,7 +1229,7 @@ app-banner {
     width: 100%;
     max-width: 530px;
     height: 58px;
-    font-family: "Roboto", sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 48px;
@@ -1239,7 +1252,7 @@ app-banner {
 .system-description {
     width: 100%;
     max-width: 530px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 18px;
@@ -1447,7 +1460,7 @@ app-banner {
     margin: 0 auto;
     width: 278.31px;
     height: 132px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 36px;
@@ -1484,7 +1497,7 @@ app-banner {
 }
 
 .form-input-wrapper::after {
-    content: "→";
+    content: '→';
     font-size: 20px;
     color: #fdb831;
     line-height: 1;
@@ -1501,7 +1514,7 @@ app-banner {
     flex: 1;
     min-width: 0;
     height: 20px;
-    font-family: "Inter", sans-serif;
+    font-family: 'Inter', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -1559,7 +1572,7 @@ app-banner {
 .footer-section-title {
     width: 190px;
     height: 18px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 18px;
@@ -1580,7 +1593,7 @@ app-banner {
     align-items: flex-start;
     padding: 0px;
     gap: 8px;
-    width: 100%px;
+    width: 100% px;
     height: 204px;
     flex: none;
     align-self: stretch;
@@ -1594,7 +1607,7 @@ app-banner {
     margin: 0 auto;
     width: auto;
     height: 28px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 20px;
@@ -1632,7 +1645,7 @@ app-banner {
     border-radius: 64px;
     border: none;
     cursor: pointer;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 14px;
@@ -1671,7 +1684,7 @@ app-banner {
 .contact-label {
     width: 186px;
     height: 18px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 18px;
@@ -1687,7 +1700,7 @@ app-banner {
 .contact-value {
     width: 132px;
     height: 22px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 16px;
@@ -1812,7 +1825,7 @@ app-banner {
     margin: 0 auto;
     width: 345px;
     height: 21px;
-    font-family: "Roboto", sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -1839,7 +1852,7 @@ app-banner {
 .footer-credit-link {
     width: auto;
     height: 21px;
-    font-family: "Roboto", sans-serif;
+    font-family: 'Roboto', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -1884,7 +1897,7 @@ app-banner {
     background-color: transparent;
     color: #ffffff;
     border: none;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     font-size: 18px;
@@ -1958,8 +1971,6 @@ app-banner {
     pointer-events: all;
 }
 
-
-
 /* Menu - Sidebar izquierdo */
 .dropdown-menu-sidebar {
     display: flex;
@@ -1994,7 +2005,7 @@ app-banner {
 .dropdown-menu-title {
     width: 214px;
     height: 18px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 18px;
@@ -2045,7 +2056,7 @@ app-banner {
 .dropdown-menu-link {
     width: auto;
     height: 20px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
@@ -2099,7 +2110,6 @@ app-banner {
     flex-grow: 0;
 }
 
-
 .dropdown-articles-inner {
     display: flex;
     flex-direction: column;
@@ -2133,7 +2143,7 @@ app-banner {
 .dropdown-articles-title {
     width: 1022px;
     height: 22px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 16px;
@@ -2201,8 +2211,8 @@ app-banner {
 }
 
 .dropdown-blog-item:hover {
-    background: #FDB831;
-    border-color: #FDB831;
+    background: #fdb831;
+    border-color: #fdb831;
     box-shadow: 0 4px 12px rgba(253, 184, 49, 0.3);
     transform: translateY(-2px);
 }
@@ -2260,7 +2270,7 @@ app-banner {
     width: 100%;
     min-height: 22px;
     height: auto;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
     font-size: 16px;
@@ -2278,7 +2288,7 @@ app-banner {
 .dropdown-blog-description {
     width: 100%;
     height: 40px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 400;
     font-size: 14px;
@@ -2318,15 +2328,15 @@ app-banner {
 }
 
 .dropdown-blog-item:hover .dropdown-blog-button {
-    background: #0C0E0F;
+    background: #0c0e0f;
 }
 
 .dropdown-blog-item:hover .dropdown-blog-button .dropdown-button-text {
-    color: #FFFFFF;
+    color: #ffffff;
 }
 
 .dropdown-blog-item:hover .dropdown-blog-button .dropdown-arrow-icon path {
-    stroke: #FFFFFF;
+    stroke: #ffffff;
 }
 
 .dropdown-blog-button .dropdown-button-text {
@@ -2334,7 +2344,7 @@ app-banner {
     height: 20px;
     color: #0c0e0f;
     font-size: 14px;
-    font-family: "Figtree", sans-serif;
+    font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
     line-height: 20px;

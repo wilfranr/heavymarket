@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -16,6 +16,12 @@ import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { DialogModule } from 'primeng/dialog';
+import { TableModule } from 'primeng/table';
+import { CheckboxModule } from 'primeng/checkbox';
+import { TooltipModule } from 'primeng/tooltip';
+import { TagModule } from 'primeng/tag';
+import { SkeletonModule } from 'primeng/skeleton';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -25,6 +31,10 @@ import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
+import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { Country, State, City } from '../../../core/models/ubicacion.model';
+import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-referencia-proveedor.service';
+import { ArticuloService } from '../../../core/services/articulo.service';
 
 /**
  * Componente de creación de pedido con Wizard de 3 pasos
@@ -48,7 +58,13 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
         DividerModule,
         StepsModule,
         ToggleButtonModule,
-        InputNumberModule
+        InputNumberModule,
+        DialogModule,
+        TableModule,
+        CheckboxModule,
+        TooltipModule,
+        TagModule,
+        SkeletonModule
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -65,10 +81,18 @@ export class CreateComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
+    private readonly ubicacionService = inject(UbicacionService);
+    private readonly proveedorService = inject(PedidoReferenciaProveedorService);
+    private readonly articuloService = inject(ArticuloService);
 
     pedidoForm!: FormGroup;
+    createTerceroForm!: FormGroup;
     activeIndex = 0;
     loading = false;
+    loadingTercero = false;
+    displayCreateTerceroDialog = false;
+
+    today = new Date();
 
     // Opciones para selects
     terceros: any[] = [];
@@ -78,16 +102,54 @@ export class CreateComponent implements OnInit {
     fabricantes: any[] = [];
     referencias: any[] = [];
 
-    // Items del wizard
-    items: MenuItem[] = [
-        { label: 'Cliente' },
-        { label: 'Referencias Masivas' },
-        { label: 'Referencias Detalladas' }
+    // Terceros completos para info cards
+    tercerosFull: any[] = [];
+    maquinasFull: any[] = [];
+
+    // Signals para reactividad en cards
+    terceroId = signal<number | null>(null);
+    maquinaId = signal<number | null>(null);
+
+    selectedTercero = computed(() => {
+        const id = this.terceroId();
+        return id ? this.tercerosFull.find(t => t.id === id) : null;
+    });
+
+    selectedMaquina = computed(() => {
+        const id = this.maquinaId();
+        return id ? this.maquinasFull.find(m => m.id === id) : null;
+    });
+
+    // Estado de proveedores por referencia (para 'Crear', se guardarán localmente antes de enviar o se manejarán como FormArrays)
+    referenciaIndexParaProveedor: number | null = null;
+    nuevoProveedorForm: FormGroup | null = null;
+
+    // Ubicación para creación de tercero
+    paises: Country[] = [];
+    departamentos: State[] = [];
+    ciudades: City[] = [];
+
+    tiposDocumento = [
+        { label: 'NIT', value: 'nit' },
+        { label: 'Cédula de Ciudadanía', value: 'cc' },
+        { label: 'Cédula de Extranjería', value: 'ce' },
+        { label: 'Pasaporte', value: 'pasaporte' }
     ];
+
+    // tiposTercero ya no es necesario en la vista si lo forzamos a "Cliente", 
+    // pero lo dejamos por si acaso o lo simplificamos.
+    // El backend espera 'Cliente', 'Proveedor', 'Ambos'
+    tiposTercero = [
+        { label: 'Cliente', value: 'Cliente' }
+    ];
+
+    // Items del wizard
+    items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
 
     ngOnInit(): void {
         this.initForm();
         this.loadInitialData();
+        this.loadPaises();
     }
 
     /**
@@ -103,12 +165,154 @@ export class CreateComponent implements OnInit {
             fabricante_id: [null],
             contacto_id: [null],
             estado: ['Nuevo' as PedidoEstado, [Validators.required]],
-            
+
             // Paso 2: Referencias Masivas
             referencias_copiadas: [''],
-            
+
             // Paso 3: Referencias Detalladas
             referencias: this.fb.array([])
+        });
+
+        // Listen for changes to update cards
+        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => this.terceroId.set(id));
+        this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(id => this.maquinaId.set(id));
+
+        // Formulario para crear tercero (Cliente)
+        this.createTerceroForm = this.fb.group({
+            tipo_documento: ['nit', [Validators.required]],
+            numero_documento: ['', [Validators.required, Validators.maxLength(20)]],
+            nombre: ['', [Validators.required, Validators.maxLength(255)]], // Razón social / Nombre
+            telefono: ['', [Validators.required]], // Teléfono requerido
+            email: ['', [Validators.email]],
+            direccion: [''],
+            // Ubicación
+            country_id: [null],
+            state_id: [null],
+            city_id: [null],
+            // Campos por defecto para cliente
+            tipo: ['Cliente'],
+            estado: ['activo']
+        });
+    }
+
+    /**
+     * Muestra el diálogo para crear un nuevo tercero
+     */
+    openCreateTerceroDialog(): void {
+        this.createTerceroForm.reset({
+            tipo_documento: 'nit',
+            tipo: 'Cliente',
+            estado: 'activo'
+        });
+
+        // Resetear selectores dependientes
+        this.departamentos = [];
+        this.ciudades = [];
+
+        this.displayCreateTerceroDialog = true;
+    }
+
+    /**
+     * Carga la lista de países
+     */
+    private loadPaises(): void {
+        this.ubicacionService.getCountries().subscribe({
+            next: (response) => {
+                this.paises = response.data;
+            }
+        });
+    }
+
+    /**
+     * Maneja el cambio de país en el formulario de tercero
+     */
+    onPaisChange(): void {
+        const countryId = this.createTerceroForm.get('country_id')?.value;
+        this.departamentos = [];
+        this.ciudades = [];
+        this.createTerceroForm.patchValue({ state_id: null, city_id: null });
+
+        if (countryId) {
+            this.ubicacionService.getStates(countryId).subscribe({
+                next: (response) => {
+                    this.departamentos = response.data;
+                    if (this.departamentos.length === 0) {
+                        this.loadCiudades(undefined, countryId);
+                    }
+                }
+            });
+        }
+    }
+
+    /**
+     * Maneja el cambio de departamento en el formulario de tercero
+     */
+    onDepartamentoChange(): void {
+        const stateId = this.createTerceroForm.get('state_id')?.value;
+        this.ciudades = [];
+        this.createTerceroForm.patchValue({ city_id: null });
+
+        if (stateId) {
+            this.loadCiudades(stateId);
+        }
+    }
+
+    /**
+     * Carga ciudades basado en estado o país
+     */
+    private loadCiudades(stateId?: number, countryId?: number): void {
+        this.ubicacionService.getCities(stateId, countryId).subscribe({
+            next: (response) => {
+                this.ciudades = response.data;
+            }
+        });
+    }
+
+    /**
+     * Cierra el diálogo de creación de tercero
+     */
+    closeCreateTerceroDialog(): void {
+        this.displayCreateTerceroDialog = false;
+    }
+
+    /**
+     * Guarda el nuevo tercero
+     */
+    saveTercero(): void {
+        if (this.createTerceroForm.invalid) {
+            this.createTerceroForm.markAllAsTouched();
+            return;
+        }
+
+        this.loadingTercero = true;
+        const formValue = this.createTerceroForm.value;
+
+        // Mapear al DTO incluyendo ubicaciones
+        const data = {
+            ...formValue,
+            country_id: formValue.country_id || undefined,
+            state_id: formValue.state_id || undefined,
+            city_id: formValue.city_id || undefined
+        };
+
+        this.terceroService.create(data).subscribe({
+            next: (response) => {
+                this.loadingTercero = false;
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Éxito',
+                    detail: 'Cliente creado correctamente'
+                });
+
+                // Recargar lista de terceros y seleccionar el nuevo
+                this.loadTerceros(response.data.id);
+                this.closeCreateTerceroDialog();
+            },
+            error: (error) => {
+                this.loadingTercero = false;
+                // El servicio ya maneja errores globales, pero podemos ser específicos si es necesario
+                console.error('Error al crear tercero', error);
+            }
         });
     }
 
@@ -117,26 +321,12 @@ export class CreateComponent implements OnInit {
      */
     private loadInitialData(): void {
         // Cargar terceros (clientes)
-        this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
-            next: (response) => {
-                this.terceros = response.data.map(t => ({
-                    label: t.razon_social || t.nombre_comercial || `Tercero ${t.id}`,
-                    value: t.id
-                }));
-            },
-            error: () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'No se pudieron cargar los clientes'
-                });
-            }
-        });
+        this.loadTerceros();
 
         // Cargar sistemas
         this.sistemaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map(s => ({
+                this.sistemas = response.data.map((s) => ({
                     label: s.nombre,
                     value: s.id
                 }));
@@ -146,7 +336,7 @@ export class CreateComponent implements OnInit {
         // Cargar marcas
         this.listaService.getByTipo('Marca').subscribe({
             next: (marcas) => {
-                this.marcas = marcas.map(m => ({
+                this.marcas = marcas.map((m) => ({
                     label: m.nombre,
                     value: m.id
                 }));
@@ -156,7 +346,8 @@ export class CreateComponent implements OnInit {
         // Cargar máquinas
         this.maquinaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.maquinas = response.data.map(m => ({
+                this.maquinasFull = response.data;
+                this.maquinas = response.data.map((m) => ({
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
                     value: m.id
                 }));
@@ -166,7 +357,7 @@ export class CreateComponent implements OnInit {
         // Cargar fabricantes
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.fabricantes = response.data.map(f => ({
+                this.fabricantes = response.data.map((f) => ({
                     label: f.nombre,
                     value: f.id
                 }));
@@ -183,7 +374,7 @@ export class CreateComponent implements OnInit {
     private loadReferencias(): void {
         this.referenciaService.getAll({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.referencias = response.data.map(r => ({
+                this.referencias = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id
                 }));
@@ -201,14 +392,17 @@ export class CreateComponent implements OnInit {
     /**
      * Agrega una nueva referencia al FormArray
      */
-    addReferencia(): void {
+    agregarReferencia(): void {
         const referenciaForm = this.fb.group({
             estado: [true],
             sistema_id: [null],
             referencia_id: [null, [Validators.required]],
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
-            comentario: ['']
+            comentario: [''],
+            definicion: [''],
+            imagen: [null],
+            proveedores: this.fb.array([])
         });
 
         this.referenciasFormArray.push(referenciaForm);
@@ -217,7 +411,7 @@ export class CreateComponent implements OnInit {
     /**
      * Elimina una referencia del FormArray
      */
-    removeReferencia(index: number): void {
+    eliminarReferencia(index: number): void {
         this.referenciasFormArray.removeAt(index);
     }
 
@@ -277,7 +471,7 @@ export class CreateComponent implements OnInit {
                     let referenciaId: number | null = null;
 
                     // Buscar coincidencia exacta
-                    const referenciaEncontrada = response.data.find(r => r.referencia.toUpperCase() === codigo);
+                    const referenciaEncontrada = response.data.find((r) => r.referencia.toUpperCase() === codigo);
 
                     if (referenciaEncontrada) {
                         referenciaId = referenciaEncontrada.id;
@@ -285,22 +479,24 @@ export class CreateComponent implements OnInit {
                         procesadas++;
                     } else {
                         // Crear nueva referencia
-                        this.referenciaService.create({
-                            referencia: codigo,
-                            marca_id: undefined,
-                            comentario: 'Creada desde importación masiva'
-                        }).subscribe({
-                            next: (createResponse) => {
-                                referenciaId = createResponse.data.id;
-                                this.agregarReferenciaAlFormArray(referenciaId, cantidad);
-                                procesadas++;
-                                this.verificarProcesamientoCompleto(procesadas, pendientes);
-                            },
-                            error: () => {
-                                pendientes--;
-                                this.verificarProcesamientoCompleto(procesadas, pendientes);
-                            }
-                        });
+                        this.referenciaService
+                            .create({
+                                referencia: codigo,
+                                marca_id: undefined,
+                                comentario: 'Creada desde importación masiva'
+                            })
+                            .subscribe({
+                                next: (createResponse) => {
+                                    referenciaId = createResponse.data.id;
+                                    this.agregarReferenciaAlFormArray(referenciaId, cantidad);
+                                    procesadas++;
+                                    this.verificarProcesamientoCompleto(procesadas, pendientes);
+                                },
+                                error: () => {
+                                    pendientes--;
+                                    this.verificarProcesamientoCompleto(procesadas, pendientes);
+                                }
+                            });
                         return;
                     }
 
@@ -349,7 +545,10 @@ export class CreateComponent implements OnInit {
             referencia_id: [referenciaId, [Validators.required]],
             marca_id: [null],
             cantidad: [cantidad, [Validators.required, Validators.min(1)]],
-            comentario: ['']
+            comentario: [''],
+            definicion: [''],
+            imagen: [null],
+            proveedores: this.fb.array([])
         });
 
         this.referenciasFormArray.push(referenciaForm);
@@ -384,7 +583,7 @@ export class CreateComponent implements OnInit {
             }
 
             // Validar todas las referencias
-            const invalid = this.referenciasFormArray.controls.find(c => c.invalid);
+            const invalid = this.referenciasFormArray.controls.find((c) => c.invalid);
             if (invalid) {
                 this.messageService.add({
                     severity: 'warn',
@@ -425,16 +624,20 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.pedidoForm.value;
-        const referencias: CreatePedidoReferenciaDto[] = this.referenciasFormArray.controls.map(control => ({
+        const referencias: CreatePedidoReferenciaDto[] = this.referenciasFormArray.controls.map((control) => ({
             referencia_id: control.get('referencia_id')?.value,
             sistema_id: control.get('sistema_id')?.value || undefined,
             marca_id: control.get('marca_id')?.value || undefined,
             cantidad: control.get('cantidad')?.value,
             comentario: control.get('comentario')?.value || undefined,
-            estado: control.get('estado')?.value ?? true
+            estado: control.get('estado')?.value ?? true,
+            // Nuevos campos
+            definicion: control.get('definicion')?.value || undefined,
+            imagen: control.get('imagen')?.value || undefined,
+            proveedores: (control.get('proveedores') as FormArray)?.value || []
         }));
 
-        const pedidoData: CreatePedidoDto = {
+        const pedidoData: any = {
             tercero_id: formValue.tercero_id,
             direccion: formValue.direccion || undefined,
             comentario: formValue.comentario || undefined,
@@ -448,21 +651,23 @@ export class CreateComponent implements OnInit {
         this.store.dispatch(createPedido({ pedido: pedidoData }));
 
         // Escuchar el resultado
-        this.store.select((state: any) => state.pedidos).subscribe((pedidosState: any) => {
-            if (!pedidosState.loading && !pedidosState.error && this.loading) {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: 'Pedido creado correctamente'
-                });
-                setTimeout(() => {
-                    this.router.navigate(['/app/pedidos']);
-                }, 1500);
-            } else if (!pedidosState.loading && pedidosState.error && this.loading) {
-                this.loading = false;
-            }
-        });
+        this.store
+            .select((state: any) => state.pedidos)
+            .subscribe((pedidosState: any) => {
+                if (!pedidosState.loading && !pedidosState.error && this.loading) {
+                    this.loading = false;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Pedido creado correctamente'
+                    });
+                    setTimeout(() => {
+                        this.router.navigate(['/app/pedidos']);
+                    }, 1500);
+                } else if (!pedidosState.loading && pedidosState.error && this.loading) {
+                    this.loading = false;
+                }
+            });
     }
 
     /**
@@ -478,5 +683,100 @@ export class CreateComponent implements OnInit {
     isFieldInvalid(field: string): boolean {
         const control = this.pedidoForm.get(field);
         return !!(control && control.invalid && control.touched);
+    }
+
+    /**
+     * Verifica si un campo del formulario de tercero es inválido
+     */
+    isTerceroFieldInvalid(field: string): boolean {
+        const control = this.createTerceroForm.get(field);
+        return !!(control && control.invalid && control.touched);
+    }
+
+    /**
+     * Carga la lista de terceros (clientes)
+     * @param selectedId ID opcional para seleccionar automáticamente
+     */
+    private loadTerceros(selectedId?: number): void {
+        this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
+            next: (response) => {
+                this.tercerosFull = response.data;
+                this.terceros = response.data.map((t) => ({
+                    label: t.nombre || `Tercero ${t.id}`,
+                    value: t.id
+                }));
+
+                // Si se proporcionó un ID, seleccionarlo
+                if (selectedId) {
+                    this.pedidoForm.patchValue({ tercero_id: selectedId });
+                }
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron cargar los clientes'
+                });
+            }
+        });
+    }
+
+    /**
+     * Métodos para manejo de proveedores en creación
+     */
+    getProveedoresControls(referenciaIndex: number): FormArray {
+        return this.referenciasFormArray.at(referenciaIndex).get('proveedores') as FormArray;
+    }
+
+    toggleReferenciaExpandida(index: number): void {
+        if (this.referenciaIndexParaProveedor === index) {
+            this.referenciaIndexParaProveedor = null;
+            this.nuevoProveedorForm = null;
+        } else {
+            this.referenciaIndexParaProveedor = index;
+            this.initNuevoProveedorForm();
+        }
+    }
+
+    private initNuevoProveedorForm(): void {
+        this.nuevoProveedorForm = this.fb.group({
+            tercero_id: [null, [Validators.required]],
+            marca_id: [null],
+            dias_entrega: [0, [Validators.required, Validators.min(0)]],
+            costo_unidad: [0, [Validators.required, Validators.min(0)]],
+            utilidad: [0, [Validators.required, Validators.min(0)]],
+            cantidad: [1, [Validators.required, Validators.min(1)]],
+            ubicacion: ['Nacional', [Validators.required]],
+            estado: [true]
+        });
+    }
+
+    guardarProveedor(referenciaIndex: number): void {
+        if (this.nuevoProveedorForm?.invalid) return;
+
+        const proveedores = this.getProveedoresControls(referenciaIndex);
+        proveedores.push(this.fb.group(this.nuevoProveedorForm?.value));
+
+        this.referenciaIndexParaProveedor = null;
+        this.nuevoProveedorForm = null;
+    }
+
+    removeProveedor(referenciaIndex: number, proveedorIndex: number): void {
+        this.getProveedoresControls(referenciaIndex).removeAt(proveedorIndex);
+    }
+
+    getTerceroLabel(id: number): string {
+        return this.terceros.find(t => t.value === id)?.label || 'Proveedor';
+    }
+
+    getMarcaLabel(id: number): string {
+        return this.marcas.find(m => m.value === id)?.label || 'GEN';
+    }
+
+    calculateTotal(proveedor: any): number {
+        const costo = proveedor.costo_unidad || 0;
+        const cantidad = proveedor.cantidad || 0;
+        const utilidad = proveedor.utilidad || 0;
+        return costo * cantidad * (1 + utilidad / 100);
     }
 }

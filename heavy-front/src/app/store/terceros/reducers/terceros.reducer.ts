@@ -39,9 +39,7 @@ export const tercerosReducer = createReducer(
         loading: true,
         error: null
     })),
-    on(TercerosActions.loadTercerosSuccess, (state, { terceros }) =>
-        tercerosAdapter.setAll(terceros, { ...state, loading: false })
-    ),
+    on(TercerosActions.loadTercerosSuccess, (state, { terceros }) => tercerosAdapter.setAll(terceros, { ...state, loading: false })),
     on(TercerosActions.loadTercerosFailure, (state, { error }) => ({
         ...state,
         loading: false,
@@ -53,9 +51,7 @@ export const tercerosReducer = createReducer(
         ...state,
         loading: true
     })),
-    on(TercerosActions.createTerceroSuccess, (state, { tercero }) =>
-        tercerosAdapter.addOne(tercero, { ...state, loading: false })
-    ),
+    on(TercerosActions.createTerceroSuccess, (state, { tercero }) => tercerosAdapter.addOne(tercero, { ...state, loading: false })),
     on(TercerosActions.createTerceroFailure, (state, { error }) => ({
         ...state,
         loading: false,
@@ -67,12 +63,7 @@ export const tercerosReducer = createReducer(
         ...state,
         loading: true
     })),
-    on(TercerosActions.updateTerceroSuccess, (state, { tercero }) =>
-        tercerosAdapter.updateOne(
-            { id: tercero.id, changes: tercero },
-            { ...state, loading: false }
-        )
-    ),
+    on(TercerosActions.updateTerceroSuccess, (state, { tercero }) => tercerosAdapter.updateOne({ id: tercero.id, changes: tercero }, { ...state, loading: false })),
     on(TercerosActions.updateTerceroFailure, (state, { error }) => ({
         ...state,
         loading: false,
@@ -84,9 +75,7 @@ export const tercerosReducer = createReducer(
         ...state,
         loading: true
     })),
-    on(TercerosActions.deleteTerceroSuccess, (state, { id }) =>
-        tercerosAdapter.removeOne(id, { ...state, loading: false })
-    ),
+    on(TercerosActions.deleteTerceroSuccess, (state, { id }) => tercerosAdapter.removeOne(id, { ...state, loading: false })),
     on(TercerosActions.deleteTerceroFailure, (state, { error }) => ({
         ...state,
         loading: false,

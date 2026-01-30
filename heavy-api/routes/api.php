@@ -23,7 +23,9 @@ use App\Http\Controllers\Api\V1\{
     ContactoController,
     DireccionController,
     TransportadoraController,
-    TRMController
+    TRMController,
+    LandingController,
+    UbicacionController
 };
 
 /**
@@ -50,6 +52,12 @@ Route::prefix('v1')->group(function () {
      */
     Route::post('/register', [AuthController::class, 'register']);
     Route::post('/login', [AuthController::class, 'login']);
+
+    /**
+     * Rutas de Landing (públicas)
+     */
+    Route::get('/landing/categories', [LandingController::class, 'index']);
+    Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
 
     /**
      * Rutas protegidas con autenticación Sanctum
@@ -120,6 +128,10 @@ Route::prefix('v1')->group(function () {
         /**
          * Módulos auxiliares
          */
+        Route::get('ubicaciones/paises', [UbicacionController::class, 'countries']);
+        Route::get('ubicaciones/departamentos', [UbicacionController::class, 'states']);
+        Route::get('ubicaciones/ciudades', [UbicacionController::class, 'cities']);
+        
         Route::apiResource('empresas', EmpresaController::class);
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class);

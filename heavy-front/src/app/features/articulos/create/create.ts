@@ -106,7 +106,7 @@ export class CreateComponent implements OnInit {
             .subscribe((articulosState: any) => {
                 if (!articulosState.loading && !articulosState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/articulos']);
+                    this.router.navigate(['/app/articulos']);
                 } else if (!articulosState.loading && articulosState.error && this.loading) {
                     this.loading = false;
                 }
@@ -117,7 +117,7 @@ export class CreateComponent implements OnInit {
      * Cancela y regresa a la lista
      */
     cancelar(): void {
-        this.router.navigate(['/articulos']);
+        this.router.navigate(['/app/articulos']);
     }
 
     /**

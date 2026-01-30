@@ -1,673 +1,228 @@
 <p-toast />
-<p-confirmDialog />
 
-<div class="container mx-auto p-4">
-    @if (loading$ | async) {
-        <!-- Skeleton mientras carga -->
-        <p-card>
-            <p-skeleton height="2rem" styleClass="mb-3"></p-skeleton>
-            <p-skeleton height="3rem" styleClass="mb-2"></p-skeleton>
-            <p-skeleton height="3rem" styleClass="mb-2"></p-skeleton>
-            <p-skeleton height="3rem" styleClass="mb-2"></p-skeleton>
-        </p-card>
-    } @else {
-        <p-card>
-            <ng-template pTemplate="header">
-                <div class="flex justify-between items-center p-4">
-                    <h2 class="text-2xl font-bold">Editar Pedido #{{ pedidoId() }}</h2>
-                    <p-button
-                        label="Cancelar"
-                        icon="pi pi-times"
-                        severity="secondary"
-                        [text]="true"
-                        (onClick)="cancelar()">
-                    </p-button>
-                </div>
-            </ng-template>
-
-            <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
-                <!-- Información Básica -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <!-- Cliente (Tercero) -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label for="tercero_id" class="block mb-2 font-semibold">
-                            Cliente <span class="text-red-500">*</span>
-                        </label>
-                        <p-select
-                            id="tercero_id"
-                            formControlName="tercero_id"
-                            [options]="terceros"
-                            placeholder="Seleccione un cliente"
-                            [filter]="true"
-                            filterBy="label"
-                            [showClear]="true"
-                            styleClass="w-full"
-                            [class.ng-invalid]="isFieldInvalid('tercero_id')">
-                        </p-select>
-                        @if (isFieldInvalid('tercero_id')) {
-                            <small class="text-red-500">El cliente es requerido</small>
-                        }
-                    </div>
-
-                    <!-- Estado -->
-                    <div>
-                        <label for="estado" class="block mb-2 font-semibold">
-                            Estado <span class="text-red-500">*</span>
-                        </label>
-                        <p-select
-                            id="estado"
-                            formControlName="estado"
-                            [options]="getEstadosDisponibles()"
-                            placeholder="Seleccione un estado"
-                            styleClass="w-full"
-                            (ngModelChange)="onEstadoChange()"
-                            [class.ng-invalid]="isFieldInvalid('estado')">
-                        </p-select>
-                        @if (isFieldInvalid('estado')) {
-                            <small class="text-red-500">El estado es requerido</small>
-                        }
-                        <small class="text-gray-500 text-xs mt-1 block">
-                            Estado actual: <strong>{{ estadoActual }}</strong>
-                        </small>
-                    </div>
-
-                    <!-- Motivo de Rechazo (solo si el estado es Rechazado) -->
-                    @if (pedidoForm.get('estado')?.value === 'Rechazado') {
-                        <div class="col-span-1 md:col-span-2">
-                            <label for="motivo_rechazo" class="block mb-2 font-semibold">
-                                Motivo de Rechazo <span class="text-red-500">*</span>
-                            </label>
-                            <textarea
-                                id="motivo_rechazo"
-                                pTextarea
-                                formControlName="motivo_rechazo"
-                                placeholder="Ingrese el motivo del rechazo (mínimo 10 caracteres)"
-                                rows="3"
-                                class="w-full"
-                                [class.ng-invalid]="isFieldInvalid('motivo_rechazo')">
-                            </textarea>
-                            @if (isFieldInvalid('motivo_rechazo')) {
-                                <small class="text-red-500">
-                                    El motivo de rechazo es requerido y debe tener al menos 10 caracteres
-                                </small>
-                            }
-                        </div>
-                    }
-
-                    <!-- Máquina -->
-                    <div>
-                        <label for="maquina_id" class="block mb-2 font-semibold">
-                            Máquina (Opcional)
-                        </label>
-                        <p-select
-                            id="maquina_id"
-                            formControlName="maquina_id"
-                            [options]="maquinas"
-                            placeholder="Seleccione una máquina"
-                            [filter]="true"
-                            [showClear]="true"
-                            styleClass="w-full">
-                        </p-select>
-                    </div>
-
-                    <!-- Fabricante -->
-                    <div>
-                        <label for="fabricante_id" class="block mb-2 font-semibold">
-                            Fabricante (Opcional)
-                        </label>
-                        <p-select
-                            id="fabricante_id"
-                            formControlName="fabricante_id"
-                            [options]="fabricantes"
-                            placeholder="Seleccione un fabricante"
-                            [filter]="true"
-                            [showClear]="true"
-                            styleClass="w-full">
-                        </p-select>
-                    </div>
-
-                    <!-- Dirección -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label for="direccion" class="block mb-2 font-semibold">
-                            Dirección de Envío
-                        </label>
-                        <input
-                            id="direccion"
-                            type="text"
-                            pInputText
-                            formControlName="direccion"
-                            placeholder="Ingrese la dirección de envío"
-                            class="w-full" />
-                    </div>
-
-                    <!-- Comentario -->
-                    <div class="col-span-1 md:col-span-2">
-                        <label for="comentario" class="block mb-2 font-semibold">
-                            Comentarios
-                        </label>
-                        <textarea
-                            id="comentario"
-                            pTextarea
-                            formControlName="comentario"
-                            placeholder="Ingrese comentarios adicionales"
-                            rows="4"
-                            class="w-full">
-                        </textarea>
-                    </div>
-                </div>
-
-                <p-divider />
-
-                <!-- Gestión de Referencias -->
-                <div class="mt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">Referencias del Pedido</h3>
-                        <div class="flex gap-2">
-                            <p-button
-                                label="Seleccionar Todas"
-                                icon="pi pi-check-square"
-                                severity="success"
-                                size="small"
-                                [text]="true"
-                                (onClick)="selectAllReferencias()">
-                            </p-button>
-                            <p-button
-                                label="Deseleccionar Todas"
-                                icon="pi pi-square"
-                                severity="secondary"
-                                size="small"
-                                [text]="true"
-                                (onClick)="deselectAllReferencias()">
-                            </p-button>
-                            <p-button
-                                label="Agregar Referencia"
-                                icon="pi pi-plus"
-                                severity="success"
-                                size="small"
-                                (onClick)="addReferencia()">
-                            </p-button>
-                        </div>
-                    </div>
-
-                    @if (referenciasFormArray.length === 0) {
-                        <div class="text-center py-8 bg-gray-50 rounded">
-                            <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-                            <p class="text-gray-600">No hay referencias agregadas</p>
-                            <p class="text-sm text-gray-500 mt-2">Haga clic en "Agregar Referencia" para comenzar</p>
-                        </div>
-                    } @else {
-                        <div class="space-y-4">
-                            @for (referencia of referenciasFormArray.controls; track $index) {
-                                <p-card>
-                                    <ng-template pTemplate="header">
-                                        <div class="flex justify-between items-center p-3">
-                                            <div class="flex items-center gap-2">
-                                                <p-toggleButton
-                                                    [formControl]="$any(referencia).controls['estado']"
-                                                    onLabel="Activa"
-                                                    offLabel="Inactiva"
-                                                    onIcon="pi pi-check"
-                                                    offIcon="pi pi-times"
-                                                    styleClass="w-auto">
-                                                </p-toggleButton>
-                                                <span class="font-semibold">Referencia #{{ $index + 1 }}</span>
-                                            </div>
-                                            <p-button
-                                                icon="pi pi-trash"
-                                                severity="danger"
-                                                [text]="true"
-                                                [rounded]="true"
-                                                size="small"
-                                                (onClick)="removeReferencia($index)"
-                                                pTooltip="Eliminar referencia">
-                                            </p-button>
-                                        </div>
-                                    </ng-template>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <!-- Sistema -->
-                                        <div>
-                                            <label class="block mb-2 text-sm font-medium">Sistema</label>
-                                            <p-select
-                                                [formControl]="$any(referencia).controls['sistema_id']"
-                                                [options]="sistemas"
-                                                placeholder="Seleccione un sistema"
-                                                [showClear]="true"
-                                                styleClass="w-full">
-                                            </p-select>
-                                        </div>
-
-                                        <!-- Referencia -->
-                                        <div>
-                                            <label class="block mb-2 text-sm font-medium">
-                                                Referencia <span class="text-red-500">*</span>
-                                            </label>
-                                            <p-select
-                                                [formControl]="$any(referencia).controls['referencia_id']"
-                                                [options]="referencias"
-                                                placeholder="Seleccione una referencia"
-                                                [filter]="true"
-                                                filterBy="label"
-                                                [showClear]="true"
-                                                styleClass="w-full"
-                                                [class.ng-invalid]="$any(referencia).controls['referencia_id'].invalid && $any(referencia).controls['referencia_id'].touched">
-                                            </p-select>
-                                            @if ($any(referencia).controls['referencia_id'].invalid && $any(referencia).controls['referencia_id'].touched) {
-                                                <small class="text-red-500">La referencia es requerida</small>
-                                            }
-                                        </div>
-
-                                        <!-- Marca -->
-                                        <div>
-                                            <label class="block mb-2 text-sm font-medium">Marca</label>
-                                            <p-select
-                                                [formControl]="$any(referencia).controls['marca_id']"
-                                                [options]="marcas"
-                                                placeholder="Seleccione una marca"
-                                                [showClear]="true"
-                                                styleClass="w-full">
-                                            </p-select>
-                                        </div>
-
-                                        <!-- Cantidad -->
-                                        <div>
-                                            <label class="block mb-2 text-sm font-medium">
-                                                Cantidad <span class="text-red-500">*</span>
-                                            </label>
-                                            <p-inputNumber
-                                                [formControl]="$any(referencia).controls['cantidad']"
-                                                [min]="1"
-                                                [showButtons]="true"
-                                                styleClass="w-full">
-                                            </p-inputNumber>
-                                            @if ($any(referencia).controls['cantidad'].invalid && $any(referencia).controls['cantidad'].touched) {
-                                                <small class="text-red-500">La cantidad debe ser mayor a 0</small>
-                                            }
-                                        </div>
-
-                                        <!-- Comentario -->
-                                        <div class="col-span-1 md:col-span-2">
-                                            <label class="block mb-2 text-sm font-medium">Comentario</label>
-                                            <textarea
-                                                [formControl]="$any(referencia).controls['comentario']"
-                                                pTextarea
-                                                placeholder="Comentarios sobre esta referencia"
-                                                rows="2"
-                                                class="w-full">
-                                            </textarea>
-                                        </div>
-                                    </div>
-
-                                    <!-- Sección de Proveedores (solo para referencias guardadas) -->
-                                    @if ($any(referencia).controls['id'].value) {
-                                        <p-divider />
-                                        <div class="mt-4">
-                                            <div class="flex justify-between items-center mb-3">
-                                                <h4 class="text-md font-semibold">
-                                                    Proveedores 
-                                                    <span class="text-sm text-gray-500">
-                                                        ({{ getProveedoresReferencia($any(referencia).controls['id'].value).length }})
-                                                    </span>
-                                                </h4>
-                                                <div class="flex gap-2">
-                                                    @if (getProveedoresReferencia($any(referencia).controls['id'].value).length > 1) {
-                                                        <p-button
-                                                            label="Comparar Proveedores"
-                                                            icon="pi pi-chart-bar"
-                                                            severity="info"
-                                                            size="small"
-                                                            [text]="true"
-                                                            (onClick)="abrirComparacionProveedores($index)">
-                                                        </p-button>
-                                                    }
-                                                    <p-button
-                                                        [label]="referenciaIndexParaProveedor === $index ? 'Cancelar' : 'Agregar Proveedor'"
-                                                        [icon]="referenciaIndexParaProveedor === $index ? 'pi pi-times' : 'pi pi-plus'"
-                                                        [severity]="referenciaIndexParaProveedor === $index ? 'secondary' : 'success'"
-                                                        size="small"
-                                                        (onClick)="toggleReferenciaExpandida($index)">
-                                                    </p-button>
-                                                </div>
-                                            </div>
-
-                                            <!-- Formulario para nuevo proveedor -->
-                                            @if (referenciaIndexParaProveedor === $index && nuevoProveedorForm) {
-                                                <div class="p-4 bg-blue-50 border border-blue-200 rounded mb-3">
-                                                    <h5 class="font-semibold mb-3">Nuevo Proveedor</h5>
-                                                    <form [formGroup]="nuevoProveedorForm" class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Proveedor <span class="text-red-500">*</span></label>
-                                                            <p-select
-                                                                formControlName="tercero_id"
-                                                                [options]="proveedores"
-                                                                placeholder="Seleccione un proveedor"
-                                                                [filter]="true"
-                                                                filterBy="label"
-                                                                styleClass="w-full">
-                                                            </p-select>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Marca</label>
-                                                            <p-select
-                                                                formControlName="marca_id"
-                                                                [options]="marcas"
-                                                                placeholder="Seleccione una marca"
-                                                                [showClear]="true"
-                                                                styleClass="w-full">
-                                                            </p-select>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Días Entrega <span class="text-red-500">*</span></label>
-                                                            <p-inputNumber
-                                                                formControlName="dias_entrega"
-                                                                [min]="0"
-                                                                [showButtons]="true"
-                                                                styleClass="w-full">
-                                                            </p-inputNumber>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Costo Unidad <span class="text-red-500">*</span></label>
-                                                            <p-inputNumber
-                                                                formControlName="costo_unidad"
-                                                                [min]="0"
-                                                                mode="decimal"
-                                                                [minFractionDigits]="2"
-                                                                [maxFractionDigits]="2"
-                                                                [showButtons]="true"
-                                                                styleClass="w-full">
-                                                            </p-inputNumber>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Utilidad % <span class="text-red-500">*</span></label>
-                                                            <p-inputNumber
-                                                                formControlName="utilidad"
-                                                                [min]="0"
-                                                                [max]="100"
-                                                                [showButtons]="true"
-                                                                styleClass="w-full">
-                                                            </p-inputNumber>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Cantidad <span class="text-red-500">*</span></label>
-                                                            <p-inputNumber
-                                                                formControlName="cantidad"
-                                                                [min]="1"
-                                                                [showButtons]="true"
-                                                                styleClass="w-full">
-                                                            </p-inputNumber>
-                                                        </div>
-                                                        <div>
-                                                            <label class="block mb-1 text-sm font-medium">Ubicación <span class="text-red-500">*</span></label>
-                                                            <p-select
-                                                                formControlName="ubicacion"
-                                                                [options]="[{label: 'Nacional', value: 'Nacional'}, {label: 'Internacional', value: 'Internacional'}]"
-                                                                styleClass="w-full">
-                                                            </p-select>
-                                                        </div>
-                                                        <div class="col-span-1 md:col-span-2 flex justify-end gap-2">
-                                                            <p-button
-                                                                label="Cancelar"
-                                                                severity="secondary"
-                                                                size="small"
-                                                                (onClick)="toggleReferenciaExpandida($index)">
-                                                            </p-button>
-                                                            <p-button
-                                                                label="Guardar Proveedor"
-                                                                icon="pi pi-save"
-                                                                severity="success"
-                                                                size="small"
-                                                                [disabled]="nuevoProveedorForm.invalid"
-                                                                (onClick)="guardarProveedor()">
-                                                            </p-button>
-                                                        </div>
-                                                    </form>
-                                                </div>
-                                            }
-
-                                            @if (getProveedoresReferencia($any(referencia).controls['id'].value).length > 0) {
-                                                <div class="space-y-2">
-                                                    @for (proveedor of getProveedoresReferencia($any(referencia).controls['id'].value); track proveedor.id) {
-                                                        <div class="p-3 bg-gray-50 rounded border">
-                                                            <div class="flex justify-between items-start">
-                                                                <div class="flex-1">
-                                                                    <p class="font-semibold">{{ proveedor.tercero?.razon_social || 'Proveedor' }}</p>
-                                                                    <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
-                                                                        <div>
-                                                                            <span class="text-gray-600">Ubicación:</span>
-                                                                            <p-tag [value]="proveedor.ubicacion" [severity]="proveedor.ubicacion === 'Nacional' ? 'success' : 'info'"></p-tag>
-                                                                        </div>
-                                                                        <div>
-                                                                            <span class="text-gray-600">Días entrega:</span>
-                                                                            <span class="font-medium">{{ proveedor.dias_entrega }}</span>
-                                                                        </div>
-                                        <div>
-                                            <span class="text-gray-600">Costo unidad:</span>
-                                            <span class="font-medium">{{ proveedor.costo_unidad | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                                        </div>
-                                        <div>
-                                            <span class="text-gray-600">Valor total:</span>
-                                            <span class="font-medium text-green-600">{{ proveedor.valor_total | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                                <p-button
-                                                                    icon="pi pi-trash"
-                                                                    severity="danger"
-                                                                    [text]="true"
-                                                                    [rounded]="true"
-                                                                    size="small"
-                                                                    (onClick)="eliminarProveedor($index, proveedor.id)">
-                                                                </p-button>
-                                                            </div>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            } @else {
-                                                <p class="text-sm text-gray-500 italic">No hay proveedores agregados para esta referencia</p>
-                                            }
-                                        </div>
-                                    }
-                                </p-card>
-                            }
-                        </div>
-                    }
-                </div>
-
-                <p-divider />
-
-                <!-- Gestión de Artículos -->
-                <div class="mt-6">
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-semibold">
-                            Artículos del Pedido
-                            <span class="text-sm text-gray-500">({{ articulosPedido.length }})</span>
-                        </h3>
-                        <p-button
-                            [label]="mostrarArticulos ? 'Ocultar Artículos' : 'Mostrar Artículos'"
-                            [icon]="mostrarArticulos ? 'pi pi-eye-slash' : 'pi pi-eye'"
-                            severity="info"
-                            size="small"
-                            [text]="true"
-                            (onClick)="mostrarArticulos = !mostrarArticulos">
-                        </p-button>
-                    </div>
-
-                    @if (mostrarArticulos) {
-                        @if (articulosPedido.length === 0) {
-                            <div class="text-center py-8 bg-gray-50 rounded">
-                                <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
-                                <p class="text-gray-600">No hay artículos agregados</p>
-                            </div>
-                        } @else {
-                            <div class="space-y-3">
-                                @for (articulo of articulosPedido; track articulo.id) {
-                                    <div class="p-3 bg-gray-50 rounded border">
-                                        <div class="flex justify-between items-start">
-                                            <div class="flex-1">
-                                                <p class="font-semibold">{{ articulo.articulo?.descripcionEspecifica || 'Artículo' }}</p>
-                                                <div class="grid grid-cols-2 md:grid-cols-4 gap-2 mt-2 text-sm">
-                                                    <div>
-                                                        <span class="text-gray-600">Cantidad:</span>
-                                                        <span class="font-medium ml-2">{{ articulo.cantidad }}</span>
-                                                    </div>
-                                                    @if (articulo.sistema) {
-                                                        <div>
-                                                            <span class="text-gray-600">Sistema:</span>
-                                                            <span class="font-medium ml-2">{{ articulo.sistema.nombre }}</span>
-                                                        </div>
-                                                    }
-                                                    @if (articulo.comentario) {
-                                                        <div class="col-span-1 md:col-span-2">
-                                                            <span class="text-gray-600">Comentario:</span>
-                                                            <p class="text-sm mt-1">{{ articulo.comentario }}</p>
-                                                        </div>
-                                                    }
-                                                </div>
-                                            </div>
-                                            <p-button
-                                                icon="pi pi-trash"
-                                                severity="danger"
-                                                [text]="true"
-                                                [rounded]="true"
-                                                size="small"
-                                                (onClick)="eliminarArticulo(articulo.id)">
-                                            </p-button>
-                                        </div>
-                                    </div>
-                                }
-                            </div>
-                        }
-                    }
-                </div>
-
-                <p-divider />
-
-                <!-- Botones -->
-                <div class="flex justify-end gap-2 mt-4">
-                    <p-button
-                        label="Cancelar"
-                        severity="secondary"
-                        icon="pi pi-times"
-                        type="button"
-                        (onClick)="cancelar()">
-                    </p-button>
-                    <p-button
-                        label="Guardar Cambios"
-                        icon="pi pi-save"
-                        type="submit"
-                        [loading]="submitting"
-                        [disabled]="pedidoForm.invalid">
-                    </p-button>
-                </div>
-            </form>
-        </p-card>
-    }
+@if (loading$ | async) {
+<div class="p-6">
+    <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
+    <p-skeleton width="100%" height="300px"></p-skeleton>
 </div>
-
-<!-- Modal de Comparación de Proveedores -->
-<p-dialog
-    [(visible)]="mostrarComparacion"
-    [modal]="true"
-    [style]="{ width: '90vw', maxWidth: '1200px' }"
-    [draggable]="false"
-    [resizable]="false"
-    header="Comparación de Proveedores"
-    (onHide)="cerrarComparacion()">
-    
-    @if (proveedoresComparacion.length > 0) {
-        <div class="mb-4">
-            <p class="text-sm text-gray-600">
-                <strong>Cantidad:</strong> {{ referenciaComparacion?.cantidad || 1 }} unidades
-            </p>
-        </div>
-
-        <p-table [value]="proveedoresComparacion" styleClass="p-datatable-sm">
-            <ng-template pTemplate="header">
-                <tr>
-                    <th>Proveedor</th>
-                    <th>Ubicación</th>
-                    <th>Días Entrega</th>
-                    <th>Costo Unidad</th>
-                    <th>Utilidad %</th>
-                    <th>Valor Unidad</th>
-                    <th>Valor Total</th>
-                    <th>Acciones</th>
-                </tr>
-            </ng-template>
-            
-            <ng-template pTemplate="body" let-proveedor>
-                <tr [class.bg-green-50]="getMejorProveedor()?.id === proveedor.id"
-                    [class.bg-blue-50]="getMejorTiempoEntrega()?.id === proveedor.id && getMejorProveedor()?.id !== proveedor.id">
-                    <td>
-                        <div class="font-semibold">
-                            {{ proveedor.tercero?.razon_social || 'Proveedor' }}
-                        </div>
-                        @if (proveedor.marca) {
-                            <div class="text-sm text-gray-600">
-                                Marca: {{ proveedor.marca?.nombre || 'N/A' }}
-                            </div>
-                        }
-                    </td>
-                    <td>
-                        <p-tag 
-                            [value]="proveedor.ubicacion" 
-                            [severity]="proveedor.ubicacion === 'Nacional' ? 'success' : 'info'">
-                        </p-tag>
-                    </td>
-                    <td>
-                        <div class="flex items-center gap-2">
-                            <span>{{ proveedor.dias_entrega }}</span>
-                            @if (getMejorTiempoEntrega()?.id === proveedor.id) {
-                                <i class="pi pi-star-fill text-yellow-500" pTooltip="Mejor tiempo de entrega"></i>
-                            }
-                        </div>
-                    </td>
-                    <td>
-                        <span class="font-medium">{{ proveedor.costo_unidad | currency:'COP':'symbol-narrow':'1.0-2' }}</span>
-                    </td>
-                    <td>
-                        <span>{{ proveedor.utilidad }}%</span>
-                    </td>
-                    <td>
-                        <span class="font-medium">{{ proveedor.valor_unidad | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
-                    </td>
-                    <td>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-lg" 
-                                  [class.text-green-600]="getMejorProveedor()?.id === proveedor.id">
-                                {{ proveedor.valor_total | currency:'COP':'symbol-narrow':'1.0-0' }}
-                            </span>
-                            @if (getMejorProveedor()?.id === proveedor.id) {
-                                <i class="pi pi-check-circle text-green-600 text-xl" pTooltip="Mejor precio"></i>
-                            }
-                        </div>
-                    </td>
-                    <td>
-                        <p-button
-                            icon="pi pi-trash"
-                            severity="danger"
-                            [text]="true"
-                            [rounded]="true"
-                            size="small"
-                            (onClick)="eliminarProveedorDesdeComparacion(proveedor.id)"
-                            pTooltip="Eliminar proveedor">
-                        </p-button>
-                    </td>
-                </tr>
-            </ng-template>
-        </p-table>
-
-        <div class="mt-4 p-3 bg-gray-50 rounded">
-            <div class="flex gap-4 text-sm">
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 bg-green-50 border border-green-300"></div>
-                    <span>Mejor precio</span>
+} @else {
+<div class="min-h-screen p-6 font-sans text-slate-200">
+    <div class="max-w-[1906px] mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 pl-[339px] pr-[69px]">
+            <div>
+                <div class="text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Pedidos > Editar
                 </div>
-                <div class="flex items-center gap-2">
-                    <div class="w-4 h-4 bg-blue-50 border border-blue-300"></div>
-                    <span>Mejor tiempo de entrega</span>
-                </div>
+                <h1 class="text-3xl font-bold text-brand-yellow" style="font-family: 'Figtree'">Pedido</h1>
+            </div>
+            <!-- Top Buttons -->
+            <div class="flex gap-4">
+                <button type="button" class="btn-pill btn-primary" (click)="onSubmit()">Guardar</button>
+                <!-- botones placeholder segun diseño -->
+                <button type="button" class="btn-pill btn-primary">Editar</button>
+                <button type="button" class="btn-pill btn-primary">Pedir</button>
             </div>
         </div>
-    }
-</p-dialog>
+
+        <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
+
+            <!-- Top Info Cards Grid -->
+            <div class="flex gap-6 mb-10 pl-[339px] pr-[69px]">
+
+                <!-- Order Info -->
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
+                        <span class="font-bold text-white text-base pl-2">Información del pedido</span>
+                        <div class="w-[47px] h-[44px] flex items-center justify-center">
+                            <i class="pi pi-shopping-bag text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-2 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm">
+                        <div class="flex justify-between">
+                            <span class="text-brand-yellow font-semibold">Documento: Pedido</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-brand-yellow font-semibold">Consecutivo: {{ pedidoId() }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-brand-yellow font-semibold">Creación: {{ (pedido$ | async)?.created_at |
+                                date:'MMMM d, y' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-brand-yellow font-semibold">Actualización: {{ (pedido$ |
+                                async)?.updated_at | date:'MMMM d, y' }}</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-brand-yellow font-semibold">Usuario: {{ (pedido$ | async)?.user?.name ||
+                                '---' }}</span>
+                        </div>
+                        <div class="flex justify-between items-center mt-2">
+                            <span class="text-brand-yellow font-semibold">Estado:</span>
+                            <p-select formControlName="estado" [options]="getEstadosDisponibles()"
+                                styleClass="w-[140px] !bg-[#2A2D36] border-none text-white h-[30px] flex items-center text-xs ml-2"
+                                (onChange)="onEstadoChange()">
+                            </p-select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Machine Info -->
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
+                        <span class="font-bold text-white text-base pl-2">Información de la máquina</span>
+                        <div class="w-[47px] h-[44px] flex items-center justify-center">
+                            <i class="pi pi-cog text-white text-xl"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
+                        <!-- Machine Selector -->
+                        <div class="mb-2">
+                            <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
+                                [showClear]="true" placeholder="Seleccionar Máquina"
+                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
+                            </p-select>
+                        </div>
+
+                        @if (pedidoForm.get('maquina_id')?.value) {
+                        @let maquina = (pedido$ | async)?.maquina;
+                        <div class="flex flex-col gap-2">
+                            <span class="text-brand-yellow font-semibold block">Máquina: {{ maquina?.modelo }}</span>
+                            <span class="text-brand-yellow font-semibold block">Fabricante: {{ maquina?.marca }}</span>
+                            <span class="text-brand-yellow font-semibold block">Serie: {{ maquina?.serie }}</span>
+                            <span class="text-brand-yellow font-semibold block">ID adicional: ----</span>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Client Info -->
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
+                        <span class="font-bold text-white text-base pl-2">Información de tercero</span>
+                        <div class="flex gap-1">
+                            <i class="pi pi-envelope text-white text-xl p-2"></i>
+                            <i class="pi pi-whatsapp text-white text-xl p-2"></i>
+                        </div>
+                    </div>
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
+                        <!-- Client Selector -->
+                        <div class="mb-2">
+                            <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" filterBy="label"
+                                placeholder="Seleccionar Cliente"
+                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
+                            </p-select>
+                        </div>
+
+                        @if (pedidoForm.get('tercero_id')?.value) {
+                        @let cliente = (pedido$ | async)?.tercero;
+                        <div class="flex flex-col gap-1">
+                            <span class="text-brand-yellow font-semibold block">Tipo: Cliente</span>
+                            <span class="text-brand-yellow font-semibold block truncate">Razón Social: {{
+                                cliente?.nombre || '---' }}</span>
+                            <span class="text-brand-yellow font-semibold block">Tipo de documento: {{
+                                cliente?.tipo_documento || '---' }}</span>
+                            <span class="text-brand-yellow font-semibold block">Número de documento: {{
+                                cliente?.numero_documento || '---' }}</span>
+                            <span class="text-brand-yellow font-semibold block">Ciudad: {{ cliente?.ciudad?.name || '--'
+                                }}</span>
+                            <span class="text-brand-yellow font-semibold block">Contacto: --</span>
+                            <span class="text-brand-yellow font-semibold block">Teléfono: {{ cliente?.telefono || '---'
+                                }}</span>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Items Section -->
+            <div class="pl-[339px] pr-[69px]">
+                <h3 class="text-xl font-semibold text-brand-yellow mb-4" style="font-family: 'Montserrat'">Tus ítems
+                </h3>
+
+                <div class="w-full">
+                    <!-- Headers -->
+                    <div class="flex gap-4 mb-2 px-2 text-white font-semibold text-sm">
+                        <div class="w-[50px] text-center">Ítem</div>
+                        <div class="w-[20%]">Sistema</div>
+                        <div class="w-[20%]">Artículo</div>
+                        <div class="w-[100px]">Cantidad</div>
+                        <div class="flex-1">Referencia</div>
+                        <div class="w-[220px] text-right pr-4">Acciones</div>
+                    </div>
+
+                    <!-- Rows -->
+                    <div class="space-y-4">
+                        @for (referencia of referenciasFormArray.controls; track $index; let refIndex = $index) {
+                        <div [formGroup]="$any(referencia)" class="flex items-center gap-4">
+                            <!-- Checkbox -->
+                            <div class="w-[50px] flex justify-center">
+                                <p-checkbox [binary]="true" styleClass="border-2 border-white rounded"></p-checkbox>
+                            </div>
+
+                            <!-- Sistema -->
+                            <div class="w-[20%]">
+                                <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
+                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center"></p-select>
+                            </div>
+
+                            <!-- Articulo -->
+                            <div class="w-[20%]">
+                                <!-- If loading existing data, we might need logic to show correct field type. Assuming text for now as per image -->
+                                <input pInputText formControlName="comentario" placeholder="Seleccionar"
+                                    class="w-full !bg-[#343743] border-none h-[48px]" />
+                            </div>
+
+                            <!-- Cantidad -->
+                            <div class="w-[100px]">
+                                <input pInputText type="number" formControlName="cantidad" placeholder="Ej: 1"
+                                    class="w-full !bg-[#343743] border-none h-[48px] text-center" />
+                            </div>
+
+                            <!-- Referencia -->
+                            <div class="flex-1">
+                                <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
+                                    filterBy="label" placeholder="Ej: no definido"
+                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center">
+                                </p-select>
+                            </div>
+
+                            <!-- Actions -->
+                            <div class="w-[220px] flex gap-3 justify-end">
+                                <button type="button" class="action-btn-circle" pTooltip="Comentar"
+                                    tooltipPosition="top">
+                                    <i class="pi pi-comments text-lg"></i>
+                                </button>
+                                <button type="button" class="action-btn-circle" pTooltip="Adjuntar"
+                                    tooltipPosition="top">
+                                    <i class="pi pi-image text-lg"></i>
+                                </button>
+                                <button type="button" class="action-btn-circle" pTooltip="Editar" tooltipPosition="top">
+                                    <i class="pi pi-pencil text-lg"></i>
+                                </button>
+                                <button type="button" class="action-btn-circle" (click)="eliminarReferencia($index)"
+                                    pTooltip="Eliminar" tooltipPosition="top">
+                                    <i class="pi pi-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        }
+                    </div>
+
+                    <!-- Bottom Buttons -->
+                    <div class="flex justify-end gap-4 mt-8">
+                        <button type="button" class="btn-pill btn-outline flex items-center gap-2">
+                            Agregar listado <i class="pi pi-plus"></i>
+                        </button>
+                        <button type="button" class="btn-pill btn-primary flex items-center gap-2"
+                            (click)="agregarReferencia()">
+                            Agregar <i class="pi pi-plus"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-20"></div>
+        </form>
+    </div>
+</div>
+}

@@ -95,7 +95,7 @@ export class EditComponent implements OnInit {
             .subscribe((sistemasState: any) => {
                 if (!sistemasState.loading && !sistemasState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/sistemas', this.sistemaId]);
+                    this.router.navigate(['/app/sistemas', this.sistemaId]);
                 } else if (!sistemasState.loading && sistemasState.error && this.loading) {
                     this.loading = false;
                 }
@@ -106,7 +106,7 @@ export class EditComponent implements OnInit {
      * Cancela y regresa al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/sistemas', this.sistemaId]);
+        this.router.navigate(['/app/sistemas', this.sistemaId]);
     }
 
     /**

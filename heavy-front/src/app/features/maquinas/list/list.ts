@@ -99,13 +99,15 @@ export class ListComponent implements OnInit {
      * Carga las máquinas desde el store
      */
     cargarMaquinas(): void {
-        this.store.dispatch(loadMaquinas({
-            page: this.currentPage,
-            per_page: this.rowsPerPage,
-            search: this.searchTerm || undefined,
-            fabricante_id: this.selectedFabricanteId || undefined,
-            tipo: this.selectedTipoId || undefined
-        }));
+        this.store.dispatch(
+            loadMaquinas({
+                page: this.currentPage,
+                per_page: this.rowsPerPage,
+                search: this.searchTerm || undefined,
+                fabricante_id: this.selectedFabricanteId || undefined,
+                tipo: this.selectedTipoId || undefined
+            })
+        );
     }
 
     /**
@@ -138,21 +140,21 @@ export class ListComponent implements OnInit {
      * Navega a crear nueva máquina
      */
     crearMaquina(): void {
-        this.router.navigate(['/maquinas/create']);
+        this.router.navigate(['/app/maquinas/create']);
     }
 
     /**
      * Navega a ver detalle
      */
     verDetalle(maquina: Maquina): void {
-        this.router.navigate(['/maquinas', maquina.id]);
+        this.router.navigate(['/app/maquinas', maquina.id]);
     }
 
     /**
      * Navega a editar
      */
     editarMaquina(maquina: Maquina): void {
-        this.router.navigate(['/maquinas', maquina.id, 'edit']);
+        this.router.navigate(['/app/maquinas', maquina.id, 'edit']);
     }
 
     /**
@@ -167,7 +169,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteMaquina({ id: maquina.id }));
-                
+
                 setTimeout(() => {
                     this.cargarMaquinas();
                 }, 500);

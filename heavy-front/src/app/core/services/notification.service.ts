@@ -12,13 +12,11 @@ import { Notification, NotificationType, CreateNotificationDto } from '../models
 export class NotificationService {
     private notificationsSubject = new BehaviorSubject<Notification[]>([]);
     public notifications$ = this.notificationsSubject.asObservable();
-    
+
     private notificationsSignal = signal<Notification[]>([]);
     public notifications = this.notificationsSignal.asReadonly();
-    
-    public unreadCount = computed(() => 
-        this.notificationsSignal().filter(n => !n.read).length
-    );
+
+    public unreadCount = computed(() => this.notificationsSignal().filter((n) => !n.read).length);
 
     constructor() {
         this.loadMockNotifications();
@@ -102,9 +100,7 @@ export class NotificationService {
      */
     markAsRead(id: number): void {
         const current = this.notificationsSignal();
-        const updated = current.map(n => 
-            n.id === id ? { ...n, read: true } : n
-        );
+        const updated = current.map((n) => (n.id === id ? { ...n, read: true } : n));
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
     }
@@ -114,7 +110,7 @@ export class NotificationService {
      */
     markAllAsRead(): void {
         const current = this.notificationsSignal();
-        const updated = current.map(n => ({ ...n, read: true }));
+        const updated = current.map((n) => ({ ...n, read: true }));
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
     }
@@ -124,7 +120,7 @@ export class NotificationService {
      */
     deleteNotification(id: number): void {
         const current = this.notificationsSignal();
-        const updated = current.filter(n => n.id !== id);
+        const updated = current.filter((n) => n.id !== id);
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
     }
@@ -134,13 +130,13 @@ export class NotificationService {
      */
     private getIconForType(type: NotificationType): string {
         const iconMap: Record<NotificationType, string> = {
-            'pedido_creado': 'pi-shopping-cart',
-            'pedido_actualizado': 'pi-refresh',
-            'cotizacion_nueva': 'pi-file',
-            'orden_confirmada': 'pi-check-circle',
-            'tercero_nuevo': 'pi-users',
-            'sistema': 'pi-info-circle',
-            'info': 'pi-bell'
+            pedido_creado: 'pi-shopping-cart',
+            pedido_actualizado: 'pi-refresh',
+            cotizacion_nueva: 'pi-file',
+            orden_confirmada: 'pi-check-circle',
+            tercero_nuevo: 'pi-users',
+            sistema: 'pi-info-circle',
+            info: 'pi-bell'
         };
         return iconMap[type] || 'pi-bell';
     }
@@ -150,13 +146,13 @@ export class NotificationService {
      */
     private getColorForType(type: NotificationType): string {
         const colorMap: Record<NotificationType, string> = {
-            'pedido_creado': 'blue',
-            'pedido_actualizado': 'orange',
-            'cotizacion_nueva': 'purple',
-            'orden_confirmada': 'green',
-            'tercero_nuevo': 'cyan',
-            'sistema': 'gray',
-            'info': 'blue'
+            pedido_creado: 'blue',
+            pedido_actualizado: 'orange',
+            cotizacion_nueva: 'purple',
+            orden_confirmada: 'green',
+            tercero_nuevo: 'cyan',
+            sistema: 'gray',
+            info: 'blue'
         };
         return colorMap[type] || 'blue';
     }

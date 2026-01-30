@@ -44,14 +44,14 @@ export class DetailComponent implements OnInit {
      * Navega al formulario de edición
      */
     editarLista(): void {
-        this.router.navigate(['/listas', this.listaId, 'edit']);
+        this.router.navigate(['/app/listas', this.listaId, 'edit']);
     }
 
     /**
      * Regresa a la lista
      */
     volver(): void {
-        this.router.navigate(['/listas']);
+        this.router.navigate(['/app/listas']);
     }
 
     /**

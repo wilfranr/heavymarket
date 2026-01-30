@@ -11,26 +11,9 @@
         </ng-template>
 
         <div class="mb-4 flex gap-4">
-            <p-select 
-                [(ngModel)]="selectedFabricanteId" 
-                [options]="fabricantes" 
-                optionLabel="nombre" 
-                optionValue="id" 
-                placeholder="Filtrar por fabricante" 
-                [showClear]="true" 
-                (ngModelChange)="onFilterChange()" 
-                styleClass="w-full md:w-14rem"> 
+            <p-select [(ngModel)]="selectedFabricanteId" [options]="fabricantes" optionLabel="nombre" optionValue="id" placeholder="Filtrar por fabricante" [showClear]="true" (ngModelChange)="onFilterChange()" styleClass="w-full md:w-14rem">
             </p-select>
-            <p-select 
-                [(ngModel)]="selectedTipoId" 
-                [options]="tipos" 
-                optionLabel="nombre" 
-                optionValue="id" 
-                placeholder="Filtrar por tipo" 
-                [showClear]="true" 
-                (ngModelChange)="onFilterChange()" 
-                styleClass="w-full md:w-14rem"> 
-            </p-select>
+            <p-select [(ngModel)]="selectedTipoId" [options]="tipos" optionLabel="nombre" optionValue="id" placeholder="Filtrar por tipo" [showClear]="true" (ngModelChange)="onFilterChange()" styleClass="w-full md:w-14rem"> </p-select>
         </div>
 
         <p-table
@@ -85,16 +68,16 @@
                     </td>
                     <td>
                         @if (maquina.tipoLista) {
-                            <span class="text-sm">{{ maquina.tipoLista.nombre }}</span>
+                        <span class="text-sm">{{ maquina.tipoLista.nombre }}</span>
                         } @else {
-                            <span class="text-gray-400">-</span>
+                        <span class="text-gray-400">-</span>
                         }
                     </td>
                     <td>
                         @if (maquina.fabricante) {
-                            <span class="text-sm">{{ maquina.fabricante.nombre }}</span>
+                        <span class="text-sm">{{ maquina.fabricante.nombre }}</span>
                         } @else {
-                            <span class="text-gray-400">-</span>
+                        <span class="text-gray-400">-</span>
                         }
                     </td>
                     <td>

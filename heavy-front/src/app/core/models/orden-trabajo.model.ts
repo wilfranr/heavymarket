@@ -19,7 +19,7 @@ export interface OrdenTrabajo {
     motivo_cancelacion: string | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     user?: any;
     tercero?: any;
@@ -33,11 +33,7 @@ export interface OrdenTrabajo {
 /**
  * Estados posibles de una orden de trabajo
  */
-export type OrdenTrabajoEstado = 
-    | 'Pendiente'
-    | 'En Proceso'
-    | 'Completado'
-    | 'Cancelado';
+export type OrdenTrabajoEstado = 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
 
 /**
  * Modelo de OrdenTrabajoReferencia
@@ -54,7 +50,7 @@ export interface OrdenTrabajoReferencia {
     observaciones: string | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     orden_trabajo?: OrdenTrabajo;
     pedido_referencia?: any;

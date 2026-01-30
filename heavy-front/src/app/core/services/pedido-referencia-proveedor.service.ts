@@ -18,33 +18,20 @@ export class PedidoReferenciaProveedorService extends ApiService {
      * Agregar un proveedor a una referencia de pedido
      */
     addProveedor(pedidoId: number, referenciaId: number, proveedor: CreatePedidoReferenciaProveedorDto): Observable<{ data: PedidoReferenciaProveedor }> {
-        return this.http.post<{ data: PedidoReferenciaProveedor }>(
-            `${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores`,
-            proveedor
-        );
+        return this.http.post<{ data: PedidoReferenciaProveedor }>(`${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores`, proveedor);
     }
 
     /**
      * Actualizar un proveedor de una referencia de pedido
      */
-    updateProveedor(
-        pedidoId: number,
-        referenciaId: number,
-        proveedorId: number,
-        cambios: UpdatePedidoReferenciaProveedorDto
-    ): Observable<{ data: PedidoReferenciaProveedor }> {
-        return this.http.put<{ data: PedidoReferenciaProveedor }>(
-            `${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores/${proveedorId}`,
-            cambios
-        );
+    updateProveedor(pedidoId: number, referenciaId: number, proveedorId: number, cambios: UpdatePedidoReferenciaProveedorDto): Observable<{ data: PedidoReferenciaProveedor }> {
+        return this.http.put<{ data: PedidoReferenciaProveedor }>(`${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores/${proveedorId}`, cambios);
     }
 
     /**
      * Eliminar un proveedor de una referencia de pedido
      */
     deleteProveedor(pedidoId: number, referenciaId: number, proveedorId: number): Observable<void> {
-        return this.http.delete<void>(
-            `${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores/${proveedorId}`
-        );
+        return this.http.delete<void>(`${this.getBaseUrl()}/${pedidoId}/referencias/${referenciaId}/proveedores/${proveedorId}`);
     }
 }

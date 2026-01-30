@@ -21,7 +21,7 @@ export interface Empresa {
     logo_dark: string | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     country?: any;
     state?: any;

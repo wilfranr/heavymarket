@@ -95,7 +95,7 @@ export class EditComponent implements OnInit {
             .subscribe((fabricantesState: any) => {
                 if (!fabricantesState.loading && !fabricantesState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/fabricantes', this.fabricanteId]);
+                    this.router.navigate(['/app/fabricantes', this.fabricanteId]);
                 } else if (!fabricantesState.loading && fabricantesState.error && this.loading) {
                     this.loading = false;
                 }
@@ -106,7 +106,7 @@ export class EditComponent implements OnInit {
      * Cancela y regresa al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/fabricantes', this.fabricanteId]);
+        this.router.navigate(['/app/fabricantes', this.fabricanteId]);
     }
 
     /**

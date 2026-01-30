@@ -126,14 +126,14 @@ export class ListComponent implements OnInit {
      * Navega al detalle de la lista
      */
     verDetalle(lista: Lista): void {
-        this.router.navigate(['/listas', lista.id]);
+        this.router.navigate(['/app/listas', lista.id]);
     }
 
     /**
      * Navega al formulario de edición
      */
     editarLista(lista: Lista): void {
-        this.router.navigate(['/listas', lista.id, 'edit']);
+        this.router.navigate(['/app/listas', lista.id, 'edit']);
     }
 
     /**
@@ -161,7 +161,7 @@ export class ListComponent implements OnInit {
      * Navega al formulario de creación
      */
     crearLista(): void {
-        this.router.navigate(['/listas/create']);
+        this.router.navigate(['/app/listas/create']);
     }
 
     /**

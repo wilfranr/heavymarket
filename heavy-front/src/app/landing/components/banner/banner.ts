@@ -1,11 +1,9 @@
 import { Component } from '@angular/core';
 
 @Component({
-  selector: 'app-banner',
-  imports: [],
-  templateUrl: './banner.html',
-  styles: ``,
+    selector: 'app-banner',
+    imports: [],
+    templateUrl: './banner.html',
+    styles: ``
 })
-export class Banner {
-
-}
+export class Banner {}

@@ -50,7 +50,7 @@ export class EditComponent implements OnInit {
     ngOnInit(): void {
         this.cargarTipos();
         this.cargarFabricantes();
-        
+
         this.route.params.subscribe((params) => {
             this.maquinaId = +params['id'];
             this.store.dispatch(loadMaquinaById({ id: this.maquinaId }));
@@ -142,7 +142,7 @@ export class EditComponent implements OnInit {
             .subscribe((maquinasState: any) => {
                 if (!maquinasState.loading && !maquinasState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/maquinas', this.maquinaId]);
+                    this.router.navigate(['/app/maquinas', this.maquinaId]);
                 } else if (!maquinasState.loading && maquinasState.error && this.loading) {
                     this.loading = false;
                 }
@@ -153,7 +153,7 @@ export class EditComponent implements OnInit {
      * Cancela y regresa al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/maquinas', this.maquinaId]);
+        this.router.navigate(['/app/maquinas', this.maquinaId]);
     }
 
     /**

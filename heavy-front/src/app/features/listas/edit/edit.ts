@@ -114,7 +114,7 @@ export class EditComponent implements OnInit {
             .subscribe((listasState: any) => {
                 if (!listasState.loading && !listasState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/listas', this.listaId]);
+                    this.router.navigate(['/app/listas', this.listaId]);
                 } else if (!listasState.loading && listasState.error && this.loading) {
                     this.loading = false;
                 }
@@ -125,7 +125,7 @@ export class EditComponent implements OnInit {
      * Cancela y regresa al detalle
      */
     cancelar(): void {
-        this.router.navigate(['/listas', this.listaId]);
+        this.router.navigate(['/app/listas', this.listaId]);
     }
 
     /**

@@ -19,30 +19,23 @@ export const selectCategoriasTotal = selectTotal;
 /**
  * Selector de loading
  */
-export const selectCategoriasLoading = createSelector(
-  selectCategoriasState,
-  (state: CategoriasState) => state.loading
-);
+export const selectCategoriasLoading = createSelector(selectCategoriasState, (state: CategoriasState) => state.loading);
 
 /**
  * Selector de error
  */
-export const selectCategoriasError = createSelector(
-  selectCategoriasState,
-  (state: CategoriasState) => state.error
-);
+export const selectCategoriasError = createSelector(selectCategoriasState, (state: CategoriasState) => state.error);
 
 /**
  * Selector de paginación
  */
 export const selectCategoriasPagination = createSelector(selectCategoriasState, (state: CategoriasState) => ({
-  total: state.total,
-  currentPage: state.currentPage,
-  lastPage: state.lastPage,
+    total: state.total,
+    currentPage: state.currentPage,
+    lastPage: state.lastPage
 }));
 
 /**
  * Selector de categoría por ID
  */
-export const selectCategoriaById = (id: number) =>
-  createSelector(selectCategoriasEntities, (entities) => entities[id] || null);
+export const selectCategoriaById = (id: number) => createSelector(selectCategoriasEntities, (entities) => entities[id] || null);

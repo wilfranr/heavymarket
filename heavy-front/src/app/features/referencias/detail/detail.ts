@@ -41,13 +41,13 @@ export class DetailComponent implements OnInit {
      * Navega al formulario de edición
      */
     editarReferencia(): void {
-        this.router.navigate(['/referencias', this.referenciaId, 'edit']);
+        this.router.navigate(['/app/referencias', this.referenciaId, 'edit']);
     }
 
     /**
      * Regresa a la lista
      */
     volver(): void {
-        this.router.navigate(['/referencias']);
+        this.router.navigate(['/app/referencias']);
     }
 }

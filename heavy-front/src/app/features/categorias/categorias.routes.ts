@@ -8,22 +8,22 @@ export const categoriasRoutes: Routes = [
         children: [
             {
                 path: '',
-                loadComponent: () => import('./list/list.component').then(m => m.ListComponent),
+                loadComponent: () => import('./list/list.component').then((m) => m.ListComponent),
                 title: 'Lista de Categorías'
             },
             {
                 path: 'create',
-                loadComponent: () => import('./create/create.component').then(m => m.CreateComponent),
+                loadComponent: () => import('./create/create.component').then((m) => m.CreateComponent),
                 title: 'Crear Categoría'
             },
             {
                 path: ':id',
-                loadComponent: () => import('./detail/detail.component').then(m => m.DetailComponent),
+                loadComponent: () => import('./detail/detail.component').then((m) => m.DetailComponent),
                 title: 'Detalle de Categoría'
             },
             {
                 path: ':id/edit',
-                loadComponent: () => import('./edit/edit.component').then(m => m.EditComponent),
+                loadComponent: () => import('./edit/edit.component').then((m) => m.EditComponent),
                 title: 'Editar Categoría'
             }
         ]

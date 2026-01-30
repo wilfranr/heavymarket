@@ -5,13 +5,7 @@
         <ng-template pTemplate="header">
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Crear Nuevo Artículo</h2>
-                <p-button
-                    label="Cancelar"
-                    icon="pi pi-times"
-                    severity="secondary"
-                    [text]="true"
-                    (onClick)="cancelar()">
-                </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"> </p-button>
             </div>
         </ng-template>
 
@@ -19,121 +13,62 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Definición (Tipo) -->
                 <div class="field">
-                    <label for="definicion" class="block text-sm font-medium mb-2">
-                        Tipo (Pieza Estandar) <span class="text-red-500">*</span>
-                    </label>
-                    <p-select
-                        id="definicion"
-                        formControlName="definicion"
-                        [options]="tipos"
-                        optionLabel="nombre"
-                        optionValue="nombre"
-                        placeholder="Seleccione un tipo"
-                        [showClear]="true"
-                        styleClass="w-full">
-                    </p-select>
+                    <label for="definicion" class="block text-sm font-medium mb-2"> Tipo (Pieza Estandar) <span class="text-red-500">*</span> </label>
+                    <p-select id="definicion" formControlName="definicion" [options]="tipos" optionLabel="nombre" optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full"> </p-select>
                     @if (articuloForm.get('definicion')?.invalid && articuloForm.get('definicion')?.touched) {
-                        <small class="p-error">El tipo es requerido</small>
+                    <small class="p-error">El tipo es requerido</small>
                     }
                 </div>
 
                 <!-- Peso -->
                 <div class="field">
-                    <label for="peso" class="block text-sm font-medium mb-2">
-                        Peso (Kg)
-                    </label>
-                    <input
-                        pInputText
-                        type="number"
-                        id="peso"
-                        formControlName="peso"
-                        placeholder="Peso en kilogramos"
-                        class="w-full" />
+                    <label for="peso" class="block text-sm font-medium mb-2"> Peso (Kg) </label>
+                    <input pInputText type="number" id="peso" formControlName="peso" placeholder="Peso en kilogramos" class="w-full" />
                 </div>
 
                 <!-- Descripción Específica -->
                 <div class="field md:col-span-2">
-                    <label for="descripcionEspecifica" class="block text-sm font-medium mb-2">
-                        Descripción Específica <span class="text-red-500">*</span>
-                    </label>
+                    <label for="descripcionEspecifica" class="block text-sm font-medium mb-2"> Descripción Específica <span class="text-red-500">*</span> </label>
                     <input
                         pInputText
                         id="descripcionEspecifica"
                         formControlName="descripcionEspecifica"
                         placeholder="Descripción específica del artículo"
                         class="w-full"
-                        [class.ng-invalid]="articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched" />
+                        [class.ng-invalid]="articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched"
+                    />
                     @if (articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched) {
-                        <small class="p-error">
-                            @if (articuloForm.get('descripcionEspecifica')?.errors?.['required']) {
-                                La descripción específica es requerida
-                            } @else if (articuloForm.get('descripcionEspecifica')?.errors?.['maxlength']) {
-                                La descripción específica no puede exceder 500 caracteres
-                            }
-                        </small>
+                    <small class="p-error">
+                        @if (articuloForm.get('descripcionEspecifica')?.errors?.['required']) { La descripción específica es requerida } @else if (articuloForm.get('descripcionEspecifica')?.errors?.['maxlength']) { La descripción específica no puede
+                        exceder 500 caracteres }
+                    </small>
                     }
                 </div>
 
                 <!-- Comentarios -->
                 <div class="field md:col-span-2">
-                    <label for="comentarios" class="block text-sm font-medium mb-2">
-                        Comentarios
-                    </label>
-                    <textarea
-                        pTextarea
-                        id="comentarios"
-                        formControlName="comentarios"
-                        placeholder="Comentarios sobre el artículo"
-                        [rows]="4"
-                        class="w-full">
-                    </textarea>
+                    <label for="comentarios" class="block text-sm font-medium mb-2"> Comentarios </label>
+                    <textarea pTextarea id="comentarios" formControlName="comentarios" placeholder="Comentarios sobre el artículo" [rows]="4" class="w-full"> </textarea>
                 </div>
 
                 <!-- Foto Descriptiva -->
                 <div class="field">
-                    <label for="fotoDescriptiva" class="block text-sm font-medium mb-2">
-                        Foto Descriptiva (URL)
-                    </label>
-                    <input
-                        pInputText
-                        id="fotoDescriptiva"
-                        formControlName="fotoDescriptiva"
-                        placeholder="URL de la foto descriptiva"
-                        class="w-full" />
+                    <label for="fotoDescriptiva" class="block text-sm font-medium mb-2"> Foto Descriptiva (URL) </label>
+                    <input pInputText id="fotoDescriptiva" formControlName="fotoDescriptiva" placeholder="URL de la foto descriptiva" class="w-full" />
                 </div>
 
                 <!-- Foto Medida -->
                 <div class="field">
-                    <label for="foto_medida" class="block text-sm font-medium mb-2">
-                        Foto Medida (URL)
-                    </label>
-                    <input
-                        pInputText
-                        id="foto_medida"
-                        formControlName="foto_medida"
-                        placeholder="URL de la foto de medida"
-                        class="w-full" />
+                    <label for="foto_medida" class="block text-sm font-medium mb-2"> Foto Medida (URL) </label>
+                    <input pInputText id="foto_medida" formControlName="foto_medida" placeholder="URL de la foto de medida" class="w-full" />
                 </div>
             </div>
 
             <p-divider />
 
             <div class="flex justify-end gap-2 mt-4">
-                <p-button
-                    label="Cancelar"
-                    icon="pi pi-times"
-                    severity="secondary"
-                    [text]="true"
-                    (onClick)="cancelar()"
-                    [disabled]="loading">
-                </p-button>
-                <p-button
-                    label="Crear Artículo"
-                    icon="pi pi-check"
-                    type="submit"
-                    [loading]="loading"
-                    [disabled]="articuloForm.invalid">
-                </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()" [disabled]="loading"> </p-button>
+                <p-button label="Crear Artículo" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="articuloForm.invalid"> </p-button>
             </div>
         </form>
     </p-card>

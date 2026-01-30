@@ -89,7 +89,7 @@ return [
     'volantes-y-accesorios' => 'volante.png',
     
     // Eléctricos
-    'alternadores' => 'landing/electricos/alternadors-2.jpg',
+    'alternadores' => 'landing/electricos/alternadores-2.jpg',
     'motores-de-arranque-starters' => 'landing/electricos/motor-de-arranque-3.avif',
     'baterias' => 'landing/electricos/baterias-1.jpg',
     'interruptores' => 'interruptor.png',
@@ -102,11 +102,11 @@ return [
     'sellos-sueltos-o-rings-anillos-de-respaldo-limpiadores' => 'landing/electricos/empaquetadura-1.jpg',
     
     // Filtración
-    'filtros-de-aire' => 'filtro-aire.png',
-    'filtros-de-aceite' => 'filtro-aceite.png',
-    'filtros-de-combustible' => 'filtro-combustible.png',
-    'filtros-de-agua-refrigerante' => 'filtro-agua.png',
-    'filtros-hidraulicos' => 'filtro-hidraulico.png',
+    'filtros-de-aire' => 'landing/filtracion/filtro-de-aire-1.jpg',
+    'filtros-de-aceite' => 'landing/filtracion/filtro-de-aceite-1.jpg',
+    'filtros-de-combustible' => 'landing/filtracion/filtros-4.jpg',
+    'filtros-de-agua-refrigerante' => 'landing/filtracion/filtros.webp',
+    'filtros-hidraulicos' => 'landing/filtracion/filtro-hidraulicos-1.jpg',
     
     // Frenos
     'pastillas-y-discos-de-freno' => 'pastillas-freno.png',

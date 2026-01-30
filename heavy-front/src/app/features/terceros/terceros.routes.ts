@@ -11,22 +11,22 @@ export const tercerosRoutes: Routes = [
         children: [
             {
                 path: '',
-                loadComponent: () => import('./list/list').then(m => m.ListComponent),
+                loadComponent: () => import('./list/list').then((m) => m.ListComponent),
                 title: 'Lista de Terceros'
             },
             {
                 path: 'create',
-                loadComponent: () => import('./create/create').then(m => m.CreateComponent),
+                loadComponent: () => import('./create/create').then((m) => m.CreateComponent),
                 title: 'Crear Tercero'
             },
             {
                 path: ':id',
-                loadComponent: () => import('./detail/detail').then(m => m.DetailComponent),
+                loadComponent: () => import('./detail/detail').then((m) => m.DetailComponent),
                 title: 'Detalle de Tercero'
             },
             {
                 path: ':id/edit',
-                loadComponent: () => import('./edit/edit').then(m => m.EditComponent),
+                loadComponent: () => import('./edit/edit').then((m) => m.EditComponent),
                 title: 'Editar Tercero'
             }
         ]

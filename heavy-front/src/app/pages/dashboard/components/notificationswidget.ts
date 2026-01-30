@@ -31,11 +31,8 @@ import { NotificationService } from '../../../core/services/notification.service
         } @else {
             <div class="max-h-96 overflow-y-auto">
                 @for (notification of notifications(); track notification.id) {
-                    <div class="flex items-start py-3 border-b border-surface cursor-pointer hover:bg-surface-hover" 
-                         (click)="markAsRead(notification.id)"
-                         [class.opacity-60]="notification.read">
-                        <div class="w-12 h-12 flex items-center justify-center rounded-full mr-4 shrink-0"
-                             [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
+                    <div class="flex items-start py-3 border-b border-surface cursor-pointer hover:bg-surface-hover" (click)="markAsRead(notification.id)" [class.opacity-60]="notification.read">
+                        <div class="w-12 h-12 flex items-center justify-center rounded-full mr-4 shrink-0" [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
                             <i [class]="'pi ' + notification.icon + ' text-xl! text-' + notification.iconColor + '-500'"></i>
                         </div>
                         <div class="flex-1">
@@ -61,8 +58,8 @@ export class NotificationsWidget {
     unreadCount = this.notificationService.unreadCount;
 
     menuItems = [
-        { 
-            label: 'Marcar todas como leídas', 
+        {
+            label: 'Marcar todas como leídas',
             icon: 'pi pi-fw pi-check',
             command: () => this.markAllAsRead()
         }
@@ -80,7 +77,7 @@ export class NotificationsWidget {
         const date = new Date(dateString);
         const now = new Date();
         const diff = now.getTime() - date.getTime();
-        
+
         const minutes = Math.floor(diff / 60000);
         const hours = Math.floor(diff / 3600000);
         const days = Math.floor(diff / 86400000);

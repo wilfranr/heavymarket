@@ -4,9 +4,9 @@ import { AuthService } from '../services/auth.service';
 
 /**
  * Guard de Roles
- * 
+ *
  * Protege rutas que requieren roles específicos.
- * 
+ *
  * Uso en rutas:
  * {
  *   path: 'admin',
@@ -16,25 +16,25 @@ import { AuthService } from '../services/auth.service';
  * }
  */
 export const roleGuard: CanActivateFn = (route, state) => {
-  const authService = inject(AuthService);
-  const router = inject(Router);
+    const authService = inject(AuthService);
+    const router = inject(Router);
 
-  const requiredRoles = route.data?.['roles'] as string[];
+    const requiredRoles = route.data?.['roles'] as string[];
 
-  if (!authService.isLoggedIn()) {
-    router.navigate(['/auth/login']);
-    return false;
-  }
-
-  if (requiredRoles && requiredRoles.length > 0) {
-    if (authService.hasAnyRole(requiredRoles)) {
-      return true;
+    if (!authService.isLoggedIn()) {
+        router.navigate(['/auth/login']);
+        return false;
     }
 
-    // Usuario no tiene los roles necesarios
-    router.navigate(['/access-denied']);
-    return false;
-  }
+    if (requiredRoles && requiredRoles.length > 0) {
+        if (authService.hasAnyRole(requiredRoles)) {
+            return true;
+        }
 
-  return true;
+        // Usuario no tiene los roles necesarios
+        router.navigate(['/access-denied']);
+        return false;
+    }
+
+    return true;
 };

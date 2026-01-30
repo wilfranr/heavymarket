@@ -24,7 +24,7 @@ export interface OrdenCompra {
     color: OrdenCompraColor | null;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     user?: any;
     tercero?: any;
@@ -38,11 +38,7 @@ export interface OrdenCompra {
 /**
  * Estados posibles de una orden de compra
  */
-export type OrdenCompraEstado = 
-    | 'Pendiente'
-    | 'En proceso'
-    | 'Entregado'
-    | 'Cancelado';
+export type OrdenCompraEstado = 'Pendiente' | 'En proceso' | 'Entregado' | 'Cancelado';
 
 /**
  * Colores de estado de orden de compra
@@ -61,7 +57,7 @@ export interface OrdenCompraReferencia {
     valor_total: number;
     created_at: string;
     updated_at: string;
-    
+
     // Relaciones
     orden_compra?: OrdenCompra;
     referencia?: any;

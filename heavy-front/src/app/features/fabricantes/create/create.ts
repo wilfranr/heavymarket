@@ -80,7 +80,7 @@ export class CreateComponent implements OnInit {
             .subscribe((fabricantesState: any) => {
                 if (!fabricantesState.loading && !fabricantesState.error && this.loading) {
                     this.loading = false;
-                    this.router.navigate(['/fabricantes']);
+                    this.router.navigate(['/app/fabricantes']);
                 } else if (!fabricantesState.loading && fabricantesState.error && this.loading) {
                     this.loading = false;
                 }
@@ -91,7 +91,7 @@ export class CreateComponent implements OnInit {
      * Cancela y regresa a la lista
      */
     cancelar(): void {
-        this.router.navigate(['/fabricantes']);
+        this.router.navigate(['/app/fabricantes']);
     }
 
     /**

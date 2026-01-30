@@ -41,13 +41,19 @@ class SubcategoriaLanding extends Model
      */
     public function getImagenUrlAttribute()
     {
-        $imagenValue = $this->getRawOriginal('imagen');
+        $imagen = $this->imagen;
         
-        if ($this->imagen) {
-            if (Str::startsWith($this->imagen, ['http://', 'https://'])) {
-                return $this->imagen;
+        if ($imagen) {
+            if (Str::startsWith($imagen, ['http://', 'https://'])) {
+                return $imagen;
             }
-            return asset($this->imagen);
+            
+            // Si empieza con landing/, es del storage
+            if (Str::startsWith($imagen, 'landing/')) {
+                return asset('storage/' . $imagen);
+            }
+            
+            return asset($imagen);
         }
         
         // Fallback al mapeo del config
