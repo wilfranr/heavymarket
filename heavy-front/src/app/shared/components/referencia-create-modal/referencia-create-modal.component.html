@@ -1,0 +1,43 @@
+<p-toast />
+<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '450px' }" [draggable]="false"
+    [resizable]="false" (onHide)="closeDialog()">
+    <form [formGroup]="referenciaForm" class="flex flex-col gap-4 mt-2">
+        <!-- Referencia -->
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-gray-400">Código / Referencia<span
+                    class="text-red-500">*</span></label>
+            <input pInputText formControlName="referencia" placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
+            @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
+            <small class="text-red-500 font-medium">La referencia es requerida</small>
+            }
+        </div>
+
+        <!-- Marca (Fabricante) -->
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-gray-400">Marca / Fabricante<span
+                    class="text-red-500">*</span></label>
+            <p-select [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
+                placeholder="Seleccione marca" [filter]="true" filterBy="nombre" class="w-full">
+            </p-select>
+            @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {
+            <small class="text-red-500 font-medium">La marca es requerida</small>
+            }
+        </div>
+
+        <!-- Comentario -->
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-gray-400">Comentario</label>
+            <textarea pTextarea formControlName="comentario" rows="3" placeholder="Opcional: Detalles adicionales"
+                class="w-full resize-none"></textarea>
+        </div>
+    </form>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
+                (onClick)="closeDialog()"></p-button>
+            <p-button label="Guardar" icon="pi pi-check" [loading]="loading" (onClick)="saveReferencia()"
+                styleClass="bg-[#fdb831] border-none text-black font-bold"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
@@ -14,12 +14,18 @@ import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 import { createArticulo } from '../../../store/articulos/actions/articulos.actions';
 import { CreateArticuloDto } from '../../../core/models/articulo.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { Referencia } from '../../../core/models/referencia.model';
+import { ReferenciaService } from '../../../core/services/referencia.service';
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
+import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 
 /**
  * Componente de creación de artículo
@@ -27,7 +33,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, FallbackImageDirective],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, FallbackImageDirective, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -41,6 +47,15 @@ export class CreateComponent implements OnInit {
     articuloForm!: FormGroup;
     loading = false;
     tipos: Lista[] = [];
+    referenciasDisponibles: Referencia[] = [];
+    referenciaService = inject(ReferenciaService);
+
+    // Variables para el modal de creación de tipo
+    showTipoModal = false;
+
+    // Variables para el modal de creación de referencia
+    showReferenciaModal = false;
+    currentReferenciaArrayIndex: number | null = null;
 
     // Variables para el conversor de peso
     showWeightConverter = false;
@@ -53,9 +68,18 @@ export class CreateComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
+    // Previsualización de imágenes
+    fotoPreview: string | null = null;
+    planoPreview: string | null = null;
+
+    // Archivos seleccionados
+    fotoFile: File | null = null;
+    planoFile: File | null = null;
+
     ngOnInit(): void {
         this.initForm();
         this.cargarTipos();
+        this.cargarReferencias();
     }
 
     /**
@@ -71,6 +95,70 @@ export class CreateComponent implements OnInit {
                 console.error('Error al cargar tipos:', error);
             }
         });
+    }
+
+    /**
+     * Carga las referencias disponibles para el selector de referencias cruzadas
+     * @param search Término de búsqueda opcional
+     */
+    cargarReferencias(search?: string): void {
+        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+            next: (res) => {
+                this.referenciasDisponibles = res.data;
+            }
+        });
+    }
+
+    /**
+     * Abre el modal para crear un nuevo tipo
+     */
+    abrirCrearTipo(): void {
+        this.showTipoModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa de un tipo
+     */
+    onTipoCreado(nuevoTipo: any): void {
+        this.cargarTipos(); // Recargar la lista
+        this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        this.showTipoModal = false;
+    }
+
+    /**
+     * Abre el modal para crear una nueva referencia
+     * @param index Índice del FormArray
+     */
+    abrirCrearReferencia(index: number): void {
+        this.currentReferenciaArrayIndex = index;
+        this.showReferenciaModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa de una referencia
+     */
+    onReferenciaCreada(nuevaRef: any): void {
+        this.cargarReferencias(); // Recargar disponibles
+
+        if (this.currentReferenciaArrayIndex !== null) {
+            const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
+            control.patchValue({ referencia_id: nuevaRef.id });
+        }
+
+        this.showReferenciaModal = false;
+        this.currentReferenciaArrayIndex = null;
+    }
+
+    /**
+     * Maneja el evento de filtrado de referencias
+     */
+    onFilterReferencias(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarReferencias(search);
+        } else if (!search) {
+            this.cargarReferencias();
+        }
     }
 
     /**
@@ -95,8 +183,33 @@ export class CreateComponent implements OnInit {
             peso: [null],
             comentarios: [''],
             fotoDescriptiva: [null],
-            foto_medida: [null]
+            foto_medida: [null],
+            referenciasCruzadas: this.fb.array([])
         });
+    }
+
+    /**
+     * Getter para el FormArray de referencias cruzadas
+     */
+    get referenciasCruzadas(): FormArray {
+        return this.articuloForm.get('referenciasCruzadas') as FormArray;
+    }
+
+    /**
+     * Agrega una nueva fila de referencia cruzada
+     */
+    agregarReferencia(): void {
+        const row = this.fb.group({
+            referencia_id: [null, Validators.required]
+        });
+        this.referenciasCruzadas.push(row);
+    }
+
+    /**
+     * Elimina una fila de referencia cruzada
+     */
+    eliminarReferencia(index: number): void {
+        this.referenciasCruzadas.removeAt(index);
     }
 
     /**
@@ -140,6 +253,56 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Dispara la selección de archivo desde el input oculto
+     */
+    triggerFileInput(input: HTMLInputElement): void {
+        input.click();
+    }
+
+    /**
+     * Maneja la selección de archivos
+     */
+    onFileSelected(event: any, field: 'foto' | 'plano'): void {
+        const file = event.target.files?.[0];
+        if (file) {
+            this.processFile(file, field);
+        }
+    }
+
+    /**
+     * Maneja el arrastre de archivos
+     */
+    onFileDropped(event: DragEvent, field: 'foto' | 'plano'): void {
+        event.preventDefault();
+        const file = event.dataTransfer?.files?.[0];
+        if (file) {
+            this.processFile(file, field);
+        }
+    }
+
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    /**
+     * Procesa el archivo para previsualización
+     */
+    private processFile(file: File, field: 'foto' | 'plano'): void {
+        if (field === 'foto') {
+            this.fotoFile = file;
+            const reader = new FileReader();
+            reader.onload = () => (this.fotoPreview = reader.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            this.planoFile = file;
+            const reader = new FileReader();
+            reader.onload = () => (this.planoPreview = reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    }
+
+    /**
      * Maneja el envío del formulario
      */
     onSubmit(): void {
@@ -156,16 +319,23 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.articuloForm.value;
-        const data: CreateArticuloDto = {
-            definicion: formValue.definicion,
-            descripcionEspecifica: formValue.descripcionEspecifica,
-            peso: formValue.peso || undefined,
-            comentarios: formValue.comentarios || undefined,
-            fotoDescriptiva: formValue.fotoDescriptiva || undefined,
-            foto_medida: formValue.foto_medida || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(createArticulo({ data }));
+        formData.append('definicion', formValue.definicion);
+        formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
+
+        if (formValue.peso) formData.append('peso', formValue.peso.toString());
+        if (formValue.comentarios) formData.append('comentarios', formValue.comentarios);
+
+        if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
+        if (this.planoFile) formData.append('foto_medida', this.planoFile);
+
+        const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
+        referenciasIds.forEach((id: number) => {
+            formData.append('referencias_ids[]', id.toString());
+        });
+
+        this.store.dispatch(createArticulo({ data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

@@ -20,14 +20,14 @@ export const loadArticuloByIdSuccess = createAction('[Articulos] Load Articulo B
 export const loadArticuloByIdFailure = createAction('[Articulos] Load Articulo By Id Failure', props<{ error: string }>());
 
 // Crear artículo
-export const createArticulo = createAction('[Articulos] Create Articulo', props<{ data: CreateArticuloDto }>());
+export const createArticulo = createAction('[Articulos] Create Articulo', props<{ data: CreateArticuloDto | FormData }>());
 
 export const createArticuloSuccess = createAction('[Articulos] Create Articulo Success', props<{ articulo: Articulo }>());
 
 export const createArticuloFailure = createAction('[Articulos] Create Articulo Failure', props<{ error: string }>());
 
 // Actualizar artículo
-export const updateArticulo = createAction('[Articulos] Update Articulo', props<{ id: number; data: UpdateArticuloDto }>());
+export const updateArticulo = createAction('[Articulos] Update Articulo', props<{ id: number; data: UpdateArticuloDto | FormData }>());
 
 export const updateArticuloSuccess = createAction('[Articulos] Update Articulo Success', props<{ articulo: Articulo }>());
 

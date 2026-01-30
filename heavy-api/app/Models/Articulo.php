@@ -32,6 +32,11 @@ class Articulo extends Model
             return $value;
         }
 
+        // Si ya tiene una ruta (contiene /) y no empieza con la ruta legada, asumimos que es una ruta directa desde public/storage
+        if (str_contains($value, '/')) {
+            return asset("storage/{$value}");
+        }
+
         return asset("storage/Aplicativo/05. Articulos/{$value}");
     }
 
@@ -39,6 +44,11 @@ class Articulo extends Model
     {
         if (!$value || str_starts_with($value, 'http')) {
             return $value;
+        }
+
+        // Si ya tiene una ruta (contiene /) y no empieza con la ruta legada, asumimos que es una ruta directa desde public/storage
+        if (str_contains($value, '/')) {
+            return asset("storage/{$value}");
         }
 
         return asset("storage/Aplicativo/06. Tipos de Medida/{$value}");

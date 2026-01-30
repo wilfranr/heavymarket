@@ -31,8 +31,10 @@ class StoreArticuloRequest extends FormRequest
             'descripcionEspecifica' => ['required', 'string', 'max:500'],
             'peso' => ['nullable', 'numeric', 'min:0'],
             'comentarios' => ['nullable', 'string'],
-            'fotoDescriptiva' => ['nullable', 'string', 'max:255'],
-            'foto_medida' => ['nullable', 'string', 'max:255'],
+            'fotoDescriptiva' => ['nullable', 'file', 'image', 'max:5120'],
+            'foto_medida' => ['nullable', 'file', 'image', 'max:5120'],
+            'referencias_ids' => ['nullable', 'array'],
+            'referencias_ids.*' => ['exists:referencias,id'],
         ];
     }
 

@@ -62,6 +62,7 @@ export interface CreateArticuloDto {
     comentarios?: string;
     fotoDescriptiva?: string;
     foto_medida?: string;
+    referencias_ids?: number[];
 }
 
 /**
@@ -74,5 +75,6 @@ export interface UpdateArticuloDto {
     comentarios?: string;
     fotoDescriptiva?: string;
     foto_medida?: string;
+    referencias_ids?: number[];
 }
 

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -15,6 +15,8 @@ import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { TooltipModule } from 'primeng/tooltip';
 import { TableModule } from 'primeng/table';
 import { TabsModule } from 'primeng/tabs';
@@ -29,6 +31,8 @@ import { Referencia } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
+import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 
 /**
  * Componente de edición de artículo
@@ -36,7 +40,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
 @Component({
     selector: 'app-articulo-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule, FallbackImageDirective],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule, FallbackImageDirective, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -57,6 +61,13 @@ export class EditComponent implements OnInit {
     tipos: Lista[] = [];
     referenciasDisponibles: Referencia[] = [];
     articuloActual: Articulo | null = null;
+
+    // Variables para el modal de creación de tipo
+    showTipoModal = false;
+
+    // Variables para el modal de creación de referencia
+    showReferenciaModal = false;
+    currentReferenciaArrayIndex: number | null = null;
 
     // Variables para diálogos de relaciones
     showReferenciaDialog = false;
@@ -81,8 +92,17 @@ export class EditComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
+    // Previsualización de imágenes
+    fotoPreview: string | null = null;
+    planoPreview: string | null = null;
+
+    // Archivos seleccionados
+    fotoFile: File | null = null;
+    planoFile: File | null = null;
+
     ngOnInit(): void {
         this.cargarTipos();
+        this.cargarReferencias();
 
         this.route.params.subscribe((params) => {
             this.articuloId = +params['id'];
@@ -92,6 +112,13 @@ export class EditComponent implements OnInit {
             this.articulo$.subscribe((articulo) => {
                 if (articulo) {
                     this.articuloActual = articulo;
+                    // Asegurar que tenemos el tipo en la lista para que el selector lo muestre
+                    if (articulo.definicion) {
+                        const exists = this.tipos.find(t => t.nombre === articulo.definicion);
+                        if (!exists) {
+                            this.tipos = [...this.tipos, { nombre: articulo.definicion } as any];
+                        }
+                    }
                     this.initForm(articulo);
                 }
             });
@@ -126,6 +153,46 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Abre el modal para crear un nuevo tipo
+     */
+    abrirCrearTipo(): void {
+        this.showTipoModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa de un tipo
+     */
+    onTipoCreado(nuevoTipo: any): void {
+        this.cargarTipos(); // Recargar la lista
+        this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        this.showTipoModal = false;
+    }
+
+    /**
+     * Abre el modal para crear una nueva referencia
+     * @param index Índice del FormArray
+     */
+    abrirCrearReferencia(index: number): void {
+        this.currentReferenciaArrayIndex = index;
+        this.showReferenciaModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa de una referencia
+     */
+    onReferenciaCreada(nuevaRef: any): void {
+        this.cargarReferencias(); // Recargar disponibles
+
+        if (this.currentReferenciaArrayIndex !== null) {
+            const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
+            control.patchValue({ referencia_id: nuevaRef.id });
+        }
+
+        this.showReferenciaModal = false;
+        this.currentReferenciaArrayIndex = null;
+    }
+
+    /**
      * Inicializa el formulario con los datos del artículo
      */
     private initForm(articulo: any): void {
@@ -135,7 +202,70 @@ export class EditComponent implements OnInit {
             peso: [articulo.peso || null],
             comentarios: [articulo.comentarios || ''],
             fotoDescriptiva: [articulo.fotoDescriptiva || null],
-            foto_medida: [articulo.foto_medida || null]
+            foto_medida: [articulo.foto_medida || null],
+            referenciasCruzadas: this.fb.array([])
+        });
+
+        // Cargar referencias existentes en el FormArray
+        if (articulo.referencias && articulo.referencias.length > 0) {
+            // Asegurar que las referencias actuales estén en la lista de disponibles
+            articulo.referencias.forEach((ref: any) => {
+                const exists = this.referenciasDisponibles.find(d => d.id === ref.id);
+                if (!exists) {
+                    this.referenciasDisponibles = [...this.referenciasDisponibles, ref];
+                }
+
+                this.referenciasCruzadas.push(this.fb.group({
+                    referencia_id: [ref.id, Validators.required]
+                }));
+            });
+        }
+    }
+
+    /**
+     * Getter para el FormArray de referencias cruzadas
+     */
+    get referenciasCruzadas(): FormArray {
+        return this.articuloForm.get('referenciasCruzadas') as FormArray;
+    }
+
+    /**
+     * Agrega una nueva fila de referencia cruzada
+     */
+    agregarReferencia(): void {
+        const row = this.fb.group({
+            referencia_id: [null, Validators.required]
+        });
+        this.referenciasCruzadas.push(row);
+    }
+
+    /**
+     * Elimina una fila de referencia cruzada
+     */
+    eliminarReferencia(index: number): void {
+        this.referenciasCruzadas.removeAt(index);
+    }
+
+    /**
+     * Maneja el evento de filtrado de referencias
+     */
+    onFilterReferencias(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarReferencias(search);
+        } else if (!search) {
+            this.cargarReferencias();
+        }
+    }
+
+    /**
+     * Carga las referencias mediante búsqueda remota
+     */
+    cargarReferencias(search?: string): void {
+        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+            next: (res) => {
+                this.referenciasDisponibles = res.data;
+            }
         });
     }
 
@@ -179,34 +309,57 @@ export class EditComponent implements OnInit {
     }
 
     /**
-     * Gestión de Referencias Cruzadas
+     * Dispara la selección de archivo desde el input oculto
      */
-    abrirDialogoReferencia(): void {
-        this.cargarReferencias();
-        this.showReferenciaDialog = true;
+    triggerFileInput(input: HTMLInputElement): void {
+        input.click();
     }
 
-    cargarReferencias(): void {
-        this.referenciaService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.referenciasDisponibles = response.data;
-            }
-        });
+    /**
+     * Maneja la selección de archivos
+     */
+    onFileSelected(event: any, field: 'foto' | 'plano'): void {
+        const file = event.target.files?.[0];
+        if (file) {
+            this.processFile(file, field);
+        }
     }
 
-    asociarReferencia(): void {
-        if (!this.selectedReferenciaId) return;
-        this.articuloService.addReferencia(this.articuloId, this.selectedReferenciaId).subscribe(() => {
-            this.reloadArticulo();
-            this.showReferenciaDialog = false;
-            this.selectedReferenciaId = null;
-        });
+    /**
+     * Maneja el arrastre de archivos
+     */
+    onFileDropped(event: DragEvent, field: 'foto' | 'plano'): void {
+        event.preventDefault();
+        const file = event.dataTransfer?.files?.[0];
+        if (file) {
+            this.processFile(file, field);
+        }
     }
 
-    eliminarReferencia(ref: Referencia): void {
-        this.articuloService.removeReferencia(this.articuloId, ref.id).subscribe(() => {
-            this.reloadArticulo();
-        });
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+    }
+
+    /**
+     * Procesa el archivo para previsualización
+     */
+    private processFile(file: File, field: 'foto' | 'plano'): void {
+        if (field === 'foto') {
+            this.fotoFile = file;
+            const reader = new FileReader();
+            reader.onload = () => (this.fotoPreview = reader.result as string);
+            reader.readAsDataURL(file);
+        } else {
+            this.planoFile = file;
+            const reader = new FileReader();
+            reader.onload = () => (this.planoPreview = reader.result as string);
+            reader.readAsDataURL(file);
+        }
+    }
+
+    private reloadArticulo(): void {
+        this.store.dispatch(loadArticuloById({ id: this.articuloId }));
     }
 
     /**
@@ -217,6 +370,7 @@ export class EditComponent implements OnInit {
         this.juegoData = { referencia_id: 0, cantidad: 1, comentario: '' };
         this.showJuegoDialog = true;
     }
+
 
     asociarJuego(): void {
         if (!this.juegoData.referencia_id) return;
@@ -268,10 +422,6 @@ export class EditComponent implements OnInit {
         });
     }
 
-    private reloadArticulo(): void {
-        this.store.dispatch(loadArticuloById({ id: this.articuloId }));
-    }
-
     /**
      * Maneja el envío del formulario
      */
@@ -289,16 +439,23 @@ export class EditComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.articuloForm.value;
-        const data: UpdateArticuloDto = {
-            definicion: formValue.definicion,
-            descripcionEspecifica: formValue.descripcionEspecifica,
-            peso: formValue.peso || undefined,
-            comentarios: formValue.comentarios || undefined,
-            fotoDescriptiva: formValue.fotoDescriptiva || undefined,
-            foto_medida: formValue.foto_medida || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(updateArticulo({ id: this.articuloId, data }));
+        formData.append('definicion', formValue.definicion);
+        formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
+
+        if (formValue.peso) formData.append('peso', formValue.peso.toString());
+        if (formValue.comentarios) formData.append('comentarios', formValue.comentarios);
+
+        if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
+        if (this.planoFile) formData.append('foto_medida', this.planoFile);
+
+        const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
+        referenciasIds.forEach((id: number) => {
+            formData.append('referencias_ids[]', id.toString());
+        });
+
+        this.store.dispatch(updateArticulo({ id: this.articuloId, data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

@@ -15,6 +15,7 @@ use App\Models\Medida;
 use App\Models\Referencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Artículos
@@ -69,7 +70,22 @@ class ArticuloController extends Controller
      */
     public function store(StoreArticuloRequest $request): JsonResponse
     {
-        $articulo = Articulo::create($request->validated());
+        $data = $request->validated();
+        
+        // Manejar carga de archivos
+        if ($request->hasFile('fotoDescriptiva')) {
+            $data['fotoDescriptiva'] = $request->file('fotoDescriptiva')->store('articulos/fotos', 'public');
+        }
+        
+        if ($request->hasFile('foto_medida')) {
+            $data['foto_medida'] = $request->file('foto_medida')->store('articulos/planos', 'public');
+        }
+
+        $articulo = Articulo::create($data);
+
+        if ($request->has('referencias_ids')) {
+            $articulo->referencias()->sync($request->input('referencias_ids'));
+        }
 
         return response()->json([
             'message' => 'Artículo creado exitosamente',
@@ -94,7 +110,30 @@ class ArticuloController extends Controller
      */
     public function update(UpdateArticuloRequest $request, Articulo $articulo): JsonResponse
     {
-        $articulo->update($request->validated());
+        $data = $request->validated();
+
+        // Manejar carga de archivos
+        if ($request->hasFile('fotoDescriptiva')) {
+            // Eliminar anterior si existe
+            if ($articulo->fotoDescriptiva) {
+                Storage::disk('public')->delete($articulo->fotoDescriptiva);
+            }
+            $data['fotoDescriptiva'] = $request->file('fotoDescriptiva')->store('articulos/fotos', 'public');
+        }
+        
+        if ($request->hasFile('foto_medida')) {
+            // Eliminar anterior si existe
+            if ($articulo->foto_medida) {
+                Storage::disk('public')->delete($articulo->foto_medida);
+            }
+            $data['foto_medida'] = $request->file('foto_medida')->store('articulos/planos', 'public');
+        }
+
+        $articulo->update($data);
+
+        if ($request->has('referencias_ids')) {
+            $articulo->referencias()->sync($request->input('referencias_ids'));
+        }
 
         return response()->json([
             'message' => 'Artículo actualizado exitosamente',

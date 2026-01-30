@@ -37,10 +37,7 @@ export class ListaService extends ApiService {
         return this.get<ApiResponse<Lista>>(`${this.endpoint}/${id}`);
     }
 
-    /**
-     * Crear una nueva lista
-     */
-    create(data: CreateListaDto): Observable<ApiResponse<Lista>> {
+    create(data: CreateListaDto | FormData): Observable<ApiResponse<Lista>> {
         return this.post<ApiResponse<Lista>>(this.endpoint, data);
     }
 

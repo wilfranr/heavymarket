@@ -32,15 +32,23 @@ export class ArticuloService extends ApiService {
     /**
      * Crear un nuevo artículo
      */
-    create(data: CreateArticuloDto): Observable<ApiResponse<Articulo>> {
+    create(data: CreateArticuloDto | FormData): Observable<ApiResponse<Articulo>> {
         return this.post<ApiResponse<Articulo>>(this.endpoint, data);
     }
 
     /**
      * Actualizar un artículo existente
      */
-    update(id: number, data: UpdateArticuloDto): Observable<ApiResponse<Articulo>> {
-        return this.put<ApiResponse<Articulo>>(`${this.endpoint}/${id}`, data);
+    update(id: number, data: UpdateArticuloDto | FormData): Observable<ApiResponse<Articulo>> {
+        // Al usar FormData con PUT, algunos servidores PHP/Laravel no lo procesan correctamente.
+        // Se suele usar POST con _method=PUT o simplemente POST si se configura bien.
+        // Pero aquí usaremos PUT directamente si no es FormData, y para FormData usaremos POST con spoofing si es necesario.
+        if (data instanceof FormData) {
+            // Spoofing PUT method for Laravel with FormData
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Articulo>>(`${this.endpoint}/${id}`, data);
+        }
+        return this.put<ApiResponse<ApiResponse<Articulo>>>(`${this.endpoint}/${id}`, data) as any;
     }
 
     deleteArticulo(id: number): Observable<any> {

@@ -31,8 +31,10 @@ class UpdateArticuloRequest extends FormRequest
             'descripcionEspecifica' => ['sometimes', 'required', 'string', 'max:500'],
             'peso' => ['nullable', 'numeric', 'min:0'],
             'comentarios' => ['nullable', 'string'],
-            'fotoDescriptiva' => ['nullable', 'string', 'max:255'],
-            'foto_medida' => ['nullable', 'string', 'max:255'],
+            'fotoDescriptiva' => ['nullable', 'sometimes'],
+            'foto_medida' => ['nullable', 'sometimes'],
+            'referencias_ids' => ['nullable', 'array'],
+            'referencias_ids.*' => ['exists:referencias,id'],
         ];
     }
 

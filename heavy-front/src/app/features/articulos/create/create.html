@@ -1,34 +1,27 @@
 <p-toast />
 
-<div class="container mx-auto p-4">
-    <p-card>
-        <ng-template pTemplate="header">
-            <div class="flex justify-between items-center p-4">
-                <h2 class="text-2xl font-bold">Crear Nuevo Artículo</h2>
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
-                </p-button>
-            </div>
-        </ng-template>
+<div class="p-6 bg-[#09090b] min-h-screen text-gray-100">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-3xl font-bold tracking-tight">Crear Articulo</h1>
+        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
+        </p-button>
+    </div>
 
-        <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Definición (Tipo) -->
-                <div class="field">
-                    <label for="definicion" class="block text-sm font-medium mb-2"> Tipo (Pieza Estandar) <span
-                            class="text-red-500">*</span> </label>
-                    <p-select id="definicion" formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full"
-                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)">
+    <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()" class="flex flex-col gap-6">
+        <!-- Top row: Main Fields -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start">
+            <!-- Tipo -->
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-gray-400">Tipo<span class="text-red-500">*</span></label>
+                <p-inputgroup>
+                    <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre" optionValue="nombre"
+                        placeholder="Seleccione un tipo" [showClear]="true" [filter]="true" filterBy="nombre"
+                        (onFilter)="onFilter($event)" class="w-full h-11 bg-transparent border-gray-800">
                         <ng-template let-tipo pTemplate="item">
                             <div class="flex items-center gap-3">
-                                @if (tipo.foto) {
-                                <img [src]="tipo.foto" [alt]="tipo.nombre" appFallbackImage
+                                <img [src]="tipo.foto" appFallbackImage
                                     class="w-8 h-8 object-cover rounded shadow-sm" />
-                                } @else {
-                                <div class="w-8 h-8 bg-gray-100 flex items-center justify-center rounded">
-                                    <i class="pi pi-image text-gray-400 text-xs"></i>
-                                </div>
-                                }
                                 <div class="flex flex-col">
                                     <span class="font-medium text-sm">{{ tipo.nombre }}</span>
                                     <span class="text-xs text-gray-500 truncate max-w-[200px]">{{ tipo.definicion
@@ -37,74 +30,148 @@
                             </div>
                         </ng-template>
                     </p-select>
-                    @if (articuloForm.get('definicion')?.invalid && articuloForm.get('definicion')?.touched) {
-                    <small class="p-error">El tipo es requerido</small>
-                    }
-                </div>
+                    <p-inputgroup-addon class="bg-transparent border-gray-800">
+                        <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
+                            (onClick)="abrirCrearTipo()"></p-button>
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+            </div>
 
-                <!-- Peso -->
-                <div class="field">
-                    <label for="peso" class="block text-sm font-medium mb-2"> Peso (Kg) </label>
-                    <div class="p-inputgroup">
-                        <input pInputText type="number" id="peso" formControlName="peso"
-                            placeholder="Peso en kilogramos" class="w-full" />
-                        <button type="button" pButton icon="pi pi-calculator" (click)="abrirConversor()"
-                            pTooltip="Conversor de peso" tooltipPosition="top"></button>
+            <!-- Descripción -->
+            <div class="flex flex-col gap-2 lg:col-span-1">
+                <label class="text-sm font-medium text-gray-400">Descripción</label>
+                <input pInputText formControlName="descripcionEspecifica"
+                    placeholder="Descripción específica de la Pieza Estandar"
+                    class="w-full h-11 bg-transparent border-gray-800" />
+            </div>
+
+            <!-- Peso -->
+            <div class="flex flex-col gap-2">
+                <div class="flex justify-between items-center">
+                    <label class="text-sm font-medium text-gray-400">Peso (Kg)</label>
+                    <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline"
+                        (click)="abrirConversor()">
+                        <i class="pi pi-calculator text-xs"></i>
+                        <span class="text-xs font-semibold">Conversor</span>
                     </div>
                 </div>
+                <p-inputgroup>
+                    <input pInputText type="number" formControlName="peso" placeholder="Peso del articulo en Kilogramos"
+                        class="h-11 bg-transparent border-gray-800" />
+                    <p-inputgroup-addon class="bg-transparent border-gray-800 text-gray-500 font-medium">
+                        Kg
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+            </div>
 
-                <!-- Descripción Específica -->
-                <div class="field md:col-span-2">
-                    <label for="descripcionEspecifica" class="block text-sm font-medium mb-2"> Descripción Específica
-                        <span class="text-red-500">*</span> </label>
-                    <input pInputText id="descripcionEspecifica" formControlName="descripcionEspecifica"
-                        placeholder="Descripción específica del artículo" class="w-full"
-                        [class.ng-invalid]="articuloForm.get('descripcionEspecifica')?.invalid && articuloForm.get('descripcionEspecifica')?.touched" />
-                    @if (articuloForm.get('descripcionEspecifica')?.invalid &&
-                    articuloForm.get('descripcionEspecifica')?.touched) {
-                    <small class="p-error">
-                        @if (articuloForm.get('descripcionEspecifica')?.errors?.['required']) { La descripción
-                        específica es requerida } @else if
-                        (articuloForm.get('descripcionEspecifica')?.errors?.['maxlength']) { La descripción específica
-                        no puede
-                        exceder 500 caracteres }
-                    </small>
-                    }
+            <!-- Comentarios -->
+            <div class="flex flex-col gap-2">
+                <label class="text-sm font-medium text-gray-400">Comentarios</label>
+                <textarea pTextarea formControlName="comentarios" placeholder="Comentarios del articulo" [rows]="1"
+                    class="w-full bg-transparent border-gray-800 resize-none h-11 overflow-hidden min-h-[2.75rem]">
+                </textarea>
+            </div>
+        </div>
+
+        <!-- Referencias Cruzadas Section -->
+        <div class="bg-[#18181b] border border-gray-800 rounded-xl p-6 flex flex-col gap-4">
+            <h3 class="text-lg font-bold">Referenicas Cruzadas</h3>
+
+            <div formArrayName="referenciasCruzadas" class="flex flex-col gap-4">
+                @for (ref of referenciasCruzadas.controls; track $index) {
+                <div [formGroupName]="$index"
+                    class="bg-[#09090b] border border-gray-800 rounded-lg p-6 relative group transition-all hover:border-[#fdb831]/30">
+                    <div
+                        class="absolute left-2 top-1/2 -translate-y-1/2 opacity-30 group-hover:opacity-100 cursor-move">
+                        <i class="pi pi-sort-alt"></i>
+                    </div>
+
+                    <button type="button" (click)="eliminarReferencia($index)"
+                        class="absolute right-4 top-4 text-red-500/50 hover:text-red-500 transition-colors">
+                        <i class="pi pi-trash"></i>
+                    </button>
+
+                    <div class="flex flex-col gap-2">
+                        <label class="text-sm font-medium text-gray-400">Referencia<span
+                                class="text-red-500">*</span></label>
+                        <p-inputgroup>
+                            <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
+                                optionLabel="referencia" optionValue="id" placeholder="Seleccione una opción"
+                                [filter]="true" filterBy="referencia" (onFilter)="onFilterReferencias($event)"
+                                class="w-full h-11 bg-transparent border-gray-800">
+                                <ng-template let-item pTemplate="item">
+                                    <div class="flex flex-col">
+                                        <span class="font-bold">{{ item.referencia }}</span>
+                                        <span class="text-xs text-gray-500">{{ item.marca?.nombre }}</span>
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                            <p-inputgroup-addon class="bg-transparent border-gray-800">
+                                <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
+                                    (onClick)="abrirCrearReferencia($index)"></p-button>
+                            </p-inputgroup-addon>
+                        </p-inputgroup>
+                    </div>
                 </div>
+                }
+            </div>
 
-                <!-- Comentarios -->
-                <div class="field md:col-span-2">
-                    <label for="comentarios" class="block text-sm font-medium mb-2"> Comentarios </label>
-                    <textarea pTextarea id="comentarios" formControlName="comentarios"
-                        placeholder="Comentarios sobre el artículo" [rows]="4" class="w-full"> </textarea>
-                </div>
+            <div class="flex justify-center mt-2">
+                <button type="button" (click)="agregarReferencia()"
+                    class="bg-[#18181b] border border-gray-800 hover:border-gray-700 px-6 py-2 rounded-full text-sm font-semibold transition-all">
+                    Añadir a
+                </button>
+            </div>
+        </div>
 
-                <!-- Foto Descriptiva -->
-                <div class="field">
-                    <label for="fotoDescriptiva" class="block text-sm font-medium mb-2"> Foto Descriptiva (URL) </label>
-                    <input pInputText id="fotoDescriptiva" formControlName="fotoDescriptiva"
-                        placeholder="URL de la foto descriptiva" class="w-full" />
-                </div>
-
-                <!-- Foto Medida -->
-                <div class="field">
-                    <label for="foto_medida" class="block text-sm font-medium mb-2"> Foto Medida (URL) </label>
-                    <input pInputText id="foto_medida" formControlName="foto_medida"
-                        placeholder="URL de la foto de medida" class="w-full" />
+        <!-- Photos & Scheme Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="flex flex-col gap-3">
+                <h4 class="text-sm font-bold text-gray-100">Foto de Referencia</h4>
+                <div (click)="triggerFileInput(fotoInput)" (drop)="onFileDropped($event, 'foto')"
+                    (dragover)="onDragOver($event)"
+                    class="bg-[#09090b] border-2 border-dashed border-gray-800 rounded-xl h-64 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 transition-all overflow-hidden relative">
+                    <input type="file" #fotoInput (change)="onFileSelected($event, 'foto')" accept="image/*"
+                        class="hidden" />
+                    <div class="flex flex-col items-center">
+                        @if (fotoPreview) {
+                        <img [src]="fotoPreview" class="h-full w-full object-contain absolute inset-0" />
+                        } @else {
+                        <p class="text-sm text-gray-400">Arrastra y suelta tus archivos o <span
+                                class="text-[#fdb831] font-semibold">Examina</span></p>
+                        }
+                    </div>
                 </div>
             </div>
 
-            <p-divider />
-
-            <div class="flex justify-end gap-2 mt-4">
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-                    [disabled]="loading"> </p-button>
-                <p-button label="Crear Artículo" icon="pi pi-check" type="submit" [loading]="loading"
-                    [disabled]="articuloForm.invalid"> </p-button>
+            <div class="flex flex-col gap-3">
+                <h4 class="text-sm font-bold text-gray-100">Plano Esquemático</h4>
+                <div (click)="triggerFileInput(planoInput)" (drop)="onFileDropped($event, 'plano')"
+                    (dragover)="onDragOver($event)"
+                    class="bg-[#09090b] border-2 border-dashed border-gray-800 rounded-xl h-64 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 transition-all overflow-hidden relative">
+                    <input type="file" #planoInput (change)="onFileSelected($event, 'plano')" accept="image/*"
+                        class="hidden" />
+                    <div class="flex flex-col items-center">
+                        @if (planoPreview) {
+                        <img [src]="planoPreview" class="h-full w-full object-contain absolute inset-0" />
+                        } @else {
+                        <p class="text-sm text-gray-400">Arrastra y suelta tus archivos o <span
+                                class="text-[#fdb831] font-semibold">Examina</span></p>
+                        }
+                    </div>
+                </div>
             </div>
-        </form>
-    </p-card>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end gap-3 mt-6">
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="cancelar()"></p-button>
+            <p-button label="Crear Artículo" [loading]="loading" type="submit"
+                styleClass="bg-[#fdb831] border-none text-black font-bold px-8 py-3 rounded-lg"></p-button>
+        </div>
+    </form>
 </div>
+
 <!-- Diálogo Conversor de Peso -->
 <p-dialog [(visible)]="showWeightConverter" header="Conversor de Peso" [modal]="true" [style]="{ width: '400px' }">
     <div class="flex flex-col gap-4 py-4">
@@ -128,3 +195,13 @@
             [disabled]="pesoOrigen === null"></p-button>
     </ng-template>
 </p-dialog>
+
+<!-- Modal para crear nueva Pieza Estándar sobre la marcha -->
+<app-lista-create-modal [(visible)]="showTipoModal" tipoDefault="Piezas Estandar" title="Nueva Pieza Estándar"
+    (onListaCreated)="onTipoCreado($event)">
+</app-lista-create-modal>
+
+<!-- Modal para crear nueva Referencia sobre la marcha -->
+<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia"
+    (onReferenciaCreated)="onReferenciaCreada($event)">
+</app-referencia-create-modal>
