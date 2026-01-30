@@ -29,7 +29,7 @@ class ArticuloResource extends JsonResource
             'descripcionEspecifica' => $this->descripcionEspecifica,
             'peso' => $this->peso,
             'comentarios' => $this->comentarios,
-            'fotoDescriptiva' => $this->fotoDescriptiva,
+            'fotoDescriptiva' => $this->fotoDescriptiva ?? asset('images/no-image.png'),
             'foto_medida' => $this->foto_medida,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

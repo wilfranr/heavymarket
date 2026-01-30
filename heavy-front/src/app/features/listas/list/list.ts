@@ -19,6 +19,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { loadListas, deleteLista } from '../../../store/listas/actions/listas.actions';
 import { selectAllListas, selectListasLoading, selectListasPagination } from '../../../store/listas/selectors/listas.selectors';
+import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 
 /**
  * Componente de lista de Listas
@@ -27,7 +28,7 @@ import { selectAllListas, selectListasLoading, selectListasPagination } from '..
 @Component({
     selector: 'app-listas-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, FallbackImageDirective],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
     // styleUrl: './list.scss'

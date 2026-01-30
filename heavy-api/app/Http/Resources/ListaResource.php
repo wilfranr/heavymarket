@@ -29,7 +29,7 @@ class ListaResource extends JsonResource
             'tipo' => $this->tipo,
             'nombre' => $this->nombre,
             'definicion' => $this->definicion,
-            'foto' => $this->foto,
+            'foto' => $this->foto ?? asset('images/no-image.png'),
             'fotoMedida' => $this->fotoMedida,
             'sistema_id' => $this->sistema_id,
             'created_at' => $this->created_at?->toISOString(),

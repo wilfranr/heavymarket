@@ -18,7 +18,25 @@
                     <label for="definicion" class="block text-sm font-medium mb-2"> Tipo (Pieza Estandar) <span
                             class="text-red-500">*</span> </label>
                     <p-select id="definicion" formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full">
+                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full"
+                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)">
+                        <ng-template let-tipo pTemplate="item">
+                            <div class="flex items-center gap-3">
+                                @if (tipo.foto) {
+                                <img [src]="tipo.foto" [alt]="tipo.nombre" appFallbackImage
+                                    class="w-16 h-16 object-cover rounded shadow-sm" />
+                                } @else {
+                                <div class="w-16 h-16 bg-gray-100 flex items-center justify-center rounded">
+                                    <i class="pi pi-image text-gray-400"></i>
+                                </div>
+                                }
+                                <div class="flex flex-col">
+                                    <span class="font-medium text-sm">{{ tipo.nombre }}</span>
+                                    <span class="text-xs text-gray-500 truncate max-w-[250px]">{{ tipo.definicion
+                                        }}</span>
+                                </div>
+                            </div>
+                        </ng-template>
                     </p-select>
                     @if (articuloForm.get('definicion')?.invalid && articuloForm.get('definicion')?.touched) {
                     <small class="p-error">El tipo es requerido</small>

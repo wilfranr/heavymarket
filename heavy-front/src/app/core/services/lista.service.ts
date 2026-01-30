@@ -18,8 +18,9 @@ export class ListaService extends ApiService {
     /**
      * Obtener listas por tipo (sin paginación, para dropdowns)
      */
-    getByTipo(tipo: ListaTipo): Observable<Lista[]> {
-        return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${tipo}`).pipe(map((response) => response.data));
+    getByTipo(tipo: ListaTipo, search?: string): Observable<Lista[]> {
+        const params = search ? { search } : {};
+        return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${tipo}`, params).pipe(map((response) => response.data));
     }
 
     /**

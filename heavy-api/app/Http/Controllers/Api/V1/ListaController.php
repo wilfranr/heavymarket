@@ -73,18 +73,23 @@ class ListaController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function getByTipo(Request $request): JsonResponse
+    public function getByTipo(Request $request, string $tipo): JsonResponse
     {
-        $tipo = $request->input('tipo');
-        
         if (!$tipo) {
             return response()->json([
                 'message' => 'El parámetro tipo es requerido'
             ], 422);
         }
 
-        $listas = Lista::where('tipo', $tipo)
-            ->orderBy('nombre', 'asc')
+        $query = Lista::where('tipo', $tipo);
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where('nombre', 'like', "%{$search}%");
+        }
+
+        $listas = $query->orderBy('nombre', 'asc')
+            ->limit(50) // Limitamos a 50 para que el dropdown sea instantáneo
             ->get();
 
         return response()->json([

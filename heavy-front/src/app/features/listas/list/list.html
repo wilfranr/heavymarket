@@ -68,7 +68,8 @@
                     </td>
                     <td>
                         @if (lista.foto) {
-                        <img [src]="lista.foto" [alt]="lista.nombre" class="w-16 h-16 object-cover rounded" />
+                        <img [src]="lista.foto" [alt]="lista.nombre" appFallbackImage
+                            class="w-16 h-16 object-cover rounded shadow-sm" />
                         } @else {
                         <span class="text-gray-400">-</span>
                         }

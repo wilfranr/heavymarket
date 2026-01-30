@@ -19,6 +19,7 @@ import { createArticulo } from '../../../store/articulos/actions/articulos.actio
 import { CreateArticuloDto } from '../../../core/models/articulo.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 
 /**
  * Componente de creación de artículo
@@ -26,7 +27,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, FallbackImageDirective],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -59,9 +60,10 @@ export class CreateComponent implements OnInit {
 
     /**
      * Carga los tipos de artículo disponibles (Pieza Estandar)
+     * @param search Término de búsqueda opcional
      */
-    cargarTipos(): void {
-        this.listaService.getByTipo('Piezas Estandar').subscribe({
+    cargarTipos(search?: string): void {
+        this.listaService.getByTipo('Piezas Estandar', search).subscribe({
             next: (tipos) => {
                 this.tipos = tipos;
             },
@@ -69,6 +71,18 @@ export class CreateComponent implements OnInit {
                 console.error('Error al cargar tipos:', error);
             }
         });
+    }
+
+    /**
+     * Maneja el evento de filtrado del dropdown
+     */
+    onFilter(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarTipos(search);
+        } else if (!search) {
+            this.cargarTipos();
+        }
     }
 
     /**

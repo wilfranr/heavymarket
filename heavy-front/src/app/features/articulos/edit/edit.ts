@@ -28,6 +28,7 @@ import { ReferenciaService } from '../../../core/services/referencia.service';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 
 /**
  * Componente de edición de artículo
@@ -35,7 +36,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-articulo-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule, FallbackImageDirective],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -99,9 +100,10 @@ export class EditComponent implements OnInit {
 
     /**
      * Carga los tipos de artículo disponibles
+     * @param search Término de búsqueda opcional
      */
-    cargarTipos(): void {
-        this.listaService.getByTipo('Piezas Estandar').subscribe({
+    cargarTipos(search?: string): void {
+        this.listaService.getByTipo('Piezas Estandar', search).subscribe({
             next: (tipos) => {
                 this.tipos = tipos;
             },
@@ -109,6 +111,18 @@ export class EditComponent implements OnInit {
                 console.error('Error al cargar tipos:', error);
             }
         });
+    }
+
+    /**
+     * Maneja el evento de filtrado del dropdown
+     */
+    onFilter(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarTipos(search);
+        } else if (!search) {
+            this.cargarTipos();
+        }
     }
 
     /**
