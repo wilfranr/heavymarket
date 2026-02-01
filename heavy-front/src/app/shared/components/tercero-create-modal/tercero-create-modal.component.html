@@ -182,8 +182,78 @@
             </div>
             }
 
-            <!-- STEP 2: Documentos -->
+            <!-- STEP 2: Contactos -->
             @if (activeIndex === 2) {
+            <div class="animate-fade-in pt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">Contactos del Tercero</h3>
+                    <p-button label="Agregar Contacto" icon="pi pi-plus" size="small" (onClick)="addContacto()"
+                        [disabled]="isViewMode"></p-button>
+                </div>
+
+                <div formArrayName="contactos" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+                    @for (contacto of contactos.controls; track contacto; let i = $index) {
+                    <div [formGroupName]="i" class="border border-gray-700 rounded-lg p-4 bg-white/5 relative group">
+                        <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
+                            <!-- Principal Toggle -->
+                            <div class="md:col-span-1 flex flex-col items-center justify-center">
+                                <label class="text-xs mb-1 text-gray-400">Principal</label>
+                                <p-button [icon]="contacto.get('principal')?.value ? 'pi pi-star-fill' : 'pi pi-star'"
+                                    [severity]="contacto.get('principal')?.value ? 'warn' : 'secondary'" [text]="true"
+                                    (onClick)="setPrincipal(i)" [disabled]="isViewMode"
+                                    pTooltip="Marcar como contacto principal"></p-button>
+                            </div>
+
+                            <div class="md:col-span-3">
+                                <label class="block mb-1 text-xs font-semibold">Nombre<span
+                                        class="text-red-500">*</span></label>
+                                <input pInputText formControlName="nombre" class="w-full p-filled p-inputtext-sm"
+                                    placeholder="Nombre completo" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block mb-1 text-xs font-semibold">Cargo</label>
+                                <input pInputText formControlName="cargo" class="w-full p-filled p-inputtext-sm"
+                                    placeholder="Ej: Gerente" />
+                            </div>
+
+                            <div class="md:col-span-3">
+                                <label class="block mb-1 text-xs font-semibold">Email</label>
+                                <input pInputText formControlName="email" class="w-full p-filled p-inputtext-sm"
+                                    placeholder="correo@ejemplo.com" />
+                            </div>
+
+                            <div class="md:col-span-2">
+                                <label class="block mb-1 text-xs font-semibold">Teléfono</label>
+                                <input pInputText formControlName="telefono" class="w-full p-filled p-inputtext-sm"
+                                    placeholder="Número" />
+                            </div>
+
+                            <!-- Remove Button -->
+                            <div class="md:col-span-1 flex items-end justify-center">
+                                <p-button icon="pi pi-trash" severity="danger" [text]="true"
+                                    (onClick)="removeContacto(i)" [disabled]="isViewMode"></p-button>
+                            </div>
+                        </div>
+
+                        @if (contacto.get('nombre')?.invalid && contacto.get('nombre')?.touched) {
+                        <small class="text-red-500 block mt-1">El nombre es obligatorio</small>
+                        }
+                    </div>
+                    } @empty {
+                    <div class="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg bg-white/5">
+                        <i class="pi pi-users text-4xl text-gray-500 mb-2"></i>
+                        <p class="text-gray-400">No hay contactos agregados.</p>
+                        <p-button label="Agregar el primer contacto" [text]="true" (onClick)="addContacto()"
+                            [disabled]="isViewMode"></p-button>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- STEP 3: Documentos -->
+            @if (activeIndex === 3) {
             <div class="animate-fade-in pt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 

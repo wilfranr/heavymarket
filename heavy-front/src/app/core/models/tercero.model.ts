@@ -19,6 +19,20 @@ export interface Tercero {
     city_id?: number | null;
     state_id?: number | null;
     country_id?: number | null;
+    contactos?: Contacto[];
+}
+
+/**
+ * Modelo de Contacto asociado a un Tercero
+ */
+export interface Contacto {
+    id?: number;
+    tercero_id?: number;
+    nombre: string;
+    cargo?: string;
+    telefono?: string;
+    email?: string;
+    principal: boolean;
 }
 
 /**

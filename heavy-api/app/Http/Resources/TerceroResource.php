@@ -58,7 +58,7 @@ class TerceroResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             
             // Relaciones opcionales
-            'contactos' => $this->whenLoaded('contactos'),
+            'contactos' => ContactoResource::collection($this->whenLoaded('contactos')),
             'direcciones' => $this->whenLoaded('direcciones'),
             'fabricantes' => $this->whenLoaded('fabricantes'),
             'sistemas' => $this->whenLoaded('sistemas'),

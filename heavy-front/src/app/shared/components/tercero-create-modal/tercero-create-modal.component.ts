@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -249,7 +249,16 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             maquina_id: data.maquinas && data.maquinas.length > 0 ? data.maquinas[0].id : null,
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
             sistema_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
+            contactos: [] // Will be populated below
         });
+
+        // Set contacts
+        this.contactos.clear();
+        if (data.contactos && data.contactos.length > 0) {
+            data.contactos.forEach((c: any) => this.addContacto(c));
+        } else {
+            // If creating and no contacts, could add one empty, but maybe better to leave empty
+        }
 
         if (data.country_id) {
             this.ubicacionService.getStates(data.country_id).subscribe(r => {
@@ -268,8 +277,35 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         this.steps = [
             { label: 'Información general' },
             { label: 'Ubicación' },
+            { label: 'Contactos' },
             { label: 'Documentos' }
         ];
+    }
+
+    get contactos(): FormArray {
+        return this.createTerceroForm.get('contactos') as FormArray;
+    }
+
+    addContacto(contacto: any = null): void {
+        const contactoForm = this.fb.group({
+            id: [contacto?.id || null],
+            nombre: [contacto?.nombre || '', [Validators.required]],
+            cargo: [contacto?.cargo || ''],
+            email: [contacto?.email || '', [Validators.email]],
+            telefono: [contacto?.telefono || ''],
+            principal: [contacto?.principal || false]
+        });
+        this.contactos.push(contactoForm);
+    }
+
+    removeContacto(index: number): void {
+        this.contactos.removeAt(index);
+    }
+
+    setPrincipal(index: number): void {
+        this.contactos.controls.forEach((control, i) => {
+            control.get('principal')?.setValue(i === index);
+        });
     }
 
     private initForm(): void {
@@ -298,7 +334,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             certificacion_bancaria: [null],
             camara_comercio: [null],
             cedula_representante_legal: [null],
-
+            contactos: this.fb.array([]),
             estado: ['activo']
         });
     }
@@ -326,8 +362,10 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 tipo: this.tipoTercero,
                 estado: 'activo',
                 fabricante_id: [],
-                sistema_id: []
+                sistema_id: [],
+                contactos: []
             });
+            this.contactos.clear();
             this.departamentos = [];
             this.ciudades = [];
         }
@@ -362,6 +400,9 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         if (step === 1) {
             return !controls['direccion'].invalid;
         }
+        if (step === 2) {
+            return this.contactos.valid;
+        }
         return true;
     }
 
@@ -374,12 +415,10 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         if (step === 1) {
             this.createTerceroForm.get('direccion')?.markAsTouched();
         }
+        if (step === 2) {
+            this.contactos.markAllAsTouched();
+        }
     }
-
-    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
-    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
-    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
-    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas = r.data.map(s => ({ label: s.nombre, value: s.id })) }); }
 
     openCreateMaquinaDialog(): void { this.displayCreateMaquinaDialog = true; }
     onMaquinaCreated(maquina: any): void { this.loadMaquinas(); this.displayCreateMaquinaDialog = false; this.createTerceroForm.patchValue({ maquina_id: maquina.id }); }
@@ -401,6 +440,11 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     onFileSelect(event: any, fieldName: string): void { if (event.files && event.files.length > 0) { this.createTerceroForm.patchValue({ [fieldName]: event.files[0] }); } }
 
     closeDialog(): void { this.visible = false; this.visibleChange.emit(false); }
+
+    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
+    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
+    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
+    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas = r.data.map(s => ({ label: s.nombre, value: s.id })) }); }
 
     saveTercero(createAnother: boolean = false): void {
         if (this.isViewMode) {
@@ -444,6 +488,21 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
         if (formValue.sistema_id && Array.isArray(formValue.sistema_id)) {
             formValue.sistema_id.forEach((id: any) => formData.append('sistema_id[]', id));
+        }
+
+        if (formValue.contactos && Array.isArray(formValue.contactos)) {
+            formValue.contactos.forEach((contacto: any, index: number) => {
+                if (contacto.nombre) {
+                    formData.append(`contactos[${index}][nombre]`, contacto.nombre);
+                    formData.append(`contactos[${index}][cargo]`, contacto.cargo || '');
+                    formData.append(`contactos[${index}][email]`, contacto.email || '');
+                    formData.append(`contactos[${index}][telefono]`, contacto.telefono || '');
+                    formData.append(`contactos[${index}][principal]`, contacto.principal ? '1' : '0');
+                    if (contacto.id) {
+                        formData.append(`contactos[${index}][id]`, contacto.id);
+                    }
+                }
+            });
         }
 
         const fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];

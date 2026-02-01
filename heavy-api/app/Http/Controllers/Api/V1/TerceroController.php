@@ -9,7 +9,8 @@ use App\Http\Requests\{StoreTerceroRequest, UpdateTerceroRequest};
 use App\Http\Resources\TerceroResource;
 use App\Models\Tercero;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Storage, DB};
+use Illuminate\Support\Arr;
 
 /**
  * Controlador API para gestión de Terceros
@@ -83,46 +84,53 @@ class TerceroController extends Controller
      */
     public function store(StoreTerceroRequest $request): JsonResponse
     {
-        try {
-            $data = $request->validated();
-            
-            // Handle Files
-            $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
-            foreach ($fileFields as $field) {
-                if ($request->hasFile($field)) {
-                    $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
+        return DB::transaction(function () use ($request) {
+            try {
+                $data = $request->validated();
+                
+                // Handle Files
+                $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+                foreach ($fileFields as $field) {
+                    if ($request->hasFile($field)) {
+                        $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
+                    }
                 }
-            }
 
-            $tercero = Tercero::create($data);
+                $tercero = Tercero::create($data);
 
-            // Handle Relationships
-            if ($request->filled('maquina_id')) {
-                // Assuming ManyToMany or OneToMany? Model says belongsToMany maquinas.
-                // If it's single selection in frontend, sync array.
-                $tercero->maquinas()->sync([$request->input('maquina_id')]);
-            }
-            
-            if ($request->filled('fabricante_id')) {
-                $tercero->fabricantes()->sync($request->input('fabricante_id'));
-            }
-            
-            if ($request->filled('sistema_id')) {
-                $tercero->sistemas()->sync($request->input('sistema_id'));
-            }
+                // Handle Contacts
+                if ($request->filled('contactos')) {
+                    foreach ($request->input('contactos') as $contactoData) {
+                        $tercero->contactos()->create($contactoData);
+                    }
+                }
 
-            return response()->json([
-                'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas'])),
-                'message' => 'Tercero creado exitosamente',
-            ], 201);
+                // Handle Relationships
+                if ($request->filled('maquina_id')) {
+                    $tercero->maquinas()->sync([$request->input('maquina_id')]);
+                }
+                
+                if ($request->filled('fabricante_id')) {
+                    $tercero->fabricantes()->sync($request->input('fabricante_id'));
+                }
+                
+                if ($request->filled('sistema_id')) {
+                    $tercero->sistemas()->sync($request->input('sistema_id'));
+                }
 
-        } catch (\Exception $e) {
-            \Log::error('Error creating tercero: ' . $e->getMessage());
-            return response()->json([
-                'message' => 'Error al crear el tercero',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+                return response()->json([
+                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas', 'contactos'])),
+                    'message' => 'Tercero creado exitosamente',
+                ], 201);
+
+            } catch (\Exception $e) {
+                \Log::error('Error creating tercero: ' . $e->getMessage());
+                return response()->json([
+                    'message' => 'Error al crear el tercero',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+        });
     }
 
     /**
@@ -149,45 +157,65 @@ class TerceroController extends Controller
      */
     public function update(UpdateTerceroRequest $request, Tercero $tercero): JsonResponse
     {
-        try {
-            $data = $request->validated();
-            
-            // Handle Files
-            $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
-            foreach ($fileFields as $field) {
-                if ($request->hasFile($field)) {
-                    // Delete old file if exists
-                    if ($tercero->{$field}) {
-                         Storage::disk('public')->delete($tercero->{$field});
+        return DB::transaction(function () use ($request, $tercero) {
+            try {
+                $data = $request->validated();
+                
+                // Handle Files
+                $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
+                foreach ($fileFields as $field) {
+                    if ($request->hasFile($field)) {
+                        // Delete old file if exists
+                        if ($tercero->{$field}) {
+                             Storage::disk('public')->delete($tercero->{$field});
+                        }
+                        $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
                     }
-                    $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
                 }
-            }
 
-            $tercero->update($data);
+                $tercero->update($data);
 
-             // Handle Relationships if passed (optional update logic)
-            if ($request->has('maquina_id')) { // Check existence key to allow unselecting
-                 $tercero->maquinas()->sync($request->input('maquina_id') ? [$request->input('maquina_id')] : []);
-            }
-            if ($request->has('fabricante_id')) {
-                 $tercero->fabricantes()->sync($request->input('fabricante_id'));
-            }
-            if ($request->has('sistema_id')) {
-                 $tercero->sistemas()->sync($request->input('sistema_id'));
-            }
+                // Handle Contacts
+                if ($request->has('contactos')) {
+                    $contactosInput = $request->input('contactos', []);
+                    $keepIds = collect($contactosInput)->pluck('id')->filter()->all();
+                    
+                    // Delete removed contacts
+                    $tercero->contactos()->whereNotIn('id', $keepIds)->delete();
+                    
+                    // Update or Create
+                    foreach ($contactosInput as $contactoData) {
+                        if (isset($contactoData['id'])) {
+                            $tercero->contactos()->where('id', $contactoData['id'])->update(Arr::except($contactoData, ['id']));
+                        } else {
+                            $tercero->contactos()->create($contactoData);
+                        }
+                    }
+                }
 
-            return response()->json([
-                'data' => new TerceroResource($tercero),
-                'message' => 'Tercero actualizado exitosamente',
-            ]);
+                 // Handle Relationships if passed (optional update logic)
+                if ($request->has('maquina_id')) { // Check existence key to allow unselecting
+                     $tercero->maquinas()->sync($request->input('maquina_id') ? [$request->input('maquina_id')] : []);
+                }
+                if ($request->has('fabricante_id')) {
+                     $tercero->fabricantes()->sync($request->input('fabricante_id'));
+                }
+                if ($request->has('sistema_id')) {
+                     $tercero->sistemas()->sync($request->input('sistema_id'));
+                }
 
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al actualizar el tercero',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+                return response()->json([
+                    'data' => new TerceroResource($tercero->load(['contactos', 'maquinas', 'fabricantes', 'sistemas'])),
+                    'message' => 'Tercero actualizado exitosamente',
+                ]);
+
+            } catch (\Exception $e) {
+                return response()->json([
+                    'message' => 'Error al actualizar el tercero',
+                    'error' => $e->getMessage(),
+                ], 500);
+            }
+        });
     }
 
     /**

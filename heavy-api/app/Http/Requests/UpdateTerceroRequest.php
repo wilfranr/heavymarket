@@ -64,6 +64,15 @@ class UpdateTerceroRequest extends FormRequest
             'maquina_id' => ['nullable', 'integer'],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],
+
+            // Contactos
+            'contactos' => ['nullable', 'array'],
+            'contactos.*.id' => ['nullable', 'integer', 'exists:contactos,id'],
+            'contactos.*.nombre' => ['required_with:contactos', 'string', 'max:255'],
+            'contactos.*.cargo' => ['nullable', 'string', 'max:255'],
+            'contactos.*.telefono' => ['nullable', 'string', 'max:50'],
+            'contactos.*.email' => ['nullable', 'email', 'max:255'],
+            'contactos.*.principal' => ['nullable', 'boolean'],
         ];
     }
 
