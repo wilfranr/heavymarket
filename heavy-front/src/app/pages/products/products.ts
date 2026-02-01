@@ -31,10 +31,10 @@ export class Products implements OnInit, AfterViewInit {
         private landingService: LandingService,
         private router: Router,
         private cdr: ChangeDetectorRef
-    ) {}
+    ) { }
 
     ngOnInit() {
-        this.landingService.getNavbarCategories().subscribe((categories) => {
+        this.landingService.getAllCategories().subscribe((categories) => {
             this.categories = categories;
             this.processAllProducts();
             this.filterProducts();

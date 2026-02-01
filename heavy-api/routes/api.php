@@ -57,6 +57,7 @@ Route::prefix('v1')->group(function () {
      * Rutas de Landing (públicas)
      */
     Route::get('/landing/categories', [LandingController::class, 'index']);
+    Route::get('/landing/navbar-data', [LandingController::class, 'navbarData']);
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
 
     /**

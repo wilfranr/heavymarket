@@ -23,8 +23,24 @@ class LandingController extends Controller
 
     /**
      * Obtener categorías de la landing con sus subcategorías.
+     * Este endpoint se usa para la sección "Nuestros Productos" (muestra todas)
      */
     public function index()
+    {
+        $categorias = CategoriaLanding::with(['subcategorias' => function ($query) {
+            $query->orderBy('nombre', 'asc');
+        }])
+        ->orderBy('nombre', 'asc')
+        ->get();
+
+        return response()->json($categorias);
+    }
+
+    /**
+     * Obtener categorías y subcategorías filtradas para el mega menú del navbar
+     * Solo devuelve las marcadas como mostrar_en_navbar = true
+     */
+    public function navbarData()
     {
         $categorias = CategoriaLanding::where('mostrar_en_navbar', true)
         ->orderBy('orden_navbar', 'asc')
@@ -35,9 +51,6 @@ class LandingController extends Controller
         }])
         ->get();
 
-        // Transformar para incluir urls de imágenes y slugs que son attributos virtuales
-        // Aunque al usar toArray() Laravel debería incluirlos si están en $appends
-        
         return response()->json($categorias);
     }
     /**

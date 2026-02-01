@@ -43,9 +43,18 @@ export class LandingService {
     }
 
     getNavbarCategories(): Observable<Category[]> {
+        return this.http.get<Category[]>(`${environment.apiUrl}/landing/navbar-data`).pipe(
+            catchError((error) => {
+                console.error('Error fetching navbar categories:', error);
+                return of([]);
+            })
+        );
+    }
+
+    getAllCategories(): Observable<Category[]> {
         return this.http.get<Category[]>(`${environment.apiUrl}/landing/categories`).pipe(
             catchError((error) => {
-                console.error('Error fetching categories:', error);
+                console.error('Error fetching all categories:', error);
                 return of([]);
             })
         );
