@@ -155,6 +155,15 @@ Route::prefix('v1')->group(function () {
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
         
         /**
+         * Gestión de Landing (Admin)
+         */
+        Route::prefix('landing')->group(function () {
+             Route::get('categorias', [LandingController::class, 'adminIndex']);
+             Route::put('categorias/{categoria}', [LandingController::class, 'updateCategoria']);
+             Route::put('subcategorias/{subcategoria}', [LandingController::class, 'updateSubcategoria']);
+        });
+
+        /**
          * Gestión de usuarios (solo admin)
          */
         Route::apiResource('users', UserController::class)

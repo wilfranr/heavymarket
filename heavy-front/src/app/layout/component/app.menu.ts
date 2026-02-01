@@ -47,7 +47,8 @@ export class AppMenu {
                     { label: 'Contactos', icon: 'pi pi-fw pi-envelope', routerLink: ['/app/contactos'] },
                     { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
                     { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
-                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
+                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] },
+                    { label: 'Gestión Landing', icon: 'pi pi-fw pi-globe', routerLink: ['/app/gestion-landing'] }
                 ]
             },
             {
@@ -58,7 +59,7 @@ export class AppMenu {
                     { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
                     { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/app/referencias'] },
                     { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
-                    { label: 'Artículos', icon: 'pi pi-fw pi-cube', routerLink: ['/app/articulos'] }
+                    { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] }
                 ]
             },
             {

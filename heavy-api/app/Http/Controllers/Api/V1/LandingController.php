@@ -9,16 +9,30 @@ use Illuminate\Http\Request;
 class LandingController extends Controller
 {
     /**
+     * Obtener todas las categorías para administración (sin filtros)
+     */
+    public function adminIndex()
+    {
+        return CategoriaLanding::with(['subcategorias' => function ($query) {
+            $query->orderBy('orden_navbar', 'asc')->orderBy('nombre', 'asc');
+        }])
+        ->orderBy('orden_navbar', 'asc')
+        ->orderBy('nombre', 'asc')
+        ->get();
+    }
+
+    /**
      * Obtener categorías de la landing con sus subcategorías.
      */
     public function index()
     {
-        $categorias = CategoriaLanding::with(['subcategorias' => function ($query) {
+        $categorias = CategoriaLanding::where('mostrar_en_navbar', true)
+        ->orderBy('orden_navbar', 'asc')
+        ->with(['subcategorias' => function ($query) {
             $query->where('mostrar_en_navbar', true)
                   ->orderBy('orden_navbar', 'asc')
                   ->orderBy('nombre', 'asc');
         }])
-        ->orderBy('nombre', 'asc')
         ->get();
 
         // Transformar para incluir urls de imágenes y slugs que son attributos virtuales
@@ -114,5 +128,37 @@ class LandingController extends Controller
             'systems' => $systems,
             'models' => $models
         ]);
+    }
+
+    /**
+     * Actualizar una categoría de landing (Admin)
+     */
+    public function updateCategoria(Request $request, CategoriaLanding $categoria)
+    {
+        $validated = $request->validate([
+            'nombre' => 'sometimes|string|max:255',
+            'descripcion_general' => 'nullable|string',
+            'mostrar_en_navbar' => 'sometimes|boolean',
+            'orden_navbar' => 'nullable|integer'
+        ]);
+
+        $categoria->update($validated);
+
+        return response()->json($categoria);
+    }
+    
+    /**
+     * Actualizar una subcategoría de landing (Admin)
+     */
+    public function updateSubcategoria(Request $request, \App\Models\SubcategoriaLanding $subcategoria)
+    {
+        $validated = $request->validate([
+            'mostrar_en_navbar' => 'sometimes|boolean',
+            'orden_navbar' => 'nullable|integer'
+        ]);
+
+        $subcategoria->update($validated);
+
+        return response()->json($subcategoria);
     }
 }

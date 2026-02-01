@@ -1,0 +1,84 @@
+<p-toast></p-toast>
+<div class="card">
+    <div class="flex justify-content-between align-items-center mb-4">
+        <div>
+            <h5 class="m-0">Gestión de Landing Page - Mega Menú</h5>
+            <span class="text-600">Selecciona hasta 5 categorías para mostrar en el menú principal.</span>
+        </div>
+        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadCategories()"
+            [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom"></button>
+    </div>
+
+    <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-striped"
+        [tableStyle]="{'min-width': '60rem'}">
+
+        <ng-template pTemplate="header">
+            <tr>
+                <th style="width: 5rem"></th>
+                <th>Nombre</th>
+                <th style="width: 200px">Mostrar en Navbar</th>
+                <th style="width: 150px">Orden</th>
+            </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-category>
+            <!-- Main Row -->
+            <tr>
+                <td>
+                    <div (click)="toggleRow(category)"
+                        class="cursor-pointer p-2 inline-flex align-items-center justify-content-center border-circle hover:surface-hover transition-colors transition-duration-150">
+                        <i [class]="expandedRows[category.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
+                    </div>
+                </td>
+                <td class="font-bold text-lg">{{ category.nombre }}</td>
+                <td>
+                    <p-toggleswitch [(ngModel)]="category.mostrar_en_navbar"
+                        (onChange)="onCategoryToggle(category)"></p-toggleswitch>
+                </td>
+                <td>
+                    <p-inputNumber [(ngModel)]="category.orden_navbar" [showButtons]="true" [min]="0" [max]="99"
+                        [step]="1" inputStyleClass="w-full" (onBlur)="onCategoryOrderChange(category)"></p-inputNumber>
+                </td>
+            </tr>
+
+            <!-- Expanded Row (Manually rendered) -->
+            <tr *ngIf="expandedRows[category.id]">
+                <td colspan="4" class="p-0 border-none">
+                    <div class="p-3" style="background-color: #1e1e1e; border-bottom: 1px solid #333;">
+                        <div class="font-bold mb-2 text-white">Subcategorías de {{ category.nombre }} ({{
+                            category.subcategorias?.length || 0 }})</div>
+
+                        <p-table [value]="category.subcategorias" dataKey="id" styleClass="p-datatable-sm">
+                            <ng-template pTemplate="header">
+            <tr>
+                <th>Nombre Subcategoría</th>
+                <th style="width: 200px">Mostrar en Navbar</th>
+                <th style="width: 150px">Orden</th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-sub>
+            <tr>
+                <td>{{ sub.nombre }}</td>
+                <td>
+                    <p-toggleswitch [(ngModel)]="sub.mostrar_en_navbar"
+                        (onChange)="onSubcategoryToggle(sub)"></p-toggleswitch>
+                </td>
+                <td>
+                    <p-inputNumber [(ngModel)]="sub.orden_navbar" [showButtons]="true" [min]="0" [max]="99"
+                        inputStyleClass="w-full" (onBlur)="onSubcategoryOrderChange(sub)"></p-inputNumber>
+                </td>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="emptymessage">
+            <tr>
+                <td colspan="3">No hay subcategorías.</td>
+            </tr>
+        </ng-template>
+    </p-table>
+</div>
+</td>
+</tr>
+</ng-template>
+
+</p-table>
+</div>

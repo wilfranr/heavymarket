@@ -20,6 +20,23 @@ class SubcategoriaLanding extends Model
     
     protected $appends = ['slug', 'imagen_url'];
 
+    protected static function booted()
+    {
+        static::saving(function ($subcategoria) {
+            if ($subcategoria->mostrar_en_navbar) {
+                // Contar cuántas subcategorías de la MISMA categoría ya están activas (excluyendo la actual si es update)
+                $count = static::where('categoria_id', $subcategoria->categoria_id)
+                    ->where('mostrar_en_navbar', true)
+                    ->where('id', '!=', $subcategoria->id)
+                    ->count();
+                
+                if ($count >= 4) {
+                    throw new \Exception('Solo se pueden seleccionar hasta 4 subcategorías por categoría para el mega menú.');
+                }
+            }
+        });
+    }
+
     /**
      * Relación: una subcategoría pertenece a una categoría
      */
