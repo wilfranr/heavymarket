@@ -212,7 +212,7 @@ class LandingController extends Controller
             $pedido = \App\Models\Pedido::create([
                 'tercero_id' => $tercero->id,
                 'user_id' => 1, 
-                'estado' => 'Solicitado',
+                'estado' => 'Nuevo',
                 'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} " . ($request->input('selectedSeries') ? "Series: " . $request->input('selectedSeries') : ""),
                 'fabricante_id' => $fabricanteId,
                 'direccion' => $userData['address'] ?? $tercero->direccion,
@@ -237,7 +237,7 @@ class LandingController extends Controller
                     'cantidad' => $itemData['quantity'],
                     'comentario' => "REF/P/N: " . ($itemData['reference'] ?? 'Desconocida'),
                     'imagen' => $imagePath,
-                    'estado' => 'Pendiente'
+                    'estado' => 1
                 ]);
             }
 

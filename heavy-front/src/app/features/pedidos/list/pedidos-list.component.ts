@@ -72,7 +72,7 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
                 <ng-template pTemplate="body" let-pedido>
                     <tr>
                         <td>{{ pedido.id }}</td>
-                        <td>{{ pedido.tercero?.razon_social || 'N/A' }}</td>
+                        <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                         <td>
                             <p-tag [value]="pedido.estado" [severity]="getEstadoSeverity(pedido.estado)"> </p-tag>
                         </td>

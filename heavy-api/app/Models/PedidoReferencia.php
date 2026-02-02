@@ -38,6 +38,11 @@ class PedidoReferencia extends Model
         return $this->belongsTo(Referencia::class);
     }
 
+    public function sistema(): BelongsTo
+    {
+        return $this->belongsTo(Sistema::class);
+    }
+
     public function proveedores(): HasMany
     {
         // Aunque el campo se llama 'pedido_id', en realidad es el id de 'pedido_referencia'
