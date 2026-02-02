@@ -44,6 +44,19 @@ class Maquina extends Model
         return "{$this->tipo} {$this->modelo} {$this->marca} {$this->serie} {$this->arreglo}";
     }
 
+    /**
+     * Accessor para obtener el nombre completo de la máquina
+     */
+    public function getNombreAttribute()
+    {
+        $parts = array_filter([
+            $this->tipo,
+            $this->modelo,
+            $this->serie,
+            $this->arreglo
+        ]);
+        return implode(' ', $parts);
+    }
 
     public function pedidos()
     {

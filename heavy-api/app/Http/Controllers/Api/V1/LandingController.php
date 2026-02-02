@@ -207,21 +207,70 @@ class LandingController extends Controller
                 $fabricanteId = $fabricante?->id;
             }
 
-            // 3. Crear el Pedido
-            // Buscamos un usuario administrador para asignar el pedido (ID 1)
+            // 3. Crear o buscar la Máquina
+            $maquinaId = null;
+            if ($request->filled('selectedModel')) {
+                // Buscar si ya existe una máquina con esa serie (si se proporcionó)
+                $maquina = null;
+                if ($request->filled('selectedSeries')) {
+                    $maquina = \App\Models\Maquina::where('serie', $request->input('selectedSeries'))->first();
+                }
+
+                // Si no existe, crear una nueva máquina
+                if (!$maquina) {
+                    $maquina = \App\Models\Maquina::create([
+                        'tipo' => $request->input('selectedType'),
+                        'modelo' => $request->input('selectedModel'),
+                        'serie' => $request->input('selectedSeries'),
+                        'arreglo' => $request->input('selectedArrangement'),
+                        'fabricante_id' => $fabricanteId ?? 1, // Default si no hay fabricante
+                    ]);
+
+                    // Vincular la máquina al tercero (relación muchos a muchos)
+                    $maquina->terceros()->attach($tercero->id);
+                } else {
+                    // Si la máquina ya existe, verificar si ya está vinculada al tercero
+                    if (!$maquina->terceros()->where('tercero_id', $tercero->id)->exists()) {
+                        $maquina->terceros()->attach($tercero->id);
+                    }
+                }
+
+                $maquinaId = $maquina->id;
+            }
+
+            // 4. Crear el Pedido
             $pedido = \App\Models\Pedido::create([
                 'tercero_id' => $tercero->id,
                 'user_id' => 1, 
                 'estado' => 'Nuevo',
                 'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} " . ($request->input('selectedSeries') ? "Series: " . $request->input('selectedSeries') : ""),
                 'fabricante_id' => $fabricanteId,
+                'maquina_id' => $maquinaId,
                 'direccion' => $userData['address'] ?? $tercero->direccion,
             ]);
 
-            // 4. Procesar Ítems
+            // 5. Procesar Ítems
             $itemsData = $request->input('items');
             foreach ($itemsData as $index => $itemData) {
                 $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first();
+                
+                // Crear una referencia temporal si se proporcionó un código
+                $referenciaId = null;
+                if (!empty($itemData['reference'])) {
+                    // Buscar si ya existe una referencia con ese código
+                    $referencia = \App\Models\Referencia::where('referencia', $itemData['reference'])->first();
+                    
+                    if (!$referencia) {
+                        // Crear referencia temporal para que el analista la complete después
+                        $referencia = \App\Models\Referencia::create([
+                            'referencia' => $itemData['reference'],
+                            'marca_id' => $fabricanteId,
+                            'comentario' => "Referencia temporal desde Landing - Requiere revisión del analista de partes"
+                        ]);
+                    }
+                    
+                    $referenciaId = $referencia->id;
+                }
                 
                 $imagePath = null;
                 // Manejar archivos si vienen en el request (multipart)
@@ -232,16 +281,21 @@ class LandingController extends Controller
 
                 \App\Models\PedidoReferencia::create([
                     'pedido_id' => $pedido->id,
+                    'referencia_id' => $referenciaId,
                     'sistema_id' => $sistema?->id,
+                    'marca_id' => $fabricanteId,
                     'definicion' => $itemData['description'],
                     'cantidad' => $itemData['quantity'],
-                    'comentario' => "REF/P/N: " . ($itemData['reference'] ?? 'Desconocida'),
+                    'comentario' => $itemData['reference'] 
+                        ? "REF/P/N: {$itemData['reference']}" 
+                        : "Sin referencia proporcionada",
                     'imagen' => $imagePath,
-                    'estado' => 1
+                    'estado' => 1,
+                    'mostrar_referencia' => 1
                 ]);
             }
 
-            // 5. Enviar e-mails (Desabilitado temporalmente a petición del usuario)
+            // 6. Enviar e-mails (Desabilitado temporalmente a petición del usuario)
             /*
             try {
                 \Illuminate\Support\Facades\Mail::to($tercero->email)

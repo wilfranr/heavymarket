@@ -33,11 +33,11 @@
             styleClass="p-datatable-sm">
             <ng-template pTemplate="caption">
                 <div class="flex">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search"></i>
+                    <p-iconfield iconPosition="left" class="w-full">
+                        <p-inputicon styleClass="pi pi-search"></p-inputicon>
                         <input pInputText type="text" (input)="onSearch($any($event.target).value)"
                             placeholder="Buscar listas..." class="w-full" />
-                    </span>
+                    </p-iconfield>
                 </div>
             </ng-template>
 

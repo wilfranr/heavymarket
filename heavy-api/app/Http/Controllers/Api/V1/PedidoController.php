@@ -177,6 +177,7 @@ class PedidoController extends Controller
             'fabricante',
             'contacto',
             'referencias.referencia',
+            'referencias.sistema',
             'referencias.proveedores.tercero',
             'articulos.articulo',
             'articulos.sistema'

@@ -9,7 +9,7 @@
 <div class="min-h-screen p-6 font-sans text-slate-200">
     <div class="max-w-[1906px] mx-auto">
         <!-- Header -->
-        <div class="flex justify-between items-center mb-6 pl-[339px] pr-[69px]">
+        <div class="flex justify-between items-center mb-6 px-8">
             <div>
                 <div class="text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Pedidos > Editar
                 </div>
@@ -27,10 +27,10 @@
         <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
 
             <!-- Top Info Cards Grid -->
-            <div class="flex gap-6 mb-10 pl-[339px] pr-[69px]">
+            <div class="flex gap-6 mb-10 px-8">
 
                 <!-- Order Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
                     <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
                         <span class="font-bold text-white text-base pl-2">Información del pedido</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
@@ -67,7 +67,7 @@
                 </div>
 
                 <!-- Machine Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
                     <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
                         <span class="font-bold text-white text-base pl-2">Información de la máquina</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
@@ -96,7 +96,7 @@
                 </div>
 
                 <!-- Client Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
                     <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
                         <span class="font-bold text-white text-base pl-2">Información de tercero</span>
                         <div class="flex gap-1">
@@ -135,7 +135,7 @@
             </div>
 
             <!-- Items Section -->
-            <div class="pl-[339px] pr-[69px]">
+            <div class="px-8">
                 <h3 class="text-xl font-semibold text-brand-yellow mb-4" style="font-family: 'Montserrat'">Tus ítems
                 </h3>
 
@@ -162,7 +162,8 @@
                             <!-- Sistema -->
                             <div class="w-[20%]">
                                 <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center" [filter]="true"></p-select>
+                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center"
+                                    [filter]="true"></p-select>
                             </div>
 
                             <!-- Articulo -->
