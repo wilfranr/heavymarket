@@ -22,6 +22,19 @@ class LandingController extends Controller
     }
 
     /**
+     * Obtener tipos de máquina jerarquizados para administración
+     */
+    public function machineTypesAdmin()
+    {
+        return \App\Models\Lista::where('tipo', 'Categoría de Máquina')
+            ->with(['children' => function($q) {
+                $q->where('tipo', 'Tipo de Máquina')->orderBy('nombre');
+            }])
+            ->orderBy('nombre')
+            ->get();
+    }
+
+    /**
      * Obtener categorías de la landing con sus subcategorías.
      * Este endpoint se usa para la sección "Nuestros Productos" (muestra todas)
      */
@@ -58,67 +71,61 @@ class LandingController extends Controller
      */
     public function quoteData()
     {
-        // 1. Obtener Tipos de Máquina desde la tabla 'listas' y agruparlos por Categoría (basado en prefijo de foto)
-        $listas = \App\Models\Lista::where('tipo', 'Tipo de Máquina')->get();
+        // 1. Obtener Categorías de Máquina y sus Tipos desde la DB
+        $categoriesData = \App\Models\Lista::where('tipo', 'Categoría de Máquina')
+            ->with(['children' => function($q) {
+                $q->where('tipo', 'Tipo de Máquina')->orderBy('nombre');
+            }])
+            ->get();
         
         $categoriesMap = [];
-        $prefixMap = [
-            'Const' => ['slug' => 'construccion', 'nombre' => 'Construcción'],
-            'EqLig' => ['slug' => 'equipo-ligero', 'nombre' => 'Equipo Ligero'],
-            'Miner' => ['slug' => 'mineria', 'nombre' => 'Minería'],
-            'Pavim' => ['slug' => 'pavimentacion', 'nombre' => 'Pavimentación'],
-            'Tunel' => ['slug' => 'subterraneo', 'nombre' => 'Subterráneo'],
-            'Util'  => ['slug' => 'utilitarios', 'nombre' => 'Utilitarios'],
-        ];
+        foreach ($categoriesData as $cat) {
+            $slug = \Illuminate\Support\Str::slug($cat->nombre);
+            $subcategorias = [];
 
-        foreach ($listas as $item) {
-            $prefix = 'Otros'; // Default
-            
-            if ($item->foto) {
-                $parts = explode('_', $item->foto);
-                if (count($parts) > 0 && isset($prefixMap[$parts[0]])) {
-                    $prefix = $parts[0];
+            foreach ($cat->children as $item) {
+                $imageUrl = asset('images/no-image.png');
+                if ($item->foto) {
+                    if (str_contains($item->foto, '/')) {
+                        $imageUrl = asset('storage/' . $item->foto);
+                    } else {
+                        $oldPath = 'Aplicativo/03. Tipos de Maquina/' . $item->foto;
+                        if (file_exists(storage_path('app/public/' . $oldPath))) {
+                            $imageUrl = asset('storage/' . $oldPath);
+                        }
+                    }
                 }
-            }
 
-            $catInfo = isset($prefixMap[$prefix]) 
-                ? $prefixMap[$prefix] 
-                : ['slug' => 'otros', 'nombre' => 'Otros'];
-            
-            $slug = $catInfo['slug'];
-
-            if (!isset($categoriesMap[$slug])) {
-                $categoriesMap[$slug] = [
-                    'nombre' => $catInfo['nombre'],
-                    'slug' => $slug,
-                    'subcategorias' => []
+                $subcategorias[] = [
+                    'id' => $item->id,
+                    'nombre' => $item->nombre,
+                    'descripcion' => $item->definicion,
+                    'imagen_url' => $imageUrl,
+                    'slug' => \Illuminate\Support\Str::slug($item->nombre)
                 ];
             }
 
-            $categoriesMap[$slug]['subcategorias'][] = [
-                'id' => $item->id,
-                'nombre' => $item->nombre,
-                'descripcion' => $item->definicion,
-                'imagen_url' => $item->foto ? asset('storage/Aplicativo/03. Tipos de Maquina/' . $item->foto) : asset('images/no-image.png'),
-                'slug' => \Illuminate\Support\Str::slug($item->nombre) // Needed for frontend compatibility
+            $categoriesMap[$slug] = [
+                'nombre' => $cat->nombre,
+                'slug' => $slug,
+                'subcategorias' => $subcategorias
             ];
         }
         
-        // Sort subcategories by name
-        foreach ($categoriesMap as &$cat) {
-            usort($cat['subcategorias'], function($a, $b) {
-                return strcmp($a['nombre'], $b['nombre']);
-            });
-        }
-        
-        // Sort categories by slug (or fixed order?)
-        // Let's keep specific order if possible.
+        // Mantener orden específico deseado
         $orderedCategories = [];
         $desiredOrder = ['construccion', 'equipo-ligero', 'mineria', 'pavimentacion', 'subterraneo', 'utilitarios', 'otros'];
         
         foreach ($desiredOrder as $slug) {
             if (isset($categoriesMap[$slug])) {
                 $orderedCategories[] = $categoriesMap[$slug];
+            }
+        }
+
+        // Agregar cualquier categoría extra que no esté en el orden deseado
+        foreach ($categoriesMap as $slug => $data) {
+            if (!in_array($slug, $desiredOrder)) {
+                $orderedCategories[] = $data;
             }
         }
 
@@ -141,6 +148,118 @@ class LandingController extends Controller
             'systems' => $systems,
             'models' => $models
         ]);
+    }
+
+    /**
+     * Procesar una solicitud de cotización desde la landing page
+     */
+    public function submitQuote(Request $request)
+    {
+        $validated = $request->validate([
+            'userData' => 'required|array',
+            'userData.name' => 'required|string|max:255',
+            'userData.email' => 'required|email|max:255',
+            'userData.phone' => 'required|string|max:20',
+            'userData.company' => 'nullable|string|max:255',
+            'userData.country' => 'nullable',
+            'userData.state' => 'nullable',
+            'userData.city' => 'nullable',
+            'userData.address' => 'nullable|string|max:500',
+            'items' => 'required|array|min:1',
+            'items.*.system' => 'required|string',
+            'items.*.description' => 'required|string',
+            'items.*.quantity' => 'required|integer|min:1',
+            'items.*.reference' => 'nullable|string',
+            'selectedBrand' => 'nullable|string',
+            'selectedType' => 'nullable|string',
+            'selectedModel' => 'nullable|string',
+            'selectedSeries' => 'nullable|string',
+        ]);
+
+        return \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+            $userData = $request->input('userData');
+            
+            // 1. Buscar o Crear Tercero por email
+            $tercero = \App\Models\Tercero::where('email', $userData['email'])->first();
+            
+            if (!$tercero) {
+                $tercero = \App\Models\Tercero::create([
+                    'nombre' => $userData['name'],
+                    'email' => $userData['email'],
+                    'telefono' => $userData['phone'],
+                    'direccion' => $userData['address'] ?? '-',
+                    'country_id' => is_array($userData['country']) ? $userData['country']['id'] : $userData['country'],
+                    'state_id' => is_array($userData['state']) ? $userData['state']['id'] : $userData['state'],
+                    'city_id' => is_array($userData['city']) ? $userData['city']['id'] : $userData['city'],
+                    'tipo' => 'Cliente',
+                    'estado' => 'Activo',
+                    'tipo_documento' => 'NIT', // Valor por defecto para prospectos
+                    'numero_documento' => '0',   // Valor por defecto para prospectos
+                    'forma_pago' => 'Contado',
+                    'puntos' => 0
+                ]);
+            }
+
+            // 2. Buscar fabricante si se especificó
+            $fabricanteId = null;
+            if ($request->filled('selectedBrand')) {
+                $fabricante = \App\Models\Fabricante::where('nombre', $request->input('selectedBrand'))->first();
+                $fabricanteId = $fabricante?->id;
+            }
+
+            // 3. Crear el Pedido
+            // Buscamos un usuario administrador para asignar el pedido (ID 1)
+            $pedido = \App\Models\Pedido::create([
+                'tercero_id' => $tercero->id,
+                'user_id' => 1, 
+                'estado' => 'Solicitado',
+                'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} " . ($request->input('selectedSeries') ? "Series: " . $request->input('selectedSeries') : ""),
+                'fabricante_id' => $fabricanteId,
+                'direccion' => $userData['address'] ?? $tercero->direccion,
+            ]);
+
+            // 4. Procesar Ítems
+            $itemsData = $request->input('items');
+            foreach ($itemsData as $index => $itemData) {
+                $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first();
+                
+                $imagePath = null;
+                // Manejar archivos si vienen en el request (multipart)
+                if ($request->hasFile("items.{$index}.file")) {
+                    $file = $request->file("items.{$index}.file");
+                    $imagePath = $file->store('pedidos/referencias', 'public');
+                }
+
+                \App\Models\PedidoReferencia::create([
+                    'pedido_id' => $pedido->id,
+                    'sistema_id' => $sistema?->id,
+                    'definicion' => $itemData['description'],
+                    'cantidad' => $itemData['quantity'],
+                    'comentario' => "REF/P/N: " . ($itemData['reference'] ?? 'Desconocida'),
+                    'imagen' => $imagePath,
+                    'estado' => 'Pendiente'
+                ]);
+            }
+
+            // 5. Enviar e-mails (Desabilitado temporalmente a petición del usuario)
+            /*
+            try {
+                \Illuminate\Support\Facades\Mail::to($tercero->email)
+                    ->send(new \App\Mail\QuoteRequestedClient($pedido));
+                
+                \Illuminate\Support\Facades\Mail::to('comercial@heavymarket.net')
+                    ->send(new \App\Mail\QuoteRequestedAdmin($pedido));
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error("Error enviando correos de cotización: " . $e->getMessage());
+            }
+            */
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Tu solicitud de cotización ha sido recibida con éxito.',
+                'pedido_id' => $pedido->id
+            ]);
+        });
     }
 
     /**

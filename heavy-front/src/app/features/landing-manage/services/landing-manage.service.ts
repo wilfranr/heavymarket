@@ -23,6 +23,8 @@ export interface CategoriaLanding {
     orden_navbar?: number;
     subcategorias?: SubcategoriaLanding[];
     slug?: string;
+    parent_id?: number | null; // Added for hierarchical listas
+    children?: CategoriaLanding[]; // Added for hierarchical listas
 }
 
 @Injectable({
@@ -34,11 +36,19 @@ export class LandingManageService extends ApiService {
         return this.get<CategoriaLanding[]>('landing/categorias');
     }
 
+    getAdminMachineTypes(): Observable<CategoriaLanding[]> {
+        return this.get<CategoriaLanding[]>('landing/machine-types');
+    }
+
     updateCategory(id: number, data: Partial<CategoriaLanding>): Observable<CategoriaLanding> {
         return this.put<CategoriaLanding>(`landing/categorias/${id}`, data);
     }
 
     updateSubcategory(id: number, data: Partial<SubcategoriaLanding>): Observable<SubcategoriaLanding> {
         return this.put<SubcategoriaLanding>(`landing/subcategorias/${id}`, data);
+    }
+
+    updateLista(id: number, data: any): Observable<any> {
+        return this.put<any>(`listas/${id}`, data);
     }
 }

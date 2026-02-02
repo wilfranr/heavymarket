@@ -36,7 +36,7 @@
                         <label for="tipo_documento" class="block mb-2 font-semibold">Tipo de Documento<span
                                 class="text-red-500">*</span></label>
                         <p-select id="tipo_documento" formControlName="tipo_documento" [options]="tiposDocumento"
-                            styleClass="w-full"></p-select>
+                            styleClass="w-full" [filter]="true"></p-select>
                     </div>
 
                     <div>
@@ -70,7 +70,7 @@
                         <label for="forma_pago" class="block mb-2 font-semibold">Forma de Pago</label>
                         <p-select id="forma_pago" formControlName="forma_pago" [options]="formasPago"
                             optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                            styleClass="w-full"></p-select>
+                            styleClass="w-full" [filter]="true" filterBy="label"></p-select>
                     </div>
 
                     @if (isCliente) {
@@ -122,8 +122,8 @@
                             <div class="flex gap-2">
                                 <p-multiselect id="fabricante_id" formControlName="fabricante_id"
                                     [options]="fabricantes" optionLabel="label" optionValue="value"
-                                    placeholder="Seleccione una opción" styleClass="w-full flex-1"
-                                    display="chip"></p-multiselect>
+                                    placeholder="Seleccione una opción" styleClass="w-full flex-1" display="chip"
+                                    [filter]="true" filterBy="label"></p-multiselect>
                                 <p-button icon="pi pi-plus" (onClick)="openCreateFabricanteDialog()"
                                     severity="secondary"></p-button>
                             </div>
@@ -133,7 +133,8 @@
                             <div class="flex gap-2">
                                 <p-multiselect id="sistema_id" formControlName="sistema_id" [options]="sistemas"
                                     optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                    styleClass="w-full flex-1" display="chip"></p-multiselect>
+                                    styleClass="w-full flex-1" display="chip" [filter]="true"
+                                    filterBy="label"></p-multiselect>
                                 <p-button icon="pi pi-plus" (onClick)="openCreateSistemaDialog()"
                                     severity="secondary"></p-button>
                             </div>

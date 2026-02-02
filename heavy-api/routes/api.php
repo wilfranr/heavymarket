@@ -59,6 +59,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/landing/categories', [LandingController::class, 'index']);
     Route::get('/landing/navbar-data', [LandingController::class, 'navbarData']);
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
+    Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote']);
 
     /**
      * Rutas protegidas con autenticación Sanctum
@@ -160,6 +161,7 @@ Route::prefix('v1')->group(function () {
          */
         Route::prefix('landing')->group(function () {
              Route::get('categorias', [LandingController::class, 'adminIndex']);
+             Route::get('machine-types', [LandingController::class, 'machineTypesAdmin']);
              Route::put('categorias/{categoria}', [LandingController::class, 'updateCategoria']);
              Route::put('subcategorias/{subcategoria}', [LandingController::class, 'updateSubcategoria']);
         });

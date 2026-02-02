@@ -13,7 +13,7 @@
         <div class="mb-4 flex gap-4">
             <p-select [(ngModel)]="selectedMarcaId" [options]="marcas" optionLabel="nombre" optionValue="id"
                 placeholder="Filtrar por marca" [showClear]="true" (ngModelChange)="onMarcaChange()"
-                styleClass="w-full md:w-14rem"> </p-select>
+                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre"> </p-select>
         </div>
 
         <p-table #dt [value]="(referencias$ | async) || []" [loading]="loading$ | async" [paginator]="true"
@@ -61,7 +61,7 @@
                         <p-cellEditor>
                             <ng-template pTemplate="input">
                                 <p-select [(ngModel)]="referencia.marca_id" [options]="marcas" optionLabel="nombre"
-                                    optionValue="id" placeholder="Marca" styleClass="w-full" appendTo="body">
+                                    optionValue="id" placeholder="Marca" styleClass="w-full" appendTo="body" [filter]="true" filterBy="nombre">
                                 </p-select>
                             </ng-template>
                             <ng-template pTemplate="output">

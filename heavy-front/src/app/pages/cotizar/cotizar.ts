@@ -12,19 +12,23 @@ import { Country, State, City } from '../../core/models/ubicacion.model';
     standalone: true,
     imports: [CommonModule, FormsModule, Navbar, FooterSection],
     templateUrl: './cotizar.html',
-    styleUrls: ['./cotizar.css'],
-    changeDetection: ChangeDetectionStrategy.OnPush
+    styleUrls: ['./cotizar.css']
 })
 export class Cotizar implements OnInit {
     // View State
     currentView: 'grid' | 'form' = 'grid';
     formStep: 1 | 2 | 3 = 1;
+    submitting = false;
+    success = false;
 
     // Data from API
     categories: Category[] = [];
     brands: { id: number; nombre: string }[] = [];
     systems: { id: number; nombre: string }[] = [];
     models: string[] = [];
+    errorMessage = '';
+    typeSearch = '';
+    brandSearch = '';
 
     // Location Data
     countries: Country[] = [];
@@ -33,7 +37,7 @@ export class Cotizar implements OnInit {
 
     // Form Data Helpers
     items: any[] = [
-        { system: '', description: '', quantity: 1, reference: '', file: null }
+        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '' }
     ];
 
     userData = {
@@ -50,8 +54,6 @@ export class Cotizar implements OnInit {
     // Dropdown States
     openBrand = false;
     openType = false;
-    openModel = false;
-    openSeries = false;
 
     // Selections
     selectedBrand = '';
@@ -67,20 +69,29 @@ export class Cotizar implements OnInit {
         private landingService: LandingService,
         private ubicacionService: UbicacionService,
         private cd: ChangeDetectorRef
-    ) { }
+    ) {
+        console.log('Cotizar Component Initialized');
+    }
 
     ngOnInit() {
+        console.log('Cotizar ngOnInit');
         // Load Quote Data
-        this.landingService.getQuoteData().subscribe(data => {
-            this.categories = data.categories || [];
-            this.brands = data.brands || [];
-            this.systems = data.systems || [];
-            this.models = data.models || [];
+        this.landingService.getQuoteData().subscribe({
+            next: data => {
+                console.log('Quote data received:', data);
+                this.categories = data.categories || [];
+                this.brands = data.brands || [];
+                this.systems = data.systems || [];
+                this.models = data.models || [];
 
-            if (this.categories.length > 0) {
-                this.activeTab = this.categories[0].slug;
+                if (this.categories.length > 0) {
+                    this.activeTab = this.categories[0].slug;
+                }
+                this.cd.detectChanges();
+            },
+            error: err => {
+                console.error('Error in getQuoteData:', err);
             }
-            this.cd.markForCheck();
         });
 
         // Load Countries
@@ -98,7 +109,28 @@ export class Cotizar implements OnInit {
     }
 
     get allTypes() {
-        return this.categories.flatMap(c => c.subcategorias).sort((a, b) => a.nombre.localeCompare(b.nombre));
+        if (!this.categories) return [];
+        let types = this.categories
+            .flatMap(c => c.subcategorias || [])
+            .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+
+        if (this.typeSearch) {
+            const search = this.typeSearch.toLowerCase();
+            types = types.filter(t => t.nombre.toLowerCase().includes(search));
+        }
+        return types;
+    }
+
+    get filteredBrands() {
+        if (!this.brands) return [];
+        if (!this.brandSearch) return this.brands;
+        const search = this.brandSearch.toLowerCase();
+        return this.brands.filter(b => b.nombre.toLowerCase().includes(search));
+    }
+
+    get filteredSystems() {
+        if (!this.systems) return [];
+        return this.systems; // We use per-item search instead for better UX in lists
     }
 
     // Location Handlers
@@ -130,89 +162,122 @@ export class Cotizar implements OnInit {
 
     // Functions
     toggleBrand() {
+        console.log('Toggle Brand');
         this.openBrand = !this.openBrand;
         if (this.openBrand) this.closeOthers('brand');
+        this.cd.markForCheck();
     }
 
     toggleType() {
+        console.log('Toggle Type');
         this.openType = !this.openType;
         if (this.openType) this.closeOthers('type');
-    }
-
-    toggleModel() {
-        this.openModel = !this.openModel;
-        if (this.openModel) this.closeOthers('model');
-    }
-
-    toggleSeries() {
-        this.openSeries = !this.openSeries;
-        if (this.openSeries) this.closeOthers('series');
+        this.cd.detectChanges();
     }
 
     closeOthers(current: string) {
         if (current !== 'brand') this.openBrand = false;
         if (current !== 'type') this.openType = false;
-        if (current !== 'model') this.openModel = false;
-        if (current !== 'series') this.openSeries = false;
     }
 
     selectBrand(brand: any) {
         this.selectedBrand = brand.nombre; // We store the name for now as the filter expects string
         this.openBrand = false;
+        this.brandSearch = '';
+        this.cd.markForCheck();
     }
 
     selectType(type: any) {
         this.selectedType = type.nombre;
         this.openType = false;
-    }
-
-    selectModel(model: string) {
-        this.selectedModel = model;
-        this.openModel = false;
-    }
-
-    selectSeries(serie: string) {
-        this.selectedSeries = serie;
-        this.openSeries = false;
+        this.typeSearch = '';
+        this.cd.markForCheck();
     }
 
     // Navigation
     goToForm() {
-        if (!this.selectedBrand && !this.selectedType && !this.selectedCard) {
-            alert('Por favor selecciona una máquina o utiliza los filtros.');
+        this.errorMessage = '';
+        console.log('goToForm called', {
+            brand: this.selectedBrand,
+            type: this.selectedType,
+            model: this.selectedModel,
+            series: this.selectedSeries,
+            card: this.selectedCard
+        });
+
+        if (!this.selectedBrand && !this.selectedType && !this.selectedCard && !this.selectedModel && !this.selectedSeries) {
+            this.errorMessage = 'Por favor selecciona una máquina o utiliza los filtros.';
+            this.cd.detectChanges();
             return;
         }
 
-        // Populate inputs if card selected
+        // Populate inputs if selections exist
         if (this.selectedCard) {
-            // If a card was selected, we assume that IS the type
             this.selectedType = this.selectedCard.nombre;
-            // Ensure at least one item exists
-            if (this.items.length === 0) this.addItem();
         }
 
         this.currentView = 'form';
         this.formStep = 1;
+        this.cd.detectChanges();
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     goBackToGrid() {
         this.currentView = 'grid';
         this.selectedCard = null;
+        this.cd.markForCheck();
     }
 
     nextFormStep() {
         if (this.formStep === 1) {
             // Validation Logic Step 1
+            const hasEmptySystem = this.items.some(item => !item.system);
+            if (hasEmptySystem) {
+                alert('Por favor selecciona un sistema para cada ítem.');
+                return;
+            }
             this.formStep = 2;
         } else if (this.formStep === 2) {
-            // Validation Logic Step 2 (Optional for now)
+            // Validation Logic Step 2
             if (!this.userData.name || !this.userData.email || !this.userData.phone) {
                 alert('Por favor complete los campos requeridos (Nombre, Email, Teléfono)');
                 return;
             }
-            this.formStep = 3;
+            this.submit();
         }
+        this.cd.markForCheck();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    submit() {
+        this.submitting = true;
+        this.errorMessage = '';
+        this.cd.markForCheck();
+
+        const data = {
+            userData: this.userData,
+            items: this.items,
+            selectedBrand: this.selectedBrand,
+            selectedType: this.selectedType,
+            selectedModel: this.selectedModel,
+            selectedSeries: this.selectedSeries
+        };
+
+        this.landingService.submitQuote(data).subscribe({
+            next: (response) => {
+                console.log('Quote submitted successfully', response);
+                this.submitting = false;
+                this.success = true;
+                this.formStep = 3;
+                this.cd.markForCheck();
+            },
+            error: (err) => {
+                console.error('Error submitting quote', err);
+                this.submitting = false;
+                this.errorMessage = 'Hubo un error al enviar tu solicitud. Inténtalo de nuevo.';
+                this.cd.markForCheck();
+            }
+        });
     }
 
     prevFormStep() {
@@ -221,34 +286,73 @@ export class Cotizar implements OnInit {
         } else {
             this.goBackToGrid();
         }
+        this.cd.markForCheck();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     // Form Items Logic
     addItem() {
-        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null });
+        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '' });
+        this.cd.markForCheck();
     }
 
     removeItem(index: number) {
         if (this.items.length > 1) {
             this.items.splice(index, 1);
         }
+        this.cd.markForCheck();
     }
 
     duplicateItem(index: number) {
-        const item = { ...this.items[index] };
+        const item = { ...this.items[index], openSystem: false, systemSearch: '' };
         this.items.splice(index + 1, 0, item);
+        this.cd.markForCheck();
+    }
+
+    toggleItemSystem(index: number) {
+        this.items[index].openSystem = !this.items[index].openSystem;
+        // Close others
+        this.items.forEach((item, i) => {
+            if (i !== index) item.openSystem = false;
+        });
+        this.cd.markForCheck();
+    }
+
+    onFileSelected(event: any, index: number) {
+        const file = event.target.files[0];
+        if (file) {
+            this.items[index].file = file;
+            this.cd.markForCheck();
+        }
+    }
+
+    selectItemSystem(index: number, system: any) {
+        this.items[index].system = system.nombre;
+        this.items[index].openSystem = false;
+        this.items[index].systemSearch = '';
+        this.cd.markForCheck();
+    }
+
+    getFilteredSystems(item: any) {
+        if (!this.systems) return [];
+        if (!item.systemSearch) return this.systems;
+        const search = item.systemSearch.toLowerCase();
+        return this.systems.filter(s => s.nombre.toLowerCase().includes(search));
     }
 
     clearFilters() {
+        console.log('Clearing filters');
         this.selectedBrand = '';
         this.selectedType = '';
         this.selectedModel = '';
         this.selectedSeries = '';
         this.selectedCard = null;
+        this.cd.markForCheck();
     }
 
     setActiveTab(tabId: string) {
         this.activeTab = tabId;
+        this.cd.markForCheck();
     }
 
     selectCard(card: any) {

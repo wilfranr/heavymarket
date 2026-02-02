@@ -58,34 +58,30 @@ class SubcategoriaLanding extends Model
      */
     public function getImagenUrlAttribute()
     {
-        $imagen = $this->imagen;
+        $imagen = $this->getRawOriginal('imagen') ?: null;
         
-        if ($imagen) {
-            if (Str::startsWith($imagen, ['http://', 'https://'])) {
-                return $imagen;
-            }
-            
-            // Si empieza con landing/, es del storage
-            if (Str::startsWith($imagen, 'landing/')) {
-                return asset('storage/' . $imagen);
-            }
-            
+        // Si no hay imagen en DB, buscar en el config
+        if (!$imagen) {
+            $map = config('productos_imagenes');
+            $imagen = is_array($map) ? ($map[$this->slug] ?? ($map['default'] ?? 'no-image.png')) : 'no-image.png';
+        }
+
+        if (Str::startsWith($imagen, ['http://', 'https://'])) {
+            return $imagen;
+        }
+
+        // Si es una ruta de storage (nueva estructura)
+        if (Str::startsWith($imagen, ['landing/', 'listas/'])) {
+            return asset('storage/' . $imagen);
+        }
+
+        // Si ya trae el prefijo storage/
+        if (Str::startsWith($imagen, 'storage/')) {
             return asset($imagen);
         }
-        
-        // Fallback al mapeo del config
-        $map = config('productos_imagenes');
-        if (is_array($map)) {
-            $imageName = $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
-            
-            if (Str::startsWith($imageName, 'landing/')) {
-                return asset('storage/' . $imageName);
-            }
-            
-            return asset('images/' . $imageName);
-        }
-        
-        return asset('images/no-image.png');
+
+        // Por defecto, si es solo el nombre del archivo, está en public/images/
+        return asset('images/' . $imagen);
     }
     
     /**
@@ -93,20 +89,9 @@ class SubcategoriaLanding extends Model
      */
     public function getImagenAttribute($value)
     {
-        // Si no hay valor, usar el mapeo del config
         if (!$value) {
             $map = config('productos_imagenes');
-            if (is_array($map)) {
-                $imageName = $map[$this->slug] ?? ($map['default'] ?? 'no-image.png');
-                
-                // Si la imagen del config empieza con landing/, asumir que está en storage
-                if (Str::startsWith($imageName, 'landing/')) {
-                    return 'storage/' . $imageName;
-                }
-                
-                return $imageName;
-            }
-            return 'no-image.png';
+            return is_array($map) ? ($map[$this->slug] ?? ($map['default'] ?? 'no-image.png')) : 'no-image.png';
         }
         
         return $value;

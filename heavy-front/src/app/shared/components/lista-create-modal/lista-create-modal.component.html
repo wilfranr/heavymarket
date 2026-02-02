@@ -6,7 +6,7 @@
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium text-gray-400">Categoría</label>
             <p-select [options]="tiposOptions" formControlName="tipo" optionLabel="label" optionValue="value"
-                placeholder="Seleccione categoría" class="w-full" [readonly]="true">
+                placeholder="Seleccione categoría" class="w-full" [readonly]="true" [filter]="true" filterBy="label">
             </p-select>
         </div>
 

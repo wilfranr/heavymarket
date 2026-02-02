@@ -6,27 +6,13 @@
             <!-- Sidebar -->
             <div class="cotizador-sidebar">
                 <div class="cotizador-sidebar-header">
-                    <p class="cotizador-sidebar-text">Selecciona una categoría, luego elige marca, tipo y modelo de la
-                        máquina para continuar.</p>
+                    <p class="cotizador-sidebar-text">Selecciona el tipo de máquina, luego elige marca, modelo y serie
+                        para continuar.</p>
                 </div>
 
                 <div class="cotizador-filters">
-                    <!-- Marca -->
-                    <div class="cotizador-filter-group" (clickOutside)="openBrand = false">
-                        <button class="cotizador-select" (click)="toggleBrand()">
-                            <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }}</span>
-                            <div class="cotizador-select-icon">
-                                <i class="pi pi-chevron-right"></i>
-                            </div>
-                        </button>
-                        <div class="cotizador-dropdown" *ngIf="openBrand">
-                            <div class="cotizador-dropdown-item" *ngFor="let brand of brands"
-                                (click)="selectBrand(brand)">{{ brand.nombre }}</div>
-                        </div>
-                    </div>
-
-                    <!-- Tipo de Máquina -->
-                    <div class="cotizador-filter-group" (clickOutside)="openType = false">
+                    <!-- 1. Tipo de Máquina -->
+                    <div class="cotizador-filter-group">
                         <button class="cotizador-select" (click)="toggleType()">
                             <span class="cotizador-select-text">{{ selectedType || 'Tipo de máquina' }}</span>
                             <div class="cotizador-select-icon">
@@ -34,30 +20,60 @@
                             </div>
                         </button>
                         <div class="cotizador-dropdown" *ngIf="openType">
+                            <div class="cotizador-dropdown-search">
+                                <input type="text" [(ngModel)]="typeSearch" placeholder="Buscar tipo..."
+                                    (click)="$event.stopPropagation()" class="cotizador-dropdown-input">
+                                <i class="pi pi-search"></i>
+                            </div>
                             <div class="cotizador-dropdown-item" *ngFor="let type of allTypes"
                                 (click)="selectType(type)">
                                 {{ type.nombre }}</div>
                         </div>
                     </div>
 
-                    <!-- Modelo -->
-                    <div class="cotizador-filter-group" (clickOutside)="openModel = false">
-                        <button class="cotizador-select" (click)="toggleModel()">
-                            <span class="cotizador-select-text">{{ selectedModel || 'Modelo (Opcional)' }}</span>
+                    <!-- 2. Marca (Opcional) -->
+                    <div class="cotizador-filter-group">
+                        <button class="cotizador-select" (click)="toggleBrand()">
+                            <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca (Opcional)'
+                                }}</span>
                             <div class="cotizador-select-icon">
                                 <i class="pi pi-chevron-right"></i>
                             </div>
                         </button>
-                        <div class="cotizador-dropdown" *ngIf="openModel">
-                            <div class="cotizador-dropdown-item" *ngFor="let model of models"
-                                (click)="selectModel(model)">{{ model }}</div>
+                        <div class="cotizador-dropdown" *ngIf="openBrand">
+                            <div class="cotizador-dropdown-search">
+                                <input type="text" [(ngModel)]="brandSearch" placeholder="Buscar marca..."
+                                    (click)="$event.stopPropagation()" class="cotizador-dropdown-input">
+                                <i class="pi pi-search"></i>
+                            </div>
+                            <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands"
+                                (click)="selectBrand(brand)">{{ brand.nombre }}</div>
                         </div>
+                    </div>
+
+                    <!-- 3. Modelo (Opcional) - Input de texto -->
+                    <div class="cotizador-filter-group">
+                        <input type="text" class="cotizador-input" [(ngModel)]="selectedModel"
+                            placeholder="Modelo (Opcional)">
+                    </div>
+
+                    <!-- 4. Serie o arreglo (Opcional) - Input de texto -->
+                    <div class="cotizador-filter-group">
+                        <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries"
+                            placeholder="Serie o arreglo (Opcional)">
                     </div>
                 </div>
 
-                <div class="cotizador-actions">
-                    <button class="cotizador-btn-secondary" (click)="clearFilters()">Limpiar</button>
-                    <button class="cotizador-btn-primary" (click)="goToForm()">Continuar</button>
+                <div class="cotizador-actions-wrapper" style="margin-top: 24px; position: relative; z-index: 5000;">
+                    <p *ngIf="errorMessage"
+                        style="color: #ff4d4d; font-size: 12px; margin-bottom: 8px; font-family: 'Figtree', sans-serif;">
+                        {{ errorMessage }}</p>
+                    <div class="cotizador-actions" style="display: flex; gap: 16px;">
+                        <button type="button" class="cotizador-btn-secondary"
+                            style="cursor: pointer; pointer-events: auto;" (click)="clearFilters()">Limpiar</button>
+                        <button type="button" class="cotizador-btn-primary"
+                            style="cursor: pointer; pointer-events: auto;" (click)="goToForm()">Continuar</button>
+                    </div>
                 </div>
             </div>
 
@@ -140,12 +156,30 @@
                                 <!-- Sistema -->
                                 <div class="form-field">
                                     <label class="input-label">Sistema</label>
-                                    <select class="custom-input" [(ngModel)]="items[i].system">
-                                        <option value="" disabled selected>Seleccionar</option>
-                                        <option *ngFor="let sys of systems" [value]="sys.nombre">{{ sys.nombre }}
-                                        </option>
-                                    </select>
-                                    <span class="helper-text">Texto de apoyo</span>
+                                    <div class="cotizador-filter-group" style="position: relative;">
+                                        <button class="custom-input"
+                                            style="text-align: left; display: flex; justify-content: space-between; align-items: center;"
+                                            (click)="toggleItemSystem(i)">
+                                            <span>{{ item.system || 'Seleccionar' }}</span>
+                                            <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
+                                        </button>
+
+                                        <div class="cotizador-dropdown" *ngIf="item.openSystem"
+                                            style="width: 100%; top: 45px; left: 0; z-index: 100;">
+                                            <div class="cotizador-dropdown-search">
+                                                <input type="text" [(ngModel)]="item.systemSearch"
+                                                    placeholder="Buscar sistema..." (click)="$event.stopPropagation()"
+                                                    class="cotizador-dropdown-input">
+                                                <i class="pi pi-search"></i>
+                                            </div>
+                                            <div class="cotizador-dropdown-item"
+                                                *ngFor="let sys of getFilteredSystems(item)"
+                                                (click)="selectItemSystem(i, sys)">
+                                                {{ sys.nombre }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <span class="helper-text">Obligatorio</span>
                                 </div>
 
                                 <!-- Descripción -->
@@ -175,9 +209,21 @@
                                 <!-- Archivos -->
                                 <div class="form-field">
                                     <label class="input-label">Archivos adjuntos</label>
-                                    <div class="upload-box">
-                                        <i class="pi pi-image" style="color: #FDB831"></i>
-                                        <span class="upload-text">Cargar</span>
+                                    <div class="upload-container">
+                                        <input type="file" #fileInput [style.display]="'none'"
+                                            (change)="onFileSelected($event, i)" accept="image/*,.pdf,.doc,.docx">
+                                        <div class="upload-box" (click)="fileInput.click()"
+                                            [class.has-file]="items[i].file">
+                                            <i [class]="items[i].file ? 'pi pi-file-check' : 'pi pi-image'"
+                                                [style.color]="items[i].file ? '#4ADE80' : '#FDB831'"></i>
+                                            <span class="upload-text">
+                                                {{ items[i].file ? items[i].file.name : 'Cargar' }}
+                                            </span>
+                                            <button *ngIf="items[i].file" class="btn-remove-file"
+                                                (click)="$event.stopPropagation(); items[i].file = null">
+                                                <i class="pi pi-times"></i>
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -270,8 +316,35 @@
                         </div>
 
                         <div class="form-footer">
-                            <button class="btn-cancel" (click)="prevFormStep()">Atrás</button>
-                            <button class="btn-continue" (click)="nextFormStep()">Continuar</button>
+                            <button class="btn-cancel" [disabled]="submitting" (click)="prevFormStep()">Atrás</button>
+                            <button class="btn-continue" [disabled]="submitting" (click)="nextFormStep()">
+                                <ng-container *ngIf="!submitting">Finalizar y enviar <i class="pi pi-send"
+                                        style="margin-left: 8px;"></i></ng-container>
+                                <ng-container *ngIf="submitting">Enviando... <i class="pi pi-spin pi-spinner"
+                                        style="margin-left: 8px;"></i></ng-container>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Success Message -->
+                    <div class="form-step-content success-step" *ngIf="formStep === 3">
+                        <div class="success-card">
+                            <div class="success-icon-wrapper">
+                                <i class="pi pi-check-circle success-icon"></i>
+                            </div>
+                            <h2 class="success-title">¡Solicitud Enviada con Éxito!</h2>
+                            <p class="success-message">
+                                Hemos recibido tu solicitud de cotización. Un correo de confirmación ha sido enviado a
+                                <span class="highlight">{{ userData.email }}</span>.
+                            </p>
+                            <p class="success-info">
+                                Nuestro equipo comercial revisará tus requerimientos y se pondrá en contacto contigo en
+                                la mayor brevedad posible.
+                            </p>
+                            <div class="success-actions">
+                                <button class="btn-primary" (click)="goBackToGrid()">Volver al inicio</button>
+                                <a routerLink="/" class="btn-secondary">Regresar a la landing</a>
+                            </div>
                         </div>
                     </div>
                 </ng-container>

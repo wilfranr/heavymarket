@@ -68,4 +68,38 @@ export class LandingService {
             })
         );
     }
+
+    submitQuote(data: any): Observable<any> {
+        const formData = new FormData();
+
+        // Appending top-level strings
+        formData.append('selectedBrand', data.selectedBrand || '');
+        formData.append('selectedType', data.selectedType || '');
+        formData.append('selectedModel', data.selectedModel || '');
+        formData.append('selectedSeries', data.selectedSeries || '');
+
+        // Appending nested userData
+        Object.keys(data.userData).forEach(key => {
+            let value = data.userData[key];
+            if (value && typeof value === 'object' && value.id) {
+                formData.append(`userData[${key}]`, value.id);
+            } else if (value !== null && value !== undefined) {
+                formData.append(`userData[${key}]`, value);
+            }
+        });
+
+        // Appending items with potential files
+        data.items.forEach((item: any, index: number) => {
+            formData.append(`items[${index}][system]`, item.system);
+            formData.append(`items[${index}][description]`, item.description);
+            formData.append(`items[${index}][quantity]`, item.quantity.toString());
+            formData.append(`items[${index}][reference]`, item.reference || '');
+
+            if (item.file) {
+                formData.append(`items[${index}][file]`, item.file, item.file.name);
+            }
+        });
+
+        return this.http.post<any>(`${environment.apiUrl}/landing/submit-quote`, formData);
+    }
 }

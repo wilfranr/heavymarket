@@ -20,6 +20,7 @@ class Lista extends Model
         'foto',
         'fotoMedida',
         'sistema_id',
+        'parent_id',
     ];
 
     protected $normalizableAttributes = [
@@ -30,6 +31,16 @@ class Lista extends Model
     public function sistemas(): BelongsToMany
     {
         return $this->belongsToMany(Sistema::class, 'sistema_lista', 'lista_id', 'sistema_id');
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Lista::class, 'parent_id');
+    }
+
+    public function children()
+    {
+        return $this->hasMany(Lista::class, 'parent_id');
     }
     
     public function getNombreAttribute($value): string

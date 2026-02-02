@@ -204,7 +204,7 @@
         <div class="field">
             <label class="block text-sm font-medium mb-2">Unidad de origen</label>
             <p-select [options]="unidadesPeso" [(ngModel)]="unidadOrigen" [ngModelOptions]="{standalone: true}"
-                placeholder="Seleccione unidad" class="w-full">
+                placeholder="Seleccione unidad" class="w-full" [filter]="true">
             </p-select>
         </div>
         <div class="field">

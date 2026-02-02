@@ -14,7 +14,7 @@
                 <label for="tipo" class="block mb-2 font-semibold">Tipo<span class="text-red-500">*</span></label>
                 <div class="flex gap-2">
                     <p-select id="tipo" formControlName="tipo" [options]="tiposMaquina" optionLabel="label"
-                        optionValue="value" placeholder="Seleccione una opción" styleClass="w-full flex-1"></p-select>
+                        optionValue="value" placeholder="Seleccione una opción" styleClass="w-full flex-1" [filter]="true" filterBy="label"></p-select>
                     <p-button icon="pi pi-plus" severity="secondary" (onClick)="openCreateTipoDialog()"></p-button>
                 </div>
             </div>

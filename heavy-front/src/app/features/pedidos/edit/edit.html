@@ -60,7 +60,7 @@
                             <span class="text-brand-yellow font-semibold">Estado:</span>
                             <p-select formControlName="estado" [options]="getEstadosDisponibles()"
                                 styleClass="w-[140px] !bg-[#2A2D36] border-none text-white h-[30px] flex items-center text-xs ml-2"
-                                (onChange)="onEstadoChange()">
+                                (onChange)="onEstadoChange()" [filter]="true">
                             </p-select>
                         </div>
                     </div>
@@ -162,7 +162,7 @@
                             <!-- Sistema -->
                             <div class="w-[20%]">
                                 <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center"></p-select>
+                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center" [filter]="true"></p-select>
                             </div>
 
                             <!-- Articulo -->

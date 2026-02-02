@@ -40,6 +40,8 @@ class UpdateListaRequest extends FormRequest
                     'Unidad de Medida',
                     'Tipo de Medida',
                     'Nombre de Medida',
+                    'Categoría de Máquina',
+                    'Piezas Estandar',
                 ])
             ],
             'nombre' => [
@@ -52,6 +54,7 @@ class UpdateListaRequest extends FormRequest
             'foto' => ['nullable', 'image', 'max:5120'],
             'fotoMedida' => ['nullable', 'image', 'max:5120'],
             'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'parent_id' => ['nullable', 'integer', 'exists:listas,id'],
         ];
     }
 

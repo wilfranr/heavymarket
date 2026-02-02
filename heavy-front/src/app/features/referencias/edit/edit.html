@@ -33,7 +33,7 @@
                 <div class="field">
                     <label for="marca_id" class="block text-sm font-medium mb-2"> Marca </label>
                     <p-select id="marca_id" formControlName="marca_id" [options]="marcas" optionLabel="nombre"
-                        optionValue="id" placeholder="Seleccione una marca" [showClear]="true" styleClass="w-full">
+                        optionValue="id" placeholder="Seleccione una marca" [showClear]="true" styleClass="w-full" [filter]="true" filterBy="nombre">
                     </p-select>
                 </div>
 

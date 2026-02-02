@@ -48,7 +48,14 @@ export class AppMenu {
                     { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
                     { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
                     { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] },
-                    { label: 'Gestión Landing', icon: 'pi pi-fw pi-globe', routerLink: ['/app/gestion-landing'] }
+                    {
+                        label: 'Gestión Landing',
+                        icon: 'pi pi-fw pi-globe',
+                        items: [
+                            { label: 'Mega Menú', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
+                            { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] }
+                        ]
+                    }
                 ]
             },
             {
