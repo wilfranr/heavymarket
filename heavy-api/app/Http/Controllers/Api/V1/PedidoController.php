@@ -10,6 +10,7 @@ use App\Http\Resources\{PedidoResource, PedidoCollection};
 use App\Models\Pedido;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
+use App\Notifications\SystemNotification;
 
 /**
  * Controlador API para gestión de Pedidos
@@ -146,6 +147,16 @@ class PedidoController extends Controller
 
             // Cargar relaciones para la respuesta
             $pedido->load(['user', 'tercero', 'referencias', 'articulos']);
+
+            // Enviar notificación al usuario (confirmación)
+            $request->user()->notify(new SystemNotification(
+                'pedido_creado',
+                'Nuevo Pedido #' . $pedido->id,
+                'Se ha creado el pedido para ' . ($pedido->tercero->nombre ?? 'cliente') . ' exitosamente.',
+                'pi-shopping-cart',
+                'blue',
+                ['id' => $pedido->id]
+            ));
 
             return response()->json([
                 'data' => new PedidoResource($pedido),

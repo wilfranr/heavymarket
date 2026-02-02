@@ -65,7 +65,7 @@ export class NotificationsWidget {
         }
     ];
 
-    markAsRead(id: number): void {
+    markAsRead(id: string | number): void {
         this.notificationService.markAsRead(id);
     }
 

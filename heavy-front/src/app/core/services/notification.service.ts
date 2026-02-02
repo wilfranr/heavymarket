@@ -1,15 +1,20 @@
-import { Injectable, signal, computed } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Injectable, signal, computed, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject } from 'rxjs';
 import { Notification, NotificationType, CreateNotificationDto } from '../models/notification.model';
+import { environment } from '../../../environments/environment';
 
 /**
  * Servicio de notificaciones
- * Maneja notificaciones en tiempo real y persistentes
+ * Maneja notificaciones persistentes vía API
  */
 @Injectable({
     providedIn: 'root'
 })
 export class NotificationService {
+    private http = inject(HttpClient);
+    private apiUrl = `${environment.apiUrl}/notifications`;
+
     private notificationsSubject = new BehaviorSubject<Notification[]>([]);
     public notifications$ = this.notificationsSubject.asObservable();
 
@@ -19,67 +24,36 @@ export class NotificationService {
     public unreadCount = computed(() => this.notificationsSignal().filter((n) => !n.read).length);
 
     constructor() {
-        this.loadMockNotifications();
+        this.loadNotifications();
+        // Polling cada 60 segundos para mantener actualizado
+        setInterval(() => this.loadNotifications(), 60000);
     }
 
     /**
-     * Carga notificaciones de ejemplo (mock)
-     * En producción, esto vendría de la API
+     * Carga notificaciones desde la API
      */
-    private loadMockNotifications(): void {
-        const mockNotifications: Notification[] = [
-            {
-                id: 1,
-                type: 'pedido_creado',
-                title: 'Nuevo Pedido',
-                message: 'Se ha creado un nuevo pedido #1234',
-                icon: 'pi-shopping-cart',
-                iconColor: 'blue',
-                read: false,
-                created_at: new Date().toISOString()
+    loadNotifications(): void {
+        // La API retorna paginación { data: [...], meta: ... } o array directo dependiendo de la implementación.
+        // Asumiendo paginación estándar de Laravel Resource/Paginate:
+        this.http.get<any>(this.apiUrl).subscribe({
+            next: (response) => {
+                const notifications = response.data || response;
+                if (Array.isArray(notifications)) {
+                    this.notificationsSignal.set(notifications);
+                    this.notificationsSubject.next(notifications);
+                }
             },
-            {
-                id: 2,
-                type: 'cotizacion_nueva',
-                title: 'Nueva Cotización',
-                message: 'Cliente ABC SAS solicitó una cotización',
-                icon: 'pi-file',
-                iconColor: 'orange',
-                read: false,
-                created_at: new Date(Date.now() - 3600000).toISOString()
-            },
-            {
-                id: 3,
-                type: 'tercero_nuevo',
-                title: 'Nuevo Cliente',
-                message: '5 nuevos clientes registrados esta semana',
-                icon: 'pi-users',
-                iconColor: 'green',
-                read: true,
-                created_at: new Date(Date.now() - 86400000).toISOString()
-            },
-            {
-                id: 4,
-                type: 'orden_confirmada',
-                title: 'Orden Confirmada',
-                message: 'Orden de compra #789 confirmada por el proveedor',
-                icon: 'pi-check-circle',
-                iconColor: 'cyan',
-                read: true,
-                created_at: new Date(Date.now() - 172800000).toISOString()
-            }
-        ];
-
-        this.notificationsSignal.set(mockNotifications);
-        this.notificationsSubject.next(mockNotifications);
+            error: (err) => console.error('Error cargando notificaciones', err)
+        });
     }
 
     /**
-     * Agrega una nueva notificación
+     * Agrega una notificación localmente (optimista) y opcionalmente la envía al backend si fuera necesario
+     * (Generalmente las notificaciones se crean desde el backend, esto es para feedback inmediato)
      */
-    addNotification(dto: CreateNotificationDto): void {
+    addLocalNotification(dto: CreateNotificationDto): void {
         const newNotification: Notification = {
-            id: Date.now(),
+            id: Date.now().toString(), // Temp ID
             type: dto.type,
             title: dto.title,
             message: dto.message,
@@ -91,42 +65,68 @@ export class NotificationService {
         };
 
         const current = this.notificationsSignal();
-        this.notificationsSignal.set([newNotification, ...current]);
-        this.notificationsSubject.next([newNotification, ...current]);
+        const updated = [newNotification, ...current];
+        this.notificationsSignal.set(updated);
+        this.notificationsSubject.next(updated);
     }
 
     /**
      * Marca una notificación como leída
      */
-    markAsRead(id: number): void {
+    markAsRead(id: string | number): void {
+        // Optimistic update
         const current = this.notificationsSignal();
         const updated = current.map((n) => (n.id === id ? { ...n, read: true } : n));
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
+
+        this.http.patch(`${this.apiUrl}/${id}/read`, {}).subscribe({
+            error: () => {
+                // Revert on error if needed
+                console.error('Error marcando como leída');
+                this.loadNotifications(); // Reload to sync
+            }
+        });
     }
 
     /**
      * Marca todas las notificaciones como leídas
      */
     markAllAsRead(): void {
+        // Optimistic update
         const current = this.notificationsSignal();
         const updated = current.map((n) => ({ ...n, read: true }));
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
+
+        this.http.post(`${this.apiUrl}/mark-all-read`, {}).subscribe({
+            error: () => {
+                console.error('Error marcando todas como leídas');
+                this.loadNotifications();
+            }
+        });
     }
 
     /**
      * Elimina una notificación
      */
-    deleteNotification(id: number): void {
+    deleteNotification(id: string | number): void {
+        // Optimistic update
         const current = this.notificationsSignal();
         const updated = current.filter((n) => n.id !== id);
         this.notificationsSignal.set(updated);
         this.notificationsSubject.next(updated);
+
+        this.http.delete(`${this.apiUrl}/${id}`).subscribe({
+            error: () => {
+                console.error('Error eliminando notificación');
+                this.loadNotifications();
+            }
+        });
     }
 
     /**
-     * Obtiene el icono según el tipo de notificación
+     * Obtiene el icono según el tipo de notificación (Fallback)
      */
     private getIconForType(type: NotificationType): string {
         const iconMap: Record<NotificationType, string> = {
@@ -142,7 +142,7 @@ export class NotificationService {
     }
 
     /**
-     * Obtiene el color según el tipo de notificación
+     * Obtiene el color según el tipo de notificación (Fallback)
      */
     private getColorForType(type: NotificationType): string {
         const colorMap: Record<NotificationType, string> = {

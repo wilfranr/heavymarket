@@ -7,7 +7,7 @@ export type NotificationType = 'pedido_creado' | 'pedido_actualizado' | 'cotizac
  * Modelo de Notificación
  */
 export interface Notification {
-    id: number;
+    id: string | number;
     type: NotificationType;
     title: string;
     message: string;

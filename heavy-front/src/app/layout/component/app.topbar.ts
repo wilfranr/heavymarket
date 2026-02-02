@@ -159,7 +159,7 @@ export class AppTopbar {
         }
     }
 
-    markNotificationAsRead(id: number): void {
+    markNotificationAsRead(id: string | number): void {
         this.notificationService.markAsRead(id);
     }
 

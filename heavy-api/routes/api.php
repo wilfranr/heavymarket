@@ -25,7 +25,9 @@ use App\Http\Controllers\Api\V1\{
     TransportadoraController,
     TRMController,
     LandingController,
-    UbicacionController
+    UbicacionController,
+    DashboardController,
+    NotificationController
 };
 
 /**
@@ -164,6 +166,28 @@ Route::prefix('v1')->group(function () {
              Route::get('machine-types', [LandingController::class, 'machineTypesAdmin']);
              Route::put('categorias/{categoria}', [LandingController::class, 'updateCategoria']);
              Route::put('subcategorias/{subcategoria}', [LandingController::class, 'updateSubcategoria']);
+        });
+
+
+        /**
+         * Gestión de Dashboard
+         */
+        Route::prefix('dashboard')->group(function () {
+             Route::get('stats', [DashboardController::class, 'stats']);
+             Route::get('revenue-stream', [DashboardController::class, 'revenueStream']);
+             Route::get('best-selling', [DashboardController::class, 'bestSelling']);
+             Route::get('notifications', [DashboardController::class, 'notifications']);
+        });
+
+        /**
+         * Gestión de Notificaciones
+         */
+        Route::prefix('notifications')->group(function () {
+            Route::get('/', [NotificationController::class, 'index']);
+            Route::get('/unread-count', [NotificationController::class, 'unreadCount']);
+            Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead']);
+            Route::patch('/{id}/read', [NotificationController::class, 'markAsRead']);
+            Route::delete('/{id}', [NotificationController::class, 'destroy']);
         });
 
         /**
