@@ -12,6 +12,8 @@ import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
@@ -35,7 +37,9 @@ import { TerceroCreateModalComponent } from '../../../shared/components/tercero-
         TagModule,
         ToastModule,
         ConfirmDialogModule,
-        TerceroCreateModalComponent
+        TerceroCreateModalComponent,
+        IconFieldModule,
+        InputIconModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',

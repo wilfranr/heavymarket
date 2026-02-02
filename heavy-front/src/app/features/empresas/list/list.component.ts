@@ -9,6 +9,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { Empresa } from '../../../core/models/empresa.model';
 import * as EmpresasActions from '../../../store/empresas/actions/empresas.actions';
 import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.selectors';
@@ -19,7 +21,7 @@ import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.s
 @Component({
     selector: 'app-empresas-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, TagModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
     providers: [ConfirmationService, MessageService],
     template: `
         <div class="card">
@@ -29,10 +31,10 @@ import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.s
             <div class="mb-4">
                 <div class="flex justify-content-between mb-3">
                     <div class="flex gap-2 flex-wrap">
-                        <span class="p-input-icon-left">
-                            <i class="pi pi-search"></i>
+                        <p-iconfield iconPosition="left">
+                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                        </span>
+                        </p-iconfield>
                     </div>
 
                     <div class="flex gap-2">

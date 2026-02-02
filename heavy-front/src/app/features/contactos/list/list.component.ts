@@ -10,6 +10,8 @@ import { SelectModule } from 'primeng/select';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { Contacto } from '../../../core/models/contacto.model';
 import * as ContactosActions from '../../../store/contactos/actions/contactos.actions';
 import * as ContactosSelectors from '../../../store/contactos/selectors/contactos.selectors';
@@ -21,7 +23,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
 @Component({
     selector: 'app-contactos-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, ConfirmDialogModule, TagModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, ConfirmDialogModule, TagModule, IconFieldModule, InputIconModule],
     providers: [ConfirmationService, MessageService],
     template: `
         <div class="card">
@@ -31,10 +33,10 @@ import { TerceroService } from '../../../core/services/tercero.service';
             <div class="mb-4">
                 <div class="flex justify-content-between mb-3">
                     <div class="flex gap-2 flex-wrap">
-                        <span class="p-input-icon-left">
-                            <i class="pi pi-search"></i>
+                        <p-iconfield iconPosition="left">
+                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                        </span>
+                        </p-iconfield>
                         <p-select [(ngModel)]="selectedTercero" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Filtrar por tercero" [showClear]="true" (ngModelChange)="onTerceroChange()" styleClass="w-full md:w-14rem">
                         </p-select>
                     </div>

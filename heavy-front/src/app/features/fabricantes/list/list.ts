@@ -13,6 +13,8 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 
 import { Fabricante } from '../../../core/models/fabricante.model';
 import { loadFabricantes, deleteFabricante } from '../../../store/fabricantes/actions/fabricantes.actions';
@@ -24,7 +26,7 @@ import { selectAllFabricantes, selectFabricantesLoading, selectFabricantesPagina
 @Component({
     selector: 'app-fabricantes-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })

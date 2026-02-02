@@ -10,30 +10,20 @@
             </div>
         </ng-template>
 
-        <p-table
-            #dt
-            [value]="(fabricantes$ | async) || []"
-            [loading]="loading$ | async"
-            [paginator]="true"
-            [rows]="rowsPerPage"
-            [totalRecords]="(pagination$ | async)?.total || 0"
-            [first]="first"
-            [lazy]="true"
+        <p-table #dt [value]="(fabricantes$ | async) || []" [loading]="loading$ | async" [paginator]="true"
+            [rows]="rowsPerPage" [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} fabricantes"
-            [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['nombre', 'descripcion']"
-            (onPage)="onPageChange($event)"
-            (onSort)="onSort($event)"
-            responsiveLayout="scroll"
-            styleClass="p-datatable-sm"
-        >
+            [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['nombre', 'descripcion']"
+            (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll"
+            styleClass="p-datatable-sm">
             <ng-template pTemplate="caption">
                 <div class="flex">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search"></i>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar fabricantes..." class="w-full" />
-                    </span>
+                    <p-iconfield iconPosition="left" class="w-full">
+                        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="Buscar fabricantes..." class="w-full" />
+                    </p-iconfield>
                 </div>
             </ng-template>
 
@@ -55,7 +45,8 @@
                     </td>
                     <td>
                         <span class="text-sm text-gray-600" [title]="fabricante.descripcion || ''">
-                            {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ? fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }}
+                            {{ fabricante.descripcion ? (fabricante.descripcion.length > 50 ?
+                            fabricante.descripcion.substring(0, 50) + '...' : fabricante.descripcion) : '-' }}
                         </span>
                     </td>
                     <td>
@@ -67,9 +58,15 @@
                     </td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(fabricante)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarFabricante(fabricante)" pTooltip="Editar" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarFabricante(fabricante)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                                (onClick)="verDetalle(fabricante)" pTooltip="Ver detalle" tooltipPosition="top">
+                            </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true"
+                                (onClick)="editarFabricante(fabricante)" pTooltip="Editar" tooltipPosition="top">
+                            </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                                (onClick)="eliminarFabricante(fabricante)" pTooltip="Eliminar" tooltipPosition="top">
+                            </p-button>
                         </div>
                     </td>
                 </tr>

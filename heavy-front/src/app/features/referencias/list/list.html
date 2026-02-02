@@ -25,11 +25,11 @@
             styleClass="p-datatable-sm" dataKey="id" editMode="row">
             <ng-template pTemplate="caption">
                 <div class="flex">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search"></i>
+                    <p-iconfield iconPosition="left" class="w-full">
+                        <p-inputicon styleClass="pi pi-search"></p-inputicon>
                         <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
                             placeholder="Buscar referencias..." class="w-full" />
-                    </span>
+                    </p-iconfield>
                 </div>
             </ng-template>
 
@@ -61,7 +61,8 @@
                         <p-cellEditor>
                             <ng-template pTemplate="input">
                                 <p-select [(ngModel)]="referencia.marca_id" [options]="marcas" optionLabel="nombre"
-                                    optionValue="id" placeholder="Marca" styleClass="w-full" appendTo="body" [filter]="true" filterBy="nombre">
+                                    optionValue="id" placeholder="Marca" styleClass="w-full" appendTo="body"
+                                    [filter]="true" filterBy="nombre">
                                 </p-select>
                             </ng-template>
                             <ng-template pTemplate="output">

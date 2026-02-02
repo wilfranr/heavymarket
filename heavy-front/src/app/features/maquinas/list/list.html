@@ -11,35 +11,29 @@
         </ng-template>
 
         <div class="mb-4 flex gap-4">
-            <p-select [(ngModel)]="selectedFabricanteId" [options]="fabricantes" optionLabel="nombre" optionValue="id" placeholder="Filtrar por fabricante" [showClear]="true" (ngModelChange)="onFilterChange()" styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre">
+            <p-select [(ngModel)]="selectedFabricanteId" [options]="fabricantes" optionLabel="nombre" optionValue="id"
+                placeholder="Filtrar por fabricante" [showClear]="true" (ngModelChange)="onFilterChange()"
+                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre">
             </p-select>
-            <p-select [(ngModel)]="selectedTipoId" [options]="tipos" optionLabel="nombre" optionValue="id" placeholder="Filtrar por tipo" [showClear]="true" (ngModelChange)="onFilterChange()" styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre"> </p-select>
+            <p-select [(ngModel)]="selectedTipoId" [options]="tipos" optionLabel="nombre" optionValue="id"
+                placeholder="Filtrar por tipo" [showClear]="true" (ngModelChange)="onFilterChange()"
+                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre"> </p-select>
         </div>
 
-        <p-table
-            #dt
-            [value]="(maquinas$ | async) || []"
-            [loading]="loading$ | async"
-            [paginator]="true"
-            [rows]="rowsPerPage"
-            [totalRecords]="(pagination$ | async)?.total || 0"
-            [first]="first"
-            [lazy]="true"
+        <p-table #dt [value]="(maquinas$ | async) || []" [loading]="loading$ | async" [paginator]="true"
+            [rows]="rowsPerPage" [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} máquinas"
-            [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['modelo', 'serie', 'arreglo']"
-            (onPage)="onPageChange($event)"
-            (onSort)="onSort($event)"
-            responsiveLayout="scroll"
-            styleClass="p-datatable-sm"
-        >
+            [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['modelo', 'serie', 'arreglo']"
+            (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll"
+            styleClass="p-datatable-sm">
             <ng-template pTemplate="caption">
                 <div class="flex">
-                    <span class="p-input-icon-left w-full">
-                        <i class="pi pi-search"></i>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar máquinas..." class="w-full" />
-                    </span>
+                    <p-iconfield iconPosition="left" class="w-full">
+                        <p-inputicon styleClass="pi pi-search"></p-inputicon>
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                            placeholder="Buscar máquinas..." class="w-full" />
+                    </p-iconfield>
                 </div>
             </ng-template>
 
@@ -91,9 +85,14 @@
                     </td>
                     <td>
                         <div class="flex gap-2">
-                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true" (onClick)="verDetalle(maquina)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editarMaquina(maquina)" pTooltip="Editar" tooltipPosition="top"> </p-button>
-                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarMaquina(maquina)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
+                                (onClick)="verDetalle(maquina)" pTooltip="Ver detalle" tooltipPosition="top">
+                            </p-button>
+                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true"
+                                (onClick)="editarMaquina(maquina)" pTooltip="Editar" tooltipPosition="top"> </p-button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                                (onClick)="eliminarMaquina(maquina)" pTooltip="Eliminar" tooltipPosition="top">
+                            </p-button>
                         </div>
                     </td>
                 </tr>

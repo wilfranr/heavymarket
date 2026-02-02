@@ -8,6 +8,8 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { Transportadora } from '../../../core/models/transportadora.model';
 import * as TransportadorasActions from '../../../store/transportadoras/actions/transportadoras.actions';
 import * as TransportadorasSelectors from '../../../store/transportadoras/selectors/transportadoras.selectors';
@@ -18,7 +20,7 @@ import * as TransportadorasSelectors from '../../../store/transportadoras/select
 @Component({
     selector: 'app-transportadoras-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
     providers: [ConfirmationService, MessageService],
     template: `
         <div class="card">
@@ -28,10 +30,10 @@ import * as TransportadorasSelectors from '../../../store/transportadoras/select
             <div class="mb-4">
                 <div class="flex justify-content-between mb-3">
                     <div class="flex gap-2 flex-wrap">
-                        <span class="p-input-icon-left">
-                            <i class="pi pi-search"></i>
+                        <p-iconfield iconPosition="left">
+                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                        </span>
+                        </p-iconfield>
                     </div>
 
                     <div class="flex gap-2">

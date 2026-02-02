@@ -10,6 +10,8 @@ import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
 import { OrdenTrabajo, OrdenTrabajoEstado } from '../../../core/models/orden-trabajo.model';
 import * as OrdenesTrabajoActions from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
 import * as OrdenesTrabajoSelectors from '../../../store/ordenes-trabajo/selectors/ordenes-trabajo.selectors';
@@ -24,7 +26,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
 @Component({
     selector: 'app-ordenes-trabajo-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
     providers: [ConfirmationService, MessageService],
     template: `
         <div class="card">
@@ -34,10 +36,10 @@ import { PedidoService } from '../../../core/services/pedido.service';
             <div class="mb-4">
                 <div class="flex justify-content-between mb-3">
                     <div class="flex gap-2 flex-wrap">
-                        <span class="p-input-icon-left">
-                            <i class="pi pi-search"></i>
+                        <p-iconfield iconPosition="left">
+                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                        </span>
+                        </p-iconfield>
 
                         <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
 
