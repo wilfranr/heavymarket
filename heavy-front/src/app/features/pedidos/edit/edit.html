@@ -6,14 +6,16 @@
     <p-skeleton width="100%" height="300px"></p-skeleton>
 </div>
 } @else {
-<div class="min-h-screen p-6 font-sans text-slate-200">
+<div class="min-h-screen p-6 font-sans text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-transparent">
     <div class="max-w-[1906px] mx-auto">
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 px-8">
             <div>
-                <div class="text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Pedidos > Editar
+                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1"
+                    style="font-family: 'Figtree'">Pedidos > Editar
                 </div>
-                <h1 class="text-3xl font-bold text-brand-yellow" style="font-family: 'Figtree'">Pedido</h1>
+                <h1 class="text-3xl font-bold text-yellow-600 dark:text-brand-yellow" style="font-family: 'Figtree'">
+                    Pedido</h1>
             </div>
             <!-- Top Buttons -->
             <div class="flex gap-4">
@@ -30,36 +32,43 @@
             <div class="flex gap-6 mb-10 px-8">
 
                 <!-- Order Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información del pedido</span>
+                <div
+                    class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                    <div
+                        class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del
+                            pedido</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-shopping-bag text-white text-xl"></i>
+                            <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
                         </div>
                     </div>
-                    <div class="p-4 space-y-2 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm">
+                    <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[#343743]">
                         <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Documento: Pedido</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Documento: Pedido</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Consecutivo: {{ pedidoId() }}</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Consecutivo: {{
+                                pedidoId() }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Creación: {{ (pedido$ | async)?.created_at |
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Creación: {{ (pedido$ |
+                                async)?.created_at |
                                 date:'MMMM d, y' }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Actualización: {{ (pedido$ |
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Actualización: {{
+                                (pedido$ |
                                 async)?.updated_at | date:'MMMM d, y' }}</span>
                         </div>
                         <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Usuario: {{ (pedido$ | async)?.user?.name ||
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Usuario: {{ (pedido$ |
+                                async)?.user?.name ||
                                 '---' }}</span>
                         </div>
                         <div class="flex justify-between items-center mt-2">
-                            <span class="text-brand-yellow font-semibold">Estado:</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Estado:</span>
                             <p-select formControlName="estado" [options]="getEstadosDisponibles()"
-                                styleClass="w-[140px] !bg-[#2A2D36] border-none text-white h-[30px] flex items-center text-xs ml-2"
+                                styleClass="w-[140px] !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white h-[30px] flex items-center text-xs ml-2"
                                 (onChange)="onEstadoChange()" [filter]="true">
                             </p-select>
                         </div>
@@ -67,66 +76,82 @@
                 </div>
 
                 <!-- Machine Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información de la máquina</span>
+                <div
+                    class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                    <div
+                        class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la
+                            máquina</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-cog text-white text-xl"></i>
+                            <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
                         </div>
                     </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743] relative">
                         <!-- Machine Selector -->
                         <div class="mb-2">
                             <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
                                 [showClear]="true" placeholder="Seleccionar Máquina"
-                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
+                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white">
                             </p-select>
                         </div>
 
                         @if (pedidoForm.get('maquina_id')?.value) {
                         @let maquina = (pedido$ | async)?.maquina;
                         <div class="flex flex-col gap-2">
-                            <span class="text-brand-yellow font-semibold block">Máquina: {{ maquina?.modelo }}</span>
-                            <span class="text-brand-yellow font-semibold block">Fabricante: {{ maquina?.marca }}</span>
-                            <span class="text-brand-yellow font-semibold block">Serie: {{ maquina?.serie }}</span>
-                            <span class="text-brand-yellow font-semibold block">ID adicional: ----</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Máquina: {{
+                                maquina?.modelo }}</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Fabricante: {{
+                                maquina?.marca }}</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Serie: {{
+                                maquina?.serie }}</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">ID adicional:
+                                ----</span>
                         </div>
                         }
                     </div>
                 </div>
 
                 <!-- Client Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información de tercero</span>
+                <div
+                    class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                    <div
+                        class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de
+                            tercero</span>
                         <div class="flex gap-1">
-                            <i class="pi pi-envelope text-white text-xl p-2"></i>
-                            <i class="pi pi-whatsapp text-white text-xl p-2"></i>
+                            <i class="pi pi-envelope text-gray-600 dark:text-white text-xl p-2"></i>
+                            <i class="pi pi-whatsapp text-gray-600 dark:text-white text-xl p-2"></i>
                         </div>
                     </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743] relative">
                         <!-- Client Selector -->
                         <div class="mb-2">
                             <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" filterBy="label"
                                 placeholder="Seleccionar Cliente"
-                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
+                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white">
                             </p-select>
                         </div>
 
                         @if (pedidoForm.get('tercero_id')?.value) {
                         @let cliente = (pedido$ | async)?.tercero;
                         <div class="flex flex-col gap-1">
-                            <span class="text-brand-yellow font-semibold block">Tipo: Cliente</span>
-                            <span class="text-brand-yellow font-semibold block truncate">Razón Social: {{
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Tipo:
+                                Cliente</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block truncate">Razón
+                                Social: {{
                                 cliente?.nombre || '---' }}</span>
-                            <span class="text-brand-yellow font-semibold block">Tipo de documento: {{
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Tipo de documento:
+                                {{
                                 cliente?.tipo_documento || '---' }}</span>
-                            <span class="text-brand-yellow font-semibold block">Número de documento: {{
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Número de
+                                documento: {{
                                 cliente?.numero_documento || '---' }}</span>
-                            <span class="text-brand-yellow font-semibold block">Ciudad: {{ cliente?.ciudad?.name || '--'
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Ciudad: {{
+                                cliente?.ciudad?.name || '--'
                                 }}</span>
-                            <span class="text-brand-yellow font-semibold block">Contacto: --</span>
-                            <span class="text-brand-yellow font-semibold block">Teléfono: {{ cliente?.telefono || '---'
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Contacto: --</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Teléfono: {{
+                                cliente?.telefono || '---'
                                 }}</span>
                         </div>
                         }
@@ -136,12 +161,12 @@
 
             <!-- Items Section -->
             <div class="px-8">
-                <h3 class="text-xl font-semibold text-brand-yellow mb-4" style="font-family: 'Montserrat'">Tus ítems
+                <h3 class="text-xl font-semibold text-yellow-600 dark:text-brand-yellow mb-4">Tus ítems
                 </h3>
 
                 <div class="w-full">
                     <!-- Headers -->
-                    <div class="flex gap-4 mb-2 px-2 text-white font-semibold text-sm">
+                    <div class="flex gap-4 mb-2 px-2 text-gray-800 dark:text-white font-semibold text-sm">
                         <div class="w-[50px] text-center">Ítem</div>
                         <div class="w-[20%]">Sistema</div>
                         <div class="w-[20%]">Artículo</div>
@@ -156,34 +181,35 @@
                         <div [formGroup]="$any(referencia)" class="flex items-center gap-4">
                             <!-- Checkbox -->
                             <div class="w-[50px] flex justify-center">
-                                <p-checkbox [binary]="true" styleClass="border-2 border-white rounded"></p-checkbox>
+                                <p-checkbox [binary]="true"
+                                    styleClass="border-2 border-gray-400 dark:border-white rounded"></p-checkbox>
                             </div>
 
                             <!-- Sistema -->
                             <div class="w-[20%]">
                                 <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center"
+                                    styleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] flex items-center text-gray-800 dark:text-white"
                                     [filter]="true"></p-select>
                             </div>
 
                             <!-- Articulo -->
                             <div class="w-[20%]">
                                 <!-- If loading existing data, we might need logic to show correct field type. Assuming text for now as per image -->
-                                <input pInputText formControlName="comentario" placeholder="Seleccionar"
-                                    class="w-full !bg-[#343743] border-none h-[48px]" />
+                                <input pInputText formControlName="definicion" placeholder="Descripción del ítem"
+                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white" />
                             </div>
 
                             <!-- Cantidad -->
                             <div class="w-[100px]">
                                 <input pInputText type="number" formControlName="cantidad" placeholder="Ej: 1"
-                                    class="w-full !bg-[#343743] border-none h-[48px] text-center" />
+                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-center text-gray-800 dark:text-white" />
                             </div>
 
                             <!-- Referencia -->
                             <div class="flex-1">
                                 <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
                                     filterBy="label" placeholder="Ej: no definido"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center">
+                                    styleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] flex items-center text-gray-800 dark:text-white">
                                 </p-select>
                             </div>
 

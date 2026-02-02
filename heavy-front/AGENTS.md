@@ -51,3 +51,10 @@ La aplicación sigue una arquitectura basada en características (features) y ca
 - `npm start`: Servidor de desarrollo.
 - `npm run format`: Formatear código con Prettier.
 - `npm run lint`: Verificar calidad de código.
+
+### 6. Diseño UI/UX y Tematización
+- **Soporte Dual (Claro/Oscuro)**: Todos los componentes y vistas nuevas o modificadas DEBEN funcionar y verse bien tanto en modo claro (Light Mode) como en modo oscuro (Dark Mode).
+  - Evitar colores de fondo o texto hardcodeados (ej. `bg-black`, `text-white`) a menos que sean intencionales para ambos modos.
+  - Utilizar clases condicionales de Tailwind (`dark:bg-x`, `dark:text-y`) o variables CSS nativas el framework.
+  - Verificar siempre el contraste en ambos modos.
+- **Estilo Visual**: Mantener consistencia con el diseño premium de HeavyMarket (Glassmorphism, sombras sutiles, bordes redondeados).

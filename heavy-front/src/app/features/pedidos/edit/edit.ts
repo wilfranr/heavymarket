@@ -347,7 +347,7 @@ export class EditComponent implements OnInit {
                 id: [ref.id],
                 estado: [ref.estado ?? true],
                 sistema_id: [ref.sistema_id || null],
-                referencia_id: [ref.referencia_id, [Validators.required]],
+                referencia_id: [ref.referencia_id], // No longer required
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
                 comentario: [ref.comentario || ''],
@@ -374,7 +374,7 @@ export class EditComponent implements OnInit {
             id: [null],
             estado: [true],
             sistema_id: [null],
-            referencia_id: [null, [Validators.required]],
+            referencia_id: [null], // No longer required
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
             comentario: [''],

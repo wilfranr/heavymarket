@@ -266,6 +266,8 @@ class LandingController extends Controller
 
             // 5. Procesar Ítems
             $itemsData = $request->input('items');
+            \Illuminate\Support\Facades\Log::info('Procesando items cotización:', ['count' => count($itemsData), 'data' => $itemsData]);
+            
             foreach ($itemsData as $index => $itemData) {
                 $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first();
                 

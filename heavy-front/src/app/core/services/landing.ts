@@ -77,6 +77,7 @@ export class LandingService {
         formData.append('selectedType', data.selectedType || '');
         formData.append('selectedModel', data.selectedModel || '');
         formData.append('selectedSeries', data.selectedSeries || '');
+        formData.append('selectedArrangement', data.selectedArrangement || '');
 
         // Appending nested userData
         Object.keys(data.userData).forEach(key => {
