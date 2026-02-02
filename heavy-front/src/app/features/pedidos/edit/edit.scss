@@ -85,4 +85,17 @@ $color-text-black: #0C0E0F;
             }
         }
     }
+
+    .machine-detail-modal {
+        .machine-table-header {
+            background-color: $color-yellow;
+            color: #000;
+            font-weight: bold;
+            padding: 0.5rem;
+        }
+
+        .machine-table-cell {
+            padding: 1rem;
+        }
+    }
 }

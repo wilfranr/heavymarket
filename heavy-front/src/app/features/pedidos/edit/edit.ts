@@ -22,6 +22,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
+import { ImageModule } from 'primeng/image';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -63,7 +64,8 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoAr
         TooltipModule,
         DialogModule,
         TableModule,
-        CheckboxModule
+        CheckboxModule,
+        ImageModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -95,8 +97,10 @@ export class EditComponent implements OnInit {
     sistemas: any[] = [];
     marcas: any[] = [];
     maquinas: any[] = [];
+    maquinasList: any[] = []; // Lista completa de máquinas con todos sus datos
     fabricantes: any[] = [];
     referencias: any[] = [];
+
     proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
     articulos: any[] = []; // Lista de artículos disponibles
 
@@ -115,7 +119,12 @@ export class EditComponent implements OnInit {
 
     // Artículos del pedido
     articulosPedido: PedidoArticulo[] = [];
+
     mostrarArticulos = false;
+
+    // Modal de detalle de máquina
+    displayMaquinaDialog = false;
+    selectedMaquina: any = null;
 
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
@@ -205,6 +214,7 @@ export class EditComponent implements OnInit {
         // Cargar máquinas
         this.maquinaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
+                this.maquinasList = response.data;
                 this.maquinas = response.data.map((m) => ({
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
                     value: m.id
@@ -806,6 +816,28 @@ export class EditComponent implements OnInit {
                 });
             }
         });
+    }
+
+    get currentMaquinaInfo(): any {
+        const id = this.pedidoForm.get('maquina_id')?.value;
+        if (!id) return null;
+
+        // Buscar en la lista de máquinas cargadas
+        const maquina = this.maquinasList.find(m => m.id === id);
+        if (maquina) return maquina;
+
+        // Si no está en la lista (caso raro), intentar usar la del pedido si coincide el ID
+        // Nota: Esto es limitado ya que pedido$ es observable, pero es un fallback
+        // Idealmente siempre debería estar en maquinasList
+        return null;
+    }
+
+    /**
+     * Muestra el modal con el detalle de la máquina
+     */
+    viewMaquina(maquina: any): void {
+        this.selectedMaquina = maquina;
+        this.displayMaquinaDialog = true;
     }
 
     /**
