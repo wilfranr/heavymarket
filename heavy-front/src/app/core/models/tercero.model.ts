@@ -15,11 +15,30 @@ export interface Tercero {
     created_at: string;
     updated_at: string;
 
+    // Campos adicionales
+    forma_pago?: string | null;
+    email_factura_electronica?: string | null;
+    sitio_web?: string | null;
+
+    // Documentos
+    rut?: string | null;
+    certificacion_bancaria?: string | null;
+    camara_comercio?: string | null;
+    cedula_representante_legal?: string | null;
+
     // Relaciones opcionales
     city_id?: number | null;
     state_id?: number | null;
     country_id?: number | null;
+
+    // Relaciones cargadas
+    city?: { id: number; name: string } | null;
+    state?: { id: number; name: string } | null;
+    country?: { id: number; name: string } | null;
     contactos?: Contacto[];
+    maquinas?: { id: number; modelo: string; serie?: string }[];
+    fabricantes?: { id: number; nombre: string }[];
+    sistemas?: { id: number; nombre: string }[];
 }
 
 /**

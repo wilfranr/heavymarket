@@ -107,7 +107,7 @@ class TerceroController extends Controller
 
                 // Handle Relationships
                 if ($request->filled('maquina_id')) {
-                    $tercero->maquinas()->sync([$request->input('maquina_id')]);
+                    $tercero->maquinas()->sync($request->input('maquina_id'));
                 }
                 
                 if ($request->filled('fabricante_id')) {
@@ -195,7 +195,7 @@ class TerceroController extends Controller
 
                  // Handle Relationships if passed (optional update logic)
                 if ($request->has('maquina_id')) { // Check existence key to allow unselecting
-                     $tercero->maquinas()->sync($request->input('maquina_id') ? [$request->input('maquina_id')] : []);
+                     $tercero->maquinas()->sync($request->input('maquina_id'));
                 }
                 if ($request->has('fabricante_id')) {
                      $tercero->fabricantes()->sync($request->input('fabricante_id'));

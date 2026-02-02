@@ -18,7 +18,6 @@ import { InputIconModule } from 'primeng/inputicon';
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceros, deleteTercero } from '../../../store/terceros/actions/terceros.actions';
 import { selectAllTerceros, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
-import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 
 /**
  * Componente de lista de terceros
@@ -37,7 +36,6 @@ import { TerceroCreateModalComponent } from '../../../shared/components/tercero-
         TagModule,
         ToastModule,
         ConfirmDialogModule,
-        TerceroCreateModalComponent,
         IconFieldModule,
         InputIconModule
     ],
@@ -49,17 +47,12 @@ export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
 
     private readonly store = inject(Store);
-    // Router no longer needed for editing/viewing but kept if needed for other navs or remove
-    // private readonly router = inject(Router); 
+    private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
     terceros$!: Observable<Tercero[]>;
     loading$!: Observable<boolean>;
-
-    displayCreateTerceroDialog = false;
-    selectedTercero: Tercero | null = null;
-    isViewMode = false;
 
     ngOnInit(): void {
         this.loadTerceros();
@@ -72,30 +65,24 @@ export class ListComponent implements OnInit {
     }
 
     /**
-     * Abre el modal en modo visualización
+     * Navega a la vista de detalle
      */
     viewDetail(tercero: Tercero): void {
-        this.selectedTercero = tercero;
-        this.isViewMode = true;
-        this.displayCreateTerceroDialog = true;
+        this.router.navigate(['/app/terceros', tercero.id]);
     }
 
     /**
-     * Abre el modal en modo edición
+     * Navega a la vista de edición
      */
     editTercero(tercero: Tercero): void {
-        this.selectedTercero = tercero;
-        this.isViewMode = false;
-        this.displayCreateTerceroDialog = true;
+        this.router.navigate(['/app/terceros', tercero.id, 'edit']);
     }
 
     /**
-     * Abre el modal de creación
+     * Navega a la vista de creación
      */
     crearTercero(): void {
-        this.selectedTercero = null;
-        this.isViewMode = false;
-        this.displayCreateTerceroDialog = true;
+        this.router.navigate(['/app/terceros/create']);
     }
 
     /**
@@ -119,13 +106,6 @@ export class ListComponent implements OnInit {
         });
     }
 
-    /**
-     * Maneja la creación/edición exitosa
-     */
-    onTerceroCreated(tercero: any): void {
-        this.displayCreateTerceroDialog = false;
-        this.loadTerceros();
-    }
 
     /**
      * Obtiene el color del tag según el tipo

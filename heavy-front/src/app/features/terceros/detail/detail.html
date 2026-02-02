@@ -1,1 +1,452 @@
-<p>detail works!</p>
+<p-toast></p-toast>
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <!-- Header -->
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <div class="flex items-center gap-4">
+                    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()"
+                        pTooltip="Volver a la lista"></p-button>
+                    <div>
+                        <h2 class="text-2xl font-bold">Detalle del Tercero</h2>
+                        @if (tercero) {
+                        <p class="text-sm text-gray-400 mt-1">{{ tercero.nombre }}</p>
+                        }
+                    </div>
+                </div>
+                @if (tercero) {
+                <p-button label="Editar" icon="pi pi-pencil" (onClick)="editTercero()"></p-button>
+                }
+            </div>
+        </ng-template>
+
+        <!-- Loading State -->
+        @if (loading) {
+        <div class="space-y-4 p-4">
+            <p-skeleton height="2rem" styleClass="mb-4"></p-skeleton>
+            <div class="info-grid">
+                <p-skeleton height="4rem"></p-skeleton>
+                <p-skeleton height="4rem"></p-skeleton>
+                <p-skeleton height="4rem"></p-skeleton>
+                <p-skeleton height="4rem"></p-skeleton>
+            </div>
+        </div>
+        }
+
+        <!-- Content -->
+        @if (!loading && tercero) {
+        <div class="p-4 space-y-6">
+
+            <!-- Información General -->
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-info-circle mr-2"></i>Información General
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Tipo de Tercero</div>
+                        <div class="info-value">
+                            <p-tag [value]="tercero.tipo" [severity]="getTipoSeverity(tercero.tipo)"></p-tag>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Estado</div>
+                        <div class="info-value">
+                            <p-tag [value]="tercero.estado" [severity]="getEstadoSeverity(tercero.estado)"></p-tag>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Nombre / Razón Social</div>
+                        <div class="info-value">{{ tercero.nombre }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Tipo de Documento</div>
+                        <div class="info-value">{{ tercero.tipo_documento }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Número de Documento</div>
+                        <div class="info-value">{{ tercero.numero_documento }}</div>
+                    </div>
+                    @if (tercero.dv) {
+                    <div class="info-item">
+                        <div class="info-label">Dígito Verificador</div>
+                        <div class="info-value">{{ tercero.dv }}</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Información de Contacto -->
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-phone mr-2"></i>Información de Contacto
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">Teléfono</div>
+                        <div class="info-value">
+                            <i class="pi pi-phone mr-2"></i>{{ tercero.telefono || 'No especificado' }}
+                        </div>
+                    </div>
+                    @if (tercero.email) {
+                    <div class="info-item">
+                        <div class="info-label">Correo Electrónico</div>
+                        <div class="info-value">
+                            <i class="pi pi-envelope mr-2"></i>{{ tercero.email }}
+                        </div>
+                    </div>
+                    }
+                    @if (tercero.email_factura_electronica) {
+                    <div class="info-item">
+                        <div class="info-label">Correo Factura Electrónica</div>
+                        <div class="info-value">
+                            <i class="pi pi-envelope mr-2"></i>{{ tercero.email_factura_electronica }}
+                        </div>
+                    </div>
+                    }
+                    @if (tercero.sitio_web) {
+                    <div class="info-item">
+                        <div class="info-label">Sitio Web</div>
+                        <div class="info-value">
+                            <i class="pi pi-globe mr-2"></i>
+                            <a [href]="'https://' + tercero.sitio_web" target="_blank"
+                                class="text-blue-400 hover:underline">
+                                {{ tercero.sitio_web }}
+                            </a>
+                        </div>
+                    </div>
+                    }
+                    @if (tercero.forma_pago) {
+                    <div class="info-item">
+                        <div class="info-label">Forma de Pago</div>
+                        <div class="info-value">{{ tercero.forma_pago }}</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <p-divider></p-divider>
+
+            <!-- Ubicación -->
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-map-marker mr-2"></i>Ubicación
+                </h3>
+                <div class="info-grid">
+                    <div class="info-item col-span-full">
+                        <div class="info-label">Dirección</div>
+                        <div class="info-value">{{ tercero.direccion || 'No especificada' }}</div>
+                    </div>
+                    @if (tercero.city) {
+                    <div class="info-item">
+                        <div class="info-label">Ciudad</div>
+                        <div class="info-value">{{ tercero.city.name }}</div>
+                    </div>
+                    }
+                    @if (tercero.state) {
+                    <div class="info-item">
+                        <div class="info-label">Departamento/Estado</div>
+                        <div class="info-value">{{ tercero.state.name }}</div>
+                    </div>
+                    }
+                    @if (tercero.country) {
+                    <div class="info-item">
+                        <div class="info-label">País</div>
+                        <div class="info-value">{{ tercero.country.name }}</div>
+                    </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Máquinas (Solo para Clientes) -->
+            @if ((tercero.tipo === 'Cliente' || tercero.tipo === 'Ambos') && tercero.maquinas && tercero.maquinas.length
+            > 0) {
+            <p-divider></p-divider>
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-cog mr-2"></i>Máquinas
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    @for (maquina of tercero.maquinas; track maquina.id) {
+                    <div class="info-item relative group">
+                        <!-- Eye Button -->
+                        <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
+                                (onClick)="viewMaquina(maquina)" pTooltip="Ver detalle de máquina"></p-button>
+                        </div>
+
+                        <div class="font-semibold text-yellow-500 pr-8">{{ maquina.modelo }}</div>
+                        @if (maquina.serie) {
+                        <div class="text-sm text-gray-400 mt-1">Serie: {{ maquina.serie }}</div>
+                        }
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Machine Detail Modal -->
+            <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{width: '900px', 'max-width': '95vw'}"
+                [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body"
+                styleClass="machine-detail-modal">
+
+                <ng-template pTemplate="header">
+                    <div class="w-full text-center">
+                        <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquina">
+                            {{ selectedMaquina.modelo }}
+                        </h2>
+                    </div>
+                </ng-template>
+
+                <div class="p-6 rounded-lg dark:bg-[#1a1a1a]" *ngIf="selectedMaquina">
+
+                    <!-- Photos Section -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <!-- Machine Photo -->
+                        <div>
+                            <h3 class="font-bold mb-2 uppercase text-sm text-gray-700 dark:text-white">FOTO DE MÁQUINA
+                            </h3>
+                            <div
+                                class="aspect-video bg-gray-100 dark:bg-black/50 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                <p-image [src]="selectedMaquina.imagen_url || 'assets/images/no-image.png'"
+                                    alt="Foto Máquina" [preview]="true" width="100%" height="100%"
+                                    imageClass="w-full h-full object-cover">
+                                </p-image>
+                            </div>
+                        </div>
+
+                        <!-- ID Photo -->
+                        <div>
+                            <h3 class="font-bold mb-2 uppercase text-sm text-gray-700 dark:text-white">FOTO ID</h3>
+                            <div
+                                class="aspect-video bg-gray-100 dark:bg-black/50 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                                <p-image [src]="selectedMaquina.imagen_placa_url || 'assets/images/no-image.png'"
+                                    alt="Foto Placa" [preview]="true" width="100%" height="100%"
+                                    imageClass="w-full h-full object-cover">
+                                </p-image>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Motor Section -->
+                    <div class="mb-6">
+                        <h3 class="font-bold mb-2 text-lg text-gray-800 dark:text-white">Motor</h3>
+                        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="grid grid-cols-5 machine-table-header text-sm">
+                                <div class="col-span-1">Marca</div>
+                                <div class="col-span-1">Modelo</div>
+                                <div class="col-span-1">Serie</div>
+                                <div class="col-span-1">Comentario</div>
+                                <div class="col-span-1">Foto</div>
+                            </div>
+                            <!-- TODO: Estos datos vendrían de una relación de componentes, por ahora simulados o desde la maquina si tiene -->
+                            <div class="grid grid-cols-5 machine-table-row items-center text-sm">
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.marca_motor || 'N/A' }}
+                                </div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.modelo_motor || 'N/A' }}
+                                </div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.serie_motor || 'N/A' }}
+                                </div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.comentario_motor || 'N/A'
+                                    }}</div>
+                                <div class="col-span-1 machine-table-cell">
+                                    <div
+                                        class="h-16 w-full max-w-[120px] bg-gray-100 dark:bg-black/30 rounded border border-gray-300 dark:border-gray-600 overflow-hidden">
+                                        <p-image
+                                            [src]="selectedMaquina.imagen_motor_url || 'assets/images/no-image.png'"
+                                            [preview]="true" width="100%" height="100%"
+                                            imageClass="w-full h-full object-cover">
+                                        </p-image>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Transmisión Section -->
+                    <div>
+                        <h3 class="font-bold mb-2 text-lg text-gray-800 dark:text-white">Transmisión</h3>
+                        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                            <div class="grid grid-cols-5 machine-table-header text-sm">
+                                <div class="col-span-1">Marca</div>
+                                <div class="col-span-1">Modelo</div>
+                                <div class="col-span-1">Serie</div>
+                                <div class="col-span-1">Comentario</div>
+                                <div class="col-span-1">Foto</div>
+                            </div>
+                            <div class="grid grid-cols-5 machine-table-row items-center text-sm">
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.marca_transmision || 'N/A'
+                                    }}</div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.modelo_transmision ||
+                                    'N/A' }}</div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.serie_transmision || 'N/A'
+                                    }}</div>
+                                <div class="col-span-1 machine-table-cell">{{ selectedMaquina.comentario_transmision ||
+                                    'N/A' }}</div>
+                                <div class="col-span-1 machine-table-cell">
+                                    <div
+                                        class="h-16 w-full max-w-[120px] bg-black/30 rounded border border-gray-600 overflow-hidden">
+                                        <p-image
+                                            [src]="selectedMaquina.imagen_transmision_url || 'assets/images/no-image.png'"
+                                            [preview]="true" width="100%" height="100%"
+                                            imageClass="w-full h-full object-cover">
+                                        </p-image>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </p-dialog>
+
+            <!-- Fabricantes y Sistemas (Solo para Proveedores) -->
+            @if (tercero.tipo === 'Proveedor' || tercero.tipo === 'Ambos') {
+
+            @if (tercero.fabricantes && tercero.fabricantes.length > 0) {
+            <p-divider></p-divider>
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-building mr-2"></i>Fabricantes
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @for (fabricante of tercero.fabricantes; track fabricante.id) {
+                    <p-tag [value]="fabricante.nombre" severity="info"></p-tag>
+                    }
+                </div>
+            </div>
+            }
+
+            @if (tercero.sistemas && tercero.sistemas.length > 0) {
+            <p-divider></p-divider>
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-sitemap mr-2"></i>Sistemas
+                </h3>
+                <div class="flex flex-wrap gap-2">
+                    @for (sistema of tercero.sistemas; track sistema.id) {
+                    <p-tag [value]="sistema.nombre" severity="warn"></p-tag>
+                    }
+                </div>
+            </div>
+            }
+            }
+
+            <!-- Contactos -->
+            @if (tercero.contactos && tercero.contactos.length > 0) {
+            <p-divider></p-divider>
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-users mr-2"></i>Contactos
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    @for (contacto of tercero.contactos; track contacto.id) {
+                    <div class="contact-card">
+                        <div class="flex justify-between items-start mb-2">
+                            <div class="font-semibold text-lg">{{ contacto.nombre }}</div>
+                            @if (contacto.principal) {
+                            <span class="principal-badge">
+                                <i class="pi pi-star-fill mr-1"></i>Principal
+                            </span>
+                            }
+                        </div>
+                        @if (contacto.cargo) {
+                        <div class="text-sm text-gray-400 mb-2">{{ contacto.cargo }}</div>
+                        }
+                        <div class="space-y-1 text-sm">
+                            @if (contacto.email) {
+                            <div>
+                                <i class="pi pi-envelope mr-2"></i>{{ contacto.email }}
+                            </div>
+                            }
+                            @if (contacto.telefono) {
+                            <div>
+                                <i class="pi pi-phone mr-2"></i>{{ contacto.telefono }}
+                            </div>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+            </div>
+            }
+
+            <!-- Documentos -->
+            <p-divider></p-divider>
+            <div>
+                <h3 class="section-title">
+                    <i class="pi pi-file mr-2"></i>Documentos
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="info-item text-center">
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.rut"
+                            [class.text-gray-500]="!tercero.rut"></i>
+                        <div class="info-label">RUT</div>
+                        <div class="info-value text-sm">
+                            @if (tercero.rut) {
+                            <a [href]="tercero.rut" target="_blank" class="text-blue-400 hover:underline">Ver
+                                documento</a>
+                            } @else {
+                            <span class="text-gray-500">No adjuntado</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item text-center">
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.certificacion_bancaria"
+                            [class.text-gray-500]="!tercero.certificacion_bancaria"></i>
+                        <div class="info-label">Certificación Bancaria</div>
+                        <div class="info-value text-sm">
+                            @if (tercero.certificacion_bancaria) {
+                            <a [href]="tercero.certificacion_bancaria" target="_blank"
+                                class="text-blue-400 hover:underline">Ver documento</a>
+                            } @else {
+                            <span class="text-gray-500">No adjuntado</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item text-center">
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.camara_comercio"
+                            [class.text-gray-500]="!tercero.camara_comercio"></i>
+                        <div class="info-label">Cámara de Comercio</div>
+                        <div class="info-value text-sm">
+                            @if (tercero.camara_comercio) {
+                            <a [href]="tercero.camara_comercio" target="_blank"
+                                class="text-blue-400 hover:underline">Ver documento</a>
+                            } @else {
+                            <span class="text-gray-500">No adjuntado</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="info-item text-center">
+                        <i class="pi pi-file-pdf text-3xl mb-2"
+                            [class.text-green-500]="tercero.cedula_representante_legal"
+                            [class.text-gray-500]="!tercero.cedula_representante_legal"></i>
+                        <div class="info-label">Cédula Rep. Legal</div>
+                        <div class="info-value text-sm">
+                            @if (tercero.cedula_representante_legal) {
+                            <a [href]="tercero.cedula_representante_legal" target="_blank"
+                                class="text-blue-400 hover:underline">Ver documento</a>
+                            } @else {
+                            <span class="text-gray-500">No adjuntado</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        }
+
+        <!-- Empty State -->
+        @if (!loading && !tercero) {
+        <div class="text-center py-12">
+            <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
+            <p class="text-gray-600 text-lg">No se encontró el tercero</p>
+        </div>
+        }
+
+    </p-card>
+</div>

@@ -57,7 +57,8 @@ class StoreTerceroRequest extends FormRequest
             'cedula_representante_legal' => ['nullable', 'file', 'max:5120'],
 
             // Relations
-            'maquina_id' => ['nullable', 'integer'],
+            'maquina_id' => ['nullable', 'array'],
+            'maquina_id.*' => ['integer', 'exists:maquinas,id'],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],
 

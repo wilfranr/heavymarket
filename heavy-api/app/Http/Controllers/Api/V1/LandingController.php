@@ -193,8 +193,8 @@ class LandingController extends Controller
                     'city_id' => is_array($userData['city']) ? $userData['city']['id'] : $userData['city'],
                     'tipo' => 'Cliente',
                     'estado' => 'Activo',
-                    'tipo_documento' => 'NIT', // Valor por defecto para prospectos
-                    'numero_documento' => '0',   // Valor por defecto para prospectos
+                    'tipo_documento' => $userData['documentType'] ?? 'NIT', 
+                    'numero_documento' => $userData['documentNumber'] ?? '0',
                     'forma_pago' => 'Contado',
                     'puntos' => 0
                 ]);
@@ -208,28 +208,43 @@ class LandingController extends Controller
             }
 
             // 3. Crear o buscar la Máquina
+            // 3. Crear o buscar la Máquina
             $maquinaId = null;
-            if ($request->filled('selectedModel')) {
-                // Buscar si ya existe una máquina con esa serie (si se proporcionó)
+            // Si al menos se seleccionó el tipo de máquina, procedemos
+            if ($request->filled('selectedType')) {
                 $maquina = null;
+                
+                // Intento 1: Buscar por serie si se proporcionó una
                 if ($request->filled('selectedSeries')) {
                     $maquina = \App\Models\Maquina::where('serie', $request->input('selectedSeries'))->first();
+                }
+
+                // Intento 2: Si no hay serie, buscar una máquina idéntica ya asociada a este cliente
+                // Esto evita crear duplicados de máquinas "Por definir" para el mismo cliente
+                if (!$maquina) {
+                    $maquina = \App\Models\Maquina::whereHas('terceros', function($q) use ($tercero) {
+                        $q->where('tercero_id', $tercero->id);
+                    })
+                    ->where('tipo', $request->input('selectedType'))
+                    ->where('modelo', $request->input('selectedModel') ?? 'Por definir')
+                    ->where('serie', $request->input('selectedSeries')) // NULL si no existe
+                    ->first();
                 }
 
                 // Si no existe, crear una nueva máquina
                 if (!$maquina) {
                     $maquina = \App\Models\Maquina::create([
                         'tipo' => $request->input('selectedType'),
-                        'modelo' => $request->input('selectedModel'),
-                        'serie' => $request->input('selectedSeries'),
-                        'arreglo' => $request->input('selectedArrangement'),
+                        'modelo' => $request->input('selectedModel') ?? 'Por definir',
+                        'serie' => $request->input('selectedSeries'), // NULL si no existe
+                        'arreglo' => $request->input('selectedArrangement') ?? 'Por definir',
                         'fabricante_id' => $fabricanteId ?? 1, // Default si no hay fabricante
                     ]);
 
-                    // Vincular la máquina al tercero (relación muchos a muchos)
+                    // Vincular la máquina al tercero
                     $maquina->terceros()->attach($tercero->id);
                 } else {
-                    // Si la máquina ya existe, verificar si ya está vinculada al tercero
+                    // Asegurar vinculación si se encontró por serie global pero no estaba vinculada
                     if (!$maquina->terceros()->where('tercero_id', $tercero->id)->exists()) {
                         $maquina->terceros()->attach($tercero->id);
                     }

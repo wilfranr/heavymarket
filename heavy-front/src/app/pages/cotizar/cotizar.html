@@ -57,10 +57,16 @@
                             placeholder="Modelo (Opcional)">
                     </div>
 
-                    <!-- 4. Serie o arreglo (Opcional) - Input de texto -->
+                    <!-- 4. Serie -->
                     <div class="cotizador-filter-group">
                         <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries"
-                            placeholder="Serie o arreglo (Opcional)">
+                            placeholder="Serie (Opcional)">
+                    </div>
+
+                    <!-- 5. Arreglo -->
+                    <div class="cotizador-filter-group">
+                        <input type="text" class="cotizador-input" [(ngModel)]="selectedArrangement"
+                            placeholder="Arreglo (Opcional)">
                     </div>
                 </div>
 
@@ -260,6 +266,24 @@
                                     <label class="input-label">Nombre completo *</label>
                                     <input type="text" class="custom-input" [(ngModel)]="userData.name"
                                         placeholder="Ej: Juan Pérez">
+                                </div>
+                            </div>
+
+                            <!-- Document Info -->
+                            <div class="form-field-row two-col">
+                                <div class="form-field">
+                                    <label class="input-label">Tipo de documento</label>
+                                    <select class="custom-input" [(ngModel)]="userData.documentType">
+                                        <option value="NIT">NIT</option>
+                                        <option value="CC">Cédula de Ciudadanía</option>
+                                        <option value="CE">Cédula de Extranjería</option>
+                                        <option value="RUT">RUT</option>
+                                    </select>
+                                </div>
+                                <div class="form-field">
+                                    <label class="input-label">Número de documento</label>
+                                    <input type="text" class="custom-input" [(ngModel)]="userData.documentNumber"
+                                        placeholder="Ej: 900123456">
                                 </div>
                             </div>
 

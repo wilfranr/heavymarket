@@ -45,6 +45,8 @@ export class Cotizar implements OnInit {
         email: '',
         phone: '',
         company: '',
+        documentType: 'NIT',
+        documentNumber: '',
         country: null as Country | null,
         state: null as State | null,
         city: null as City | null,
@@ -60,6 +62,7 @@ export class Cotizar implements OnInit {
     selectedType = '';
     selectedModel = '';
     selectedSeries = '';
+    selectedArrangement = '';
     selectedCard: any = null; // Changed to object to hold the full subcategory
 
     // Tabs
@@ -260,7 +263,8 @@ export class Cotizar implements OnInit {
             selectedBrand: this.selectedBrand,
             selectedType: this.selectedType,
             selectedModel: this.selectedModel,
-            selectedSeries: this.selectedSeries
+            selectedSeries: this.selectedSeries,
+            selectedArrangement: this.selectedArrangement
         };
 
         this.landingService.submitQuote(data).subscribe({
