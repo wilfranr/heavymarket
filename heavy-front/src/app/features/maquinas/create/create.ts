@@ -11,7 +11,11 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { FabricanteCreateModalComponent } from '../../../shared/components/fabricante-create-modal/fabricante-create-modal.component';
 
 import { createMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { CreateMaquinaDto } from '../../../core/models/maquina.model';
@@ -26,7 +30,22 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquina-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        RouterModule,
+        CardModule,
+        ButtonModule,
+        InputTextModule,
+        SelectModule,
+        ToastModule,
+        DividerModule,
+        InputGroupModule,
+        InputGroupAddonModule,
+        ImageUploadComponent,
+        ListaCreateModalComponent,
+        FabricanteCreateModalComponent
+    ],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -42,6 +61,9 @@ export class CreateComponent implements OnInit {
     loading = false;
     tipos: Lista[] = [];
     fabricantes: Fabricante[] = [];
+
+    showTipoModal = false;
+    showFabricanteModal = false;
 
     fotoFile: File | null = null;
     fotoIdFile: File | null = null;
@@ -78,6 +100,36 @@ export class CreateComponent implements OnInit {
                 console.error('Error al cargar fabricantes:', error);
             }
         });
+    }
+
+    /**
+     * Abre el modal para crear un nuevo tipo de máquina
+     */
+    abrirCrearTipo(): void {
+        this.showTipoModal = true;
+    }
+
+    /**
+     * Maneja la creación de un nuevo tipo de máquina
+     */
+    onTipoCreado(nuevoTipo: any): void {
+        this.cargarTipos();
+        this.maquinaForm.patchValue({ tipo: nuevoTipo.id });
+    }
+
+    /**
+     * Abre el modal para crear un nuevo fabricante
+     */
+    abrirCrearFabricante(): void {
+        this.showFabricanteModal = true;
+    }
+
+    /**
+     * Maneja la creación de un nuevo fabricante
+     */
+    onFabricanteCreado(nuevoFabricante: any): void {
+        this.cargarFabricantes();
+        this.maquinaForm.patchValue({ fabricante_id: nuevoFabricante.id });
     }
 
     /**

@@ -31,9 +31,16 @@
                 <!-- Marca -->
                 <div class="field">
                     <label for="marca_id" class="block text-sm font-medium mb-2"> Marca </label>
-                    <p-select id="marca_id" formControlName="marca_id" [options]="marcas" optionLabel="nombre"
-                        optionValue="id" placeholder="Seleccione una marca" [showClear]="true" styleClass="w-full">
-                    </p-select>
+                    <p-inputgroup>
+                        <p-select id="marca_id" formControlName="marca_id" [options]="marcas" optionLabel="nombre"
+                            optionValue="id" placeholder="Seleccione una marca" [showClear]="true" styleClass="w-full"
+                            [filter]="true" filterBy="nombre">
+                        </p-select>
+                        <p-inputgroup-addon>
+                            <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                (onClick)="abrirCrearFabricante()"></p-button>
+                        </p-inputgroup-addon>
+                    </p-inputgroup>
                 </div>
 
                 <!-- Artículo -->
@@ -76,3 +83,8 @@
         </form>
     </p-card>
 </div>
+
+<!-- Modal para crear fabricante -->
+<app-fabricante-create-modal [(visible)]="showFabricanteModal" title="Crear Fabricante"
+    (onFabricanteCreated)="onFabricanteCreado($event)">
+</app-fabricante-create-modal>
