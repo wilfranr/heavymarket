@@ -1,96 +1,159 @@
 <p-toast />
 
-<div class="container mx-auto p-4">
-    <p-card>
-        <ng-template pTemplate="header">
-            <div class="flex justify-between items-center p-4">
-                <h2 class="text-2xl font-bold">Editar Máquina</h2>
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
-                </p-button>
-            </div>
-        </ng-template>
+<div class="container mx-auto p-4 md:p-8 max-w-7xl relative overflow-hidden min-h-screen">
+    @if (maquina$ | async; as maquina) {
+    <!-- Decorative background elements -->
+    <div
+        class="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-[#fdb831]/10 rounded-full blur-[120px] pointer-events-none">
+    </div>
+    <div
+        class="absolute bottom-0 left-0 -ml-32 -mb-32 w-80 h-80 bg-[#fdb831]/5 rounded-full blur-[100px] pointer-events-none">
+    </div>
 
-        @if (maquina$ | async; as maquina) {
-        <form [formGroup]="maquinaForm" (ngSubmit)="onSubmit()">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Tipo -->
-                <div class="field">
-                    <label for="tipo" class="block text-sm font-medium mb-2"> Tipo de Máquina <span
-                            class="text-red-500">*</span> </label>
-                    <p-select id="tipo" formControlName="tipo" [options]="tipos" optionLabel="nombre" optionValue="id"
-                        placeholder="Seleccione un tipo" [showClear]="true" styleClass="w-full"> </p-select>
-                    @if (maquinaForm.get('tipo')?.invalid && maquinaForm.get('tipo')?.touched) {
-                    <small class="p-error">El tipo es requerido</small>
-                    }
-                </div>
-
-                <!-- Fabricante -->
-                <div class="field">
-                    <label for="fabricante_id" class="block text-sm font-medium mb-2"> Fabricante <span
-                            class="text-red-500">*</span> </label>
-                    <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
-                        optionLabel="nombre" optionValue="id" placeholder="Seleccione un fabricante" [showClear]="true"
-                        styleClass="w-full"> </p-select>
-                    @if (maquinaForm.get('fabricante_id')?.invalid && maquinaForm.get('fabricante_id')?.touched) {
-                    <small class="p-error">El fabricante es requerido</small>
-                    }
-                </div>
-
-                <!-- Modelo -->
-                <div class="field">
-                    <label for="modelo" class="block text-sm font-medium mb-2"> Modelo <span
-                            class="text-red-500">*</span> </label>
-                    <input pInputText id="modelo" formControlName="modelo" placeholder="Modelo de la máquina"
-                        class="w-full"
-                        [class.ng-invalid]="maquinaForm.get('modelo')?.invalid && maquinaForm.get('modelo')?.touched" />
-                    @if (maquinaForm.get('modelo')?.invalid && maquinaForm.get('modelo')?.touched) {
-                    <small class="p-error"> @if (maquinaForm.get('modelo')?.errors?.['required']) { El modelo es
-                        requerido } @else if (maquinaForm.get('modelo')?.errors?.['maxlength']) { El modelo no puede
-                        exceder 255 caracteres } </small>
-                    }
-                </div>
-
-                <!-- Serie -->
-                <div class="field">
-                    <label for="serie" class="block text-sm font-medium mb-2"> Serie </label>
-                    <input pInputText id="serie" formControlName="serie" placeholder="Número de serie" class="w-full" />
-                </div>
-
-                <!-- Arreglo -->
-                <div class="field">
-                    <label for="arreglo" class="block text-sm font-medium mb-2"> Arreglo </label>
-                    <input pInputText id="arreglo" formControlName="arreglo" placeholder="Arreglo" class="w-full" />
-                </div>
-
-                <!-- Foto -->
-                <div class="field">
-                    <app-image-upload label="Foto" icon="pi pi-camera" [currentImage]="maquinaForm.get('foto')?.value"
-                        (fileSelected)="onFotoSelected($event)">
-                    </app-image-upload>
-                </div>
-
-                <!-- Foto ID -->
-                <div class="field">
-                    <app-image-upload label="Foto ID" icon="pi pi-id-card"
-                        [currentImage]="maquinaForm.get('fotoId')?.value" (fileSelected)="onFotoIdSelected($event)">
-                    </app-image-upload>
-                </div>
-            </div>
-
-            <p-divider />
-
-            <div class="flex justify-end gap-2 mt-4">
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-                    [disabled]="loading"> </p-button>
-                <p-button label="Actualizar Máquina" icon="pi pi-check" type="submit" [loading]="loading"
-                    [disabled]="maquinaForm.invalid"> </p-button>
-            </div>
-        </form>
-        } @else {
-        <div class="text-center py-8">
-            <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
-            <p class="text-gray-600 mt-4">Cargando máquina...</p>
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4 relative z-10">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-white tracking-tight">Editar Máquina</h1>
+            <p class="text-gray-400 mt-2 text-lg">Modifique los detalles técnicos de la maquinaria seleccionada.</p>
         </div>
-        }
-    </p-card>
+        <div class="hidden md:block">
+            <p-button label="Guardar Registro" icon="pi pi-save"
+                styleClass="p-button-warning text-sm font-bold px-8 py-4 rounded-2xl shadow-xl shadow-orange-500/20"
+                (onClick)="onSubmit()" [loading]="loading" [disabled]="maquinaForm.invalid">
+            </p-button>
+        </div>
+    </div>
+
+    <form [formGroup]="maquinaForm" (ngSubmit)="onSubmit()" class="relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            <!-- Left Column: Technical Info -->
+            <div class="lg:col-span-7 xl:col-span-8">
+                <p-card
+                    styleClass="border-none shadow-2xl bg-[#141416]/80 backdrop-blur-xl overflow-hidden rounded-[2.5rem] h-full border border-white/5">
+                    <div class="p-4 md:p-6">
+                        <div class="flex items-center gap-4 mb-10">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                <i class="pi pi-cog text-xl"></i>
+                            </div>
+                            <h2 class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Información Técnica
+                            </h2>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
+                            <!-- Tipo -->
+                            <div class="field">
+                                <label for="tipo"
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Tipo de Máquina <span class="text-red-500">*</span> </label>
+                                <p-select id="tipo" formControlName="tipo" [options]="tipos" optionLabel="nombre"
+                                    optionValue="id" placeholder="Seleccione un tipo" [showClear]="true"
+                                    styleClass="w-full rounded-2xl" [filter]="true" filterBy="nombre"> </p-select>
+                                @if (maquinaForm.get('tipo')?.invalid && maquinaForm.get('tipo')?.touched) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El tipo es
+                                    requerido</small>
+                                }
+                            </div>
+
+                            <!-- Fabricante -->
+                            <div class="field">
+                                <label for="fabricante_id"
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Fabricante <span class="text-red-500">*</span> </label>
+                                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
+                                    optionLabel="nombre" optionValue="id" placeholder="Seleccione un fabricante"
+                                    [showClear]="true" styleClass="w-full rounded-2xl" [filter]="true"
+                                    filterBy="nombre"> </p-select>
+                                @if (maquinaForm.get('fabricante_id')?.invalid &&
+                                maquinaForm.get('fabricante_id')?.touched) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El fabricante es
+                                    requerido</small>
+                                }
+                            </div>
+
+                            <!-- Modelo -->
+                            <div class="field">
+                                <label for="modelo"
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Modelo <span class="text-red-500">*</span> </label>
+                                <input pInputText id="modelo" formControlName="modelo"
+                                    placeholder="Modelo de la máquina" class="w-full rounded-2xl"
+                                    [class.ng-invalid]="maquinaForm.get('modelo')?.invalid && maquinaForm.get('modelo')?.touched" />
+                                @if (maquinaForm.get('modelo')?.invalid && maquinaForm.get('modelo')?.touched) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">
+                                    @if (maquinaForm.get('modelo')?.errors?.['required']) { El modelo es requerido }
+                                    @else if (maquinaForm.get('modelo')?.errors?.['maxlength']) { El modelo no puede
+                                    exceder 255 caracteres }
+                                </small>
+                                }
+                            </div>
+
+                            <!-- Serie -->
+                            <div class="field">
+                                <label for="serie"
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Serie </label>
+                                <input pInputText id="serie" formControlName="serie" placeholder="Número de serie"
+                                    class="w-full rounded-2xl" />
+                            </div>
+
+                            <!-- Arreglo -->
+                            <div class="field md:col-span-2">
+                                <label for="arreglo"
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Arreglo </label>
+                                <input pInputText id="arreglo" formControlName="arreglo" placeholder="Arreglo"
+                                    class="w-full rounded-2xl" />
+                            </div>
+                        </div>
+                    </div>
+                </p-card>
+            </div>
+
+            <!-- Right Column: Photos -->
+            <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
+                <!-- Foto Card -->
+                <p-card
+                    styleClass="border-none shadow-2xl bg-[#141416]/80 backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-white/5">
+                    <div class="p-2">
+                        <app-image-upload label="Foto" icon="pi pi-camera"
+                            [currentImage]="maquinaForm.get('foto')?.value" (fileSelected)="onFotoSelected($event)">
+                        </app-image-upload>
+                    </div>
+                </p-card>
+
+                <!-- Foto ID Card -->
+                <p-card
+                    styleClass="border-none shadow-2xl bg-[#141416]/80 backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-white/5">
+                    <div class="p-2">
+                        <app-image-upload label="Foto ID" icon="pi pi-id-card"
+                            [currentImage]="maquinaForm.get('fotoId')?.value" (fileSelected)="onFotoIdSelected($event)">
+                        </app-image-upload>
+                        <p class="text-[11px] font-medium text-gray-500 mt-4 text-center">Placa de identificación o
+                            serie legible</p>
+                    </div>
+                </p-card>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex flex-col md:flex-row justify-end items-center gap-8 mt-16 pt-10 border-t border-white/5 mb-10">
+            <p-button label="Cancelar y Salir" styleClass="p-button-secondary text-base font-bold p-button-text p-4"
+                (onClick)="cancelar()" [disabled]="loading">
+            </p-button>
+            <p-button label="Actualizar Registro" icon="pi pi-check"
+                styleClass="p-button-warning text-lg font-bold px-12 py-5 rounded-[2rem] shadow-2xl shadow-orange-500/20"
+                type="submit" [loading]="loading" [disabled]="maquinaForm.invalid">
+            </p-button>
+        </div>
+    </form>
+    } @else {
+    <div
+        class="flex flex-col items-center justify-center py-32 bg-[#141416]/50 backdrop-blur-xl rounded-[2.5rem] border border-white/5 relative z-10">
+        <div class="w-20 h-20 rounded-full bg-[#fdb831]/10 flex items-center justify-center mb-6">
+            <i class="pi pi-spin pi-spinner text-3xl text-[#fdb831]"></i>
+        </div>
+        <p class="text-gray-400 font-bold tracking-widest uppercase text-xs">Cargando detalles de la máquina...</p>
+    </div>
+    }
 </div>
