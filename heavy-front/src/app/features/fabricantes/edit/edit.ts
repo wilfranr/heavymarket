@@ -12,6 +12,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadFabricanteById, updateFabricante } from '../../../store/fabricantes/actions/fabricantes.actions';
 import { selectFabricanteById } from '../../../store/fabricantes/selectors/fabricantes.selectors';
@@ -23,7 +24,7 @@ import { UpdateFabricanteDto } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-fabricante-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -38,6 +39,7 @@ export class EditComponent implements OnInit {
     fabricante$!: Observable<any>;
     fabricanteId!: number;
     loading = false;
+    logoFile: File | null = null;
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
@@ -64,6 +66,10 @@ export class EditComponent implements OnInit {
         });
     }
 
+    onLogoSelected(file: File): void {
+        this.logoFile = file;
+    }
+
     /**
      * Maneja el envío del formulario
      */
@@ -81,13 +87,14 @@ export class EditComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.fabricanteForm.value;
-        const data: UpdateFabricanteDto = {
-            nombre: formValue.nombre,
-            descripcion: formValue.descripcion,
-            logo: formValue.logo || undefined
-        };
 
-        this.store.dispatch(updateFabricante({ id: this.fabricanteId, data }));
+        const formData = new FormData();
+
+        formData.append('nombre', formValue.nombre);
+        formData.append('descripcion', formValue.descripcion);
+        if (this.logoFile) formData.append('logo', this.logoFile);
+
+        this.store.dispatch(updateFabricante({ id: this.fabricanteId, data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

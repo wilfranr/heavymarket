@@ -1,215 +1,473 @@
 <p-toast />
 
-<div class="min-h-screen p-6 font-sans text-slate-200">
-    <div class="max-w-[1906px] mx-auto">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6 pl-[339px] pr-[69px]">
-            <div>
-                <div class="text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Pedidos > Crear
+<div class="min-h-screen font-sans">
+    <div class="max-w-[1600px] mx-auto px-8 py-6">
+
+        <!-- Header Mejorado -->
+        <div class="mb-8">
+            <!-- Breadcrumb -->
+            <div class="flex items-center gap-2 text-sm theme-text-secondary mb-3">
+                <i class="pi pi-home text-xs"></i>
+                <span>Pedidos</span>
+                <i class="pi pi-angle-right text-xs"></i>
+                <span class="text-brand-yellow font-medium">Crear Pedido</span>
+            </div>
+
+            <!-- Title & Actions -->
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-bold theme-text-primary mb-1">Nuevo Pedido</h1>
+                    <p class="theme-text-secondary text-sm">Complete la información en 3 simples pasos</p>
                 </div>
-                <h1 class="text-3xl font-bold text-brand-yellow" style="font-family: 'Figtree'">Pedido</h1>
+                <div class="flex gap-3">
+                    <button type="button" class="btn-pill btn-outline" routerLink="/app/pedidos">
+                        <i class="pi pi-times mr-2"></i>Cancelar
+                    </button>
+                    <button type="button" class="btn-pill btn-primary" (click)="onSubmit()" [disabled]="loading">
+                        <i class="pi pi-save mr-2"></i>{{ loading ? 'Guardando...' : 'Guardar Pedido' }}
+                    </button>
+                </div>
             </div>
-            <div class="flex gap-4">
-                <button type="button" class="btn-pill btn-primary" (click)="onSubmit()">Guardar</button>
-                <!-- botones placeholder segun diseño -->
-                <button type="button" class="btn-pill btn-primary">Editar</button>
-                <button type="button" class="btn-pill btn-primary">Pedir</button>
-            </div>
+        </div>
+
+        <!-- Wizard Steps Mejorado -->
+        <div class="max-w-4xl mx-auto mb-12">
+            <p-steps [model]="items" [(activeIndex)]="activeIndex" [readonly]="false"
+                styleClass="custom-steps"></p-steps>
         </div>
 
         <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
 
-            <!-- Top Info Cards Grid -->
-            <!-- Layout ajustado al diseño: 3 columnas con anchos específicos si fuera necesario, usando grid por ahora -->
-            <div class="flex gap-6 mb-10 pl-[339px] pr-[69px]">
+            <div [ngSwitch]="activeIndex">
 
-                <!-- Order Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información del pedido</span>
-                        <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-shopping-bag text-white text-xl"></i>
+                <!-- STEP 1: INFORMACIÓN DEL CLIENTE -->
+                <div *ngSwitchCase="0" class="animate-fade-in">
+
+                    <!-- Info Cards Grid Mejorado -->
+                    <div class="grid grid-cols-3 gap-6 mb-8">
+
+                        <!-- Order Info Card -->
+                        <div class="theme-card rounded-xl overflow-hidden transition-all">
+                            <div class="p-5 border-b theme-border">
+                                <div class="flex items-center gap-3">
+                                    <div
+                                        class="w-10 h-10 rounded-lg bg-brand-yellow/10 flex items-center justify-center">
+                                        <i class="pi pi-file-edit text-brand-yellow text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="theme-text-primary font-semibold text-base">Información del Pedido
+                                        </h3>
+                                        <p class="theme-text-secondary text-xs">Detalles generales</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5 space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <span class="theme-text-secondary text-sm">Tipo</span>
+                                    <span class="theme-text-primary font-medium">Pedido</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="theme-text-secondary text-sm">Fecha</span>
+                                    <span class="theme-text-primary font-medium">{{ today | date:'dd/MM/yyyy' }}</span>
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="theme-text-secondary text-sm">Estado</span>
+                                    <span
+                                        class="px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400">Nuevo</span>
+                                </div>
+                                <div class="pt-3 border-t theme-border">
+                                    <label
+                                        class="theme-text-secondary text-sm font-medium mb-2 block">Comentarios</label>
+                                    <textarea pTextarea formControlName="comentario" rows="3"
+                                        placeholder="Notas internas del pedido..."
+                                        class="w-full text-sm rounded-lg"></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Client Info Card -->
+                        <div class="theme-card rounded-xl overflow-hidden transition-all">
+                            <div class="p-5 border-b theme-border">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-blue-500/10 flex items-center justify-center">
+                                        <i class="pi pi-building text-blue-400 text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="theme-text-primary font-semibold text-base">Cliente</h3>
+                                        <p class="theme-text-secondary text-xs">Seleccione el cliente</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5 space-y-4">
+                                <!-- Client Selector -->
+                                <div>
+                                    <label class="theme-text-secondary text-sm font-medium mb-2 block">
+                                        Cliente <span class="text-red-400">*</span>
+                                    </label>
+                                    <div class="flex gap-2">
+                                        <p-select formControlName="tercero_id" [options]="terceros" [filter]="true"
+                                            filterBy="label" placeholder="Buscar cliente..."
+                                            styleClass="flex-1 h-[42px]">
+                                        </p-select>
+                                        <button type="button" (click)="openCreateTerceroDialog()"
+                                            class="w-[42px] h-[42px] rounded-lg bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center justify-center transition-colors shrink-0">
+                                            <i class="pi pi-plus text-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Contact Selector -->
+                                <div>
+                                    <label class="theme-text-secondary text-sm font-medium mb-2 block">Contacto</label>
+                                    <p-select formControlName="contacto_id" [options]="contactos" [filter]="true"
+                                        placeholder="Seleccionar contacto..."
+                                        [disabled]="!pedidoForm.get('tercero_id')?.value" styleClass="w-full h-[42px]">
+                                    </p-select>
+                                </div>
+
+                                <!-- Client Details -->
+                                @if (selectedTercero()) {
+                                <div class="pt-3 border-t theme-border space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-building theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-xs theme-text-secondary">Razón Social</p>
+                                            <p class="text-sm theme-text-primary font-medium truncate">{{
+                                                selectedTercero()?.nombre }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-phone theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p class="text-xs theme-text-secondary">Teléfono</p>
+                                            <p class="text-sm theme-text-primary font-medium">{{
+                                                selectedTercero()?.telefono ||
+                                                'No registrado' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                } @else {
+                                <div class="pt-3 border-t theme-border">
+                                    <p class="theme-text-secondary text-xs italic text-center py-2">Seleccione un
+                                        cliente para
+                                        ver detalles</p>
+                                </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Machine Info Card -->
+                        <div
+                            class="theme-card rounded-xl border theme-border overflow-hidden hover:border-brand-yellow/30 transition-all">
+                            <div class="p-5 border-b theme-border">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center">
+                                        <i class="pi pi-cog text-purple-400 text-lg"></i>
+                                    </div>
+                                    <div>
+                                        <h3 class="theme-text-primary font-semibold text-base">Máquina</h3>
+                                        <p class="theme-text-secondary text-xs">Equipo asociado</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="p-5 space-y-4">
+                                <!-- Machine Selector -->
+                                <div>
+                                    <label class="theme-text-secondary text-sm font-medium mb-2 block">Máquina</label>
+                                    <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
+                                        [showClear]="true" placeholder="Seleccionar máquina..."
+                                        [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                        styleClass="w-full    h-[42px]">
+                                    </p-select>
+                                </div>
+
+                                <!-- Machine Details -->
+                                @if (selectedMaquina()) {
+                                <div class="pt-3 border-t theme-border space-y-2">
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-tag theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p class="text-xs theme-text-secondary">Modelo</p>
+                                            <p class="text-sm theme-text-primary font-medium">{{
+                                                selectedMaquina()?.modelo }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-hashtag theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p class="text-xs theme-text-secondary">Serie</p>
+                                            <p class="text-sm theme-text-primary font-medium">{{
+                                                selectedMaquina()?.serie || 'No
+                                                especificada' }}</p>
+                                        </div>
+                                    </div>
+                                    @if (selectedMaquina()?.arreglo) {
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-sitemap theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p class="text-xs theme-text-secondary">Arreglo</p>
+                                            <p class="text-sm theme-text-primary font-medium">{{
+                                                selectedMaquina()?.arreglo }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                    }
+                                </div>
+                                } @else if (pedidoForm.get('tercero_id')?.value && maquinas.length === 0) {
+                                <div class="pt-3 border-t theme-border">
+                                    <div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                                        <div class="flex items-start gap-2">
+                                            <i class="pi pi-info-circle text-amber-400 text-sm mt-0.5"></i>
+                                            <p class="text-amber-200 text-xs">Este cliente no tiene máquinas registradas
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                                } @else {
+                                <div class="pt-3 border-t theme-border">
+                                    <p class="theme-text-secondary text-xs italic text-center py-2">Seleccione una
+                                        máquina
+                                        para ver detalles</p>
+                                </div>
+                                }
+                            </div>
                         </div>
                     </div>
-                    <div class="p-4 space-y-2 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm">
-                        <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Documento: Pedido</span>
+
+                    <!-- Navigation -->
+                    <div class="flex justify-end">
+                        <button type="button" class="btn-pill btn-primary px-8" (click)="nextStep()">
+                            Continuar <i class="pi pi-arrow-right ml-2"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: REFERENCIAS MASIVAS -->
+                <div *ngSwitchCase="1" class="animate-fade-in">
+                    <div class="max-w-4xl mx-auto">
+                        <!-- Instructional Header -->
+                        <div
+                            class="bg-gradient-to-r from-brand-yellow/10 to-transparent border border-brand-yellow/20 rounded-xl p-6 mb-6">
+                            <div class="flex items-start gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-lg bg-brand-yellow/20 flex items-center justify-center shrink-0">
+                                    <i class="pi pi-upload text-brand-yellow text-xl"></i>
+                                </div>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-semibold theme-text-primary mb-2">Importación Masiva de
+                                        Referencias
+                                    </h3>
+                                    <p class="theme-text-secondary text-sm mb-3">Pegue su listado de referencias para
+                                        una
+                                        carga rápida. Puede omitir este paso si prefiere agregar ítems manualmente.</p>
+                                    <div class="bg-black/30 rounded-lg p-4 border theme-border">
+                                        <p class="theme-text-secondary text-xs mb-2 font-medium">Formato requerido (una
+                                            referencia por línea):</p>
+                                        <code
+                                            class="text-brand-yellow text-sm font-mono">CANTIDAD [TAB o ESPACIO] CÓDIGO_REFERENCIA</code>
+                                        <div class="mt-3 pt-3 border-t theme-border">
+                                            <p class="theme-text-secondary text-xs mb-1">Ejemplo:</p>
+                                            <pre class="theme-text-secondary text-xs font-mono">10    REF-12345
+5     FILTRO-ABC
+20    SELLO-XYZ</pre>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Consecutivo: ---</span>
+
+                        <!-- Import Area -->
+                        <div class="theme-card rounded-xl border theme-border p-6">
+                            <label class="theme-text-secondary text-sm font-medium mb-3 block">
+                                <i class="pi pi-list mr-2"></i>Listado de Referencias
+                            </label>
+                            <textarea pTextarea formControlName="referencias_copiadas" rows="12"
+                                placeholder="Pegue aquí su listado...&#10;&#10;Ejemplo:&#10;10&#9;REF-12345&#10;5&#9;FILTRO-ABC&#10;20&#9;SELLO-XYZ"
+                                class="w-full    placeholder:theme-text-secondary font-mono text-sm rounded-lg resize-none"></textarea>
+
+                            @if (pedidoForm.get('referencias_copiadas')?.value) {
+                            <div class="mt-3 flex items-center gap-2 text-sm">
+                                <i class="pi pi-info-circle text-blue-400"></i>
+                                <span class="theme-text-secondary">{{ contarLineas() }} líneas detectadas</span>
+                            </div>
+                            }
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Creación: {{ today | date:'MMMM d, y'
-                                }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-brand-yellow font-semibold">Estado:</span>
-                            <span class="bg-[#F5FCE6] text-[#008F39] px-3 py-1 rounded text-xs font-bold">Nuevo</span>
-                        </div>
-                        <!-- Comentarios internos -->
-                        <div class="mt-2">
-                            <input pInputText formControlName="comentario" placeholder="Comentario..."
-                                class="w-full text-xs !bg-[#2A2D36] border-none" />
+
+                        <!-- Navigation -->
+                        <div class="flex justify-between mt-8">
+                            <button type="button" class="btn-pill btn-outline" (click)="prevStep()">
+                                <i class="pi pi-arrow-left mr-2"></i>Anterior
+                            </button>
+                            <div class="flex gap-3">
+                                <button type="button"
+                                    class="btn-pill bg-slate-700 hover:bg-slate-600 theme-text-primary border-0"
+                                    (click)="nextStep()">
+                                    Omitir este paso
+                                </button>
+                                <button type="button" class="btn-pill btn-primary px-6"
+                                    (click)="procesarReferenciasMasivas(); nextStep()">
+                                    <i class="pi pi-check mr-2"></i>Procesar y Continuar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Machine Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información de la máquina</span>
-                        <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-cog text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
-                        <!-- Machine Selector -->
-                        <div class="mb-2">
-                            <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
-                                [showClear]="true" placeholder="Seleccionar Máquina"
-                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
-                            </p-select>
-                        </div>
+                <!-- STEP 3: REFERENCIAS DETALLADAS -->
+                <div *ngSwitchCase="2" class="animate-fade-in">
 
-                        @if (selectedMaquina()) {
-                        <div class="flex flex-col gap-2">
-                            <span class="text-brand-yellow font-semibold block">Máquina: {{ selectedMaquina()?.modelo
-                                }}</span>
-                            <span class="text-brand-yellow font-semibold block">Fabricante: {{ selectedMaquina()?.marca
-                                }}</span>
-                            <span class="text-brand-yellow font-semibold block">Serie: {{ selectedMaquina()?.serie
-                                }}</span>
+                    <!-- Header Section -->
+                    <div class="flex justify-between items-center mb-6">
+                        <div>
+                            <h3 class="text-2xl font-bold theme-text-primary mb-1">Referencias del Pedido</h3>
+                            <p class="theme-text-secondary text-sm">Revise y ajuste los detalles de cada ítem</p>
                         </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- Client Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[243px]">
-                    <div class="p-3 bg-[#343743] flex justify-between items-center rounded-t-lg shadow-sm mb-[1px]">
-                        <span class="font-bold text-white text-base pl-2">Información de tercero</span>
-                        <div class="flex gap-1">
-                            <i class="pi pi-envelope text-white text-xl p-2"></i>
-                            <i class="pi pi-whatsapp text-white text-xl p-2"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-[#343743] rounded-b-lg shadow-sm relative">
-                        <!-- Client Selector -->
-                        <div class="mb-2 flex gap-2">
-                            <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" filterBy="label"
-                                placeholder="Seleccionar Cliente"
-                                styleClass="w-full !bg-[#2A2D36] border-none text-white">
-                            </p-select>
-                            <button type="button" (click)="openCreateTerceroDialog()"
-                                class="bg-[#2A2D36] text-brand-yellow w-10 h-10 rounded flex items-center justify-center hover:bg-slate-700 pointer-events-auto z-10">
-                                <i class="pi pi-plus"></i>
+                        <div class="flex items-center gap-4">
+                            <div class="theme-card border theme-border rounded-lg px-4 py-2">
+                                <span class="theme-text-secondary text-sm">Total de ítems:</span>
+                                <span class="text-brand-yellow font-bold text-lg ml-2">{{ referenciasFormArray.length
+                                    }}</span>
+                            </div>
+                            <button type="button" class="btn-pill btn-primary" (click)="agregarReferencia()">
+                                <i class="pi pi-plus mr-2"></i>Agregar Ítem
                             </button>
                         </div>
+                    </div>
 
-                        @if (selectedTercero()) {
-                        <div class="flex flex-col gap-1">
-                            <span class="text-brand-yellow font-semibold block">Tipo: Cliente</span>
-                            <span class="text-brand-yellow font-semibold block truncate">Razón Social: {{
-                                selectedTercero()?.nombre || '---' }}</span>
-                            <span class="text-brand-yellow font-semibold block">Tel: {{ selectedTercero()?.telefono ||
-                                '---' }}</span>
-                            <span class="text-brand-yellow font-semibold block truncate">Email: {{
-                                selectedTercero()?.email || '---' }}</span>
+                    <!-- Table Container -->
+                    <div class="theme-card rounded-xl border theme-border overflow-hidden">
+
+                        <!-- Table Header -->
+                        <div class="theme-card-elevated border-b theme-border px-6 py-4">
+                            <div class="flex gap-4 theme-text-secondary font-semibold text-xs uppercase tracking-wider">
+                                <div class="w-[50px] text-center">
+                                    <i class="pi pi-check-circle"></i>
+                                </div>
+                                <div class="w-[15%]">Sistema</div>
+                                <div class="w-[15%]">Tipo</div>
+                                <div class="w-[80px] text-center">Cant.</div>
+                                <div class="flex-1">Referencia</div>
+                                <div class="w-[180px] text-center">Acciones</div>
+                            </div>
                         </div>
-                        }
+
+                        <!-- Table Body -->
+                        <div class="divide-y divide-slate-700/30">
+                            @for (referencia of referenciasFormArray.controls; track $index; let refIndex = $index) {
+                            <div [formGroup]="$any(referencia)"
+                                class="flex items-center gap-4 px-6 py-4 hover:theme-card-elevated/50 transition-colors group">
+
+                                <!-- Checkbox/Estado -->
+                                <div class="w-[50px] flex justify-center">
+                                    <p-checkbox formControlName="estado" [binary]="true"
+                                        styleClass="border-2 border-slate-600 rounded"></p-checkbox>
+                                </div>
+
+                                <!-- Sistema -->
+                                <div class="w-[15%]">
+                                    <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Sistema"
+                                        [filter]="true" appendTo="body"
+                                        styleClass="w-full    h-[42px]">
+                                    </p-select>
+                                </div>
+
+                                <!-- Tipo Articulo -->
+                                <div class="w-[15%]">
+                                    <p-select formControlName="definicion" [options]="tiposArticulos" placeholder="Tipo"
+                                        [filter]="true" appendTo="body"
+                                        styleClass="w-full    h-[42px]">
+                                    </p-select>
+                                </div>
+
+                                <!-- Cantidad -->
+                                <div class="w-[80px]">
+                                    <input pInputText type="number" formControlName="cantidad" min="1" placeholder="0"
+                                        class="w-full    h-[42px] text-center font-semibold rounded-lg" />
+                                </div>
+
+                                <!-- Referencia -->
+                                <div class="flex-1">
+                                    <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
+                                        filterBy="label" placeholder="Buscar referencia..." appendTo="body"
+                                        styleClass="w-full    h-[42px]">
+                                    </p-select>
+                                </div>
+
+                                <!-- Actions -->
+                                <div
+                                    class="w-[180px] flex gap-2 justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button type="button"
+                                        class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 flex items-center justify-center transition-colors"
+                                        pTooltip="Agregar comentario" tooltipPosition="top">
+                                        <i class="pi pi-comment text-sm"></i>
+                                    </button>
+                                    <button type="button"
+                                        class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 flex items-center justify-center transition-colors"
+                                        pTooltip="Adjuntar imagen" tooltipPosition="top">
+                                        <i class="pi pi-image text-sm"></i>
+                                    </button>
+                                    <button type="button"
+                                        class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 flex items-center justify-center transition-colors"
+                                        pTooltip="Editar detalles" tooltipPosition="top">
+                                        <i class="pi pi-pencil text-sm"></i>
+                                    </button>
+                                    <button type="button"
+                                        class="w-9 h-9 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 flex items-center justify-center transition-colors"
+                                        (click)="eliminarReferencia($index)" pTooltip="Eliminar ítem"
+                                        tooltipPosition="top">
+                                        <i class="pi pi-trash text-sm"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            } @empty {
+                            <!-- Empty State -->
+                            <div class="py-16 px-6">
+                                <div class="max-w-md mx-auto text-center">
+                                    <div
+                                        class="w-20 h-20 rounded-full bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
+                                        <i class="pi pi-inbox text-4xl text-slate-600"></i>
+                                    </div>
+                                    <h4 class="text-lg font-semibold theme-text-primary mb-2">No hay ítems agregados
+                                    </h4>
+                                    <p class="theme-text-secondary text-sm mb-6">
+                                        Comience agregando ítems manualmente o importe referencias desde el paso
+                                        anterior
+                                    </p>
+                                    <button type="button" class="btn-pill btn-primary" (click)="agregarReferencia()">
+                                        <i class="pi pi-plus mr-2"></i>Agregar Primer Ítem
+                                    </button>
+                                </div>
+                            </div>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Navigation Footer -->
+                    <div class="flex justify-between items-center mt-8">
+                        <button type="button" class="btn-pill btn-outline" (click)="prevStep()">
+                            <i class="pi pi-arrow-left mr-2"></i>Anterior
+                        </button>
+
+                        <div class="flex items-center gap-4">
+                            @if (referenciasFormArray.length > 0) {
+                            <div class="text-sm theme-text-secondary">
+                                <i class="pi pi-info-circle mr-2"></i>
+                                Revise que todos los campos estén completos antes de crear el pedido
+                            </div>
+                            }
+                            <button type="button" class="btn-pill btn-primary px-8" (click)="onSubmit()"
+                                [disabled]="loading || referenciasFormArray.length === 0">
+                                @if (loading) {
+                                <i class="pi pi-spin pi-spinner mr-2"></i>Creando...
+                                } @else {
+                                <i class="pi pi-check mr-2"></i>Crear Pedido
+                                }
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            <!-- Items Section -->
-            <div class="pl-[339px] pr-[69px]">
-                <h3 class="text-xl font-semibold text-brand-yellow mb-4" style="font-family: 'Montserrat'">Tus ítems
-                </h3>
-
-                <div class="w-full">
-                    <!-- Headers (Implicit in design but useful for alignment) -->
-                    <div class="flex gap-4 mb-2 px-2 text-white font-semibold text-sm">
-                        <div class="w-[50px] text-center">Ítem</div>
-                        <div class="w-[20%]">Sistema</div>
-                        <div class="w-[20%]">Artículo</div>
-                        <div class="w-[100px]">Cantidad</div>
-                        <div class="flex-1">Referencia</div>
-                        <div class="w-[220px] text-right pr-4">Acciones</div>
-                    </div>
-
-                    <!-- Rows -->
-                    <div class="space-y-4">
-                        @for (referencia of referenciasFormArray.controls; track $index; let refIndex = $index) {
-                        <div [formGroup]="$any(referencia)" class="flex items-center gap-4">
-                            <!-- Checkbox -->
-                            <div class="w-[50px] flex justify-center">
-                                <p-checkbox [binary]="true" styleClass="border-2 border-white rounded"></p-checkbox>
-                            </div>
-
-                            <!-- Sistema -->
-                            <div class="w-[20%]">
-                                <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center"></p-select>
-                            </div>
-
-                            <!-- Articulo (Definicion) -->
-                            <div class="w-[20%]">
-                                <input pInputText formControlName="definicion" placeholder="Seleccionar"
-                                    class="w-full !bg-[#343743] border-none h-[48px]" />
-                            </div>
-
-                            <!-- Cantidad -->
-                            <div class="w-[100px]">
-                                <input pInputText type="number" formControlName="cantidad" placeholder="Ej: 1"
-                                    class="w-full !bg-[#343743] border-none h-[48px] text-center" />
-                            </div>
-
-                            <!-- Referencia -->
-                            <div class="flex-1">
-                                <!-- Using p-select or input depending on logic. Design says "Ej: no definido" input look -->
-                                <!-- But logic uses p-select for existing references. Let keep p-select for now but styled as input -->
-                                <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
-                                    filterBy="label" placeholder="Ej: no definido"
-                                    styleClass="w-full !bg-[#343743] border-none h-[48px] flex items-center">
-                                </p-select>
-                            </div>
-
-                            <!-- Actions -->
-                            <div class="w-[220px] flex gap-3 justify-end">
-                                <button type="button" class="action-btn-circle" pTooltip="Comentar"
-                                    tooltipPosition="top">
-                                    <i class="pi pi-comments text-lg"></i>
-                                </button>
-                                <button type="button" class="action-btn-circle" pTooltip="Adjuntar"
-                                    tooltipPosition="top">
-                                    <i class="pi pi-image text-lg"></i>
-                                </button>
-                                <button type="button" class="action-btn-circle" pTooltip="Editar" tooltipPosition="top">
-                                    <i class="pi pi-pencil text-lg"></i>
-                                </button>
-                                <button type="button" class="action-btn-circle" (click)="eliminarReferencia($index)"
-                                    pTooltip="Eliminar" tooltipPosition="top">
-                                    <i class="pi pi-trash text-lg"></i>
-                                </button>
-                            </div>
-                        </div>
-                        }
-                    </div>
-
-                    <!-- Bottom Buttons -->
-                    <div class="flex justify-end gap-4 mt-8">
-                        <button type="button" class="btn-pill btn-outline flex items-center gap-2">
-                            Agregar listado <i class="pi pi-plus"></i>
-                        </button>
-                        <button type="button" class="btn-pill btn-primary flex items-center gap-2"
-                            (click)="agregarReferencia()">
-                            Agregar <i class="pi pi-plus"></i>
-                        </button>
-                    </div>
-                </div>
-            </div>
-
-            <div class="h-20"></div>
         </form>
     </div>
 </div>

@@ -9,6 +9,7 @@ use App\Http\Requests\{StoreListaRequest, UpdateListaRequest};
 use App\Http\Resources\ListaResource;
 use App\Models\Lista;
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Listas
@@ -105,14 +106,19 @@ class ListaController extends Controller
      */
     public function store(StoreListaRequest $request): JsonResponse
     {
-        $lista = Lista::create([
-            'tipo' => $request->input('tipo'),
-            'nombre' => ucwords($request->input('nombre')), // Asegurar primera letra mayúscula
-            'definicion' => $request->input('definicion'),
-            'foto' => $request->input('foto'),
-            'fotoMedida' => $request->input('fotoMedida'),
-            'sistema_id' => $request->input('sistema_id'),
-        ]);
+        $data = $request->validated();
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('listas', 'public');
+        }
+
+        if ($request->hasFile('fotoMedida')) {
+            $data['fotoMedida'] = $request->file('fotoMedida')->store('listas/medidas', 'public');
+        }
+
+        $data['nombre'] = ucwords($data['nombre']);
+
+        $lista = Lista::create($data);
 
         return response()->json([
             'message' => 'Lista creada exitosamente',
@@ -149,6 +155,14 @@ class ListaController extends Controller
         // Asegurar primera letra mayúscula en nombre si se actualiza
         if (isset($data['nombre'])) {
             $data['nombre'] = ucwords($data['nombre']);
+        }
+
+        if ($request->hasFile('foto')) {
+            $data['foto'] = $request->file('foto')->store('listas', 'public');
+        }
+
+        if ($request->hasFile('fotoMedida')) {
+            $data['fotoMedida'] = $request->file('fotoMedida')->store('listas/medidas', 'public');
         }
 
         $lista->update($data);

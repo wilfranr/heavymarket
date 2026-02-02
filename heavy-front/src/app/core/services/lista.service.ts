@@ -44,7 +44,11 @@ export class ListaService extends ApiService {
     /**
      * Actualizar una lista existente
      */
-    update(id: number, data: UpdateListaDto): Observable<ApiResponse<Lista>> {
+    update(id: number, data: UpdateListaDto | FormData): Observable<ApiResponse<Lista>> {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Lista>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Lista>>(`${this.endpoint}/${id}`, data);
     }
 

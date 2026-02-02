@@ -49,8 +49,8 @@ class UpdateListaRequest extends FormRequest
                 Rule::unique('listas', 'nombre')->ignore($listaId)
             ],
             'definicion' => ['nullable', 'string'],
-            'foto' => ['nullable', 'string', 'max:255'],
-            'fotoMedida' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'image', 'max:5120'],
+            'fotoMedida' => ['nullable', 'image', 'max:5120'],
             'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
         ];
     }

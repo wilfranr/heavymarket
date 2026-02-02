@@ -32,8 +32,8 @@ class UpdateMaquinaRequest extends FormRequest
             'fabricante_id' => ['sometimes', 'required', 'integer', 'exists:fabricantes,id'],
             'serie' => ['nullable', 'string', 'max:255'],
             'arreglo' => ['nullable', 'string', 'max:255'],
-            'foto' => ['nullable', 'string', 'max:255'],
-            'fotoId' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'image', 'max:10480'],
+            'fotoId' => ['nullable', 'image', 'max:10480'],
         ];
     }
 

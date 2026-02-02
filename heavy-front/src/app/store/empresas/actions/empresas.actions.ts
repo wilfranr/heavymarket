@@ -20,14 +20,14 @@ export const loadEmpresaByIdSuccess = createAction('[Empresas] Load Empresa By I
 export const loadEmpresaByIdFailure = createAction('[Empresas] Load Empresa By Id Failure', props<{ error: string }>());
 
 // Crear empresa
-export const createEmpresa = createAction('[Empresas] Create Empresa', props<{ data: CreateEmpresaDto }>());
+export const createEmpresa = createAction('[Empresas] Create Empresa', props<{ data: CreateEmpresaDto | FormData }>());
 
 export const createEmpresaSuccess = createAction('[Empresas] Create Empresa Success', props<{ empresa: Empresa }>());
 
 export const createEmpresaFailure = createAction('[Empresas] Create Empresa Failure', props<{ error: string }>());
 
 // Actualizar empresa
-export const updateEmpresa = createAction('[Empresas] Update Empresa', props<{ id: number; data: UpdateEmpresaDto }>());
+export const updateEmpresa = createAction('[Empresas] Update Empresa', props<{ id: number; data: UpdateEmpresaDto | FormData }>());
 
 export const updateEmpresaSuccess = createAction('[Empresas] Update Empresa Success', props<{ empresa: Empresa }>());
 

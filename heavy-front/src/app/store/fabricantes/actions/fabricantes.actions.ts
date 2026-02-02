@@ -20,14 +20,14 @@ export const loadFabricanteByIdSuccess = createAction('[Fabricantes] Load Fabric
 export const loadFabricanteByIdFailure = createAction('[Fabricantes] Load Fabricante By Id Failure', props<{ error: string }>());
 
 // Crear fabricante
-export const createFabricante = createAction('[Fabricantes] Create Fabricante', props<{ data: CreateFabricanteDto }>());
+export const createFabricante = createAction('[Fabricantes] Create Fabricante', props<{ data: CreateFabricanteDto | FormData }>());
 
 export const createFabricanteSuccess = createAction('[Fabricantes] Create Fabricante Success', props<{ fabricante: Fabricante }>());
 
 export const createFabricanteFailure = createAction('[Fabricantes] Create Fabricante Failure', props<{ error: string }>());
 
 // Actualizar fabricante
-export const updateFabricante = createAction('[Fabricantes] Update Fabricante', props<{ id: number; data: UpdateFabricanteDto }>());
+export const updateFabricante = createAction('[Fabricantes] Update Fabricante', props<{ id: number; data: UpdateFabricanteDto | FormData }>());
 
 export const updateFabricanteSuccess = createAction('[Fabricantes] Update Fabricante Success', props<{ fabricante: Fabricante }>());
 

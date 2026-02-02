@@ -29,7 +29,7 @@ class StoreFabricanteRequest extends FormRequest
         return [
             'nombre' => ['required', 'string', 'max:255', 'unique:fabricantes,nombre'],
             'descripcion' => ['required', 'string', 'max:500'],
-            'logo' => ['nullable', 'string', 'max:255'],
+            'logo' => ['nullable', 'image', 'max:5120'],
         ];
     }
 

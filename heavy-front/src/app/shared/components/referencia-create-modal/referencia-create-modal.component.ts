@@ -8,10 +8,15 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
+import { ArticuloService } from '../../../core/services/articulo.service';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
+import { Articulo } from '../../../core/models/articulo.model';
+import { FabricanteCreateModalComponent } from '../fabricante-create-modal/fabricante-create-modal.component';
 
 @Component({
     selector: 'app-referencia-create-modal',
@@ -24,7 +29,10 @@ import { CreateReferenciaDto } from '../../../core/models/referencia.model';
         InputTextModule,
         TextareaModule,
         SelectModule,
-        ToastModule
+        ToastModule,
+        InputGroupModule,
+        InputGroupAddonModule,
+        FabricanteCreateModalComponent
     ],
     templateUrl: './referencia-create-modal.component.html',
     providers: [MessageService]
@@ -33,6 +41,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     private readonly fb = inject(FormBuilder);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly fabricanteService = inject(FabricanteService);
+    private readonly articuloService = inject(ArticuloService);
     private readonly messageService = inject(MessageService);
 
     @Input() visible: boolean = false;
@@ -45,10 +54,15 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     referenciaForm!: FormGroup;
     loading = false;
     marcas: any[] = [];
+    articulos: Articulo[] = [];
+
+    // Modales secundarios
+    showMarcaModal = false;
 
     ngOnInit(): void {
         this.initForm();
         this.cargarMarcas();
+        this.cargarArticulos();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -61,6 +75,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
         this.referenciaForm = this.fb.group({
             referencia: ['', [Validators.required, Validators.maxLength(255)]],
             marca_id: [null, [Validators.required]],
+            articulo_id: [null],
             comentario: ['', [Validators.maxLength(500)]]
         });
     }
@@ -72,6 +87,32 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
             }
         });
     }
+
+    private cargarArticulos(): void {
+        this.articuloService.getAll({ per_page: 500 }).subscribe({
+            next: (response) => {
+                this.articulos = response.data;
+            }
+        });
+    }
+
+    /**
+     * Abre el modal para crear una nueva marca
+     */
+    abrirCrearMarca(): void {
+        this.showMarcaModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa de una marca
+     */
+    onMarcaCreada(nuevaMarca: any): void {
+        this.cargarMarcas();
+        this.referenciaForm.patchValue({ marca_id: nuevaMarca.id });
+        this.showMarcaModal = false;
+    }
+
+
 
     resetForm(): void {
         if (this.referenciaForm) {
@@ -93,7 +134,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
         this.loading = true;
         const data: CreateReferenciaDto = {
             ...this.referenciaForm.value,
-            articulo_id: this.articuloId
+            articulo_id: this.referenciaForm.value.articulo_id || this.articuloId
         };
 
         this.referenciaService.create(data).subscribe({

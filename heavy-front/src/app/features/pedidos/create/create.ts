@@ -33,6 +33,7 @@ import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-referencia-proveedor.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
+import { ContactoService } from '../../../core/services/contacto.service';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 
 /**
@@ -83,6 +84,7 @@ export class CreateComponent implements OnInit {
     private readonly fabricanteService = inject(FabricanteService);
     private readonly proveedorService = inject(PedidoReferenciaProveedorService);
     private readonly articuloService = inject(ArticuloService);
+    private readonly contactoService = inject(ContactoService);
 
     pedidoForm!: FormGroup;
     activeIndex = 0;
@@ -100,6 +102,8 @@ export class CreateComponent implements OnInit {
     maquinas: any[] = [];
     fabricantes: any[] = [];
     referencias: any[] = [];
+    contactos: any[] = [];
+    tiposArticulos: any[] = [];
 
     // Terceros completos para info cards
     tercerosFull: any[] = [];
@@ -152,8 +156,30 @@ export class CreateComponent implements OnInit {
             referencias: this.fb.array([])
         });
 
-        // Listen for changes to update cards
-        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => this.terceroId.set(id));
+        // Listen for changes to update cards and filter dependent lists
+        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => {
+            this.terceroId.set(id);
+            if (id) {
+                this.loadContactos(id);
+                this.loadMaquinasPorCliente(id);
+
+                // Cargar datos adicionales del tercero si están en tercerosFull
+                const t = this.tercerosFull.find(x => x.id === id);
+                if (t) {
+                    this.pedidoForm.patchValue({
+                        direccion: t.direccion || ''
+                    }, { emitEvent: false });
+                }
+            } else {
+                this.contactos = [];
+                this.maquinas = [];
+                this.pedidoForm.patchValue({
+                    direccion: '',
+                    contacto_id: null,
+                    maquina_id: null
+                }, { emitEvent: false });
+            }
+        });
         this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(id => this.maquinaId.set(id));
     }
 
@@ -223,17 +249,39 @@ export class CreateComponent implements OnInit {
 
         // Cargar referencias (para el select del paso 3)
         this.loadReferencias();
+
+        // Cargar tipos de artículos
+        this.loadTiposArticulos();
     }
 
     /**
      * Carga las referencias disponibles
      */
     private loadReferencias(): void {
-        this.referenciaService.getAll({ per_page: 200 }).subscribe({
+        this.referenciaService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
                 this.referencias = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga los tipos de artículos (definiciones únicas)
+     */
+    private loadTiposArticulos(): void {
+        this.articuloService.getAll({ per_page: 500 }).subscribe({
+            next: (response) => {
+                // Obtener definiciones únicas
+                const definicionesUnicas = response.data
+                    .map(a => a.definicion)
+                    .filter((v, i, a) => v && a.indexOf(v) === i);
+
+                this.tiposArticulos = definicionesUnicas.map(d => ({
+                    label: d,
+                    value: d
                 }));
             }
         });
@@ -547,7 +595,7 @@ export class CreateComponent implements OnInit {
      * @param selectedId ID opcional para seleccionar automáticamente
      */
     private loadTerceros(selectedId?: number): void {
-        this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
+        this.terceroService.getClientes({ per_page: 100 }).subscribe({
             next: (response) => {
                 this.tercerosFull = response.data;
                 this.terceros = response.data.map((t) => ({
@@ -566,6 +614,35 @@ export class CreateComponent implements OnInit {
                     summary: 'Error',
                     detail: 'No se pudieron cargar los clientes'
                 });
+            }
+        });
+    }
+
+    /**
+     * Carga los contactos de un cliente específico
+     */
+    private loadContactos(terceroId: number): void {
+        this.contactoService.getAll({ tercero_id: terceroId }).subscribe({
+            next: (response) => {
+                this.contactos = response.data.map((c: any) => ({
+                    label: c.nombre,
+                    value: c.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga las máquinas de un cliente específico
+     */
+    private loadMaquinasPorCliente(terceroId: number): void {
+        this.maquinaService.getAll({ tercero_id: terceroId }).subscribe({
+            next: (response) => {
+                this.maquinasFull = response.data;
+                this.maquinas = response.data.map((m: any) => ({
+                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+                    value: m.id
+                }));
             }
         });
     }
@@ -620,6 +697,11 @@ export class CreateComponent implements OnInit {
 
     getMarcaLabel(id: number): string {
         return this.marcas.find(m => m.value === id)?.label || 'GEN';
+    }
+
+    contarLineas(): number {
+        const texto = this.pedidoForm.get('referencias_copiadas')?.value || '';
+        return texto.split('\n').filter((l: string) => l.trim()).length;
     }
 
     calculateTotal(proveedor: any): number {

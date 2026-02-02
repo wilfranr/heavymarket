@@ -5,8 +5,10 @@
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">{{ referencia.referencia }}</h2>
                 <div class="flex gap-2">
-                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarReferencia()"> </p-button>
-                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="volver()"> </p-button>
+                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarReferencia()">
+                    </p-button>
+                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true"
+                        (onClick)="volver()"> </p-button>
                 </div>
             </div>
         </ng-template>
@@ -45,11 +47,6 @@
                     <div>
                         <label class="text-sm font-medium text-gray-600">Artículos Asociados</label>
                         <p class="text-base">{{ referencia.articulos.length }} artículo(s)</p>
-                    </div>
-                    } @if (referencia.categoria) {
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Categoría</label>
-                        <p class="text-base">{{ referencia.categoria.nombre || '-' }}</p>
                     </div>
                     }
                 </div>

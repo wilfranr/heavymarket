@@ -45,8 +45,8 @@ class StoreEmpresaRequest extends FormRequest
             'estado' => ['nullable', 'boolean'],
             'flete' => ['nullable', 'numeric', 'min:0'],
             'trm' => ['nullable', 'numeric', 'min:0'],
-            'logo_light' => ['nullable', 'string', 'max:255'],
-            'logo_dark' => ['nullable', 'string', 'max:255'],
+            'logo_light' => ['nullable', 'image', 'max:5120'],
+            'logo_dark' => ['nullable', 'image', 'max:5120'],
         ];
     }
 

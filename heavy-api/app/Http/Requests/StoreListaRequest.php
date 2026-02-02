@@ -42,8 +42,8 @@ class StoreListaRequest extends FormRequest
             ],
             'nombre' => ['required', 'string', 'max:255', 'unique:listas,nombre'],
             'definicion' => ['nullable', 'string'],
-            'foto' => ['nullable', 'string', 'max:255'],
-            'fotoMedida' => ['nullable', 'string', 'max:255'],
+            'foto' => ['nullable', 'image', 'max:5120'],
+            'fotoMedida' => ['nullable', 'image', 'max:5120'],
             'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
         ];
     }

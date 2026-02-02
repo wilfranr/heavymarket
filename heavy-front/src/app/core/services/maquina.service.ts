@@ -18,7 +18,7 @@ export class MaquinaService extends ApiService {
     /**
      * Obtener todas las máquinas con filtros
      */
-    getAll(params?: { search?: string; fabricante_id?: number; tipo?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Maquina>> {
+    getAll(params?: { search?: string; fabricante_id?: number; tercero_id?: number; tipo?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Maquina>> {
         return this.get<PaginatedResponse<Maquina>>(this.endpoint, params);
     }
 
@@ -40,6 +40,10 @@ export class MaquinaService extends ApiService {
      * Actualizar una máquina existente
      */
     update(id: number, data: UpdateMaquinaDto | FormData): Observable<ApiResponse<Maquina>> {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
     }
 

@@ -23,7 +23,6 @@ import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ReferenciaService } from '../../../core/services/referencia.service';
-import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 
@@ -33,7 +32,7 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, FallbackImageDirective, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -68,9 +67,7 @@ export class CreateComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
-    // Previsualización de imágenes
-    fotoPreview: string | null = null;
-    planoPreview: string | null = null;
+
 
     // Archivos seleccionados
     fotoFile: File | null = null;
@@ -159,6 +156,10 @@ export class CreateComponent implements OnInit {
         } else if (!search) {
             this.cargarReferencias();
         }
+    }
+
+    getReferenciaDetail(id: number): Referencia | undefined {
+        return this.referenciasDisponibles.find(r => r.id === id);
     }
 
     /**
@@ -252,54 +253,12 @@ export class CreateComponent implements OnInit {
         this.pesoOrigen = null;
     }
 
-    /**
-     * Dispara la selección de archivo desde el input oculto
-     */
-    triggerFileInput(input: HTMLInputElement): void {
-        input.click();
+    onFotoSelected(file: File): void {
+        this.fotoFile = file;
     }
 
-    /**
-     * Maneja la selección de archivos
-     */
-    onFileSelected(event: any, field: 'foto' | 'plano'): void {
-        const file = event.target.files?.[0];
-        if (file) {
-            this.processFile(file, field);
-        }
-    }
-
-    /**
-     * Maneja el arrastre de archivos
-     */
-    onFileDropped(event: DragEvent, field: 'foto' | 'plano'): void {
-        event.preventDefault();
-        const file = event.dataTransfer?.files?.[0];
-        if (file) {
-            this.processFile(file, field);
-        }
-    }
-
-    onDragOver(event: DragEvent): void {
-        event.preventDefault();
-        event.stopPropagation();
-    }
-
-    /**
-     * Procesa el archivo para previsualización
-     */
-    private processFile(file: File, field: 'foto' | 'plano'): void {
-        if (field === 'foto') {
-            this.fotoFile = file;
-            const reader = new FileReader();
-            reader.onload = () => (this.fotoPreview = reader.result as string);
-            reader.readAsDataURL(file);
-        } else {
-            this.planoFile = file;
-            const reader = new FileReader();
-            reader.onload = () => (this.planoPreview = reader.result as string);
-            reader.readAsDataURL(file);
-        }
+    onPlanoSelected(file: File): void {
+        this.planoFile = file;
     }
 
     /**

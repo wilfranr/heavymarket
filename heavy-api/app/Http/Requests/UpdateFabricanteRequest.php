@@ -37,7 +37,7 @@ class UpdateFabricanteRequest extends FormRequest
                 Rule::unique('fabricantes', 'nombre')->ignore($fabricanteId),
             ],
             'descripcion' => ['required', 'string', 'max:500'],
-            'logo' => ['nullable', 'string', 'max:255'],
+            'logo' => ['nullable', 'image', 'max:5120'],
         ];
     }
 

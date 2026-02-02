@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * API Resource para el modelo Artículo
@@ -29,8 +30,8 @@ class ArticuloResource extends JsonResource
             'descripcionEspecifica' => $this->descripcionEspecifica,
             'peso' => $this->peso,
             'comentarios' => $this->comentarios,
-            'fotoDescriptiva' => $this->fotoDescriptiva,
-            'foto_medida' => $this->foto_medida,
+            'fotoDescriptiva' => $this->fotoDescriptiva && !filter_var($this->fotoDescriptiva, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoDescriptiva) : $this->fotoDescriptiva,
+            'foto_medida' => $this->foto_medida && !filter_var($this->foto_medida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto_medida) : $this->foto_medida,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 

@@ -13,7 +13,7 @@ export const loadTercerosFailure = createAction('[Terceros] Load Terceros Failur
 /**
  * Acciones para crear tercero
  */
-export const createTercero = createAction('[Terceros] Create Tercero', props<{ tercero: CreateTerceroDto }>());
+export const createTercero = createAction('[Terceros] Create Tercero', props<{ tercero: CreateTerceroDto | FormData }>());
 
 export const createTerceroSuccess = createAction('[Terceros] Create Tercero Success', props<{ tercero: Tercero }>());
 
@@ -22,7 +22,7 @@ export const createTerceroFailure = createAction('[Terceros] Create Tercero Fail
 /**
  * Acciones para actualizar tercero
  */
-export const updateTercero = createAction('[Terceros] Update Tercero', props<{ id: number; tercero: UpdateTerceroDto }>());
+export const updateTercero = createAction('[Terceros] Update Tercero', props<{ id: number; tercero: UpdateTerceroDto | FormData }>());
 
 export const updateTerceroSuccess = createAction('[Terceros] Update Tercero Success', props<{ tercero: Tercero }>());
 

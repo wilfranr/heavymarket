@@ -12,6 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createLista } from '../../../store/listas/actions/listas.actions';
 import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
@@ -23,7 +24,7 @@ import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
     // styleUrl: './create.scss'
@@ -46,6 +47,9 @@ export class CreateComponent implements OnInit {
         { label: 'Piezas Estandar', value: 'Piezas Estandar' as ListaTipo }
     ];
 
+    fotoFile: File | null = null;
+    fotoMedidaFile: File | null = null;
+
     loading = false;
 
     ngOnInit(): void {
@@ -66,6 +70,15 @@ export class CreateComponent implements OnInit {
         });
     }
 
+    onFotoSelected(file: File): void {
+        this.fotoFile = file;
+    }
+
+    onFotoMedidaSelected(file: File): void {
+        this.fotoMedidaFile = file;
+    }
+
+
     /**
      * Maneja el envío del formulario
      */
@@ -83,16 +96,20 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.listaForm.value;
-        const data: CreateListaDto = {
-            tipo: formValue.tipo,
-            nombre: formValue.nombre,
-            definicion: formValue.definicion || undefined,
-            foto: formValue.foto || undefined,
-            fotoMedida: formValue.fotoMedida || undefined,
-            sistema_id: formValue.sistema_id || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(createLista({ data }));
+        formData.append('tipo', formValue.tipo);
+        formData.append('nombre', formValue.nombre);
+        if (formValue.definicion) formData.append('definicion', formValue.definicion);
+        if (formValue.sistema_id) formData.append('sistema_id', formValue.sistema_id);
+
+        if (this.fotoFile) formData.append('foto', this.fotoFile);
+        if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
+
+        // Mantener compatibilidad con JSON si no se seleccionaron archivos nuevos? No, el backend debería manejar ambos o preferir FormData.
+        // Asumiendo que createAction ahora acepta FormData.
+
+        this.store.dispatch(createLista({ data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

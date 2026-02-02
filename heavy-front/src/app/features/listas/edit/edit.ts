@@ -13,6 +13,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadListaById, updateLista } from '../../../store/listas/actions/listas.actions';
 import { selectListaById } from '../../../store/listas/selectors/listas.selectors';
@@ -25,7 +26,7 @@ import { UpdateListaDto, ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
     // styleUrl: './edit.scss'
@@ -50,6 +51,9 @@ export class EditComponent implements OnInit {
         { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo },
         { label: 'Piezas Estandar', value: 'Piezas Estandar' as ListaTipo }
     ];
+
+    fotoFile: File | null = null;
+    fotoMedidaFile: File | null = null;
 
     loading = false;
 
@@ -81,6 +85,14 @@ export class EditComponent implements OnInit {
         });
     }
 
+    onFotoSelected(file: File): void {
+        this.fotoFile = file;
+    }
+
+    onFotoMedidaSelected(file: File): void {
+        this.fotoMedidaFile = file;
+    }
+
     /**
      * Maneja el envío del formulario
      */
@@ -98,16 +110,20 @@ export class EditComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.listaForm.value;
-        const data: UpdateListaDto = {
-            tipo: formValue.tipo,
-            nombre: formValue.nombre,
-            definicion: formValue.definicion || undefined,
-            foto: formValue.foto || undefined,
-            fotoMedida: formValue.fotoMedida || undefined,
-            sistema_id: formValue.sistema_id || undefined
-        };
 
-        this.store.dispatch(updateLista({ id: this.listaId, data }));
+        const formData = new FormData();
+
+        formData.append('tipo', formValue.tipo);
+        formData.append('nombre', formValue.nombre);
+        if (formValue.definicion) formData.append('definicion', formValue.definicion);
+        if (formValue.sistema_id) formData.append('sistema_id', formValue.sistema_id);
+
+        if (this.fotoFile) formData.append('foto', this.fotoFile);
+        if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
+
+        // El servicio manejará el _method: PUT si recibe FormData
+
+        this.store.dispatch(updateLista({ id: this.listaId, data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

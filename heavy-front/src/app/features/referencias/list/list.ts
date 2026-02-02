@@ -15,11 +15,16 @@ import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 
-import { Referencia } from '../../../core/models/referencia.model';
-import { loadReferencias, deleteReferencia } from '../../../store/referencias/actions/referencias.actions';
+import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
+import { loadReferencias, deleteReferencia, updateReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { selectAllReferencias, selectReferenciasLoading, selectReferenciasPagination } from '../../../store/referencias/selectors/referencias.selectors';
 import { ListaService } from '../../../core/services/lista.service';
+import { ArticuloService } from '../../../core/services/articulo.service';
 import { Lista } from '../../../core/models/lista.model';
+import { Articulo } from '../../../core/models/articulo.model';
+import { TextareaModule } from 'primeng/textarea';
+import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
+import { RippleModule } from 'primeng/ripple';
 
 /**
  * Componente de lista de Referencias
@@ -27,7 +32,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-referencias-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, TextareaModule, ReferenciaCreateModalComponent, RippleModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -39,6 +44,7 @@ export class ListComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly listaService = inject(ListaService);
+    private readonly articuloService = inject(ArticuloService);
 
     referencias$!: Observable<Referencia[]>;
     loading$!: Observable<boolean>;
@@ -51,6 +57,11 @@ export class ListComponent implements OnInit {
     searchTerm = '';
     selectedMarcaId: number | null = null;
     marcas: Lista[] = [];
+    articulos: Articulo[] = [];
+    editingReferencias: { [s: string]: Referencia } = {};
+
+    // Modal de creación
+    showCreateModal = false;
 
     ngOnInit(): void {
         this.referencias$ = this.store.select(selectAllReferencias);
@@ -58,6 +69,7 @@ export class ListComponent implements OnInit {
         this.pagination$ = this.store.select(selectReferenciasPagination);
 
         this.cargarMarcas();
+        this.cargarArticulos();
         this.cargarReferencias();
     }
 
@@ -71,6 +83,20 @@ export class ListComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error al cargar marcas:', error);
+            }
+        });
+    }
+
+    /**
+     * Carga los artículos disponibles para asociar
+     */
+    cargarArticulos(): void {
+        this.articuloService.getAll({ per_page: 500 }).subscribe({
+            next: (response) => {
+                this.articulos = response.data;
+            },
+            error: (error) => {
+                console.error('Error al cargar artículos:', error);
             }
         });
     }
@@ -116,10 +142,17 @@ export class ListComponent implements OnInit {
     }
 
     /**
-     * Navega a crear nueva referencia
+     * Muestra el modal para crear nueva referencia
      */
     crearReferencia(): void {
-        this.router.navigate(['/app/referencias/create']);
+        this.showCreateModal = true;
+    }
+
+    /**
+     * Maneja la creación exitosa desde el modal
+     */
+    onReferenciaCreada(): void {
+        this.cargarReferencias();
     }
 
     /**
@@ -134,6 +167,52 @@ export class ListComponent implements OnInit {
      */
     editarReferencia(referencia: Referencia): void {
         this.router.navigate(['/app/referencias', referencia.id, 'edit']);
+    }
+
+    /**
+     * Inicia la edición de una fila
+     */
+    onRowEditInit(referencia: Referencia) {
+        this.editingReferencias[referencia.id] = { ...referencia };
+    }
+
+    /**
+     * Guarda los cambios de la fila
+     */
+    onRowEditSave(referencia: Referencia) {
+        const data: UpdateReferenciaDto = {
+            referencia: referencia.referencia,
+            marca_id: referencia.marca_id,
+            articulo_id: referencia.articulo_id,
+            comentario: referencia.comentario
+        };
+
+        this.store.dispatch(updateReferencia({ id: referencia.id, data }));
+        delete this.editingReferencias[referencia.id];
+
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Éxito',
+            detail: 'Referencia actualizada correctamente'
+        });
+
+        // Opcional: recargar después de un pequeño delay para asegurar consistencia
+        setTimeout(() => this.cargarReferencias(), 500);
+    }
+
+    /**
+     * Cancela la edición de la fila
+     */
+    onRowEditCancel(referencia: Referencia, index: number) {
+        // Al usar el observable directo referenciad$ | async, 
+        // necesitamos que el componente restaure los valores originales si es necesario.
+        // Pero PrimeNG suele manejar el estado visual si clonamos correctamente.
+        // Para asegurar que los datos del observable no se "ensucien" localmente:
+        const original = this.editingReferencias[referencia.id];
+        if (original) {
+            Object.assign(referencia, original);
+        }
+        delete this.editingReferencias[referencia.id];
     }
 
     /**

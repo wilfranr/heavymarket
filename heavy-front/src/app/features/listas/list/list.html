@@ -35,7 +35,7 @@
                 <div class="flex">
                     <span class="p-input-icon-left w-full">
                         <i class="pi pi-search"></i>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                        <input pInputText type="text" (input)="onSearch($any($event.target).value)"
                             placeholder="Buscar listas..." class="w-full" />
                     </span>
                 </div>

@@ -12,6 +12,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { createEmpresa } from '../../../store/empresas/actions/empresas.actions';
 import { CreateEmpresaDto } from '../../../core/models/empresa.model';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 /**
  * Componente de creación de empresa
@@ -19,7 +20,7 @@ import { CreateEmpresaDto } from '../../../core/models/empresa.model';
 @Component({
     selector: 'app-empresa-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, ImageUploadComponent],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -96,6 +97,22 @@ import { CreateEmpresaDto } from '../../../core/models/empresa.model';
                     </div>
 
                     <div class="col-12 md:col-6">
+                        <app-image-upload 
+                            label="Logo Light" 
+                            icon="pi pi-image" 
+                            (fileSelected)="onLogoLightSelected($event)">
+                        </app-image-upload>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <app-image-upload 
+                            label="Logo Dark" 
+                            icon="pi pi-image" 
+                            (fileSelected)="onLogoDarkSelected($event)">
+                        </app-image-upload>
+                    </div>
+
+                    <div class="col-12 md:col-6">
                         <label for="estado" class="block mb-2">Estado</label>
                         <p-select formControlName="estado" [options]="estadoOptions" placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
                     </div>
@@ -125,8 +142,19 @@ export class CreateComponent implements OnInit {
         { label: 'Inactiva', value: false }
     ];
 
+    logoLightFile: File | null = null;
+    logoDarkFile: File | null = null;
+
     ngOnInit(): void {
         this.initForm();
+    }
+
+    onLogoLightSelected(file: File): void {
+        this.logoLightFile = file;
+    }
+
+    onLogoDarkSelected(file: File): void {
+        this.logoDarkFile = file;
     }
 
     private initForm(): void {
@@ -164,26 +192,28 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.empresaForm.value;
-        const data: CreateEmpresaDto = {
-            nombre: formValue.nombre,
-            siglas: formValue.siglas || undefined,
-            direccion: formValue.direccion,
-            telefono: formValue.telefono || undefined,
-            celular: formValue.celular,
-            email: formValue.email,
-            nit: formValue.nit,
-            representante: formValue.representante,
-            country_id: formValue.country_id || undefined,
-            state_id: formValue.state_id || undefined,
-            city_id: formValue.city_id || undefined,
-            estado: formValue.estado,
-            flete: formValue.flete || undefined,
-            trm: formValue.trm || undefined,
-            logo_light: formValue.logo_light || undefined,
-            logo_dark: formValue.logo_dark || undefined
-        };
 
-        this.store.dispatch(createEmpresa({ data }));
+        const formData = new FormData();
+
+        formData.append('nombre', formValue.nombre);
+        if (formValue.siglas) formData.append('siglas', formValue.siglas);
+        formData.append('direccion', formValue.direccion);
+        if (formValue.telefono) formData.append('telefono', formValue.telefono);
+        formData.append('celular', formValue.celular);
+        formData.append('email', formValue.email);
+        formData.append('nit', formValue.nit);
+        formData.append('representante', formValue.representante);
+        if (formValue.country_id) formData.append('country_id', formValue.country_id);
+        if (formValue.state_id) formData.append('state_id', formValue.state_id);
+        if (formValue.city_id) formData.append('city_id', formValue.city_id);
+        formData.append('estado', formValue.estado ? '1' : '0');
+        if (formValue.flete) formData.append('flete', formValue.flete);
+        if (formValue.trm) formData.append('trm', formValue.trm);
+
+        if (this.logoLightFile) formData.append('logo_light', this.logoLightFile);
+        if (this.logoDarkFile) formData.append('logo_dark', this.logoDarkFile);
+
+        this.store.dispatch(createEmpresa({ data: formData }));
 
         // Escuchar el resultado
         const subscription = this.store

@@ -11,6 +11,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createFabricante } from '../../../store/fabricantes/actions/fabricantes.actions';
 import { CreateFabricanteDto } from '../../../core/models/fabricante.model';
@@ -21,7 +22,7 @@ import { CreateFabricanteDto } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-fabricante-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -33,6 +34,7 @@ export class CreateComponent implements OnInit {
 
     fabricanteForm!: FormGroup;
     loading = false;
+    logoFile: File | null = null;
 
     ngOnInit(): void {
         this.initForm();
@@ -47,6 +49,10 @@ export class CreateComponent implements OnInit {
             descripcion: ['', [Validators.required, Validators.maxLength(500)]],
             logo: [null]
         });
+    }
+
+    onLogoSelected(file: File): void {
+        this.logoFile = file;
     }
 
     /**
@@ -66,13 +72,14 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.fabricanteForm.value;
-        const data: CreateFabricanteDto = {
-            nombre: formValue.nombre,
-            descripcion: formValue.descripcion,
-            logo: formValue.logo || undefined
-        };
 
-        this.store.dispatch(createFabricante({ data }));
+        const formData = new FormData();
+
+        formData.append('nombre', formValue.nombre);
+        formData.append('descripcion', formValue.descripcion);
+        if (this.logoFile) formData.append('logo', this.logoFile);
+
+        this.store.dispatch(createFabricante({ data: formData }));
 
         // Escuchar el resultado de la acción
         this.store

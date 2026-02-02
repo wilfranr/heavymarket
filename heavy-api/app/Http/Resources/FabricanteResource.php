@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * API Resource para el modelo Fabricante
@@ -27,7 +28,7 @@ class FabricanteResource extends JsonResource
             'id' => $this->id,
             'nombre' => $this->nombre,
             'descripcion' => $this->descripcion,
-            'logo' => $this->logo,
+            'logo' => $this->logo && !filter_var($this->logo, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->logo) : $this->logo,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

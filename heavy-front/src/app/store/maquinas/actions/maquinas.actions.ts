@@ -20,14 +20,14 @@ export const loadMaquinaByIdSuccess = createAction('[Maquinas] Load Maquina By I
 export const loadMaquinaByIdFailure = createAction('[Maquinas] Load Maquina By Id Failure', props<{ error: string }>());
 
 // Crear máquina
-export const createMaquina = createAction('[Maquinas] Create Maquina', props<{ data: CreateMaquinaDto }>());
+export const createMaquina = createAction('[Maquinas] Create Maquina', props<{ data: CreateMaquinaDto | FormData }>());
 
 export const createMaquinaSuccess = createAction('[Maquinas] Create Maquina Success', props<{ maquina: Maquina }>());
 
 export const createMaquinaFailure = createAction('[Maquinas] Create Maquina Failure', props<{ error: string }>());
 
 // Actualizar máquina
-export const updateMaquina = createAction('[Maquinas] Update Maquina', props<{ id: number; data: UpdateMaquinaDto }>());
+export const updateMaquina = createAction('[Maquinas] Update Maquina', props<{ id: number; data: UpdateMaquinaDto | FormData }>());
 
 export const updateMaquinaSuccess = createAction('[Maquinas] Update Maquina Success', props<{ maquina: Maquina }>());
 

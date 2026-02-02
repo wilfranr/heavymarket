@@ -11,6 +11,7 @@ use App\Http\Resources\FabricanteResource;
 use App\Models\Fabricante;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Fabricantes
@@ -68,6 +69,10 @@ class FabricanteController extends Controller
         $data = $request->validated();
         $data['nombre'] = ucwords($data['nombre']);
 
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('fabricantes/logos', 'public');
+        }
+
         $fabricante = Fabricante::create($data);
 
         return response()->json([
@@ -94,6 +99,10 @@ class FabricanteController extends Controller
         $data = $request->validated();
         if (isset($data['nombre'])) {
             $data['nombre'] = ucwords($data['nombre']);
+        }
+
+        if ($request->hasFile('logo')) {
+            $data['logo'] = $request->file('logo')->store('fabricantes/logos', 'public');
         }
 
         $fabricante->update($data);

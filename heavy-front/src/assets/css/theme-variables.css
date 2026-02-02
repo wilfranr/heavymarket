@@ -1,0 +1,78 @@
+/* ============================================
+   THEME VARIABLES - Light & Dark Mode
+   ============================================ */
+
+:root {
+    /* Brand Colors */
+    --color-brand-yellow: #FDB831;
+    --color-brand-yellow-dark: #E5A52D;
+
+    /* Light Theme Colors */
+    --light-bg-primary: #FFFFFF;
+    --light-bg-secondary: #F8F9FA;
+    --light-bg-tertiary: #E9ECEF;
+    --light-bg-card: #FFFFFF;
+    --light-bg-input: #F8F9FA;
+    --light-border: #DEE2E6;
+    --light-border-hover: #ADB5BD;
+    --light-text-primary: #212529;
+    --light-text-secondary: #6C757D;
+    --light-text-tertiary: #ADB5BD;
+
+    /* Dark Theme Colors */
+    --dark-bg-primary: #000000;
+    --dark-bg-secondary: #0f1117;
+    --dark-bg-tertiary: #1a1d24;
+    --dark-bg-card: #1a1d24;
+    --dark-bg-input: #0f1117;
+    --dark-border: #334155;
+    --dark-border-hover: #475569;
+    --dark-text-primary: #FFFFFF;
+    --dark-text-secondary: #94A3B8;
+    --dark-text-tertiary: #64748B;
+}
+
+/* Light Theme (Default) */
+.light-theme {
+    --bg-primary: var(--light-bg-primary);
+    --bg-secondary: var(--light-bg-secondary);
+    --bg-tertiary: var(--light-bg-tertiary);
+    --bg-card: var(--light-bg-card);
+    --bg-input: var(--light-bg-input);
+    --border-color: var(--light-border);
+    --border-hover: var(--light-border-hover);
+    --text-primary: var(--light-text-primary);
+    --text-secondary: var(--light-text-secondary);
+    --text-tertiary: var(--light-text-tertiary);
+
+    /* Shadows for light mode */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+/* Dark Theme */
+.dark-theme {
+    --bg-primary: var(--dark-bg-primary);
+    --bg-secondary: var(--dark-bg-secondary);
+    --bg-tertiary: var(--dark-bg-tertiary);
+    --bg-card: var(--dark-bg-card);
+    --bg-input: var(--dark-bg-input);
+    --border-color: var(--dark-border);
+    --border-hover: var(--dark-border-hover);
+    --text-primary: var(--dark-text-primary);
+    --text-secondary: var(--dark-text-secondary);
+    --text-tertiary: var(--dark-text-tertiary);
+
+    /* Shadows for dark mode */
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.7);
+}
+
+/* Apply theme to body */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    transition: background-color 0.3s ease, color 0.3s ease;
+}

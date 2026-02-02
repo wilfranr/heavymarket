@@ -32,14 +32,18 @@ export class FabricanteService extends ApiService {
     /**
      * Crear un nuevo fabricante
      */
-    create(data: CreateFabricanteDto): Observable<ApiResponse<Fabricante>> {
+    create(data: CreateFabricanteDto | FormData): Observable<ApiResponse<Fabricante>> {
         return this.post<ApiResponse<Fabricante>>(this.endpoint, data);
     }
 
     /**
      * Actualizar un fabricante existente
      */
-    update(id: number, data: UpdateFabricanteDto): Observable<ApiResponse<Fabricante>> {
+    update(id: number, data: UpdateFabricanteDto | FormData): Observable<ApiResponse<Fabricante>> {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Fabricante>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Fabricante>>(`${this.endpoint}/${id}`, data);
     }
 

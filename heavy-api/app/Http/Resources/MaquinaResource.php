@@ -6,6 +6,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * API Resource para el modelo Máquina
@@ -30,8 +31,8 @@ class MaquinaResource extends JsonResource
             'fabricante_id' => $this->fabricante_id,
             'serie' => $this->serie,
             'arreglo' => $this->arreglo,
-            'foto' => $this->foto,
-            'fotoId' => $this->fotoId,
+            'foto' => $this->foto && !filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : $this->foto,
+            'fotoId' => $this->fotoId && !filter_var($this->fotoId, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoId) : $this->fotoId,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 

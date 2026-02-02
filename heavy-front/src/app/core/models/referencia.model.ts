@@ -27,9 +27,9 @@ export interface Referencia {
  */
 export interface CreateReferenciaDto {
     referencia: string;
-    articulo_id?: number;
-    marca_id?: number;
-    comentario?: string;
+    articulo_id?: number | null;
+    marca_id?: number | null;
+    comentario?: string | null;
 }
 
 /**
@@ -37,7 +37,7 @@ export interface CreateReferenciaDto {
  */
 export interface UpdateReferenciaDto {
     referencia?: string;
-    articulo_id?: number;
-    marca_id?: number;
-    comentario?: string;
+    articulo_id?: number | null;
+    marca_id?: number | null;
+    comentario?: string | null;
 }

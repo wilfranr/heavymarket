@@ -10,6 +10,7 @@ use App\Http\Resources\EmpresaResource;
 use App\Models\Empresa;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Empresas
@@ -67,6 +68,14 @@ class EmpresaController extends Controller
 
             $validated = $request->validated();
 
+            if ($request->hasFile('logo_light')) {
+                $validated['logo_light'] = $request->file('logo_light')->store('empresas/logos', 'public');
+            }
+
+            if ($request->hasFile('logo_dark')) {
+                $validated['logo_dark'] = $request->file('logo_dark')->store('empresas/logos', 'public');
+            }
+
             $empresa = Empresa::create($validated);
 
             DB::commit();
@@ -120,11 +129,25 @@ class EmpresaController extends Controller
             'estado' => ['sometimes', 'boolean'],
             'flete' => ['nullable', 'numeric', 'min:0'],
             'trm' => ['nullable', 'numeric', 'min:0'],
-            'logo_light' => ['nullable', 'string', 'max:255'],
-            'logo_dark' => ['nullable', 'string', 'max:255'],
+            'logo_light' => ['nullable', 'image', 'max:5120'],
+            'logo_dark' => ['nullable', 'image', 'max:5120'],
         ]);
 
         try {
+            if ($request->hasFile('logo_light')) {
+                if ($empresa->logo_light) {
+                     // Storage::disk('public')->delete($empresa->logo_light); // Optional cleanup
+                }
+                $validated['logo_light'] = $request->file('logo_light')->store('empresas/logos', 'public');
+            }
+
+            if ($request->hasFile('logo_dark')) {
+                 if ($empresa->logo_dark) {
+                     // Storage::disk('public')->delete($empresa->logo_dark); // Optional cleanup
+                }
+                $validated['logo_dark'] = $request->file('logo_dark')->store('empresas/logos', 'public');
+            }
+
             $empresa->update($validated);
             $empresa->load(['country', 'city', 'states']);
 

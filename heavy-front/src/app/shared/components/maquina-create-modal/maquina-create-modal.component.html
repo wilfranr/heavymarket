@@ -89,3 +89,13 @@
 
     </form>
 </p-dialog>
+
+<!-- Modal para crear tipo de máquina -->
+<app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina"
+    (onListaCreated)="onTipoCreated($event)">
+</app-lista-create-modal>
+
+<!-- Modal para crear fabricante -->
+<app-fabricante-create-modal [(visible)]="showCreateFabricanteModal" title="Crear Fabricante"
+    (onFabricanteCreated)="onFabricanteCreated($event)">
+</app-fabricante-create-modal>

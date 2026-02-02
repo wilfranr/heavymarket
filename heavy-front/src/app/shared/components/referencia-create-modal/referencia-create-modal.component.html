@@ -16,13 +16,37 @@
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium text-gray-400">Marca / Fabricante<span
                     class="text-red-500">*</span></label>
-            <p-select [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
-                placeholder="Seleccione marca" [filter]="true" filterBy="nombre" class="w-full">
-            </p-select>
+            <p-inputgroup>
+                <p-select [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
+                    placeholder="Seleccione marca" [filter]="true" filterBy="nombre" class="w-full">
+                </p-select>
+                <p-inputgroup-addon class="bg-transparent border-gray-800">
+                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
+                        (onClick)="abrirCrearMarca()"></p-button>
+                </p-inputgroup-addon>
+            </p-inputgroup>
             @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {
             <small class="text-red-500 font-medium">La marca es requerida</small>
             }
         </div>
+
+        <!-- Artículo -->
+        @if (!articuloId) {
+        <div class="flex flex-col gap-2">
+            <label class="text-sm font-medium text-gray-400">Artículo Relacionado</label>
+            <p-select [options]="articulos" formControlName="articulo_id" optionLabel="descripcionEspecifica"
+                optionValue="id" placeholder="Seleccione artículo (opcional)" [filter]="true"
+                filterBy="descripcionEspecifica,definicion" class="w-full">
+                <ng-template let-articulo pTemplate="item">
+                    <div class="flex flex-col">
+                        <span class="font-medium text-xs">{{ articulo.definicion }}</span>
+                        <small class="text-gray-500" style="font-size: 10px;">{{ articulo.descripcionEspecifica
+                            }}</small>
+                    </div>
+                </ng-template>
+            </p-select>
+        </div>
+        }
 
         <!-- Comentario -->
         <div class="flex flex-col gap-2">
@@ -41,3 +65,8 @@
         </div>
     </ng-template>
 </p-dialog>
+
+<!-- Modal para crear nueva Marca sobre la marcha -->
+<app-fabricante-create-modal [(visible)]="showMarcaModal" title="Nueva Marca / Fabricante"
+    (onFabricanteCreated)="onMarcaCreada($event)">
+</app-fabricante-create-modal>

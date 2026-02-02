@@ -27,14 +27,14 @@ export const loadListasByTipoSuccess = createAction('[Listas] Load Listas By Tip
 export const loadListasByTipoFailure = createAction('[Listas] Load Listas By Tipo Failure', props<{ error: string }>());
 
 // Crear lista
-export const createLista = createAction('[Listas] Create Lista', props<{ data: CreateListaDto }>());
+export const createLista = createAction('[Listas] Create Lista', props<{ data: CreateListaDto | FormData }>());
 
 export const createListaSuccess = createAction('[Listas] Create Lista Success', props<{ lista: Lista }>());
 
 export const createListaFailure = createAction('[Listas] Create Lista Failure', props<{ error: string }>());
 
 // Actualizar lista
-export const updateLista = createAction('[Listas] Update Lista', props<{ id: number; data: UpdateListaDto }>());
+export const updateLista = createAction('[Listas] Update Lista', props<{ id: number; data: UpdateListaDto | FormData }>());
 
 export const updateListaSuccess = createAction('[Listas] Update Lista Success', props<{ lista: Lista }>());
 

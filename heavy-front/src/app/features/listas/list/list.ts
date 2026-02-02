@@ -15,6 +15,11 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
+import { IconFieldModule } from 'primeng/iconfield';
+import { InputIconModule } from 'primeng/inputicon';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { loadListas, deleteLista } from '../../../store/listas/actions/listas.actions';
@@ -28,7 +33,25 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
 @Component({
     selector: 'app-listas-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, FallbackImageDirective],
+    imports: [
+        CommonModule,
+        RouterModule,
+        TableModule,
+        ButtonModule,
+        CardModule,
+        InputTextModule,
+        TagModule,
+        ToastModule,
+        ConfirmDialogModule,
+        SelectModule,
+        FormsModule,
+        TooltipModule,
+        FallbackImageDirective,
+        IconFieldModule,
+        InputIconModule,
+        InputGroupModule,
+        InputGroupAddonModule
+    ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
     // styleUrl: './list.scss'
@@ -56,6 +79,8 @@ export class ListComponent implements OnInit {
 
     // Filtros
     selectedTipo: ListaTipo | null = null;
+    searchTerm = '';
+    private searchSubject = new Subject<string>();
 
     tipos: { label: string; value: ListaTipo | null }[] = [
         { label: 'Todos', value: null },
@@ -73,6 +98,24 @@ export class ListComponent implements OnInit {
         this.listas$ = this.store.select(selectAllListas);
         this.loading$ = this.store.select(selectListasLoading);
         this.pagination$ = this.store.select(selectListasPagination);
+
+        // Setup search debounce
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(term => {
+            this.searchTerm = term;
+            this.currentPage = 1;
+            this.first = 0;
+            this.loadListas();
+        });
+    }
+
+    /**
+     * Maneja la búsqueda
+     */
+    onSearch(term: string): void {
+        this.searchSubject.next(term);
     }
 
     /**
@@ -118,6 +161,9 @@ export class ListComponent implements OnInit {
         };
         if (this.selectedTipo) {
             params.tipo = this.selectedTipo;
+        }
+        if (this.searchTerm) {
+            params.search = this.searchTerm;
         }
         this.store.dispatch(loadListas(params));
     }

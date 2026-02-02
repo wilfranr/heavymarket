@@ -49,6 +49,10 @@ export class TerceroService extends ApiService {
      * Actualizar un tercero existente
      */
     update(id: number, data: UpdateTerceroDto | FormData): Observable<ApiResponse<Tercero>> {
+        if (data instanceof FormData) {
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Tercero>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Tercero>>(`${this.endpoint}/${id}`, data);
     }
 

@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { updateEmpresa, loadEmpresaById } from '../../../store/empresas/actions/empresas.actions';
 import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.selectors';
 import { UpdateEmpresaDto } from '../../../core/models/empresa.model';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 /**
  * Componente de edición de empresa
@@ -20,7 +21,7 @@ import { UpdateEmpresaDto } from '../../../core/models/empresa.model';
 @Component({
     selector: 'app-empresa-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, ImageUploadComponent],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -80,8 +81,25 @@ import { UpdateEmpresaDto } from '../../../core/models/empresa.model';
                         </div>
 
                         <div class="col-12 md:col-6">
-                            <label for="trm" class="block mb-2">TRM (Tasa de cambio)</label>
                             <p-inputNumber formControlName="trm" [min]="0" [step]="0.01" [showButtons]="true" styleClass="w-full"> </p-inputNumber>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <app-image-upload 
+                                label="Logo Light" 
+                                icon="pi pi-image" 
+                                [currentImage]="empresaForm.get('logo_light')?.value"
+                                (fileSelected)="onLogoLightSelected($event)">
+                            </app-image-upload>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <app-image-upload 
+                                label="Logo Dark" 
+                                icon="pi pi-image" 
+                                [currentImage]="empresaForm.get('logo_dark')?.value"
+                                (fileSelected)="onLogoDarkSelected($event)">
+                            </app-image-upload>
                         </div>
 
                         <div class="col-12 md:col-6">
@@ -118,12 +136,23 @@ export class EditComponent implements OnInit {
         { label: 'Inactiva', value: false }
     ];
 
+    logoLightFile: File | null = null;
+    logoDarkFile: File | null = null;
+
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.empresaId.set(+id);
             this.loadEmpresa(+id);
         }
+    }
+
+    onLogoLightSelected(file: File): void {
+        this.logoLightFile = file;
+    }
+
+    onLogoDarkSelected(file: File): void {
+        this.logoDarkFile = file;
     }
 
     private loadEmpresa(id: number): void {
@@ -161,7 +190,9 @@ export class EditComponent implements OnInit {
             representante: [empresa.representante || ''],
             flete: [empresa.flete || 2.2],
             trm: [empresa.trm || 0],
-            estado: [empresa.estado || false]
+            estado: [empresa.estado || false],
+            logo_light: [empresa.logo_light || null],
+            logo_dark: [empresa.logo_dark || null]
         });
     }
 
@@ -179,21 +210,24 @@ export class EditComponent implements OnInit {
         this.saving.set(true);
 
         const formValue = this.empresaForm.value;
-        const data: UpdateEmpresaDto = {
-            nombre: formValue.nombre || undefined,
-            siglas: formValue.siglas || undefined,
-            direccion: formValue.direccion || undefined,
-            telefono: formValue.telefono || undefined,
-            celular: formValue.celular || undefined,
-            email: formValue.email || undefined,
-            nit: formValue.nit || undefined,
-            representante: formValue.representante || undefined,
-            flete: formValue.flete || undefined,
-            trm: formValue.trm || undefined,
-            estado: formValue.estado
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(updateEmpresa({ id: this.empresaId(), data }));
+        if (formValue.nombre) formData.append('nombre', formValue.nombre);
+        if (formValue.siglas) formData.append('siglas', formValue.siglas);
+        if (formValue.direccion) formData.append('direccion', formValue.direccion);
+        if (formValue.telefono) formData.append('telefono', formValue.telefono);
+        if (formValue.celular) formData.append('celular', formValue.celular);
+        if (formValue.email) formData.append('email', formValue.email);
+        if (formValue.nit) formData.append('nit', formValue.nit);
+        if (formValue.representante) formData.append('representante', formValue.representante);
+        if (formValue.flete) formData.append('flete', formValue.flete);
+        if (formValue.trm) formData.append('trm', formValue.trm);
+        formData.append('estado', formValue.estado ? '1' : '0');
+
+        if (this.logoLightFile) formData.append('logo_light', this.logoLightFile);
+        if (this.logoDarkFile) formData.append('logo_dark', this.logoDarkFile);
+
+        this.store.dispatch(updateEmpresa({ id: this.empresaId(), data: formData }));
 
         // Escuchar el resultado
         const subscription = this.store

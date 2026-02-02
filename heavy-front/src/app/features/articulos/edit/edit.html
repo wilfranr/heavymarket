@@ -7,7 +7,7 @@
             <div class="w-10 h-10 rounded-lg bg-[#fdb831] flex items-center justify-center text-black">
                 <i class="pi pi-box text-xl"></i>
             </div>
-            <h1 class="text-2xl font-bold tracking-tight">Editar Artículo</h1>
+            <h1 class="text-base font-bold tracking-tight">Editar Artículo</h1>
         </div>
         <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
             class="text-gray-400 hover:text-white transition-all"></p-button>
@@ -23,7 +23,7 @@
                     <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                         <i class="pi pi-info-circle text-sm"></i>
                     </div>
-                    <h3 class="text-lg font-bold">Información General</h3>
+                    <h3 class="text-xs font-bold uppercase tracking-wider">Información General</h3>
                 </div>
 
                 <div class="flex flex-col gap-6">
@@ -106,7 +106,7 @@
                             class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                             <i class="pi pi-sync text-sm"></i>
                         </div>
-                        <h3 class="text-lg font-bold">Referencias Cruzadas</h3>
+                        <h3 class="text-xs font-bold uppercase tracking-wider">Referencias Cruzadas</h3>
                     </div>
                     <div class="flex gap-2">
                         <p-button label="Importar desde Excel" icon="pi pi-file-excel" [text]="true"
@@ -204,86 +204,16 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Foto de Referencia -->
                 <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col gap-6">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-camera text-sm"></i>
-                        </div>
-                        <h3 class="text-sm font-black text-gray-400 tracking-widest uppercase">Foto de Referencia</h3>
-                    </div>
-
-                    <div (click)="triggerFileInput(fotoInput)" (drop)="onFileDropped($event, 'foto')"
-                        (dragover)="onDragOver($event)"
-                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-2xl h-72 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative">
-                        <input type="file" #fotoInput (change)="onFileSelected($event, 'foto')" accept="image/*"
-                            class="hidden" />
-
-                        <div class="flex flex-col items-center p-4">
-                            @if (fotoPreview) {
-                            <img [src]="fotoPreview" class="max-h-64 max-w-full object-contain rounded-lg shadow-2xl" />
-                            <div
-                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                <span class="text-xs font-bold text-white uppercase tracking-wider">Cambiar
-                                    imagen</span>
-                            </div>
-                            } @else if (articuloActual.fotoDescriptiva) {
-                            <img [src]="articuloActual.fotoDescriptiva" appFallbackImage
-                                class="max-h-48 w-auto object-contain mb-4 rounded shadow-lg" />
-                            <span class="text-xs text-gray-500 group-hover:text-[#fdb831] transition-colors">Haz clic
-                                para cambiar la imagen</span>
-                            } @else {
-                            <div
-                                class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <i class="pi pi-upload text-gray-600 group-hover:text-[#fdb831]"></i>
-                            </div>
-                            <p class="text-[11px] text-gray-500 text-center">
-                                Arrastra y suelta o <span class="text-[#fdb831] font-bold">Examina</span>
-                            </p>
-                            }
-                        </div>
-                    </div>
+                    <app-image-upload label="Foto de Referencia" icon="pi pi-camera"
+                        [currentImage]="articuloActual.fotoDescriptiva" (fileSelected)="onFotoSelected($event)">
+                    </app-image-upload>
                 </div>
 
                 <!-- Plano Esquemático -->
                 <div class="bg-[#18181b] border border-white/5 rounded-2xl p-6 shadow-xl flex flex-col gap-6">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-map text-sm"></i>
-                        </div>
-                        <h3 class="text-sm font-black text-gray-400 tracking-widest uppercase">Plano Esquemático</h3>
-                    </div>
-
-                    <div (click)="triggerFileInput(planoInput)" (drop)="onFileDropped($event, 'plano')"
-                        (dragover)="onDragOver($event)"
-                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-2xl h-72 flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative">
-                        <input type="file" #planoInput (change)="onFileSelected($event, 'plano')" accept="image/*"
-                            class="hidden" />
-
-                        <div class="flex flex-col items-center p-4">
-                            @if (planoPreview) {
-                            <img [src]="planoPreview"
-                                class="max-h-64 max-w-full object-contain rounded-lg shadow-2xl" />
-                            <div
-                                class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                <span class="text-xs font-bold text-white uppercase tracking-wider">Cambiar plano</span>
-                            </div>
-                            } @else if (articuloActual.foto_medida) {
-                            <img [src]="articuloActual.foto_medida" appFallbackImage
-                                class="max-h-48 w-auto object-contain mb-4 rounded shadow-lg" />
-                            <span class="text-xs text-gray-500 group-hover:text-[#fdb831] transition-colors">Haz clic
-                                para cambiar el plano</span>
-                            } @else {
-                            <div
-                                class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center mb-2 group-hover:scale-110 transition-transform">
-                                <i class="pi pi-upload text-gray-600 group-hover:text-[#fdb831]"></i>
-                            </div>
-                            <p class="text-[11px] text-gray-500 text-center">
-                                Arrastra y suelta o <span class="text-[#fdb831] font-bold">Examina</span>
-                            </p>
-                            }
-                        </div>
-                    </div>
+                    <app-image-upload label="Plano Esquemático" icon="pi pi-map"
+                        [currentImage]="articuloActual.foto_medida" (fileSelected)="onPlanoSelected($event)">
+                    </app-image-upload>
                 </div>
             </div>
 

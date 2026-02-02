@@ -11,7 +11,7 @@ import { Empresa, CreateEmpresaDto, UpdateEmpresaDto } from '../models/empresa.m
 })
 export class EmpresaService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/empresas`;
+        return 'empresas';
     }
 
     /**
@@ -31,14 +31,18 @@ export class EmpresaService extends ApiService {
     /**
      * Crear una nueva empresa
      */
-    create(empresa: CreateEmpresaDto): Observable<{ data: Empresa }> {
+    create(empresa: CreateEmpresaDto | FormData): Observable<{ data: Empresa }> {
         return this.post<{ data: Empresa }>(this.getBaseUrl(), empresa);
     }
 
     /**
      * Actualizar una empresa
      */
-    update(id: number, empresa: UpdateEmpresaDto): Observable<{ data: Empresa }> {
+    update(id: number, empresa: UpdateEmpresaDto | FormData): Observable<{ data: Empresa }> {
+        if (empresa instanceof FormData) {
+            empresa.append('_method', 'PUT');
+            return this.post<{ data: Empresa }>(`${this.getBaseUrl()}/${id}`, empresa);
+        }
         return this.put<{ data: Empresa }>(`${this.getBaseUrl()}/${id}`, empresa);
     }
 

@@ -11,6 +11,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { CreateMaquinaDto } from '../../../core/models/maquina.model';
@@ -25,7 +26,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquina-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -41,6 +42,9 @@ export class CreateComponent implements OnInit {
     loading = false;
     tipos: Lista[] = [];
     fabricantes: Fabricante[] = [];
+
+    fotoFile: File | null = null;
+    fotoIdFile: File | null = null;
 
     ngOnInit(): void {
         this.initForm();
@@ -91,6 +95,14 @@ export class CreateComponent implements OnInit {
         });
     }
 
+    onFotoSelected(file: File): void {
+        this.fotoFile = file;
+    }
+
+    onFotoIdSelected(file: File): void {
+        this.fotoIdFile = file;
+    }
+
     /**
      * Maneja el envío del formulario
      */
@@ -108,17 +120,18 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.maquinaForm.value;
-        const data: CreateMaquinaDto = {
-            tipo: formValue.tipo,
-            modelo: formValue.modelo,
-            fabricante_id: formValue.fabricante_id,
-            serie: formValue.serie || undefined,
-            arreglo: formValue.arreglo || undefined,
-            foto: formValue.foto || undefined,
-            fotoId: formValue.fotoId || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(createMaquina({ data }));
+        formData.append('tipo', formValue.tipo);
+        formData.append('modelo', formValue.modelo);
+        formData.append('fabricante_id', formValue.fabricante_id);
+        if (formValue.serie) formData.append('serie', formValue.serie);
+        if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
+
+        if (this.fotoFile) formData.append('foto', this.fotoFile);
+        if (this.fotoIdFile) formData.append('fotoId', this.fotoIdFile);
+
+        this.store.dispatch(createMaquina({ data: formData }));
 
         // Escuchar el resultado de la acción
         this.store
