@@ -2918,6 +2918,657 @@ app-banner {
 }
 
 /* ========================================
+   RESPONSIVE DESIGN - ALL SECTIONS
+   ======================================== */
+
+/* Tablet (≤1024px) */
+@media (max-width: 1024px) {
+
+    /* Carousel Section */
+    .carousel-wrapper {
+        height: 600px;
+    }
+
+    .carousel-container {
+        height: 600px;
+    }
+
+    .carousel-content {
+        height: auto;
+        padding: 0 32px;
+    }
+
+    .carousel-text-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 0 32px;
+        margin-bottom: 40px;
+    }
+
+    .carousel-title {
+        width: 100%;
+        font-size: 48px;
+        line-height: 56px;
+        text-align: center;
+    }
+
+    .carousel-controls {
+        padding: 0 32px;
+    }
+
+    .carousel-arrow-left,
+    .carousel-arrow-right {
+        width: 60px;
+        height: 60px;
+    }
+
+    .carousel-arrow svg {
+        width: 40px;
+        height: 40px;
+    }
+
+    /* Brands Section */
+    .brands-section {
+        padding: 60px 32px;
+        height: auto;
+    }
+
+    .brands-heading {
+        width: 100%;
+        max-width: 800px;
+        font-size: 48px;
+        line-height: 56px;
+    }
+
+    .brands-grid {
+        gap: 16px;
+    }
+
+    .brands-row {
+        gap: 16px;
+        height: auto;
+        flex-wrap: wrap;
+    }
+
+    .brand-item {
+        width: calc(50% - 8px);
+        min-width: 280px;
+        height: 120px;
+    }
+
+    /* Quote Section */
+    .quote-section {
+        flex-direction: column;
+        padding: 60px 32px;
+        gap: 32px;
+        align-items: flex-start;
+    }
+
+    .quote-column:first-child,
+    .quote-column:last-child {
+        width: 100%;
+        height: auto;
+    }
+
+    .quote-headline {
+        width: 100%;
+        height: auto;
+        font-size: 56px;
+        line-height: 64px;
+    }
+
+    .quote-description {
+        width: 100%;
+        height: auto;
+    }
+
+    .quote-actions {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Who We Are Section */
+    .who-we-are-section .content-container {
+        flex-direction: column;
+        gap: 40px;
+        padding: 60px 32px;
+    }
+
+    .who-we-are-section .text-column,
+    .who-we-are-section .image-column {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .who-we-are-section .section-title {
+        font-size: 48px;
+        line-height: 56px;
+    }
+
+    /* Values Section */
+    .values-section {
+        padding: 60px 32px;
+    }
+
+    .values-section .section-title {
+        font-size: 48px;
+        line-height: 56px;
+    }
+
+    .values-section .cards-container {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+    }
+
+    /* Steps Section */
+    .steps-section {
+        padding: 80px 32px;
+    }
+
+    .steps-content {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        gap: 32px;
+        align-items: center;
+    }
+
+    .steps-image {
+        width: 100%;
+        max-width: 400px;
+        height: auto;
+        aspect-ratio: 1;
+        margin-bottom: 0;
+    }
+
+    .steps-heading {
+        width: 100%;
+        max-width: 600px;
+        height: auto;
+        font-size: 48px;
+        line-height: 56px;
+        text-align: center;
+    }
+
+    .steps-grid {
+        flex-direction: column;
+        gap: 48px;
+        align-items: center;
+    }
+
+    .step-item {
+        max-width: 500px;
+    }
+
+    /* Systems Section */
+    .systems-header {
+        padding: 60px 32px;
+        height: auto;
+    }
+
+    .systems-main-heading {
+        width: 100%;
+        height: auto;
+        font-size: 56px;
+        line-height: 64px;
+    }
+
+    .system-item {
+        flex-direction: column !important;
+        padding: 60px 32px;
+        height: auto;
+        gap: 40px;
+    }
+
+    .system-content {
+        width: 100%;
+        min-width: 100%;
+        height: auto;
+    }
+
+    .system-image {
+        width: 100%;
+        height: 300px;
+    }
+
+    .system-title {
+        font-size: 40px;
+        height: auto;
+    }
+
+    .machinery-showcase {
+        flex-direction: column;
+    }
+
+    .machinery-showcase__panel {
+        min-width: 100%;
+        padding: 60px 32px;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+
+    /* Carousel Section */
+    .carousel-wrapper {
+        height: 500px;
+    }
+
+    .carousel-container {
+        height: 500px;
+    }
+
+    .carousel-text-container {
+        padding: 0 24px;
+        margin-bottom: 32px;
+    }
+
+    .carousel-title {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .carousel-controls {
+        padding: 0 24px;
+    }
+
+    .carousel-arrow-left,
+    .carousel-arrow-right {
+        width: 50px;
+        height: 50px;
+    }
+
+    .carousel-arrow svg {
+        width: 32px;
+        height: 32px;
+    }
+
+    .carousel-dots {
+        width: auto;
+    }
+
+    /* Brands Section */
+    .brands-section {
+        padding: 48px 24px;
+    }
+
+    .brands-heading {
+        font-size: 36px;
+        line-height: 44px;
+        height: auto;
+    }
+
+    .brands-row {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .brand-item {
+        width: 100%;
+        max-width: 350px;
+        height: 100px;
+    }
+
+    /* Quote Section */
+    .quote-section {
+        padding: 48px 24px;
+    }
+
+    .quote-headline {
+        font-size: 40px;
+        line-height: 48px;
+    }
+
+    .quote-description {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .quote-actions {
+        flex-direction: column;
+        width: 100%;
+        height: auto;
+        gap: 12px;
+    }
+
+    .quote-button {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Who We Are Section */
+    .who-we-are-section .content-container {
+        padding: 48px 24px;
+    }
+
+    .who-we-are-section .section-title {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .who-we-are-section .text-content p {
+        font-size: 16px;
+        line-height: 24px;
+    }
+
+    .who-we-are-section .btn-primary {
+        width: 100%;
+        max-width: 300px;
+    }
+
+    /* Values Section */
+    .values-section {
+        padding: 48px 24px;
+    }
+
+    .values-section .section-title {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .values-section .cards-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .values-section .value-card {
+        padding: 24px;
+    }
+
+    .values-section .icon-container {
+        width: 60px;
+        height: 60px;
+        font-size: 28px;
+    }
+
+    .values-section .card-text {
+        font-size: 15px;
+        line-height: 22px;
+    }
+
+    /* Steps Section */
+    .steps-section {
+        padding: 60px 24px;
+    }
+
+    .steps-heading {
+        font-size: 36px;
+        line-height: 44px;
+    }
+
+    .step-title {
+        font-size: 36px;
+        line-height: 44px;
+        min-height: auto;
+        height: auto;
+    }
+
+    .step-description {
+        font-size: 20px;
+        line-height: 28px;
+        height: auto;
+    }
+
+    .step-supporting-text {
+        font-size: 16px;
+        line-height: 24px;
+        height: auto;
+    }
+
+    /* Systems Section */
+    .systems-header {
+        padding: 48px 24px;
+    }
+
+    .systems-main-heading {
+        font-size: 40px;
+        line-height: 48px;
+    }
+
+    .system-item {
+        padding: 48px 24px;
+    }
+
+    .system-title {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .system-description {
+        font-size: 16px;
+        line-height: 22px;
+    }
+
+    .system-image {
+        height: 250px;
+    }
+
+    .machinery-showcase__panel {
+        padding: 48px 24px;
+    }
+
+    .machinery-showcase__title {
+        font-size: 32px;
+    }
+
+    .machinery-showcase__body p {
+        font-size: 15px;
+    }
+
+    /* Scroll Up Button */
+    .scroll-up-button {
+        width: 64px;
+        height: 64px;
+        bottom: 24px;
+        right: 24px;
+    }
+
+    .scroll-up-button svg {
+        width: 32px;
+        height: 32px;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+
+    /* Carousel Section */
+    .carousel-wrapper {
+        height: 400px;
+    }
+
+    .carousel-container {
+        height: 400px;
+    }
+
+    .carousel-text-container {
+        padding: 0 20px;
+        margin-bottom: 24px;
+    }
+
+    .carousel-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .carousel-controls {
+        padding: 0 20px;
+    }
+
+    .carousel-arrow-left,
+    .carousel-arrow-right {
+        width: 44px;
+        height: 44px;
+    }
+
+    .carousel-arrow svg {
+        width: 28px;
+        height: 28px;
+    }
+
+    /* Brands Section */
+    .brands-section {
+        padding: 40px 20px;
+    }
+
+    .brands-heading {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .brand-item {
+        height: 90px;
+    }
+
+    /* Quote Section */
+    .quote-section {
+        padding: 40px 20px;
+    }
+
+    .quote-headline {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .quote-description {
+        font-size: 15px;
+        line-height: 21px;
+    }
+
+    .quote-button {
+        font-size: 13px;
+        padding: 10px 14px;
+    }
+
+    /* Who We Are Section */
+    .who-we-are-section .content-container {
+        padding: 40px 20px;
+    }
+
+    .who-we-are-section .section-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .who-we-are-section .text-content p {
+        font-size: 15px;
+        line-height: 22px;
+    }
+
+    /* Values Section */
+    .values-section {
+        padding: 40px 20px;
+    }
+
+    .values-section .section-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .values-section .value-card {
+        padding: 20px;
+    }
+
+    .values-section .icon-container {
+        width: 50px;
+        height: 50px;
+        font-size: 24px;
+    }
+
+    .values-section .card-text {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    /* Steps Section */
+    .steps-section {
+        padding: 48px 20px;
+    }
+
+    .steps-heading {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .steps-image {
+        max-width: 300px;
+    }
+
+    .step-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .step-icon {
+        width: 72px;
+        height: 72px;
+    }
+
+    .step-description {
+        font-size: 18px;
+        line-height: 26px;
+    }
+
+    .step-supporting-text {
+        font-size: 15px;
+        line-height: 22px;
+    }
+
+    /* Systems Section */
+    .systems-header {
+        padding: 40px 20px;
+    }
+
+    .systems-main-heading {
+        font-size: 32px;
+        line-height: 40px;
+    }
+
+    .system-item {
+        padding: 40px 20px;
+    }
+
+    .system-title {
+        font-size: 28px;
+        line-height: 36px;
+    }
+
+    .system-description {
+        font-size: 15px;
+        line-height: 21px;
+    }
+
+    .system-image {
+        height: 200px;
+    }
+
+    .machinery-showcase__panel {
+        padding: 40px 20px;
+    }
+
+    .machinery-showcase__title {
+        font-size: 28px;
+    }
+
+    .machinery-showcase__body p {
+        font-size: 14px;
+    }
+
+    /* Scroll Up Button */
+    .scroll-up-button {
+        width: 56px;
+        height: 56px;
+        bottom: 20px;
+        right: 20px;
+    }
+
+    .scroll-up-button svg {
+        width: 28px;
+        height: 28px;
+    }
+}
+
+/* ========================================
    MOBILE MENU STYLES
    ======================================== */
 
