@@ -12,6 +12,8 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { TabsModule } from 'primeng/tabs';
+
 import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
@@ -27,11 +29,25 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
 @Component({
     selector: 'app-pedidos-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule, TabsModule],
     providers: [ConfirmationService],
     template: `
         <div class="card">
             <h2>Gestión de Pedidos</h2>
+
+            <!-- Tabs de Estados -->
+            <p-tabs [value]="selectedTabValue" (valueChange)="onTabChange($event)">
+                <p-tablist>
+                    <p-tab value="Todos">
+                        <i class="pi pi-list mr-2"></i>
+                        <span>Todos</span>
+                    </p-tab>
+                    <p-tab *ngFor="let tab of estadosTabs" [value]="tab.value">
+                        <i [class]="tab.icon + ' mr-2'"></i>
+                        <span>{{ tab.label }}</span>
+                    </p-tab>
+                </p-tablist>
+            </p-tabs>
 
             <!-- Filtros y Acciones -->
             <div class="mb-4">
@@ -42,7 +58,8 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
                         </p-iconfield>
 
-                        <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
+                        <!-- <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select> -->
+
 
                         <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
 
@@ -118,18 +135,15 @@ export class PedidosListComponent implements OnInit {
     maquinas: any[] = [];
     fabricantes: any[] = [];
 
-    estadosOptions: Array<{ label: string; value: PedidoEstado }> = [
-        { label: 'Nuevo', value: 'Nuevo' },
-        { label: 'Enviado', value: 'Enviado' },
-        { label: 'En Costeo', value: 'En_Costeo' },
-        { label: 'Cotizado', value: 'Cotizado' },
-        { label: 'Aprobado', value: 'Aprobado' },
-        { label: 'Entregado', value: 'Entregado' },
-        { label: 'Rechazado', value: 'Rechazado' },
-        { label: 'Cancelado', value: 'Cancelado' }
-    ];
+
+
+    estadosTabs: any[] = [];
+    selectedTabValue: string = 'Todos';
 
     ngOnInit() {
+        // Inicializar Tabs
+        this.initTabs();
+
         // Cargar datos para filtros
         this.loadFilterOptions();
 
@@ -219,10 +233,7 @@ export class PedidosListComponent implements OnInit {
         this.loadPedidos({ search });
     }
 
-    onEstadoChange(value: any) {
-        this.selectedEstado = value;
-        this.loadPedidos();
-    }
+
 
     onTerceroChange(value: any) {
         this.selectedTercero = value;
@@ -245,11 +256,31 @@ export class PedidosListComponent implements OnInit {
     }
 
     limpiarFiltros(): void {
+        this.selectedTabValue = 'Todos';
         this.selectedEstado = null;
         this.selectedTercero = null;
         this.selectedVendedor = null;
         this.selectedMaquina = null;
         this.selectedFabricante = null;
+        this.loadPedidos();
+    }
+
+    private initTabs() {
+        this.estadosTabs = [
+            { label: 'Nuevo', value: 'Nuevo', icon: 'pi pi-star' },
+            { label: 'Enviado', value: 'Enviado', icon: 'pi pi-send' },
+            { label: 'En Costeo', value: 'En_Costeo', icon: 'pi pi-money-bill' },
+            { label: 'Cotizado', value: 'Cotizado', icon: 'pi pi-file' },
+            { label: 'Aprobado', value: 'Aprobado', icon: 'pi pi-check-circle' },
+            { label: 'Entregado', value: 'Entregado', icon: 'pi pi-box' },
+            { label: 'Rechazado', value: 'Rechazado', icon: 'pi pi-times-circle' },
+            { label: 'Cancelado', value: 'Cancelado', icon: 'pi pi-ban' }
+        ];
+    }
+
+    onTabChange(value: any) {
+        this.selectedTabValue = value as string;
+        this.selectedEstado = value === 'Todos' ? null : value;
         this.loadPedidos();
     }
 
