@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -50,32 +50,46 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
             <!-- Filtros y Acciones -->
             <div class="mb-4">
-                <div class="flex justify-content-between mb-3">
-                    <div class="flex gap-2 flex-wrap">
-                        <p-iconfield iconPosition="left">
-                            <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                            <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
-                        </p-iconfield>
-
-                        <!-- <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select> -->
-
-
-                        <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
-                    </div>
-
+                <div class="flex justify-content-end mb-3">
                     <div class="flex gap-2">
-                        <p-button label="Limpiar Filtros" icon="pi pi-filter-slash" severity="secondary" [text]="true" (onClick)="limpiarFiltros()"> </p-button>
                         <p-button label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
                     </div>
                 </div>
             </div>
 
             <!-- Tabla de Pedidos -->
-            <p-table [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines">
+            <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']">
+                <ng-template pTemplate="caption">
+                    <div class="flex justify-between items-center flex-column sm:flex-row">
+                        <p-button label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
+                        <p-iconfield iconPosition="left" class="ml-auto">
+                            <p-inputicon>
+                                <i class="pi pi-search"></i>
+                            </p-inputicon>
+                            <input pInputText type="text" #searchInput (input)="onSearch($event)" placeholder="Search keyword" />
+                        </p-iconfield>
+                    </div>
+                </ng-template>
+
                 <ng-template pTemplate="header">
                     <tr>
-                        <th>ID</th>
-                        <th>Tercero</th>
+                        <th style="min-width: 5rem">ID</th>
+                        <th style="min-width: 15rem">
+                            <div class="flex justify-between items-center">
+                                Tercero
+                                <p-columnFilter field="tercero" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                                    <ng-template pTemplate="header">
+                                        <div class="px-3 pt-3 pb-0">
+                                            <span class="font-bold">Filtrar por Cliente</span>
+                                        </div>
+                                    </ng-template>
+                                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                        <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value); filter($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
+                                        </p-select>
+                                    </ng-template>
+                                </p-columnFilter>
+                            </div>
+                        </th>
                         <th>Estado</th>
                         <th>Dirección</th>
                         <th>Fecha</th>
@@ -208,7 +222,15 @@ export class PedidosListComponent implements OnInit {
         this.loadPedidos();
     }
 
-    limpiarFiltros(): void {
+    @ViewChild('searchInput') searchInput!: ElementRef;
+
+    limpiarFiltros(table?: any): void {
+        if (table) {
+            table.clear();
+        }
+        if (this.searchInput) {
+            this.searchInput.nativeElement.value = '';
+        }
         this.selectedTabValue = 'Todos';
         this.selectedEstado = null;
         this.selectedTercero = null;
