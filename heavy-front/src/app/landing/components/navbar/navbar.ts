@@ -16,6 +16,10 @@ export class Navbar implements OnInit {
     hoverTimeout: any;
     closeTimeout: any;
 
+    // Mobile menu properties
+    isMobileMenuOpen: boolean = false;
+    expandedCategories: Set<string> = new Set();
+
     constructor(private landingService: LandingService) { }
 
     ngOnInit() {
@@ -57,5 +61,40 @@ export class Navbar implements OnInit {
 
     setActiveCategory(slug: string) {
         this.activeCategory = slug;
+    }
+
+    // Mobile menu methods
+    toggleMobileMenu() {
+        this.isMobileMenuOpen = !this.isMobileMenuOpen;
+        // Prevent body scroll when menu is open
+        if (this.isMobileMenuOpen) {
+            document.body.style.overflow = 'hidden';
+        } else {
+            document.body.style.overflow = '';
+            this.expandedCategories.clear();
+        }
+    }
+
+    closeMobileMenu() {
+        this.isMobileMenuOpen = false;
+        document.body.style.overflow = '';
+        this.expandedCategories.clear();
+    }
+
+    toggleCategory(slug: string, event?: Event) {
+        if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+        }
+
+        if (this.expandedCategories.has(slug)) {
+            this.expandedCategories.delete(slug);
+        } else {
+            this.expandedCategories.add(slug);
+        }
+    }
+
+    isCategoryExpanded(slug: string): boolean {
+        return this.expandedCategories.has(slug);
     }
 }

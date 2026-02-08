@@ -1,6 +1,13 @@
 <div class="navbar-wrapper">
     <div class="navbar-content">
         <div class="navbar-inner-container">
+            <!-- Mobile hamburger button -->
+            <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+
             <div class="navbar-logo">
                 <a routerLink="/">
                     <img src="/images/logo.svg" alt="HEAVYMarket.NET" class="logo-image" />
@@ -138,6 +145,97 @@
                     </a>
                 </div>
             </div>
+        </div>
+    </div>
+    <!-- Mobile Menu -->
+    <div class="mobile-menu-overlay" [class.active]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+    <div class="mobile-menu" [class.active]="isMobileMenuOpen">
+        <div class="mobile-menu-header">
+            <div class="mobile-menu-logo">
+                <img src="/images/logo.svg" alt="HEAVYMarket.NET" />
+            </div>
+            <button class="mobile-menu-close" (click)="closeMobileMenu()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+        </div>
+
+        <div class="mobile-menu-content">
+            <!-- Nuestros productos con categorías expandibles -->
+            <div class="mobile-menu-section">
+                <button class="mobile-menu-item mobile-menu-expandable" (click)="toggleCategory('productos', $event)"
+                    [class.expanded]="isCategoryExpanded('productos')">
+                    <span class="mobile-menu-text">Nuestros productos</span>
+                    <svg class="mobile-menu-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                        <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            stroke-linejoin="round" />
+                    </svg>
+                </button>
+
+                <div class="mobile-menu-dropdown" [class.expanded]="isCategoryExpanded('productos')">
+                    <div class="mobile-menu-categories">
+                        @for (category of categories; track category.slug) {
+                        <div class="mobile-category-item">
+                            <button class="mobile-category-header" (click)="toggleCategory(category.slug, $event)"
+                                [class.expanded]="isCategoryExpanded(category.slug)">
+                                <span class="mobile-category-name">{{ category.nombre }}</span>
+                                <svg class="mobile-category-chevron" width="14" height="14" viewBox="0 0 16 16"
+                                    fill="none">
+                                    <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2"
+                                        stroke-linecap="round" stroke-linejoin="round" />
+                                </svg>
+                            </button>
+
+                            <div class="mobile-subcategories" [class.expanded]="isCategoryExpanded(category.slug)">
+                                @if (category.subcategorias && category.subcategorias.length > 0) {
+                                @for (sub of category.subcategorias; track sub.slug) {
+                                <div class="mobile-product-card" [routerLink]="['/productos', category.slug, sub.slug]"
+                                    (click)="closeMobileMenu()">
+                                    <div class="mobile-product-image">
+                                        <img [src]="sub.imagen_url" [alt]="sub.nombre" />
+                                    </div>
+                                    <div class="mobile-product-info">
+                                        <h5 class="mobile-product-name">{{ sub.nombre }}</h5>
+                                        <p class="mobile-product-description">{{ sub.descripcion }}</p>
+                                        <button class="mobile-product-button">
+                                            <span>Saber más</span>
+                                            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                <path d="M6 3L11 8L6 13" stroke="#0C0E0F" stroke-width="2"
+                                                    stroke-linecap="round" stroke-linejoin="round" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                                }
+                                }
+                            </div>
+                        </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cotiza ahora -->
+            <a routerLink="/cotizar" class="mobile-menu-item" (click)="closeMobileMenu()">
+                <span class="mobile-menu-text">Cotiza ahora</span>
+            </a>
+
+            <!-- Quienes somos -->
+            <a href="#quienes-somos" class="mobile-menu-item" (click)="closeMobileMenu()">
+                <span class="mobile-menu-text">Quienes somos</span>
+            </a>
+
+            <!-- Contáctanos -->
+            <a href="#contacto" class="mobile-menu-item" (click)="closeMobileMenu()">
+                <span class="mobile-menu-text">Contáctanos</span>
+            </a>
+
+            <!-- WhatsApp Button -->
+            <a href="https://wa.me/573208400279" target="_blank" class="mobile-whatsapp-button">
+                <span>WhatsApp</span>
+            </a>
         </div>
     </div>
     <!-- <app-banner></app-banner> -->
