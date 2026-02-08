@@ -1,6 +1,6 @@
 <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" (onHide)="onClose()"
     [showHeader]="false" [closable]="true" [dismissableMask]="true" styleClass="auth-modal-dialog"
-    maskStyleClass="auth-modal-mask" [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }">
+    maskStyleClass="auth-modal-mask" appendTo="body" [baseZIndex]="11000" [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }">
 
     <!-- Force Landing Dark Theme (Pure Black) -->
     <div class="landing-dark-theme" style="display: flex; flex-direction: column; width: 100%;">
