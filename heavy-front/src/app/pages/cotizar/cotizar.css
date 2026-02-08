@@ -587,11 +587,20 @@
 }
 
 /* Form Section */
+.form-step-content {
+    width: 954px;
+}
+
+.items-list {
+    width: 100%;
+}
+
 .form-section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    width: 100%;
 }
 
 .section-title {
@@ -904,6 +913,10 @@
 }
 
 /* User Data Form Layout */
+.user-data-form {
+    width: 100%;
+}
+
 .form-field-row {
     margin-bottom: 20px;
 }
