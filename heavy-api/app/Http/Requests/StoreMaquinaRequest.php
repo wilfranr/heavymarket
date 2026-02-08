@@ -34,6 +34,7 @@ class StoreMaquinaRequest extends FormRequest
             'arreglo' => ['nullable', 'string', 'max:255'],
             'foto' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
             'fotoId' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
+            'tercero_id' => ['nullable', 'integer', 'exists:terceros,id'],
         ];
     }
 

@@ -91,6 +91,11 @@ class MaquinaController extends Controller
 
         $maquina = Maquina::create($data);
 
+        // Si se envió un tercero_id, asociar la máquina
+        if ($request->filled('tercero_id')) {
+            $maquina->terceros()->attach($request->input('tercero_id'));
+        }
+
         return response()->json([
             'message' => 'Máquina creada exitosamente',
             'data' => new MaquinaResource($maquina->load(['fabricantes', 'listas'])),

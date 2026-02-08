@@ -65,8 +65,16 @@ class PedidoReferenciaProveedor extends Model
             }
             
             // Si aún no tenemos los IDs, lanzar una excepción con un mensaje claro
-            if (empty($model->referencia_id) || empty($model->pedido_referencia_id)) {
-                throw new \RuntimeException('No se pudo determinar la referencia o el pedido referencia. Asegúrate de que los IDs estén siendo proporcionados correctamente.');
+            if (empty($model->pedido_referencia_id)) {
+                throw new \RuntimeException('No se pudo determinar el pedido referencia. Asegúrate de que el ID esté siendo proporcionado correctamente.');
+            }
+            
+            // Si referencia_id es null, intentar recuperarlo del padre si existe
+            if (empty($model->referencia_id) && $model->pedido_referencia_id) {
+                 $padre = $model->pedidoReferencia ?? PedidoReferencia::find($model->pedido_referencia_id);
+                 if ($padre && $padre->referencia_id) {
+                     $model->referencia_id = $padre->referencia_id;
+                 }
             }
         });
     }
