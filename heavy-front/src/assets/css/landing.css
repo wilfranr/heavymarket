@@ -1852,7 +1852,7 @@ app-banner {
 .dropdown-main-content {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: stretch;
     padding: 0px;
     width: 100%;
     min-height: 343px;
@@ -1881,7 +1881,7 @@ app-banner {
     gap: 32px;
     width: 318px;
     min-height: 343px;
-    height: 100%;
+    height: auto;
     /* Ajuste para que se estire con el contenido */
     background: #0c0e0f;
     flex: none;
@@ -1896,16 +1896,16 @@ app-banner {
     align-items: flex-start;
     padding: 0px;
     gap: 16px;
-    width: 214px;
-    height: 274px;
+    width: 100%;
+    height: auto;
     flex: none;
     order: 0;
     flex-grow: 1;
 }
 
 .dropdown-menu-title {
-    width: 214px;
-    height: 18px;
+    width: 100%;
+    height: auto;
     font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;
@@ -1925,8 +1925,8 @@ app-banner {
     flex-direction: column;
     align-items: flex-start;
     padding: 0px;
-    width: 214px;
-    height: 240px;
+    width: 100%;
+    height: auto;
     flex: none;
     order: 1;
     align-self: stretch;
@@ -1940,13 +1940,15 @@ app-banner {
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 4px 10px;
+    padding: 8px 12px;
     gap: 10px;
-    width: 214px;
-    height: 48px;
+    width: 100%;
+    min-height: 48px;
+    height: auto;
     flex: none;
     align-self: stretch;
     flex-grow: 0;
+    box-sizing: border-box;
 }
 
 .dropdown-menu-item.active {
@@ -1955,18 +1957,20 @@ app-banner {
 }
 
 .dropdown-menu-link {
-    width: auto;
-    height: 20px;
+    width: 100%;
+    height: auto;
     font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 500;
     font-size: 14px;
-    line-height: 20px;
+    line-height: 1.2;
     letter-spacing: -0.006em;
-    flex: none;
+    flex: 1;
     order: 0;
-    flex-grow: 0;
+    flex-grow: 1;
     text-decoration: none;
+    white-space: normal;
+    word-break: break-word;
 }
 
 .dropdown-menu-item.active .dropdown-menu-link {
@@ -2043,7 +2047,7 @@ app-banner {
 
 .dropdown-articles-title {
     width: 1022px;
-    height: 22px;
+    height: auto;
     font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 700;

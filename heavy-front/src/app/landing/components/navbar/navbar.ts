@@ -2,11 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LandingService, Category } from '../../../core/services/landing';
-import { Banner } from '../banner/banner';
 
 @Component({
     selector: 'app-navbar',
-    imports: [CommonModule, RouterModule, Banner],
+    imports: [CommonModule, RouterModule],
     templateUrl: './navbar.html',
     styles: ``
 })
@@ -17,7 +16,7 @@ export class Navbar implements OnInit {
     hoverTimeout: any;
     closeTimeout: any;
 
-    constructor(private landingService: LandingService) {}
+    constructor(private landingService: LandingService) { }
 
     ngOnInit() {
         this.landingService.getNavbarCategories().subscribe((data) => {
