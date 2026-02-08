@@ -46,6 +46,11 @@ class ReferenciaController extends Controller
             $query->where('marca_id', $request->input('marca_id'));
         }
 
+        // Filtro por artículo
+        if ($request->filled('articulo_id')) {
+            $query->where('articulo_id', $request->input('articulo_id'));
+        }
+
         // Ordenamiento
         $sortBy = $request->input('sort_by', 'referencia');
         $sortOrder = $request->input('sort_order', 'asc');

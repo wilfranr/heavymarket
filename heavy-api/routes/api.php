@@ -27,9 +27,9 @@ use App\Http\Controllers\Api\V1\{
     LandingController,
     UbicacionController,
     DashboardController,
-    NotificationController
+    NotificationController,
+    ClientAuthController
 };
-
 /**
  * Rutas API versión 1
  * 
@@ -62,6 +62,25 @@ Route::prefix('v1')->group(function () {
     Route::get('/landing/navbar-data', [LandingController::class, 'navbarData']);
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote']);
+
+    /**
+     * Rutas de Ubicaciones (públicas para formularios)
+     */
+    Route::prefix('ubicaciones')->group(function () {
+        Route::get('paises', [UbicacionController::class, 'countries']);
+        Route::get('departamentos', [UbicacionController::class, 'states']);
+        Route::get('ciudades', [UbicacionController::class, 'cities']);
+    });
+
+    /**
+     * Rutas de Autenticación para Clientes (Landing)
+     */
+    Route::prefix('landing/auth')->group(function () {
+        Route::post('/register', [ClientAuthController::class, 'register']);
+        Route::post('/login', [ClientAuthController::class, 'login']);
+        Route::get('/{provider}/redirect', [ClientAuthController::class, 'redirectToProvider']);
+        Route::get('/{provider}/callback', [ClientAuthController::class, 'handleProviderCallback']);
+    });
 
     /**
      * Rutas protegidas con autenticación Sanctum
@@ -147,9 +166,7 @@ Route::prefix('v1')->group(function () {
         /**
          * Módulos auxiliares
          */
-        Route::get('ubicaciones/paises', [UbicacionController::class, 'countries']);
-        Route::get('ubicaciones/departamentos', [UbicacionController::class, 'states']);
-        Route::get('ubicaciones/ciudades', [UbicacionController::class, 'cities']);
+
         
         Route::apiResource('empresas', EmpresaController::class);
         Route::apiResource('contactos', ContactoController::class);

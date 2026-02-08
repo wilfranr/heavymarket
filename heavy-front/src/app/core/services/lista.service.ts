@@ -26,7 +26,7 @@ export class ListaService extends ApiService {
     /**
      * Obtener todas las listas con filtros
      */
-    getAll(params?: { tipo?: ListaTipo; search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Lista>> {
+    getAll(params?: { tipo?: ListaTipo; search?: string; sistema_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Lista>> {
         return this.get<PaginatedResponse<Lista>>(this.endpoint, params);
     }
 

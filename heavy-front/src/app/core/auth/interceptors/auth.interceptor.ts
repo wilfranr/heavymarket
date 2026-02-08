@@ -12,7 +12,19 @@ import { AuthService } from '../services/auth.service';
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
     const authService = inject(AuthService);
-    const token = authService.getToken();
+
+    // Obtener tokens de ambos contextos
+    const adminToken = authService.getToken();
+    const landingToken = localStorage.getItem('clientToken');
+
+    let token = null;
+
+    // Priorizar el token según la ruta
+    if (req.url.includes('/landing/')) {
+        token = landingToken;
+    } else {
+        token = adminToken;
+    }
 
     // Solo agregar token si existe y la petición va al API
     if (token && req.url.includes('/api/')) {

@@ -53,7 +53,7 @@ export class Cotizar implements OnInit {
         address: ''
     };
 
-    // Dropdown States
+    // Dropsdowns
     openBrand = false;
     openType = false;
 
@@ -64,6 +64,9 @@ export class Cotizar implements OnInit {
     selectedSeries = '';
     selectedArrangement = '';
     selectedCard: any = null; // Changed to object to hold the full subcategory
+
+    // Auth
+    currentUser: any = null;
 
     // Tabs
     activeTab = '';
@@ -78,6 +81,15 @@ export class Cotizar implements OnInit {
 
     ngOnInit() {
         console.log('Cotizar ngOnInit');
+
+        // Load User from LocalStorage
+        const storedUser = localStorage.getItem('clientUser');
+        if (storedUser) {
+            this.currentUser = JSON.parse(storedUser);
+            this.userData.name = this.currentUser.name;
+            this.userData.email = this.currentUser.email;
+        }
+
         // Load Quote Data
         this.landingService.getQuoteData().subscribe({
             next: data => {

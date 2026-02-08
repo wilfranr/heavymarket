@@ -18,7 +18,7 @@ export class ReferenciaService extends ApiService {
     /**
      * Obtener todas las referencias con filtros
      */
-    getAll(params?: { search?: string; marca_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Referencia>> {
+    getAll(params?: { search?: string; marca_id?: number; articulo_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Referencia>> {
         return this.get<PaginatedResponse<Referencia>>(this.endpoint, params);
     }
 

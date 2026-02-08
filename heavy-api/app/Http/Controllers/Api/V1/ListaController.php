@@ -39,6 +39,17 @@ class ListaController extends Controller
             $query->where('tipo', $request->input('tipo'));
         }
 
+        // Filtro por sistema
+        if ($request->filled('sistema_id')) {
+            $sistemaId = $request->input('sistema_id');
+            $query->where(function($q) use ($sistemaId) {
+                $q->where('sistema_id', $sistemaId)
+                  ->orWhereHas('sistemas', function($sq) use ($sistemaId) {
+                      $sq->where('sistemas.id', $sistemaId);
+                  });
+            });
+        }
+
         // Búsqueda en nombre o definición
         if ($request->filled('search')) {
             $search = $request->input('search');

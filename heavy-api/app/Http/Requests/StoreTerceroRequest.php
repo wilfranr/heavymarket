@@ -28,15 +28,15 @@ class StoreTerceroRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tipo_documento' => ['required', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
-            'numero_documento' => ['required', 'string', 'max:50', 'unique:terceros,numero_documento'],
+            'tipo_documento' => ['nullable', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
+            'numero_documento' => ['nullable', 'string', 'max:50', 'unique:terceros,numero_documento'],
             'nombre' => ['required', 'string', 'max:255'],
             'tipo' => ['required', Rule::in(['Cliente', 'Proveedor', 'Ambos'])],
             
             // Contact info
             'email' => ['nullable', 'email', 'max:255'],
-            'telefono' => ['required', 'string', 'max:50'],
-            'direccion' => ['required', 'string', 'max:255'],
+            'telefono' => ['nullable', 'string', 'max:50'],
+            'direccion' => ['nullable', 'string', 'max:255'],
             
             // Location keys (IDs preferred if passed, but basic validation here)
             'country_id' => ['nullable', 'integer'],

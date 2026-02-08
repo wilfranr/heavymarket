@@ -20,11 +20,31 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
         catchError((error: HttpErrorResponse) => {
             // Manejar errores de autenticación
             if (error.status === 401) {
+                // Evitar bucle infinito si la propia petición de logout falla
+                if (req.url.includes('/logout')) {
+                    return throwError(() => error);
+                }
+
+                // Si el error viene de una ruta pública de la landing o de ubicaciones, no redirigimos
+                if (req.url.includes('/landing/') || req.url.includes('/ubicaciones/')) {
+                    return throwError(() => error);
+                }
+
                 // Token inválido o expirado - redirigir al login
-                authService.logout().subscribe();
-                router.navigate(['/auth/login'], {
-                    queryParams: { returnUrl: router.url }
-                });
+                // Evitamos llamar a logout().subscribe() aquí directamente si ya estamos en una ruta de auth
+                if (!router.url.includes('/auth/login')) {
+                    authService.logout().subscribe({
+                        error: () => {
+                            // Si falla el logout del server, al menos limpiamos localmente
+                            localStorage.removeItem('access_token');
+                            localStorage.removeItem('current_user');
+                        }
+                    });
+
+                    router.navigate(['/auth/login'], {
+                        queryParams: { returnUrl: router.url }
+                    });
+                }
             }
 
             // Solo loggear errores que no sean de validación (422)

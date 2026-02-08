@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
@@ -101,6 +101,12 @@ export class LandingService {
             }
         });
 
-        return this.http.post<any>(`${environment.apiUrl}/landing/submit-quote`, formData);
+        const token = localStorage.getItem('clientToken');
+        let headers = new HttpHeaders();
+        if (token) {
+            headers = headers.set('Authorization', `Bearer ${token}`);
+        }
+
+        return this.http.post<any>(`${environment.apiUrl}/landing/submit-quote`, formData, { headers });
     }
 }

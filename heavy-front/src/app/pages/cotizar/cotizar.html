@@ -256,8 +256,8 @@
                         </div>
 
                         <div class="user-data-form">
-                            <!-- Name -->
-                            <div class="form-field-row">
+                            <!-- Name (Hide if logged in) -->
+                            <div class="form-field-row" *ngIf="!currentUser">
                                 <div class="form-field full-width">
                                     <label class="input-label">Nombre completo *</label>
                                     <input type="text" class="custom-input" [(ngModel)]="userData.name"
@@ -265,8 +265,17 @@
                                 </div>
                             </div>
 
-                            <!-- Document Info -->
-                            <div class="form-field-row two-col">
+                            <!-- Welcome message if logged in -->
+                            <div class="logged-in-greeting" *ngIf="currentUser"
+                                style="margin-bottom: 24px; padding: 16px; background: rgba(253, 184, 49, 0.1); border-radius: 12px; border-left: 4px solid #fdb831;">
+                                <p style="margin: 0; color: #fff; font-size: 1.1rem;">Hola, <strong
+                                        style="color: #fdb831;">{{ currentUser.name }}</strong></p>
+                                <p style="margin: 4px 0 0 0; color: #ccc; font-size: 0.9rem;">Hemos pre-llenado tus
+                                    datos básicos. Por favor completa la información restante.</p>
+                            </div>
+
+                            <!-- Document Info (Hide if logged in) -->
+                            <div class="form-field-row two-col" *ngIf="!currentUser">
                                 <div class="form-field">
                                     <label class="input-label">Tipo de documento</label>
                                     <select class="custom-input" [(ngModel)]="userData.documentType">
@@ -283,14 +292,14 @@
                                 </div>
                             </div>
 
-                            <!-- Email & Phone -->
+                            <!-- Email & Phone (Email hidden if logged in) -->
                             <div class="form-field-row two-col">
-                                <div class="form-field">
+                                <div class="form-field" *ngIf="!currentUser">
                                     <label class="input-label">Correo electrónico *</label>
                                     <input type="email" class="custom-input" [(ngModel)]="userData.email"
                                         placeholder="Ej: juan@empresa.com">
                                 </div>
-                                <div class="form-field">
+                                <div class="form-field" [class.full-width]="currentUser">
                                     <label class="input-label">Teléfono / Celular *</label>
                                     <input type="tel" class="custom-input" [(ngModel)]="userData.phone"
                                         placeholder="Ej: +57 300 123 4567">

@@ -34,7 +34,7 @@
                     <div class="form-checkbox">
                         <input type="checkbox" id="terms" />
                         <label for="terms">Acepto el tratamiento de mis datos personales y comerciales. <a
-                                href="#">Saber más.</a></label>
+                                (click)="openTerms.emit()" class="cursor-pointer">Saber más.</a></label>
                     </div>
 
                     <button type="submit" class="submit-button">Enviar formulario</button>
@@ -90,8 +90,8 @@
     <div class="footer-credits">
         <p class="copyright">© 2025 HeavyMarket. Todos los derechos reservados.</p>
         <div class="footer-links">
-            <a href="#" class="footer-credit-link">Política de privacidad</a>
-            <a href="#" class="footer-credit-link">Términos de servicio</a>
+            <a (click)="openTerms.emit()" class="footer-credit-link cursor-pointer">Política de privacidad</a>
+            <a (click)="openTerms.emit()" class="footer-credit-link cursor-pointer">Términos de servicio</a>
             <a href="#" class="footer-credit-link">Configuración de cookies</a>
         </div>
     </div>

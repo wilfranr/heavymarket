@@ -1,0 +1,94 @@
+::ng-deep .auth-modal-dialog {
+    box-shadow: 0px 20px 50px rgba(0, 0, 0, 0.5) !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 56px !important;
+
+    .p-dialog-header {
+        display: none !important;
+    }
+
+    .p-dialog-content {
+        padding: 0 !important;
+        background: transparent !important;
+        border: none !important;
+        overflow: visible !important;
+        border-radius: 56px !important;
+        display: block !important;
+    }
+}
+
+/* Custom Checkbox for Dark Theme */
+::ng-deep .dark-checkbox .p-checkbox-box {
+    background: #1a1c1e !important;
+    border: 1px solid #333 !important;
+    border-radius: 4px !important;
+}
+
+::ng-deep .dark-checkbox .p-checkbox-box.p-highlight {
+    background: #fdb831 !important;
+    border-color: #fdb831 !important;
+
+    .p-checkbox-icon {
+        color: #0c0e0f !important;
+    }
+}
+
+/* Hard reset for inputs inside the modal to match Landing Dark Theme */
+.landing-dark-theme {
+    /* Sakai colors overrides for this scope */
+    --text-color: #ffffff;
+    --text-color-secondary: #9ca3af;
+    --primary-color: #fdb831;
+
+    .auth-card {
+        background-color: #0c0e0f !important;
+        color: #ffffff !important;
+    }
+
+    input.p-inputtext,
+    .p-password-input {
+        width: 100% !important;
+        display: block !important;
+        background: #1a1c1e !important;
+        color: #fff !important;
+        border: 1px solid #333 !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+        border-radius: 12px !important;
+
+        &:focus {
+            border-color: #fdb831 !important;
+            box-shadow: 0 0 0 1px #fdb831 !important;
+        }
+
+        &::placeholder {
+            color: #666 !important;
+        }
+    }
+
+    .p-password {
+        display: flex !important;
+        width: 100% !important;
+    }
+
+    /* Override PrimeNG labels and spacing */
+    label {
+        font-weight: 500 !important;
+        color: #e5e7eb !important;
+    }
+
+    /* Small links and extra text */
+    a {
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
+}
+
+/* Ensure password visibility icon is visible */
+::ng-deep .p-password-icon {
+    color: #9ca3af !important;
+}

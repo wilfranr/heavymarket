@@ -85,6 +85,7 @@ class Tercero extends Model
         'country_id',                 // ID del país del tercero
         'state_id',                   // ID del estado/provincia del tercero
         'city_id',                    // ID de la ciudad del tercero
+        'user_id',                    // ID del usuario relacionado (opcional)
     ];
 
     protected $normalizableAttributes = [
@@ -210,5 +211,15 @@ class Tercero extends Model
     public function pedidosReferenciaProveedor()
     {
         return $this->hasMany(\App\Models\PedidoReferenciaProveedor::class, 'tercero_id');
+    }
+
+    /**
+     * Relación con el usuario del sistema.
+     * 
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }

@@ -119,10 +119,18 @@
                                 <!-- Contact Selector -->
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block">Contacto</label>
-                                    <p-select formControlName="contacto_id" [options]="contactos" [filter]="true"
-                                        placeholder="Seleccionar contacto..."
-                                        [disabled]="!pedidoForm.get('tercero_id')?.value" styleClass="w-full h-[42px]">
-                                    </p-select>
+                                    <div class="flex gap-2">
+                                        <p-select formControlName="contacto_id" [options]="contactos" [filter]="true"
+                                            placeholder="Seleccionar contacto..."
+                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                            styleClass="flex-1 h-[42px]">
+                                        </p-select>
+                                        <button type="button" (click)="openCreateContactoDialog()"
+                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                            class="w-[42px] h-[42px] rounded-lg bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shrink-0">
+                                            <i class="pi pi-plus text-sm"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Client Details -->
@@ -381,23 +389,22 @@
 
                                 <!-- Tipo Articulo -->
                                 <div class="w-[15%]">
-                                    <p-select formControlName="definicion" [options]="tiposArticulos" placeholder="Tipo"
-                                        [filter]="true" appendTo="body" [editable]="true"
-                                        styleClass="w-full    h-[42px]">
+                                    <p-select formControlName="articulo_id" [options]="tiposPorFila[refIndex]"
+                                        placeholder="Tipo" [filter]="true" appendTo="body" styleClass="w-full h-[42px]">
                                     </p-select>
                                 </div>
 
                                 <!-- Cantidad -->
                                 <div class="w-[80px]">
                                     <input pInputText type="number" formControlName="cantidad" min="1" placeholder="0"
-                                        class="w-full    h-[42px] text-center font-semibold rounded-lg" />
+                                        class="w-full h-[42px] text-center font-semibold rounded-lg" />
                                 </div>
 
                                 <!-- Referencia -->
                                 <div class="flex-1">
-                                    <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
-                                        filterBy="label" placeholder="Buscar referencia..." appendTo="body"
-                                        styleClass="w-full    h-[42px]">
+                                    <p-select formControlName="referencia_id" [options]="referenciasPorFila[refIndex]"
+                                        [filter]="true" filterBy="label" placeholder="Buscar referencia..."
+                                        appendTo="body" styleClass="w-full h-[42px]">
                                     </p-select>
                                 </div>
 
@@ -487,3 +494,8 @@
 <app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" [terceroId]="terceroId()"
     (onMaquinaCreated)="onMaquinaCreated($event)">
 </app-maquina-create-modal>
+
+<!-- Create Contacto Dialog -->
+<app-contacto-create-modal [(visible)]="displayCreateContactoDialog" [terceroId]="terceroId()"
+    (onContactoCreated)="onContactoCreated($event)">
+</app-contacto-create-modal>

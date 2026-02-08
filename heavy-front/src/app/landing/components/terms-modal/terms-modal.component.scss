@@ -1,0 +1,73 @@
+:host ::ng-deep {
+    .p-dialog {
+        background: #0c0e0f;
+        border: 1px solid #333;
+        border-radius: 20px;
+        box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
+
+        .p-dialog-header {
+            background: #0c0e0f;
+            color: #fdb831;
+            border-bottom: 1px solid #333;
+            border-top-left-radius: 20px;
+            border-top-right-radius: 20px;
+            padding: 1.5rem;
+        }
+
+        .p-dialog-content {
+            background: #0c0e0f;
+            color: #ccc;
+            padding: 2rem;
+        }
+
+        .p-dialog-footer {
+            background: #0c0e0f;
+            border-top: 1px solid #333;
+            border-bottom-left-radius: 20px;
+            border-bottom-right-radius: 20px;
+            padding: 1rem 1.5rem;
+        }
+
+        .p-dialog-header-icons .p-dialog-header-icon {
+            color: #fdb831;
+
+            &:hover {
+                background: rgba(253, 184, 49, 0.1);
+            }
+        }
+    }
+}
+
+.terms-content {
+    h3 {
+        color: #fdb831;
+        font-size: 1.25rem;
+        margin: 1.5rem 0 0.75rem 0;
+        font-weight: 600;
+    }
+
+    p {
+        line-height: 1.7;
+        margin-bottom: 1rem;
+        font-size: 1rem;
+        color: #b0b0b0;
+    }
+
+    ul {
+        padding-left: 1.5rem;
+        margin-bottom: 1rem;
+
+        li {
+            color: #b0b0b0;
+            margin-bottom: 0.5rem;
+            line-height: 1.6;
+        }
+    }
+
+    .last-updated {
+        font-style: italic;
+        font-size: 0.9rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+}

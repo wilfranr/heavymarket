@@ -9,10 +9,18 @@ import { StepsSection } from './components/steps-section/steps-section';
 import { SystemsSection } from './components/systems-section/systems-section';
 import { FooterSection } from './components/footer-section/footer-section';
 
+import { TermsModalComponent } from './components/terms-modal/terms-modal.component';
+
 @Component({
     selector: 'app-landing',
-    imports: [Navbar, Carousel, BrandsSection, QuoteSection, WhoWeAreSection, ValuesSection, StepsSection, SystemsSection, FooterSection],
+    imports: [Navbar, Carousel, BrandsSection, QuoteSection, WhoWeAreSection, ValuesSection, StepsSection, SystemsSection, FooterSection, TermsModalComponent],
     templateUrl: './landing.html',
     styles: ``
 })
-export class Landing { }
+export class Landing {
+    showTerms = false;
+
+    openTerms() {
+        this.showTerms = true;
+    }
+}

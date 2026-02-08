@@ -18,7 +18,7 @@ export class ArticuloService extends ApiService {
     /**
      * Obtener todos los artículos con filtros
      */
-    getAll(params?: { search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Articulo>> {
+    getAll(params?: { search?: string; definicion?: string; sistema_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Articulo>> {
         return this.get<PaginatedResponse<Articulo>>(this.endpoint, params);
     }
 

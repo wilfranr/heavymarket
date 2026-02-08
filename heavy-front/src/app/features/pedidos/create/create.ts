@@ -36,6 +36,7 @@ import { ArticuloService } from '../../../core/services/articulo.service';
 import { ContactoService } from '../../../core/services/contacto.service';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
+import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 
 /**
  * Componente de creación de pedido con Wizard de 3 pasos
@@ -64,7 +65,8 @@ import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-
         TagModule,
         SkeletonModule,
         TerceroCreateModalComponent,
-        MaquinaCreateModalComponent
+        MaquinaCreateModalComponent,
+        ContactoCreateModalComponent
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -93,6 +95,7 @@ export class CreateComponent implements OnInit {
     // Modales
     displayCreateTerceroDialog = false;
     displayCreateMaquinaDialog = false;
+    displayCreateContactoDialog = false;
 
     today = new Date();
 
@@ -104,7 +107,11 @@ export class CreateComponent implements OnInit {
     fabricantes: any[] = [];
     referencias: any[] = [];
     contactos: any[] = [];
-    tiposArticulos: any[] = [];
+    tiposArticulos: any[] = []; // Opciones globales si se necesita
+
+    // Cascading options por fila (índice del FormArray)
+    tiposPorFila: any[][] = [];
+    referenciasPorFila: any[][] = [];
 
     // Terceros completos para info cards
     tercerosFull: any[] = [];
@@ -201,6 +208,39 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Muestra el diálogo para crear un nuevo contacto
+     */
+    openCreateContactoDialog(): void {
+        if (!this.terceroId()) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Atención',
+                detail: 'Debe seleccionar un cliente primero'
+            });
+            return;
+        }
+        this.displayCreateContactoDialog = true;
+    }
+
+    /**
+     * Maneja el evento cuando se crea un contacto exitosamente
+     */
+    onContactoCreated(contacto: any): void {
+        const clienteId = this.terceroId();
+        if (clienteId) {
+            this.loadContactos(clienteId);
+            // Seleccionar el nuevo contacto
+            setTimeout(() => {
+                this.pedidoForm.patchValue({ contacto_id: contacto.id });
+
+                // Si es el contacto principal o único, actualizar info adicional si es necesario
+                console.log('Contacto creado y seleccionado:', contacto);
+            }, 500);
+        }
+        this.displayCreateContactoDialog = false;
+    }
+
+    /**
      * Muestra el diálogo para crear una nueva máquina
      */
     openCreateMaquinaDialog(): void {
@@ -286,7 +326,63 @@ export class CreateComponent implements OnInit {
     }
 
     /**
-     * Carga las referencias disponibles
+     * Maneja el cambio de sistema en una fila
+     */
+    onSistemaChange(sistemaId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+        this.tiposPorFila[index] = [];
+        this.referenciasPorFila[index] = [];
+
+        if (!sistemaId) return;
+
+        // Cargar Listas (Tipos de Artículo) asociados al sistema
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+            next: (response) => {
+                // Ahora buscamos los Artículos que coinciden con estos nombres
+                const nombresTipos = response.data.map(l => l.nombre);
+
+                // Opción A: Cargar artículos que tienen esta definición
+                // Para simplificar, si el backend no tiene un join directo, 
+                // cargaremos los artículos a medida que el usuario los necesite
+                this.articuloService.getAll({ per_page: 500 }).subscribe({
+                    next: (resArt) => {
+                        this.tiposPorFila[index] = resArt.data
+                            .filter(a => nombresTipos.includes(a.definicion))
+                            .map(a => ({
+                                label: a.definicion,
+                                value: a.id,
+                                descripcion: a.descripcionEspecifica
+                            }));
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Maneja el cambio de artículo (Tipo) en una fila
+     */
+    onArticuloChange(articuloId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ referencia_id: null }, { emitEvent: false });
+        this.referenciasPorFila[index] = [];
+
+        if (!articuloId) return;
+
+        // Cargar referencias asociadas a este artículo
+        this.referenciaService.getAll({ articulo_id: articuloId, per_page: 100 }).subscribe({
+            next: (response) => {
+                this.referenciasPorFila[index] = response.data.map(r => ({
+                    label: r.referencia,
+                    value: r.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga las referencias disponibles (globales, se mantiene por compatibilidad)
      */
     private loadReferencias(): void {
         this.referenciaService.getAll({ per_page: 500 }).subscribe({
@@ -335,21 +431,44 @@ export class CreateComponent implements OnInit {
         return referenciaId || definicion ? null : { requiredReferenciaOrDefinicion: true };
     }
 
-    /**
-     * Agrega una nueva referencia al FormArray
-     */
-    agregarReferencia(): void {
+    agregarReferencia(data: any = {}): void {
+        const index = this.referenciasFormArray.length;
+
+        // Inicializar opciones vacías para esta fila
+        this.tiposPorFila[index] = [];
+        this.referenciasPorFila[index] = [];
+
         const referenciaForm = this.fb.group({
-            estado: [true],
-            sistema_id: [null],
-            referencia_id: [null],
-            marca_id: [null],
-            cantidad: [1, [Validators.required, Validators.min(1)]],
-            comentario: [''],
-            definicion: [''],
-            imagen: [null],
-            proveedores: this.fb.array([])
-        }, { validators: this.referenciaOrDefinicionValidator });
+            estado: [data.estado ?? true],
+            sistema_id: [data.sistema_id ?? null],
+            articulo_id: [data.articulo_id ?? null],
+            referencia_id: [data.referencia_id ?? null],
+            marca_id: [data.marca_id ?? null],
+            cantidad: [data.cantidad ?? 1, [Validators.required, Validators.min(1)]],
+            comentario: [data.comentario ?? ''],
+            definicion: [data.definicion ?? ''],
+            imagen: [data.imagen ?? null],
+            proveedores: this.fb.array(data.proveedores ?? [])
+        });
+
+        // Suscribirse a cambios de sistema para cargar tipos
+        referenciaForm.get('sistema_id')?.valueChanges.subscribe(sistemaId => {
+            this.onSistemaChange(sistemaId as number | null, index);
+        });
+
+        // Suscribirse a cambios de artículo para cargar referencias
+        referenciaForm.get('articulo_id')?.valueChanges.subscribe(articuloId => {
+            this.onArticuloChange(articuloId as number | null, index);
+        });
+
+        // Si ya viene con sistema_id, cargar tipos inmediatamente
+        if (data.sistema_id) {
+            this.onSistemaChange(data.sistema_id, index);
+        }
+        // Si ya viene con articulo_id, cargar referencias inmediatamente
+        if (data.articulo_id) {
+            this.onArticuloChange(data.articulo_id, index);
+        }
 
         this.referenciasFormArray.push(referenciaForm);
     }
@@ -488,19 +607,11 @@ export class CreateComponent implements OnInit {
      * Agrega una referencia al FormArray (método privado)
      */
     private agregarReferenciaAlFormArray(referenciaId: number | null, cantidad: number, definicion: string = ''): void {
-        const referenciaForm = this.fb.group({
-            estado: [true],
-            sistema_id: [null],
-            referencia_id: [referenciaId],
-            marca_id: [null],
-            cantidad: [cantidad, [Validators.required, Validators.min(1)]],
-            comentario: [''],
-            definicion: [definicion],
-            imagen: [null],
-            proveedores: this.fb.array([])
-        }, { validators: this.referenciaOrDefinicionValidator });
-
-        this.referenciasFormArray.push(referenciaForm);
+        this.agregarReferencia({
+            referencia_id: referenciaId,
+            cantidad: cantidad,
+            definicion: definicion
+        });
     }
 
     /**

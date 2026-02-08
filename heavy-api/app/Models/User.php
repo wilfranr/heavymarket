@@ -83,8 +83,30 @@ class User extends Authenticatable
      * @param string|array $roles
      * @return bool
      */
+    /**
+     * Verifica si el usuario tiene uno de los roles permitidos
+     *
+     * @param string|array $roles
+     * @return bool
+     */
     public function isAuthorized(string|array $roles): bool
     {
         return $this->hasAnyRole(is_array($roles) ? $roles : [$roles]);
+    }
+
+    /**
+     * Get the social identities for the user.
+     */
+    public function socialIdentities()
+    {
+        return $this->hasMany(SocialIdentity::class);
+    }
+
+    /**
+     * Get the tercero record associated with the user.
+     */
+    public function tercero()
+    {
+        return $this->hasOne(Tercero::class);
     }
 }

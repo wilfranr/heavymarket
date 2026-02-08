@@ -45,6 +45,11 @@ class ArticuloController extends Controller
             });
         }
 
+        // Filtro exacto por definición
+        if ($request->filled('definicion')) {
+            $query->where('definicion', $request->input('definicion'));
+        }
+
         // Ordenamiento
         $sortBy = $request->input('sort_by', 'descripcionEspecifica');
         $sortOrder = $request->input('sort_order', 'asc');

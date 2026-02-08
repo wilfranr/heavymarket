@@ -31,16 +31,16 @@ class UpdateTerceroRequest extends FormRequest
         $terceroId = $this->route('tercero')->id;
 
         return [
-            'tipo_documento' => ['required', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
+            'tipo_documento' => ['nullable', Rule::in(['NIT', 'CC', 'CE', 'Pasaporte'])],
             // Ignore unique rule for the current record
-            'numero_documento' => ['required', 'string', 'max:50', Rule::unique('terceros', 'numero_documento')->ignore($terceroId)],
+            'numero_documento' => ['nullable', 'string', 'max:50', Rule::unique('terceros', 'numero_documento')->ignore($terceroId)],
             'nombre' => ['required', 'string', 'max:255'],
             'tipo' => ['required', Rule::in(['Cliente', 'Proveedor', 'Ambos'])],
             
             // Contact info
             'email' => ['nullable', 'email', 'max:255'],
-            'telefono' => ['required', 'string', 'max:50'],
-            'direccion' => ['required', 'string', 'max:255'],
+            'telefono' => ['nullable', 'string', 'max:50'],
+            'direccion' => ['nullable', 'string', 'max:255'],
             
             // Location keys
             'country_id' => ['nullable', 'integer'],
