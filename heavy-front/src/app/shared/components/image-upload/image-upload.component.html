@@ -11,7 +11,7 @@
     }
 
     <div (click)="triggerFileInput()" (drop)="onFileDropped($event)" (dragover)="onDragOver($event)"
-        class="surface-ground border-2 border-dashed border-surface-border rounded-2xl flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative"
+        class="surface-section border-2 border-dashed border-surface-border rounded-2xl flex flex-col items-center justify-center gap-4 group cursor-pointer hover:border-[#fdb831]/50 hover:bg-[#fdb831]/5 transition-all overflow-hidden relative"
         [ngStyle]="{ height: height }">
 
         <input type="file" #fileInput (change)="onFileSelected($event)" [accept]="accept" class="hidden" />
