@@ -1,7 +1,6 @@
 :host {
     display: block;
     min-height: 100vh;
-    background-color: #000000;
     font-family: 'Figtree', sans-serif;
 }
 
@@ -57,19 +56,24 @@ $color-text-black: #0C0E0F;
     border: none;
 }
 
-::ng-deep {
+// Estilos específicos solo para este componente
+:host ::ng-deep {
 
-    .p-inputtext,
-    .p-select,
-    .p-textarea {
-        background-color: #343743;
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        color: #FFFFFF;
-        border-radius: 8px;
+    // Solo afectar inputs dentro del formulario de pedidos
+    form {
 
-        &:enabled:focus {
-            border-color: $color-yellow;
-            box-shadow: 0 0 0 1px $color-yellow;
+        .p-inputtext,
+        .p-select,
+        .p-textarea {
+            background-color: #343743;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #FFFFFF;
+            border-radius: 8px;
+
+            &:enabled:focus {
+                border-color: $color-yellow;
+                box-shadow: 0 0 0 1px $color-yellow;
+            }
         }
     }
 

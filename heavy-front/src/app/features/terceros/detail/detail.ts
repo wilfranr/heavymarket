@@ -40,21 +40,21 @@ import { ImageModule } from 'primeng/image';
         
         .info-item {
             padding: 1rem;
-            background: rgba(255, 255, 255, 0.05);
+            background: var(--surface-50);
             border-radius: 0.5rem;
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--surface-border);
         }
         
         .info-label {
             font-size: 0.875rem;
-            color: rgba(255, 255, 255, 0.6);
+            color: var(--text-color-secondary);
             margin-bottom: 0.5rem;
             font-weight: 600;
         }
         
         .info-value {
             font-size: 1rem;
-            color: rgba(255, 255, 255, 0.9);
+            color: var(--text-color);
         }
         
         .section-title {
@@ -66,8 +66,8 @@ import { ImageModule } from 'primeng/image';
         }
         
         .contact-card {
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: var(--surface-50);
+            border: 1px solid var(--surface-border);
             border-radius: 0.5rem;
             padding: 1rem;
         }

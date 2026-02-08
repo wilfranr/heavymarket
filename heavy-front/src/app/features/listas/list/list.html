@@ -11,12 +11,12 @@
         </ng-template>
 
         <div class="mb-6 overflow-x-auto pb-2">
-            <div class="flex items-center gap-1 p-1 bg-[#1a1c1e] rounded-xl w-max min-w-full">
+            <div class="flex items-center gap-1 p-1 surface-100 rounded-xl w-max min-w-full">
                 @for (tipo of tipos; track tipo.label) {
                 <button (click)="onTipoChange(tipo.value)"
                     class="px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200" [ngClass]="{
-                        'bg-[#2d2f31] text-[#f4ba3e] shadow-sm': selectedTipo === tipo.value,
-                        'text-gray-400 hover:text-white hover:bg-[#252729]': selectedTipo !== tipo.value
+                        'surface-card text-primary shadow-sm': selectedTipo === tipo.value,
+                        'text-600 hover:text-900 hover:surface-200': selectedTipo !== tipo.value
                     }">
                     {{ tipo.label }}
                 </button>

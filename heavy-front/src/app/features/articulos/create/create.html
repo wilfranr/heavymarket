@@ -1,8 +1,9 @@
 <p-toast />
 
-<div class="p-8 bg-[#09090b] min-h-screen text-gray-100 pb-28">
+<div class="p-8 surface-ground min-h-screen text-900 pb-28">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-8 bg-[#121214] p-4 rounded-xl border border-white/5 shadow-xl">
+    <div
+        class="flex justify-between items-center mb-8 surface-card p-4 rounded-xl border border-surface-border shadow-xl">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-[#fdb831] flex items-center justify-center text-black">
                 <i class="pi pi-box text-xl"></i>
@@ -17,12 +18,12 @@
 
         <!-- Columna Izquierda: Información General (4 celdas) -->
         <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-xl flex flex-col gap-6 h-full">
-                <div class="flex items-center gap-3 mb-2 border-b border-white/5 pb-4">
+            <div class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-6 h-full">
+                <div class="flex items-center gap-3 mb-2 border-b border-surface-border pb-4">
                     <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                         <i class="pi pi-info-circle text-sm"></i>
                     </div>
-                    <h3 class="text-sm font-bold uppercase tracking-wide text-gray-200">Información General</h3>
+                    <h3 class="text-sm font-bold uppercase tracking-wide text-700">Información General</h3>
                 </div>
 
                 <div class="flex flex-col gap-5">
@@ -34,7 +35,7 @@
                             <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
                                 optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" [filter]="true"
                                 filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
-                                class="w-full h-10 bg-[#0c0c0e] border-white/5 rounded-l-lg">
+                                class="w-full h-10 bg-surface-50 border border-surface-border rounded-l-lg">
                                 <ng-template let-tipo pTemplate="item">
                                     <div class="flex items-center gap-3">
                                         <img [src]="tipo.foto" class="w-8 h-8 object-cover rounded shadow-sm" />
@@ -46,7 +47,8 @@
                                     </div>
                                 </ng-template>
                             </p-select>
-                            <p-inputgroup-addon class="bg-[#0c0c0e] border-white/5 border-l-0 rounded-r-lg">
+                            <p-inputgroup-addon
+                                class="bg-surface-50 border border-surface-border border-l-0 rounded-r-lg">
                                 <p-button icon="pi pi-plus" [text]="true" severity="secondary"
                                     (onClick)="abrirCrearTipo()"></p-button>
                             </p-inputgroup-addon>
@@ -62,7 +64,7 @@
                             class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Descripción</label>
                         <textarea pTextarea formControlName="descripcionEspecifica" rows="3"
                             placeholder="Descripción específica..."
-                            class="w-full bg-[#0c0c0e] border-white/5 rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
+                            class="w-full bg-surface-50 border border-surface-border rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
                         @if (articuloForm.get('descripcionEspecifica')?.touched &&
                         articuloForm.get('descripcionEspecifica')?.invalid) {
                         <small class="text-red-500 font-medium">La descripción es requerida</small>
@@ -83,9 +85,9 @@
                             </div>
                             <p-inputgroup>
                                 <input pInputText type="number" formControlName="peso" placeholder="0.00"
-                                    class="w-full h-10 bg-[#0c0c0e] border-white/5 rounded-l-lg" />
+                                    class="w-full h-10 bg-surface-50 border border-surface-border rounded-l-lg" />
                                 <p-inputgroup-addon
-                                    class="bg-[#0c0c0e] border-white/5 border-l-0 rounded-r-lg text-gray-500 font-medium text-xs">
+                                    class="bg-surface-50 border border-surface-border border-l-0 rounded-r-lg text-gray-500 font-medium text-xs">
                                     Kg
                                 </p-inputgroup-addon>
                             </p-inputgroup>
@@ -97,7 +99,7 @@
                         <label
                             class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Comentarios</label>
                         <textarea pTextarea formControlName="comentarios" rows="3" placeholder="Notas internas..."
-                            class="w-full bg-[#0c0c0e] border-white/5 rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
+                            class="w-full bg-surface-50 border border-surface-border rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
                     </div>
                 </div>
             </div>
@@ -107,24 +109,24 @@
         <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
 
             <!-- Referencias Cruzadas -->
-            <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-xl">
+            <div class="surface-card border border-surface-border rounded-xl p-6 shadow-xl">
                 <div class="flex justify-between items-center mb-6">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                             <i class="pi pi-sync text-sm"></i>
                         </div>
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-gray-200">Referencias Cruzadas</h3>
+                        <h3 class="text-sm font-bold uppercase tracking-wide text-700">Referencias Cruzadas</h3>
                     </div>
                     <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
                         styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
                         (onClick)="agregarReferencia()"></p-button>
                 </div>
 
-                <div class="overflow-hidden rounded-lg border border-white/5 bg-[#0c0c0e]/50">
+                <div class="overflow-hidden rounded-lg border border-surface-border bg-surface-ground/50">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-[#0c0c0e]">
+                            <tr class="bg-surface-ground">
                                 <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
                                     Referencia / Código</th>
                                 <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
@@ -139,7 +141,7 @@
                         <tbody formArrayName="referenciasCruzadas">
                             @for (ref of referenciasCruzadas.controls; track $index) {
                             <tr [formGroupName]="$index"
-                                class="border-t border-white/5 hover:bg-white/5 transition-colors group">
+                                class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                 <td class="px-4 py-2">
                                     <p-inputgroup>
                                         <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
@@ -181,7 +183,8 @@
                             <tr>
                                 <td colspan="4" class="px-4 py-8 text-center">
                                     <p class="text-gray-500 text-xs italic">No hay referencias agregadas. Haga clic en
-                                        <span class="text-[#fdb831] font-bold">AÑADIR</span> para comenzar.</p>
+                                        <span class="text-[#fdb831] font-bold">AÑADIR</span> para comenzar.
+                                    </p>
                                 </td>
                             </tr>
                             }
@@ -193,38 +196,40 @@
             <!-- Multimedia Section (Locked) -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Foto -->
-                <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
+                <div
+                    class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                             <i class="pi pi-camera text-sm"></i>
                         </div>
-                        <h3 class="text-xs font-black text-gray-400 tracking-widest uppercase">Foto de Referencia</h3>
+                        <h3 class="text-xs font-black text-gray-500 tracking-widest uppercase">Foto de Referencia</h3>
                     </div>
                     <div
-                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
-                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                            <i class="pi pi-lock text-gray-600 text-xl"></i>
+                        class="bg-surface-50 border-2 border-dashed border-surface-border rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
+                        <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
+                            <i class="pi pi-lock text-color-secondary text-xl"></i>
                         </div>
-                        <p class="text-xs text-gray-500 font-medium">Disponible tras crear el artículo</p>
+                        <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo</p>
                     </div>
                 </div>
 
                 <!-- Plano -->
-                <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
+                <div
+                    class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
                     <div class="flex items-center gap-3">
                         <div
                             class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                             <i class="pi pi-map text-sm"></i>
                         </div>
-                        <h3 class="text-xs font-black text-gray-400 tracking-widest uppercase">Plano Esquemático</h3>
+                        <h3 class="text-xs font-black text-gray-500 tracking-widest uppercase">Plano Esquemático</h3>
                     </div>
                     <div
-                        class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
-                        <div class="w-12 h-12 rounded-xl bg-white/5 flex items-center justify-center">
-                            <i class="pi pi-lock text-gray-600 text-xl"></i>
+                        class="bg-surface-50 border-2 border-dashed border-surface-border rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
+                        <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
+                            <i class="pi pi-lock text-color-secondary text-xl"></i>
                         </div>
-                        <p class="text-xs text-gray-500 font-medium">Disponible tras crear el artículo</p>
+                        <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo</p>
                     </div>
                 </div>
             </div>
@@ -234,7 +239,7 @@
 
     <!-- Floating Footer Actions -->
     <div
-        class="fixed bottom-0 left-0 right-0 bg-[#09090b]/95 backdrop-blur-md border-t border-white/10 p-4 z-50 flex justify-end gap-3 px-8 lg:pl-[280px]">
+        class="fixed bottom-0 left-0 right-0 surface-section backdrop-blur-md border-t border-surface-border p-4 z-50 flex justify-end gap-3 px-8 lg:pl-[280px]">
         <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
             styleClass="text-gray-400 hover:text-white transition-colors"></p-button>
         <p-button label="Crear Artículo" icon="pi pi-check" [loading]="loading" (onClick)="onSubmit()"
