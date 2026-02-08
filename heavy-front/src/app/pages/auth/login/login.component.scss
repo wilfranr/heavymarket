@@ -8,4 +8,78 @@
         transform: scale(1.6);
         margin-right: 1rem;
     }
+
+    /* Custom Checkbox for Dark Theme */
+    .dark-checkbox .p-checkbox-box {
+        background: #1a1c1e !important;
+        border: 1px solid #333 !important;
+        border-radius: 4px !important;
+    }
+
+    .dark-checkbox .p-checkbox-box.p-highlight {
+        background: #fdb831 !important;
+        border-color: #fdb831 !important;
+
+        .p-checkbox-icon {
+            color: #0c0e0f !important;
+        }
+    }
+}
+
+.landing-dark-theme {
+    --text-color: #ffffff;
+    --text-color-secondary: #9ca3af;
+    --primary-color: #fdb831;
+
+    .auth-card {
+        background-color: #0c0e0f !important;
+        color: #ffffff !important;
+    }
+
+    ::ng-deep {
+
+        input.p-inputtext,
+        .p-password input,
+        .p-password-input {
+            width: 100% !important;
+            display: block !important;
+            background: #1a1c1e !important;
+            color: #fff !important;
+            border: 1px solid #333 !important;
+            padding: 1rem !important;
+            box-sizing: border-box !important;
+            border-radius: 12px !important;
+
+            &:focus {
+                border-color: #fdb831 !important;
+                box-shadow: 0 0 0 1px #fdb831 !important;
+            }
+
+            &::placeholder {
+                color: #666 !important;
+            }
+        }
+
+        .p-password {
+            display: flex !important;
+            width: 100% !important;
+        }
+
+        .p-password-icon {
+            color: #9ca3af !important;
+        }
+
+        label {
+            font-weight: 500 !important;
+            color: #e5e7eb !important;
+        }
+    }
+
+    a {
+        transition: opacity 0.2s;
+
+        &:hover {
+            opacity: 0.8;
+        }
+    }
 }

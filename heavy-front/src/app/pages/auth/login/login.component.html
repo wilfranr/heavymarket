@@ -1,61 +1,76 @@
-<div class="surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden">
-    <div class="flex flex-column align-items-center justify-content-center">
-        <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, var(--primary-color) 10%, rgba(33, 150, 243, 0) 30%)">
-            <div class="w-full surface-card py-8 px-5 sm:px-8" style="border-radius: 53px">
-                <div class="text-center mb-5">
-                    <div class="text-900 text-3xl font-medium mb-3">HeavyMarket</div>
-                    <span class="text-600 font-medium">Inicia sesión para continuar</span>
+<div class="landing-dark-theme surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden"
+    style="background: #0c0e0f !important;">
+    <div class="flex flex-column align-items-center justify-content-center w-full px-3" style="max-width: 500px;">
+        <!-- Card Structure with Yellow/Dark Gradient -->
+        <div
+            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, #fdb831 10%, rgba(12, 14, 15, 0) 30%); width: 100%; box-sizing: border-box;">
+            <div class="w-full auth-card"
+                style="border-radius: 53px; padding: 3rem 2.5rem; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background: #0c0e0f;">
+
+                <div class="text-center mb-5" style="display: flex; flex-direction: column; align-items: center;">
+                    <div class="text-white text-4xl font-bold mb-3 tracking-tight">HeavyMarket</div>
+                    <span class="text-gray-400 font-medium text-lg">Inicia sesión para continuar</span>
                 </div>
 
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-                    <div>
-                        <!-- Email -->
-                        <label for="email" class="block text-900 text-xl font-medium mb-2">Email</label>
-                        <input
-                            id="email"
-                            type="email"
-                            formControlName="email"
-                            placeholder="Email"
-                            pInputText
-                            class="w-full md:w-30rem mb-1"
-                            [ngClass]="{ 'ng-invalid ng-dirty': hasError('email', 'required') || hasError('email', 'email') }"
-                            style="padding: 1rem"
-                        />
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()"
+                    style="display: flex; flex-direction: column; width: 100%;">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
 
-                        @if (hasError('email', 'required')) {
-                            <small class="text-red-500 block mb-3">El email es obligatorio</small>
-                        }
-                        @if (hasError('email', 'email')) {
-                            <small class="text-red-500 block mb-3">Email inválido</small>
-                        }
+                        <!-- Email -->
+                        <div style="display: flex; flex-direction: column;">
+                            <label for="email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
+                            <input id="email" type="email" formControlName="email" placeholder="Email" pInputText
+                                class="w-full custom-input"
+                                [ngClass]="{ 'ng-invalid ng-dirty': hasError('email', 'required') || hasError('email', 'email') }" />
+
+                            @if (hasError('email', 'required')) {
+                            <small class="text-red-400 mt-1">El email es obligatorio</small>
+                            }
+                            @if (hasError('email', 'email')) {
+                            <small class="text-red-400 mt-1">Email inválido</small>
+                            }
+                        </div>
 
                         <!-- Password -->
-                        <label for="password" class="block text-900 font-medium text-xl mb-2 mt-4">Contraseña</label>
-                        <p-password id="password" formControlName="password" placeholder="Contraseña" [toggleMask]="true" styleClass="w-full mb-1" inputStyleClass="w-full p-3 md:w-30rem" [feedback]="false"> </p-password>
+                        <div style="display: flex; flex-direction: column;">
+                            <label for="password"
+                                class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
+                            <p-password id="password" formControlName="password" placeholder="Contraseña"
+                                [toggleMask]="true" styleClass="w-full custom-password" inputStyleClass="w-full"
+                                [feedback]="false">
+                            </p-password>
 
-                        @if (hasError('password', 'required')) {
-                            <small class="text-red-500 block mb-3">La contraseña es obligatoria</small>
-                        }
-                        @if (hasError('password', 'minlength')) {
-                            <small class="text-red-500 block mb-3">Mínimo 6 caracteres</small>
-                        }
+                            @if (hasError('password', 'required')) {
+                            <small class="text-red-400 mt-1">La contraseña es obligatoria</small>
+                            }
+                        </div>
 
                         <!-- Remember Me & Forgot Password -->
-                        <div class="flex align-items-center justify-content-between mb-5 gap-5 mt-4">
-                            <div class="flex align-items-center">
-                                <p-checkbox id="rememberme" formControlName="rememberMe" [binary]="true" styleClass="mr-2"> </p-checkbox>
-                                <label for="rememberme">Recordarme</label>
+                        <div class="flex align-items-center justify-content-between mb-2 gap-2"
+                            style="display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
+                            <div class="flex align-items-center"
+                                style="display: flex; flex-direction: row; align-items: center;">
+                                <p-checkbox id="rememberme" formControlName="rememberMe" [binary]="true"
+                                    styleClass="dark-checkbox mr-2"> </p-checkbox>
+                                <label for="rememberme" class="text-gray-300 cursor-pointer">Recordarme</label>
                             </div>
-                            <a class="font-medium no-underline ml-2 text-right cursor-pointer" style="color: var(--primary-color)"> ¿Olvidaste tu contraseña? </a>
+                            <a class="font-medium no-underline text-right cursor-pointer" style="color: #fdb831">
+                                ¿Olvidaste tu contraseña? </a>
                         </div>
 
                         <!-- Submit Button -->
-                        <p-button label="Iniciar Sesión" type="submit" styleClass="w-full p-3 text-xl" [loading]="isLoading()"> </p-button>
+                        <button type="submit" [disabled]="isLoading()"
+                            class="w-full p-3 text-xl font-bold border-none cursor-pointer"
+                            style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s;">
+                            @if (isLoading()) { <i class="pi pi-spin pi-spinner mr-2"></i> }
+                            Iniciar Sesión
+                        </button>
 
                         <!-- Register Link -->
-                        <div class="text-center mt-4">
-                            <span class="text-600 font-medium">¿No tienes cuenta? </span>
-                            <a routerLink="/auth/register" class="font-medium no-underline cursor-pointer" style="color: var(--primary-color)"> Regístrate </a>
+                        <div class="text-center mt-3">
+                            <span class="text-gray-500 font-medium">¿No tienes cuenta? </span>
+                            <a routerLink="/auth/register" class="font-bold no-underline cursor-pointer"
+                                style="color: #fdb831"> Regístrate </a>
                         </div>
                     </div>
                 </form>
