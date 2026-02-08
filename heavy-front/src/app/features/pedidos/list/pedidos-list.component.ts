@@ -61,12 +61,12 @@ import { TerceroService } from '../../../core/services/tercero.service';
             <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']">
                 <ng-template pTemplate="caption">
                     <div class="flex justify-between items-center flex-column sm:flex-row">
-                        <p-button label="Clear" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
+                        <p-button label="Limpiar" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
                         <p-iconfield iconPosition="left" class="ml-auto">
                             <p-inputicon>
                                 <i class="pi pi-search"></i>
                             </p-inputicon>
-                            <input pInputText type="text" #searchInput (input)="onSearch($event)" placeholder="Search keyword" />
+                            <input pInputText type="text" #searchInput (input)="onSearch($event)" placeholder="Buscar..." />
                         </p-iconfield>
                     </div>
                 </ng-template>
@@ -77,14 +77,14 @@ import { TerceroService } from '../../../core/services/tercero.service';
                         <th style="min-width: 15rem">
                             <div class="flex justify-between items-center">
                                 Tercero
-                                <p-columnFilter field="tercero" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false">
+                                <p-columnFilter field="tercero" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false" [showApplyButton]="false" [showClearButton]="false">
                                     <ng-template pTemplate="header">
                                         <div class="px-3 pt-3 pb-0">
                                             <span class="font-bold">Filtrar por Cliente</span>
                                         </div>
                                     </ng-template>
                                     <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                        <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value); filter($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
+                                        <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
                                         </p-select>
                                     </ng-template>
                                 </p-columnFilter>
