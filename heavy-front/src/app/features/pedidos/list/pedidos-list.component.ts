@@ -18,8 +18,7 @@ import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
-import { MaquinaService } from '../../../core/services/maquina.service';
-import { FabricanteService } from '../../../core/services/fabricante.service';
+
 
 /**
  * Componente de Lista de Pedidos
@@ -62,10 +61,6 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
 
 
                         <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
-
-                        <p-select [options]="maquinas" [(ngModel)]="selectedMaquina" (ngModelChange)="onMaquinaChange($event)" placeholder="Máquina" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
-
-                        <p-select [options]="fabricantes" [(ngModel)]="selectedFabricante" (ngModelChange)="onFabricanteChange($event)" placeholder="Fabricante" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
                     </div>
 
                     <div class="flex gap-2">
@@ -116,8 +111,6 @@ export class PedidosListComponent implements OnInit {
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
     private terceroService = inject(TerceroService);
-    private maquinaService = inject(MaquinaService);
-    private fabricanteService = inject(FabricanteService);
 
     // Signals para estado local
     pedidos = signal<Pedido[]>([]);
@@ -126,14 +119,10 @@ export class PedidosListComponent implements OnInit {
     selectedEstado: string | null = null;
     selectedTercero: number | null = null;
     selectedVendedor: number | null = null;
-    selectedMaquina: number | null = null;
-    selectedFabricante: number | null = null;
 
     // Opciones para filtros
     terceros: any[] = [];
     vendedores: any[] = [];
-    maquinas: any[] = [];
-    fabricantes: any[] = [];
 
 
 
@@ -178,26 +167,6 @@ export class PedidosListComponent implements OnInit {
             }
         });
 
-        // Cargar máquinas
-        this.maquinaService.getAll({ per_page: 200 }).subscribe({
-            next: (response) => {
-                this.maquinas = response.data.map((m) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
-                    value: m.id
-                }));
-            }
-        });
-
-        // Cargar fabricantes
-        this.fabricanteService.getAll({ per_page: 200 }).subscribe({
-            next: (response) => {
-                this.fabricantes = response.data.map((f) => ({
-                    label: f.nombre,
-                    value: f.id
-                }));
-            }
-        });
-
         // Cargar usuarios (vendedores) - si existe el servicio
         // TODO: Implementar cuando esté disponible el servicio de usuarios
     }
@@ -214,12 +183,6 @@ export class PedidosListComponent implements OnInit {
         }
         if (this.selectedVendedor) {
             filterParams.user_id = this.selectedVendedor;
-        }
-        if (this.selectedMaquina) {
-            filterParams.maquina_id = this.selectedMaquina;
-        }
-        if (this.selectedFabricante) {
-            filterParams.fabricante_id = this.selectedFabricante;
         }
 
         // Combinar con otros parámetros (búsqueda, paginación, etc.)
@@ -245,23 +208,11 @@ export class PedidosListComponent implements OnInit {
         this.loadPedidos();
     }
 
-    onMaquinaChange(value: any) {
-        this.selectedMaquina = value;
-        this.loadPedidos();
-    }
-
-    onFabricanteChange(value: any) {
-        this.selectedFabricante = value;
-        this.loadPedidos();
-    }
-
     limpiarFiltros(): void {
         this.selectedTabValue = 'Todos';
         this.selectedEstado = null;
         this.selectedTercero = null;
         this.selectedVendedor = null;
-        this.selectedMaquina = null;
-        this.selectedFabricante = null;
         this.loadPedidos();
     }
 

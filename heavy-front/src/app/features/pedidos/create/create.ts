@@ -35,12 +35,10 @@ import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ContactoService } from '../../../core/services/contacto.service';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
+import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
 
 /**
  * Componente de creación de pedido con Wizard de 3 pasos
- * Paso 1: Cliente
- * Paso 2: Referencias Masivas
- * Paso 3: Referencias Detalladas
  */
 @Component({
     selector: 'app-pedido-create',
@@ -65,7 +63,8 @@ import { TerceroCreateModalComponent } from '../../../shared/components/tercero-
         TooltipModule,
         TagModule,
         SkeletonModule,
-        TerceroCreateModalComponent
+        TerceroCreateModalComponent,
+        MaquinaCreateModalComponent
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -73,6 +72,7 @@ import { TerceroCreateModalComponent } from '../../../shared/components/tercero-
 })
 export class CreateComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
+    // ... services injections ...
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -90,8 +90,9 @@ export class CreateComponent implements OnInit {
     activeIndex = 0;
     loading = false;
 
-    // Modal de creación de tercero
+    // Modales
     displayCreateTerceroDialog = false;
+    displayCreateMaquinaDialog = false;
 
     today = new Date();
 
@@ -200,6 +201,36 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Muestra el diálogo para crear una nueva máquina
+     */
+    openCreateMaquinaDialog(): void {
+        if (!this.terceroId()) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Atención',
+                detail: 'Debe seleccionar un cliente primero'
+            });
+            return;
+        }
+        this.displayCreateMaquinaDialog = true;
+    }
+
+    /**
+     * Maneja el evento cuando se crea una máquina exitosamente
+     */
+    onMaquinaCreated(maquina: any): void {
+        const clienteId = this.terceroId();
+        if (clienteId) {
+            this.loadMaquinasPorCliente(clienteId);
+            // Seleccionar la nueva máquina
+            setTimeout(() => {
+                this.pedidoForm.patchValue({ maquina_id: maquina.id });
+            }, 500);
+        }
+        this.displayCreateMaquinaDialog = false;
+    }
+
+    /**
      * Carga datos iniciales para los selects
      */
     private loadInitialData(): void {
@@ -295,20 +326,30 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Validador personalizado para requerir referencia_id o definicion
+     */
+    private referenciaOrDefinicionValidator(group: FormGroup): any {
+        const referenciaId = group.get('referencia_id')?.value;
+        const definicion = group.get('definicion')?.value;
+
+        return referenciaId || definicion ? null : { requiredReferenciaOrDefinicion: true };
+    }
+
+    /**
      * Agrega una nueva referencia al FormArray
      */
     agregarReferencia(): void {
         const referenciaForm = this.fb.group({
             estado: [true],
             sistema_id: [null],
-            referencia_id: [null, [Validators.required]],
+            referencia_id: [null],
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
             comentario: [''],
             definicion: [''],
             imagen: [null],
             proveedores: this.fb.array([])
-        });
+        }, { validators: this.referenciaOrDefinicionValidator });
 
         this.referenciasFormArray.push(referenciaForm);
     }
@@ -374,6 +415,7 @@ export class CreateComponent implements OnInit {
             this.referenciaService.getAll({ search: codigo, per_page: 10 }).subscribe({
                 next: (response) => {
                     let referenciaId: number | null = null;
+                    let definicion: string = '';
 
                     // Buscar coincidencia exacta
                     const referenciaEncontrada = response.data.find((r) => r.referencia.toUpperCase() === codigo);
@@ -383,7 +425,9 @@ export class CreateComponent implements OnInit {
                         this.agregarReferenciaAlFormArray(referenciaId, cantidad);
                         procesadas++;
                     } else {
-                        // Crear nueva referencia
+                        // Si no existe, la agregamos como definición genérica por ahora (o creamos referencia, depende de la lógica deseada)
+                        // Para este caso de uso donde el usuario quiere flexibilidad, podríamos agregarla sin ID
+                        // Pero el flujo original creaba la referencia automáticamente. Mantendremos eso para masivas.
                         this.referenciaService
                             .create({
                                 referencia: codigo,
@@ -441,20 +485,20 @@ export class CreateComponent implements OnInit {
     }
 
     /**
-     * Agrega una referencia al FormArray
+     * Agrega una referencia al FormArray (método privado)
      */
-    private agregarReferenciaAlFormArray(referenciaId: number, cantidad: number): void {
+    private agregarReferenciaAlFormArray(referenciaId: number | null, cantidad: number, definicion: string = ''): void {
         const referenciaForm = this.fb.group({
             estado: [true],
             sistema_id: [null],
-            referencia_id: [referenciaId, [Validators.required]],
+            referencia_id: [referenciaId],
             marca_id: [null],
             cantidad: [cantidad, [Validators.required, Validators.min(1)]],
             comentario: [''],
-            definicion: [''],
+            definicion: [definicion],
             imagen: [null],
             proveedores: this.fb.array([])
-        });
+        }, { validators: this.referenciaOrDefinicionValidator });
 
         this.referenciasFormArray.push(referenciaForm);
     }

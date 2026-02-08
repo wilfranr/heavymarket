@@ -174,11 +174,18 @@
                                 <!-- Machine Selector -->
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block">Máquina</label>
-                                    <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
-                                        [showClear]="true" placeholder="Seleccionar máquina..."
-                                        [disabled]="!pedidoForm.get('tercero_id')?.value"
-                                        styleClass="w-full    h-[42px]">
-                                    </p-select>
+                                    <div class="flex gap-2">
+                                        <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
+                                            [showClear]="true" placeholder="Seleccionar máquina..."
+                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                            styleClass="flex-1 h-[42px]">
+                                        </p-select>
+                                        <button type="button" (click)="openCreateMaquinaDialog()"
+                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                            class="w-[42px] h-[42px] rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors shrink-0">
+                                            <i class="pi pi-plus text-sm"></i>
+                                        </button>
+                                    </div>
                                 </div>
 
                                 <!-- Machine Details -->
@@ -356,7 +363,8 @@
                         <div class="divide-y divide-slate-700/30">
                             @for (referencia of referenciasFormArray.controls; track $index; let refIndex = $index) {
                             <div [formGroup]="$any(referencia)"
-                                class="flex items-center gap-4 px-6 py-4 hover:theme-card-elevated/50 transition-colors group">
+                                class="flex items-center gap-4 px-6 py-4 hover:theme-card-elevated/50 transition-colors group"
+                                [class.bg-red-500/5]="referencia.errors?.['requiredReferenciaOrDefinicion'] && (referencia.get('referencia_id')?.touched || referencia.get('definicion')?.touched)">
 
                                 <!-- Checkbox/Estado -->
                                 <div class="w-[50px] flex justify-center">
@@ -367,15 +375,14 @@
                                 <!-- Sistema -->
                                 <div class="w-[15%]">
                                     <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Sistema"
-                                        [filter]="true" appendTo="body"
-                                        styleClass="w-full    h-[42px]">
+                                        [filter]="true" appendTo="body" styleClass="w-full    h-[42px]">
                                     </p-select>
                                 </div>
 
                                 <!-- Tipo Articulo -->
                                 <div class="w-[15%]">
                                     <p-select formControlName="definicion" [options]="tiposArticulos" placeholder="Tipo"
-                                        [filter]="true" appendTo="body"
+                                        [filter]="true" appendTo="body" [editable]="true"
                                         styleClass="w-full    h-[42px]">
                                     </p-select>
                                 </div>
@@ -475,3 +482,8 @@
 <!-- Create Client Dialog -->
 <app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" (onTerceroCreated)="onTerceroCreated($event)">
 </app-tercero-create-modal>
+
+<!-- Create Maquina Dialog -->
+<app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" [terceroId]="terceroId()"
+    (onMaquinaCreated)="onMaquinaCreated($event)">
+</app-maquina-create-modal>

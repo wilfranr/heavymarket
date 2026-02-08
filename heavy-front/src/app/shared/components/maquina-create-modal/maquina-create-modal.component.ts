@@ -41,6 +41,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private readonly messageService = inject(MessageService);
 
     @Input() visible: boolean = false;
+    @Input() terceroId: number | null = null;
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onMaquinaCreated = new EventEmitter<any>();
 
@@ -145,6 +146,11 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
         this.loading = true;
         const formValue = this.createMaquinaForm.value;
         const formData = new FormData();
+
+        // Agregar terceroId si existe
+        if (this.terceroId) {
+            formData.append('tercero_id', this.terceroId.toString());
+        }
 
         Object.keys(formValue).forEach(key => {
             const value = formValue[key];
