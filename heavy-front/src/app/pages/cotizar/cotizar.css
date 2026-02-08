@@ -931,3 +931,528 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* ========================================
+   RESPONSIVE DESIGN - COTIZAR PAGE
+   ======================================== */
+
+/* Tablet (≤1024px) */
+@media (max-width: 1024px) {
+    .cotizador-page-container {
+        padding-top: 120px;
+        padding-bottom: 40px;
+        padding-left: 24px;
+        padding-right: 24px;
+    }
+
+    .cotizador-container {
+        width: 100%;
+        max-width: 100%;
+        padding: 24px;
+        gap: 20px;
+    }
+
+    .cotizador-sidebar {
+        width: 280px;
+    }
+
+    .cotizador-sidebar-header {
+        width: 280px;
+    }
+
+    .cotizador-sidebar-text {
+        width: 280px;
+        font-size: 13px;
+        line-height: 19px;
+    }
+
+    .cotizador-filters {
+        width: 280px;
+    }
+
+    .cotizador-filter-group {
+        width: 280px;
+    }
+
+    .cotizador-select,
+    .cotizador-input {
+        width: 280px;
+    }
+
+    .cotizador-dropdown {
+        width: 280px;
+    }
+
+    .cotizador-actions {
+        width: 280px;
+    }
+
+    .cotizador-main {
+        width: calc(100% - 300px);
+    }
+
+    .cotizador-tabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .cotizador-tab {
+        min-width: 140px;
+        width: auto;
+    }
+
+    .cotizador-grid-container {
+        width: 100%;
+    }
+
+    .cotizador-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .form-item-row {
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+
+    .item-actions {
+        grid-column: 1 / -1;
+        padding-top: 0;
+        justify-content: flex-end;
+    }
+}
+
+/* Mobile (≤768px) */
+@media (max-width: 768px) {
+    .cotizador-page-container {
+        padding-top: 80px;
+        padding-bottom: 30px;
+        padding-left: 16px;
+        padding-right: 16px;
+    }
+
+    .cotizador-container {
+        flex-direction: column;
+        padding: 20px;
+        gap: 24px;
+        min-height: auto;
+    }
+
+    /* Sidebar */
+    .cotizador-sidebar {
+        width: 100%;
+        order: 1;
+    }
+
+    .cotizador-sidebar-header {
+        width: 100%;
+        padding: 16px 0;
+    }
+
+    .cotizador-sidebar-text {
+        width: 100%;
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .cotizador-filters {
+        width: 100%;
+    }
+
+    .cotizador-filter-group {
+        width: 100%;
+    }
+
+    .cotizador-select,
+    .cotizador-input {
+        width: 100%;
+    }
+
+    .cotizador-dropdown {
+        width: 100%;
+    }
+
+    .cotizador-actions {
+        width: 100%;
+        flex-direction: row;
+        height: auto;
+    }
+
+    .cotizador-btn-secondary,
+    .cotizador-btn-primary {
+        flex: 1;
+        width: auto;
+    }
+
+    /* Main Content */
+    .cotizador-main {
+        width: 100%;
+        order: 2;
+    }
+
+    .cotizador-tabs {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: thin;
+    }
+
+    .cotizador-tabs::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    .cotizador-tabs::-webkit-scrollbar-thumb {
+        background: rgba(253, 184, 49, 0.5);
+        border-radius: 2px;
+    }
+
+    .cotizador-tab {
+        min-width: 120px;
+        width: auto;
+        flex-shrink: 0;
+    }
+
+    .cotizador-tab-text {
+        font-size: 14px;
+        line-height: 20px;
+    }
+
+    .cotizador-grid-container {
+        width: 100%;
+        padding-right: 0;
+    }
+
+    .cotizador-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .cotizador-card {
+        width: 100%;
+    }
+
+    .cotizador-card-image {
+        height: 200px;
+    }
+
+    .cotizador-card-title {
+        font-size: 20px;
+        line-height: 28px;
+    }
+
+    .cotizador-card-description {
+        font-size: 13px;
+        line-height: 19px;
+        height: auto;
+    }
+
+    /* Stepper */
+    .cotizador-stepper {
+        padding: 0 20px;
+        margin-bottom: 30px;
+    }
+
+    .step-label {
+        display: none;
+    }
+
+    .step-connector {
+        margin: 0 10px;
+        max-width: 50px;
+    }
+
+    .step-icon {
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+
+    /* Breadcrumb */
+    .cotizador-breadcrumb {
+        font-size: 12px;
+        line-height: 18px;
+        margin-bottom: 16px;
+    }
+
+    /* Form */
+    .form-section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .section-title {
+        font-size: 16px;
+    }
+
+    .btn-add-list {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .form-item-row {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .item-actions {
+        grid-column: 1;
+        justify-content: center;
+        padding-top: 8px;
+    }
+
+    .form-footer {
+        flex-direction: column-reverse;
+        gap: 12px;
+    }
+
+    .btn-cancel,
+    .btn-continue {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+    }
+
+    /* Success Card */
+    .success-card {
+        padding: 32px 24px;
+    }
+
+    .success-icon {
+        font-size: 60px;
+    }
+
+    .success-title {
+        font-size: 24px;
+    }
+
+    .success-message {
+        font-size: 16px;
+    }
+
+    .success-info {
+        font-size: 14px;
+    }
+
+    .success-actions {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .success-step .btn-primary,
+    .success-step .btn-secondary {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Small Mobile (≤480px) */
+@media (max-width: 480px) {
+    .cotizador-page-container {
+        padding-top: 70px;
+        padding-bottom: 20px;
+        padding-left: 12px;
+        padding-right: 12px;
+    }
+
+    .cotizador-container {
+        padding: 16px;
+        gap: 20px;
+        border-radius: 16px;
+    }
+
+    .cotizador-sidebar-header {
+        padding: 12px 0;
+    }
+
+    .cotizador-sidebar-text {
+        font-size: 13px;
+        line-height: 19px;
+    }
+
+    .cotizador-select,
+    .cotizador-input {
+        height: 44px;
+        font-size: 13px;
+        padding: 10px;
+    }
+
+    .cotizador-select-text {
+        font-size: 13px;
+    }
+
+    .cotizador-select-icon {
+        width: 32px;
+        height: 32px;
+    }
+
+    .cotizador-btn-secondary,
+    .cotizador-btn-primary {
+        font-size: 13px;
+        padding: 10px 14px;
+        height: 38px;
+    }
+
+    .cotizador-tab {
+        min-width: 100px;
+        padding: 10px;
+        height: 44px;
+    }
+
+    .cotizador-tab-text {
+        font-size: 13px;
+        line-height: 18px;
+    }
+
+    .cotizador-card {
+        padding: 14px;
+    }
+
+    .cotizador-card-image {
+        height: 180px;
+    }
+
+    .cotizador-card-title {
+        font-size: 18px;
+        line-height: 24px;
+    }
+
+    .cotizador-card-tag span {
+        font-size: 12px;
+    }
+
+    .cotizador-card-description {
+        font-size: 12px;
+        line-height: 18px;
+    }
+
+    .cotizador-card-btn {
+        font-size: 13px;
+        padding: 8px 14px;
+        height: 36px;
+    }
+
+    .cotizador-stepper {
+        padding: 0 12px;
+        margin-bottom: 24px;
+    }
+
+    .step-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .step-connector {
+        margin: 0 8px;
+        max-width: 30px;
+    }
+
+    .cotizador-breadcrumb {
+        font-size: 11px;
+        line-height: 16px;
+    }
+
+    .section-title {
+        font-size: 15px;
+    }
+
+    .btn-add-list {
+        font-size: 13px;
+        padding: 6px 14px;
+    }
+
+    .form-item-row {
+        padding: 14px;
+        gap: 14px;
+    }
+
+    .input-label {
+        font-size: 11px;
+    }
+
+    .custom-input {
+        font-size: 13px;
+        padding: 8px 10px;
+    }
+
+    .helper-text {
+        font-size: 10px;
+    }
+
+    .upload-box {
+        height: 38px;
+    }
+
+    .upload-text {
+        font-size: 11px;
+        max-width: 100px;
+    }
+
+    .action-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .btn-cancel,
+    .btn-continue {
+        font-size: 13px;
+        padding: 10px 20px;
+    }
+
+    .success-card {
+        padding: 24px 16px;
+        border-radius: 16px;
+    }
+
+    .success-icon {
+        font-size: 50px;
+    }
+
+    .success-title {
+        font-size: 20px;
+        margin-bottom: 12px;
+    }
+
+    .success-message {
+        font-size: 14px;
+    }
+
+    .success-info {
+        font-size: 13px;
+        margin-bottom: 24px;
+    }
+
+    .success-step .btn-primary,
+    .success-step .btn-secondary {
+        font-size: 13px;
+        padding: 10px 20px;
+    }
+}
+
+/* Landscape Mobile Optimization */
+@media (max-width: 768px) and (orientation: landscape) {
+    .cotizador-page-container {
+        padding-top: 60px;
+    }
+
+    .cotizador-container {
+        flex-direction: row;
+    }
+
+    .cotizador-sidebar {
+        width: 300px;
+        max-height: calc(100vh - 100px);
+        overflow-y: auto;
+    }
+
+    .cotizador-main {
+        width: calc(100% - 320px);
+    }
+
+    .cotizador-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
