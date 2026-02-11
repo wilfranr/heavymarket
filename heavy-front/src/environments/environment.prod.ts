@@ -3,8 +3,8 @@
  */
 export const environment = {
     production: true,
-    apiUrl: 'https://api.heavymarket.net/api/v1',
-    apiBaseUrl: 'https://api.heavymarket.net',
+    apiUrl: 'https://heavymarket.net/api/v1',
+    apiBaseUrl: 'https://heavymarket.net',
     pusherKey: '',
     pusherCluster: 'mt1',
     pusherEnabled: false,
