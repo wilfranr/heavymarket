@@ -70,8 +70,8 @@ apiBaseUrl: 'http://localhost:8000'
 
 ### Producción (`environment.prod.ts`)
 ```typescript
-apiUrl: 'https://api.heavymarket.com/api/v1'
-apiBaseUrl: 'https://api.heavymarket.com'
+apiUrl: 'https://api.heavymarket.net/api/v1'
+apiBaseUrl: 'https://api.heavymarket.net'
 ```
 
 ## Instalación y Ejecución

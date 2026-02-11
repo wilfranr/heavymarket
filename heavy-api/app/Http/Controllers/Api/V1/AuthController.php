@@ -80,7 +80,7 @@ class AuthController extends Controller
      * @param LoginRequest $request
      * @return JsonResponse
      * 
-     * @bodyParam email string required Email del usuario. Example: admin@heavymarket.com
+     * @bodyParam email string required Email del usuario. Example: admin@heavymarket.net
      * @bodyParam password string required Contraseña. Example: password
      * @bodyParam device_name string optional Nombre del dispositivo. Example: Chrome Browser
      */
