@@ -1,250 +1,290 @@
 <p-toast />
 
-<div class="p-8 surface-ground min-h-screen text-900 pb-28">
-    <!-- Header -->
+<div class="container mx-auto p-4 md:p-8 max-w-7xl relative overflow-hidden min-h-screen">
+    <!-- Decorative background elements -->
     <div
-        class="flex justify-between items-center mb-8 surface-card p-4 rounded-xl border border-surface-border shadow-xl">
-        <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-[#fdb831] flex items-center justify-center text-black">
-                <i class="pi pi-box text-xl"></i>
-            </div>
-            <h1 class="text-xl font-bold tracking-tight">Crear Artículo</h1>
-        </div>
-        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-            class="text-gray-400 hover:text-white transition-all"></p-button>
+        class="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-[#fdb831]/10 rounded-full blur-[120px] pointer-events-none">
+    </div>
+    <div
+        class="absolute bottom-0 left-0 -ml-32 -mb-32 w-80 h-80 bg-[#fdb831]/5 rounded-full blur-[100px] pointer-events-none">
     </div>
 
-    <form [formGroup]="articuloForm" class="grid grid-cols-12 gap-8">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4 relative z-10">
+        <div>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-900 tracking-tight">Crear Artículo</h1>
+            <p class="text-gray-400 mt-2 text-lg">Defina la pieza, sus referencias cruzadas y la documentación
+                asociada.</p>
+        </div>
+        <div class="hidden md:block">
+            <p-button label="Crear Artículo" icon="pi pi-check"
+                styleClass="p-button-warning text-sm font-bold px-8 py-4 rounded-2xl shadow-xl shadow-orange-500/20"
+                (onClick)="onSubmit()" [loading]="loading" [disabled]="articuloForm.invalid">
+            </p-button>
+        </div>
+    </div>
 
-        <!-- Columna Izquierda: Información General (4 celdas) -->
-        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-6 h-full">
-                <div class="flex items-center gap-3 mb-2 border-b border-surface-border pb-4">
-                    <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                        <i class="pi pi-info-circle text-sm"></i>
-                    </div>
-                    <h3 class="text-sm font-bold uppercase tracking-wide text-700">Información General</h3>
-                </div>
+    <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()" class="relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-                <div class="flex flex-col gap-5">
-                    <!-- Tipo -->
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Tipo <span
-                                class="text-red-500">*</span></label>
-                        <p-inputgroup>
-                            <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                                optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" [filter]="true"
-                                filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
-                                class="w-full h-10 bg-surface-50 border border-surface-border rounded-l-lg">
-                                <ng-template let-tipo pTemplate="item">
-                                    <div class="flex items-center gap-3">
-                                        <img [src]="tipo.foto" class="w-8 h-8 object-cover rounded shadow-sm" />
-                                        <div class="flex flex-col">
-                                            <span class="font-medium text-sm">{{ tipo.nombre }}</span>
-                                            <span class="text-xs text-gray-500 truncate max-w-[150px]">{{
-                                                tipo.definicion }}</span>
-                                        </div>
-                                    </div>
-                                </ng-template>
-                            </p-select>
-                            <p-inputgroup-addon
-                                class="bg-surface-50 border border-surface-border border-l-0 rounded-r-lg">
-                                <p-button icon="pi pi-plus" [text]="true" severity="secondary"
-                                    (onClick)="abrirCrearTipo()"></p-button>
-                            </p-inputgroup-addon>
-                        </p-inputgroup>
-                        @if (articuloForm.get('definicion')?.touched && articuloForm.get('definicion')?.invalid) {
-                        <small class="text-red-500 font-medium">El tipo es requerido</small>
-                        }
-                    </div>
-
-                    <!-- Descripción -->
-                    <div class="flex flex-col gap-2">
-                        <label
-                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Descripción</label>
-                        <textarea pTextarea formControlName="descripcionEspecifica" rows="3"
-                            placeholder="Descripción específica..."
-                            class="w-full bg-surface-50 border border-surface-border rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
-                        @if (articuloForm.get('descripcionEspecifica')?.touched &&
-                        articuloForm.get('descripcionEspecifica')?.invalid) {
-                        <small class="text-red-500 font-medium">La descripción es requerida</small>
-                        }
-                    </div>
-
-                    <!-- Peso -->
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="flex flex-col gap-2 col-span-2">
-                            <div class="flex justify-between items-center">
-                                <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Peso
-                                    (Kg)</label>
-                                <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline"
-                                    (click)="abrirConversor()">
-                                    <i class="pi pi-calculator text-[10px]"></i>
-                                    <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
-                                </div>
+            <!-- Columna Izquierda: Información General (4 celdas) -->
+            <div class="lg:col-span-4 flex flex-col gap-8">
+                <p-card
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] h-full border border-surface-border">
+                    <div class="p-4 md:p-6">
+                        <div class="flex items-center gap-4 mb-10">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                <i class="pi pi-info-circle text-xl"></i>
                             </div>
-                            <p-inputgroup>
-                                <input pInputText type="number" formControlName="peso" placeholder="0.00"
-                                    class="w-full h-10 bg-surface-50 border border-surface-border rounded-l-lg" />
-                                <p-inputgroup-addon
-                                    class="bg-surface-50 border border-surface-border border-l-0 rounded-r-lg text-gray-500 font-medium text-xs">
-                                    Kg
-                                </p-inputgroup-addon>
-                            </p-inputgroup>
+                            <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Información
+                                General
+                            </span>
+                        </div>
+
+                        <div class="flex flex-col gap-8">
+                            <!-- Tipo -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Tipo <span class="text-red-500">*</span></label>
+                                <p-inputgroup styleClass="w-full">
+                                    <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
+                                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true"
+                                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
+                                        styleClass="w-full rounded-l-2xl">
+                                        <ng-template let-tipo pTemplate="item">
+                                            <div class="flex items-center gap-3">
+                                                <img [src]="tipo.foto" class="w-8 h-8 object-cover rounded shadow-sm" />
+                                                <div class="flex flex-col">
+                                                    <span class="font-medium text-sm">{{ tipo.nombre }}</span>
+                                                    <span class="text-xs text-gray-500 truncate max-w-[150px]">{{
+                                                        tipo.definicion }}</span>
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                    </p-select>
+                                    <p-inputgroup-addon styleClass="rounded-r-2xl">
+                                        <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                            (onClick)="abrirCrearTipo()"></p-button>
+                                    </p-inputgroup-addon>
+                                </p-inputgroup>
+                                @if (articuloForm.get('definicion')?.touched && articuloForm.get('definicion')?.invalid)
+                                {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El tipo es
+                                    requerido</small>
+                                }
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Descripción</label>
+                                <textarea pTextarea formControlName="descripcionEspecifica" rows="3"
+                                    placeholder="Descripción específica..."
+                                    class="w-full rounded-2xl resize-none"></textarea>
+                                @if (articuloForm.get('descripcionEspecifica')?.touched &&
+                                articuloForm.get('descripcionEspecifica')?.invalid) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">La descripción es
+                                    requerida</small>
+                                }
+                            </div>
+
+                            <!-- Peso -->
+                            <div class="field">
+                                <div class="flex justify-between items-center mb-3 ml-1">
+                                    <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Peso
+                                        (Kg)</label>
+                                    <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline"
+                                        (click)="abrirConversor()">
+                                        <i class="pi pi-calculator text-[10px]"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
+                                    </div>
+                                </div>
+                                <p-inputgroup styleClass="w-full">
+                                    <input pInputText type="number" formControlName="peso" placeholder="0.00"
+                                        class="w-full rounded-l-2xl" />
+                                    <p-inputgroup-addon styleClass="rounded-r-2xl">
+                                        Kg
+                                    </p-inputgroup-addon>
+                                </p-inputgroup>
+                            </div>
+
+                            <!-- Comentarios -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Comentarios</label>
+                                <textarea pTextarea formControlName="comentarios" rows="3"
+                                    placeholder="Notas internas..." class="w-full rounded-2xl resize-none"></textarea>
+                            </div>
                         </div>
                     </div>
+                </p-card>
+            </div>
 
-                    <!-- Comentarios -->
-                    <div class="flex flex-col gap-2">
-                        <label
-                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Comentarios</label>
-                        <textarea pTextarea formControlName="comentarios" rows="3" placeholder="Notas internas..."
-                            class="w-full bg-surface-50 border border-surface-border rounded-lg resize-none focus:ring-1 focus:ring-[#fdb831]/50"></textarea>
+            <!-- Columna Derecha: Referencias y Multimedia (8 celdas) -->
+            <div class="lg:col-span-8 flex flex-col gap-8">
+
+                <!-- Referencias Cruzadas -->
+                <p-card
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
+                    <div class="p-4 md:p-6">
+                        <div class="flex justify-between items-center mb-10">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                    <i class="pi pi-sync text-xl"></i>
+                                </div>
+                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Referencias
+                                    Cruzadas</span>
+                            </div>
+                            <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
+                                styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
+                                (onClick)="agregarReferencia()"></p-button>
+                        </div>
+
+                        <div class="overflow-hidden rounded-2xl border border-surface-border bg-surface-ground/50">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-surface-ground">
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Referencia / Código</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Marca</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Comentario</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase text-center w-20">
+                                            Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody formArrayName="referenciasCruzadas">
+                                    @for (ref of referenciasCruzadas.controls; track $index) {
+                                    <tr [formGroupName]="$index"
+                                        class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
+                                        <td class="px-4 py-2">
+                                            <p-inputgroup>
+                                                <p-select formControlName="referencia_id"
+                                                    [options]="referenciasDisponibles" optionLabel="referencia"
+                                                    optionValue="id" placeholder="Seleccione..." [filter]="true"
+                                                    filterBy="referencia" (onFilter)="onFilterReferencias($event)"
+                                                    appendTo="body"
+                                                    class="w-full border-none bg-transparent h-9 text-sm focus:ring-0">
+                                                    <ng-template let-item pTemplate="item">
+                                                        <div class="flex flex-col">
+                                                            <span class="font-bold text-sm">{{ item.referencia
+                                                                }}</span>
+                                                            <span class="text-[10px] text-gray-500">{{
+                                                                item.marca?.nombre }}</span>
+                                                        </div>
+                                                    </ng-template>
+                                                </p-select>
+                                                <p-inputgroup-addon class="bg-transparent border-none">
+                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                                        styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
+                                                        (onClick)="abrirCrearReferencia($index)"></p-button>
+                                                </p-inputgroup-addon>
+                                            </p-inputgroup>
+                                        </td>
+                                        <td class="px-4 py-2 text-sm text-gray-400">
+                                            {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}
+                                        </td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 italic">
+                                            {{ getReferenciaDetail(ref.value.referencia_id)?.comentario || 'Sin
+                                            comentarios...'
+                                            }}
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <button type="button" (click)="eliminarReferencia($index)"
+                                                class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
+                                                <i class="pi pi-trash text-sm"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    }
+                                    @if (referenciasCruzadas.length === 0) {
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-8 text-center">
+                                            <p class="text-gray-500 text-xs italic">No hay referencias agregadas. Haga
+                                                clic en
+                                                <span class="text-[#fdb831] font-bold">AÑADIR</span> para comenzar.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                </p-card>
+
+                <!-- Multimedia Section (Locked) -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Foto -->
+                    <p-card
+                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border opacity-75">
+                        <div class="p-2">
+                            <div class="flex items-center gap-4 mb-6 px-4 pt-2">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                    <i class="pi pi-camera text-xl"></i>
+                                </div>
+                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Foto de
+                                    Referencia</span>
+                            </div>
+                            <div
+                                class="surface-section border-2 border-dashed border-surface-border rounded-2xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed mx-4 mb-4">
+                                <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
+                                    <i class="pi pi-lock text-color-secondary text-xl"></i>
+                                </div>
+                                <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo
+                                </p>
+                            </div>
+                        </div>
+                    </p-card>
+
+                    <!-- Plano -->
+                    <p-card
+                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border opacity-75">
+                        <div class="p-2">
+                            <div class="flex items-center gap-4 mb-6 px-4 pt-2">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                    <i class="pi pi-map text-xl"></i>
+                                </div>
+                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Plano
+                                    Esquemático</span>
+                            </div>
+                            <div
+                                class="surface-section border-2 border-dashed border-surface-border rounded-2xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed mx-4 mb-4">
+                                <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
+                                    <i class="pi pi-lock text-color-secondary text-xl"></i>
+                                </div>
+                                <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo
+                                </p>
+                            </div>
+                        </div>
+                    </p-card>
                 </div>
+
             </div>
         </div>
 
-        <!-- Columna Derecha: Referencias y Multimedia (8 celdas) -->
-        <div class="col-span-12 lg:col-span-8 flex flex-col gap-6">
-
-            <!-- Referencias Cruzadas -->
-            <div class="surface-card border border-surface-border rounded-xl p-6 shadow-xl">
-                <div class="flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-sync text-sm"></i>
-                        </div>
-                        <h3 class="text-sm font-bold uppercase tracking-wide text-700">Referencias Cruzadas</h3>
-                    </div>
-                    <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
-                        styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
-                        (onClick)="agregarReferencia()"></p-button>
-                </div>
-
-                <div class="overflow-hidden rounded-lg border border-surface-border bg-surface-ground/50">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-surface-ground">
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Referencia / Código</th>
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Marca</th>
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Comentario</th>
-                                <th
-                                    class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase text-center w-20">
-                                    Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody formArrayName="referenciasCruzadas">
-                            @for (ref of referenciasCruzadas.controls; track $index) {
-                            <tr [formGroupName]="$index"
-                                class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
-                                <td class="px-4 py-2">
-                                    <p-inputgroup>
-                                        <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
-                                            optionLabel="referencia" optionValue="id" placeholder="Seleccione..."
-                                            [filter]="true" filterBy="referencia"
-                                            (onFilter)="onFilterReferencias($event)" appendTo="body"
-                                            class="w-full border-none bg-transparent h-9 text-sm focus:ring-0">
-                                            <ng-template let-item pTemplate="item">
-                                                <div class="flex flex-col">
-                                                    <span class="font-bold text-sm">{{ item.referencia }}</span>
-                                                    <span class="text-[10px] text-gray-500">{{ item.marca?.nombre
-                                                        }}</span>
-                                                </div>
-                                            </ng-template>
-                                        </p-select>
-                                        <p-inputgroup-addon class="bg-transparent border-none">
-                                            <p-button icon="pi pi-plus" [text]="true" severity="secondary"
-                                                styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
-                                                (onClick)="abrirCrearReferencia($index)"></p-button>
-                                        </p-inputgroup-addon>
-                                    </p-inputgroup>
-                                </td>
-                                <td class="px-4 py-2 text-sm text-gray-400">
-                                    {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}
-                                </td>
-                                <td class="px-4 py-2 text-sm text-gray-500 italic">
-                                    {{ getReferenciaDetail(ref.value.referencia_id)?.comentario || 'Sin comentarios...'
-                                    }}
-                                </td>
-                                <td class="px-4 py-2 text-center">
-                                    <button type="button" (click)="eliminarReferencia($index)"
-                                        class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
-                                        <i class="pi pi-trash text-sm"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            }
-                            @if (referenciasCruzadas.length === 0) {
-                            <tr>
-                                <td colspan="4" class="px-4 py-8 text-center">
-                                    <p class="text-gray-500 text-xs italic">No hay referencias agregadas. Haga clic en
-                                        <span class="text-[#fdb831] font-bold">AÑADIR</span> para comenzar.
-                                    </p>
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <!-- Multimedia Section (Locked) -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- Foto -->
-                <div
-                    class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-camera text-sm"></i>
-                        </div>
-                        <h3 class="text-xs font-black text-gray-500 tracking-widest uppercase">Foto de Referencia</h3>
-                    </div>
-                    <div
-                        class="surface-section border-2 border-dashed border-surface-border rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
-                        <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
-                            <i class="pi pi-lock text-color-secondary text-xl"></i>
-                        </div>
-                        <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo</p>
-                    </div>
-                </div>
-
-                <!-- Plano -->
-                <div
-                    class="surface-card border border-surface-border rounded-xl p-6 shadow-xl flex flex-col gap-4 opacity-75">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-map text-sm"></i>
-                        </div>
-                        <h3 class="text-xs font-black text-gray-500 tracking-widest uppercase">Plano Esquemático</h3>
-                    </div>
-                    <div
-                        class="surface-section border-2 border-dashed border-surface-border rounded-xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed">
-                        <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
-                            <i class="pi pi-lock text-color-secondary text-xl"></i>
-                        </div>
-                        <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo</p>
-                    </div>
-                </div>
-            </div>
-
+        <!-- Footer Actions -->
+        <div
+            class="flex flex-col md:flex-row justify-end items-center gap-8 mt-16 pt-10 border-t border-surface-border mb-10">
+            <p-button label="Cancelar y Salir" styleClass="p-button-secondary text-base font-bold p-button-text p-4"
+                (onClick)="cancelar()" [disabled]="loading">
+            </p-button>
+            <p-button label="Confirmar Artículo" icon="pi pi-check"
+                styleClass="p-button-warning text-lg font-bold px-12 py-5 rounded-[2rem] shadow-2xl shadow-orange-500/20"
+                type="submit" [loading]="loading" [disabled]="articuloForm.invalid">
+            </p-button>
         </div>
     </form>
-
-    <!-- Floating Footer Actions -->
-    <div
-        class="fixed bottom-0 left-0 right-0 surface-section backdrop-blur-md border-t border-surface-border p-4 z-50 flex justify-end gap-3 px-8 lg:pl-[280px]">
-        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-            styleClass="text-gray-400 hover:text-white transition-colors"></p-button>
-        <p-button label="Crear Artículo" icon="pi pi-check" [loading]="loading" (onClick)="onSubmit()"
-            styleClass="bg-[#fdb831] border-none text-black font-black uppercase text-sm px-6 py-3 shadow-[0_0_20px_rgba(253,184,49,0.3)] hover:shadow-[0_0_30px_rgba(253,184,49,0.5)] transition-all"></p-button>
-    </div>
 </div>
 
 <!-- Diálogo Conversor de Peso -->
