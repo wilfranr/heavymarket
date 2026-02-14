@@ -61,6 +61,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/landing/categories', [LandingController::class, 'index']);
     Route::get('/landing/navbar-data', [LandingController::class, 'navbarData']);
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
+    Route::get('/landing/brands', [LandingController::class, 'brands']);
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote']);
 
     /**

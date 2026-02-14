@@ -66,9 +66,17 @@ class LandingController extends Controller
 
         return response()->json($categorias);
     }
+    
     /**
-     * Obtener datos para la vista de cotización (Grid + Form Filters)
+     * Obtener marcas para el carrusel de la landing
      */
+    public function brands()
+    {
+        $brands = \App\Models\Fabricante::orderBy('nombre')
+            ->get();
+            
+        return response()->json($brands);
+    }
     public function quoteData()
     {
         // 1. Obtener Categorías de Máquina y sus Tipos desde la DB
