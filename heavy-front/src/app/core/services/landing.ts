@@ -60,6 +60,15 @@ export class LandingService {
         );
     }
 
+    getBrands(): Observable<any[]> {
+        return this.http.get<any[]>(`${environment.apiUrl}/landing/brands`).pipe(
+            catchError((error) => {
+                console.error('Error fetching brands:', error);
+                return of([]);
+            })
+        );
+    }
+
     getQuoteData(): Observable<any> {
         return this.http.get<any>(`${environment.apiUrl}/landing/quote-data`).pipe(
             catchError((error) => {

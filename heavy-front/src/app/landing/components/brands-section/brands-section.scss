@@ -1,0 +1,98 @@
+:host {
+    display: block;
+    width: 100%;
+}
+
+.hm-brands-section {
+    width: 100%;
+    background: #ffffff;
+    padding: 48px 0;
+    overflow: hidden;
+}
+
+.hm-brands-marquee {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Fade edges */
+.hm-brands-marquee::before,
+.hm-brands-marquee::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 80px;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.hm-brands-marquee::before {
+    left: 0;
+    background: linear-gradient(to right, #ffffff, transparent);
+}
+
+.hm-brands-marquee::after {
+    right: 0;
+    background: linear-gradient(to left, #ffffff, transparent);
+}
+
+/* Infinite scroll track */
+.hm-brands-track {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 32px;
+    width: max-content;
+    animation: hm-scroll 60s linear infinite;
+}
+
+.hm-brands-marquee:hover .hm-brands-track {
+    animation-play-state: paused;
+}
+
+@keyframes hm-scroll {
+    0% {
+        transform: translateX(0);
+    }
+
+    100% {
+        transform: translateX(-50%);
+    }
+}
+
+/* Card */
+.hm-brands-card {
+    flex: 0 0 180px;
+    height: 100px;
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    transition: all 0.3s ease;
+}
+
+.hm-brands-card:hover {
+    border-color: #cbd5e1;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+/* Logo image */
+.hm-brands-img {
+    max-width: 140px;
+    max-height: 68px;
+    object-fit: contain;
+    filter: grayscale(100%);
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+
+.hm-brands-card:hover .hm-brands-img {
+    filter: grayscale(0%);
+    opacity: 1;
+    transform: scale(1.08);
+}
