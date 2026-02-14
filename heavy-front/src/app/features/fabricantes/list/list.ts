@@ -15,6 +15,7 @@ import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { ImageModule } from 'primeng/image';
 
 import { Fabricante } from '../../../core/models/fabricante.model';
 import { loadFabricantes, deleteFabricante } from '../../../store/fabricantes/actions/fabricantes.actions';
@@ -26,7 +27,7 @@ import { selectAllFabricantes, selectFabricantesLoading, selectFabricantesPagina
 @Component({
     selector: 'app-fabricantes-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule, ImageModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -73,9 +74,15 @@ export class ListComponent implements OnInit {
      * Maneja el cambio de página
      */
     onPageChange(event: any): void {
-        this.first = event.first;
-        this.currentPage = event.page + 1;
-        this.rowsPerPage = event.rows;
+        console.log('Page event:', event);
+        this.first = Number(event.first) || 0;
+        this.rowsPerPage = Number(event.rows) || 20;
+
+        // Calculate page number safely
+        const calculatedPage = Math.floor(this.first / this.rowsPerPage) + 1;
+        this.currentPage = isNaN(calculatedPage) ? 1 : calculatedPage;
+
+        console.log('Loading page:', this.currentPage);
         this.cargarFabricantes();
     }
 
