@@ -83,7 +83,7 @@ app-banner {
     background: transparent;
     flex: none;
     flex-grow: 0;
-    z-index: 10;
+    z-index: 10000;
 }
 
 /* Content - Contenedor principal del navbar (fondo negro 100%) */
@@ -1844,7 +1844,7 @@ app-banner {
     left: 0;
     top: 72px;
     background: transparent;
-    z-index: 1000;
+    z-index: 10001;
     pointer-events: none;
 }
 
