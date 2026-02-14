@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject, signal, ViewChild, ElementRef, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -32,7 +32,11 @@ import { TerceroService } from '../../../core/services/tercero.service';
     providers: [ConfirmationService],
     template: `
         <div class="card">
-            <h2>Gestión de Pedidos</h2>
+            <!-- Header: Título + Acción principal -->
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="m-0">Gestión de Pedidos</h2>
+                <p-button label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
+            </div>
 
             <!-- Tabs de Estados -->
             <p-tabs [value]="selectedTabValue" (valueChange)="onTabChange($event)">
@@ -47,15 +51,6 @@ import { TerceroService } from '../../../core/services/tercero.service';
                     </p-tab>
                 </p-tablist>
             </p-tabs>
-
-            <!-- Filtros y Acciones -->
-            <div class="mb-4">
-                <div class="flex justify-content-end mb-3">
-                    <div class="flex gap-2">
-                        <p-button label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
-                    </div>
-                </div>
-            </div>
 
             <!-- Tabla de Pedidos -->
             <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']">
@@ -118,7 +113,12 @@ import { TerceroService } from '../../../core/services/tercero.service';
 
         <p-confirmDialog></p-confirmDialog>
     `,
-    styles: []
+    encapsulation: ViewEncapsulation.None,
+    styles: [`
+        app-pedidos-list .p-tablist-tab-list {
+            justify-content: center;
+        }
+    `]
 })
 export class PedidosListComponent implements OnInit {
     private store = inject(Store);

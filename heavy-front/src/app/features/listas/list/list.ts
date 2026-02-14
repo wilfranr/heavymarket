@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -6,20 +6,17 @@ import { Observable } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
-import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { TagModule } from 'primeng/tag';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
-import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TabsModule } from 'primeng/tabs';
 
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { loadListas, deleteLista } from '../../../store/listas/actions/listas.actions';
@@ -38,23 +35,25 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
         RouterModule,
         TableModule,
         ButtonModule,
-        CardModule,
         InputTextModule,
         TagModule,
         ToastModule,
         ConfirmDialogModule,
-        SelectModule,
         FormsModule,
         TooltipModule,
         FallbackImageDirective,
         IconFieldModule,
         InputIconModule,
-        InputGroupModule,
-        InputGroupAddonModule
+        TabsModule
     ],
     providers: [MessageService, ConfirmationService],
-    templateUrl: './list.html'
-    // styleUrl: './list.scss'
+    templateUrl: './list.html',
+    encapsulation: ViewEncapsulation.None,
+    styles: [`
+        app-listas-list .p-tablist-tab-list {
+            justify-content: center;
+        }
+    `]
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
@@ -79,18 +78,19 @@ export class ListComponent implements OnInit {
 
     // Filtros
     selectedTipo: ListaTipo | null = null;
+    selectedTabValue: string = 'Todos';
     searchTerm = '';
     private searchSubject = new Subject<string>();
 
-    tipos: { label: string; value: ListaTipo | null }[] = [
-        { label: 'Todos', value: null },
-        { label: 'Marcas', value: 'Marca' },
-        { label: 'Tipos de Máquina', value: 'Tipo de Máquina' },
-        { label: 'Tipos de Artículo', value: 'Tipo de Artículo' },
-        { label: 'Unidades Medida', value: 'Unidad de Medida' },
-        { label: 'Tipos de Medida', value: 'Tipo de Medida' },
-        { label: 'Nombres de Medida', value: 'Nombre de Medida' },
-        { label: 'Piezas Estandar', value: 'Piezas Estandar' }
+    tipos: { label: string; value: string; tipoValue: ListaTipo | null; icon: string }[] = [
+        { label: 'Todos', value: 'Todos', tipoValue: null, icon: 'pi pi-list' },
+        { label: 'Marcas', value: 'Marca', tipoValue: 'Marca', icon: 'pi pi-bookmark' },
+        { label: 'Tipos de Máquina', value: 'Tipo de Máquina', tipoValue: 'Tipo de Máquina', icon: 'pi pi-cog' },
+        { label: 'Tipos de Artículo', value: 'Tipo de Artículo', tipoValue: 'Tipo de Artículo', icon: 'pi pi-box' },
+        { label: 'Unidades Medida', value: 'Unidad de Medida', tipoValue: 'Unidad de Medida', icon: 'pi pi-ruler-combined' },
+        { label: 'Tipos de Medida', value: 'Tipo de Medida', tipoValue: 'Tipo de Medida', icon: 'pi pi-sliders-h' },
+        { label: 'Nombres de Medida', value: 'Nombre de Medida', tipoValue: 'Nombre de Medida', icon: 'pi pi-tag' },
+        { label: 'Piezas Estandar', value: 'Piezas Estandar', tipoValue: 'Piezas Estandar', icon: 'pi pi-objects-column' }
     ];
 
     ngOnInit(): void {
@@ -119,11 +119,25 @@ export class ListComponent implements OnInit {
     }
 
     /**
-     * Filtra por tipo
+     * Cambia el tab seleccionado y filtra
      */
-    onTipoChange(tipo: ListaTipo | null): void {
-        this.selectedTipo = tipo;
-        this.currentPage = 1; // Reset to first page when filtering
+    onTabChange(value: any): void {
+        this.selectedTabValue = value as string;
+        const tipo = this.tipos.find(t => t.value === value);
+        this.selectedTipo = tipo?.tipoValue ?? null;
+        this.currentPage = 1;
+        this.first = 0;
+        this.loadListas();
+    }
+
+    /**
+     * Limpia todos los filtros
+     */
+    limpiarFiltros(): void {
+        this.selectedTabValue = 'Todos';
+        this.selectedTipo = null;
+        this.searchTerm = '';
+        this.currentPage = 1;
         this.first = 0;
         this.loadListas();
     }
