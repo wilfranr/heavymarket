@@ -30,6 +30,8 @@ $color-text-black: #0C0E0F;
     padding: 10px 24px;
     border: none;
     transition: all 0.2s;
+    cursor: pointer;
+    font-size: 0.875rem;
 
     &.btn-primary {
         background-color: $color-yellow;
@@ -37,6 +39,48 @@ $color-text-black: #0C0E0F;
 
         &:hover {
             filter: brightness(1.1);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: none;
+        }
+    }
+
+    &.btn-outline {
+        background-color: transparent;
+        color: $color-yellow;
+        border: 2px solid $color-yellow;
+
+        &:hover {
+            background-color: rgba($color-yellow, 0.1);
+        }
+    }
+
+    &.btn-costeo {
+        background: linear-gradient(135deg, #10b981, #059669);
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        letter-spacing: 0.02em;
+
+        &:hover {
+            background: linear-gradient(135deg, #059669, #047857);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.25);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
         }
     }
 }
@@ -51,13 +95,101 @@ $color-text-black: #0C0E0F;
     align-items: center;
     justify-content: center;
     font-size: 1.2rem;
-    transition: transform 0.1s;
+    transition: transform 0.15s, background-color 0.15s;
     cursor: pointer;
     border: none;
+
+    &:hover {
+        transform: scale(1.08);
+    }
+
+    &.action-btn-delete {
+        background-color: #ef4444;
+        color: #ffffff;
+
+        &:hover {
+            background-color: #dc2626;
+        }
+    }
+}
+
+// Fila de ítem con error
+.item-row-error {
+    background-color: rgba(239, 68, 68, 0.06);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 12px;
+
+    animation: shake 0.4s ease-in-out;
+}
+
+.item-row-normal {
+    background-color: transparent;
+    border: 1px solid transparent;
+    border-radius: 12px;
+
+    &:hover {
+        background-color: rgba(255, 255, 255, 0.02);
+    }
+}
+
+// Error banner por ítem
+.error-banner {
+    background-color: rgba(239, 68, 68, 0.08);
+    border: 1px solid rgba(239, 68, 68, 0.15);
+}
+
+// Animación de shake
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-4px);
+    }
+
+    40% {
+        transform: translateX(4px);
+    }
+
+    60% {
+        transform: translateX(-3px);
+    }
+
+    80% {
+        transform: translateX(3px);
+    }
+}
+
+// Animación fade-in
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 // Estilos específicos solo para este componente
 :host ::ng-deep {
+
+    // Campo con error de validación de costeo
+    .campo-error {
+        .p-select {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.4) !important;
+        }
+    }
 
     // Solo afectar inputs dentro del formulario de pedidos
     form {
@@ -65,23 +197,112 @@ $color-text-black: #0C0E0F;
         .p-inputtext,
         .p-select,
         .p-textarea {
-            background-color: #343743;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #FFFFFF;
+            background-color: #ffffff;
+            border: 1px solid #cbd5e1; // slate-300
+            color: #334155; // slate-700
             border-radius: 8px;
+            transition: all 0.2s;
 
             &:enabled:focus {
                 border-color: $color-yellow;
                 box-shadow: 0 0 0 1px $color-yellow;
             }
+
+            &::placeholder {
+                color: #94a3b8;
+            }
         }
     }
 
+    // Estilos para Modo Oscuro (Override agresivo para PrimeNG components)
+    :host-context(.dark),
+    :host-context(.app-dark) {
+        ::ng-deep {
+
+            .p-select,
+            .p-dropdown {
+                background-color: #343743 !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+                .p-select-label,
+                .p-dropdown-label {
+                    color: #FFFFFF !important;
+                    background: transparent !important;
+                }
+
+                .p-placeholder {
+                    color: #94a3b8 !important; // slate-400
+                }
+
+                .p-select-trigger,
+                .p-dropdown-trigger {
+                    color: rgba(255, 255, 255, 0.6) !important;
+                    background: transparent !important;
+                }
+
+                &:not(.p-disabled):hover {
+                    border-color: $color-yellow !important;
+                }
+            }
+
+            .p-select-panel,
+            .p-dropdown-panel {
+                background-color: #343743 !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+                .p-select-item,
+                .p-dropdown-item {
+                    color: #FFFFFF !important;
+
+                    &:hover {
+                        background-color: rgba(255, 255, 255, 0.05) !important;
+                        color: #FFFFFF !important;
+                    }
+
+                    &.p-highlight {
+                        background-color: $color-yellow !important;
+                        color: #000000 !important;
+                    }
+                }
+
+                .p-select-header,
+                .p-dropdown-header {
+                    background-color: #343743 !important;
+                    color: #ffffff !important;
+                    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+
+                    .p-inputtext {
+                        background-color: rgba(255, 255, 255, 0.05) !important;
+                        color: #ffffff !important;
+                        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                    }
+                }
+
+                .p-select-empty-message,
+                .p-dropdown-empty-message {
+                    color: #94a3b8 !important;
+                    background: #343743 !important;
+                }
+            }
+        }
+
+        form {
+
+            .p-inputtext,
+            .p-textarea {
+                background-color: #343743 !important;
+                border: 1px solid rgba(255, 255, 255, 0.1) !important;
+                color: #FFFFFF !important;
+            }
+        }
+    }
+
+    // Ajustes del panel de select (global o fuera del host-context a veces necesario para PrimeNG appendTo="body")
     .p-select-panel {
-        background-color: #343743;
+        background-color: #ffffff;
 
         .p-select-item {
-            color: #FFFFFF;
+            color: #334155;
 
             &.p-highlight {
                 background-color: $color-yellow;

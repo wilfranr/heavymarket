@@ -1,4 +1,5 @@
 <p-toast />
+<p-confirmDialog />
 
 @if (loading$ | async) {
 <div class="p-6">
@@ -15,14 +16,35 @@
                     style="font-family: 'Figtree'">Pedidos > Editar
                 </div>
                 <h1 class="text-3xl font-bold text-yellow-600 dark:text-brand-yellow" style="font-family: 'Figtree'">
-                    Pedido</h1>
+                    Pedido #{{ pedidoId() }}</h1>
             </div>
             <!-- Top Buttons -->
-            <div class="flex gap-4">
-                <button type="button" class="btn-pill btn-primary" (click)="onSubmit()">Guardar</button>
-                <!-- botones placeholder segun diseño -->
-                <button type="button" class="btn-pill btn-primary">Editar</button>
-                <button type="button" class="btn-pill btn-primary">Pedir</button>
+            <div class="flex gap-4 items-center">
+                <!-- Enviar a Costeo Button -->
+                @if (puedeEnviarACosteo) {
+                <button type="button" class="btn-pill btn-costeo flex items-center gap-2" (click)="enviarACosteo()"
+                    [disabled]="enviandoACosteo"
+                    pTooltip="Valida que todos los ítems tengan Sistema, Tipo de artículo, Referencia y Cantidad"
+                    tooltipPosition="bottom">
+                    @if (enviandoACosteo) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>Enviando...</span>
+                    } @else {
+                    <i class="pi pi-send"></i>
+                    <span>Enviar a Costeo</span>
+                    }
+                </button>
+                }
+                <button type="button" class="btn-pill btn-primary" (click)="onSubmit()" [disabled]="submitting">
+                    @if (submitting) {
+                    <i class="pi pi-spin pi-spinner mr-2"></i>Guardando...
+                    } @else {
+                    <i class="pi pi-save mr-2"></i>Guardar
+                    }
+                </button>
+                <button type="button" class="btn-pill btn-outline" (click)="cancelar()">
+                    <i class="pi pi-times mr-2"></i>Cancelar
+                </button>
             </div>
         </div>
 
@@ -168,60 +190,97 @@
 
             <!-- Items Section -->
             <div class="px-8">
-                <h3 class="text-xl font-semibold text-yellow-600 dark:text-brand-yellow mb-4">Tus ítems
-                </h3>
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-xl font-semibold text-yellow-600 dark:text-brand-yellow">Tus ítems
+                    </h3>
+                    <div class="flex items-center gap-4">
+                        <div
+                            class="bg-gray-100 dark:bg-[#343743] border border-gray-200 dark:border-none rounded-lg px-4 py-2">
+                            <span class="text-gray-500 dark:text-slate-400 text-sm">Total:</span>
+                            <span class="text-yellow-600 dark:text-brand-yellow font-bold text-lg ml-2">{{
+                                referenciasFormArray.length }}</span>
+                        </div>
+                    </div>
+                </div>
 
                 <div class="w-full">
                     <!-- Headers -->
                     <div class="flex gap-4 mb-2 px-2 text-gray-800 dark:text-white font-semibold text-sm">
                         <div class="w-[50px] text-center">Ítem</div>
-                        <div class="w-[20%]">Sistema</div>
-                        <div class="w-[20%]">Artículo</div>
-                        <div class="w-[100px]">Cantidad</div>
-                        <div class="flex-1">Referencia</div>
-                        <div class="w-[220px] text-right pr-4">Acciones</div>
+                        <div class="w-[18%]">Sistema <span class="text-red-400">*</span></div>
+                        <div class="w-[18%]">Tipo de artículo <span class="text-red-400">*</span></div>
+                        <div class="w-[100px]">Cantidad <span class="text-red-400">*</span></div>
+                        <div class="flex-1">Referencia <span class="text-red-400">*</span></div>
+                        <div class="w-[180px] text-right pr-4">Acciones</div>
                     </div>
 
                     <!-- Rows -->
                     <div class="space-y-4">
                         @for (referencia of referenciasFormArray.controls; track $index; let refIndex = $index) {
-                        <div [formGroup]="$any(referencia)" class="flex items-center gap-4">
+                        <div [formGroup]="$any(referencia)"
+                            class="flex items-start gap-4 p-3 rounded-lg transition-all duration-300"
+                            [class.item-row-error]="itemTieneError($index)"
+                            [class.item-row-normal]="!itemTieneError($index)">
+
                             <!-- Checkbox -->
-                            <div class="w-[50px] flex justify-center">
+                            <div class="w-[50px] flex justify-center pt-2">
                                 <p-checkbox [binary]="true"
                                     styleClass="border-2 border-gray-400 dark:border-white rounded"></p-checkbox>
                             </div>
 
-                            <!-- Sistema -->
-                            <div class="w-[20%]">
-                                <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar"
-                                    styleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] flex items-center text-gray-800 dark:text-white"
-                                    [filter]="true"></p-select>
+                            <!-- Sistema (Cascada nivel 1) -->
+                            <div class="w-[18%]">
+                                <p-select formControlName="sistema_id" [options]="sistemas"
+                                    placeholder="Seleccionar sistema..." styleClass="w-full h-[48px] flex items-center"
+                                    [class]="campoTieneErrorCosteo($index, 'sistema_id') ? 'campo-error' : ''"
+                                    [filter]="true" appendTo="body"
+                                    (onChange)="onSistemaChange($event.value, $index)"></p-select>
+                                @if (campoTieneErrorCosteo($index, 'sistema_id')) {
+                                <small class="text-red-400 text-xs mt-1 block"><i
+                                        class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
+                                }
                             </div>
 
-                            <!-- Articulo -->
-                            <div class="w-[20%]">
-                                <!-- If loading existing data, we might need logic to show correct field type. Assuming text for now as per image -->
-                                <input pInputText formControlName="definicion" placeholder="Descripción del ítem"
-                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white" />
+                            <!-- Tipo de Artículo (Cascada nivel 2) -->
+                            <div class="w-[18%]">
+                                <p-select formControlName="articulo_id" [options]="tiposPorFila[$index]"
+                                    placeholder="Tipo de artículo" styleClass="w-full h-[48px] flex items-center"
+                                    [class]="campoTieneErrorCosteo($index, 'articulo_id') ? 'campo-error' : ''"
+                                    [filter]="true" appendTo="body" [disabled]="!referencia.get('sistema_id')?.value"
+                                    (onChange)="onArticuloChange($event.value, $index)"></p-select>
+                                @if (campoTieneErrorCosteo($index, 'articulo_id')) {
+                                <small class="text-red-400 text-xs mt-1 block"><i
+                                        class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
+                                }
                             </div>
 
                             <!-- Cantidad -->
                             <div class="w-[100px]">
                                 <input pInputText type="number" formControlName="cantidad" placeholder="Ej: 1"
-                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-center text-gray-800 dark:text-white" />
+                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-center text-gray-800 dark:text-white"
+                                    [class.border-red-500]="campoTieneErrorCosteo($index, 'cantidad')"
+                                    [class.dark:border-red-500]="campoTieneErrorCosteo($index, 'cantidad')" />
+                                @if (campoTieneErrorCosteo($index, 'cantidad')) {
+                                <small class="text-red-400 text-xs mt-1 block"><i
+                                        class="pi pi-exclamation-circle mr-1"></i>Obligatorio</small>
+                                }
                             </div>
 
-                            <!-- Referencia -->
+                            <!-- Referencia (Cascada nivel 3) -->
                             <div class="flex-1">
-                                <p-select formControlName="referencia_id" [options]="referencias" [filter]="true"
-                                    filterBy="label" placeholder="Ej: no definido"
-                                    styleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] flex items-center text-gray-800 dark:text-white">
-                                </p-select>
+                                <p-select formControlName="referencia_id" [options]="referenciasPorFila[$index]"
+                                    [filter]="true" filterBy="label" placeholder="Seleccionar referencia..."
+                                    styleClass="w-full h-[48px] flex items-center"
+                                    [class]="campoTieneErrorCosteo($index, 'referencia_id') ? 'campo-error' : ''"
+                                    appendTo="body" [disabled]="!referencia.get('articulo_id')?.value"></p-select>
+                                @if (campoTieneErrorCosteo($index, 'referencia_id')) {
+                                <small class="text-red-400 text-xs mt-1 block"><i
+                                        class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
+                                }
                             </div>
 
                             <!-- Actions -->
-                            <div class="w-[220px] flex gap-3 justify-end">
+                            <div class="w-[180px] flex gap-3 justify-end pt-1">
                                 <button type="button" class="action-btn-circle" pTooltip="Comentar"
                                     tooltipPosition="top">
                                     <i class="pi pi-comments text-lg"></i>
@@ -230,12 +289,40 @@
                                     tooltipPosition="top">
                                     <i class="pi pi-image text-lg"></i>
                                 </button>
-                                <button type="button" class="action-btn-circle" pTooltip="Editar" tooltipPosition="top">
-                                    <i class="pi pi-pencil text-lg"></i>
-                                </button>
-                                <button type="button" class="action-btn-circle" (click)="eliminarReferencia($index)"
-                                    pTooltip="Eliminar" tooltipPosition="top">
+                                <button type="button" class="action-btn-circle action-btn-delete"
+                                    (click)="eliminarReferencia($index)" pTooltip="Eliminar" tooltipPosition="top">
                                     <i class="pi pi-trash text-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Error detail banner per item -->
+                        @if (itemTieneError($index)) {
+                        <div
+                            class="error-banner flex items-center gap-2 px-4 py-2 ml-[50px] mr-[180px] rounded-md animate-fade-in">
+                            <i class="pi pi-info-circle text-red-400"></i>
+                            <span class="text-red-300 text-xs">
+                                Campos faltantes: <strong>{{ getErroresItem($index).join(', ') }}</strong>
+                            </span>
+                        </div>
+                        }
+                        }
+
+                        <!-- Empty state -->
+                        @if (referenciasFormArray.length === 0) {
+                        <div class="py-12 px-6">
+                            <div class="max-w-md mx-auto text-center">
+                                <div
+                                    class="w-20 h-20 rounded-full bg-gray-100 dark:bg-slate-800/50 flex items-center justify-center mx-auto mb-4">
+                                    <i class="pi pi-inbox text-4xl text-gray-400 dark:text-slate-600"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-800 dark:text-white mb-2">No hay ítems
+                                    agregados</h4>
+                                <p class="text-gray-500 dark:text-slate-400 text-sm mb-6">
+                                    Comience agregando ítems al pedido
+                                </p>
+                                <button type="button" class="btn-pill btn-primary" (click)="agregarReferencia()">
+                                    <i class="pi pi-plus mr-2"></i>Agregar Primer Ítem
                                 </button>
                             </div>
                         </div>
@@ -244,12 +331,9 @@
 
                     <!-- Bottom Buttons -->
                     <div class="flex justify-end gap-4 mt-8">
-                        <button type="button" class="btn-pill btn-outline flex items-center gap-2">
-                            Agregar listado <i class="pi pi-plus"></i>
-                        </button>
-                        <button type="button" class="btn-pill btn-primary flex items-center gap-2"
+                        <button type="button" class="btn-pill btn-outline flex items-center gap-2"
                             (click)="agregarReferencia()">
-                            Agregar <i class="pi pi-plus"></i>
+                            Agregar ítem <i class="pi pi-plus"></i>
                         </button>
                     </div>
                 </div>

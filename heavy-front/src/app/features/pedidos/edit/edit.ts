@@ -101,6 +101,10 @@ export class EditComponent implements OnInit {
     fabricantes: any[] = [];
     referencias: any[] = [];
 
+    // Opciones en cascada por fila (índice del FormArray)
+    tiposPorFila: any[][] = [];
+    referenciasPorFila: any[][] = [];
+
     proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
     articulos: any[] = []; // Lista de artículos disponibles
 
@@ -121,6 +125,10 @@ export class EditComponent implements OnInit {
     articulosPedido: PedidoArticulo[] = [];
 
     mostrarArticulos = false;
+
+    // Validación de ítems para enviar a costeo
+    itemsConErrores = signal<Map<number, string[]>>(new Map());
+    enviandoACosteo = false;
 
     // Modal de detalle de máquina
     displayMaquinaDialog = false;
@@ -352,12 +360,19 @@ export class EditComponent implements OnInit {
      * Carga las referencias del pedido al FormArray
      */
     private cargarReferenciasAlFormArray(referencias: PedidoReferencia[]): void {
-        referencias.forEach((ref) => {
+        referencias.forEach((ref, idx) => {
+            const index = this.referenciasFormArray.length;
+
+            // Inicializar opciones vacías para esta fila
+            this.tiposPorFila[index] = [];
+            this.referenciasPorFila[index] = [];
+
             const referenciaForm = this.fb.group({
                 id: [ref.id],
                 estado: [ref.estado ?? true],
                 sistema_id: [ref.sistema_id || null],
-                referencia_id: [ref.referencia_id], // No longer required
+                articulo_id: [null], // Se cargará por cascada
+                referencia_id: [ref.referencia_id || null],
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
                 comentario: [ref.comentario || ''],
@@ -366,6 +381,11 @@ export class EditComponent implements OnInit {
             });
 
             this.referenciasFormArray.push(referenciaForm);
+
+            // Cargar cascadas si ya tiene sistema_id
+            if (ref.sistema_id) {
+                this.cargarTiposPorSistema(ref.sistema_id, index, ref.referencia_id);
+            }
         });
     }
 
@@ -380,11 +400,18 @@ export class EditComponent implements OnInit {
      * Agrega una nueva referencia al FormArray
      */
     agregarReferencia(): void {
+        const index = this.referenciasFormArray.length;
+
+        // Inicializar opciones vacías para esta fila
+        this.tiposPorFila[index] = [];
+        this.referenciasPorFila[index] = [];
+
         const referenciaForm = this.fb.group({
             id: [null],
             estado: [true],
             sistema_id: [null],
-            referencia_id: [null], // No longer required
+            articulo_id: [null],
+            referencia_id: [null],
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
             comentario: [''],
@@ -393,6 +420,238 @@ export class EditComponent implements OnInit {
         });
 
         this.referenciasFormArray.push(referenciaForm);
+    }
+
+    /**
+     * Maneja el cambio de sistema en una fila (cascada)
+     */
+    onSistemaChange(sistemaId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+        this.tiposPorFila[index] = [];
+        this.referenciasPorFila[index] = [];
+
+        if (!sistemaId) return;
+
+        this.cargarTiposPorSistema(sistemaId, index);
+    }
+
+    /**
+     * Carga los tipos de artículo asociados a un sistema
+     */
+    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null): void {
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Piezas Estandar', per_page: 200 }).subscribe({
+            next: (response) => {
+                const nombresTipos = response.data.map(l => l.nombre);
+
+                this.articuloService.getAll({ per_page: 500 }).subscribe({
+                    next: (resArt) => {
+                        this.tiposPorFila[index] = resArt.data
+                            .filter(a => nombresTipos.includes(a.definicion))
+                            .map(a => ({
+                                label: a.definicion,
+                                value: a.id,
+                                descripcion: a.descripcionEspecifica
+                            }));
+
+                        // Si hay una referencia preseleccionada, buscar a qué artículo pertenece
+                        if (referenciaIdPreseleccionada) {
+                            this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Autoselecciona el artículo que contiene la referencia dada (para carga inicial)
+     */
+    private autoseleccionarArticuloPorReferencia(index: number, referenciaId: number): void {
+        this.referenciaService.getAll({ per_page: 500 }).subscribe({
+            next: (response) => {
+                const ref = response.data.find(r => r.id === referenciaId);
+                if (ref && (ref as any).articulo_id) {
+                    const articuloId = (ref as any).articulo_id;
+                    const row = this.referenciasFormArray.at(index);
+                    row.patchValue({ articulo_id: articuloId }, { emitEvent: false });
+                    // Cargar referencias de ese artículo
+                    this.cargarReferenciasPorArticulo(articuloId, index);
+                }
+            }
+        });
+    }
+
+    /**
+     * Maneja el cambio de artículo (tipo) en una fila (cascada)
+     */
+    onArticuloChange(articuloId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ referencia_id: null }, { emitEvent: false });
+        this.referenciasPorFila[index] = [];
+
+        if (!articuloId) return;
+
+        this.cargarReferenciasPorArticulo(articuloId, index);
+    }
+
+    /**
+     * Carga las referencias asociadas a un artículo
+     */
+    private cargarReferenciasPorArticulo(articuloId: number, index: number): void {
+        this.referenciaService.getAll({ articulo_id: articuloId, per_page: 100 }).subscribe({
+            next: (response) => {
+                this.referenciasPorFila[index] = response.data.map(r => ({
+                    label: r.referencia,
+                    value: r.id
+                }));
+            }
+        });
+    }
+
+    /**
+     * Valida todos los ítems del pedido y envía a costeo si todo es correcto.
+     * Campos obligatorios: sistema_id, articulo_id, referencia_id, cantidad
+     */
+    enviarACosteo(): void {
+        const errores = new Map<number, string[]>();
+        let hayErrores = false;
+
+        this.referenciasFormArray.controls.forEach((control, index) => {
+            const camposFaltantes: string[] = [];
+
+            if (!control.get('sistema_id')?.value) {
+                camposFaltantes.push('Sistema');
+            }
+            if (!control.get('articulo_id')?.value) {
+                camposFaltantes.push('Tipo de artículo');
+            }
+            if (!control.get('referencia_id')?.value) {
+                camposFaltantes.push('Referencia');
+            }
+            if (!control.get('cantidad')?.value || control.get('cantidad')?.value < 1) {
+                camposFaltantes.push('Cantidad');
+            }
+
+            if (camposFaltantes.length > 0) {
+                errores.set(index, camposFaltantes);
+                hayErrores = true;
+            }
+        });
+
+        this.itemsConErrores.set(errores);
+
+        if (this.referenciasFormArray.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Sin ítems',
+                detail: 'Debe agregar al menos un ítem antes de enviar a costeo'
+            });
+            return;
+        }
+
+        if (hayErrores) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Campos obligatorios faltantes',
+                detail: 'Algunos ítems no tienen todos los campos obligatorios. Revise los campos resaltados en rojo.'
+            });
+            return;
+        }
+
+        // Confirmar el envío a costeo
+        this.confirmationService.confirm({
+            message: '¿Está seguro de enviar este pedido a costeo? El estado cambiará a "En Costeo".',
+            header: 'Confirmar envío a costeo',
+            icon: 'pi pi-send',
+            accept: () => {
+                this.enviandoACosteo = true;
+
+                // Primero guardar el pedido actual, luego cambiar estado
+                const formValue = this.pedidoForm.value;
+                const pedidoData: UpdatePedidoDto = {
+                    tercero_id: formValue.tercero_id,
+                    direccion: formValue.direccion || undefined,
+                    comentario: formValue.comentario || undefined,
+                    maquina_id: formValue.maquina_id || undefined,
+                    fabricante_id: formValue.fabricante_id || undefined,
+                    contacto_id: formValue.contacto_id || undefined,
+                    estado: 'En_Costeo'
+                };
+
+                this.store.dispatch(
+                    updatePedido({
+                        id: this.pedidoId(),
+                        changes: pedidoData
+                    })
+                );
+
+                this.store
+                    .select((state: any) => state.pedidos)
+                    .subscribe((pedidosState: any) => {
+                        if (!pedidosState.loading && !pedidosState.error && this.enviandoACosteo) {
+                            this.enviandoACosteo = false;
+                            this.estadoActual = 'En_Costeo';
+                            this.pedidoForm.patchValue({ estado: 'En_Costeo' });
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: '¡Enviado a Costeo!',
+                                detail: 'El pedido ha sido enviado a costeo exitosamente'
+                            });
+                            setTimeout(() => {
+                                this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                            }, 1500);
+                        } else if (!pedidosState.loading && pedidosState.error && this.enviandoACosteo) {
+                            this.enviandoACosteo = false;
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'No se pudo enviar el pedido a costeo'
+                            });
+                        }
+                    });
+            }
+        });
+    }
+
+    /**
+     * Verifica si un ítem tiene errores de validación de costeo
+     */
+    itemTieneError(index: number): boolean {
+        return this.itemsConErrores().has(index);
+    }
+
+    /**
+     * Obtiene los campos con error de un ítem
+     */
+    getErroresItem(index: number): string[] {
+        return this.itemsConErrores().get(index) || [];
+    }
+
+    /**
+     * Verifica si un campo específico de un ítem tiene error de costeo
+     */
+    campoTieneErrorCosteo(index: number, campo: string): boolean {
+        const errores = this.itemsConErrores().get(index);
+        if (!errores) return false;
+
+        const mapaCampos: Record<string, string> = {
+            'sistema_id': 'Sistema',
+            'articulo_id': 'Tipo de artículo',
+            'referencia_id': 'Referencia',
+            'cantidad': 'Cantidad'
+        };
+
+        return errores.includes(mapaCampos[campo] || '');
+    }
+
+    /**
+     * Verifica si el botón de enviar a costeo debe estar habilitado
+     */
+    get puedeEnviarACosteo(): boolean {
+        // Solo se puede enviar a costeo si el estado actual permite la transición
+        const transiciones = this.transicionesValidas[this.estadoActual] || [];
+        return transiciones.includes('En_Costeo') && this.referenciasFormArray.length > 0;
     }
 
     /**
