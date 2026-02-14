@@ -3,7 +3,7 @@
  */
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8000/api/v1',
+    apiUrl: 'http://localhost:8000/v1',
     apiBaseUrl: 'http://localhost:8000',
     pusherKey: '',
     pusherCluster: 'mt1',

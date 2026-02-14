@@ -27,7 +27,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     }
 
     // Solo agregar token si existe y la petición va al API
-    if (token && req.url.includes('/api/')) {
+    if (token && req.url.includes('/v1/')) {
         req = req.clone({
             setHeaders: {
                 Authorization: `Bearer ${token}`

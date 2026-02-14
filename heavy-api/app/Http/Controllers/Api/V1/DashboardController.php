@@ -62,28 +62,17 @@ class DashboardController extends Controller
         $topRefs = DB::table('orden_compra_referencia')
             ->join('referencias', 'orden_compra_referencia.referencia_id', '=', 'referencias.id')
             ->select(
-                'referencias.nombre',
-                'referencias.codigo', // Assuming it has code or similar
+                'referencias.referencia as name',
+                'referencias.referencia as code',
                 DB::raw('SUM(orden_compra_referencia.cantidad) as total_quantity'),
                 DB::raw('SUM(orden_compra_referencia.valor_total) as total_value')
             )
-            ->groupBy('referencias.id', 'referencias.nombre', 'referencias.codigo')
-            ->orderByDesc('total_value') // Or total_quantity
+            ->groupBy('referencias.id', 'referencias.referencia')
+            ->orderByDesc('total_value')
             ->limit(5)
             ->get();
 
-        // If no data, return some "recent" references or empty
-        if ($topRefs->isEmpty()) {
-             // Fallback to just some random references to show "Real Data" exists on the system
-             $topRefs = DB::table('referencias')
-                ->select('nombre', 'codigo', 'precio as total_value') // Mock value
-                ->limit(5)
-                ->get()
-                ->map(function($item) {
-                    $item->total_quantity = rand(1, 100);
-                    return $item;
-                });
-        }
+
 
         return response()->json($topRefs);
     }
