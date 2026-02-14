@@ -28,8 +28,7 @@ export class AppMenu {
                 label: 'Ventas',
                 items: [
                     { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
-                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
-                    { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] }
+                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] }
                 ]
             },
             {
@@ -40,33 +39,33 @@ export class AppMenu {
                 ]
             },
             {
-                label: 'Configuración y Catálogos',
+                label: 'Catálogos',
                 items: [
-                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
-                    { label: 'Categorías', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
-                    { label: 'Contactos', icon: 'pi pi-fw pi-envelope', routerLink: ['/app/contactos'] },
-                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
-                    { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
-                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] },
-                    {
-                        label: 'Gestión Landing',
-                        icon: 'pi pi-fw pi-globe',
-                        items: [
-                            { label: 'Mega Menú', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
-                            { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] }
-                        ]
-                    }
+                    { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
+                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/app/referencias'] },
+                    { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
+                    { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
+                    { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/app/fabricantes'] },
+                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] }
                 ]
             },
             {
-                label: 'Catálogos',
+                label: 'Gestión',
                 items: [
-                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] },
-                    { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/app/fabricantes'] },
-                    { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
-                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/app/referencias'] },
-                    { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
-                    { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] }
+                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
+                    { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] },
+                    { label: 'Contactos', icon: 'pi pi-fw pi-envelope', routerLink: ['/app/contactos'] },
+                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
+                    { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
+                    { label: 'Categorías', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
+                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
+                ]
+            },
+            {
+                label: 'Landing',
+                items: [
+                    { label: 'Mega Menú', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
+                    { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] }
                 ]
             },
             {
