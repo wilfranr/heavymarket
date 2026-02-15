@@ -1,0 +1,242 @@
+[
+    {
+        "id": 278,
+        "nombre": "Motores",
+        "descripcion_general": "El Motor es el coraz\u00f3n de su m\u00e1quina. Con nosotros encontrar\u00e1 desde motores completos hasta los componentes esenciales para su \u00f3ptimo funcionamiento y reparaci\u00f3n. Ofrecemos productos que transforman la energ\u00eda en la potencia mec\u00e1nica que necesitas. Suministramos repuestos de las mejores marcas del mercado para la mayor\u00eda de Fabricantes existentes. Componentes fabricados con materiales de alta resistencia, dise\u00f1ados para soportar las m\u00e1s altas exigencias, asegurando rendimiento, durabilidad y la potencia necesaria. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-02-01T17:32:49.000000Z",
+        "mostrar_en_navbar": true,
+        "orden_navbar": 1,
+        "slug": "motores"
+    },
+    {
+        "id": 279,
+        "nombre": "Trenes de Rodaje",
+        "descripcion_general": "El Tren de Rodaje es la base fundamental que garantiza la movilidad, estabilidad y tracci\u00f3n de su maquinaria pesada. Es un sistema sometido a un desgaste constante y que representa una parte significativa de los costos operativos. Por ello, ofrecemos una gama completa de componentes de la m\u00e1s alta calidad, dise\u00f1ados para soportar las condiciones de trabajo m\u00e1s severas y el abuso constante. Nuestros repuestos aseguran un funcionamiento suave, minimizan el tiempo de inactividad y prolongan la vida \u00fatil de su m\u00e1quina. Suministramos piezas de alta ingenier\u00eda, fabricadas con aceros de alto rendimiento para garantizar resistencia superior, durabilidad excepcional en cualquier terreno y la m\u00e1xima eficiencia en la transferencia de potencia. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-02-01T17:32:51.000000Z",
+        "mostrar_en_navbar": true,
+        "orden_navbar": 2,
+        "slug": "trenes-de-rodaje"
+    },
+    {
+        "id": 280,
+        "nombre": "Chasis y Articulaciones",
+        "descripcion_general": "El Chasis y las Articulaciones son la estructura fundamental que soporta la carga din\u00e1mica y est\u00e1tica, y que permite la funcionalidad precisa de los implementos de su m\u00e1quina. La integridad de estos componentes es vital para la seguridad operativa, la estabilidad y la correcta distribuci\u00f3n de fuerzas durante el trabajo pesado. Suministramos repuestos dise\u00f1ados para ser el punto de m\u00e1xima resistencia, fabricados con aceros de alta tenacidad y mecanizados con precisi\u00f3n milim\u00e9trica. Con nuestros componentes, asegurar\u00e1 que su maquinaria mantenga su rigidez estructural, su capacidad de carga y la fluidez de movimiento necesarias para operar al m\u00e1ximo rendimiento y con la mayor vida \u00fatil. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-02-01T17:33:01.000000Z",
+        "mostrar_en_navbar": true,
+        "orden_navbar": 3,
+        "slug": "chasis-y-articulaciones"
+    },
+    {
+        "id": 281,
+        "nombre": "Hidr\u00e1ulicos",
+        "descripcion_general": "El sistema Hidr\u00e1ulico es el nervio central de su m\u00e1quina, responsable de transformar la potencia mec\u00e1nica del motor en la fuerza controlada necesaria para el movimiento, levantamiento y operaci\u00f3n de los implementos. La eficiencia y precisi\u00f3n de su maquinaria dependen directamente de la calidad de sus componentes hidr\u00e1ulicos. Suministramos un inventario completo de piezas que garantizan el flujo, la presi\u00f3n y el control \u00f3ptimos. Desde el coraz\u00f3n del sistema (bombas) hasta la precisi\u00f3n del control (v\u00e1lvulas y solenoides), ofrecemos repuestos de las mejores marcas, dise\u00f1ados para soportar altas presiones y operar con la m\u00e1xima fiabilidad, asegurando una respuesta r\u00e1pida y potente en cada ciclo de trabajo. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-02-01T17:33:10.000000Z",
+        "mostrar_en_navbar": true,
+        "orden_navbar": 4,
+        "slug": "hidraulicos"
+    },
+    {
+        "id": 282,
+        "nombre": "Orugas de Goma y Componentes de Rodaje Liviano",
+        "descripcion_general": "Las Orugas de Goma y sus componentes asociados son la soluci\u00f3n ideal para maquinaria que requiere de una tracci\u00f3n superior, bajo impacto en el terreno y una reducci\u00f3n significativa de la vibraci\u00f3n. Este sistema es fundamental para proteger superficies sensibles (como pavimento y concreto) sin sacrificar la movilidad o la capacidad de trabajo. Suministramos productos de ingenier\u00eda avanzada que garantizan la m\u00e1xima durabilidad, una distribuci\u00f3n de peso eficiente y un rendimiento excepcional. Ya sea que necesite el bajo peso de la goma o la resistencia pura del metal para equipos compactos, le ofrecemos las mejores soluciones para optimizar la eficiencia y reducir los costos operativos. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-02-01T17:33:24.000000Z",
+        "mostrar_en_navbar": true,
+        "orden_navbar": 5,
+        "slug": "orugas-de-goma-y-componentes-de-rodaje-liviano"
+    },
+    {
+        "id": 283,
+        "nombre": "Herramienta de Corte (GET - Ground Engaging Tools)",
+        "descripcion_general": "La Herramienta de Corte, o GET (Ground Engaging Tools), es el conjunto de componentes que interact\u00faan directamente con el material, ya sea tierra, roca o escombros. La eficiencia de su excavadora, cargador o motoniveladora depende cr\u00edticamente de la calidad y el dise\u00f1o de estas piezas. Ofrecemos una l\u00ednea completa de GET fabricados con aceros de alta especificaci\u00f3n y tratados t\u00e9rmicamente para resistir la abrasi\u00f3n y el impacto extremo. Al utilizar nuestros componentes, usted asegura una mejor penetraci\u00f3n, reduce la tensi\u00f3n en la m\u00e1quina, optimiza la carga de material y minimiza los tiempos de inactividad por cambio de piezas, maximizando la productividad en cada jornada. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "herramienta-de-corte-get-ground-engaging-tools"
+    },
+    {
+        "id": 284,
+        "nombre": "Electr\u00f3nicos",
+        "descripcion_general": "La electr\u00f3nica moderna es el sistema nervioso de su maquinaria pesada, indispensable para la eficiencia operativa, el control preciso del rendimiento del motor e implementos, y el diagn\u00f3stico r\u00e1pido de fallas. Suministramos una gama completa de componentes electr\u00f3nicos de alta calidad que aseguran la comunicaci\u00f3n fluida entre todos los sistemas de su equipo. Nuestros productos est\u00e1n dise\u00f1ados para resistir las condiciones ambientales m\u00e1s duras (vibraci\u00f3n, humedad y temperatura), garantizando la fiabilidad y la precisi\u00f3n de la informaci\u00f3n que es cr\u00edtica para el rendimiento \u00f3ptimo y el ahorro de combustible de su m\u00e1quina. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "electronicos"
+    },
+    {
+        "id": 285,
+        "nombre": "Accesorios Motor",
+        "descripcion_general": "Los Accesorios del Motor son componentes esenciales que, si bien no generan la potencia directamente, garantizan que el coraz\u00f3n de su m\u00e1quina funcione de manera \u00f3ptima, regulada y protegida. Desde la gesti\u00f3n de la temperatura hasta la lubricaci\u00f3n vital, estos sistemas accesorios aseguran que el motor opere dentro de sus par\u00e1metros de dise\u00f1o, previniendo el sobrecalentamiento y el desgaste prematuro. Suministramos repuestos de alta calidad que aseguran la m\u00e1xima eficiencia en el manejo de fluidos y la disipaci\u00f3n t\u00e9rmica, cruciales para la durabilidad y el rendimiento sostenido de su motor. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "accesorios-motor"
+    },
+    {
+        "id": 286,
+        "nombre": "Aire Acondicionado",
+        "descripcion_general": "El sistema de Aire Acondicionado es un componente esencial que garantiza el confort, la seguridad y la productividad sostenida del operador en la cabina. Un entorno de trabajo regulado y limpio minimiza la fatiga y permite una mayor concentraci\u00f3n en las tareas cr\u00edticas. Suministramos una l\u00ednea completa de componentes de climatizaci\u00f3n de alta calidad que aseguran el enfriamiento r\u00e1pido y la deshumidificaci\u00f3n eficiente del aire. Nuestros repuestos est\u00e1n dise\u00f1ados para resistir las vibraciones y el polvo de los entornos de maquinaria pesada, garantizando un rendimiento fiable y una vida \u00fatil prolongada del sistema de climatizaci\u00f3n. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "aire-acondicionado"
+    },
+    {
+        "id": 287,
+        "nombre": "Cabina",
+        "descripcion_general": "La Cabina de su maquinaria pesada es m\u00e1s que un simple habit\u00e1culo; es el centro de comando donde la seguridad, la ergonom\u00eda y la tecnolog\u00eda se unen para maximizar la productividad. Una cabina bien equipada y en perfectas condiciones es crucial para mantener al operador c\u00f3modo, concentrado y con total control de la m\u00e1quina. Suministramos repuestos y accesorios de cabina que garantizan la integridad estructural, la m\u00e1xima visibilidad y un entorno de trabajo ergon\u00f3mico, asegurando que cada hora de operaci\u00f3n sea lo m\u00e1s eficiente y segura posible. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "cabina"
+    },
+    {
+        "id": 288,
+        "nombre": "Sistema de Direcci\u00f3n",
+        "descripcion_general": "El Sistema de Direcci\u00f3n es el mecanismo que transforma la intenci\u00f3n del operador en el movimiento preciso de la m\u00e1quina, siendo crucial para la seguridad operativa, la maniobrabilidad y la productividad en espacios reducidos o terrenos dif\u00edciles. La fiabilidad de la direcci\u00f3n es indispensable, y por ello ofrecemos componentes hidr\u00e1ulicos y mec\u00e1nicos de la m\u00e1s alta calidad, dise\u00f1ados para soportar las cargas din\u00e1micas extremas y asegurar una respuesta suave y predecible. Nuestros repuestos garantizan el control total y la eficiencia en la direcci\u00f3n, minimizando el esfuerzo del operador y asegurando la precisi\u00f3n en cada movimiento. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "sistema-de-direccion"
+    },
+    {
+        "id": 289,
+        "nombre": "El\u00e9ctricos",
+        "descripcion_general": "El sistema El\u00e9ctrico es el encargado de proveer la energ\u00eda vital para el arranque, la carga constante de la bater\u00eda y la operaci\u00f3n de todos los componentes de control, iluminaci\u00f3n y seguridad de su m\u00e1quina. La fiabilidad de estos componentes es esencial para evitar paradas inesperadas y asegurar el funcionamiento de los sistemas electr\u00f3nicos modernos. Suministramos una gama completa de productos el\u00e9ctricos que garantizan un suministro de energ\u00eda estable y potente, dise\u00f1ados para resistir las condiciones extremas de vibraci\u00f3n, polvo y humedad del trabajo pesado. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "electricos"
+    },
+    {
+        "id": 290,
+        "nombre": "Empaquetaduras Hidr\u00e1ulicas",
+        "descripcion_general": "Las Empaquetaduras Hidr\u00e1ulicas son los componentes que garantizan la estanqueidad perfecta del sistema, previniendo la fuga del fluido de trabajo y la crucial entrada de contaminantes. Su calidad es indispensable para mantener la eficiencia volum\u00e9trica, la presi\u00f3n operativa y la limpieza del aceite, protegiendo componentes costosos como bombas y cilindros. Suministramos sellos y kits fabricados con pol\u00edmeros y elast\u00f3meros de alta resistencia a la temperatura, la presi\u00f3n y los qu\u00edmicos, dise\u00f1ados para ofrecer una vida \u00fatil excepcional y la m\u00e1xima fiabilidad en cada punto de sellado de su maquinaria. ",
+        "created_at": "2026-01-25T16:44:38.000000Z",
+        "updated_at": "2026-01-25T16:44:38.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "empaquetaduras-hidraulicas"
+    },
+    {
+        "id": 291,
+        "nombre": "Filtraci\u00f3n",
+        "descripcion_general": "El sistema de Filtraci\u00f3n es la defensa primordial de su maquinaria pesada contra el desgaste prematuro y las fallas catastr\u00f3ficas. La limpieza de los fluidos (aceite, combustible, aire y fluido hidr\u00e1ulico) es crucial para la longevidad y el rendimiento \u00f3ptimo de los componentes de alta precisi\u00f3n, como inyectores, bombas y motores. Suministramos una l\u00ednea completa de filtros de alta eficiencia y capacidad de retenci\u00f3n de suciedad superior, dise\u00f1ados para cumplir o exceder las especificaciones del fabricante, asegurando que solo los fluidos m\u00e1s limpios lleguen a los sistemas vitales de su m\u00e1quina. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "filtracion"
+    },
+    {
+        "id": 292,
+        "nombre": "Frenos",
+        "descripcion_general": "El Sistema de Frenos es, sin duda, el sistema de seguridad m\u00e1s cr\u00edtico de cualquier maquinaria pesada. Su capacidad para detener, controlar o inmovilizar la m\u00e1quina bajo cualquier condici\u00f3n de carga y pendiente es indispensable para la seguridad del personal y la protecci\u00f3n del equipo. Suministramos una l\u00ednea completa de componentes de frenado dise\u00f1ados para soportar las altas temperaturas y las cargas extremas, garantizando una potencia de detenci\u00f3n consistente y fiable. Nuestros repuestos est\u00e1n fabricados con materiales de fricci\u00f3n avanzados y tolerancias de precisi\u00f3n para asegurar la m\u00e1xima respuesta y durabilidad. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "frenos"
+    },
+    {
+        "id": 293,
+        "nombre": "Inyecci\u00f3n",
+        "descripcion_general": "El sistema de Inyecci\u00f3n es el responsable directo de la potencia, la eficiencia de combustible y el cumplimiento de las normativas de emisiones de su motor di\u00e9sel. Estos componentes de alta precisi\u00f3n deben dosificar el combustible bajo presiones extremas y con una sincronizaci\u00f3n milim\u00e9trica. Suministramos una gama completa de piezas de inyecci\u00f3n dise\u00f1adas para un rendimiento \u00f3ptimo, garantizando una pulverizaci\u00f3n fina y atomizada del combustible que se traduce en una combusti\u00f3n completa, m\u00e1xima potencia y m\u00ednimo consumo. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "inyeccion"
+    },
+    {
+        "id": 294,
+        "nombre": "Llantas",
+        "descripcion_general": "Las Llantas y sus componentes son el punto de contacto crucial entre su m\u00e1quina y el terreno, determinando la tracci\u00f3n, la estabilidad y la capacidad de carga en cualquier entorno operativo. Ofrecemos soluciones integrales que van desde neum\u00e1ticos de alto rendimiento hasta opciones macizas para ambientes extremos. Nuestros productos est\u00e1n dise\u00f1ados para maximizar la vida \u00fatil, minimizar el tiempo de inactividad por pinchazos y garantizar que su maquinaria mantenga la movilidad y seguridad necesarias para cumplir con las exigencias del trabajo pesado. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "llantas"
+    },
+    {
+        "id": 295,
+        "nombre": "Martillos Hidr\u00e1ulicos",
+        "descripcion_general": "El Martillo Hidr\u00e1ulico es el implemento de demolici\u00f3n m\u00e1s potente, dise\u00f1ado para romper concreto, rocas y otras estructuras con una fuerza de impacto controlada y masiva. La fiabilidad de estos equipos depende de la calidad de sus componentes internos, que deben soportar vibraciones extremas, presiones hidr\u00e1ulicas alt\u00edsimas y la tensi\u00f3n constante del ciclo de impacto. Suministramos repuestos de alta resistencia, tratados t\u00e9rmicamente y mecanizados con precisi\u00f3n para garantizar la m\u00e1xima transferencia de energ\u00eda y una larga vida \u00fatil del martillo, reduciendo los costos operativos de demolici\u00f3n. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "martillos-hidraulicos"
+    },
+    {
+        "id": 296,
+        "nombre": "Montacargas",
+        "descripcion_general": "Los componentes de Montacargas son esenciales para la manipulaci\u00f3n vertical y horizontal eficiente de materiales. El sistema de elevaci\u00f3n y movimiento de carga es el pilar de la productividad en bodegas, puertos y centros de distribuci\u00f3n. Suministramos repuestos de alta resistencia y precisi\u00f3n, dise\u00f1ados para soportar cargas pesadas con la m\u00e1xima estabilidad y seguridad. Al mantener su equipo con nuestros componentes, usted garantiza un levantamiento suave, un posicionamiento exacto y la m\u00e1xima vida \u00fatil de sus equipos de manipulaci\u00f3n de carga. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "montacargas"
+    },
+    {
+        "id": 297,
+        "nombre": "Perforadores",
+        "descripcion_general": "El equipo y las herramientas de Perforadores son esenciales para la miner\u00eda, la construcci\u00f3n y la obra civil, donde se requiere la creaci\u00f3n de barrenos con precisi\u00f3n y rapidez. Estos componentes est\u00e1n sometidos a impactos, torsiones y abrasi\u00f3n extremas. Suministramos herramientas de perforaci\u00f3n de m\u00e1xima ingenier\u00eda, fabricadas con aceros de alto rendimiento y carburo de tungsteno premium. Nuestros productos garantizan una alta velocidad de penetraci\u00f3n y una larga vida \u00fatil en los entornos geol\u00f3gicos m\u00e1s duros, optimizando el ciclo de perforaci\u00f3n y reduciendo significativamente sus costos por metro perforado. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "perforadores"
+    },
+    {
+        "id": 298,
+        "nombre": "Soportes de Vibraci\u00f3n",
+        "descripcion_general": "Los Soportes de Vibraci\u00f3n son elementos pasivos cruciales para la maquinaria pesada, dise\u00f1ados para aislar y amortiguar las vibraciones y los golpes generados por el motor, la transmisi\u00f3n o los implementos de trabajo. Su funci\u00f3n es doble: proteger los componentes sensibles (electr\u00f3nica, estructura, ejes) del da\u00f1o por fatiga y maximizar el confort del operador al minimizar la transmisi\u00f3n de ruido y vibraci\u00f3n a la cabina. Suministramos aisladores fabricados con compuestos de caucho y metales de alta ingenier\u00eda, que garantizan la amortiguaci\u00f3n efectiva y la longevidad de su equipo. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "soportes-de-vibracion"
+    },
+    {
+        "id": 299,
+        "nombre": "Torniller\u00eda",
+        "descripcion_general": "La Torniller\u00eda es la base de la integridad estructural y funcional de toda maquinaria pesada. Estos componentes de sujeci\u00f3n son responsables de unir las piezas cr\u00edticas y deben resistir fuerzas de tensi\u00f3n, cizallamiento y vibraci\u00f3n extremas. Suministramos una l\u00ednea completa de elementos de fijaci\u00f3n fabricados con aceros de alta resistencia (grados 8.8, 10.9 y 12.9), con tratamientos superficiales que garantizan la m\u00e1xima durabilidad y resistencia a la corrosi\u00f3n. Utilizar nuestra torniller\u00eda asegura que sus componentes permanezcan unidos de forma segura, minimizando el riesgo de fallas por aflojamiento y prolongando la vida \u00fatil de la estructura de su equipo. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "tornilleria"
+    },
+    {
+        "id": 300,
+        "nombre": "Transmisiones",
+        "descripcion_general": "El sistema de Transmisiones es el encargado de transferir y gestionar la potencia generada por el motor hacia el tren de rodaje o las ruedas, asegurando la velocidad y el par motor adecuados para cada tarea operativa. La fiabilidad y la precisi\u00f3n de la transmisi\u00f3n son fundamentales para la eficiencia del combustible y la capacidad de la m\u00e1quina para trabajar bajo carga. Suministramos componentes de alta ingenier\u00eda dise\u00f1ados para soportar cargas de torsi\u00f3n masivas, cambios de direcci\u00f3n constantes y el calor extremo, garantizando una transferencia de potencia suave, controlada y eficiente en todo momento. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "transmisiones"
+    },
+    {
+        "id": 301,
+        "nombre": "Turboalimentadores",
+        "descripcion_general": "El Turboalimentador es un componente de alta ingenier\u00eda esencial en los motores di\u00e9sel modernos, encargado de incrementar la potencia y la eficiencia del combustible al forzar m\u00e1s aire en la c\u00e1mara de combusti\u00f3n. Estos sistemas operan a velocidades extremas (m\u00e1s de 200,000 RPM) y a temperaturas muy elevadas. Suministramos turboalimentadores y sus componentes de precisi\u00f3n fabricados con materiales resistentes al calor y la fatiga, garantizando la m\u00e1xima sobrealimentaci\u00f3n y una larga vida \u00fatil que se traduce directamente en una mejor respuesta del motor, mayor par motor y menor consumo de combustible. ",
+        "created_at": "2026-01-25T16:44:39.000000Z",
+        "updated_at": "2026-01-25T16:44:39.000000Z",
+        "mostrar_en_navbar": false,
+        "orden_navbar": null,
+        "slug": "turboalimentadores"
+    }
+]
