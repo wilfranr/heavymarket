@@ -93,11 +93,14 @@ class LandingController extends Controller
 
             foreach ($cat->children as $item) {
                 $imageUrl = asset('images/no-image.png');
-                if ($item->foto) {
-                    if (str_contains($item->foto, '/')) {
-                        $imageUrl = asset('storage/' . $item->foto);
+                $rawFoto = $item->getRawOriginal('foto');
+                if ($rawFoto) {
+                    if (str_starts_with($rawFoto, 'http')) {
+                         $imageUrl = $rawFoto;
+                    } elseif (str_contains($rawFoto, '/')) {
+                        $imageUrl = asset('storage/' . $rawFoto);
                     } else {
-                        $oldPath = 'Aplicativo/03. Tipos de Maquina/' . $item->foto;
+                        $oldPath = 'Aplicativo/03. Tipos de Maquina/' . $rawFoto;
                         if (file_exists(storage_path('app/public/' . $oldPath))) {
                             $imageUrl = asset('storage/' . $oldPath);
                         }
