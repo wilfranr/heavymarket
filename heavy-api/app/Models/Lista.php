@@ -42,6 +42,19 @@ class Lista extends Model
     {
         return $this->hasMany(Lista::class, 'parent_id');
     }
+
+    public function getFotoAttribute($value): ?string
+    {
+        if (!$value) {
+            return null;
+        }
+
+        if (str_starts_with($value, 'http')) {
+            return $value;
+        }
+
+        return asset('storage/' . $value);
+    }
     
     public function getNombreAttribute($value): string
     {
