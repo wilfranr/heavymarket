@@ -49,13 +49,12 @@ class ListasSeeder extends Seeder
         $count = count($data);
         $this->command->info("Found {$count} records to process.");
 
+        DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+
         Lista::unguard();
 
         try {
             Lista::withoutEvents(function () use ($data) {
-                // Use chunks to manage memory if needed, but iteration is fine
-                // with the data array already in memory.
-                
                 foreach ($data as $item) {
                     Lista::withTrashed()->updateOrCreate(
                         ['id' => $item['id']],
@@ -80,5 +79,7 @@ class ListasSeeder extends Seeder
         }
 
         Lista::reguard();
+
+        DB::statement('SET FOREIGN_KEY_CHECKS=1;');
     }
 }
