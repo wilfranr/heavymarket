@@ -209,9 +209,18 @@ class PedidoController extends Controller
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
         try {
+            DB::beginTransaction();
+
             $pedido->update($request->validated());
 
-            $pedido->load(['user', 'tercero', 'maquina', 'fabricante']);
+            // Sincronizar referencias si se envían
+            if ($request->has('referencias')) {
+                $this->syncReferencias($pedido, $request->input('referencias'));
+            }
+
+            DB::commit();
+
+            $pedido->load(['user', 'tercero', 'maquina', 'fabricante', 'referencias', 'articulos']);
 
             return response()->json([
                 'data' => new PedidoResource($pedido),
@@ -219,6 +228,8 @@ class PedidoController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'message' => 'Error al actualizar el pedido',
                 'error' => $e->getMessage(),
@@ -615,5 +626,65 @@ class PedidoController extends Controller
             'valor_unidad' => $valor_unidad,
             'valor_total' => $valor_total,
         ];
+    }
+
+    /**
+     * Sincroniza las referencias de un pedido
+     * 
+     * @param Pedido $pedido
+     * @param array $referenciasData
+     */
+    private function syncReferencias(Pedido $pedido, array $referenciasData): void
+    {
+        // Obtener Ids actuales
+        $currentIds = $pedido->referencias()->pluck('id')->toArray();
+        
+        // Obtener Ids que vienen en la petición (los que tienen ID son actualizaciones)
+        $incomingIds = [];
+        foreach ($referenciasData as $refData) {
+            if (isset($refData['id']) && $refData['id']) {
+                $incomingIds[] = $refData['id'];
+            }
+        }
+
+        // Eliminar los que no vienen en la petición
+        $toDelete = array_diff($currentIds, $incomingIds);
+        if (!empty($toDelete)) {
+            $pedido->referencias()->whereIn('id', $toDelete)->delete();
+        }
+
+        // Crear o actualizar
+        foreach ($referenciasData as $refData) {
+            if (isset($refData['id']) && $refData['id']) {
+                // Actualizar
+                $referencia = $pedido->referencias()->find($refData['id']);
+                if ($referencia) {
+                    $referencia->update([
+                        'referencia_id' => $refData['referencia_id'],
+                        'sistema_id' => $refData['sistema_id'] ?? null,
+                        'marca_id' => $refData['marca_id'] ?? null,
+                        'definicion' => $refData['definicion'] ?? null,
+                        'cantidad' => $refData['cantidad'],
+                        'comentario' => $refData['comentario'] ?? null,
+                        'imagen' => $refData['imagen'] ?? null,
+                        'mostrar_referencia' => $refData['mostrar_referencia'] ?? true,
+                        'estado' => $refData['estado'] ?? true,
+                    ]);
+                }
+            } else {
+                // Crear
+                $pedido->referencias()->create([
+                    'referencia_id' => $refData['referencia_id'],
+                    'sistema_id' => $refData['sistema_id'] ?? null,
+                    'marca_id' => $refData['marca_id'] ?? null,
+                    'definicion' => $refData['definicion'] ?? null,
+                    'cantidad' => $refData['cantidad'],
+                    'comentario' => $refData['comentario'] ?? null,
+                    'imagen' => $refData['imagen'] ?? null,
+                    'mostrar_referencia' => $refData['mostrar_referencia'] ?? true,
+                    'estado' => $refData['estado'] ?? true,
+                ]);
+            }
+        }
     }
 }

@@ -367,11 +367,14 @@ export class EditComponent implements OnInit {
             this.tiposPorFila[index] = [];
             this.referenciasPorFila[index] = [];
 
+            // Intentar obtener articulo_id de la relación referencia (si viene poblada)
+            const articuloId = (ref.referencia as any)?.articulo_id || null;
+
             const referenciaForm = this.fb.group({
                 id: [ref.id],
                 estado: [ref.estado ?? true],
                 sistema_id: [ref.sistema_id || null],
-                articulo_id: [null], // Se cargará por cascada
+                articulo_id: [articuloId], // Precargar si está disponible
                 referencia_id: [ref.referencia_id || null],
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
@@ -382,9 +385,14 @@ export class EditComponent implements OnInit {
 
             this.referenciasFormArray.push(referenciaForm);
 
-            // Cargar cascadas si ya tiene sistema_id
+            // Cargar cascadas
             if (ref.sistema_id) {
-                this.cargarTiposPorSistema(ref.sistema_id, index, ref.referencia_id);
+                // Pasamos el articuloId para que se seleccione en la lista de tipos
+                this.cargarTiposPorSistema(ref.sistema_id, index, null, articuloId);
+            }
+
+            if (articuloId) {
+                this.cargarReferenciasPorArticulo(articuloId, index);
             }
         });
     }
@@ -439,7 +447,7 @@ export class EditComponent implements OnInit {
     /**
      * Carga los tipos de artículo asociados a un sistema
      */
-    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null): void {
+    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, articuloIdPreseleccionado?: number | null): void {
         this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Piezas Estandar', per_page: 200 }).subscribe({
             next: (response) => {
                 const nombresTipos = response.data.map(l => l.nombre);
@@ -454,8 +462,8 @@ export class EditComponent implements OnInit {
                                 descripcion: a.descripcionEspecifica
                             }));
 
-                        // Si hay una referencia preseleccionada, buscar a qué artículo pertenece
-                        if (referenciaIdPreseleccionada) {
+                        // Si hay una referencia preseleccionada y NO hay articuloId (caso legacy o fallback), buscar a qué artículo pertenece
+                        if (referenciaIdPreseleccionada && !articuloIdPreseleccionado) {
                             this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
                         }
                     }
