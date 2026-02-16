@@ -96,6 +96,7 @@ export class CreateComponent implements OnInit {
     displayCreateTerceroDialog = false;
     displayCreateMaquinaDialog = false;
     displayCreateContactoDialog = false;
+    displayHelpDialog = false;
 
     today = new Date();
 
@@ -268,6 +269,13 @@ export class CreateComponent implements OnInit {
             }, 500);
         }
         this.displayCreateMaquinaDialog = false;
+    }
+
+    /**
+     * Muestra el diálogo de ayuda para importación masiva
+     */
+    openHelpDialog(): void {
+        this.displayHelpDialog = true;
     }
 
     /**

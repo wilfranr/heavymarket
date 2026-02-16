@@ -196,4 +196,5 @@ export interface UpdatePedidoDto {
     fabricante_id?: number;
     motivo_rechazo?: string;
     comentarios_rechazo?: string;
+    referencias?: any[];
 }

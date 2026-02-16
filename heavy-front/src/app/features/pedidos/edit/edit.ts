@@ -313,7 +313,7 @@ export class EditComponent implements OnInit {
 
             this.pedido$
                 .pipe(
-                    filter((pedido) => !!pedido),
+                    filter((pedido) => !!pedido && pedido.referencias !== undefined),
                     take(1)
                 )
                 .subscribe((pedido) => {
@@ -826,7 +826,8 @@ export class EditComponent implements OnInit {
             fabricante_id: formValue.fabricante_id || undefined,
             contacto_id: formValue.contacto_id || undefined,
             estado: nuevoEstado,
-            motivo_rechazo: nuevoEstado === 'Rechazado' ? formValue.motivo_rechazo : undefined
+            motivo_rechazo: nuevoEstado === 'Rechazado' ? formValue.motivo_rechazo : undefined,
+            referencias: this.referenciasFormArray.getRawValue()
         };
 
         this.store.dispatch(

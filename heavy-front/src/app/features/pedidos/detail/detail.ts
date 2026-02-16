@@ -17,6 +17,7 @@ import { PanelModule } from 'primeng/panel';
 
 import { Pedido } from '../../../core/models/pedido.model';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
+import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 
 /**
  * Componente de detalle de pedido
@@ -50,6 +51,9 @@ export class DetailComponent implements OnInit {
 
             this.pedido$ = this.store.select(selectPedidoById(pedidoId));
             this.loading$ = this.store.select(selectPedidosLoading);
+
+            // Cargar pedido si no está en store o para actualizar
+            this.store.dispatch(loadPedido({ id: pedidoId }));
         } else {
             this.messageService.add({
                 severity: 'error',

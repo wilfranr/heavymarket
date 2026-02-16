@@ -51,6 +51,15 @@ $color-text-black: #0C0E0F;
             border-color: var(--p-primary-color);
         }
     }
+
+    &.btn-dark {
+        background-color: var(--p-surface-800);
+        color: var(--p-surface-0);
+
+        &:hover {
+            background-color: var(--p-surface-700);
+        }
+    }
 }
 
 /* Animations */
