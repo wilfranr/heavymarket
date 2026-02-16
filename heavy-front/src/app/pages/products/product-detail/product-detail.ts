@@ -31,7 +31,7 @@ export class ProductDetail implements OnInit {
         private router: Router,
         private landingService: LandingService,
         private _location: Location
-    ) {}
+    ) { }
 
     ngOnInit() {
         this.route.params.subscribe((params) => {
@@ -43,7 +43,7 @@ export class ProductDetail implements OnInit {
 
     loadProduct() {
         this.loading = true;
-        this.landingService.getNavbarCategories().subscribe({
+        this.landingService.getAllCategories().subscribe({
             next: (categories) => {
                 const cat = categories.find((c) => c.slug === this.categorySlug);
                 if (cat) {
