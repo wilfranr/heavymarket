@@ -7,10 +7,12 @@ import { LandingService, Category } from '../../core/services/landing';
 import { UbicacionService } from '../../core/services/ubicacion.service';
 import { Country, State, City } from '../../core/models/ubicacion.model';
 
+import { RouterModule } from '@angular/router';
+
 @Component({
     selector: 'app-cotizar',
     standalone: true,
-    imports: [CommonModule, FormsModule, Navbar, FooterSection],
+    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection],
     templateUrl: './cotizar.html',
     styleUrls: ['./cotizar.css']
 })
