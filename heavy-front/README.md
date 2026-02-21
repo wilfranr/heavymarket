@@ -1,59 +1,95 @@
-# Sakai19
+# HeavyMarket - Frontend (Angular 20)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.0.5.
+Frontend del sistema HeavyMarket, generado con [Angular CLI](https://github.com/angular/angular-cli) versión 20.
 
-## Development server
+---
 
-To start a local development server, run:
+## 🖥️ Desarrollo local
+
+### Servidor de desarrollo (con live reload)
+
+Ejecuta desde la carpeta `heavy-front/`:
 
 ```bash
-ng serve
+npm start
+# equivalente a: ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+Abre el navegador en `http://localhost:4200/`. La aplicación se recarga automáticamente con cada cambio en el código fuente.
 
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+### Formateo de código
 
 ```bash
-ng generate component component-name
+npm run format
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+---
+
+## 🚀 Despliegue a Producción
+
+> ⚠️ **IMPORTANTE**: Después de hacer `git pull` en el servidor, **siempre hay que recompilar** el frontend. Los archivos del repositorio son código fuente; el servidor web sirve los archivos compilados en `dist/`. Sin recompilar, la aplicación seguirá mostrando la versión anterior.
+
+### Usar el script `deploy.sh` (recomendado)
+
+Ejecuta desde la **raíz del repositorio** (`/var/www/heavymarket` o similar):
 
 ```bash
+# Desplegar API (Laravel) + Frontend (Angular) completo
+./scripts/deploy.sh
+
+# Solo frontend
+./scripts/deploy.sh --front
+
+# Solo backend
+./scripts/deploy.sh --api
+
+# Probar sin ejecutar cambios (dry-run)
+./scripts/deploy.sh --dry-run
+```
+
+### ¿Qué hace el script de frontend?
+
+1. `npm ci` — instala dependencias exactas del `package-lock.json`
+2. `npm run build` — compila Angular en modo producción
+3. Los archivos compilados quedan en: `heavy-front/dist/sakai-ng/`
+
+### Flujo completo en servidor tras un `git pull`
+
+```bash
+git pull
+./scripts/deploy.sh          # despliega API + Frontend
+# o solo front si no hubo cambios en backend:
+./scripts/deploy.sh --front
+```
+
+### Compilación manual (sin el script)
+
+Si necesitas compilar solo el frontend manualmente:
+
+```bash
+cd heavy-front
+npm ci
+npm run build
+```
+
+Salida en: `heavy-front/dist/sakai-ng/`
+
+---
+
+## 🛠️ Scaffolding
+
+```bash
+ng generate component nombre-componente
 ng generate --help
 ```
 
-## Building
-
-To build the project run:
+## 🧪 Tests
 
 ```bash
-ng build
+npm test
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+## 📚 Recursos adicionales
 
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+- [Angular CLI](https://angular.dev/tools/cli)
+- Ver `AGENTS.md` para patrones y reglas del proyecto

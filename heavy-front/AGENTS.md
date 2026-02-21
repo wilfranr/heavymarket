@@ -123,6 +123,30 @@ La aplicación sigue una arquitectura basada en características (features) y ca
 - **Consistencia**: Si existe un componente similar en el proyecto, replicar su estructura exacta, no inventar una nueva.
 
 ## Scripts de Ayuda
-- `npm start`: Servidor de desarrollo.
-- `npm run format`: Formatear código con Prettier.
-- `npm run lint`: Verificar calidad de código.
+
+### Desarrollo local
+- `npm start` — Servidor de desarrollo en `http://localhost:4200/` (con live reload).
+- `npm run format` — Formatear código con Prettier.
+- `npm run lint` — Verificar calidad de código.
+
+### Despliegue a Producción
+
+> ⚠️ **CRÍTICO**: Después de un `git pull` en el servidor, **siempre se debe recompilar** el frontend con el script de despliegue. Sin este paso, la app seguirá sirviendo la versión anterior aunque los archivos fuente estén actualizados.
+
+Ejecutar desde la **raíz del repositorio**:
+
+```bash
+# Desplegar todo (API Laravel + Frontend Angular)
+./scripts/deploy.sh
+
+# Solo frontend
+./scripts/deploy.sh --front
+
+# Solo backend
+./scripts/deploy.sh --api
+
+# Probar sin ejecutar cambios reales
+./scripts/deploy.sh --dry-run
+```
+
+El script de frontend ejecuta: `npm ci` → `npm run build` → salida en `heavy-front/dist/sakai-ng/`.

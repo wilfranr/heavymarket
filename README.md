@@ -119,7 +119,23 @@ docker-compose down
 - **Analista**: Reportes y análisis de datos
 - **Logística**: Órdenes de compra y trabajo
 
-## Scripts Útiles
+## 🚀 Despliegue a Producción
+
+> ⚠️ **IMPORTANTE**: Tras un `git pull` en el servidor, **siempre hay que recompilar** el frontend. Sin este paso la aplicación seguirá sirviendo la versión anterior aunque los archivos fuente ya estén actualizados.
+
+Ejecutar desde la **raíz del repositorio**:
+
+```bash
+git pull
+./scripts/deploy.sh           # Despliega API + Frontend
+./scripts/deploy.sh --front   # Solo frontend Angular
+./scripts/deploy.sh --api     # Solo backend Laravel
+./scripts/deploy.sh --dry-run # Simula sin ejecutar cambios
+```
+
+Ver documentación completa del script en [scripts/README.md](scripts/README.md)
+
+## Scripts Útiles (Desarrollo)
 
 ```bash
 # Backend
@@ -130,8 +146,8 @@ php artisan route:list        # Ver rutas API
 
 # Frontend
 cd heavy-front
+npm start                     # Servidor local (http://localhost:4200)
 npm test                      # Ejecutar tests
-npm run build                 # Build de producción
 npm run lint                  # Linter
 npm run format                # Formatear código
 ```

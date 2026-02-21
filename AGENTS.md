@@ -36,5 +36,20 @@ Para instrucciones detalladas sobre cada parte del stack, consulta:
 
 ## Comandos Comunes
 - **Backend (Tests)**: `cd heavy-api && php artisan test`
+- **Frontend (Dev)**: `cd heavy-front && npm start`
 - **Frontend (Tests)**: `cd heavy-front && npm test`
 - **Linting**: Revisar `package.json` en root o subdirectorios para scripts de linting.
+
+## Despliegue a Producción
+
+> ⚠️ **CRÍTICO**: Después de un `git pull` en el servidor, **SIEMPRE ejecutar el script de despliegue** para recompilar el frontend. Sin este paso la URL seguirá mostrando la versión anterior.
+
+```bash
+# Desde la raíz del repositorio en el servidor:
+git pull
+./scripts/deploy.sh             # API + Frontend completo
+./scripts/deploy.sh --front     # Solo frontend
+./scripts/deploy.sh --api       # Solo backend
+```
+
+Ver detalles completos en [scripts/README.md](scripts/README.md).
