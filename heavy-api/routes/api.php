@@ -63,6 +63,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
     Route::get('/landing/brands', [LandingController::class, 'brands']);
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote']);
+    Route::post('/landing/contact', [LandingController::class, 'submitContactForm']);
 
     /**
      * Rutas de Ubicaciones (públicas para formularios)
@@ -180,10 +181,16 @@ Route::prefix('v1')->group(function () {
          * Gestión de Landing (Admin)
          */
         Route::prefix('landing')->group(function () {
+             Route::get('contact-leads', [LandingController::class, 'contactLeads']);
+             Route::put('contact-leads/{id}/status', [LandingController::class, 'updateContactLeadStatus']);
              Route::get('categorias', [LandingController::class, 'adminIndex']);
              Route::get('machine-types', [LandingController::class, 'machineTypesAdmin']);
+             Route::post('categorias', [LandingController::class, 'storeCategoria']);
              Route::put('categorias/{categoria}', [LandingController::class, 'updateCategoria']);
+             Route::delete('categorias/{categoria}', [LandingController::class, 'destroyCategoria']);
+             Route::post('subcategorias', [LandingController::class, 'storeSubcategoria']);
              Route::put('subcategorias/{subcategoria}', [LandingController::class, 'updateSubcategoria']);
+             Route::delete('subcategorias/{subcategoria}', [LandingController::class, 'destroySubcategoria']);
         });
 
 

@@ -345,34 +345,134 @@ class LandingController extends Controller
     }
 
     /**
+     * Procesar el formulario de contacto de la landing page
+     */
+    public function submitContactForm(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre_completo' => 'required|string|max:255',
+            'empresa' => 'nullable|string|max:255',
+            'correo_electronico' => 'required|email|max:255',
+            'telefono' => 'nullable|string|max:50',
+            'motivo_consulta' => 'required|string',
+            'acepta_tratamiento_datos' => 'required|accepted',
+        ]);
+
+        $clienteInteresado = \App\Models\ClienteInteresado::create([
+            ...$validated,
+            'acepta_tratamiento_datos' => true,
+            'estado' => 'nuevo'
+        ]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Tu mensaje ha sido enviado con éxito.',
+        ]);
+    }
+
+    /**
      * Actualizar una categoría de landing (Admin)
      */
+    public function storeCategoria(Request $request)
+    {
+        $validated = $request->validate([
+            'nombre' => 'required|string|max:255',
+            'descripcion_general' => 'nullable|string',
+            'mostrar_en_navbar' => 'boolean',
+            'orden_navbar' => 'nullable|integer',
+            'estado' => 'boolean'
+        ]);
+
+        $categoria = CategoriaLanding::create($validated);
+        $categoria->load('subcategorias');
+
+        return response()->json($categoria, 201);
+    }
+
+    public function destroyCategoria(CategoriaLanding $categoria)
+    {
+        $categoria->delete();
+        return response()->json(['message' => 'Categoría eliminada']);
+    }
+
     public function updateCategoria(Request $request, CategoriaLanding $categoria)
     {
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
             'descripcion_general' => 'nullable|string',
             'mostrar_en_navbar' => 'sometimes|boolean',
-            'orden_navbar' => 'nullable|integer'
+            'orden_navbar' => 'nullable|integer',
+            'estado' => 'sometimes|boolean'
         ]);
 
         $categoria->update($validated);
+        $categoria->load('subcategorias');
 
         return response()->json($categoria);
     }
     
-    /**
-     * Actualizar una subcategoría de landing (Admin)
-     */
+    public function storeSubcategoria(Request $request)
+    {
+        $validated = $request->validate([
+            'categoria_id' => 'required|exists:categorias_landing,id',
+            'nombre' => 'required|string|max:255',
+            'descripcion' => 'nullable|string',
+            'mostrar_en_navbar' => 'boolean',
+            'orden_navbar' => 'nullable|integer',
+            'estado' => 'boolean'
+        ]);
+
+        $subcategoria = \App\Models\SubcategoriaLanding::create($validated);
+
+        return response()->json($subcategoria, 201);
+    }
+
+    public function destroySubcategoria(\App\Models\SubcategoriaLanding $subcategoria)
+    {
+        $subcategoria->delete();
+        return response()->json(['message' => 'Subcategoría eliminada']);
+    }
+
     public function updateSubcategoria(Request $request, \App\Models\SubcategoriaLanding $subcategoria)
     {
         $validated = $request->validate([
+            'nombre' => 'sometimes|string|max:255',
+            'descripcion' => 'nullable|string',
             'mostrar_en_navbar' => 'sometimes|boolean',
-            'orden_navbar' => 'nullable|integer'
+            'orden_navbar' => 'nullable|integer',
+            'estado' => 'sometimes|boolean'
         ]);
 
         $subcategoria->update($validated);
 
         return response()->json($subcategoria);
+    }
+
+    /**
+     * Obtener listado de clientes interesados (leads de contacto)
+     */
+    public function contactLeads()
+    {
+        $leads = \App\Models\ClienteInteresado::orderBy('created_at', 'desc')->get();
+        return response()->json($leads);
+    }
+
+    /**
+     * Actualizar estado de un lead de contacto
+     */
+    public function updateContactLeadStatus(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'estado' => 'required|string|in:nuevo,contactado,descartado'
+        ]);
+
+        $lead = \App\Models\ClienteInteresado::findOrFail($id);
+        $lead->update(['estado' => $validated['estado']]);
+
+        return response()->json([
+            'status' => 'success',
+            'message' => 'Estado actualizado correctamente',
+            'data' => $lead
+        ]);
     }
 }

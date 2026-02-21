@@ -65,7 +65,8 @@ export class AppMenu {
                 label: 'Landing',
                 items: [
                     { label: 'Mega Menú', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
-                    { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] }
+                    { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] },
+                    { label: 'Clientes Interesados', icon: 'pi pi-fw pi-users', routerLink: ['/app/gestion-landing/contact-leads'] }
                 ]
             },
             {

@@ -12,10 +12,11 @@ class SubcategoriaLanding extends Model
 
     protected $table = 'subcategorias_landing';
     
-    protected $fillable = ['categoria_id', 'nombre', 'descripcion', 'imagen', 'mostrar_en_navbar', 'orden_navbar'];
+    protected $fillable = ['categoria_id', 'nombre', 'descripcion', 'imagen', 'mostrar_en_navbar', 'orden_navbar', 'estado'];
     
     protected $casts = [
         'mostrar_en_navbar' => 'boolean',
+        'estado' => 'boolean',
     ];
     
     protected $appends = ['slug', 'imagen_url'];

@@ -118,4 +118,12 @@ export class LandingService {
 
         return this.http.post<any>(`${environment.apiUrl}/landing/submit-quote`, formData, { headers });
     }
+    submitContactForm(data: any): Observable<any> {
+        return this.http.post<any>(`${environment.apiUrl}/landing/contact`, data).pipe(
+            catchError((error) => {
+                console.error('Error submitting contact form:', error);
+                throw error;
+            })
+        );
+    }
 }

@@ -8,5 +8,9 @@ export const landingManageRoutes: Routes = [
     {
         path: 'machine-types',
         loadComponent: () => import('./pages/machine-type-list/machine-type-list.component').then(m => m.MachineTypeListComponent)
+    },
+    {
+        path: 'contact-leads',
+        loadComponent: () => import('./pages/contact-leads/contact-leads.component').then(m => m.ContactLeadsComponent)
     }
 ];

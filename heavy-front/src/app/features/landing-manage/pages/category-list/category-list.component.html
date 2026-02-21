@@ -1,12 +1,19 @@
 <p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
 <div class="card">
-    <div class="flex justify-content-between align-items-center mb-4">
+    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center mb-4">
         <div>
-            <h5 class="m-0">Gestión de Landing Page - Mega Menú</h5>
-            <span class="text-600">Selecciona hasta 5 categorías para mostrar en el menú principal.</span>
+            <h5 class="m-0">Gestión de Landing Page - Categorías</h5>
+            <span class="text-600">Gestiona las categorías de la landing y selecciona hasta 6 para ser mostradas en el
+                mega menú principal.</span>
         </div>
-        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadCategories()"
-            [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom"></button>
+        <div class="flex gap-2 mt-3 md:mt-0">
+            <button pButton label="Nueva Categoría" icon="pi pi-plus" class="p-button-success"
+                (click)="openNewCategory()"></button>
+            <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadCategories()"
+                [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom"></button>
+        </div>
     </div>
 
     <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-striped"
@@ -16,8 +23,10 @@
             <tr>
                 <th style="width: 5rem"></th>
                 <th>Nombre</th>
-                <th style="width: 200px">Mostrar en Navbar</th>
+                <th style="width: 150px">Estado (Activo)</th>
+                <th style="width: 200px">Mostrar en Mega Menú</th>
                 <th style="width: 150px">Orden</th>
+                <th style="width: 120px">Acciones</th>
             </tr>
         </ng-template>
 
@@ -32,6 +41,10 @@
                 </td>
                 <td class="font-bold text-lg">{{ category.nombre }}</td>
                 <td>
+                    <p-toggleswitch [(ngModel)]="category.estado"
+                        (onChange)="onCategoryStatusChange(category)"></p-toggleswitch>
+                </td>
+                <td>
                     <p-toggleswitch [(ngModel)]="category.mostrar_en_navbar"
                         (onChange)="onCategoryToggle(category)"></p-toggleswitch>
                 </td>
@@ -39,26 +52,44 @@
                     <p-inputNumber [(ngModel)]="category.orden_navbar" [showButtons]="true" [min]="0" [max]="99"
                         [step]="1" inputStyleClass="w-full" (onBlur)="onCategoryOrderChange(category)"></p-inputNumber>
                 </td>
+                <td>
+                    <div class="flex gap-2">
+                        <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-text p-button-info"
+                            (click)="editCategory(category)"></button>
+                        <button pButton icon="pi pi-trash" class="p-button-rounded p-button-text p-button-danger"
+                            (click)="deleteCategory(category)"></button>
+                    </div>
+                </td>
             </tr>
 
             <!-- Expanded Row (Manually rendered) -->
             <tr *ngIf="expandedRows[category.id]">
-                <td colspan="4" class="p-0 border-none">
+                <td colspan="6" class="p-0 border-none">
                     <div class="p-3 surface-100 border-bottom-1 surface-border">
-                        <div class="font-bold mb-2 text-900">Subcategorías de {{ category.nombre }} ({{
-                            category.subcategorias?.length || 0 }})</div>
+                        <div class="flex justify-content-between align-items-center mb-2">
+                            <div class="font-bold text-900">Subcategorías de {{ category.nombre }} ({{
+                                category.subcategorias?.length || 0 }})</div>
+                            <button pButton label="Añadir Subcategoría" icon="pi pi-plus"
+                                class="p-button-success p-button-sm" (click)="openNewSubcategory(category)"></button>
+                        </div>
 
                         <p-table [value]="category.subcategorias" dataKey="id" styleClass="p-datatable-sm">
                             <ng-template pTemplate="header">
             <tr>
                 <th>Nombre Subcategoría</th>
-                <th style="width: 200px">Mostrar en Navbar</th>
+                <th style="width: 150px">Estado</th>
+                <th style="width: 200px">Mostrar en Mega Menú</th>
                 <th style="width: 150px">Orden</th>
+                <th style="width: 120px">Acciones</th>
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-sub>
             <tr>
                 <td>{{ sub.nombre }}</td>
+                <td>
+                    <p-toggleswitch [(ngModel)]="sub.estado"
+                        (onChange)="onSubcategoryStatusChange(sub)"></p-toggleswitch>
+                </td>
                 <td>
                     <p-toggleswitch [(ngModel)]="sub.mostrar_en_navbar"
                         (onChange)="onSubcategoryToggle(sub)"></p-toggleswitch>
@@ -67,11 +98,21 @@
                     <p-inputNumber [(ngModel)]="sub.orden_navbar" [showButtons]="true" [min]="0" [max]="99"
                         inputStyleClass="w-full" (onBlur)="onSubcategoryOrderChange(sub)"></p-inputNumber>
                 </td>
+                <td>
+                    <div class="flex gap-2">
+                        <button pButton icon="pi pi-pencil"
+                            class="p-button-rounded p-button-text p-button-info p-button-sm"
+                            (click)="editSubcategory(sub)"></button>
+                        <button pButton icon="pi pi-trash"
+                            class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                            (click)="deleteSubcategory(sub)"></button>
+                    </div>
+                </td>
             </tr>
         </ng-template>
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="3">No hay subcategorías.</td>
+                <td colspan="5">No hay subcategorías.</td>
             </tr>
         </ng-template>
     </p-table>
@@ -82,3 +123,75 @@
 
 </p-table>
 </div>
+
+<!-- Modal Categoría -->
+<p-dialog [(visible)]="categoryDialog" [style]="{width: '450px'}"
+    [header]="isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría'" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label for="nombre">Nombre</label>
+            <input type="text" pInputText id="nombre" [(ngModel)]="currentCategory.nombre" required autofocus />
+        </div>
+        <div class="field">
+            <label for="descripcion">Descripción General</label>
+            <textarea id="descripcion" p-textarea [(ngModel)]="currentCategory.descripcion_general" rows="3"></textarea>
+        </div>
+        <div class="field-checkbox">
+            <p-checkbox [(ngModel)]="currentCategory.estado" [binary]="true" inputId="estado_cat"></p-checkbox>
+            <label for="estado_cat">Categoría Activa (Visible en la app)</label>
+        </div>
+        <div class="field-checkbox">
+            <p-checkbox [(ngModel)]="currentCategory.mostrar_en_navbar" [binary]="true"
+                inputId="mostrar_cat"></p-checkbox>
+            <label for="mostrar_cat">Mostrar en Mega Menú (Max 6)</label>
+        </div>
+        <div class="field">
+            <label for="orden_cat">Orden</label>
+            <p-inputNumber id="orden_cat" [(ngModel)]="currentCategory.orden_navbar"
+                [showButtons]="true"></p-inputNumber>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+            (click)="categoryDialog = false"></button>
+        <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+            (click)="saveCategory()"></button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal Subcategoría -->
+<p-dialog [(visible)]="subcategoryDialog" [style]="{width: '450px'}"
+    [header]="isEditingSubcategory ? 'Editar Subcategoría' : 'Nueva Subcategoría'" [modal]="true" class="p-fluid">
+    <ng-template pTemplate="content">
+        <div class="field">
+            <label for="sub_nombre">Nombre</label>
+            <input type="text" pInputText id="sub_nombre" [(ngModel)]="currentSubcategory.nombre" required autofocus />
+        </div>
+        <div class="field">
+            <label for="sub_descripcion">Descripción</label>
+            <textarea id="sub_descripcion" p-textarea [(ngModel)]="currentSubcategory.descripcion" rows="3"></textarea>
+        </div>
+        <div class="field-checkbox">
+            <p-checkbox [(ngModel)]="currentSubcategory.estado" [binary]="true" inputId="estado_sub"></p-checkbox>
+            <label for="estado_sub">Subcategoría Activa</label>
+        </div>
+        <div class="field-checkbox">
+            <p-checkbox [(ngModel)]="currentSubcategory.mostrar_en_navbar" [binary]="true"
+                inputId="mostrar_sub"></p-checkbox>
+            <label for="mostrar_sub">Mostrar en Mega Menú (Max 4 por categoría)</label>
+        </div>
+        <div class="field">
+            <label for="orden_sub">Orden</label>
+            <p-inputNumber id="orden_sub" [(ngModel)]="currentSubcategory.orden_navbar"
+                [showButtons]="true"></p-inputNumber>
+        </div>
+    </ng-template>
+
+    <ng-template pTemplate="footer">
+        <button pButton pRipple label="Cancelar" icon="pi pi-times" class="p-button-text"
+            (click)="subcategoryDialog = false"></button>
+        <button pButton pRipple label="Guardar" icon="pi pi-check" class="p-button-text"
+            (click)="saveSubcategory()"></button>
+    </ng-template>
+</p-dialog>

@@ -12,10 +12,11 @@ class CategoriaLanding extends Model
 
     protected $table = 'categorias_landing';
     
-    protected $fillable = ['nombre', 'descripcion_general', 'mostrar_en_navbar', 'orden_navbar'];
+    protected $fillable = ['nombre', 'descripcion_general', 'mostrar_en_navbar', 'orden_navbar', 'estado'];
 
     protected $casts = [
         'mostrar_en_navbar' => 'boolean',
+        'estado' => 'boolean',
     ];
 
     protected static function booted()
@@ -26,8 +27,8 @@ class CategoriaLanding extends Model
                     ->where('id', '!=', $categoria->id)
                     ->count();
                 
-                if ($count >= 5) {
-                    throw new \Exception('Solo se pueden seleccionar hasta 5 categorías para el mega menú.');
+                if ($count >= 6) {
+                    throw new \Exception('Solo se pueden seleccionar hasta 6 categorías para el mega menú.');
                 }
             }
         });
