@@ -10,7 +10,7 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { CheckboxModule } from 'primeng/checkbox';
-import { TextareaModule } from 'primeng/textarea';
+import { DividerModule } from 'primeng/divider';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { LandingManageService, CategoriaLanding, SubcategoriaLanding } from '../../services/landing-manage.service';
@@ -32,7 +32,7 @@ import { finalize } from 'rxjs/operators';
         InputTextModule,
         ConfirmDialogModule,
         CheckboxModule,
-        TextareaModule
+        DividerModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './category-list.component.html'
@@ -87,7 +87,7 @@ export class CategoryListComponent implements OnInit {
     }
 
     openNewCategory() {
-        this.currentCategory = { estado: true, mostrar_en_navbar: false, orden_navbar: 0 };
+        this.currentCategory = { estado: true, mostrar_en_navbar: false };
         this.isEditingCategory = false;
         this.categoryDialog = true;
     }
@@ -139,7 +139,7 @@ export class CategoryListComponent implements OnInit {
     }
 
     openNewSubcategory(category: CategoriaLanding) {
-        this.currentSubcategory = { categoria_id: category.id, estado: true, mostrar_en_navbar: false, orden_navbar: 0 };
+        this.currentSubcategory = { categoria_id: category.id, estado: true, mostrar_en_navbar: false };
         this.isEditingSubcategory = false;
         this.subcategoryDialog = true;
     }
@@ -220,15 +220,7 @@ export class CategoryListComponent implements OnInit {
         });
     }
 
-    onCategoryOrderChange(category: CategoriaLanding) {
-        this.landingService.updateCategory(category.id, {
-            orden_navbar: category.orden_navbar
-        }).subscribe({
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar orden.' });
-            }
-        });
-    }
+
 
     onSubcategoryToggle(subcategory: SubcategoriaLanding) {
         this.landingService.updateSubcategory(subcategory.id, {
@@ -260,13 +252,4 @@ export class CategoryListComponent implements OnInit {
         });
     }
 
-    onSubcategoryOrderChange(subcategory: SubcategoriaLanding) {
-        this.landingService.updateSubcategory(subcategory.id, {
-            orden_navbar: subcategory.orden_navbar
-        }).subscribe({
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error al actualizar orden.' });
-            }
-        });
-    }
 }
