@@ -14,9 +14,9 @@ class LandingController extends Controller
     public function adminIndex()
     {
         return CategoriaLanding::with(['subcategorias' => function ($query) {
-            $query->orderBy('orden_navbar', 'asc')->orderBy('nombre', 'asc');
+            $query->orderBy('updated_at', 'desc')->orderBy('nombre', 'asc');
         }])
-        ->orderBy('orden_navbar', 'asc')
+        ->orderBy('updated_at', 'desc')
         ->orderBy('nombre', 'asc')
         ->get();
     }
@@ -56,10 +56,10 @@ class LandingController extends Controller
     public function navbarData()
     {
         $categorias = CategoriaLanding::where('mostrar_en_navbar', true)
-        ->orderBy('orden_navbar', 'asc')
+        ->orderBy('updated_at', 'desc')
         ->with(['subcategorias' => function ($query) {
             $query->where('mostrar_en_navbar', true)
-                  ->orderBy('orden_navbar', 'asc')
+                  ->orderBy('updated_at', 'desc')
                   ->orderBy('nombre', 'asc');
         }])
         ->get();
@@ -363,6 +363,14 @@ class LandingController extends Controller
             'acepta_tratamiento_datos' => true,
             'estado' => 'nuevo'
         ]);
+
+        try {
+            // Send email to commercial team asynchronously (if queue is configured) or synchronously
+            \Illuminate\Support\Facades\Mail::to('comercial@heavymarket.net')
+                ->send(new \App\Mail\NewContactLead($clienteInteresado));
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error("Error enviando correo de nuevo lead de contacto: " . $e->getMessage());
+        }
 
         return response()->json([
             'status' => 'success',
