@@ -20,6 +20,9 @@ export interface Tercero {
     email_factura_electronica?: string | null;
     sitio_web?: string | null;
 
+    // Acceso Landing
+    landing_access?: boolean;
+
     // Documentos
     rut?: string | null;
     certificacion_bancaria?: string | null;
@@ -87,6 +90,8 @@ export interface CreateTerceroDto {
     city_id?: number;
     state_id?: number;
     country_id?: number;
+    landing_access?: boolean;
+    landing_password?: string;
 }
 
 /**

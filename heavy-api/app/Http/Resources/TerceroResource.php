@@ -9,18 +9,17 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 /**
  * API Resource para el modelo Tercero
- * 
+ *
  * Transforma los datos de terceros (clientes/proveedores)
  * en una respuesta JSON estructurada.
- * 
+ *
  * @property \App\Models\Tercero $resource
  */
 class TerceroResource extends JsonResource
 {
     /**
      * Transforma el recurso en un array.
-     * 
-     * @param Request $request
+     *
      * @return array<string, mixed>
      */
     public function toArray(Request $request): array
@@ -39,13 +38,14 @@ class TerceroResource extends JsonResource
             'sitio_web' => $this->sitio_web,
             'dv' => $this->dv,
             'estado' => $this->estado,
-            
+            'landing_access' => (bool) $this->landing_access,
+
             // Files mapping if needed, or return full urls
             'rut' => $this->rut ? \Storage::url($this->rut) : null,
             'certificacion_bancaria' => $this->certificacion_bancaria ? \Storage::url($this->certificacion_bancaria) : null,
             'camara_comercio' => $this->camara_comercio ? \Storage::url($this->camara_comercio) : null,
             'cedula_representante_legal' => $this->cedula_representante_legal ? \Storage::url($this->cedula_representante_legal) : null,
-            
+
             // Location
             'country_id' => $this->country_id,
             'state_id' => $this->state_id,
@@ -53,10 +53,10 @@ class TerceroResource extends JsonResource
             'country' => $this->whenLoaded('country'),
             'state' => $this->whenLoaded('states'), // Relation in model is 'states' (bad naming? viewed in step 266: public function states()) - Careful.
             'city' => $this->whenLoaded('city'),
-            
+
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
-            
+
             // Relaciones opcionales
             'contactos' => ContactoResource::collection($this->whenLoaded('contactos')),
             'direcciones' => $this->whenLoaded('direcciones'),

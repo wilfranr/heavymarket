@@ -14,6 +14,8 @@ import { PanelModule } from 'primeng/panel';
 import { StepsModule } from 'primeng/steps';
 import { FileUploadModule } from 'primeng/fileupload';
 import { TooltipModule } from 'primeng/tooltip';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { PasswordModule } from 'primeng/password';
 
 import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
@@ -42,7 +44,9 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
         StepsModule,
         FileUploadModule,
         TooltipModule,
-        MaquinaCreateModalComponent
+        MaquinaCreateModalComponent,
+        ToggleSwitchModule,
+        PasswordModule,
     ],
     templateUrl: './tercero-form.component.html',
     styles: [`
@@ -232,7 +236,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             maquina_id: data.maquinas ? data.maquinas.map((m: any) => m.id) : [],
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
             sistema_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
-            contactos: []
+            contactos: [],
+            landing_access: data.landing_access ?? false,
+            landing_password: '',
         });
 
         // Set contacts
@@ -315,7 +321,23 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             camara_comercio: [null],
             cedula_representante_legal: [null],
             contactos: this.fb.array([]),
-            estado: ['activo']
+            estado: ['activo'],
+
+            // Acceso Landing
+            landing_access: [false],
+            landing_password: [''],
+        });
+
+        // Controlar obligatoriedad de la contraseña al activar el toggle
+        this.createTerceroForm.get('landing_access')!.valueChanges.subscribe((enabled: boolean) => {
+            const pwControl = this.createTerceroForm.get('landing_password')!;
+            if (enabled && !this.terceroId) {
+                // En creación es obligatoria
+                pwControl.setValidators([Validators.required, Validators.minLength(6)]);
+            } else {
+                pwControl.clearValidators();
+            }
+            pwControl.updateValueAndValidity();
         });
     }
 
@@ -325,6 +347,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
     get isCliente(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Cliente' || t === 'Ambos'; }
     get isProveedor(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Proveedor' || t === 'Ambos'; }
+    get landingAccessEnabled(): boolean { return !!this.createTerceroForm.get('landing_access')?.value; }
     get activeTheme(): string {
         const tipo = this.createTerceroForm?.get('tipo')?.value;
         if (tipo === 'Cliente') return 'theme-cliente';
@@ -344,7 +367,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 maquina_id: [],
                 fabricante_id: [],
                 sistema_id: [],
-                contactos: []
+                contactos: [],
+                landing_access: false,
+                landing_password: '',
             });
             this.contactos.clear();
             this.departamentos = [];
@@ -499,6 +524,12 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 formData.append(field, formValue[field]);
             }
         });
+
+        // Acceso Landing
+        formData.append('landing_access', formValue.landing_access ? '1' : '0');
+        if (formValue.landing_access && formValue.landing_password) {
+            formData.append('landing_password', formValue.landing_password);
+        }
 
         let request$: any;
         if (this.terceroId) {

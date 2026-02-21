@@ -5,48 +5,51 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{StoreTerceroRequest, UpdateTerceroRequest};
+use App\Http\Requests\StoreTerceroRequest;
+use App\Http\Requests\UpdateTerceroRequest;
 use App\Http\Resources\TerceroResource;
 use App\Models\Tercero;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Storage, DB};
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Controlador API para gestión de Terceros
- * 
+ *
  * Maneja operaciones CRUD para clientes y proveedores.
+ * Cuando landing_access=true, crea/actualiza un User vinculado con rol 'Cliente'
+ * para permitir el inicio de sesión en la landing page.
  */
 class TerceroController extends Controller
 {
     /**
      * Listar todos los terceros con filtros
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
         $query = Tercero::query();
 
-        // Filtro por tipo de tercero
         if ($request->filled('tipo')) {
-             $query->where('tipo', $request->input('tipo'));
-        }
-        
-        // Legacy or specific filters mapping
-        if ($request->filled('es_cliente')) {
-             if ($request->input('es_cliente')) {
-                 $query->whereIn('tipo', ['Cliente', 'Ambos']);
-             }
-        }
-        if ($request->filled('es_proveedor')) {
-             if ($request->input('es_proveedor')) {
-                 $query->whereIn('tipo', ['Proveedor', 'Ambos']);
-             }
+            $query->where('tipo', $request->input('tipo'));
         }
 
-        // Búsqueda por nombre o documento
+        if ($request->filled('es_cliente')) {
+            if ($request->input('es_cliente')) {
+                $query->whereIn('tipo', ['Cliente', 'Ambos']);
+            }
+        }
+        if ($request->filled('es_proveedor')) {
+            if ($request->input('es_proveedor')) {
+                $query->whereIn('tipo', ['Proveedor', 'Ambos']);
+            }
+        }
+
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
@@ -56,12 +59,10 @@ class TerceroController extends Controller
             });
         }
 
-        // Ordenamiento
         $sortBy = $request->input('sort_by', 'nombre');
         $sortOrder = $request->input('sort_order', 'asc');
         $query->orderBy($sortBy, $sortOrder);
 
-        // Paginación
         $perPage = (int) $request->input('per_page', 15);
         $terceros = $query->paginate($perPage);
 
@@ -78,16 +79,13 @@ class TerceroController extends Controller
 
     /**
      * Crear un nuevo tercero
-     * 
-     * @param StoreTerceroRequest $request
-     * @return JsonResponse
      */
     public function store(StoreTerceroRequest $request): JsonResponse
     {
         return DB::transaction(function () use ($request) {
             try {
                 $data = $request->validated();
-                
+
                 // Handle Files
                 $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
                 foreach ($fileFields as $field) {
@@ -95,6 +93,11 @@ class TerceroController extends Controller
                         $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
                     }
                 }
+
+                // Extraer el campo landing_password (no va a la tabla terceros)
+                $landingPassword = $request->input('landing_password');
+                $landingAccess = filter_var($data['landing_access'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                $data['landing_access'] = $landingAccess;
 
                 $tercero = Tercero::create($data);
 
@@ -109,13 +112,16 @@ class TerceroController extends Controller
                 if ($request->filled('maquina_id')) {
                     $tercero->maquinas()->sync($request->input('maquina_id'));
                 }
-                
                 if ($request->filled('fabricante_id')) {
                     $tercero->fabricantes()->sync($request->input('fabricante_id'));
                 }
-                
                 if ($request->filled('sistema_id')) {
                     $tercero->sistemas()->sync($request->input('sistema_id'));
+                }
+
+                // Gestionar acceso a la landing
+                if ($landingAccess && $tercero->email) {
+                    $this->syncLandingUser($tercero, $landingPassword);
                 }
 
                 return response()->json([
@@ -124,7 +130,8 @@ class TerceroController extends Controller
                 ], 201);
 
             } catch (\Exception $e) {
-                \Log::error('Error creating tercero: ' . $e->getMessage());
+                Log::error('Error creating tercero: '.$e->getMessage());
+
                 return response()->json([
                     'message' => 'Error al crear el tercero',
                     'error' => $e->getMessage(),
@@ -135,9 +142,6 @@ class TerceroController extends Controller
 
     /**
      * Mostrar un tercero específico
-     * 
-     * @param Tercero $tercero
-     * @return JsonResponse
      */
     public function show(Tercero $tercero): JsonResponse
     {
@@ -150,28 +154,30 @@ class TerceroController extends Controller
 
     /**
      * Actualizar un tercero existente
-     * 
-     * @param UpdateTerceroRequest $request
-     * @param Tercero $tercero
-     * @return JsonResponse
      */
     public function update(UpdateTerceroRequest $request, Tercero $tercero): JsonResponse
     {
         return DB::transaction(function () use ($request, $tercero) {
             try {
                 $data = $request->validated();
-                
+
                 // Handle Files
                 $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
                 foreach ($fileFields as $field) {
                     if ($request->hasFile($field)) {
-                        // Delete old file if exists
                         if ($tercero->{$field}) {
-                             Storage::disk('public')->delete($tercero->{$field});
+                            Storage::disk('public')->delete($tercero->{$field});
                         }
                         $data[$field] = $request->file($field)->store('terceros/documentos', 'public');
                     }
                 }
+
+                // Extraer campos de acceso landing
+                $landingAccess = isset($data['landing_access'])
+                    ? filter_var($data['landing_access'], FILTER_VALIDATE_BOOLEAN)
+                    : $tercero->landing_access;
+                $landingPassword = $request->input('landing_password');
+                $data['landing_access'] = $landingAccess;
 
                 $tercero->update($data);
 
@@ -179,11 +185,9 @@ class TerceroController extends Controller
                 if ($request->has('contactos')) {
                     $contactosInput = $request->input('contactos', []);
                     $keepIds = collect($contactosInput)->pluck('id')->filter()->all();
-                    
-                    // Delete removed contacts
+
                     $tercero->contactos()->whereNotIn('id', $keepIds)->delete();
-                    
-                    // Update or Create
+
                     foreach ($contactosInput as $contactoData) {
                         if (isset($contactoData['id'])) {
                             $tercero->contactos()->where('id', $contactoData['id'])->update(Arr::except($contactoData, ['id']));
@@ -193,15 +197,23 @@ class TerceroController extends Controller
                     }
                 }
 
-                 // Handle Relationships if passed (optional update logic)
-                if ($request->has('maquina_id')) { // Check existence key to allow unselecting
-                     $tercero->maquinas()->sync($request->input('maquina_id'));
+                // Handle Relationships
+                if ($request->has('maquina_id')) {
+                    $tercero->maquinas()->sync($request->input('maquina_id'));
                 }
                 if ($request->has('fabricante_id')) {
-                     $tercero->fabricantes()->sync($request->input('fabricante_id'));
+                    $tercero->fabricantes()->sync($request->input('fabricante_id'));
                 }
                 if ($request->has('sistema_id')) {
-                     $tercero->sistemas()->sync($request->input('sistema_id'));
+                    $tercero->sistemas()->sync($request->input('sistema_id'));
+                }
+
+                // Gestionar acceso a la landing
+                if ($landingAccess && $tercero->email) {
+                    $this->syncLandingUser($tercero, $landingPassword ?: null);
+                } elseif (! $landingAccess && $tercero->user_id) {
+                    // Desactivar acceso: desvincular el user sin borrarlo
+                    $tercero->updateQuietly(['user_id' => null]);
                 }
 
                 return response()->json([
@@ -220,21 +232,17 @@ class TerceroController extends Controller
 
     /**
      * Eliminar un tercero
-     * 
-     * @param Tercero $tercero
-     * @return JsonResponse
      */
     public function destroy(Tercero $tercero): JsonResponse
     {
         try {
-            // Delete files
             $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
-             foreach ($fileFields as $field) {
+            foreach ($fileFields as $field) {
                 if ($tercero->{$field}) {
-                     Storage::disk('public')->delete($tercero->{$field});
+                    Storage::disk('public')->delete($tercero->{$field});
                 }
             }
-            
+
             $tercero->delete();
 
             return response()->json([
@@ -246,6 +254,44 @@ class TerceroController extends Controller
                 'message' => 'Error al eliminar el tercero',
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Sincronizar (crear o actualizar) el User de landing vinculado al tercero.
+     *
+     * - Si el tercero ya tiene user_id, actualiza ese User.
+     * - Si no, busca por email o crea uno nuevo.
+     * - Siempre asegura que el User tenga el rol 'Cliente'.
+     * - Vincula user_id al tercero si no estaba vinculado.
+     */
+    private function syncLandingUser(Tercero $tercero, ?string $password): void
+    {
+        $user = $tercero->user_id
+            ? User::find($tercero->user_id)
+            : User::where('email', $tercero->email)->first();
+
+        if ($user) {
+            $user->name = $tercero->nombre;
+            $user->email = $tercero->email;
+            if ($password) {
+                $user->password = Hash::make($password);
+            }
+            $user->save();
+        } else {
+            $user = User::create([
+                'name' => $tercero->nombre,
+                'email' => $tercero->email,
+                'password' => Hash::make($password ?? Str::random(16)),
+            ]);
+        }
+
+        if (! $user->hasRole('Cliente')) {
+            $user->assignRole('Cliente');
+        }
+
+        if ($tercero->user_id !== $user->id) {
+            $tercero->updateQuietly(['user_id' => $user->id]);
         }
     }
 }

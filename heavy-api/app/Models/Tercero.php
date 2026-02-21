@@ -2,22 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Traits\NormalizesResources;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\City;
-use App\Models\Country;
-use App\Models\State;
-use App\Models\Maquina;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 /**
  * Modelo Tercero - Gestiona proveedores, clientes y terceros del sistema CYH
- * 
+ *
  * Este modelo representa a todos los terceros que interactúan con el sistema,
  * incluyendo proveedores, clientes, fabricantes y otros socios comerciales.
  * Es fundamental para la gestión de relaciones comerciales y transacciones.
- * 
+ *
  * @property int $id Identificador único del tercero
  * @property string $nombre Nombre o razón social del tercero
  * @property string $tipo_documento Tipo de documento de identificación
@@ -41,7 +37,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $city_id ID de la ciudad del tercero
  * @property \Carbon\Carbon $created_at Fecha de creación del tercero
  * @property \Carbon\Carbon $updated_at Fecha de última actualización
- * 
  * @property-read Country $country País del tercero
  * @property-read State $state Estado/provincia del tercero
  * @property-read City $city Ciudad del tercero
@@ -52,16 +47,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property-read \Illuminate\Database\Eloquent\Collection|Sistema[] $sistemas Sistemas asociados al tercero
  * @property-read \Illuminate\Database\Eloquent\Collection|Fabricante[] $fabricantes Fabricantes asociados
  * @property-read \Illuminate\Database\Eloquent\Collection|Categoria[] $categorias Categorías del tercero
- * 
+ *
  * @since 1.0.0
+ *
  * @author Sistema CYH
  */
 class Tercero extends Model
 {
     use HasFactory, NormalizesResources;
+
     /**
      * Los atributos que son asignables masivamente.
-     * 
+     *
      * @var array<string>
      */
     protected $fillable = [
@@ -86,6 +83,11 @@ class Tercero extends Model
         'state_id',                   // ID del estado/provincia del tercero
         'city_id',                    // ID de la ciudad del tercero
         'user_id',                    // ID del usuario relacionado (opcional)
+        'landing_access',             // Habilita el acceso a la landing page
+    ];
+
+    protected $casts = [
+        'landing_access' => 'boolean',
     ];
 
     protected $normalizableAttributes = [
@@ -97,7 +99,7 @@ class Tercero extends Model
 
     /**
      * Relación con el país del tercero.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function country()
@@ -107,7 +109,7 @@ class Tercero extends Model
 
     /**
      * Relación con la ciudad del tercero.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function city()
@@ -117,7 +119,7 @@ class Tercero extends Model
 
     /**
      * Relación con el estado/provincia del tercero.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function states()
@@ -128,7 +130,7 @@ class Tercero extends Model
     /**
      * Relación muchos a muchos con máquinas.
      * Un tercero puede estar asociado a múltiples máquinas.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function maquinas()
@@ -139,7 +141,7 @@ class Tercero extends Model
     /**
      * Relación con los contactos del tercero.
      * Un tercero puede tener múltiples contactos.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function contactos()
@@ -150,7 +152,7 @@ class Tercero extends Model
     /**
      * Relación con las direcciones del tercero.
      * Un tercero puede tener múltiples direcciones.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function direcciones()
@@ -161,7 +163,7 @@ class Tercero extends Model
     /**
      * Relación con los pedidos del tercero.
      * Un tercero puede tener múltiples pedidos.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function pedidos()
@@ -172,8 +174,6 @@ class Tercero extends Model
     /**
      * Relación muchos a muchos con sistemas.
      * Un tercero puede estar asociado a múltiples sistemas.
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function sistemas(): BelongsToMany
     {
@@ -183,8 +183,6 @@ class Tercero extends Model
     /**
      * Relación muchos a muchos con fabricantes.
      * Un tercero puede estar asociado a múltiples fabricantes.
-     * 
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function fabricantes(): BelongsToMany
     {
@@ -194,7 +192,7 @@ class Tercero extends Model
     /**
      * Relación muchos a muchos con categorías.
      * Un tercero puede estar asociado a múltiples categorías.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function categorias()
@@ -205,7 +203,7 @@ class Tercero extends Model
     /**
      * Relación con las referencias de proveedor del tercero.
      * Un tercero puede tener múltiples referencias de proveedor.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function pedidosReferenciaProveedor()
@@ -215,7 +213,7 @@ class Tercero extends Model
 
     /**
      * Relación con el usuario del sistema.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function user()
