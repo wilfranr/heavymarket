@@ -1,6 +1,7 @@
 <p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" (onHide)="onClose()"
     [showHeader]="false" [closable]="true" [dismissableMask]="true" styleClass="auth-modal-dialog"
-    maskStyleClass="auth-modal-mask" appendTo="body" [baseZIndex]="11000" [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }">
+    maskStyleClass="auth-modal-mask" appendTo="body" [baseZIndex]="11000"
+    [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }">
 
     <!-- Force Landing Dark Theme (Pure Black) -->
     <div class="landing-dark-theme" style="display: flex; flex-direction: column; width: 100%;">
@@ -69,11 +70,11 @@
                                 Iniciar Sesión
                             </button>
 
-                            <div class="text-center mt-3">
+                            <!-- <div class="text-center mt-3">
                                 <span class="text-gray-500 font-medium">¿No tienes cuenta? </span>
                                 <a (click)="toggleTab('register')" class="font-bold no-underline cursor-pointer"
                                     style="color: #fdb831"> Regístrate </a>
-                            </div>
+                            </div> -->
                         </div>
                     </form>
                     }
@@ -170,7 +171,7 @@
                     }
 
                     <!-- Social Login Divider -->
-                    <div class="flex align-items-center w-full my-4"
+                    <!-- <div class="flex align-items-center w-full my-4"
                         style="display: flex; flex-direction: row; align-items: center; width: 100%;">
                         <div style="flex-grow: 1; border-top: 1px solid #333;"></div>
                         <span class="px-3 text-gray-500 font-medium whitespace-nowrap">O continúa con</span>
@@ -191,7 +192,7 @@
                             onmouseout="this.style.background='transparent'">
                             <i class="pi pi-facebook"></i> Facebook
                         </button>
-                    </div>
+                    </div> -->
                 </div>
             </div>
         </div>
