@@ -406,10 +406,10 @@
 
                                 <!-- Referencia -->
                                 <div class="flex-1">
-                                    <p-select formControlName="referencia_id" [options]="referenciasPorFila[refIndex]"
-                                        [filter]="true" filterBy="label" placeholder="Buscar referencia..."
-                                        appendTo="body" styleClass="w-full h-[42px]">
-                                    </p-select>
+                                    <input pInputText type="text" formControlName="definicion"
+                                        placeholder="Escribir referencia..."
+                                        class="w-full h-[42px] font-semibold rounded-lg"
+                                        [class.border-red-500]="referencia.errors?.['requiredReferenciaOrDefinicion'] && (referencia.get('referencia_id')?.touched || referencia.get('definicion')?.touched)" />
                                 </div>
 
                                 <!-- Actions -->

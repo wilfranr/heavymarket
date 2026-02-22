@@ -534,7 +534,7 @@ export class EditComponent implements OnInit {
             if (!control.get('articulo_id')?.value) {
                 camposFaltantes.push('Tipo de artículo');
             }
-            if (!control.get('referencia_id')?.value) {
+            if (!control.get('referencia_id')?.value && !control.get('definicion')?.value) {
                 camposFaltantes.push('Referencia');
             }
             if (!control.get('cantidad')?.value || control.get('cantidad')?.value < 1) {
@@ -647,6 +647,7 @@ export class EditComponent implements OnInit {
             'sistema_id': 'Sistema',
             'articulo_id': 'Tipo de artículo',
             'referencia_id': 'Referencia',
+            'definicion': 'Referencia',
             'cantidad': 'Cantidad'
         };
 

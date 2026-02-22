@@ -266,14 +266,14 @@
                                 }
                             </div>
 
-                            <!-- Referencia (Cascada nivel 3) -->
+                            <!-- Referencia -->
                             <div class="flex-1">
-                                <p-select formControlName="referencia_id" [options]="referenciasPorFila[$index]"
-                                    [filter]="true" filterBy="label" placeholder="Seleccionar referencia..."
-                                    styleClass="w-full h-[48px] flex items-center"
-                                    [class]="campoTieneErrorCosteo($index, 'referencia_id') ? 'campo-error' : ''"
-                                    appendTo="body" [disabled]="!referencia.get('articulo_id')?.value"></p-select>
-                                @if (campoTieneErrorCosteo($index, 'referencia_id')) {
+                                <input pInputText type="text" formControlName="definicion"
+                                    placeholder="Escriba la referencia..."
+                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white"
+                                    [class.border-red-500]="campoTieneErrorCosteo($index, 'definicion')"
+                                    [class.dark:border-red-500]="campoTieneErrorCosteo($index, 'definicion')" />
+                                @if (campoTieneErrorCosteo($index, 'definicion')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
