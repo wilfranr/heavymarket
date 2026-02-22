@@ -145,8 +145,10 @@ class LandingController extends Controller
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
         $systems = \App\Models\Sistema::with(['listas' => function ($query) {
-            $query->where('tipo', 'Tipo de Artículo')->select('listas.id', 'listas.nombre')->orderBy('listas.nombre');
-        }])->orderBy('nombre')->get(['id', 'nombre']);
+            $query->where('tipo', 'Tipo de Artículo')
+                  ->select('listas.id', 'listas.nombre', 'listas.foto')
+                  ->orderBy('listas.nombre');
+        }])->orderBy('nombre')->get(['id', 'nombre', 'imagen']);
         
         // 4. Modelos (Distintos modelos de la tabla Maquinas)
         $models = \App\Models\Maquina::select('modelo')

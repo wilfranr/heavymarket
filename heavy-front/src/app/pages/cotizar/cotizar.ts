@@ -26,7 +26,7 @@ export class Cotizar implements OnInit {
     // Data from API
     categories: Category[] = [];
     brands: { id: number; nombre: string }[] = [];
-    systems: { id: number; nombre: string; listas?: { id: number; nombre: string }[] }[] = [];
+    systems: { id: number; nombre: string; imagen?: string; listas?: { id: number; nombre: string; foto?: string }[] }[] = [];
     models: string[] = [];
     errorMessage = '';
     typeSearch = '';
@@ -391,6 +391,18 @@ export class Cotizar implements OnInit {
             descList = descList.filter((d: any) => d.nombre.toLowerCase().includes(search));
         }
         return descList;
+    }
+
+    getSelectedSystem(item: any) {
+        if (!item.system) return null;
+        return this.systems.find(s => s.nombre === item.system) || null;
+    }
+
+    getSelectedDescription(item: any) {
+        if (!item.description || !item.system) return null;
+        const sys = this.systems.find(s => s.nombre === item.system);
+        if (!sys?.listas) return null;
+        return sys.listas.find((d: any) => d.nombre === item.description) || null;
     }
 
     clearFilters() {

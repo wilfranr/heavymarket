@@ -193,6 +193,86 @@
     background: #3d4149;
 }
 
+/* ── Dropdown con Avatar ────────────────────────────────── */
+
+/* Item del dropdown con avatar circular */
+.dropdown-item-with-avatar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 12px;
+}
+
+/* Avatar circular en items del dropdown */
+.dropdown-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(253, 184, 49, 0.4);
+    background: #1e2428;
+}
+
+/* Placeholder cuando no hay imagen */
+.dropdown-avatar-placeholder {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(253, 184, 49, 0.6);
+    font-size: 13px;
+}
+
+/* Botón trigger del select con avatar */
+.select-with-avatar {
+    text-align: left !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+}
+
+.select-avatar-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow: hidden;
+    flex: 1;
+    min-width: 0;
+}
+
+.select-avatar-trigger span {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+}
+
+/* Avatar pequeño en el botón trigger (cuando hay selección) */
+.select-avatar-img {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 1.5px solid rgba(253, 184, 49, 0.5);
+}
+
+/* Placeholder pequeño en el botón trigger */
+.select-avatar-placeholder {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(253, 184, 49, 0.1);
+    border: 1.5px solid rgba(253, 184, 49, 0.25);
+    color: rgba(253, 184, 49, 0.5);
+    font-size: 11px;
+    flex-shrink: 0;
+}
+
+
 .cotizador-dropdown-search {
     position: sticky;
     top: 0;
