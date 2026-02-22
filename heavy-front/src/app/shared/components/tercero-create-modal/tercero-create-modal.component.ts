@@ -148,6 +148,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     @Input() tipoTercero: string = 'Cliente';
     @Input() terceroToEdit: Tercero | null = null;
     @Input() isViewMode: boolean = false;
+    @Input() initialData: { nombre?: string; telefono?: string; email?: string } | null = null;
 
     createTerceroForm!: FormGroup;
     loadingTercero = false;
@@ -201,6 +202,13 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             this.resetForm();
             if (this.terceroToEdit) {
                 this.loadTerceroData(this.terceroToEdit.id);
+            } else if (this.initialData) {
+                // Pre-fill from lead data
+                this.createTerceroForm.patchValue({
+                    nombre: this.initialData.nombre || '',
+                    telefono: this.initialData.telefono || '',
+                    email: this.initialData.email || ''
+                });
             }
         }
         if (changes['tipoTercero'] && !this.terceroToEdit) {

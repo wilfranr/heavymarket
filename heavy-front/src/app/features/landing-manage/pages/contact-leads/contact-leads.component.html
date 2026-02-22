@@ -56,14 +56,10 @@
                     </p>
                 </td>
                 <td>
-                    <div class="flex gap-2">
-                        <a pButton pRipple icon="pi pi-envelope" class="p-button-rounded p-button-text p-button-primary"
-                            [href]="'mailto:' + lead.correo_electronico" title="Enviar correo"></a>
-
-                        <a *ngIf="lead.telefono" pButton pRipple icon="pi pi-whatsapp"
-                            class="p-button-rounded p-button-text p-button-success"
-                            [href]="getWhatsappUrl(lead.telefono)" target="_blank" title="Enviar WhatsApp"></a>
-                    </div>
+                    <button pButton pRipple icon="pi pi-user-plus"
+                        class="p-button-rounded p-button-text p-button-warning" (click)="openCreateTercero(lead)"
+                        pTooltip="Convertir en Tercero" tooltipPosition="left">
+                    </button>
                 </td>
                 <td>
                     <p-checkbox [(ngModel)]="lead.isContacted" [binary]="true"
@@ -84,3 +80,11 @@
 
     </p-table>
 </div>
+
+<!-- Modal: Crear Tercero desde Lead -->
+<app-tercero-create-modal [(visible)]="showTerceroModal" tipoTercero="Cliente" [initialData]="selectedLead ? {
+        nombre: selectedLead.empresa || selectedLead.nombre_completo,
+        telefono: selectedLead.telefono,
+        email: selectedLead.correo_electronico
+    } : null" (onTerceroCreated)="onTerceroCreated($event)">
+</app-tercero-create-modal>

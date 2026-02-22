@@ -8,18 +8,23 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
+import { TerceroCreateModalComponent } from '../../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { LandingManageService } from '../../services/landing-manage.service';
 
 @Component({
     selector: 'app-contact-leads',
     standalone: true,
-    imports: [CommonModule, TableModule, ButtonModule, ToastModule, CheckboxModule, InputTextModule, FormsModule, TooltipModule],
+    imports: [CommonModule, TableModule, ButtonModule, ToastModule, CheckboxModule, InputTextModule, FormsModule, TooltipModule, TerceroCreateModalComponent],
     providers: [MessageService],
     templateUrl: './contact-leads.component.html'
 })
 export class ContactLeadsComponent implements OnInit {
     leads: any[] = [];
     loading = false;
+
+    // Tercero modal
+    showTerceroModal = false;
+    selectedLead: any = null;
 
     constructor(
         private landingManageService: LandingManageService,
@@ -66,8 +71,31 @@ export class ContactLeadsComponent implements OnInit {
 
     getWhatsappUrl(phone: string): string {
         if (!phone) return '#';
-        // Remove spaces and special characters for the URL
         const cleanPhone = phone.replace(/[^0-9]/g, '');
         return `https://wa.me/${cleanPhone}`;
+    }
+
+    openCreateTercero(lead: any): void {
+        this.selectedLead = lead;
+        this.showTerceroModal = true;
+    }
+
+    onTerceroCreated(tercero: any): void {
+        this.showTerceroModal = false;
+        this.messageService.add({
+            severity: 'success',
+            summary: '¡Tercero creado!',
+            detail: `${tercero.nombre} fue registrado como cliente en el sistema.`
+        });
+        // Mark lead as contacted automatically
+        if (this.selectedLead) {
+            this.landingManageService.updateContactLeadStatus(this.selectedLead.id, 'contactado').subscribe({
+                next: () => {
+                    this.selectedLead.estado = 'contactado';
+                    this.selectedLead.isContacted = true;
+                }
+            });
+        }
+        this.selectedLead = null;
     }
 }
