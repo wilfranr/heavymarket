@@ -12,6 +12,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { TableModule } from 'primeng/table';
 
 import { loadSistemaById, updateSistema } from '../../../store/sistemas/actions/sistemas.actions';
 import { selectSistemaById } from '../../../store/sistemas/selectors/sistemas.selectors';
@@ -23,7 +24,7 @@ import { UpdateSistemaDto } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, TableModule],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -121,5 +122,12 @@ export class EditComponent implements OnInit {
                 this.markFormGroupTouched(control);
             }
         });
+    }
+
+    /**
+     * Navega al detalle del artículo / lista
+     */
+    verArticulo(id: number): void {
+        this.router.navigate(['/app/listas', id]);
     }
 }

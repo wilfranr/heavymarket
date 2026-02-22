@@ -11,6 +11,7 @@ export interface Sistema {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
+    articulos?: any[]; // Tipo de Artículo listas
 }
 
 /**

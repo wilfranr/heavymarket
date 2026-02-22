@@ -7,12 +7,13 @@ import { MessageService } from 'primeng/api';
 import { CheckboxModule } from 'primeng/checkbox';
 import { InputTextModule } from 'primeng/inputtext';
 import { FormsModule } from '@angular/forms';
+import { TooltipModule } from 'primeng/tooltip';
 import { LandingManageService } from '../../services/landing-manage.service';
 
 @Component({
     selector: 'app-contact-leads',
     standalone: true,
-    imports: [CommonModule, TableModule, ButtonModule, ToastModule, CheckboxModule, InputTextModule, FormsModule],
+    imports: [CommonModule, TableModule, ButtonModule, ToastModule, CheckboxModule, InputTextModule, FormsModule, TooltipModule],
     providers: [MessageService],
     templateUrl: './contact-leads.component.html'
 })

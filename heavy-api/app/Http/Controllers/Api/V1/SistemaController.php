@@ -83,6 +83,10 @@ class SistemaController extends Controller
      */
     public function show(Sistema $sistema): JsonResponse
     {
+        $sistema->load(['listas' => function ($query) {
+            $query->where('tipo', 'Tipo de Artículo');
+        }]);
+
         return response()->json([
             'data' => new SistemaResource($sistema),
         ]);

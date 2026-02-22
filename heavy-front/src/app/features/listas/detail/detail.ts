@@ -8,6 +8,7 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
+import { TableModule } from 'primeng/table';
 
 import { loadListaById } from '../../../store/listas/actions/listas.actions';
 import { selectListaById } from '../../../store/listas/selectors/listas.selectors';
@@ -20,7 +21,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule],
     templateUrl: './detail.html'
     // styleUrl: './detail.scss'
 })
@@ -67,5 +68,12 @@ export class DetailComponent implements OnInit {
             'Nombre de Medida': 'contrast'
         };
         return severityMap[tipo] || 'secondary';
+    }
+
+    /**
+     * Navega al detalle del sistema
+     */
+    verSistema(id: number): void {
+        this.router.navigate(['/app/sistemas', id]);
     }
 }

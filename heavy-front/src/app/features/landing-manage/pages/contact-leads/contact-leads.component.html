@@ -1,7 +1,11 @@
 <p-toast></p-toast>
 
 <div class="card">
-    <h5>Clientes Interesados (Contacto Landing)</h5>
+    <div class="flex justify-content-between align-items-center mb-4">
+        <h5 class="m-0">Clientes Interesados (Contacto Landing)</h5>
+        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadLeads()"
+            [disabled]="loading" pTooltip="Recargar" tooltipPosition="bottom"></button>
+    </div>
 
     <p-table #dt [value]="leads" [loading]="loading" [rows]="10" [paginator]="true"
         [globalFilterFields]="['nombre_completo', 'empresa', 'correo_electronico', 'telefono']"

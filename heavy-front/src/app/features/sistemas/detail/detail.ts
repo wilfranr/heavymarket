@@ -7,6 +7,7 @@ import { Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { TableModule } from 'primeng/table';
 
 import { loadSistemaById } from '../../../store/sistemas/actions/sistemas.actions';
 import { selectSistemaById } from '../../../store/sistemas/selectors/sistemas.selectors';
@@ -18,7 +19,7 @@ import { Sistema } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TableModule],
     templateUrl: './detail.html'
 })
 export class DetailComponent implements OnInit {
@@ -49,5 +50,12 @@ export class DetailComponent implements OnInit {
      */
     volver(): void {
         this.router.navigate(['/app/sistemas']);
+    }
+
+    /**
+     * Navega al detalle del artículo / lista
+     */
+    verArticulo(id: number): void {
+        this.router.navigate(['/app/listas', id]);
     }
 }

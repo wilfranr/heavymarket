@@ -26,7 +26,7 @@ export class Cotizar implements OnInit {
     // Data from API
     categories: Category[] = [];
     brands: { id: number; nombre: string }[] = [];
-    systems: { id: number; nombre: string }[] = [];
+    systems: { id: number; nombre: string; listas?: { id: number; nombre: string }[] }[] = [];
     models: string[] = [];
     errorMessage = '';
     typeSearch = '';
@@ -39,7 +39,7 @@ export class Cotizar implements OnInit {
 
     // Form Data Helpers
     items: any[] = [
-        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '' }
+        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' }
     ];
 
     userData = {
@@ -310,7 +310,7 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '' });
+        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' });
         this.cd.markForCheck();
     }
 
@@ -322,7 +322,7 @@ export class Cotizar implements OnInit {
     }
 
     duplicateItem(index: number) {
-        const item = { ...this.items[index], openSystem: false, systemSearch: '' };
+        const item = { ...this.items[index], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' };
         this.items.splice(index + 1, 0, item);
         this.cd.markForCheck();
     }
@@ -332,6 +332,18 @@ export class Cotizar implements OnInit {
         // Close others
         this.items.forEach((item, i) => {
             if (i !== index) item.openSystem = false;
+            item.openDescription = false;
+        });
+        this.cd.markForCheck();
+    }
+
+    toggleItemDescription(index: number) {
+        if (!this.items[index].system) return;
+        this.items[index].openDescription = !this.items[index].openDescription;
+        // Close others
+        this.items.forEach((item, i) => {
+            if (i !== index) item.openDescription = false;
+            item.openSystem = false;
         });
         this.cd.markForCheck();
     }
@@ -345,9 +357,20 @@ export class Cotizar implements OnInit {
     }
 
     selectItemSystem(index: number, system: any) {
+        // Reset description if system changes
+        if (this.items[index].system !== system.nombre) {
+            this.items[index].description = '';
+        }
         this.items[index].system = system.nombre;
         this.items[index].openSystem = false;
         this.items[index].systemSearch = '';
+        this.cd.markForCheck();
+    }
+
+    selectItemDescription(index: number, desc: any) {
+        this.items[index].description = desc.nombre;
+        this.items[index].openDescription = false;
+        this.items[index].descriptionSearch = '';
         this.cd.markForCheck();
     }
 
@@ -356,6 +379,18 @@ export class Cotizar implements OnInit {
         if (!item.systemSearch) return this.systems;
         const search = item.systemSearch.toLowerCase();
         return this.systems.filter(s => s.nombre.toLowerCase().includes(search));
+    }
+
+    getFilteredDescriptions(item: any) {
+        const selectedSys = this.systems.find(s => s.nombre === item.system);
+        if (!selectedSys || !selectedSys.listas) return [];
+
+        let descList = selectedSys.listas;
+        if (item.descriptionSearch) {
+            const search = item.descriptionSearch.toLowerCase();
+            descList = descList.filter((d: any) => d.nombre.toLowerCase().includes(search));
+        }
+        return descList;
     }
 
     clearFilters() {

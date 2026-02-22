@@ -143,8 +143,10 @@ class LandingController extends Controller
         // 2. Fabricantes para el Formulario
         $brands = \App\Models\Fabricante::orderBy('nombre')->get(['id', 'nombre']);
 
-        // 3. Sistemas para el Formulario
-        $systems = \App\Models\Sistema::orderBy('nombre')->get(['id', 'nombre']);
+        // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
+        $systems = \App\Models\Sistema::with(['listas' => function ($query) {
+            $query->where('tipo', 'Tipo de Artículo')->select('listas.id', 'listas.nombre')->orderBy('listas.nombre');
+        }])->orderBy('nombre')->get(['id', 'nombre']);
         
         // 4. Modelos (Distintos modelos de la tabla Maquinas)
         $models = \App\Models\Maquina::select('modelo')
