@@ -44,7 +44,7 @@
                     <label for="tipo_documento" class="block mb-2 font-semibold">Tipo de Documento<span
                             class="text-red-500">*</span></label>
                     <p-select id="tipo_documento" formControlName="tipo_documento" [options]="tiposDocumento"
-                        styleClass="w-full" [filter]="true"></p-select>
+                        styleClass="w-full" [filter]="true" appendTo="body"></p-select>
                 </div>
 
                 <div>
@@ -78,7 +78,7 @@
                     <label for="forma_pago" class="block mb-2 font-semibold">Forma de Pago</label>
                     <p-select id="forma_pago" formControlName="forma_pago" [options]="formasPago" optionLabel="label"
                         optionValue="value" placeholder="Seleccione una opción" styleClass="w-full" [filter]="true"
-                        filterBy="label"></p-select>
+                        filterBy="label" appendTo="body"></p-select>
                 </div>
 
                 @if (isCliente) {
@@ -111,8 +111,8 @@
                     <div class="flex gap-2">
                         <p-multiselect id="maquina_id" formControlName="maquina_id" [options]="maquinas"
                             optionLabel="label" optionValue="value" [filter]="true" filterBy="label"
-                            placeholder="Seleccione una o más máquinas" styleClass="w-full flex-1"
-                            display="chip"></p-multiselect>
+                            placeholder="Seleccione una o más máquinas" styleClass="w-full flex-1" display="chip"
+                            appendTo="body"></p-multiselect>
                         <p-button icon="pi pi-plus" (onClick)="openCreateMaquinaDialog()"
                             severity="secondary"></p-button>
                     </div>
@@ -186,8 +186,8 @@
                         <div class="flex gap-2">
                             <p-multiselect id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
                                 optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                styleClass="w-full flex-1" display="chip" [filter]="true"
-                                filterBy="label"></p-multiselect>
+                                styleClass="w-full flex-1" display="chip" [filter]="true" filterBy="label"
+                                appendTo="body"></p-multiselect>
                             <p-button icon="pi pi-plus" (onClick)="openCreateFabricanteDialog()"
                                 severity="secondary"></p-button>
                         </div>
@@ -197,8 +197,8 @@
                         <div class="flex gap-2">
                             <p-multiselect id="sistema_id" formControlName="sistema_id" [options]="sistemas"
                                 optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                styleClass="w-full flex-1" display="chip" [filter]="true"
-                                filterBy="label"></p-multiselect>
+                                styleClass="w-full flex-1" display="chip" [filter]="true" filterBy="label"
+                                appendTo="body"></p-multiselect>
                             <p-button icon="pi pi-plus" (onClick)="openCreateSistemaDialog()"
                                 severity="secondary"></p-button>
                         </div>
@@ -224,7 +224,7 @@
                     <label for="country_id" class="block mb-2 font-semibold">País</label>
                     <p-select id="country_id" formControlName="country_id" [options]="paises" optionLabel="name"
                         optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
-                        styleClass="w-full" (onChange)="onPaisChange()">
+                        styleClass="w-full" (onChange)="onPaisChange()" appendTo="body">
                     </p-select>
                 </div>
                 <div>
@@ -232,7 +232,7 @@
                     <p-select id="state_id" formControlName="state_id" [options]="departamentos" optionLabel="name"
                         optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
                         styleClass="w-full" (onChange)="onDepartamentoChange()"
-                        [disabled]="!createTerceroForm.get('country_id')?.value">
+                        [disabled]="!createTerceroForm.get('country_id')?.value" appendTo="body">
                     </p-select>
                 </div>
                 <div>
@@ -240,7 +240,8 @@
                     <p-select id="city_id" formControlName="city_id" [options]="ciudades" optionLabel="name"
                         optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
                         styleClass="w-full"
-                        [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value">
+                        [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value"
+                        appendTo="body">
                     </p-select>
                 </div>
             </div>
