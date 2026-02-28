@@ -40,8 +40,9 @@ class LandingController extends Controller
      */
     public function index()
     {
-        $categorias = CategoriaLanding::with(['subcategorias' => function ($query) {
-            $query->orderBy('nombre', 'asc');
+        $categorias = CategoriaLanding::where('estado', true)
+        ->with(['subcategorias' => function ($query) {
+            $query->where('estado', true)->orderBy('nombre', 'asc');
         }])
         ->orderBy('nombre', 'asc')
         ->get();
@@ -56,9 +57,11 @@ class LandingController extends Controller
     public function navbarData()
     {
         $categorias = CategoriaLanding::where('mostrar_en_navbar', true)
+        ->where('estado', true)
         ->orderBy('updated_at', 'desc')
         ->with(['subcategorias' => function ($query) {
             $query->where('mostrar_en_navbar', true)
+                  ->where('estado', true)
                   ->orderBy('updated_at', 'desc')
                   ->orderBy('nombre', 'asc');
         }])
