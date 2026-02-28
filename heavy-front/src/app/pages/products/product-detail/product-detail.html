@@ -20,7 +20,8 @@
         <!-- Header con Breadcrumb -->
         <div class="products-header">
             <h1 class="products-title">Nuestros productos</h1>
-            <p class="products-breadcrumb">{{ category?.nombre }} / <a routerLink="/productos" class="breadcrumb-link">Productos</a> / <strong>{{ subCategory?.nombre }}</strong></p>
+            <p class="products-breadcrumb">{{ category?.nombre }} / <a routerLink="/productos"
+                    class="breadcrumb-link">Productos</a> / <strong>{{ subCategory?.nombre }}</strong></p>
         </div>
 
         <div class="product-detail-container">
@@ -35,14 +36,10 @@
                 </div>
                 <!-- Imagen derecha -->
                 <div class="product-detail-image">
-                    <img
-                        [src]="subCategory?.imagen_url || '/images/no-image.png'"
-                        [alt]="subCategory?.nombre"
-                        onerror="
+                    <img [src]="subCategory?.imagen_url || '/images/no-image.png'" [alt]="subCategory?.nombre" onerror="
                             this.onerror = null;
                             this.src = '/images/no-image.png';
-                        "
-                    />
+                        " />
                 </div>
             </div>
 
@@ -50,14 +47,11 @@
             <div class="product-detail-section reverse">
                 <!-- Imagen izquierda -->
                 <div class="product-detail-image">
-                    <img
-                        [src]="subCategory?.imagen_url || '/images/no-image.png'"
-                        [alt]="subCategory?.nombre"
-                        onerror="
+                    <img [src]="subCategory?.imagen_secundaria_url || subCategory?.imagen_url || '/images/no-image.png'"
+                        [alt]="subCategory?.nombre" onerror="
                             this.onerror = null;
                             this.src = '/images/no-image.png';
-                        "
-                    />
+                        " />
                 </div>
                 <!-- Texto y botones derecho -->
                 <div class="product-detail-text">

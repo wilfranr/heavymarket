@@ -9,6 +9,7 @@ export interface SubCategory {
     nombre: string;
     slug: string;
     imagen_url: string;
+    imagen_secundaria_url: string;
     descripcion: string;
 }
 

@@ -19,7 +19,7 @@ class SubcategoriaLanding extends Model
         'estado' => 'boolean',
     ];
     
-    protected $appends = ['slug', 'imagen_url'];
+    protected $appends = ['slug', 'imagen_url', 'imagen_secundaria_url'];
 
     protected static function booted()
     {
@@ -55,7 +55,7 @@ class SubcategoriaLanding extends Model
     }
 
     /**
-     * Helper para obtener la URL completa de la imagen
+     * Helper para obtener la URL completa de la imagen principal
      */
     public function getImagenUrlAttribute()
     {
@@ -85,6 +85,52 @@ class SubcategoriaLanding extends Model
         return asset('images/' . $imagen);
     }
     
+    /**
+     * Helper para obtener la URL de la segunda imagen, si existe.
+     * Reemplaza "- 1" o "1" por "- 2" o "2" y verifica si el archivo existe.
+     */
+    public function getImagenSecundariaUrlAttribute()
+    {
+        $imagen = $this->getRawOriginal('imagen') ?: null;
+        
+        if (!$imagen) {
+            return $this->imagen_url;
+        }
+        
+        if (Str::startsWith($imagen, ['http://', 'https://'])) {
+            return $this->imagen_url;
+        }
+
+        $extension = pathinfo($imagen, PATHINFO_EXTENSION);
+        $basename = pathinfo($imagen, PATHINFO_BASENAME);
+        
+        $secondaryImagen = null;
+        
+        // Transform " - 1" to " - 2", "- 1" to "- 2", "-1" to "-2", or "1" to "2" immediately before extension
+        if (Str::contains($basename, '- 1.')) {
+            $secondaryImagen = str_replace('- 1.', '- 2.', $imagen);
+        } elseif (Str::contains($basename, '-1.')) {
+            $secondaryImagen = str_replace('-1.', '-2.', $imagen);
+        } elseif (preg_match('/1\.' . $extension . '$/', $basename)) {
+            $secondaryImagen = preg_replace('/1\.' . $extension . '$/', '2.' . $extension, $imagen);
+        }
+
+        if ($secondaryImagen) {
+            $path = storage_path('app/public/' . $secondaryImagen);
+            if (file_exists($path)) {
+                if (Str::startsWith($secondaryImagen, ['landing/', 'listas/'])) {
+                    return asset('storage/' . $secondaryImagen);
+                }
+                if (Str::startsWith($secondaryImagen, 'storage/')) {
+                    return asset($secondaryImagen);
+                }
+                return asset('images/' . $secondaryImagen);
+            }
+        }
+        
+        return $this->imagen_url;
+    }
+
     /**
      * Accessor para obtener la imagen por defecto si es null
      */
