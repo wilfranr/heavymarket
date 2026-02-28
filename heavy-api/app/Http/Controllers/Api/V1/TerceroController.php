@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Spatie\Permission\Models\Role;
 
 /**
  * Controlador API para gestión de Terceros
@@ -285,6 +286,10 @@ class TerceroController extends Controller
                 'password' => Hash::make($password ?? Str::random(16)),
             ]);
         }
+
+        // Garantizar que el rol 'Cliente' existe antes de asignarlo
+        // (protección defensiva por si la migración no se corrió aún en el entorno)
+        Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
 
         if (! $user->hasRole('Cliente')) {
             $user->assignRole('Cliente');
