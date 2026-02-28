@@ -89,8 +89,25 @@ if [[ ! -d "heavy-api" || ! -d "heavy-front" ]]; then
     exit 1
 fi
 
+echo -e "${GREEN}"
+echo "╔═══════════════════════════════════════════╗"
+echo "║   Iniciando despliegue de Monorepo        ║"
+echo "║              Heavymarket...                ║"
+echo "╚═══════════════════════════════════════════╝"
+echo -e "${NC}"
+
 log_info "Repositorio: $REPO_ROOT"
 [[ "$DRY_RUN" == "true" ]] && log_warn "Modo dry-run: no se ejecutarán comandos reales"
+echo ""
+
+# --- Git Pull seguro (protege archivos de storage) ---
+log_info "Actualizando código desde el repositorio..."
+run git stash push -m "deploy-backup-$(date +%Y%m%d%H%M%S)" -- heavy-api/storage/ 2>/dev/null || true
+run git pull --ff-only || {
+    log_warn "No se pudo hacer fast-forward. Intentando con rebase..."
+    run git pull --rebase
+}
+run git stash pop 2>/dev/null || true
 echo ""
 
 # --- Backend (Laravel) ---
