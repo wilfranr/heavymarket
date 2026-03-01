@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
 
 @Component({
     selector: 'app-quote-section',
-    imports: [],
+    imports: [RouterModule],
     templateUrl: './quote-section.html',
     styles: ``
 })
-export class QuoteSection {}
+export class QuoteSection { }
