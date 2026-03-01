@@ -293,7 +293,9 @@
 
                                         <!-- Botones de acción (en fila top) -->
                                         <div class="item-actions">
-                                            <button class="action-btn btn-comment" title="Comentar"><i
+                                            <button class="action-btn btn-comment" title="Comentar"
+                                                (click)="openCommentModal(i)"
+                                                [class.has-comment]="items[i].comment && items[i].comment.length > 0"><i
                                                     class="pi pi-comment"></i></button>
                                             <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
                                                 title="Duplicar"><i class="pi pi-copy"></i></button>
@@ -551,6 +553,30 @@
                 </div>
             </div>
         </ng-container>
+
+        <!-- Comment Modal -->
+        <p-dialog header="Nota del Ítem" [(visible)]="showCommentModal" [modal]="true"
+            [style]="{width: '500px', 'max-width': '90vw'}" [draggable]="false" [resizable]="false"
+            (onHide)="closeCommentModal()" styleClass="cotizador-dark-dialog">
+            <div class="p-fluid" style="margin-top: 1rem; padding-bottom: 1rem;">
+                <p
+                    style="margin-bottom: 0.8rem; font-weight: 500; font-family: 'Figtree', sans-serif; color: #FFF; font-size: 14px;">
+                    Escribe una nota adicional para este ítem (opcional)</p>
+                <textarea class="custom-input" [(ngModel)]="tempComment" rows="5" style="width: 100%; resize: vertical;"
+                    placeholder="Ej: Necesito que este repuesto sea en marca genérica..."></textarea>
+            </div>
+            <ng-template pTemplate="footer">
+                <div style="display: flex; justify-content: flex-end; gap: 12px;">
+                    <button type="button" class="cotizador-btn-secondary"
+                        style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px;"
+                        (click)="closeCommentModal()">Cancelar</button>
+                    <button type="button" class="cotizador-btn-primary"
+                        style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px;"
+                        (click)="saveComment()">Guardar</button>
+                </div>
+            </ng-template>
+        </p-dialog>
+
     </div>
     <app-footer-section></app-footer-section>
 </div>

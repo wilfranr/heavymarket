@@ -8,11 +8,12 @@ import { UbicacionService } from '../../core/services/ubicacion.service';
 import { Country, State, City } from '../../core/models/ubicacion.model';
 
 import { RouterModule } from '@angular/router';
+import { DialogModule } from 'primeng/dialog';
 
 @Component({
     selector: 'app-cotizar',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection],
+    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection, DialogModule],
     templateUrl: './cotizar.html',
     styleUrls: ['./cotizar.css']
 })
@@ -39,7 +40,7 @@ export class Cotizar implements OnInit {
 
     // Form Data Helpers
     items: any[] = [
-        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' }
+        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }
     ];
 
     userData = {
@@ -80,6 +81,11 @@ export class Cotizar implements OnInit {
 
     // Tabs
     activeTab = '';
+
+    // Comment Modal State
+    showCommentModal = false;
+    activeCommentIndex: number | null = null;
+    tempComment = '';
 
     constructor(
         private landingService: LandingService,
@@ -386,7 +392,7 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' });
+        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
         this.cd.markForCheck();
     }
 
@@ -398,7 +404,7 @@ export class Cotizar implements OnInit {
     }
 
     duplicateItem(index: number) {
-        const item = { ...this.items[index], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '' };
+        const item = { ...this.items[index], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: this.items[index].comment || '' };
         this.items.splice(index + 1, 0, item);
         this.cd.markForCheck();
     }
@@ -499,5 +505,26 @@ export class Cotizar implements OnInit {
     selectCard(card: any) {
         this.selectedCard = card;
         this.goToForm();
+    }
+
+    openCommentModal(index: number) {
+        this.activeCommentIndex = index;
+        this.tempComment = this.items[index].comment || '';
+        this.showCommentModal = true;
+        this.cd.markForCheck();
+    }
+
+    saveComment() {
+        if (this.activeCommentIndex !== null) {
+            this.items[this.activeCommentIndex].comment = this.tempComment;
+        }
+        this.closeCommentModal();
+    }
+
+    closeCommentModal() {
+        this.showCommentModal = false;
+        this.activeCommentIndex = null;
+        this.tempComment = '';
+        this.cd.markForCheck();
     }
 }

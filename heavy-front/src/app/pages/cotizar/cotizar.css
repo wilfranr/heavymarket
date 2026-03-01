@@ -913,6 +913,11 @@
     color: #000;
 }
 
+.btn-comment.has-comment {
+    background: #4ADE80;
+    color: #000;
+}
+
 .btn-duplicate {
     background: #FDB831;
     color: #000;
@@ -1779,4 +1784,40 @@
     .quote-btn-secondary {
         width: 100%;
     }
+}
+/* Comment Modal (Dark theme overrides for PrimeNG dialog) */
+::ng-deep .cotizador-dark-dialog .p-dialog-header {
+    background: #343743;
+    color: #FDB831;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-family: 'Figtree', sans-serif;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+::ng-deep .cotizador-dark-dialog .p-dialog-content {
+    background: #343743;
+    color: #FFFFFF;
+}
+
+::ng-deep .cotizador-dark-dialog .p-dialog-footer {
+    background: #343743;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+::ng-deep .cotizador-dark-dialog .p-dialog-header-icon {
+    color: #9CA3AF;
+}
+
+::ng-deep .cotizador-dark-dialog .p-dialog-header-icon:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #FFFFFF;
+}
+
+::ng-deep .p-dialog.cotizador-dark-dialog {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }

@@ -188,6 +188,7 @@ class LandingController extends Controller
             'items.*.description' => 'required|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.reference' => 'nullable|string',
+            'items.*.comment' => 'nullable|string',
             'selectedBrand' => 'nullable|string',
             'selectedType' => 'nullable|string',
             'selectedModel' => 'nullable|string',
@@ -321,9 +322,10 @@ class LandingController extends Controller
                     'marca_id' => $fabricanteId,
                     'definicion' => $itemData['description'],
                     'cantidad' => $itemData['quantity'],
-                    'comentario' => $itemData['reference'] 
+                    'comentario' => ($itemData['reference'] 
                         ? "REF/P/N: {$itemData['reference']}" 
-                        : "Sin referencia proporcionada",
+                        : "Sin referencia proporcionada")
+                        . (!empty($itemData['comment']) ? "\nNota: {$itemData['comment']}" : ""),
                     'imagen' => $imagePath,
                     'estado' => 1,
                     'mostrar_referencia' => 1
