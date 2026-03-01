@@ -798,6 +798,43 @@
     color: #9CA3AF;
 }
 
+/* Location Dropdown Buttons */
+.location-select-btn {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    text-align: left;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
+    min-height: 42px;
+}
+
+.location-select-btn:hover:not(:disabled) {
+    border-color: #FDB831;
+    background: #2e3740;
+}
+
+.location-select-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    color: rgba(255, 255, 255, 0.75);
+    font-size: 14px;
+}
+
+.location-disabled {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+}
+
+.pi-chevron-down.rotated {
+    transform: rotate(180deg);
+    transition: transform 0.2s ease;
+}
+
+
+
 /* Upload Box */
 .upload-box {
     border: 1px dashed #4B5563;

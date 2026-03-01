@@ -422,30 +422,92 @@
 
                                 <!-- Location -->
                                 <div class="form-field-row three-col">
+
+                                    <!-- País -->
                                     <div class="form-field">
                                         <label class="input-label">País</label>
-                                        <select class="custom-input" [(ngModel)]="userData.country"
-                                            (change)="onCountryChange()">
-                                            <option [ngValue]="null" disabled selected>Seleccionar</option>
-                                            <option *ngFor="let c of countries" [ngValue]="c">{{ c.name }}</option>
-                                        </select>
+                                        <div class="cotizador-filter-group" style="position: relative;">
+                                            <button class="custom-input location-select-btn" (click)="toggleCountry()">
+                                                <span class="location-select-text">{{ userData.country?.name ||
+                                                    'Seleccionar país' }}</span>
+                                                <i class="pi pi-chevron-down" [class.rotated]="openCountry"
+                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
+                                            </button>
+                                            <div class="cotizador-dropdown" *ngIf="openCountry" style="top: 46px;">
+                                                <div class="cotizador-dropdown-search">
+                                                    <input type="text" [(ngModel)]="countrySearch"
+                                                        placeholder="Buscar país..." (click)="$event.stopPropagation()"
+                                                        class="cotizador-dropdown-input" autofocus>
+                                                    <i class="pi pi-search"></i>
+                                                </div>
+                                                <div class="cotizador-dropdown-item" *ngFor="let c of filteredCountries"
+                                                    (click)="selectCountry(c)">{{ c.name }}</div>
+                                                <div class="cotizador-dropdown-item"
+                                                    *ngIf="filteredCountries.length === 0"
+                                                    style="color: #666; font-style: italic; cursor: default;">Sin
+                                                    resultados</div>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    <!-- Departamento -->
                                     <div class="form-field">
                                         <label class="input-label">Departamento</label>
-                                        <select class="custom-input" [(ngModel)]="userData.state"
-                                            (change)="onStateChange()" [disabled]="!userData.country">
-                                            <option [ngValue]="null" disabled selected>Seleccionar</option>
-                                            <option *ngFor="let s of states" [ngValue]="s">{{ s.name }}</option>
-                                        </select>
+                                        <div class="cotizador-filter-group" style="position: relative;">
+                                            <button class="custom-input location-select-btn" (click)="toggleState()"
+                                                [disabled]="!userData.country"
+                                                [class.location-disabled]="!userData.country">
+                                                <span class="location-select-text">{{ userData.state?.name ||
+                                                    'Seleccionar departamento' }}</span>
+                                                <i class="pi pi-chevron-down" [class.rotated]="openState"
+                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
+                                            </button>
+                                            <div class="cotizador-dropdown" *ngIf="openState" style="top: 46px;">
+                                                <div class="cotizador-dropdown-search">
+                                                    <input type="text" [(ngModel)]="stateSearch"
+                                                        placeholder="Buscar departamento..."
+                                                        (click)="$event.stopPropagation()"
+                                                        class="cotizador-dropdown-input" autofocus>
+                                                    <i class="pi pi-search"></i>
+                                                </div>
+                                                <div class="cotizador-dropdown-item" *ngFor="let s of filteredStates"
+                                                    (click)="selectState(s)">{{ s.name }}</div>
+                                                <div class="cotizador-dropdown-item" *ngIf="filteredStates.length === 0"
+                                                    style="color: #666; font-style: italic; cursor: default;">Sin
+                                                    resultados</div>
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    <!-- Ciudad -->
                                     <div class="form-field">
                                         <label class="input-label">Ciudad</label>
-                                        <select class="custom-input" [(ngModel)]="userData.city"
-                                            [disabled]="!userData.state">
-                                            <option [ngValue]="null" disabled selected>Seleccionar</option>
-                                            <option *ngFor="let c of cities" [ngValue]="c">{{ c.name }}</option>
-                                        </select>
+                                        <div class="cotizador-filter-group" style="position: relative;">
+                                            <button class="custom-input location-select-btn" (click)="toggleCity()"
+                                                [disabled]="!userData.state"
+                                                [class.location-disabled]="!userData.state">
+                                                <span class="location-select-text">{{ userData.city?.name ||
+                                                    'Seleccionar ciudad' }}</span>
+                                                <i class="pi pi-chevron-down" [class.rotated]="openCity"
+                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
+                                            </button>
+                                            <div class="cotizador-dropdown" *ngIf="openCity" style="top: 46px;">
+                                                <div class="cotizador-dropdown-search">
+                                                    <input type="text" [(ngModel)]="citySearch"
+                                                        placeholder="Buscar ciudad..."
+                                                        (click)="$event.stopPropagation()"
+                                                        class="cotizador-dropdown-input" autofocus>
+                                                    <i class="pi pi-search"></i>
+                                                </div>
+                                                <div class="cotizador-dropdown-item" *ngFor="let c of filteredCities"
+                                                    (click)="selectCity(c)">{{ c.name }}</div>
+                                                <div class="cotizador-dropdown-item" *ngIf="filteredCities.length === 0"
+                                                    style="color: #666; font-style: italic; cursor: default;">Sin
+                                                    resultados</div>
+                                            </div>
+                                        </div>
                                     </div>
+
                                 </div>
                             </div>
 

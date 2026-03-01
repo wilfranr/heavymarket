@@ -55,9 +55,17 @@ export class Cotizar implements OnInit {
         address: ''
     };
 
-    // Dropsdowns
+    // Dropdowns
     openBrand = false;
     openType = false;
+
+    // Location Dropdowns
+    openCountry = false;
+    openState = false;
+    openCity = false;
+    countrySearch = '';
+    stateSearch = '';
+    citySearch = '';
 
     // Selections
     selectedBrand = '';
@@ -177,6 +185,71 @@ export class Cotizar implements OnInit {
         }
     }
 
+    // Location Dropdown Toggles
+    toggleCountry() {
+        this.openCountry = !this.openCountry;
+        if (this.openCountry) this.closeOthers('country');
+        this.cd.markForCheck();
+    }
+
+    toggleState() {
+        if (!this.userData.country) return;
+        this.openState = !this.openState;
+        if (this.openState) this.closeOthers('state');
+        this.cd.markForCheck();
+    }
+
+    toggleCity() {
+        if (!this.userData.state) return;
+        this.openCity = !this.openCity;
+        if (this.openCity) this.closeOthers('city');
+        this.cd.markForCheck();
+    }
+
+    selectCountry(country: Country) {
+        this.userData.country = country;
+        this.openCountry = false;
+        this.countrySearch = '';
+        this.onCountryChange();
+        this.cd.markForCheck();
+    }
+
+    selectState(state: State) {
+        this.userData.state = state;
+        this.openState = false;
+        this.stateSearch = '';
+        this.onStateChange();
+        this.cd.markForCheck();
+    }
+
+    selectCity(city: City) {
+        this.userData.city = city;
+        this.openCity = false;
+        this.citySearch = '';
+        this.cd.markForCheck();
+    }
+
+    get filteredCountries() {
+        if (!this.countries) return [];
+        if (!this.countrySearch) return this.countries;
+        const s = this.countrySearch.toLowerCase();
+        return this.countries.filter(c => c.name.toLowerCase().includes(s));
+    }
+
+    get filteredStates() {
+        if (!this.states) return [];
+        if (!this.stateSearch) return this.states;
+        const s = this.stateSearch.toLowerCase();
+        return this.states.filter(st => st.name.toLowerCase().includes(s));
+    }
+
+    get filteredCities() {
+        if (!this.cities) return [];
+        if (!this.citySearch) return this.cities;
+        const s = this.citySearch.toLowerCase();
+        return this.cities.filter(c => c.name.toLowerCase().includes(s));
+    }
+
     // Functions
     toggleBrand() {
         console.log('Toggle Brand');
@@ -195,6 +268,9 @@ export class Cotizar implements OnInit {
     closeOthers(current: string) {
         if (current !== 'brand') this.openBrand = false;
         if (current !== 'type') this.openType = false;
+        if (current !== 'country') this.openCountry = false;
+        if (current !== 'state') this.openState = false;
+        if (current !== 'city') this.openCity = false;
     }
 
     selectBrand(brand: any) {
