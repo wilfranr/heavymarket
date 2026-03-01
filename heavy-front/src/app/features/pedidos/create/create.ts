@@ -38,6 +38,7 @@ import { ContactoService } from '../../../core/services/contacto.service';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 /**
  * Componente de creación de pedido con Wizard de 3 pasos
@@ -89,6 +90,7 @@ export class CreateComponent implements OnInit {
     private readonly proveedorService = inject(PedidoReferenciaProveedorService);
     private readonly articuloService = inject(ArticuloService);
     private readonly contactoService = inject(ContactoService);
+    private readonly authService = inject(AuthService);
 
     pedidoForm!: FormGroup;
     activeIndex = 0;
@@ -149,6 +151,8 @@ export class CreateComponent implements OnInit {
     displayImagenDialog = false;
     activeItemIndex: number | null = null;
     comentarioControl = new FormControl('');
+    origenComentarioControl = new FormControl('Asesor');
+    comentariosItemActual: { origen: string; comentario: string; fecha?: string }[] = [];
     imagenControl = new FormControl('');
 
     // Items del wizard
@@ -529,19 +533,87 @@ export class CreateComponent implements OnInit {
         this.displayLoteDialog = false;
     }
 
+    private parseComentariosRaw(raw: unknown): { origen: string; comentario: string; fecha?: string }[] {
+        if (!raw) {
+            return [];
+        }
+
+        if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (!trimmed || trimmed === 'Sin comentario adicional') {
+                return [];
+            }
+
+            try {
+                const parsed = JSON.parse(trimmed);
+                if (Array.isArray(parsed)) {
+                    return parsed
+                        .filter((c) => c && typeof c.comentario === 'string')
+                        .map((c) => ({
+                            origen: (c.origen as string) || 'Interno',
+                            comentario: c.comentario as string,
+                            fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                        }));
+                }
+            } catch {
+                // No es JSON, continuar con formato legacy
+            }
+
+            const sinPrefijo = trimmed.startsWith('Comentario del cliente:')
+                ? trimmed.replace('Comentario del cliente:', '').trim()
+                : trimmed;
+
+            if (!sinPrefijo) {
+                return [];
+            }
+
+            return [
+                {
+                    origen: 'Cliente',
+                    comentario: sinPrefijo
+                }
+            ];
+        }
+
+        return [];
+    }
+
+    private buildComentariosPayload(comentarios: { origen: string; comentario: string; fecha?: string }[]): string {
+        return JSON.stringify(comentarios);
+    }
+
     abrirDialogoComentario(index: number): void {
         this.activeItemIndex = index;
-        const currentComentario = this.referenciasFormArray.at(index).get('comentario')?.value || '';
-        this.comentarioControl.setValue(currentComentario);
+        const rawComentario = this.referenciasFormArray.at(index).get('comentario')?.value;
+        this.comentariosItemActual = this.parseComentariosRaw(rawComentario);
+        this.comentarioControl.setValue('');
+        const user = this.authService.currentUser();
+        const rol = user && user.roles && user.roles.length > 0 ? user.roles[0] : 'Interno';
+        this.origenComentarioControl.setValue(rol);
         this.displayComentarioDialog = true;
     }
 
     guardarComentario(): void {
         if (this.activeItemIndex !== null) {
-            this.referenciasFormArray.at(this.activeItemIndex).patchValue({ comentario: this.comentarioControl.value });
+            const texto = (this.comentarioControl.value || '').toString().trim();
+            if (texto) {
+                const row = this.referenciasFormArray.at(this.activeItemIndex);
+                const rawAnterior = row.get('comentario')?.value;
+                const existentes = this.parseComentariosRaw(rawAnterior);
+
+                existentes.push({
+                    origen: (this.origenComentarioControl.value || 'Interno').toString(),
+                    comentario: texto,
+                    fecha: new Date().toISOString()
+                });
+
+                row.patchValue({ comentario: this.buildComentariosPayload(existentes) });
+            }
         }
         this.displayComentarioDialog = false;
         this.activeItemIndex = null;
+        this.comentariosItemActual = [];
+        this.comentarioControl.setValue('');
     }
 
     abrirDialogoImagen(index: number): void {

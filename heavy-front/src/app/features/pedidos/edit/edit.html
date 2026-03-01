@@ -513,12 +513,50 @@
     </p-dialog>
 
     <!-- Modal Comentario -->
-    <p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '450px'}"
-        header="Agregar comentario" appendTo="body">
-        <div class="flex flex-col mt-4">
-            <textarea pTextarea rows="5" [formControl]="comentarioControl"
-                placeholder="Escriba un comentario para este ítem..."
-                class="w-full rounded-lg border-gray-300 dark:border-gray-700"></textarea>
+    <p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '520px'}"
+        header="Comentarios del ítem" appendTo="body">
+        <div class="flex flex-col gap-4 mt-2">
+            <div>
+                <label class="font-medium text-sm theme-text-secondary mb-2 block">Historial de comentarios</label>
+                @if (comentariosItemActual.length > 0) {
+                <div class="space-y-2 max-h-64 overflow-auto">
+                    @for (c of comentariosItemActual; track $index) {
+                    <div
+                        class="bg-gray-900/40 dark:bg-[#1f2933] border border-gray-700/70 rounded-lg px-3 py-2 text-sm">
+                        <div class="flex items-center justify-between mb-1">
+                            <span class="text-[11px] font-semibold text-yellow-400 uppercase tracking-wide">
+                                {{ c.origen }}
+                            </span>
+                            @if (c.fecha) {
+                            <span class="text-[10px] text-gray-400">
+                                {{ c.fecha | date:'dd/MM/yyyy HH:mm' }}
+                            </span>
+                            }
+                        </div>
+                        <p class="m-0 text-sm text-gray-100 whitespace-pre-wrap break-words">
+                            {{ c.comentario }}
+                        </p>
+                    </div>
+                    }
+                </div>
+                } @else {
+                <p class="text-xs text-gray-400 italic">Este ítem aún no tiene comentarios.</p>
+                }
+            </div>
+
+            <div class="pt-3 border-t border-gray-700 dark:border-gray-600">
+                <div class="flex items-center justify-between mb-2">
+                    <label class="font-medium text-sm theme-text-secondary">Agregar nuevo comentario</label>
+                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/40">
+                        Origen: {{ origenComentarioControl.value || 'Interno' }}
+                    </span>
+                </div>
+                <div class="flex flex-col gap-2">
+                    <textarea pTextarea rows="3" [formControl]="comentarioControl"
+                        placeholder="Escriba un comentario adicional para este ítem..."
+                        class="w-full rounded-lg border-gray-300 dark:border-gray-700"></textarea>
+                </div>
+            </div>
         </div>
         <ng-template pTemplate="footer">
             <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"

@@ -345,9 +345,19 @@ class LandingController extends Controller
                 }
 
                 $comentarioItem = isset($itemData['comment']) ? trim((string) $itemData['comment']) : '';
-                $comentarioPedidoRef = $comentarioItem !== ''
-                    ? "Comentario del cliente:\n" . $comentarioItem
-                    : 'Sin comentario adicional';
+
+                if ($comentarioItem !== '') {
+                    $comentariosEstructurados = [
+                        [
+                            'origen' => 'Cliente',
+                            'comentario' => $comentarioItem,
+                            'fecha' => now()->toISOString()
+                        ]
+                    ];
+                    $comentarioPedidoRef = json_encode($comentariosEstructurados, JSON_UNESCAPED_UNICODE);
+                } else {
+                    $comentarioPedidoRef = 'Sin comentario adicional';
+                }
 
                 $pedidoRef = \App\Models\PedidoReferencia::create([
                     'pedido_id' => $pedido->id,
