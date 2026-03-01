@@ -121,6 +121,7 @@ class PedidoController extends Controller
                     $pedido->referencias()->create([
                         'referencia_id' => $referencia['referencia_id'],
                         'sistema_id' => $referencia['sistema_id'] ?? null,
+                        'lista_id' => $referencia['lista_id'] ?? null,
                         'marca_id' => $referencia['marca_id'] ?? null,
                         'definicion' => $referencia['definicion'] ?? null,
                         'cantidad' => $referencia['cantidad'],
@@ -189,6 +190,8 @@ class PedidoController extends Controller
             'contacto',
             'referencias.referencia',
             'referencias.sistema',
+            'referencias.lista',
+            'referencias.imagenes',
             'referencias.proveedores.tercero',
             'articulos.articulo',
             'articulos.sistema'
@@ -662,6 +665,7 @@ class PedidoController extends Controller
                     $referencia->update([
                         'referencia_id' => $refData['referencia_id'],
                         'sistema_id' => $refData['sistema_id'] ?? null,
+                        'lista_id' => $refData['lista_id'] ?? null,
                         'marca_id' => $refData['marca_id'] ?? null,
                         'definicion' => $refData['definicion'] ?? null,
                         'cantidad' => $refData['cantidad'],
@@ -676,6 +680,7 @@ class PedidoController extends Controller
                 $pedido->referencias()->create([
                     'referencia_id' => $refData['referencia_id'],
                     'sistema_id' => $refData['sistema_id'] ?? null,
+                    'lista_id' => $refData['lista_id'] ?? null,
                     'marca_id' => $refData['marca_id'] ?? null,
                     'definicion' => $refData['definicion'] ?? null,
                     'cantidad' => $refData['cantidad'],

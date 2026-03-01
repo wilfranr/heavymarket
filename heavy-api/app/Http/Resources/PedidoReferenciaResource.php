@@ -24,16 +24,22 @@ class PedidoReferenciaResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $imagenUrl = $this->imagen;
+        if ($imagenUrl && !str_starts_with($imagenUrl, 'http')) {
+            $imagenUrl = asset('storage/' . ltrim($imagenUrl, '/'));
+        }
+
         return [
             'id' => $this->id,
             'pedido_id' => $this->pedido_id,
             'referencia_id' => $this->referencia_id,
             'sistema_id' => $this->sistema_id,
+            'lista_id' => $this->lista_id,
             'marca_id' => $this->marca_id,
             'definicion' => $this->definicion,
             'cantidad' => $this->cantidad,
             'comentario' => $this->comentario,
-            'imagen' => $this->imagen,
+            'imagen' => $imagenUrl,
             'mostrar_referencia' => $this->mostrar_referencia,
             'estado' => $this->estado,
             'created_at' => $this->created_at?->toISOString(),
@@ -42,7 +48,11 @@ class PedidoReferenciaResource extends JsonResource
             // Relaciones opcionales
             'referencia' => $this->whenLoaded('referencia'),
             'sistema' => $this->whenLoaded('sistema'),
+            'lista' => $this->whenLoaded('lista'),
             'marca' => $this->whenLoaded('marca'),
+            'imagenes' => $this->whenLoaded('imagenes', function () {
+                return PedidoReferenciaImagenResource::collection($this->imagenes);
+            }),
             'proveedores' => $this->whenLoaded('proveedores', function () {
                 return PedidoReferenciaProveedorResource::collection($this->proveedores);
             }),

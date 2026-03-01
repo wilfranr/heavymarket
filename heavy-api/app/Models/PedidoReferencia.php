@@ -17,6 +17,7 @@ class PedidoReferencia extends Model
         'pedido_id',
         'referencia_id',
         'sistema_id',
+        'lista_id',
         'marca_id',
         'definicion',
         'cantidad',
@@ -31,8 +32,6 @@ class PedidoReferencia extends Model
         return $this->belongsTo(Pedido::class);
     }
 
-
-
     public function referencia(): BelongsTo
     {
         return $this->belongsTo(Referencia::class);
@@ -41,6 +40,16 @@ class PedidoReferencia extends Model
     public function sistema(): BelongsTo
     {
         return $this->belongsTo(Sistema::class);
+    }
+
+    public function lista(): BelongsTo
+    {
+        return $this->belongsTo(Lista::class, 'lista_id');
+    }
+
+    public function imagenes(): HasMany
+    {
+        return $this->hasMany(PedidoReferenciaImagen::class, 'pedido_referencia_id');
     }
 
     public function proveedores(): HasMany

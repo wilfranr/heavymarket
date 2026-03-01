@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 
@@ -143,6 +143,13 @@ export class CreateComponent implements OnInit {
     loteForm!: FormGroup;
     tiposLote: any[] = [];
     referenciasLote: any[] = [];
+
+    // Dialogos de comentario e imagen
+    displayComentarioDialog = false;
+    displayImagenDialog = false;
+    activeItemIndex: number | null = null;
+    comentarioControl = new FormControl('');
+    imagenControl = new FormControl('');
 
     // Items del wizard
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
@@ -365,21 +372,22 @@ export class CreateComponent implements OnInit {
         // Cargar Listas (Tipos de Artículo) asociados al sistema
         this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
             next: (response) => {
-                // Ahora buscamos los Artículos que coinciden con estos nombres
-                const nombresTipos = response.data.map(l => l.nombre);
+                const listasAsociadas = response.data;
 
-                // Opción A: Cargar artículos que tienen esta definición
-                // Para simplificar, si el backend no tiene un join directo, 
-                // cargaremos los artículos a medida que el usuario los necesite
                 this.articuloService.getAll({ per_page: 500 }).subscribe({
                     next: (resArt) => {
-                        this.tiposPorFila[index] = resArt.data
-                            .filter(a => nombresTipos.includes(a.definicion))
-                            .map(a => ({
-                                label: a.definicion,
-                                value: a.id,
-                                descripcion: a.descripcionEspecifica
-                            }));
+                        const opcionesUnicas: any[] = [];
+
+                        listasAsociadas.forEach(lista => {
+                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
+                            opcionesUnicas.push({
+                                label: lista.nombre,
+                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
+                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
+                            });
+                        });
+
+                        this.tiposPorFila[index] = opcionesUnicas;
                     }
                 });
             }
@@ -521,6 +529,36 @@ export class CreateComponent implements OnInit {
         this.displayLoteDialog = false;
     }
 
+    abrirDialogoComentario(index: number): void {
+        this.activeItemIndex = index;
+        const currentComentario = this.referenciasFormArray.at(index).get('comentario')?.value || '';
+        this.comentarioControl.setValue(currentComentario);
+        this.displayComentarioDialog = true;
+    }
+
+    guardarComentario(): void {
+        if (this.activeItemIndex !== null) {
+            this.referenciasFormArray.at(this.activeItemIndex).patchValue({ comentario: this.comentarioControl.value });
+        }
+        this.displayComentarioDialog = false;
+        this.activeItemIndex = null;
+    }
+
+    abrirDialogoImagen(index: number): void {
+        this.activeItemIndex = index;
+        const currentImagen = this.referenciasFormArray.at(index).get('imagen')?.value || '';
+        this.imagenControl.setValue(currentImagen);
+        this.displayImagenDialog = true;
+    }
+
+    guardarImagen(): void {
+        if (this.activeItemIndex !== null) {
+            this.referenciasFormArray.at(this.activeItemIndex).patchValue({ imagen: this.imagenControl.value });
+        }
+        this.displayImagenDialog = false;
+        this.activeItemIndex = null;
+    }
+
     onSistemaLoteChange(sistemaId: number | null): void {
         this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
         this.loteForm.get('articulo_id')?.disable();
@@ -532,16 +570,21 @@ export class CreateComponent implements OnInit {
 
         this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
             next: (response) => {
-                const nombresTipos = response.data.map(l => l.nombre);
+                const listasAsociadas = response.data;
                 this.articuloService.getAll({ per_page: 500 }).subscribe({
                     next: (resArt) => {
-                        this.tiposLote = resArt.data
-                            .filter(a => nombresTipos.includes(a.definicion))
-                            .map(a => ({
-                                label: a.definicion,
-                                value: a.id,
-                                descripcion: a.descripcionEspecifica
-                            }));
+                        const opcionesUnicas: any[] = [];
+
+                        listasAsociadas.forEach(lista => {
+                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
+                            opcionesUnicas.push({
+                                label: lista.nombre,
+                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
+                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
+                            });
+                        });
+
+                        this.tiposLote = opcionesUnicas;
                         if (this.tiposLote.length > 0) {
                             this.loteForm.get('articulo_id')?.enable();
                         }

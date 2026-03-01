@@ -241,14 +241,14 @@
                                 }
                             </div>
 
-                            <!-- Tipo de Artículo (Cascada nivel 2) -->
+                            <!-- Tipo de Artículo (Lista asociada al sistema) -->
                             <div class="w-[18%]">
-                                <p-select formControlName="articulo_id" [options]="tiposPorFila[$index]"
+                                <p-select formControlName="lista_id" [options]="tiposPorFila[$index]"
                                     placeholder="Tipo de artículo" styleClass="w-full h-[48px] flex items-center"
-                                    [class]="campoTieneErrorCosteo($index, 'articulo_id') ? 'campo-error' : ''"
+                                    [class]="campoTieneErrorCosteo($index, 'lista_id') ? 'campo-error' : ''"
                                     [filter]="true" appendTo="body" [disabled]="!referencia.get('sistema_id')?.value"
-                                    (onChange)="onArticuloChange($event.value, $index)"></p-select>
-                                @if (campoTieneErrorCosteo($index, 'articulo_id')) {
+                                    (onChange)="onListaChange($event.value, $index)"></p-select>
+                                @if (campoTieneErrorCosteo($index, 'lista_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
@@ -280,14 +280,18 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="w-[180px] flex gap-3 justify-end pt-1">
+                            <div class="w-[180px] flex gap-3 justify-end pt-1 relative">
                                 <button type="button" class="action-btn-circle" pTooltip="Comentar"
-                                    tooltipPosition="top">
+                                    (click)="abrirDialogoComentario($index)" tooltipPosition="top">
                                     <i class="pi pi-comments text-lg"></i>
                                 </button>
-                                <button type="button" class="action-btn-circle" pTooltip="Adjuntar"
-                                    tooltipPosition="top">
+                                <button type="button" class="action-btn-circle relative" pTooltip="Ver imágenes"
+                                    (click)="abrirModalImagenes($index)" tooltipPosition="top"
+                                    [class.has-content]="getImagenesParaFila($index).length > 0">
                                     <i class="pi pi-image text-lg"></i>
+                                    @if (getImagenesParaFila($index).length > 0) {
+                                    <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-yellow-500 text-white text-xs flex items-center justify-center">{{ getImagenesParaFila($index).length }}</span>
+                                    }
                                 </button>
                                 <button type="button" class="action-btn-circle action-btn-delete"
                                     (click)="eliminarReferencia($index)" pTooltip="Eliminar" tooltipPosition="top">
@@ -506,6 +510,72 @@
             </div>
 
         </form>
+    </p-dialog>
+
+    <!-- Modal Comentario -->
+    <p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '450px'}"
+        header="Agregar comentario" appendTo="body">
+        <div class="flex flex-col mt-4">
+            <textarea pTextarea rows="5" [formControl]="comentarioControl"
+                placeholder="Escriba un comentario para este ítem..."
+                class="w-full rounded-lg border-gray-300 dark:border-gray-700"></textarea>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
+                (onClick)="displayComentarioDialog = false"></p-button>
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="guardarComentario()"></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Modal Imagen -->
+    <p-dialog [(visible)]="displayImagenDialog" [modal]="true" [style]="{width: '450px'}" header="Adjuntar imagen"
+        appendTo="body">
+        <div class="flex flex-col gap-2 mt-4">
+            @if (imagenControl.value) {
+            <div class="mb-2">
+                <span class="font-medium text-sm theme-text-secondary block mb-1">Vista previa</span>
+                <img [src]="imagenControl.value" alt="Adjunto" class="max-w-full max-h-48 rounded border border-gray-300 dark:border-gray-600 object-contain"
+                    (error)="$any($event.target).style.display='none'" />
+            </div>
+            }
+            <label class="font-medium text-sm theme-text-secondary">URL de la imagen</label>
+            <input pInputText type="text" [formControl]="imagenControl" placeholder="https://ejemplo.com/imagen.jpg"
+                class="w-full rounded-lg border-gray-300 dark:border-gray-700" />
+        </div>
+        <ng-template pTemplate="footer">
+            <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary"
+                (onClick)="displayImagenDialog = false"></p-button>
+            <p-button label="Guardar" icon="pi pi-check" (onClick)="guardarImagen()"></p-button>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Modal Galleria de imágenes del ítem (estilo Sakai uikit/media) -->
+    <p-dialog [(visible)]="displayImagenesCarouselModal" [modal]="true" [style]="{width: '640px', 'max-width': '95vw'}"
+        header="Imágenes del ítem" appendTo="body" (onHide)="cerrarModalImagenes()" styleClass="galleria-imagenes-modal">
+        @if (galleriaImages.length > 0) {
+        <p-galleria [value]="galleriaImages" [responsiveOptions]="galleriaResponsiveOptions"
+            [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
+            [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+            <ng-template #item let-item>
+                <div class="flex flex-col items-center gap-2">
+                    <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[70vh] object-contain rounded" style="width: 100%;" />
+                    @if (item.origen) {
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Origen: {{ item.origen }}</span>
+                    }
+                </div>
+            </ng-template>
+            <ng-template #thumbnail let-item>
+                <div class="galleria-thumbnail-cell">
+                    <img [src]="item.thumbnailImageSrc" alt="Miniatura" />
+                </div>
+            </ng-template>
+        </p-galleria>
+        } @else {
+        <p class="text-gray-500 dark:text-gray-400 py-4">No hay imágenes asociadas a este ítem.</p>
+        }
+        <ng-template pTemplate="footer">
+            <p-button label="Cerrar" icon="pi pi-times" (onClick)="cerrarModalImagenes()"></p-button>
+        </ng-template>
     </p-dialog>
 </div>
 }

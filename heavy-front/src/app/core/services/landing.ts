@@ -102,9 +102,11 @@ export class LandingService {
         // Appending items with potential files
         data.items.forEach((item: any, index: number) => {
             formData.append(`items[${index}][system]`, item.system);
-            formData.append(`items[${index}][description]`, item.description);
+            formData.append(`items[${index}][description]`, item.description || '');
             formData.append(`items[${index}][quantity]`, item.quantity.toString());
             formData.append(`items[${index}][reference]`, item.reference || '');
+
+            formData.append(`items[${index}][comment]`, item.comment || '');
 
             if (item.file) {
                 formData.append(`items[${index}][file]`, item.file, item.file.name);

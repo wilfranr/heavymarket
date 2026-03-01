@@ -59,6 +59,7 @@ class UpdatePedidoRequest extends FormRequest
             'referencias.*.id' => ['nullable', 'integer', 'exists:pedido_referencias,id'], // ID de la relación si existe
             'referencias.*.referencia_id' => ['nullable', 'integer', 'exists:referencias,id'],
             'referencias.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'referencias.*.lista_id' => ['nullable', 'integer', 'exists:listas,id'],
             'referencias.*.marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'], // Nota: En Store usa fabricantes,id
             'referencias.*.definicion' => ['required_without:referencias.*.referencia_id', 'nullable', 'string', 'max:255'],
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],

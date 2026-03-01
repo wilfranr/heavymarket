@@ -289,47 +289,88 @@ class LandingController extends Controller
             
             foreach ($itemsData as $index => $itemData) {
                 $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first();
-                
-                // Crear una referencia temporal si se proporcionó un código
-                $referenciaId = null;
-                if (!empty($itemData['reference'])) {
-                    // Buscar si ya existe una referencia con ese código
-                    $referencia = \App\Models\Referencia::where('referencia', $itemData['reference'])->first();
-                    
-                    if (!$referencia) {
-                        // Crear referencia temporal para que el analista la complete después
-                        $referencia = \App\Models\Referencia::create([
-                            'referencia' => $itemData['reference'],
-                            'marca_id' => $fabricanteId,
-                            'comentario' => "Referencia temporal desde Landing - Requiere revisión del analista de partes"
-                        ]);
-                    }
-                    
-                    $referenciaId = $referencia->id;
+                $sistemaId = $sistema?->id;
+
+                // Tipo de artículo = Lista (tipo "Tipo de Artículo") relacionada con este sistema
+                $description = $itemData['description'] ?? '';
+                $lista = null;
+                if ($sistemaId && $description !== '') {
+                    $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+                        ->whereHas('sistemas', fn ($q) => $q->where('sistemas.id', $sistemaId))
+                        ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($description)])
+                        ->first();
                 }
-                
-                $imagePath = null;
-                // Manejar archivos si vienen en el request (multipart)
-                if ($request->hasFile("items.{$index}.file")) {
-                    $file = $request->file("items.{$index}.file");
-                    $imagePath = $file->store('pedidos/referencias', 'public');
+                $listaId = $lista?->id;
+
+                // Articulo opcional (para Referencia) - por si existe definición coincidente
+                $articulo = \App\Models\Articulo::whereRaw('LOWER(definicion) = ?', [mb_strtolower($description)])
+                    ->orWhereRaw('LOWER(descripcionEspecifica) = ?', [mb_strtolower($description)])
+                    ->first();
+                $articuloId = $articulo?->id;
+
+                // Referencia del usuario (código libre); definicion en PedidoReferencia = solo esto
+                $referenceUser = isset($itemData['reference']) ? trim((string) $itemData['reference']) : '';
+                $referenceText = $referenceUser !== '' ? $referenceUser : ('Pendiente - ' . $description);
+
+                $referencia = \App\Models\Referencia::where('referencia', $referenceText)->first();
+
+                if (!$referencia) {
+                    $referencia = \App\Models\Referencia::create([
+                        'referencia' => $referenceText,
+                        'articulo_id' => $articuloId,
+                        'marca_id' => $fabricanteId,
+                        'comentario' => 'Referencia temporal desde Landing - Requiere revisión',
+                    ]);
+                } elseif ($articuloId && !$referencia->articulo_id) {
+                    $referencia->update(['articulo_id' => $articuloId]);
                 }
 
-                \App\Models\PedidoReferencia::create([
+                $referenciaId = $referencia->id;
+
+                $imagePath = null;
+                if ($request->hasFile("items.{$index}.file")) {
+                    $file = $request->file("items.{$index}.file");
+                    if ($file && $file->isValid()) {
+                        $imagePath = $file->store('pedidos/referencias', 'public');
+                    }
+                }
+                if (!$imagePath && $request->hasFile('items')) {
+                    $itemsFiles = $request->file('items');
+                    if (isset($itemsFiles[$index]['file'])) {
+                        $file = $itemsFiles[$index]['file'];
+                        if ($file && $file->isValid()) {
+                            $imagePath = $file->store('pedidos/referencias', 'public');
+                        }
+                    }
+                }
+
+                $comentarioItem = isset($itemData['comment']) ? trim((string) $itemData['comment']) : '';
+                $comentarioPedidoRef = $comentarioItem !== ''
+                    ? "Comentario del cliente:\n" . $comentarioItem
+                    : 'Sin comentario adicional';
+
+                $pedidoRef = \App\Models\PedidoReferencia::create([
                     'pedido_id' => $pedido->id,
                     'referencia_id' => $referenciaId,
-                    'sistema_id' => $sistema?->id,
+                    'sistema_id' => $sistemaId,
+                    'lista_id' => $listaId,
                     'marca_id' => $fabricanteId,
-                    'definicion' => $itemData['description'],
+                    'definicion' => $referenceUser,
                     'cantidad' => $itemData['quantity'],
-                    'comentario' => ($itemData['reference'] 
-                        ? "REF/P/N: {$itemData['reference']}" 
-                        : "Sin referencia proporcionada")
-                        . (!empty($itemData['comment']) ? "\nNota: {$itemData['comment']}" : ""),
+                    'comentario' => $comentarioPedidoRef,
                     'imagen' => $imagePath,
                     'estado' => 1,
                     'mostrar_referencia' => 1
                 ]);
+
+                // Registrar imagen en tabla de imágenes por ítem (origen: cliente)
+                if ($imagePath) {
+                    \App\Models\PedidoReferenciaImagen::create([
+                        'pedido_referencia_id' => $pedidoRef->id,
+                        'imagen' => $imagePath,
+                        'origen' => \App\Models\PedidoReferenciaImagen::ORIGEN_CLIENTE,
+                    ]);
+                }
             }
 
             // 6. Enviar e-mails (Desabilitado temporalmente a petición del usuario)

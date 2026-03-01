@@ -1,6 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, filter, take } from 'rxjs';
@@ -24,6 +24,7 @@ import { DialogModule } from 'primeng/dialog';
 import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ImageModule } from 'primeng/image';
+import { GalleriaModule } from 'primeng/galleria';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -67,7 +68,8 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoAr
         DialogModule,
         TableModule,
         CheckboxModule,
-        ImageModule
+        ImageModule,
+        GalleriaModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -141,6 +143,15 @@ export class EditComponent implements OnInit {
     loteForm!: FormGroup;
     tiposLote: any[] = [];
     referenciasLote: any[] = [];
+
+    // Dialogos de comentario e imagen
+    displayComentarioDialog = false;
+    displayImagenDialog = false;
+    displayImagenesCarouselModal = false;
+    activeItemIndex: number | null = null;
+    activeImagenesFilaIndex: number | null = null;
+    comentarioControl = new FormControl('');
+    imagenControl = new FormControl('');
 
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
@@ -378,32 +389,30 @@ export class EditComponent implements OnInit {
         referencias.forEach((ref, idx) => {
             const index = this.referenciasFormArray.length;
 
-            // Inicializar opciones vacías para esta fila
             this.tiposPorFila[index] = [];
             this.referenciasPorFila[index] = [];
 
-            // Intentar obtener articulo_id de la relación referencia (si viene poblada)
             const articuloId = (ref.referencia as any)?.articulo_id || null;
 
             const referenciaForm = this.fb.group({
                 id: [ref.id],
                 estado: [ref.estado ?? true],
                 sistema_id: [ref.sistema_id || null],
-                articulo_id: [articuloId], // Precargar si está disponible
+                lista_id: [ref.lista_id || null],
+                articulo_id: [articuloId],
                 referencia_id: [ref.referencia_id || null],
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
                 comentario: [ref.comentario || ''],
                 definicion: [ref.definicion || ''],
-                imagen: [ref.imagen || null]
+                imagen: [ref.imagen || null],
+                imagenes: [ref.imagenes || []]
             });
 
             this.referenciasFormArray.push(referenciaForm);
 
-            // Cargar cascadas
             if (ref.sistema_id) {
-                // Pasamos el articuloId para que se seleccione en la lista de tipos
-                this.cargarTiposPorSistema(ref.sistema_id, index, null, articuloId);
+                this.cargarTiposPorSistema(ref.sistema_id, index, null, ref.lista_id ?? undefined);
             }
 
             if (articuloId) {
@@ -433,13 +442,15 @@ export class EditComponent implements OnInit {
             id: [null],
             estado: [true],
             sistema_id: [null],
+            lista_id: [null],
             articulo_id: [null],
             referencia_id: [null],
             marca_id: [null],
             cantidad: [1, [Validators.required, Validators.min(1)]],
             comentario: [''],
             definicion: [''],
-            imagen: [null]
+            imagen: [null],
+            imagenes: [[]]
         });
 
         this.referenciasFormArray.push(referenciaForm);
@@ -450,7 +461,7 @@ export class EditComponent implements OnInit {
      */
     onSistemaChange(sistemaId: number | null, index: number): void {
         const row = this.referenciasFormArray.at(index);
-        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+        row.patchValue({ lista_id: null, articulo_id: null, referencia_id: null }, { emitEvent: false });
         this.tiposPorFila[index] = [];
         this.referenciasPorFila[index] = [];
 
@@ -460,46 +471,107 @@ export class EditComponent implements OnInit {
     }
 
     /**
-     * Carga los tipos de artículo asociados a un sistema
+     * Maneja el cambio de tipo de artículo (lista) en una fila
      */
-    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, articuloIdPreseleccionado?: number | null): void {
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Piezas Estandar', per_page: 200 }).subscribe({
-            next: (response) => {
-                const nombresTipos = response.data.map(l => l.nombre);
+    onListaChange(listaId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+        this.referenciasPorFila[index] = [];
 
-                this.articuloService.getAll({ per_page: 500 }).subscribe({
-                    next: (resArt) => {
-                        this.tiposPorFila[index] = resArt.data
-                            .filter(a => nombresTipos.includes(a.definicion))
-                            .map(a => ({
-                                label: a.definicion,
-                                value: a.id,
-                                descripcion: a.descripcionEspecifica
-                            }));
+        if (!listaId) return;
 
-                        // Si hay una referencia preseleccionada y NO hay articuloId (caso legacy o fallback), buscar a qué artículo pertenece
-                        if (referenciaIdPreseleccionada && !articuloIdPreseleccionado) {
-                            this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
-                        }
-                    }
-                });
+        const opciones = this.tiposPorFila[index] || [];
+        const opcion = opciones.find((o: any) => o.value === listaId);
+        const listaNombre = opcion?.label ?? '';
+        if (!listaNombre) return;
+
+        this.articuloService.getAll({ per_page: 500 }).subscribe({
+            next: (resArt) => {
+                const articulo = resArt.data.find((a: any) =>
+                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
+                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
+                );
+                if (articulo) {
+                    row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
+                    this.cargarReferenciasPorArticulo(articulo.id, index);
+                }
             }
         });
     }
 
     /**
-     * Autoselecciona el artículo que contiene la referencia dada (para carga inicial)
+     * Carga los tipos de artículo (Listas) asociados a un sistema
+     */
+    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, listaIdPreseleccionado?: number | null): void {
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+            next: (response) => {
+                const listasAsociadas = response.data;
+                const opciones = listasAsociadas.map((lista: any) => ({
+                    label: lista.nombre,
+                    value: lista.id
+                }));
+                this.tiposPorFila[index] = opciones;
+
+                if (listaIdPreseleccionado != null) {
+                    const row = this.referenciasFormArray.at(index);
+                    row.patchValue({ lista_id: listaIdPreseleccionado }, { emitEvent: false });
+                    const listaNombre = opciones.find((o: any) => o.value === listaIdPreseleccionado)?.label;
+                    if (listaNombre) {
+                        this.articuloService.getAll({ per_page: 500 }).subscribe({
+                            next: (resArt) => {
+                                const articulo = resArt.data.find((a: any) =>
+                                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
+                                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
+                                );
+                                if (articulo) {
+                                    row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
+                                    this.cargarReferenciasPorArticulo(articulo.id, index);
+                                }
+                                if (referenciaIdPreseleccionada && !articulo) {
+                                    this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
+                                }
+                            }
+                        });
+                    }
+                } else if (referenciaIdPreseleccionada) {
+                    this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
+                }
+            }
+        });
+    }
+
+    /**
+     * Autoselecciona el artículo y lista que contienen la referencia dada (para carga inicial / legacy)
      */
     private autoseleccionarArticuloPorReferencia(index: number, referenciaId: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row.get('sistema_id')?.value;
         this.referenciaService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
                 const ref = response.data.find(r => r.id === referenciaId);
                 if (ref && (ref as any).articulo_id) {
                     const articuloId = (ref as any).articulo_id;
-                    const row = this.referenciasFormArray.at(index);
                     row.patchValue({ articulo_id: articuloId }, { emitEvent: false });
-                    // Cargar referencias de ese artículo
                     this.cargarReferenciasPorArticulo(articuloId, index);
+                    if (sistemaId) {
+                        this.articuloService.getAll({ per_page: 500 }).subscribe({
+                            next: (resArt) => {
+                                const articulo = resArt.data.find((a: any) => a.id === articuloId);
+                                if (articulo?.definicion) {
+                                    this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+                                        next: (listRes) => {
+                                            const lista = listRes.data.find((l: any) =>
+                                                l.nombre && l.nombre.toLowerCase() === articulo.definicion.toLowerCase()
+                                            );
+                                            if (lista) {
+                                                row.patchValue({ lista_id: lista.id }, { emitEvent: false });
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        });
+                    }
                 }
             }
         });
@@ -546,7 +618,7 @@ export class EditComponent implements OnInit {
             if (!control.get('sistema_id')?.value) {
                 camposFaltantes.push('Sistema');
             }
-            if (!control.get('articulo_id')?.value) {
+            if (!control.get('lista_id')?.value) {
                 camposFaltantes.push('Tipo de artículo');
             }
             if (!control.get('referencia_id')?.value && !control.get('definicion')?.value) {
@@ -660,7 +732,7 @@ export class EditComponent implements OnInit {
 
         const mapaCampos: Record<string, string> = {
             'sistema_id': 'Sistema',
-            'articulo_id': 'Tipo de artículo',
+            'lista_id': 'Tipo de artículo',
             'referencia_id': 'Referencia',
             'definicion': 'Referencia',
             'cantidad': 'Cantidad'
@@ -747,6 +819,98 @@ export class EditComponent implements OnInit {
         this.displayLoteDialog = false;
     }
 
+    abrirDialogoComentario(index: number): void {
+        this.activeItemIndex = index;
+        const currentComentario = this.referenciasFormArray.at(index).get('comentario')?.value || '';
+        this.comentarioControl.setValue(currentComentario);
+        this.displayComentarioDialog = true;
+    }
+
+    guardarComentario(): void {
+        if (this.activeItemIndex !== null) {
+            this.referenciasFormArray.at(this.activeItemIndex).patchValue({ comentario: this.comentarioControl.value });
+        }
+        this.displayComentarioDialog = false;
+        this.activeItemIndex = null;
+    }
+
+    abrirDialogoImagen(index: number): void {
+        this.activeItemIndex = index;
+        const currentImagen = this.referenciasFormArray.at(index).get('imagen')?.value || '';
+        this.imagenControl.setValue(currentImagen);
+        this.displayImagenDialog = true;
+    }
+
+    guardarImagen(): void {
+        if (this.activeItemIndex !== null) {
+            this.referenciasFormArray.at(this.activeItemIndex).patchValue({ imagen: this.imagenControl.value });
+        }
+        this.displayImagenDialog = false;
+        this.activeItemIndex = null;
+    }
+
+    /**
+     * Devuelve todas las imágenes del ítem sin duplicar (legacy + imagenes[], evitando misma URL dos veces)
+     */
+    getImagenesParaFila(index: number): { url: string; origen?: string }[] {
+        const row = this.referenciasFormArray.at(index);
+        const imagen = row.get('imagen')?.value;
+        const imagenes: { id?: number; imagen: string; origen?: string }[] = row.get('imagenes')?.value || [];
+        const out: { url: string; origen?: string }[] = [];
+        const urlsVistos = new Set<string>();
+
+        // Primero las de la tabla imagenes (origen cliente/asesor/costeo)
+        imagenes.forEach((img: any) => {
+            if (img && img.imagen) {
+                const url = typeof img.imagen === 'string' ? img.imagen : (img.imagen?.url ?? img.imagen);
+                if (url && !urlsVistos.has(url)) {
+                    urlsVistos.add(url);
+                    out.push({ url, origen: img.origen || 'cliente' });
+                }
+            }
+        });
+        // Legacy solo si no está ya en imagenes (evita duplicado cuando landing guarda en ambos)
+        if (imagen) {
+            const urlLegacy = typeof imagen === 'string' ? imagen : (imagen?.url ?? imagen);
+            if (urlLegacy && !urlsVistos.has(urlLegacy)) {
+                out.unshift({ url: urlLegacy, origen: 'Legacy' });
+            }
+        }
+        return out;
+    }
+
+    abrirModalImagenes(index: number): void {
+        this.activeImagenesFilaIndex = index;
+        this.displayImagenesCarouselModal = true;
+    }
+
+    cerrarModalImagenes(): void {
+        this.displayImagenesCarouselModal = false;
+        this.activeImagenesFilaIndex = null;
+    }
+
+    get imagenesCarouselActual(): { url: string; origen?: string }[] {
+        if (this.activeImagenesFilaIndex === null) return [];
+        return this.getImagenesParaFila(this.activeImagenesFilaIndex);
+    }
+
+    /** Formato para p-galleria (Sakai uikit/media): itemImageSrc y thumbnailImageSrc */
+    get galleriaImages(): { itemImageSrc: string; thumbnailImageSrc: string; origen?: string }[] {
+        return this.imagenesCarouselActual.map((img) => ({
+            itemImageSrc: img.url,
+            thumbnailImageSrc: img.url,
+            origen: img.origen
+        }));
+    }
+
+    /** Opciones responsivas para Galleria (igual que Sakai uikit/media) */
+    galleriaResponsiveOptions = [
+        { breakpoint: '1024px', numVisible: 5 },
+        { breakpoint: '960px', numVisible: 4 },
+        { breakpoint: '768px', numVisible: 3 },
+        { breakpoint: '560px', numVisible: 1 }
+    ];
+
     onSistemaLoteChange(sistemaId: number | null): void {
         this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
         this.loteForm.get('articulo_id')?.disable();
@@ -756,18 +920,23 @@ export class EditComponent implements OnInit {
 
         if (!sistemaId) return;
 
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Piezas Estandar', per_page: 200 }).subscribe({
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
             next: (response) => {
-                const nombresTipos = response.data.map(l => l.nombre);
+                const listasAsociadas = response.data;
                 this.articuloService.getAll({ per_page: 500 }).subscribe({
                     next: (resArt) => {
-                        this.tiposLote = resArt.data
-                            .filter(a => nombresTipos.includes(a.definicion))
-                            .map(a => ({
-                                label: a.definicion,
-                                value: a.id,
-                                descripcion: a.descripcionEspecifica
-                            }));
+                        const opcionesUnicas: any[] = [];
+
+                        listasAsociadas.forEach(lista => {
+                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
+                            opcionesUnicas.push({
+                                label: lista.nombre,
+                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
+                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
+                            });
+                        });
+
+                        this.tiposLote = opcionesUnicas;
                         if (this.tiposLote.length > 0) {
                             this.loteForm.get('articulo_id')?.enable();
                         }

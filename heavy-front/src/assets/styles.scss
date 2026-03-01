@@ -48,3 +48,38 @@
     transform: rotate(-360deg);
   }
 }
+
+/* Galleria en modal "Imágenes del ítem" - miniaturas pequeñas (appendTo="body") */
+.galleria-imagenes-modal .p-galleria-thumbnails-container,
+.galleria-imagenes-modal .p-galleria-thumbnail-wrapper {
+  max-height: 72px;
+}
+.galleria-imagenes-modal .p-galleria-thumbnail-item,
+.galleria-imagenes-modal .p-galleria-thumbnail-item-content {
+  width: 72px !important;
+  height: 54px !important;
+  min-width: 72px;
+  min-height: 54px;
+}
+.galleria-imagenes-modal .galleria-thumbnail-cell,
+.galleria-imagenes-modal .p-galleria-thumbnail-item img,
+.galleria-imagenes-modal .p-galleria-thumbnail-item-content img {
+  width: 72px !important;
+  height: 54px !important;
+  max-width: 72px;
+  max-height: 54px;
+  object-fit: cover;
+  border-radius: 6px;
+}
+.galleria-imagenes-modal .galleria-thumbnail-cell {
+  display: block;
+  width: 72px;
+  height: 54px;
+  overflow: hidden;
+  border-radius: 6px;
+}
+.galleria-imagenes-modal .galleria-thumbnail-cell img {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover;
+}

@@ -42,6 +42,7 @@ export interface PedidoReferencia {
     pedido_id: number;
     referencia_id: number;
     sistema_id: number | null;
+    lista_id: number | null;
     marca_id: number | null;
     definicion: string | null;
     cantidad: number;
@@ -53,8 +54,21 @@ export interface PedidoReferencia {
     // Relaciones
     referencia?: any;
     sistema?: any;
+    lista?: { id: number; nombre: string };
     marca?: any;
+    imagenes?: PedidoReferenciaImagen[];
     proveedores?: PedidoReferenciaProveedor[];
+}
+
+/**
+ * Imagen asociada a un ítem del pedido (cliente, asesor, costeo)
+ */
+export interface PedidoReferenciaImagen {
+    id: number;
+    pedido_referencia_id: number;
+    imagen: string;
+    origen: 'cliente' | 'asesor' | 'costeo';
+    created_at?: string;
 }
 
 /**
@@ -146,6 +160,7 @@ export interface UpdatePedidoArticuloDto {
 export interface CreatePedidoReferenciaDto {
     referencia_id: number;
     sistema_id?: number;
+    lista_id?: number;
     marca_id?: number;
     definicion?: string;
     cantidad: number;

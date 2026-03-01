@@ -10,7 +10,7 @@ import { DashboardService, BestSellingProduct } from '../../../core/services/das
     imports: [CommonModule, ButtonModule, MenuModule],
     template: ` <div class="card">
         <div class="flex justify-between items-center mb-6">
-            <div class="font-semibold text-xl">Best Selling Products</div>
+            <div class="font-semibold text-xl">Productos Más Vendidos</div>
             <div>
                 <button pButton type="button" icon="pi pi-ellipsis-v" class="p-button-rounded p-button-text p-button-plain" (click)="menu.toggle($event)"></button>
                 <p-menu #menu [popup]="true" [model]="items"></p-menu>
@@ -32,7 +32,7 @@ import { DashboardService, BestSellingProduct } from '../../../core/services/das
                 </li>
             }
             @if (products().length === 0) {
-                <div class="text-center text-muted-color py-4">No data available</div>
+                <div class="text-center text-muted-color py-4">No hay datos disponibles</div>
             }
         </ul>
     </div>`
@@ -45,8 +45,8 @@ export class BestSellingWidget implements OnInit {
     menu = null;
 
     items = [
-        { label: 'Add New', icon: 'pi pi-fw pi-plus' },
-        { label: 'Remove', icon: 'pi pi-fw pi-trash' }
+        { label: 'Agregar Nuevo', icon: 'pi pi-fw pi-plus' },
+        { label: 'Eliminar', icon: 'pi pi-fw pi-trash' }
     ];
 
     ngOnInit(): void {
