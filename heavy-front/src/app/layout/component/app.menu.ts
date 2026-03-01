@@ -25,40 +25,45 @@ export class AppMenu {
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/app'] }]
             },
             {
-                label: 'Ventas',
+                label: 'Comercial',
                 items: [
+                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
                     { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
-                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] }
+                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
                 ]
             },
             {
                 label: 'Compras',
                 items: [
-                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] },
-                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }
                 ]
             },
             {
-                label: 'Catálogos',
+                label: 'Catálogo de Productos',
                 items: [
-                    { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
-                    { label: 'Referencias', icon: 'pi pi-fw pi-clipboard', routerLink: ['/app/referencias'] },
                     { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
                     { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
-                    { label: 'Fabricantes', icon: 'pi pi-fw pi-bookmark', routerLink: ['/app/fabricantes'] },
-                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] }
+                    { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] },
+                    { label: 'Fabricantes', icon: 'pi pi-fw pi-globe', routerLink: ['/app/fabricantes'] },
+                    { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
+                    { label: 'Referencias', icon: 'pi pi-fw pi-hashtag', routerLink: ['/app/referencias'] }
                 ]
             },
             {
-                label: 'Gestión',
+                label: 'CRM & Terceros',
                 items: [
-                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
                     { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] },
-                    { label: 'Contactos', icon: 'pi pi-fw pi-envelope', routerLink: ['/app/contactos'] },
-                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] },
+                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
+                    { label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] },
+                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] }
+                ]
+            },
+            {
+                label: 'Configuración & Logística',
+                items: [
                     { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
-                    { label: 'Categorías', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
-                    { label: 'TRM', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
+                    { label: 'Categorías (ERP)', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
+                    { label: 'Tasa de Cambio (TRM)', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
                 ]
             },
             {
