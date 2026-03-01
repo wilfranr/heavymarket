@@ -69,17 +69,6 @@ export class AppMenu {
                     { label: 'Clientes Interesados', icon: 'pi pi-fw pi-users', routerLink: ['/app/gestion-landing/contact-leads'] }
                 ]
             },
-            {
-                separator: true
-            },
-            {
-                label: 'Componentes UI (Demo)',
-                items: [
-                    { label: 'Form Layout', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/uikit/formlayout'] },
-                    { label: 'Table', icon: 'pi pi-fw pi-table', routerLink: ['/app/uikit/table'] },
-                    { label: 'Charts', icon: 'pi pi-fw pi-chart-bar', routerLink: ['/app/uikit/charts'] }
-                ]
-            }
         ];
     }
 }
