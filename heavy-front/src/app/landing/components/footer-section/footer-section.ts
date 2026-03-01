@@ -15,6 +15,15 @@ import { LandingService } from '../../../core/services/landing';
 export class FooterSection {
     @Output() openTerms = new EventEmitter<void>();
 
+    // Año dinámico: siempre muestra el año actual
+    readonly currentYear = new Date().getFullYear();
+
+    // URLs de redes sociales (actualizar según cuentas oficiales)
+    readonly socialLinks = {
+        facebook: 'https://www.facebook.com/heavymarket',
+        youtube: 'https://www.youtube.com/@heavymarket'
+    };
+
     contactForm: FormGroup;
     isSubmitting = false;
     submitSuccess = false;

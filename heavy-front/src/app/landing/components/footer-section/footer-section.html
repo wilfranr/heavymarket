@@ -10,9 +10,7 @@
                         <input type="text" formControlName="nombre_completo" placeholder="Ej: Juan Pérez"
                             class="contact-input" />
                         <div *ngIf="contactForm.get('nombre_completo')?.invalid && contactForm.get('nombre_completo')?.touched"
-                            class="text-red-500 text-sm mt-1">
-                            El nombre es obligatorio.
-                        </div>
+                            class="text-red-500 text-sm mt-1">El nombre es obligatorio.</div>
                     </div>
 
                     <div class="form-group">
@@ -26,9 +24,7 @@
                         <input type="email" formControlName="correo_electronico" placeholder="ejemplo@empresa.com"
                             class="contact-input" />
                         <div *ngIf="contactForm.get('correo_electronico')?.invalid && contactForm.get('correo_electronico')?.touched"
-                            class="text-red-500 text-sm mt-1">
-                            Ingresa un correo electrónico válido.
-                        </div>
+                            class="text-red-500 text-sm mt-1">Ingresa un correo electrónico válido.</div>
                     </div>
 
                     <div class="form-group">
@@ -42,9 +38,7 @@
                         <textarea formControlName="motivo_consulta" placeholder="Hola, estoy interesado en cotizar..."
                             class="contact-textarea"></textarea>
                         <div *ngIf="contactForm.get('motivo_consulta')?.invalid && contactForm.get('motivo_consulta')?.touched"
-                            class="text-red-500 text-sm mt-1">
-                            El motivo de consulta es obligatorio.
-                        </div>
+                            class="text-red-500 text-sm mt-1">El motivo de consulta es obligatorio.</div>
                     </div>
 
                     <div class="form-checkbox">
@@ -53,20 +47,15 @@
                                 (click)="openTerms.emit()" class="cursor-pointer">Saber más.</a></label>
                     </div>
                     <div *ngIf="contactForm.get('acepta_tratamiento_datos')?.invalid && contactForm.get('acepta_tratamiento_datos')?.touched"
-                        class="text-red-500 text-sm mt-1">
-                        Debes aceptar el tratamiento de datos para continuar.
-                    </div>
+                        class="text-red-500 text-sm mt-1">Debes aceptar el tratamiento de datos para continuar.</div>
 
-                    <div *ngIf="submitSuccess" class="bg-green-100 text-green-700 p-3 rounded mb-3 mt-3">
-                        Tu mensaje ha sido enviado exitosamente. Nos pondremos en contacto pronto.
-                    </div>
-                    <div *ngIf="submitError" class="bg-red-100 text-red-700 p-3 rounded mb-3 mt-3">
-                        Hubo un problema al enviar tu mensaje. Inténtalo más tarde.
-                    </div>
+                    <div *ngIf="submitSuccess" class="bg-green-100 text-green-700 p-3 rounded mb-3 mt-3">Tu mensaje ha
+                        sido enviado exitosamente. Nos pondremos en contacto pronto.</div>
+                    <div *ngIf="submitError" class="bg-red-100 text-red-700 p-3 rounded mb-3 mt-3">Hubo un problema al
+                        enviar tu mensaje. Inténtalo más tarde.</div>
 
-                    <button type="submit" class="submit-button" [disabled]="isSubmitting">
-                        {{ isSubmitting ? 'Enviando...' : 'Enviar formulario' }}
-                    </button>
+                    <button type="submit" class="submit-button" [disabled]="isSubmitting">{{ isSubmitting ?
+                        'Enviando...' : 'Enviar formulario' }}</button>
                 </form>
             </div>
 
@@ -93,11 +82,12 @@
                     <div class="contact-item full-width">
                         <h5 class="contact-label">CORREO</h5>
                         <p class="contact-value">comercial@heavymarket.net</p>
+                        <p class="contact-value">contabilidad@heavymarket.net</p>
                     </div>
 
                     <div class="contact-item full-width">
                         <h5 class="contact-label">DIRECCIÓN</h5>
-                        <p class="contact-value">Calle 47 No. 14-81, C.P. 11001, Bogotá, Colombia</p>
+                        <p class="contact-value">CRA 69D No. 1 - 45 SUR - TORRE 2 APTO 1214, Bogotá, Colombia</p>
                     </div>
                 </div>
             </div>
@@ -105,23 +95,25 @@
     </div>
     <div class="footer-bottom">
         <div class="footer-socials">
-            <a href="#" class="social-link">
+            <a [href]="socialLinks.facebook" target="_blank" rel="noopener noreferrer" class="social-link"
+                aria-label="Visitar Facebook de HeavyMarket">
                 <img src="/images/icons/icon-facebook.svg" alt="Facebook" />
             </a>
-            <a href="#" class="social-link">
+            <a [href]="socialLinks.youtube" target="_blank" rel="noopener noreferrer" class="social-link"
+                aria-label="Visitar YouTube de HeavyMarket">
                 <img src="/images/icons/icon-youtube.svg" alt="YouTube" />
             </a>
-            <button class="scroll-up-button" (click)="scrollToTop()">
+            <button class="scroll-up-button" (click)="scrollToTop()" aria-label="Volver al inicio">
                 <img src="/images/icons/icon-scroll-up.svg" alt="Scroll Up" />
             </button>
         </div>
     </div>
     <div class="footer-credits">
-        <p class="copyright">© 2025 HeavyMarket. Todos los derechos reservados.</p>
+        <p class="copyright">© {{ currentYear }} HeavyMarket. Todos los derechos reservados.</p>
         <div class="footer-links">
             <a (click)="openTerms.emit()" class="footer-credit-link cursor-pointer">Política de privacidad</a>
             <a (click)="openTerms.emit()" class="footer-credit-link cursor-pointer">Términos de servicio</a>
-            <a href="#" class="footer-credit-link">Configuración de cookies</a>
+            <a (click)="openTerms.emit()" class="footer-credit-link cursor-pointer">Configuración de cookies</a>
         </div>
     </div>
 </footer>
