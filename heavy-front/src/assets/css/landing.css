@@ -1683,7 +1683,7 @@ app-banner {
     padding: 0px;
     width: 88px;
     height: 88px;
-    border: none;
+    border: 2px solid #ffffff;
     border-radius: 88px;
     background: #0c0e0f;
     cursor: pointer;
@@ -1691,6 +1691,12 @@ app-banner {
     bottom: 40px;
     right: 40px;
     z-index: 1000;
+    transition: border-color 0.3s ease, transform 0.2s ease;
+}
+
+.scroll-up-button:hover {
+    border-color: #FDB831;
+    transform: translateY(-3px);
 }
 
 .footer-credits {
