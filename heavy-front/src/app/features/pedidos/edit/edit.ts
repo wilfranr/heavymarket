@@ -16,6 +16,7 @@ import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
@@ -59,6 +60,7 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoAr
         SkeletonModule,
         ToggleButtonModule,
         InputNumberModule,
+        MultiSelectModule,
         ConfirmDialogModule,
         TagModule,
         TooltipModule,
@@ -134,6 +136,12 @@ export class EditComponent implements OnInit {
     displayMaquinaDialog = false;
     selectedMaquina: any = null;
 
+    // Lote de Referencias
+    displayLoteDialog = false;
+    loteForm!: FormGroup;
+    tiposLote: any[] = [];
+    referenciasLote: any[] = [];
+
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
@@ -182,6 +190,13 @@ export class EditComponent implements OnInit {
             contacto_id: [null],
             referencias: this.fb.array([]),
             motivo_rechazo: ['']
+        });
+
+        this.loteForm = this.fb.group({
+            sistema_id: [null, [Validators.required]],
+            articulo_id: [{ value: null, disabled: true }, [Validators.required]],
+            referencias_seleccionadas: [{ value: [], disabled: true }, [Validators.required, Validators.minLength(1)]],
+            cantidad_lote: [1, [Validators.required, Validators.min(1)]]
         });
     }
 
@@ -718,6 +733,109 @@ export class EditComponent implements OnInit {
             summary: 'Información',
             detail: 'Todas las referencias han sido deseleccionadas'
         });
+    }
+
+    /**
+     * Inicia el flujo de agregado múltiple
+     */
+    abrirDialogoLote(): void {
+        this.loteForm.reset({ cantidad_lote: 1 });
+        this.displayLoteDialog = true;
+    }
+
+    cerrarDialogoLote(): void {
+        this.displayLoteDialog = false;
+    }
+
+    onSistemaLoteChange(sistemaId: number | null): void {
+        this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
+        this.loteForm.get('articulo_id')?.disable();
+        this.loteForm.get('referencias_seleccionadas')?.disable();
+        this.tiposLote = [];
+        this.referenciasLote = [];
+
+        if (!sistemaId) return;
+
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Piezas Estandar', per_page: 200 }).subscribe({
+            next: (response) => {
+                const nombresTipos = response.data.map(l => l.nombre);
+                this.articuloService.getAll({ per_page: 500 }).subscribe({
+                    next: (resArt) => {
+                        this.tiposLote = resArt.data
+                            .filter(a => nombresTipos.includes(a.definicion))
+                            .map(a => ({
+                                label: a.definicion,
+                                value: a.id,
+                                descripcion: a.descripcionEspecifica
+                            }));
+                        if (this.tiposLote.length > 0) {
+                            this.loteForm.get('articulo_id')?.enable();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    onArticuloLoteChange(articuloId: number | null): void {
+        this.loteForm.patchValue({ referencias_seleccionadas: [] });
+        this.loteForm.get('referencias_seleccionadas')?.disable();
+        this.referenciasLote = [];
+
+        if (!articuloId) return;
+
+        this.referenciaService.getAll({ articulo_id: articuloId, per_page: 200 }).subscribe({
+            next: (response) => {
+                this.referenciasLote = response.data.map(r => ({
+                    label: r.referencia,
+                    value: r.id,
+                    definicion: r.referencia
+                }));
+                if (this.referenciasLote.length > 0) {
+                    this.loteForm.get('referencias_seleccionadas')?.enable();
+                } else {
+                    this.messageService.add({ severity: 'info', summary: 'Sin referencias', detail: 'Este artículo no tiene referencias parametrizadas.' });
+                }
+            }
+        });
+    }
+
+    agregarNuevasLote(): void {
+        if (this.loteForm.invalid) {
+            this.loteForm.markAllAsTouched();
+            return;
+        }
+
+        const data = this.loteForm.value;
+        const refs = data.referencias_seleccionadas;
+
+        refs.forEach((refId: number) => {
+            const index = this.referenciasFormArray.length;
+            this.tiposPorFila[index] = [];
+            this.referenciasPorFila[index] = [];
+
+            const refModel = this.referenciasLote.find(r => r.value === refId);
+
+            const referenciaForm = this.fb.group({
+                id: [null],
+                estado: [true],
+                sistema_id: [data.sistema_id],
+                articulo_id: [data.articulo_id],
+                referencia_id: [refId],
+                marca_id: [null],
+                cantidad: [data.cantidad_lote, [Validators.required, Validators.min(1)]],
+                comentario: [''],
+                definicion: [refModel?.definicion || ''],
+                imagen: [null]
+            });
+
+            this.referenciasFormArray.push(referenciaForm);
+            this.cargarTiposPorSistema(data.sistema_id, index, null, data.articulo_id);
+            this.cargarReferenciasPorArticulo(data.articulo_id, index);
+        });
+
+        this.messageService.add({ severity: 'success', summary: 'Agregado en Lote', detail: `Se insertaron ${refs.length} referencias exitosamente.` });
+        this.cerrarDialogoLote();
     }
 
     /**

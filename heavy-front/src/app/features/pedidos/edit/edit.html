@@ -331,9 +331,14 @@
 
                     <!-- Bottom Buttons -->
                     <div class="flex justify-end gap-4 mt-8">
+                        <button type="button"
+                            class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 flex items-center gap-2 border-none transition-colors"
+                            (click)="abrirDialogoLote()">
+                            <i class="pi pi-bars"></i> Buscar y agregar en lote
+                        </button>
                         <button type="button" class="btn-pill btn-outline flex items-center gap-2"
                             (click)="agregarReferencia()">
-                            Agregar ítem <i class="pi pi-plus"></i>
+                            Agregar ítem manual <i class="pi pi-plus"></i>
                         </button>
                     </div>
                 </div>
@@ -452,6 +457,55 @@
             </div>
 
         </div>
+    </p-dialog>
+
+    <!-- Dialogo Agregar Lote -->
+    <p-dialog [(visible)]="displayLoteDialog" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}"
+        [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body"
+        header="Agregar Referencias en Lote">
+
+        <form [formGroup]="loteForm" class="flex flex-col gap-6 p-4">
+
+            <div class="flex flex-col gap-2 relative">
+                <label class="font-bold text-gray-800 dark:text-white">1. Sistema <span
+                        class="text-red-500">*</span></label>
+                <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar sistema..."
+                    styleClass="w-full" [filter]="true" appendTo="body"
+                    (onChange)="onSistemaLoteChange($event.value)"></p-select>
+            </div>
+
+            <div class="flex flex-col gap-2 relative">
+                <label class="font-bold text-gray-800 dark:text-white">2. Tipo de artículo <span
+                        class="text-red-500">*</span></label>
+                <p-select formControlName="articulo_id" [options]="tiposLote" placeholder="Tipo de artículo"
+                    styleClass="w-full" [filter]="true" appendTo="body"
+                    (onChange)="onArticuloLoteChange($event.value)"></p-select>
+            </div>
+
+            <div class="flex flex-col gap-2 relative">
+                <label class="font-bold text-gray-800 dark:text-white">3. Seleccionar Referencias Múltiples <span
+                        class="text-red-500">*</span></label>
+                <p-multiSelect formControlName="referencias_seleccionadas" [options]="referenciasLote"
+                    placeholder="Seleccionar referencias..." styleClass="w-full" [filter]="true"
+                    filterPlaceHolder="Buscar..." appendTo="body" display="chip"></p-multiSelect>
+                <small class="text-gray-500">Se buscaron en la base de datos las referencias parametrizadas bajo este
+                    Sistema y Tipo de artículo.</small>
+            </div>
+
+            <div class="flex flex-col gap-2 relative">
+                <label class="font-bold text-gray-800 dark:text-white">Cantidad por ítem <span
+                        class="text-red-500">*</span></label>
+                <p-inputNumber formControlName="cantidad_lote" styleClass="w-full" placeholder="Ej: 1"></p-inputNumber>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                <p-button label="Cancelar" severity="secondary" [text]="true"
+                    (onClick)="cerrarDialogoLote()"></p-button>
+                <p-button label="Insertar Ítems" icon="pi pi-check" (onClick)="agregarNuevasLote()"
+                    [disabled]="loteForm.invalid"></p-button>
+            </div>
+
+        </form>
     </p-dialog>
 </div>
 }

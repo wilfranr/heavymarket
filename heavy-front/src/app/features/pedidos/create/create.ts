@@ -22,6 +22,7 @@ import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
+import { MultiSelectModule } from 'primeng/multiselect';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -64,6 +65,7 @@ import { ContactoCreateModalComponent } from '../../../shared/components/contact
         TooltipModule,
         TagModule,
         SkeletonModule,
+        MultiSelectModule,
         TerceroCreateModalComponent,
         MaquinaCreateModalComponent,
         ContactoCreateModalComponent
@@ -136,6 +138,12 @@ export class CreateComponent implements OnInit {
     referenciaIndexParaProveedor: number | null = null;
     nuevoProveedorForm: FormGroup | null = null;
 
+    // Lote de Referencias
+    displayLoteDialog = false;
+    loteForm!: FormGroup;
+    tiposLote: any[] = [];
+    referenciasLote: any[] = [];
+
     // Items del wizard
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
 
@@ -163,6 +171,13 @@ export class CreateComponent implements OnInit {
 
             // Paso 3: Referencias Detalladas
             referencias: this.fb.array([])
+        });
+
+        this.loteForm = this.fb.group({
+            sistema_id: [null, [Validators.required]],
+            articulo_id: [{ value: null, disabled: true }, [Validators.required]],
+            referencias_seleccionadas: [{ value: [], disabled: true }, [Validators.required, Validators.minLength(1)]],
+            cantidad_lote: [1, [Validators.required, Validators.min(1)]]
         });
 
         // Listen for changes to update cards and filter dependent lists
@@ -336,11 +351,14 @@ export class CreateComponent implements OnInit {
     /**
      * Maneja el cambio de sistema en una fila
      */
-    onSistemaChange(sistemaId: number | null, index: number): void {
+    onSistemaChange(sistemaId: number | null, index: number, clear = true): void {
         const row = this.referenciasFormArray.at(index);
-        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
-        this.tiposPorFila[index] = [];
-        this.referenciasPorFila[index] = [];
+
+        if (clear && row) {
+            row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+            this.tiposPorFila[index] = [];
+            this.referenciasPorFila[index] = [];
+        }
 
         if (!sistemaId) return;
 
@@ -371,10 +389,13 @@ export class CreateComponent implements OnInit {
     /**
      * Maneja el cambio de artículo (Tipo) en una fila
      */
-    onArticuloChange(articuloId: number | null, index: number): void {
+    onArticuloChange(articuloId: number | null, index: number, clear = true): void {
         const row = this.referenciasFormArray.at(index);
-        row.patchValue({ referencia_id: null }, { emitEvent: false });
-        this.referenciasPorFila[index] = [];
+
+        if (clear && row) {
+            row.patchValue({ referencia_id: null }, { emitEvent: false });
+            this.referenciasPorFila[index] = [];
+        }
 
         if (!articuloId) return;
 
@@ -442,9 +463,9 @@ export class CreateComponent implements OnInit {
     agregarReferencia(data: any = {}): void {
         const index = this.referenciasFormArray.length;
 
-        // Inicializar opciones vacías para esta fila
-        this.tiposPorFila[index] = [];
-        this.referenciasPorFila[index] = [];
+        // Inicializar opciones vacías para esta fila o usar las proveídas
+        this.tiposPorFila[index] = data.tipos || [];
+        this.referenciasPorFila[index] = data.referencias || [];
 
         const referenciaForm = this.fb.group({
             estado: [data.estado ?? true],
@@ -459,26 +480,26 @@ export class CreateComponent implements OnInit {
             proveedores: this.fb.array(data.proveedores ?? [])
         });
 
+        this.referenciasFormArray.push(referenciaForm);
+
         // Suscribirse a cambios de sistema para cargar tipos
         referenciaForm.get('sistema_id')?.valueChanges.subscribe(sistemaId => {
-            this.onSistemaChange(sistemaId as number | null, index);
+            this.onSistemaChange(sistemaId as number | null, index); // por default clear = true
         });
 
         // Suscribirse a cambios de artículo para cargar referencias
         referenciaForm.get('articulo_id')?.valueChanges.subscribe(articuloId => {
-            this.onArticuloChange(articuloId as number | null, index);
+            this.onArticuloChange(articuloId as number | null, index); // por default clear = true
         });
 
-        // Si ya viene con sistema_id, cargar tipos inmediatamente
-        if (data.sistema_id) {
-            this.onSistemaChange(data.sistema_id, index);
+        // Si ya viene con sistema_id y no se pre-cargaron tipos, cargar tipos inmediatamente
+        if (data.sistema_id && (!data.tipos || data.tipos.length === 0)) {
+            this.onSistemaChange(data.sistema_id, index, false);
         }
-        // Si ya viene con articulo_id, cargar referencias inmediatamente
-        if (data.articulo_id) {
-            this.onArticuloChange(data.articulo_id, index);
+        // Si ya viene con articulo_id y no se pre-cargaron referencias, cargar referencias inmediatamente
+        if (data.articulo_id && (!data.referencias || data.referencias.length === 0)) {
+            this.onArticuloChange(data.articulo_id, index, false);
         }
-
-        this.referenciasFormArray.push(referenciaForm);
     }
 
     /**
@@ -486,6 +507,101 @@ export class CreateComponent implements OnInit {
      */
     eliminarReferencia(index: number): void {
         this.referenciasFormArray.removeAt(index);
+    }
+
+    /**
+     * Inicia el flujo de agregado múltiple
+     */
+    abrirDialogoLote(): void {
+        this.loteForm.reset({ cantidad_lote: 1 });
+        this.displayLoteDialog = true;
+    }
+
+    cerrarDialogoLote(): void {
+        this.displayLoteDialog = false;
+    }
+
+    onSistemaLoteChange(sistemaId: number | null): void {
+        this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
+        this.loteForm.get('articulo_id')?.disable();
+        this.loteForm.get('referencias_seleccionadas')?.disable();
+        this.tiposLote = [];
+        this.referenciasLote = [];
+
+        if (!sistemaId) return;
+
+        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+            next: (response) => {
+                const nombresTipos = response.data.map(l => l.nombre);
+                this.articuloService.getAll({ per_page: 500 }).subscribe({
+                    next: (resArt) => {
+                        this.tiposLote = resArt.data
+                            .filter(a => nombresTipos.includes(a.definicion))
+                            .map(a => ({
+                                label: a.definicion,
+                                value: a.id,
+                                descripcion: a.descripcionEspecifica
+                            }));
+                        if (this.tiposLote.length > 0) {
+                            this.loteForm.get('articulo_id')?.enable();
+                        }
+                    }
+                });
+            }
+        });
+    }
+
+    onArticuloLoteChange(articuloId: number | null): void {
+        this.loteForm.patchValue({ referencias_seleccionadas: [] });
+        this.loteForm.get('referencias_seleccionadas')?.disable();
+        this.referenciasLote = [];
+
+        if (!articuloId) return;
+
+        this.referenciaService.getAll({ articulo_id: articuloId, per_page: 200 }).subscribe({
+            next: (response) => {
+                this.referenciasLote = response.data.map(r => ({
+                    label: r.referencia,
+                    value: r.id,
+                    definicion: r.referencia
+                }));
+                if (this.referenciasLote.length > 0) {
+                    this.loteForm.get('referencias_seleccionadas')?.enable();
+                } else {
+                    this.messageService.add({ severity: 'info', summary: 'Sin referencias', detail: 'Este artículo no tiene referencias parametrizadas.' });
+                }
+            }
+        });
+    }
+
+    agregarNuevasLote(): void {
+        if (this.loteForm.invalid) {
+            this.loteForm.markAllAsTouched();
+            return;
+        }
+
+        const data = this.loteForm.value;
+        const refs = data.referencias_seleccionadas;
+
+        refs.forEach((refId: number) => {
+            const index = this.referenciasFormArray.length;
+
+            const refModel = this.referenciasLote.find(r => r.value === refId);
+
+            this.agregarReferencia({
+                estado: true,
+                sistema_id: data.sistema_id,
+                articulo_id: data.articulo_id,
+                referencia_id: refId,
+                cantidad: data.cantidad_lote,
+                definicion: refModel?.definicion || '',
+                tipos: [...this.tiposLote],
+                referencias: [...this.referenciasLote]
+            });
+        });
+
+        this.messageService.add({ severity: 'success', summary: 'Agregado en Lote', detail: `Se insertaron ${refs.length} referencias exitosamente.` });
+        this.cerrarDialogoLote();
     }
 
     /**
