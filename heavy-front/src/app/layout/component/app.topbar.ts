@@ -10,15 +10,17 @@ import { MenuModule } from 'primeng/menu';
 import { InputTextModule } from 'primeng/inputtext';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { LayoutService } from '../service/layout.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { GlobalSearchService, SearchResult } from '../../core/services/global-search.service';
 
 @Component({
     selector: 'app-topbar',
     standalone: true,
-    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule, IconFieldModule, InputIconModule],
+    imports: [RouterModule, CommonModule, FormsModule, StyleClassModule, BadgeModule, PopoverModule, MenuModule, InputTextModule, IconFieldModule, InputIconModule, AutoCompleteModule],
     template: ` <div class="layout-topbar">
         <div class="layout-topbar-logo-container">
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
@@ -30,10 +32,32 @@ import { AuthService } from '../../core/auth/services/auth.service';
         </div>
 
         <div class="flex-1 flex items-center justify-center px-4 hidden lg:flex">
-            <p-iconfield iconPosition="left" style="width: 100%; max-width: 500px;">
-                <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                <input type="text" pInputText [(ngModel)]="searchQuery" (keyup.enter)="performSearch()" placeholder="Buscar pedidos, terceros, cotizaciones..." class="w-full" />
-            </p-iconfield>
+            <p-autoComplete 
+                [(ngModel)]="selectedSearchResult" 
+                [suggestions]="searchResults" 
+                (completeMethod)="onSearch($event)" 
+                field="title" 
+                placeholder="Buscar pedidos, terceros, artículos, fabricantes..." 
+                [style]="{'width':'100%', 'max-width':'600px'}" 
+                [inputStyle]="{'width':'100%', 'border-radius': '20px', 'padding-left': '2.5rem'}" 
+                styleClass="w-full max-w-[600px] relative"
+                (onSelect)="onSearchSelect($event)">
+                
+                <ng-template pTemplate="content">
+                    <i class="pi pi-search absolute left-4 text-gray-500" style="top: 50%; transform: translateY(-50%); z-index: 1;"></i>
+                </ng-template>
+
+                <ng-template let-item pTemplate="item">
+                    <div class="flex items-center gap-3 py-1">
+                        <i [ngClass]="getSearchIcon(item.type)" class="text-xl text-primary"></i>
+                        <div class="flex-1">
+                            <div class="font-bold">{{ item.title }}</div>
+                            <div class="text-sm text-gray-500">{{ item.description }}</div>
+                        </div>
+                        <span class="ml-auto text-xs px-2 py-1 bg-surface-200 dark:bg-surface-700 rounded capitalize">{{ item.type }}</span>
+                    </div>
+                </ng-template>
+            </p-autoComplete>
         </div>
 
         <div class="layout-topbar-actions">
@@ -108,6 +132,7 @@ export class AppTopbar {
     private readonly notificationService = inject(NotificationService);
     private readonly authService = inject(AuthService);
     private readonly router = inject(Router);
+    private readonly searchService = inject(GlobalSearchService);
     public readonly layoutService = inject(LayoutService);
 
     @ViewChild('profileMenu') profileMenu: any;
@@ -118,6 +143,9 @@ export class AppTopbar {
     isAuthenticated = this.authService.isAuthenticated;
 
     searchQuery = '';
+    selectedSearchResult: any = null;
+    searchResults: SearchResult[] = [];
+
     items!: MenuItem[];
 
     profileMenuItems: MenuItem[] = [
@@ -151,6 +179,56 @@ export class AppTopbar {
 
     toggleDarkMode(): void {
         this.layoutService.layoutConfig.update((state) => ({ ...state, darkTheme: !state.darkTheme }));
+    }
+
+    onSearch(event: any): void {
+        const query = event.query;
+        if (query && query.length >= 2) {
+            this.searchService.search(query).subscribe({
+                next: (res) => {
+                    this.searchResults = res.data;
+                },
+                error: (err) => {
+                    console.error('Search error', err);
+                    this.searchResults = [];
+                }
+            });
+        } else {
+            this.searchResults = [];
+        }
+    }
+
+    onSearchSelect(event: any): void {
+        if (event && event.value) {
+            const item: SearchResult = event.value;
+            // Navigate to the specific route
+            // Depending on the type, we might want to navigate to a detail page.
+            // For now, redirect to the list module or specific entity if ID is provided.
+            let navRoute = item.route;
+
+            // Logica para rutas con ID  (ej: /app/pedidos/10)
+            if (['pedido', 'cotizacion', 'tercero', 'articulo', 'maquina'].includes(item.type)) {
+                navRoute = `${item.route}/${item.id}`;
+            }
+
+            this.router.navigate([navRoute]);
+            this.selectedSearchResult = null; // Clear search on select
+        }
+    }
+
+    getSearchIcon(type: string): string {
+        switch (type) {
+            case 'pedido': return 'pi pi-shopping-cart';
+            case 'cotizacion': return 'pi pi-file';
+            case 'tercero': return 'pi pi-users';
+            case 'articulo': return 'pi pi-box';
+            case 'referencia': return 'pi pi-hashtag';
+            case 'maquina': return 'pi pi-cog';
+            case 'sistema': return 'pi pi-wrench';
+            case 'lista': return 'pi pi-list-check';
+            case 'fabricante': return 'pi pi-globe';
+            default: return 'pi pi-search';
+        }
     }
 
     performSearch(): void {

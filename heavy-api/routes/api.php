@@ -99,6 +99,9 @@ Route::prefix('v1')->group(function () {
         Route::get('/tokens', [AuthController::class, 'tokens']);
         Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
         
+        // Global Search
+        Route::get('/search', [App\Http\Controllers\Api\V1\SearchController::class, 'index']);
+        
         /**
          * Información del usuario autenticado
          */
