@@ -20,8 +20,8 @@ export class FooterSection {
 
     // URLs de redes sociales (actualizar según cuentas oficiales)
     readonly socialLinks = {
-        facebook: 'https://www.facebook.com/heavymarket',
-        youtube: 'https://www.youtube.com/@heavymarket'
+        facebook: 'https://www.facebook.com/heavymarketsas',
+        youtube: ''
     };
 
     contactForm: FormGroup;

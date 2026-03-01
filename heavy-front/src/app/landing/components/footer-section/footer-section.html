@@ -95,12 +95,12 @@
     </div>
     <div class="footer-bottom">
         <div class="footer-socials">
-            <a [href]="socialLinks.facebook" target="_blank" rel="noopener noreferrer" class="social-link"
-                aria-label="Visitar Facebook de HeavyMarket">
+            <a *ngIf="socialLinks.facebook" [href]="socialLinks.facebook" target="_blank" rel="noopener noreferrer"
+                class="social-link" aria-label="Visitar Facebook de HeavyMarket">
                 <img src="/images/icons/icon-facebook.svg" alt="Facebook" />
             </a>
-            <a [href]="socialLinks.youtube" target="_blank" rel="noopener noreferrer" class="social-link"
-                aria-label="Visitar YouTube de HeavyMarket">
+            <a *ngIf="socialLinks.youtube" [href]="socialLinks.youtube" target="_blank" rel="noopener noreferrer"
+                class="social-link" aria-label="Visitar YouTube de HeavyMarket">
                 <img src="/images/icons/icon-youtube.svg" alt="YouTube" />
             </a>
             <button class="scroll-up-button" (click)="scrollToTop()" aria-label="Volver al inicio">
