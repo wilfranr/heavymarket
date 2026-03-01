@@ -1630,6 +1630,17 @@ app-banner {
     margin: 0;
 }
 
+a.contact-email {
+    display: block;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+a.contact-email:hover {
+    color: #FDB831;
+    text-decoration: underline;
+}
+
 .footer-bottom {
     display: flex;
     flex-direction: column;
