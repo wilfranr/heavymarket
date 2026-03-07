@@ -692,6 +692,27 @@
 }
 
 .btn-add-list {
+    background: transparent;
+    color: #FFFFFF;
+    border: 1px solid #FDB831;
+    border-radius: 64px;
+    padding: 8px 16px;
+    font-family: 'Figtree', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.btn-add-list:hover {
+    background: #FDB831;
+    color: #0C0E0F;
+}
+
+.btn-bulk-import {
     background: #FDB831;
     color: #0C0E0F;
     border: none;
@@ -704,63 +725,97 @@
     display: flex;
     align-items: center;
     gap: 8px;
+    transition: all 0.3s ease;
+}
+
+.bulk-import-container {
+    background: #2D3539;
+    padding: 24px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+    border: 1px dashed #FDB831;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.bulk-helper {
+    color: #ccc;
+    font-size: 13px;
+    margin-bottom: 12px;
+}
+
+.bulk-textarea {
+    font-family: monospace;
+    margin-bottom: 16px;
+    height: 120px;
+}
+
+.bulk-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Form Item Row */
 .form-item-row {
     background: #343743;
     border-radius: 12px;
-    padding: 20px 24px;
+    padding: 12px 16px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
-    margin-bottom: 16px;
+    gap: 8px;
+    margin-bottom: 12px;
     border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Fila superior: Sistema + Descripción + Botones */
-.item-row-top {
+.item-row-single {
     display: flex;
     flex-direction: row;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
-    width: 100%;
-}
-
-/* Fila inferior: Cantidad + Referencia + Archivos */
-.item-row-bottom {
-    display: flex;
-    flex-direction: row;
-    align-items: flex-end;
-    flex-wrap: wrap;
-    gap: 16px;
+    align-items: center;
+    gap: 12px;
     width: 100%;
 }
 
 /* Tamaños de campo */
 .item-field-sistema {
-    flex: 2;
+    flex: 1.5;
     min-width: 0;
 }
 
 .item-field-descripcion {
-    flex: 3;
-    min-width: 0;
-}
-
-.item-field-cantidad {
-    flex: 0 0 110px;
-}
-
-.item-field-referencia {
     flex: 2;
     min-width: 0;
 }
 
-.item-field-archivos {
-    flex: 2.5;
+.item-field-cantidad {
+    flex: 0 0 80px;
+}
+
+.item-field-referencia {
+    flex: 1.5;
     min-width: 0;
+}
+
+.item-field-archivos {
+    flex: 1.5;
+    min-width: 0;
+}
+
+.item-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
 }
 
 .form-field {
@@ -1785,6 +1840,7 @@
         width: 100%;
     }
 }
+
 /* Comment Modal (Dark theme overrides for PrimeNG dialog) */
 ::ng-deep .cotizador-dark-dialog .p-dialog-header {
     background: #343743;

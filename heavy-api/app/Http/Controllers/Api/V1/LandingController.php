@@ -147,11 +147,30 @@ class LandingController extends Controller
         $brands = \App\Models\Fabricante::orderBy('nombre')->get(['id', 'nombre']);
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
-        $systems = \App\Models\Sistema::with(['listas' => function ($query) {
-            $query->where('tipo', 'Tipo de Artículo')
-                  ->select('listas.id', 'listas.nombre', 'listas.foto')
-                  ->orderBy('listas.nombre');
-        }])->orderBy('nombre')->get(['id', 'nombre', 'imagen']);
+        $allItemTypes = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+            ->select('id', 'nombre', 'foto')
+            ->orderBy('nombre')
+            ->get();
+
+        $defaultSystem = \App\Models\Sistema::where('nombre', 'Por Defecto')->first();
+        if ($defaultSystem) {
+            $defaultSystem->setRelation('listas', $allItemTypes);
+        }
+
+        $otherSystems = \App\Models\Sistema::where('nombre', '!=', 'Por Defecto')
+            ->with(['listas' => function ($query) {
+                $query->where('tipo', 'Tipo de Artículo')
+                      ->select('listas.id', 'listas.nombre', 'listas.foto')
+                      ->orderBy('listas.nombre');
+            }])
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'imagen']);
+
+        $systems = collect();
+        if ($defaultSystem) {
+            $systems->push($defaultSystem);
+        }
+        $systems = $systems->concat($otherSystems);
         
         // 4. Modelos (Distintos modelos de la tabla Maquinas)
         $models = \App\Models\Maquina::select('modelo')
@@ -521,7 +540,10 @@ class LandingController extends Controller
      */
     public function contactLeads()
     {
-        $leads = \App\Models\ClienteInteresado::orderBy('created_at', 'desc')->get();
+        $terceroEmails = \App\Models\Tercero::whereNotNull('email')->pluck('email')->toArray();
+        $leads = \App\Models\ClienteInteresado::whereNotIn('correo_electronico', $terceroEmails)
+            ->orderBy('created_at', 'desc')
+            ->get();
         return response()->json($leads);
     }
 

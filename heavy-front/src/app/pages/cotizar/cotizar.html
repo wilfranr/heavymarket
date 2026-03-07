@@ -65,8 +65,7 @@
                         <!-- 2. Marca (Opcional) -->
                         <div class="cotizador-filter-group">
                             <button class="cotizador-select" (click)="toggleBrand()">
-                                <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca
-                                    (Opcional)'
+                                <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca'
                                     }}</span>
                                 <div class="cotizador-select-icon">
                                     <i class="pi pi-chevron-right"></i>
@@ -85,20 +84,18 @@
 
                         <!-- 3. Modelo (Opcional) - Input de texto -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel"
-                                placeholder="Modelo (Opcional)">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel" placeholder="Modelo">
                         </div>
 
                         <!-- 4. Serie -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries"
-                                placeholder="Serie (Opcional)">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries" placeholder="Serie">
                         </div>
 
                         <!-- 5. Arreglo -->
                         <div class="cotizador-filter-group">
                             <input type="text" class="cotizador-input" [(ngModel)]="selectedArrangement"
-                                placeholder="Arreglo (Opcional)">
+                                placeholder="Arreglo">
                         </div>
                     </div>
 
@@ -185,20 +182,36 @@
                         <div class="form-step-content" *ngIf="formStep === 1">
                             <div class="form-section-header">
                                 <h3 class="section-title">Tus ítems</h3>
-                                <button class="btn-add-list" (click)="addItem()">
-                                    Agregar listado <i class="pi pi-plus"></i>
-                                </button>
+                                <div class="header-actions" style="display: flex; gap: 12px;">
+                                    <button class="btn-bulk-import" (click)="showBulkImport = !showBulkImport">
+                                        Carga masiva <i class="pi pi-upload"></i>
+                                    </button>
+                                    <button class="btn-add-list" (click)="addItem()">
+                                        Agregar listado <i class="pi pi-plus"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Bulk Import Area -->
+                            <div class="bulk-import-container" *ngIf="showBulkImport">
+                                <p class="bulk-helper">Pega tu listado (Cantidad [Espacio] Referencia). Una por línea.
+                                </p>
+                                <textarea [(ngModel)]="bulkText" rows="5" class="custom-input bulk-textarea"
+                                    placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"></textarea>
+                                <div class="bulk-actions">
+                                    <button class="cotizador-btn-secondary"
+                                        (click)="showBulkImport = false">Cerrar</button>
+                                    <button class="cotizador-btn-primary" (click)="procesarMasivo()">Procesar
+                                        listado</button>
+                                </div>
                             </div>
 
                             <div class="items-list">
                                 <div class="form-item-row" *ngFor="let item of items; let i = index">
 
-                                    <!-- Fila 1: Sistema + Descripción + Botones -->
-                                    <div class="item-row-top">
-
+                                    <div class="item-row-single">
                                         <!-- Sistema -->
                                         <div class="form-field item-field-sistema">
-                                            <label class="input-label">Sistema</label>
                                             <div class="cotizador-filter-group" style="position: relative;">
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemSystem(i)">
@@ -211,7 +224,7 @@
                                                             class="select-avatar-placeholder">
                                                             <i class="pi pi-cog"></i>
                                                         </div>
-                                                        <span>{{ item.system || 'Seleccionar' }}</span>
+                                                        <span>{{ item.system || 'Sistema' }}</span>
                                                     </div>
                                                     <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
                                                 </button>
@@ -243,7 +256,6 @@
 
                                         <!-- Descripción -->
                                         <div class="form-field item-field-descripcion">
-                                            <label class="input-label">Descripción (Tipo de artículo)</label>
                                             <div class="cotizador-filter-group" style="position: relative;">
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemDescription(i)" [disabled]="!item.system">
@@ -256,8 +268,8 @@
                                                             class="select-avatar-placeholder">
                                                             <i class="pi pi-box"></i>
                                                         </div>
-                                                        <span>{{ item.description || (item.system ? 'Seleccionar tipo' :
-                                                            'Selecciona un sistema primero') }}</span>
+                                                        <span>{{ item.description || (item.system ? 'Tipo de artículo' :
+                                                            'Selecciona sistema') }}</span>
                                                     </div>
                                                     <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
                                                 </button>
@@ -266,7 +278,7 @@
                                                     style="width: 100%; top: 45px; left: 0; z-index: 100;">
                                                     <div class="cotizador-dropdown-search">
                                                         <input type="text" [(ngModel)]="item.descriptionSearch"
-                                                            placeholder="Buscar tipo de artículo..."
+                                                            placeholder="Buscar tipo..."
                                                             (click)="$event.stopPropagation()"
                                                             class="cotizador-dropdown-input">
                                                         <i class="pi pi-search"></i>
@@ -282,16 +294,44 @@
                                                         </div>
                                                         <span>{{ desc.nombre }}</span>
                                                     </div>
-                                                    <div class="cotizador-dropdown-item"
-                                                        *ngIf="getFilteredDescriptions(item).length === 0"
-                                                        style="color: #666; font-style: italic; cursor: default;">
-                                                        No hay tipos disponibles para este sistema
-                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <!-- Botones de acción (en fila top) -->
+                                        <!-- Cantidad -->
+                                        <div class="form-field item-field-cantidad">
+                                            <input type="number" class="custom-input" [(ngModel)]="items[i].quantity"
+                                                placeholder="Cant.">
+                                        </div>
+
+                                        <!-- Referencia -->
+                                        <div class="form-field item-field-referencia">
+                                            <input type="text" class="custom-input" [(ngModel)]="items[i].reference"
+                                                placeholder="Referencia">
+                                        </div>
+
+                                        <!-- Archivos -->
+                                        <div class="form-field item-field-archivos">
+                                            <div class="upload-container">
+                                                <input type="file" #fileInput [style.display]="'none'"
+                                                    (change)="onFileSelected($event, i)"
+                                                    accept="image/*,.pdf,.doc,.docx">
+                                                <div class="upload-box" (click)="fileInput.click()"
+                                                    [class.has-file]="items[i].file">
+                                                    <i [class]="items[i].file ? 'pi pi-file-check' : 'pi pi-image'"
+                                                        [style.color]="items[i].file ? '#4ADE80' : '#FDB831'"></i>
+                                                    <span class="upload-text">
+                                                        {{ items[i].file ? items[i].file.name : 'Imagen' }}
+                                                    </span>
+                                                    <button *ngIf="items[i].file" class="btn-remove-file"
+                                                        (click)="$event.stopPropagation(); items[i].file = null">
+                                                        <i class="pi pi-times"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Acciones -->
                                         <div class="item-actions">
                                             <button class="action-btn btn-comment" title="Comentar"
                                                 (click)="openCommentModal(i)"
@@ -303,48 +343,7 @@
                                                 title="Eliminar"><i class="pi pi-trash"></i></button>
                                         </div>
 
-                                    </div><!-- /item-row-top -->
-
-                                    <!-- Fila 2: Cantidad + Referencia + Archivos -->
-                                    <div class="item-row-bottom">
-
-                                        <!-- Cantidad -->
-                                        <div class="form-field item-field-cantidad">
-                                            <label class="input-label">Cantidad</label>
-                                            <input type="number" class="custom-input" [(ngModel)]="items[i].quantity"
-                                                placeholder="Ej: 1">
-                                        </div>
-
-                                        <!-- Referencia -->
-                                        <div class="form-field item-field-referencia">
-                                            <label class="input-label">Referencia</label>
-                                            <input type="text" class="custom-input" [(ngModel)]="items[i].reference"
-                                                placeholder="Ej: no definido">
-                                        </div>
-
-                                        <!-- Archivos -->
-                                        <div class="form-field item-field-archivos">
-                                            <label class="input-label">Archivos adjuntos</label>
-                                            <div class="upload-container">
-                                                <input type="file" #fileInput [style.display]="'none'"
-                                                    (change)="onFileSelected($event, i)"
-                                                    accept="image/*,.pdf,.doc,.docx">
-                                                <div class="upload-box" (click)="fileInput.click()"
-                                                    [class.has-file]="items[i].file">
-                                                    <i [class]="items[i].file ? 'pi pi-file-check' : 'pi pi-image'"
-                                                        [style.color]="items[i].file ? '#4ADE80' : '#FDB831'"></i>
-                                                    <span class="upload-text">
-                                                        {{ items[i].file ? items[i].file.name : 'Cargar' }}
-                                                    </span>
-                                                    <button *ngIf="items[i].file" class="btn-remove-file"
-                                                        (click)="$event.stopPropagation(); items[i].file = null">
-                                                        <i class="pi pi-times"></i>
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                    </div><!-- /item-row-bottom -->
+                                    </div><!-- /item-row-single -->
                                 </div>
 
                                 <button class="btn-add-item-row" (click)="addItem()">Agregar +</button>

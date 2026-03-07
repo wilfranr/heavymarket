@@ -317,7 +317,13 @@ export class CreateComponent implements OnInit {
                 this.sistemas = response.data.map((s) => ({
                     label: s.nombre,
                     value: s.id
-                }));
+                })).sort((a, b) => {
+                    const labelA = a.label.toLowerCase();
+                    const labelB = b.label.toLowerCase();
+                    if (labelA === 'por defecto') return -1;
+                    if (labelB === 'por defecto') return 1;
+                    return labelA.localeCompare(labelB);
+                });
             }
         });
 
@@ -373,8 +379,15 @@ export class CreateComponent implements OnInit {
 
         if (!sistemaId) return;
 
+        // Si el sistema es "Por defecto", no filtramos por sistema_id para obtener todos los tipos
+        const system = this.sistemas.find(s => s.value === sistemaId);
+        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
+        if (system && system.label.toLowerCase() !== 'por defecto') {
+            params.sistema_id = sistemaId;
+        }
+
         // Cargar Listas (Tipos de Artículo) asociados al sistema
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+        this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
 
@@ -479,9 +492,12 @@ export class CreateComponent implements OnInit {
         this.tiposPorFila[index] = data.tipos || [];
         this.referenciasPorFila[index] = data.referencias || [];
 
+        const defaultSistema = this.sistemas.find(s => s.label.toLowerCase() === 'por defecto');
+        const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
+
         const referenciaForm = this.fb.group({
             estado: [data.estado ?? true],
-            sistema_id: [data.sistema_id ?? null],
+            sistema_id: [data.sistema_id ?? defaultSistemaId],
             articulo_id: [data.articulo_id ?? null],
             referencia_id: [data.referencia_id ?? null],
             marca_id: [data.marca_id ?? null],
@@ -640,7 +656,13 @@ export class CreateComponent implements OnInit {
 
         if (!sistemaId) return;
 
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+        const system = this.sistemas.find(s => s.value === sistemaId);
+        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
+        if (system && system.label.toLowerCase() !== 'por defecto') {
+            params.sistema_id = sistemaId;
+        }
+
+        this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
                 this.articuloService.getAll({ per_page: 500 }).subscribe({

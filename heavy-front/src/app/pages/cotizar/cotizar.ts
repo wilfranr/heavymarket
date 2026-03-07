@@ -32,6 +32,8 @@ export class Cotizar implements OnInit {
     errorMessage = '';
     typeSearch = '';
     brandSearch = '';
+    bulkText = '';
+    showBulkImport = false;
 
     // Location Data
     countries: Country[] = [];
@@ -114,6 +116,10 @@ export class Cotizar implements OnInit {
                 this.brands = data.brands || [];
                 this.systems = data.systems || [];
                 this.models = data.models || [];
+
+                if (this.systems.length > 0 && this.items.length > 0 && !this.items[0].system) {
+                    this.items[0].system = this.systems[0].nombre;
+                }
 
                 if (this.categories.length > 0) {
                     this.activeTab = this.categories[0].slug;
@@ -392,7 +398,8 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        this.items.push({ system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
+        const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
+        this.items.push({ system: defaultSys, description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
         this.cd.markForCheck();
     }
 
@@ -406,6 +413,51 @@ export class Cotizar implements OnInit {
     duplicateItem(index: number) {
         const item = { ...this.items[index], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: this.items[index].comment || '' };
         this.items.splice(index + 1, 0, item);
+        this.cd.markForCheck();
+    }
+
+    procesarMasivo() {
+        if (!this.bulkText) return;
+        const lines = this.bulkText.split('\n');
+
+        if (this.items.length === 1 && !this.items[0].reference && !this.items[0].description) {
+            this.items = [];
+        }
+
+        const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+
+            const parts = trimmed.split(/[\s\t]+/);
+            let qty = 1;
+            let ref = trimmed;
+
+            if (parts.length >= 2) {
+                const parsedQty = parseInt(parts[0], 10);
+                if (!isNaN(parsedQty)) {
+                    qty = parsedQty;
+                    ref = parts.slice(1).join(' ');
+                }
+            }
+
+            this.items.push({
+                system: defaultSys,
+                description: '',
+                quantity: qty,
+                reference: ref,
+                file: null,
+                openSystem: false,
+                systemSearch: '',
+                openDescription: false,
+                descriptionSearch: '',
+                comment: ''
+            });
+        });
+
+        this.bulkText = '';
+        this.showBulkImport = false;
         this.cd.markForCheck();
     }
 
@@ -464,7 +516,7 @@ export class Cotizar implements OnInit {
     }
 
     getFilteredDescriptions(item: any) {
-        const selectedSys = this.systems.find(s => s.nombre === item.system);
+        const selectedSys = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
         if (!selectedSys || !selectedSys.listas) return [];
 
         let descList = selectedSys.listas;
@@ -477,12 +529,12 @@ export class Cotizar implements OnInit {
 
     getSelectedSystem(item: any) {
         if (!item.system) return null;
-        return this.systems.find(s => s.nombre === item.system) || null;
+        return this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase()) || null;
     }
 
     getSelectedDescription(item: any) {
         if (!item.description || !item.system) return null;
-        const sys = this.systems.find(s => s.nombre === item.system);
+        const sys = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
         if (!sys?.listas) return null;
         return sys.listas.find((d: any) => d.nombre === item.description) || null;
     }

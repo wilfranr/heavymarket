@@ -235,7 +235,13 @@ export class EditComponent implements OnInit {
                 this.sistemas = response.data.map((s) => ({
                     label: s.nombre,
                     value: s.id
-                }));
+                })).sort((a, b) => {
+                    const labelA = a.label.toLowerCase();
+                    const labelB = b.label.toLowerCase();
+                    if (labelA === 'por defecto') return -1;
+                    if (labelB === 'por defecto') return 1;
+                    return labelA.localeCompare(labelB);
+                });
             }
         });
 
@@ -432,32 +438,32 @@ export class EditComponent implements OnInit {
         return this.pedidoForm.get('referencias') as FormArray;
     }
 
-    /**
-     * Agrega una nueva referencia al FormArray
-     */
-    agregarReferencia(): void {
+    agregarReferencia(data: any = {}): void {
         const index = this.referenciasFormArray.length;
 
-        // Inicializar opciones vacías para esta fila
-        this.tiposPorFila[index] = [];
-        this.referenciasPorFila[index] = [];
+        const defaultSistema = this.sistemas.find(s => s.label.toLowerCase() === 'por defecto');
+        const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
 
         const referenciaForm = this.fb.group({
-            id: [null],
-            estado: [true],
-            sistema_id: [null],
-            lista_id: [null],
-            articulo_id: [null],
-            referencia_id: [null],
-            marca_id: [null],
-            cantidad: [1, [Validators.required, Validators.min(1)]],
-            comentario: [''],
-            definicion: [''],
-            imagen: [null],
-            imagenes: [[]]
+            id: [data?.id ?? null],
+            estado: [data?.estado ?? true],
+            sistema_id: [data?.sistema_id ?? defaultSistemaId],
+            lista_id: [data?.lista_id ?? null],
+            articulo_id: [data?.articulo_id ?? null],
+            referencia_id: [data?.referencia_id ?? null],
+            marca_id: [data?.marca_id ?? null],
+            cantidad: [data?.cantidad ?? 1, [Validators.required, Validators.min(1)]],
+            comentario: [data?.comentario ?? ''],
+            definicion: [data?.definicion ?? ''],
+            imagen: [data?.imagen ?? null],
+            imagenes: [data?.imagenes ?? []]
         });
 
         this.referenciasFormArray.push(referenciaForm);
+
+        if (referenciaForm.get('sistema_id')?.value) {
+            this.cargarTiposPorSistema(referenciaForm.get('sistema_id')?.value, index);
+        }
     }
 
     /**
@@ -507,7 +513,13 @@ export class EditComponent implements OnInit {
      * Carga los tipos de artículo (Listas) asociados a un sistema
      */
     private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, listaIdPreseleccionado?: number | null): void {
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+        const system = this.sistemas.find(s => s.value === sistemaId);
+        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
+        if (system && system.label.toLowerCase() !== 'por defecto') {
+            params.sistema_id = sistemaId;
+        }
+
+        this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
                 const opciones = listasAsociadas.map((lista: any) => ({
@@ -992,7 +1004,13 @@ export class EditComponent implements OnInit {
 
         if (!sistemaId) return;
 
-        this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
+        const system = this.sistemas.find(s => s.value === sistemaId);
+        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
+        if (system && system.label.toLowerCase() !== 'por defecto') {
+            params.sistema_id = sistemaId;
+        }
+
+        this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
                 this.articuloService.getAll({ per_page: 500 }).subscribe({
