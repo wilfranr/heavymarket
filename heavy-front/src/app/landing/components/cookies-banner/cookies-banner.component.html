@@ -1,0 +1,79 @@
+<!-- Banner Fijo -->
+<div *ngIf="showBanner && !showPreferences"
+    class="cookies-banner-fixed surface-card p-4 flex flex-column md:flex-row align-items-center justify-content-between border-top-1 border-300">
+    <div class="mb-3 md:mb-0 mr-0 md:mr-4 flex-1">
+        <h3 class="text-xl font-bold mb-2 text-900 line-height-3">Utilizamos cookies</h3>
+        <p class="text-700 m-0 line-height-3">
+            HeavyMarket utiliza cookies propias y de terceros para mejorar tu experiencia, analizar nuestro tráfico y
+            personalizar los anuncios. Al hacer clic en "Aceptar todas", aceptas el uso de cookies. Puedes configurarlas
+            o rechazarlas haciendo clic en "Preferencias".
+            <br /> Consulta nuestra política en nuestros
+            <a href="javascript:void(0)" (click)="onTermsClick()"
+                class="text-primary font-bold cursor-pointer hover:underline">Términos y
+                Condiciones</a>.
+        </p>
+    </div>
+    <div class="flex gap-2 flex-wrap sm:flex-nowrap">
+        <button pButton label="Preferencias" class="p-button-outlined p-button-secondary w-full sm:w-auto"
+            (click)="openPreferences()"></button>
+        <button pButton label="Rechazar opcionales" class="p-button-outlined p-button-danger w-full sm:w-auto"
+            (click)="rejectAll()"></button>
+        <button pButton label="Aceptar todas" class="p-button-primary w-full sm:w-auto" (click)="acceptAll()"></button>
+    </div>
+</div>
+
+<!-- Modal de Preferencias -->
+<p-dialog [(visible)]="showPreferences" [modal]="true" [draggable]="false" [resizable]="false"
+    [style]="{ width: '600px', maxWidth: '95vw' }" header="Preferencias de Cookies" (onHide)="closePreferences()">
+
+    <div class="mb-4">
+        <p class="text-700 line-height-3">
+            Cuando visitas un sitio web, este puede almacenar o recuperar información en tu navegador, principalmente en
+            forma de cookies. Esta información podría ser sobre ti, tus preferencias o tu dispositivo.
+        </p>
+    </div>
+
+    <!-- Strictly Necessary -->
+    <div class="flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-1 text-900 font-bold">Estrictamente Necesarias</h4>
+            <p class="text-700 text-sm m-0">Requeridas para el funcionamiento del sitio y no se pueden desactivar.</p>
+        </div>
+        <div>
+            <p-toggleswitch [ngModel]="true" [disabled]="true" readonly="true"></p-toggleswitch>
+        </div>
+    </div>
+
+    <hr class="border-top-1 border-300 mb-3" />
+
+    <!-- Analytics -->
+    <div class="flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-1 text-900 font-bold">Rendimiento y Analítica</h4>
+            <p class="text-700 text-sm m-0">Nos permiten contar las visitas y fuentes de tráfico para mejorar el
+                rendimiento.</p>
+        </div>
+        <div>
+            <p-toggleswitch [(ngModel)]="preferences.analytics"></p-toggleswitch>
+        </div>
+    </div>
+
+    <hr class="border-top-1 border-300 mb-3" />
+
+    <!-- Marketing -->
+    <div class="flex justify-content-between align-items-center mb-3">
+        <div>
+            <h4 class="mb-1 text-900 font-bold">Marketing y Publicidad</h4>
+            <p class="text-700 text-sm m-0">Utilizadas para personalizar anuncios y medir la eficacia de campañas.</p>
+        </div>
+        <div>
+            <p-toggleswitch [(ngModel)]="preferences.marketing"></p-toggleswitch>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-content-end gap-2">
+            <button pButton label="Guardar Preferencias" class="p-button-primary" (click)="savePreferences()"></button>
+        </div>
+    </ng-template>
+</p-dialog>

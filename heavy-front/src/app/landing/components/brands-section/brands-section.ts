@@ -23,8 +23,10 @@ export class BrandsSection implements OnInit {
 
     ngOnInit() {
         this.landingService.getBrands().subscribe((data) => {
+            console.log('Brands found:', data?.length);
             const filtered = data.filter((b) => b.logo);
             this.brands = this.shuffle(filtered);
+            console.log('Brands with logos:', this.brands.length);
         });
     }
 

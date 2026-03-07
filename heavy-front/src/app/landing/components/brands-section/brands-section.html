@@ -1,14 +1,17 @@
 <div class="hm-brands-section">
     <div class="hm-brands-marquee">
         <div class="hm-brands-track">
-            <!-- First copy -->
-            <div *ngFor="let brand of brands" class="hm-brands-card">
+            @for (brand of brands; track brand.id) {
+            <div class="hm-brands-card">
                 <img [src]="brand.logo" [alt]="brand.nombre" class="hm-brands-img" />
             </div>
+            }
             <!-- Duplicate for seamless loop -->
-            <div *ngFor="let brand of brands" class="hm-brands-card">
+            @for (brand of brands; track 'copy-' + brand.id) {
+            <div class="hm-brands-card">
                 <img [src]="brand.logo" [alt]="brand.nombre" class="hm-brands-img" />
             </div>
+            }
         </div>
     </div>
 </div>

@@ -739,12 +739,17 @@ app-banner {
     flex-grow: 0;
     margin: 0;
     position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
     opacity: 0;
     transition: opacity 0.5s ease-in-out;
+    pointer-events: none;
 }
 
 .carousel-title.active {
     opacity: 1;
+    pointer-events: auto;
 }
 
 /* Frame 51 - Dots de navegación */
