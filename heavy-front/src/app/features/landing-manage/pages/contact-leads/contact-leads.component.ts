@@ -93,6 +93,8 @@ export class ContactLeadsComponent implements OnInit {
                 next: () => {
                     this.selectedLead.estado = 'contactado';
                     this.selectedLead.isContacted = true;
+                    // Una vez convertido en tercero, se remueve del listado de interesados
+                    this.leads = this.leads.filter((lead) => lead.id !== this.selectedLead?.id);
                 }
             });
         }
