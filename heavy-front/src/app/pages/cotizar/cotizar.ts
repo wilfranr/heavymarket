@@ -436,7 +436,7 @@ export class Cotizar implements OnInit {
 
             if (parts.length >= 2) {
                 const parsedQty = parseInt(parts[0], 10);
-                if (!isNaN(parsedQty)) {
+                if (!isNaN(parsedQty) && parsedQty > 0) {
                     qty = parsedQty;
                     ref = parts.slice(1).join(' ');
                 }

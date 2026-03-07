@@ -621,7 +621,8 @@
         <div class="flex flex-col gap-2 relative">
             <label class="font-bold text-gray-800 dark:text-white">Cantidad por ítem <span
                     class="text-red-500">*</span></label>
-            <p-inputNumber formControlName="cantidad_lote" styleClass="w-full" placeholder="Ej: 1"></p-inputNumber>
+            <p-inputNumber formControlName="cantidad_lote" styleClass="w-full" placeholder="Ej: 1"
+                [min]="1"></p-inputNumber>
         </div>
 
         <div class="flex justify-end gap-3 mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
