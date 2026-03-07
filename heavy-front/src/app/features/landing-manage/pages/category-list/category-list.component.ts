@@ -14,6 +14,7 @@ import { DividerModule } from 'primeng/divider';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TooltipModule } from 'primeng/tooltip';
 import { LandingManageService, CategoriaLanding, SubcategoriaLanding } from '../../services/landing-manage.service';
+import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
 import { finalize } from 'rxjs/operators';
 
 @Component({
@@ -32,7 +33,8 @@ import { finalize } from 'rxjs/operators';
         InputTextModule,
         ConfirmDialogModule,
         CheckboxModule,
-        DividerModule
+        DividerModule,
+        ImageUploadComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './category-list.component.html'
@@ -50,6 +52,10 @@ export class CategoryListComponent implements OnInit {
     subcategoryDialog: boolean = false;
     currentSubcategory: Partial<SubcategoriaLanding> = {};
     isEditingSubcategory: boolean = false;
+
+    // Gestión de imagen para subcategoría
+    subcategoryImageFile: File | undefined = undefined;
+    subcategoryRemoveImage: boolean = false;
 
     constructor(
         private landingService: LandingManageService,
@@ -90,12 +96,16 @@ export class CategoryListComponent implements OnInit {
         this.currentCategory = { estado: true, mostrar_en_navbar: false };
         this.isEditingCategory = false;
         this.categoryDialog = true;
+        // Ajustar altura inicial (descripción suele estar vacía, pero por consistencia)
+        setTimeout(() => this.autoResizeCategoryDescription(), 0);
     }
 
     editCategory(category: CategoriaLanding) {
         this.currentCategory = { ...category };
         this.isEditingCategory = true;
         this.categoryDialog = true;
+        // Al abrir con descripción ya existente, ajustar para que no se corte el texto
+        setTimeout(() => this.autoResizeCategoryDescription(), 0);
     }
 
     deleteCategory(category: CategoriaLanding) {
@@ -141,12 +151,16 @@ export class CategoryListComponent implements OnInit {
     openNewSubcategory(category: CategoriaLanding) {
         this.currentSubcategory = { categoria_id: category.id, estado: true, mostrar_en_navbar: false };
         this.isEditingSubcategory = false;
+        this.subcategoryImageFile = undefined;
+        this.subcategoryRemoveImage = false;
         this.subcategoryDialog = true;
     }
 
     editSubcategory(subcategory: SubcategoriaLanding) {
         this.currentSubcategory = { ...subcategory };
         this.isEditingSubcategory = true;
+        this.subcategoryImageFile = undefined;
+        this.subcategoryRemoveImage = false;
         this.subcategoryDialog = true;
     }
 
@@ -173,14 +187,27 @@ export class CategoryListComponent implements OnInit {
             return;
         }
 
+        const hasImageChanges = !!this.subcategoryImageFile || this.subcategoryRemoveImage;
+
         const request = this.isEditingSubcategory
-            ? this.landingService.updateSubcategory(this.currentSubcategory.id!, this.currentSubcategory)
-            : this.landingService.createSubcategory(this.currentSubcategory);
+            ? hasImageChanges
+                ? this.landingService.updateSubcategoryWithImage(
+                    this.currentSubcategory.id!,
+                    this.currentSubcategory,
+                    this.subcategoryImageFile,
+                    this.subcategoryRemoveImage
+                )
+                : this.landingService.updateSubcategory(this.currentSubcategory.id!, this.currentSubcategory)
+            : hasImageChanges
+                ? this.landingService.createSubcategoryWithImage(this.currentSubcategory, this.subcategoryImageFile)
+                : this.landingService.createSubcategory(this.currentSubcategory);
 
         request.subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Subcategoría ${this.isEditingSubcategory ? 'actualizada' : 'creada'}` });
                 this.subcategoryDialog = false;
+                this.subcategoryImageFile = undefined;
+                this.subcategoryRemoveImage = false;
                 this.loadCategories();
             },
             error: (err) => {
@@ -188,6 +215,12 @@ export class CategoryListComponent implements OnInit {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
             }
         });
+    }
+
+    onSubcategoryImageSelected(file: File) {
+        this.subcategoryImageFile = file;
+        // Si el usuario selecciona una nueva imagen, desmarcamos eliminar
+        this.subcategoryRemoveImage = false;
     }
 
     onCategoryToggle(category: CategoriaLanding) {
@@ -250,6 +283,33 @@ export class CategoryListComponent implements OnInit {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
             }
         });
+    }
+
+    /**
+     * Autoajusta la altura del textarea de descripción general
+     * para evitar scroll interno y crecer según el contenido.
+     */
+    onCategoryDescriptionInput(event: Event) {
+        const textarea = event.target as HTMLTextAreaElement | null;
+        this.autoResizeCategoryDescription(textarea);
+    }
+
+    /**
+     * Aplica auto-resize al textarea de descripción general,
+     * usando la referencia directa cuando el diálogo ya está renderizado.
+     */
+    autoResizeCategoryDescription(textarea?: HTMLTextAreaElement | null) {
+        if (!textarea) {
+            textarea = document.getElementById('cat_desc') as HTMLTextAreaElement | null;
+        }
+
+        if (!textarea) {
+            return;
+        }
+
+        textarea.style.height = 'auto';
+        textarea.style.overflowY = 'hidden';
+        textarea.style.height = `${textarea.scrollHeight}px`;
     }
 
 }

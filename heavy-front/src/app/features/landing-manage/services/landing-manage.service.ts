@@ -66,6 +66,55 @@ export class LandingManageService extends ApiService {
         return this.delete<any>(`landing/subcategorias/${id}`);
     }
 
+    /**
+     * Crear subcategoría incluyendo una posible imagen (multipart/form-data)
+     */
+    createSubcategoryWithImage(data: Partial<SubcategoriaLanding>, imagenFile?: File): Observable<SubcategoriaLanding> {
+        const formData = new FormData();
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, String(value));
+            }
+        });
+
+        if (imagenFile) {
+            formData.append('imagen', imagenFile);
+        }
+
+        return this.post<SubcategoriaLanding>('landing/subcategorias', formData);
+    }
+
+    /**
+     * Actualizar subcategoría incluyendo gestión de imagen (multipart/form-data)
+     * Usa method spoofing para compatibilidad con Laravel.
+     */
+    updateSubcategoryWithImage(
+        id: number,
+        data: Partial<SubcategoriaLanding>,
+        imagenFile?: File | null,
+        removeImagen?: boolean
+    ): Observable<SubcategoriaLanding> {
+        const formData = new FormData();
+        formData.append('_method', 'PUT');
+
+        Object.entries(data).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+                formData.append(key, String(value));
+            }
+        });
+
+        if (imagenFile) {
+            formData.append('imagen', imagenFile);
+        }
+
+        if (removeImagen) {
+            formData.append('remove_imagen', '1');
+        }
+
+        return this.post<SubcategoriaLanding>(`landing/subcategorias/${id}`, formData);
+    }
+
     updateLista(id: number, data: any): Observable<any> {
         return this.put<any>(`listas/${id}`, data);
     }

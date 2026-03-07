@@ -504,12 +504,23 @@ class LandingController extends Controller
             'categoria_id' => 'required|exists:categorias_landing,id',
             'nombre' => 'required|string|max:255',
             'descripcion' => 'nullable|string',
+            'imagen' => 'nullable|image|max:5120',
             'mostrar_en_navbar' => 'boolean',
             'orden_navbar' => 'nullable|integer',
             'estado' => 'boolean'
         ]);
 
-        $subcategoria = \App\Models\SubcategoriaLanding::create($validated);
+        // Separar datos simples del archivo de imagen
+        $data = $validated;
+        unset($data['imagen']);
+
+        $subcategoria = new \App\Models\SubcategoriaLanding($data);
+
+        if ($request->hasFile('imagen')) {
+            $subcategoria->imagen = $request->file('imagen')->store('landing', 'public');
+        }
+
+        $subcategoria->save();
 
         return response()->json($subcategoria, 201);
     }
@@ -525,12 +536,34 @@ class LandingController extends Controller
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
             'descripcion' => 'nullable|string',
+            'imagen' => 'nullable|image|max:5120',
             'mostrar_en_navbar' => 'sometimes|boolean',
             'orden_navbar' => 'nullable|integer',
-            'estado' => 'sometimes|boolean'
+            'estado' => 'sometimes|boolean',
+            'remove_imagen' => 'sometimes|boolean'
         ]);
 
-        $subcategoria->update($validated);
+        // Actualizar campos básicos (sin incluir la imagen ni flags especiales)
+        $data = $validated;
+        unset($data['imagen'], $data['remove_imagen']);
+
+        if (!empty($data)) {
+            $subcategoria->update($data);
+        }
+
+        // Eliminar imagen existente si se solicita explícitamente
+        if ($request->boolean('remove_imagen')) {
+            $subcategoria->imagen = null;
+        }
+
+        // Guardar nueva imagen si se envía un archivo
+        if ($request->hasFile('imagen')) {
+            $subcategoria->imagen = $request->file('imagen')->store('landing', 'public');
+        }
+
+        if ($subcategoria->isDirty()) {
+            $subcategoria->save();
+        }
 
         return response()->json($subcategoria);
     }
