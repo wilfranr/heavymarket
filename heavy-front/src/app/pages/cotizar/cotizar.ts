@@ -6,6 +6,7 @@ import { FooterSection } from '../../landing/components/footer-section/footer-se
 import { LandingService, Category } from '../../core/services/landing';
 import { UbicacionService } from '../../core/services/ubicacion.service';
 import { Country, State, City } from '../../core/models/ubicacion.model';
+import { ClientAuthService } from '../../core/services/client-auth.service';
 
 import { RouterModule } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
@@ -39,6 +40,15 @@ export class Cotizar implements OnInit {
     countries: Country[] = [];
     states: State[] = [];
     cities: City[] = [];
+
+    // Helper para autocompletar ubicación desde tercero
+    private pendingTerceroLocation:
+        | {
+              country_id?: number | null;
+              state_id?: number | null;
+              city_id?: number | null;
+          }
+        | null = null;
 
     // Form Data Helpers
     items: any[] = [
@@ -92,6 +102,7 @@ export class Cotizar implements OnInit {
     constructor(
         private landingService: LandingService,
         private ubicacionService: UbicacionService,
+        private clientAuthService: ClientAuthService,
         private cd: ChangeDetectorRef
     ) {
         console.log('Cotizar Component Initialized');
@@ -106,6 +117,25 @@ export class Cotizar implements OnInit {
             this.currentUser = JSON.parse(storedUser);
             this.userData.name = this.currentUser.name;
             this.userData.email = this.currentUser.email;
+        }
+
+        // Si hay token de cliente, obtener perfil completo (incluyendo tercero asociado)
+        const clientToken = localStorage.getItem('clientToken');
+        if (clientToken) {
+            this.clientAuthService.me().subscribe({
+                next: (data) => {
+                    this.currentUser = data;
+                    localStorage.setItem('clientUser', JSON.stringify(data));
+
+                    if (data?.tercero) {
+                        this.prefillUserDataFromTercero(data.tercero);
+                    }
+                    this.cd.markForCheck();
+                },
+                error: (err) => {
+                    console.error('Error cargando perfil de cliente para cotizar', err);
+                }
+            });
         }
 
         // Load Quote Data
@@ -135,6 +165,12 @@ export class Cotizar implements OnInit {
         this.ubicacionService.getCountries().subscribe(res => {
             if (res && res.data) {
                 this.countries = res.data;
+
+                // Si hay ubicación pendiente desde el tercero, aplicarla ahora
+                if (this.pendingTerceroLocation) {
+                    this.applyLocationFromTercero(this.pendingTerceroLocation);
+                }
+
                 this.cd.markForCheck();
             }
         });
@@ -260,6 +296,92 @@ export class Cotizar implements OnInit {
         if (!this.citySearch) return this.cities;
         const s = this.citySearch.toLowerCase();
         return this.cities.filter(c => c.name.toLowerCase().includes(s));
+    }
+
+    /**
+     * Autocompletar datos del solicitante usando la información del tercero asociado
+     */
+    private prefillUserDataFromTercero(tercero: any) {
+        if (!tercero) return;
+
+        // Datos básicos
+        this.userData.name = tercero.nombre || this.userData.name;
+        this.userData.email = tercero.email || this.userData.email;
+        this.userData.phone = tercero.telefono || this.userData.phone;
+        this.userData.address = tercero.direccion || this.userData.address;
+
+        // Documento
+        if (tercero.tipo_documento) {
+            const tipo = (tercero.tipo_documento as string).toLowerCase();
+            if (tipo === 'nit') this.userData.documentType = 'NIT';
+            else if (tipo === 'cc') this.userData.documentType = 'CC';
+            else if (tipo === 'ce') this.userData.documentType = 'CE';
+            else this.userData.documentType = this.userData.documentType || 'NIT';
+        }
+        if (tercero.numero_documento) {
+            this.userData.documentNumber = tercero.numero_documento;
+        }
+
+        // Guardar ubicación para aplicarla cuando tengamos catálogos cargados
+        this.pendingTerceroLocation = {
+            country_id: tercero.country_id ?? tercero.country?.id,
+            state_id: tercero.state_id ?? tercero.state?.id,
+            city_id: tercero.city_id ?? tercero.city?.id
+        };
+
+        if (this.countries && this.countries.length > 0) {
+            this.applyLocationFromTercero(this.pendingTerceroLocation);
+        }
+    }
+
+    /**
+     * Aplicar ubicación (país/departamento/ciudad) a partir de IDs del tercero
+     */
+    private applyLocationFromTercero(location: {
+        country_id?: number | null;
+        state_id?: number | null;
+        city_id?: number | null;
+    } | null) {
+        if (!location || !location.country_id || !this.countries.length) {
+            return;
+        }
+
+        const country = this.countries.find(c => c.id === location.country_id);
+        if (!country) {
+            return;
+        }
+
+        this.userData.country = country;
+
+        // Cargar departamentos y seleccionar el correspondiente
+        this.ubicacionService.getStates(country.id).subscribe(res => {
+            this.states = res.data || [];
+
+            if (location.state_id) {
+                const state = this.states.find(s => s.id === location.state_id);
+                if (state) {
+                    this.userData.state = state;
+
+                    // Cargar ciudades y seleccionar la correspondiente
+                    this.ubicacionService.getCities(state.id).subscribe(resCities => {
+                        this.cities = resCities.data || [];
+
+                        if (location.city_id) {
+                            const city = this.cities.find(c => c.id === location.city_id);
+                            if (city) {
+                                this.userData.city = city;
+                            }
+                        }
+
+                        this.cd.markForCheck();
+                    });
+                } else {
+                    this.cd.markForCheck();
+                }
+            } else {
+                this.cd.markForCheck();
+            }
+        });
     }
 
     // Functions

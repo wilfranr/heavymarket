@@ -7,6 +7,8 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\{LoginRequest, RegisterRequest};
 use App\Models\User;
+use App\Models\Tercero;
+use App\Http\Resources\TerceroResource;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Hash};
 use Illuminate\Validation\ValidationException;
@@ -161,6 +163,9 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
+        $tercero = Tercero::with(['country', 'states', 'city'])
+            ->where('user_id', $user->id)
+            ->first();
 
         return response()->json([
             'data' => [
@@ -171,6 +176,8 @@ class AuthController extends Controller
                 'created_at' => $user->created_at->toISOString(),
                 'roles' => $user->roles->pluck('name'),
                 'permissions' => $user->getAllPermissions()->pluck('name'),
+                // Información del tercero asociado (si existe), útil para landing/cotizar
+                'tercero' => $tercero ? new TerceroResource($tercero) : null,
             ],
         ]);
     }

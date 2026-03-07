@@ -398,14 +398,14 @@
                                     </div>
                                 </div>
 
-                                <!-- Email & Phone (Email hidden if logged in) -->
+                                <!-- Email & Phone -->
                                 <div class="form-field-row two-col">
-                                    <div class="form-field" *ngIf="!currentUser">
+                                    <div class="form-field">
                                         <label class="input-label">Correo electrónico *</label>
                                         <input type="email" class="custom-input" [(ngModel)]="userData.email"
                                             placeholder="Ej: juan@empresa.com">
                                     </div>
-                                    <div class="form-field" [class.full-width]="currentUser">
+                                    <div class="form-field">
                                         <label class="input-label">Teléfono / Celular *</label>
                                         <input type="tel" class="custom-input" [(ngModel)]="userData.phone"
                                             placeholder="Ej: +57 300 123 4567">
