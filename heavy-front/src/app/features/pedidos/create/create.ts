@@ -23,6 +23,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ImageModule } from 'primeng/image';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -69,7 +70,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         MultiSelectModule,
         TerceroCreateModalComponent,
         MaquinaCreateModalComponent,
-        ContactoCreateModalComponent
+        ContactoCreateModalComponent,
+        ImageModule
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -135,6 +137,10 @@ export class CreateComponent implements OnInit {
         const id = this.maquinaId();
         return id ? this.maquinasFull.find(m => m.id === id) : null;
     });
+
+    // Modal de detalle de máquina
+    displayMaquinaDialog = false;
+    selectedMaquinaDetail: any = null;
 
     // Estado de proveedores por referencia
     referenciaIndexParaProveedor: number | null = null;
@@ -1125,5 +1131,18 @@ export class CreateComponent implements OnInit {
         const cantidad = proveedor.cantidad || 0;
         const utilidad = proveedor.utilidad || 0;
         return costo * cantidad * (1 + utilidad / 100);
+    }
+
+    get currentMaquinaInfo(): any {
+        const id = this.pedidoForm.get('maquina_id')?.value;
+        if (!id) return null;
+
+        const maquina = this.maquinasFull.find(m => m.id === id);
+        return maquina || null;
+    }
+
+    viewMaquina(maquina: any): void {
+        this.selectedMaquinaDetail = maquina;
+        this.displayMaquinaDialog = true;
     }
 }

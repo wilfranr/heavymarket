@@ -207,6 +207,17 @@ export class EditComponent implements OnInit {
             motivo_rechazo: ['']
         });
 
+        // Cuando cambia el tercero, filtrar las máquinas asociadas a ese cliente
+        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe((terceroId: number | null) => {
+            if (terceroId) {
+                this.loadMaquinasPorCliente(terceroId);
+            } else {
+                this.maquinas = [];
+                this.maquinasList = [];
+                this.pedidoForm.patchValue({ maquina_id: null }, { emitEvent: false });
+            }
+        });
+
         this.loteForm = this.fb.group({
             sistema_id: [null, [Validators.required]],
             articulo_id: [{ value: null, disabled: true }, [Validators.required]],
@@ -327,6 +338,21 @@ export class EditComponent implements OnInit {
                     dias_entrega: (p as any).dias_entrega || 0,
                     costo_unidad: (p as any).costo_unidad || 0,
                     utilidad: (p as any).utilidad || 0
+                }));
+            }
+        });
+    }
+
+    /**
+     * Carga las máquinas asociadas a un cliente específico
+     */
+    private loadMaquinasPorCliente(terceroId: number): void {
+        this.maquinaService.getAll({ tercero_id: terceroId }).subscribe({
+            next: (response) => {
+                this.maquinasList = response.data;
+                this.maquinas = response.data.map((m: any) => ({
+                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+                    value: m.id
                 }));
             }
         });

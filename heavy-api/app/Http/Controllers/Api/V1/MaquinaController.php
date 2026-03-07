@@ -23,12 +23,12 @@ class MaquinaController extends Controller
     /**
      * Listar todas las máquinas con filtros opcionales
      *
-     *
      * @queryParam page int Número de página. Example: 1
      * @queryParam per_page int Elementos por página. Example: 15
      * @queryParam search string Buscar en modelo, serie o arreglo. Example: CAT
      * @queryParam fabricante_id int Filtrar por fabricante. Example: 1
      * @queryParam tipo int Filtrar por tipo de máquina. Example: 1
+     * @queryParam tercero_id int Filtrar por tercero asociado (relación muchos a muchos). Example: 5
      */
     public function index(Request $request): JsonResponse
     {
@@ -52,6 +52,14 @@ class MaquinaController extends Controller
         // Filtro por tipo
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->input('tipo'));
+        }
+
+        // Filtro por tercero asociado (pivot tercero_maquina)
+        if ($request->filled('tercero_id')) {
+            $terceroId = (int) $request->input('tercero_id');
+            $query->whereHas('terceros', function ($q) use ($terceroId) {
+                $q->where('tercero_id', $terceroId);
+            });
         }
 
         // Ordenamiento
