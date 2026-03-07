@@ -89,15 +89,18 @@ export class ContactLeadsComponent implements OnInit {
         });
         // Mark lead as contacted automatically
         if (this.selectedLead) {
-            this.landingManageService.updateContactLeadStatus(this.selectedLead.id, 'contactado').subscribe({
+            const selectedLead = this.selectedLead;
+            const selectedLeadId = selectedLead.id;
+
+            this.landingManageService.updateContactLeadStatus(selectedLeadId, 'contactado').subscribe({
                 next: () => {
-                    this.selectedLead.estado = 'contactado';
-                    this.selectedLead.isContacted = true;
+                    selectedLead.estado = 'contactado';
+                    selectedLead.isContacted = true;
                     // Una vez convertido en tercero, se remueve del listado de interesados
-                    this.leads = this.leads.filter((lead) => lead.id !== this.selectedLead?.id);
+                    this.leads = this.leads.filter((lead) => lead.id !== selectedLeadId);
+                    this.selectedLead = null;
                 }
             });
         }
-        this.selectedLead = null;
     }
 }
