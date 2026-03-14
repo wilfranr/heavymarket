@@ -8,6 +8,7 @@ export interface Referencia {
     referencia: string;
     articulo_id: number | null;
     marca_id: number | null;
+    es_temporal?: boolean;
     comentario: string | null;
     created_at: string;
     updated_at: string;
@@ -29,6 +30,7 @@ export interface CreateReferenciaDto {
     referencia: string;
     articulo_id?: number | null;
     marca_id?: number | null;
+    es_temporal?: boolean;
     comentario?: string | null;
 }
 
@@ -39,5 +41,6 @@ export interface UpdateReferenciaDto {
     referencia?: string;
     articulo_id?: number | null;
     marca_id?: number | null;
+    es_temporal?: boolean;
     comentario?: string | null;
 }

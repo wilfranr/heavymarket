@@ -10,10 +10,18 @@
             </div>
         </ng-template>
 
-        <div class="mb-4 flex gap-4">
+        <div class="mb-4 flex gap-6 items-center">
             <p-select [(ngModel)]="selectedMarcaId" [options]="marcas" optionLabel="nombre" optionValue="id"
                 placeholder="Filtrar por marca" [showClear]="true" (ngModelChange)="onMarcaChange()"
                 styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre"> </p-select>
+
+            <div class="flex items-center gap-2">
+                <p-checkbox [(ngModel)]="filterTemporales" [binary]="true" inputId="temporal"
+                    (onChange)="onTemporalChange()"></p-checkbox>
+                <label for="temporal" class="text-sm font-medium cursor-pointer flex items-center gap-1">
+                    Solo temporales <p-tag value="Landing" severity="warn" [rounded]="true" styleClass="text-[10px]"></p-tag>
+                </label>
+            </div>
         </div>
 
         <p-table #dt [value]="(referencias$ | async) || []" [loading]="loading$ | async" [paginator]="true"
@@ -21,8 +29,9 @@
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} referencias"
             [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['referencia', 'comentario']"
-            (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll"
-            styleClass="p-datatable-sm" dataKey="id" editMode="row">
+            (onLazyLoad)="onLazyLoad($event)" responsiveLayout="scroll"
+            styleClass="p-datatable-sm" dataKey="id" editMode="row"
+            sortField="created_at" [sortOrder]="-1">
             <ng-template pTemplate="caption">
                 <div class="flex">
                     <p-iconfield iconPosition="left" class="w-full">
@@ -37,6 +46,7 @@
                 <tr>
                     <th style="width: 5rem" pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                     <th pSortableColumn="referencia">Referencia <p-sortIcon field="referencia"></p-sortIcon></th>
+                    <th pSortableColumn="created_at">Fecha Creación <p-sortIcon field="created_at"></p-sortIcon></th>
                     <th>Marca</th>
                     <th>Comentario</th>
                     <th>Artículo Relacionado</th>
@@ -53,10 +63,14 @@
                                 <input pInputText type="text" [(ngModel)]="referencia.referencia" class="w-full" />
                             </ng-template>
                             <ng-template pTemplate="output">
-                                <span class="font-semibold">{{ referencia.referencia }}</span>
+                                <div class="flex items-center gap-2">
+                                    <span class="font-semibold">{{ referencia.referencia }}</span>
+                                    <p-tag *ngIf="referencia.es_temporal" value="Temporal" severity="warn" [rounded]="true" styleClass="text-[10px]"></p-tag>
+                                </div>
                             </ng-template>
                         </p-cellEditor>
                     </td>
+                    <td class="text-xs">{{ referencia.created_at | date:'dd/MM/yyyy' }}</td>
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">

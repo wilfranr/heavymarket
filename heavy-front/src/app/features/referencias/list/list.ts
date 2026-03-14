@@ -16,6 +16,8 @@ import { FormsModule } from '@angular/forms';
 import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { TagModule } from 'primeng/tag';
+import { CheckboxModule } from 'primeng/checkbox';
 
 import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { loadReferencias, deleteReferencia, updateReferencia } from '../../../store/referencias/actions/referencias.actions';
@@ -34,7 +36,7 @@ import { RippleModule } from 'primeng/ripple';
 @Component({
     selector: 'app-referencias-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, TextareaModule, ReferenciaCreateModalComponent, RippleModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, TextareaModule, ReferenciaCreateModalComponent, RippleModule, IconFieldModule, InputIconModule, TagModule, CheckboxModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -52,12 +54,16 @@ export class ListComponent implements OnInit {
     loading$!: Observable<boolean>;
     pagination$!: Observable<{ total: number; currentPage: number; lastPage: number }>;
 
-    // Paginación
+    // Paginación y Filtros
     currentPage = 1;
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
     selectedMarcaId: number | null = null;
+    filterTemporales = false;
+    sortBy = 'created_at';
+    sortOrder: 'asc' | 'desc' = 'desc';
+
     marcas: Lista[] = [];
     articulos: Articulo[] = [];
     editingReferencias: { [s: string]: Referencia } = {};
@@ -112,34 +118,49 @@ export class ListComponent implements OnInit {
                 page: this.currentPage,
                 per_page: this.rowsPerPage,
                 search: this.searchTerm || undefined,
-                marca_id: this.selectedMarcaId || undefined
+                marca_id: this.selectedMarcaId || undefined,
+                es_temporal: this.filterTemporales || undefined,
+                sort_by: this.sortBy,
+                sort_order: this.sortOrder
             })
         );
+    }
+
+    /**
+     * Maneja la carga perezosa (paginación, orden y filtros remotos)
+     */
+    onLazyLoad(event: any): void {
+        this.first = event.first || 0;
+        this.rowsPerPage = event.rows || 20;
+        this.currentPage = Math.floor(this.first / this.rowsPerPage) + 1;
+
+        if (event.globalFilter !== undefined) {
+            this.searchTerm = event.globalFilter;
+        }
+
+        if (event.sortField) {
+            this.sortBy = event.sortField;
+            this.sortOrder = event.sortOrder === 1 ? 'asc' : 'desc';
+        }
+
+        this.cargarReferencias();
     }
 
     /**
      * Maneja el cambio de filtro por marca
      */
     onMarcaChange(): void {
-        this.currentPage = 1;
         this.first = 0;
+        this.currentPage = 1;
         this.cargarReferencias();
     }
 
     /**
-     * Maneja el cambio de página
+     * Maneja el cambio de filtro temporal
      */
-    onPageChange(event: any): void {
-        this.first = event.first;
-        this.currentPage = event.page + 1;
-        this.rowsPerPage = event.rows;
-        this.cargarReferencias();
-    }
-
-    /**
-     * Maneja el ordenamiento
-     */
-    onSort(event: any): void {
+    onTemporalChange(): void {
+        this.first = 0;
+        this.currentPage = 1;
         this.cargarReferencias();
     }
 
@@ -198,7 +219,6 @@ export class ListComponent implements OnInit {
             detail: 'Referencia actualizada correctamente'
         });
 
-        // Opcional: recargar después de un pequeño delay para asegurar consistencia
         setTimeout(() => this.cargarReferencias(), 500);
     }
 
@@ -206,10 +226,6 @@ export class ListComponent implements OnInit {
      * Cancela la edición de la fila
      */
     onRowEditCancel(referencia: Referencia, index: number) {
-        // Al usar el observable directo referenciad$ | async, 
-        // necesitamos que el componente restaure los valores originales si es necesario.
-        // Pero PrimeNG suele manejar el estado visual si clonamos correctamente.
-        // Para asegurar que los datos del observable no se "ensucien" localmente:
         const original = this.editingReferencias[referencia.id];
         if (original) {
             Object.assign(referencia, original);
@@ -229,10 +245,7 @@ export class ListComponent implements OnInit {
             rejectLabel: 'Cancelar',
             accept: () => {
                 this.store.dispatch(deleteReferencia({ id: referencia.id }));
-
-                setTimeout(() => {
-                    this.cargarReferencias();
-                }, 500);
+                setTimeout(() => this.cargarReferencias(), 500);
             }
         });
     }

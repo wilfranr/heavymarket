@@ -21,8 +21,8 @@ export class ReferenciasEffects {
     loadReferencias$ = createEffect(() =>
         this.actions$.pipe(
             ofType(ReferenciasActions.loadReferencias),
-            switchMap(({ search, marca_id, page, per_page }) =>
-                this.referenciaService.getAll({ search, marca_id, page, per_page }).pipe(
+            switchMap(({ search, marca_id, page, per_page, es_temporal, sort_by, sort_order }) =>
+                this.referenciaService.getAll({ search, marca_id, page, per_page, es_temporal, sort_by, sort_order }).pipe(
                     map((response) => {
                         return ReferenciasActions.loadReferenciasSuccess({
                             referencias: response.data,

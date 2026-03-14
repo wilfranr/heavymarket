@@ -6,7 +6,7 @@ import { Referencia, CreateReferenciaDto, UpdateReferenciaDto } from '../../../c
  */
 
 // Cargar referencias
-export const loadReferencias = createAction('[Referencias] Load Referencias', props<{ search?: string; marca_id?: number; page?: number; per_page?: number }>());
+export const loadReferencias = createAction('[Referencias] Load Referencias', props<{ search?: string; marca_id?: number; page?: number; per_page?: number; es_temporal?: boolean; sort_by?: string; sort_order?: 'asc' | 'desc' }>());
 
 export const loadReferenciasSuccess = createAction('[Referencias] Load Referencias Success', props<{ referencias: Referencia[]; total: number; currentPage: number; lastPage: number }>());
 

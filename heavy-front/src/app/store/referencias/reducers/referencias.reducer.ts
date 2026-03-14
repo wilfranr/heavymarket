@@ -15,8 +15,7 @@ export interface ReferenciasState extends EntityState<Referencia> {
 }
 
 export const adapter: EntityAdapter<Referencia> = createEntityAdapter<Referencia>({
-    selectId: (referencia: Referencia) => referencia.id,
-    sortComparer: (a: Referencia, b: Referencia) => a.referencia.localeCompare(b.referencia)
+    selectId: (referencia: Referencia) => referencia.id
 });
 
 const initialState: ReferenciasState = adapter.getInitialState({

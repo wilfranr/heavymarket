@@ -123,6 +123,11 @@ class ReferenciaController extends Controller
             $query->where('articulo_id', $request->input('articulo_id'));
         }
 
+        // Filtro por referencias temporales (Landing)
+        if ($request->has('es_temporal')) {
+            $query->where('es_temporal', $request->boolean('es_temporal'));
+        }
+
         // Ordenamiento
         $sortBy = $request->input('sort_by', 'referencia');
         $sortOrder = $request->input('sort_order', 'asc');
@@ -173,7 +178,14 @@ class ReferenciaController extends Controller
      */
     public function update(UpdateReferenciaRequest $request, Referencia $referencia): JsonResponse
     {
-        $referencia->update($request->validated());
+        $data = $request->validated();
+
+        // Si la referencia era temporal (de Landing), al editarla manualmente se convierte en oficial
+        if ($referencia->es_temporal) {
+            $data['es_temporal'] = false;
+        }
+
+        $referencia->update($data);
 
         return response()->json([
             'message' => 'Referencia actualizada exitosamente',
