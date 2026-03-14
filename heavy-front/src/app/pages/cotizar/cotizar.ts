@@ -7,6 +7,7 @@ import { LandingService, Category } from '../../core/services/landing';
 import { UbicacionService } from '../../core/services/ubicacion.service';
 import { Country, State, City } from '../../core/models/ubicacion.model';
 import { ClientAuthService } from '../../core/services/client-auth.service';
+import { ReferenciaService } from '../../core/services/referencia.service';
 
 import { RouterModule } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
@@ -35,6 +36,8 @@ export class Cotizar implements OnInit {
     brandSearch = '';
     bulkText = '';
     showBulkImport = false;
+    processingBulk = false;
+    displayHelpDialog = false;
 
     // Location Data
     countries: Country[] = [];
@@ -103,6 +106,7 @@ export class Cotizar implements OnInit {
         private landingService: LandingService,
         private ubicacionService: UbicacionService,
         private clientAuthService: ClientAuthService,
+        private referenciaService: ReferenciaService,
         private cd: ChangeDetectorRef
     ) {
         console.log('Cotizar Component Initialized');
@@ -449,6 +453,12 @@ export class Cotizar implements OnInit {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
+    preventNegative(event: KeyboardEvent) {
+        if (event.key === '-' || event.key === 'e') {
+            event.preventDefault();
+        }
+    }
+
     goBackToGrid() {
         this.currentView = 'grid';
         this.selectedCard = null;
@@ -463,6 +473,13 @@ export class Cotizar implements OnInit {
                 alert('Por favor selecciona un sistema para cada ítem.');
                 return;
             }
+            
+            const hasInvalidQuantity = this.items.some(item => item.quantity === null || item.quantity < 1);
+            if (hasInvalidQuantity) {
+                alert('Por favor corrige las cantidades. No se permiten datos negativos o iguales a cero.');
+                return;
+            }
+
             this.formStep = 2;
         } else if (this.formStep === 2) {
             // Validation Logic Step 2
@@ -539,48 +556,77 @@ export class Cotizar implements OnInit {
     }
 
     procesarMasivo() {
-        if (!this.bulkText) return;
+        if (!this.bulkText || this.processingBulk) return;
+        
         const lines = this.bulkText.split('\n');
-
-        if (this.items.length === 1 && !this.items[0].reference && !this.items[0].description) {
-            this.items = [];
-        }
-
-        const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
+        const referenciasParaProcesar: Array<{ cantidad: number; codigo: string }> = [];
 
         lines.forEach(line => {
             const trimmed = line.trim();
             if (!trimmed) return;
 
-            const parts = trimmed.split(/[\s\t]+/);
-            let qty = 1;
-            let ref = trimmed;
+            // Formato: CANTIDAD [TAB o espacios] REFERENCIA
+            const match = trimmed.match(/^(\d+)\s+(.+)$/);
+            if (match) {
+                const cantidad = parseInt(match[1], 10);
+                const codigoReferencia = match[2].trim().toUpperCase();
 
-            if (parts.length >= 2) {
-                const parsedQty = parseInt(parts[0], 10);
-                if (!isNaN(parsedQty) && parsedQty > 0) {
-                    qty = parsedQty;
-                    ref = parts.slice(1).join(' ');
+                if (cantidad > 0 && codigoReferencia) {
+                    referenciasParaProcesar.push({ cantidad, codigo: codigoReferencia });
                 }
+            } else {
+                // Si no coincide con el formato, asumimos cantidad 1
+                referenciasParaProcesar.push({ cantidad: 1, codigo: trimmed.toUpperCase() });
             }
-
-            this.items.push({
-                system: defaultSys,
-                description: '',
-                quantity: qty,
-                reference: ref,
-                file: null,
-                openSystem: false,
-                systemSearch: '',
-                openDescription: false,
-                descriptionSearch: '',
-                comment: ''
-            });
         });
 
-        this.bulkText = '';
-        this.showBulkImport = false;
+        if (referenciasParaProcesar.length === 0) return;
+
+        this.processingBulk = true;
         this.cd.markForCheck();
+
+        // Llamar al servicio optimizado con el flag esTemporal = true
+        this.referenciaService.bulkSearchOrCreate(referenciasParaProcesar, true).subscribe({
+            next: (response: any) => {
+                this.processingBulk = false;
+                const resultados = response.data;
+
+                if (resultados && resultados.length > 0) {
+                    // Si el primer item está vacío, lo removemos
+                    if (this.items.length === 1 && !this.items[0].reference && !this.items[0].description) {
+                        this.items = [];
+                    }
+
+                    const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
+
+                    resultados.forEach((item: any) => {
+                        this.items.push({
+                            system: item.referencia?.articulo?.sistema?.nombre || defaultSys,
+                            description: item.referencia?.articulo?.definicion || '',
+                            quantity: item.cantidad,
+                            reference: item.codigo,
+                            referencia_id: item.referencia_id, // Guardamos el ID para el submit
+                            file: null,
+                            openSystem: false,
+                            systemSearch: '',
+                            openDescription: false,
+                            descriptionSearch: '',
+                            comment: ''
+                        });
+                    });
+
+                    this.bulkText = '';
+                    this.showBulkImport = false;
+                }
+                this.cd.markForCheck();
+            },
+            error: (err: any) => {
+                this.processingBulk = false;
+                console.error('Error al procesar referencias masivas en landing', err);
+                alert('Hubo un error al procesar las referencias. Inténtalo de nuevo.');
+                this.cd.markForCheck();
+            }
+        });
     }
 
     toggleItemSystem(index: number) {

@@ -160,6 +160,7 @@ Route::prefix('v1')->group(function () {
             Route::delete('medidas/{medida}', [ArticuloController::class, 'removeMedida']);
         });
         
+        Route::post('referencias/bulk-search-or-create', [ReferenciaController::class, 'bulkSearchOrCreate']);
         Route::apiResource('referencias', ReferenciaController::class);
         Route::apiResource('fabricantes', FabricanteController::class);
         Route::apiResource('sistemas', SistemaController::class);

@@ -204,7 +204,7 @@ class LandingController extends Controller
             'userData.address' => 'nullable|string|max:500',
             'items' => 'required|array|min:1',
             'items.*.system' => 'required|string',
-            'items.*.description' => 'required|string',
+            'items.*.description' => 'nullable|string',
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.reference' => 'nullable|string',
             'items.*.comment' => 'nullable|string',
@@ -327,24 +327,30 @@ class LandingController extends Controller
                     ->first();
                 $articuloId = $articulo?->id;
 
-                // Referencia del usuario (código libre); definicion en PedidoReferencia = solo esto
-                $referenceUser = isset($itemData['reference']) ? trim((string) $itemData['reference']) : '';
-                $referenceText = $referenceUser !== '' ? $referenceUser : ('Pendiente - ' . $description);
+                // Si el frontend ya envió un ID de referencia procesado
+                $referenciaId = $itemData['referencia_id'] ?? null;
 
-                $referencia = \App\Models\Referencia::where('referencia', $referenceText)->first();
+                if (!$referenciaId) {
+                    // Referencia del usuario (código libre); definicion en PedidoReferencia = solo esto
+                    $referenceUser = isset($itemData['reference']) ? trim((string) $itemData['reference']) : '';
+                    $referenceText = $referenceUser !== '' ? $referenceUser : ('Pendiente - ' . $description);
 
-                if (!$referencia) {
-                    $referencia = \App\Models\Referencia::create([
-                        'referencia' => $referenceText,
-                        'articulo_id' => $articuloId,
-                        'marca_id' => $fabricanteId,
-                        'comentario' => 'Referencia temporal desde Landing - Requiere revisión',
-                    ]);
-                } elseif ($articuloId && !$referencia->articulo_id) {
-                    $referencia->update(['articulo_id' => $articuloId]);
+                    $referencia = \App\Models\Referencia::where('referencia', $referenceText)->first();
+
+                    if (!$referencia) {
+                        $referencia = \App\Models\Referencia::create([
+                            'referencia' => strtoupper($referenceText),
+                            'articulo_id' => $articuloId,
+                            'marca_id' => $fabricanteId,
+                            'es_temporal' => true, // Siempre temporal si viene de landing
+                            'comentario' => 'Referencia manual desde Landing - Requiere revisión',
+                        ]);
+                    } elseif ($articuloId && !$referencia->articulo_id) {
+                        $referencia->update(['articulo_id' => $articuloId]);
+                    }
+
+                    $referenciaId = $referencia->id;
                 }
-
-                $referenciaId = $referencia->id;
 
                 $imagePath = null;
                 if ($request->hasFile("items.{$index}.file")) {

@@ -43,6 +43,7 @@ class Referencia extends Model
         'referencia',    // Código o número de referencia del artículo
         'articulo_id',   // ID del artículo asociado
         'marca_id',      // ID de la marca asociada a la referencia
+        'es_temporal',   // Indica si la referencia es temporal (creada desde landing)
         'comentario',    // Comentarios adicionales sobre la referencia
     ];
 

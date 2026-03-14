@@ -37,6 +37,13 @@ export class ReferenciaService extends ApiService {
     }
 
     /**
+     * Buscar o crear referencias por lotes
+     */
+    bulkSearchOrCreate(items: { codigo: string; cantidad: number }[], esTemporal: boolean = false): Observable<ApiResponse<any[]>> {
+        return this.post<ApiResponse<any[]>>(`${this.endpoint}/bulk-search-or-create`, { items, es_temporal: esTemporal });
+    }
+
+    /**
      * Actualizar una referencia existente
      */
     update(id: number, data: UpdateReferenciaDto): Observable<ApiResponse<Referencia>> {

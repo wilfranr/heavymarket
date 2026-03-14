@@ -765,7 +765,7 @@ export class CreateComponent implements OnInit {
         const lineas = texto.split('\n');
         const referenciasParaProcesar: Array<{ cantidad: number; codigo: string }> = [];
 
-        // Primero, parsear todas las líneas
+        // Parsear líneas
         lineas.forEach((linea: string) => {
             const trimmed = linea.trim();
             if (!trimmed) return;
@@ -787,98 +787,86 @@ export class CreateComponent implements OnInit {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Advertencia',
-                detail: 'No se encontraron referencias válidas en el formato correcto'
+                detail: 'No se encontraron referencias válidas en el formato correcto (Cantidad [Espacio] Referencia)'
             });
             return;
         }
 
-        // Procesar todas las referencias
-        let procesadas = 0;
-        let pendientes = referenciasParaProcesar.length;
+        // Una sola petición al backend para buscar o crear todas las referencias
+        this.referenciaService.bulkSearchOrCreate(referenciasParaProcesar).subscribe({
+            next: (response) => {
+                this.loading = false;
+                const resultados = response.data;
 
-        referenciasParaProcesar.forEach(({ cantidad, codigo }) => {
-            // Buscar referencia existente
-            this.referenciaService.getAll({ search: codigo, per_page: 10 }).subscribe({
-                next: (response) => {
-                    let referenciaId: number | null = null;
-                    let definicion: string = '';
-
-                    // Buscar coincidencia exacta
-                    const referenciaEncontrada = response.data.find((r) => r.referencia.toUpperCase() === codigo);
-
-                    if (referenciaEncontrada) {
-                        referenciaId = referenciaEncontrada.id;
-                        this.agregarReferenciaAlFormArray(referenciaId, cantidad);
-                        procesadas++;
-                    } else {
-                        // Si no existe, la agregamos como definición genérica por ahora (o creamos referencia, depende de la lógica deseada)
-                        // Para este caso de uso donde el usuario quiere flexibilidad, podríamos agregarla sin ID
-                        // Pero el flujo original creaba la referencia automáticamente. Mantendremos eso para masivas.
-                        this.referenciaService
-                            .create({
-                                referencia: codigo,
-                                marca_id: undefined,
-                                comentario: 'Creada desde importación masiva'
-                            })
-                            .subscribe({
-                                next: (createResponse) => {
-                                    referenciaId = createResponse.data.id;
-                                    this.agregarReferenciaAlFormArray(referenciaId, cantidad);
-                                    procesadas++;
-                                    this.verificarProcesamientoCompleto(procesadas, pendientes);
-                                },
-                                error: () => {
-                                    pendientes--;
-                                    this.verificarProcesamientoCompleto(procesadas, pendientes);
-                                }
+                if (resultados && resultados.length > 0) {
+                    resultados.forEach((item: any) => {
+                        // 1. Asegurar que la referencia esté en el pool global de opciones para los selects
+                        const existeEnGlobal = this.referencias.find(r => r.value === item.referencia_id);
+                        if (!existeEnGlobal) {
+                            this.referencias.push({
+                                label: item.codigo,
+                                value: item.referencia_id
                             });
-                        return;
-                    }
+                        }
 
-                    pendientes--;
-                    this.verificarProcesamientoCompleto(procesadas, pendientes);
-                },
-                error: () => {
-                    pendientes--;
-                    this.verificarProcesamientoCompleto(procesadas, pendientes);
+                        // 2. Agregar al FormArray pasando la información necesaria
+                        this.agregarReferenciaAlFormArray(item.referencia_id, item.cantidad, item.codigo, item.referencia);
+                    });
+
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: `${resultados.length} referencia(s) procesada(s) exitosamente`
+                    });
+                    
+                    // Limpiar el campo de texto y avanzar al siguiente paso
+                    this.pedidoForm.get('referencias_copiadas')?.setValue('');
+                    this.nextStep();
                 }
-            });
-        });
-    }
-
-    /**
-     * Verifica si el procesamiento masivo está completo
-     */
-    private verificarProcesamientoCompleto(procesadas: number, pendientes: number): void {
-        if (pendientes === 0) {
-            this.loading = false;
-            if (procesadas > 0) {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: `${procesadas} referencia(s) procesada(s)`
-                });
-                // Limpiar el campo de texto
-                this.pedidoForm.get('referencias_copiadas')?.setValue('');
-            } else {
+            },
+            error: (err) => {
+                this.loading = false;
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail: 'No se pudieron procesar las referencias'
+                    detail: 'No se pudieron procesar las referencias: ' + (err.error?.message || err.message)
                 });
             }
-        }
+        });
     }
 
     /**
      * Agrega una referencia al FormArray (método privado)
      */
-    private agregarReferenciaAlFormArray(referenciaId: number | null, cantidad: number, definicion: string = ''): void {
-        this.agregarReferencia({
+    private agregarReferenciaAlFormArray(referenciaId: number | null, cantidad: number, codigo: string = '', referenciaData: any = null): void {
+        const data: any = {
             referencia_id: referenciaId,
             cantidad: cantidad,
-            definicion: definicion
-        });
+            definicion: codigo // Usamos el código como definición inicial
+        };
+
+        // Si tenemos la data completa de la referencia, podemos pre-cargar más campos
+        if (referenciaData) {
+            data.marca_id = referenciaData.marca_id;
+            data.articulo_id = referenciaData.articulo_id;
+            
+            // Si tiene artículo y sistema, los usamos
+            if (referenciaData.articulo) {
+                data.definicion = referenciaData.articulo.definicion;
+                // Si el backend retornó el sistema a través del artículo o directamente
+                if (referenciaData.articulo.sistema_id) {
+                    data.sistema_id = referenciaData.articulo.sistema_id;
+                }
+            }
+
+            // Para que el select de la fila tenga la opción disponible de inmediato
+            data.referencias = [{
+                label: codigo,
+                value: referenciaId
+            }];
+        }
+
+        this.agregarReferencia(data);
     }
 
     /**

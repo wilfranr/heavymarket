@@ -11,6 +11,7 @@ use App\Http\Resources\ReferenciaResource;
 use App\Models\Referencia;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controlador API para gestión de Referencias
@@ -19,6 +20,77 @@ use Illuminate\Http\Request;
  */
 class ReferenciaController extends Controller
 {
+    /**
+     * Buscar o crear referencias por lotes
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function bulkSearchOrCreate(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'items' => ['required', 'array'],
+            'items.*.codigo' => ['required', 'string'],
+            'items.*.cantidad' => ['required', 'integer', 'min:1'],
+            'es_temporal' => ['nullable', 'boolean'],
+        ]);
+
+        $items = $validated['items'];
+        $esTemporal = $validated['es_temporal'] ?? false;
+        $codigos = array_map('strtoupper', array_column($items, 'codigo'));
+
+        // Buscar referencias existentes
+        $existentes = Referencia::whereIn('referencia', $codigos)
+            ->with(['articulo', 'marca'])
+            ->get()
+            ->keyBy(function ($item) {
+                return strtoupper($item->referencia);
+            });
+
+        $resultados = [];
+        
+        DB::beginTransaction();
+        try {
+            foreach ($items as $item) {
+                $codigo = strtoupper($item['codigo']);
+                
+                if ($existentes->has($codigo)) {
+                    $referencia = $existentes->get($codigo);
+                } else {
+                    // Crear si no existe
+                    $referencia = Referencia::create([
+                        'referencia' => $codigo,
+                        'es_temporal' => $esTemporal,
+                        'comentario' => $esTemporal 
+                            ? 'Referencia temporal desde Landing - Requiere revisión'
+                            : 'Creada desde importación masiva',
+                    ]);
+                    // Añadir a existentes para evitar duplicados en el mismo lote
+                    $existentes->put($codigo, $referencia);
+                }
+
+                $resultados[] = [
+                    'referencia_id' => $referencia->id,
+                    'codigo' => $referencia->referencia,
+                    'cantidad' => $item['cantidad'],
+                    'referencia' => new ReferenciaResource($referencia->load(['marca', 'articulo'])),
+                ];
+            }
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al procesar el lote de referencias',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+
+        return response()->json([
+            'data' => $resultados,
+            'message' => count($resultados) . ' referencia(s) procesada(s) exitosamente',
+        ]);
+    }
+
     /**
      * Listar todas las referencias con filtros opcionales
      *
