@@ -144,7 +144,7 @@ class LandingController extends Controller
         }
 
         // 2. Fabricantes para el Formulario
-        $brands = \App\Models\Fabricante::orderBy('nombre')->get(['id', 'nombre']);
+        $brands = \App\Models\Fabricante::orderBy('nombre')->get(['id', 'nombre', 'logo']);
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
         $allItemTypes = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
@@ -408,9 +408,10 @@ class LandingController extends Controller
                 }
             }
 
-            // 6. Enviar e-mails (Desabilitado temporalmente a petición del usuario)
-            /*
+            // 6. Enviar e-mails
             try {
+                $pedido->load(['tercero', 'referencias.referencia', 'referencias.sistema']);
+                
                 \Illuminate\Support\Facades\Mail::to($tercero->email)
                     ->send(new \App\Mail\QuoteRequestedClient($pedido));
                 
@@ -419,7 +420,6 @@ class LandingController extends Controller
             } catch (\Exception $e) {
                 \Illuminate\Support\Facades\Log::error("Error enviando correos de cotización: " . $e->getMessage());
             }
-            */
 
             return response()->json([
                 'status' => 'success',
