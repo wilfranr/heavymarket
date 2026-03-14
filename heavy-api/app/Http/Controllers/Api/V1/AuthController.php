@@ -163,7 +163,7 @@ class AuthController extends Controller
     public function me(Request $request): JsonResponse
     {
         $user = $request->user();
-        $tercero = Tercero::with(['country', 'states', 'city'])
+        $tercero = Tercero::with(['country', 'state', 'city'])
             ->where('user_id', $user->id)
             ->first();
 

@@ -23,7 +23,7 @@ class EmpresaController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = Empresa::query()
-            ->with(['country', 'city', 'states']);
+            ->with(['country', 'city', 'state']);
 
         // Filtros
         if ($request->filled('estado')) {

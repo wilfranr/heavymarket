@@ -51,7 +51,7 @@ class TerceroResource extends JsonResource
             'state_id' => $this->state_id,
             'city_id' => $this->city_id,
             'country' => $this->whenLoaded('country'),
-            'state' => $this->whenLoaded('states'), // Relation in model is 'states' (bad naming? viewed in step 266: public function states()) - Careful.
+            'state' => $this->whenLoaded('state'),
             'city' => $this->whenLoaded('city'),
 
             'created_at' => $this->created_at?->toISOString(),

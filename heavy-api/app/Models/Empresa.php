@@ -107,7 +107,7 @@ class Empresa extends Model
      * 
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
-    public function states()
+    public function state()
     {
         return $this->belongsTo(State::class);
     }
