@@ -20,6 +20,8 @@ use App\Notifications\SystemNotification;
  */
 class PedidoController extends Controller
 {
+    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
     /**
      * Listar todos los pedidos con filtros opcionales
      * 
@@ -39,6 +41,11 @@ class PedidoController extends Controller
         $query = Pedido::query()
             ->with(['user', 'tercero', 'maquina', 'fabricante'])
             ->withCount(['referencias', 'articulos']);
+
+        $user = $request->user();
+        if (!$user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica'])) {
+            $query->where('user_id', $user->id);
+        }
 
         // Filtro por estado
         if ($request->filled('estado')) {
