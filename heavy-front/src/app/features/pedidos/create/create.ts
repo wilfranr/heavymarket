@@ -939,18 +939,22 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.pedidoForm.value;
-        const referencias: CreatePedidoReferenciaDto[] = this.referenciasFormArray.controls.map((control) => ({
-            referencia_id: control.get('referencia_id')?.value,
-            sistema_id: control.get('sistema_id')?.value || undefined,
-            marca_id: control.get('marca_id')?.value || undefined,
-            cantidad: control.get('cantidad')?.value,
-            comentario: control.get('comentario')?.value || undefined,
-            estado: control.get('estado')?.value ?? true,
-            // Nuevos campos
-            definicion: control.get('definicion')?.value || undefined,
-            imagen: control.get('imagen')?.value || undefined,
-            proveedores: (control.get('proveedores') as FormArray)?.value || []
-        }));
+        const referencias: CreatePedidoReferenciaDto[] = this.referenciasFormArray.controls.map((control) => {
+            const referenciaId = control.get('referencia_id')?.value;
+            const definicionRaw = control.get('definicion')?.value || '';
+
+            return {
+                referencia_id: referenciaId || undefined,
+                sistema_id: control.get('sistema_id')?.value || undefined,
+                marca_id: control.get('marca_id')?.value || undefined,
+                cantidad: control.get('cantidad')?.value,
+                comentario: control.get('comentario')?.value || undefined,
+                estado: control.get('estado')?.value ?? true,
+                definicion: referenciaId ? undefined : (definicionRaw || 'Sin definición'),
+                imagen: control.get('imagen')?.value || undefined,
+                proveedores: (control.get('proveedores') as FormArray)?.value || []
+            };
+        });
 
         const pedidoData: any = {
             tercero_id: formValue.tercero_id,
