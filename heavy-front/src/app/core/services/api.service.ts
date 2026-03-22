@@ -49,40 +49,47 @@ export class ApiService {
     protected http = inject(HttpClient);
     protected readonly API_URL = environment.apiUrl;
 
+    protected formatUrl(endpoint: string): string {
+        if (endpoint.startsWith('http://') || endpoint.startsWith('https://')) {
+            return endpoint;
+        }
+        return `${this.API_URL}/${endpoint.replace(/^\/+/, '')}`;
+    }
+
     /**
      * GET: Obtener un recurso
      */
     protected get<T>(endpoint: string, params?: QueryParams): Observable<T> {
         const httpParams = this.buildHttpParams(params);
-        return this.http.get<T>(`${this.API_URL}/${endpoint}`, { params: httpParams });
+        return this.http.get<T>(this.formatUrl(endpoint), { params: httpParams });
     }
 
     /**
      * POST: Crear un recurso
      */
     protected post<T>(endpoint: string, data: any): Observable<T> {
-        return this.http.post<T>(`${this.API_URL}/${endpoint}`, data);
+        return this.http.post<T>(this.formatUrl(endpoint), data);
     }
 
     /**
      * PUT: Actualizar un recurso completo
      */
     protected put<T>(endpoint: string, data: any): Observable<T> {
-        return this.http.put<T>(`${this.API_URL}/${endpoint}`, data);
+        return this.http.put<T>(this.formatUrl(endpoint), data);
     }
 
     /**
      * PATCH: Actualizar parcialmente un recurso
      */
     protected patch<T>(endpoint: string, data: any): Observable<T> {
-        return this.http.patch<T>(`${this.API_URL}/${endpoint}`, data);
+        return this.http.patch<T>(this.formatUrl(endpoint), data);
     }
 
     /**
      * DELETE: Eliminar un recurso
      */
     protected delete<T>(endpoint: string): Observable<T> {
-        return this.http.delete<T>(`${this.API_URL}/${endpoint}`);
+        return this.http.delete<T>(this.formatUrl(endpoint));
     }
 
     /**
