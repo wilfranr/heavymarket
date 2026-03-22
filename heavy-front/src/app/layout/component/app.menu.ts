@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
+import { AuthService } from '../../core/auth/services/auth.service';
 
 @Component({
     selector: 'app-menu',
@@ -15,21 +16,30 @@ import { AppMenuitem } from './app.menuitem';
         </ng-container>
     </ul> `
 })
-export class AppMenu {
+export class AppMenu implements OnInit {
     model: MenuItem[] = [];
+    private authService = inject(AuthService);
 
     ngOnInit() {
+        const hasAdminRole = this.authService.hasAnyRole(['super_admin', 'Administrador']);
+
         this.model = [
             {
                 label: 'Principal',
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/app'] }]
-            },
-            {
+            }
+        ];
+
+        if (hasAdminRole) {
+            this.model.push({
                 label: 'Administración',
                 items: [
                     { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] }
                 ]
-            },
+            });
+        }
+
+        this.model.push(
             {
                 label: 'Comercial',
                 items: [
@@ -71,15 +81,18 @@ export class AppMenu {
                     { label: 'Categorías (ERP)', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
                     { label: 'Tasa de Cambio (TRM)', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
                 ]
-            },
-            {
+            }
+        );
+
+        if (hasAdminRole) {
+            this.model.push({
                 label: 'Landing',
                 items: [
                     { label: 'Categorías Landing', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
                     { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] },
                     { label: 'Clientes Interesados', icon: 'pi pi-fw pi-users', routerLink: ['/app/gestion-landing/contact-leads'] }
                 ]
-            },
-        ];
+            });
+        }
     }
 }
