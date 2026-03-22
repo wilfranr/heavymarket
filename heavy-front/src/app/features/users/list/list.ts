@@ -18,6 +18,7 @@ import { InputIconModule } from 'primeng/inputicon';
 import { TagModule } from 'primeng/tag';
 import { PasswordModule } from 'primeng/password';
 import { MultiSelectModule } from 'primeng/multiselect';
+import { ToolbarModule } from 'primeng/toolbar';
 
 import { User } from '../../../core/auth/models/user.model';
 import { UsersActions } from '../../../store/users/actions/users.actions';
@@ -30,7 +31,7 @@ import { selectUsers, selectLoading, selectTotal, selectCurrentPage } from '../.
         CommonModule, TableModule, ButtonModule, CardModule, InputTextModule, 
         ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, 
         IconFieldModule, InputIconModule, TagModule, DialogModule, 
-        PasswordModule, MultiSelectModule
+        PasswordModule, MultiSelectModule, ToolbarModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'

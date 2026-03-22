@@ -4,6 +4,11 @@
             <h4>Gestión de Usuarios</h4>
             <p-toast></p-toast>
             <p-confirmDialog [style]="{width: '450px'}"></p-confirmDialog>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <button pButton pRipple label="Nuevo Usuario" icon="pi pi-plus" class="p-button-success" (click)="openNew()"></button>
+                </ng-template>
+            </p-toolbar>
 
             <ng-container *ngIf="users$ | async as users">
                 <p-table #dt [value]="users" [loading]="(loading$ | async)!" 
@@ -11,11 +16,11 @@
                          [lazy]="true" (onLazyLoad)="onPageChange($event)" [first]="first"
                          [rowsPerPageOptions]="[10,15,30]" responsiveLayout="scroll">
                     <ng-template pTemplate="caption">
-                        <div class="flex justify-content-between flex-column sm:flex-row">
-                            <button pButton label="Nuevo Usuario" icon="pi pi-plus" class="p-button-success mb-2" (click)="openNew()"></button>
-                            <p-iconField iconPosition="left">
+                        <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                            <h5 class="m-0">Administrar Usuarios</h5>
+                            <p-iconField iconPosition="left" class="mt-2 md:mt-0">
                                 <p-inputIcon class="pi pi-search"></p-inputIcon>
-                                <input pInputText type="text" placeholder="Buscar por Nombre/Email..." (input)="onGlobalFilter($event)" class="w-full" />
+                                <input pInputText type="text" placeholder="Buscar por Nombre/Email..." (input)="onGlobalFilter($event)" class="w-full sm:w-auto" />
                             </p-iconField>
                         </div>
                     </ng-template>
@@ -41,8 +46,8 @@
                             </td>
                             <td>{{usr.created_at | date:'dd/MM/yyyy HH:mm'}}</td>
                             <td>
-                                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editUser(usr)"></button>
-                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger" (click)="deleteUser(usr)"></button>
+                                <button pButton icon="pi pi-pencil" class="p-button-rounded p-button-success p-button-text mr-2" pTooltip="Editar" tooltipPosition="top" (click)="editUser(usr)"></button>
+                                <button pButton icon="pi pi-trash" class="p-button-rounded p-button-danger p-button-text" pTooltip="Eliminar" tooltipPosition="top" (click)="deleteUser(usr)"></button>
                             </td>
                         </tr>
                     </ng-template>
