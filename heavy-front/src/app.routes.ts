@@ -51,7 +51,8 @@ export const appRoutes: Routes = [
             { path: 'referencias', loadChildren: () => import('./app/features/referencias/referencias.routes').then((m) => m.referenciasRoutes) },
             { path: 'maquinas', loadChildren: () => import('./app/features/maquinas/maquinas.routes').then((m) => m.maquinasRoutes) },
             { path: 'articulos', loadChildren: () => import('./app/features/articulos/articulos.routes').then((m) => m.articulosRoutes) },
-            { path: 'gestion-landing', loadChildren: () => import('./app/features/landing-manage/landing-manage.routes').then((m) => m.landingManageRoutes) }
+            { path: 'gestion-landing', loadChildren: () => import('./app/features/landing-manage/landing-manage.routes').then((m) => m.landingManageRoutes) },
+            { path: 'usuarios', loadChildren: () => import('./app/features/users/users.routes').then((m) => m.usersRoutes) }
         ]
     },
     // { path: 'landing', component: Landing },

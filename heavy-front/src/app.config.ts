@@ -99,6 +99,8 @@ import { ContactosEffects } from './app/store/contactos/effects/contactos.effect
 import { DireccionesEffects } from './app/store/direcciones/effects/direcciones.effects';
 import { TransportadorasEffects } from './app/store/transportadoras/effects/transportadoras.effects';
 import { TRMsEffects } from './app/store/trms/effects/trms.effects';
+import { usersReducer } from './app/store/users/reducers/users.reducer';
+import { UsersEffects } from './app/store/users/effects/users.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
@@ -124,7 +126,8 @@ export const appConfig: ApplicationConfig = {
             contactos: contactosReducer,
             direcciones: direccionesReducer,
             transportadoras: transportadorasReducer,
-            trms: trmsReducer
+            trms: trmsReducer,
+            users: usersReducer
         }),
         provideEffects([
             AuthEffects,
@@ -144,7 +147,8 @@ export const appConfig: ApplicationConfig = {
             ContactosEffects,
             DireccionesEffects,
             TransportadorasEffects,
-            TRMsEffects
+            TRMsEffects,
+            UsersEffects
         ]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
