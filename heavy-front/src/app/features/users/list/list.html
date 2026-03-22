@@ -77,31 +77,40 @@
     </p-card>
 </div>
 
-            <p-dialog [(visible)]="userDialog" [style]="{width: '500px'}" [header]="dialogTitle" [modal]="true" class="p-fluid">
+            <p-dialog [(visible)]="userDialog" [style]="{width: '500px'}" [header]="dialogTitle" [modal]="true">
                 <ng-template pTemplate="content">
-                    <div class="field">
-                        <label for="name">Nombre</label>
-                        <input type="text" pInputText id="name" [(ngModel)]="user.name" required autofocus />
-                        <small class="p-error" *ngIf="!user.name">El nombre es obligatorio.</small>
-                    </div>
-                    <div class="field">
-                        <label for="email">Correo Electrónico</label>
-                        <input type="email" pInputText id="email" [(ngModel)]="user.email" required />
-                        <small class="p-error" *ngIf="!user.email">El correo electrónico es obligatorio.</small>
-                    </div>
-                    <div class="field">
-                        <label for="password">Contraseña <span *ngIf="user.id" class="text-600 font-normal">(Dejar en blanco para no cambiarla)</span></label>
-                        <p-password [(ngModel)]="user.password" [toggleMask]="true" promptLabel="Introduce una contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte"></p-password>
-                        <small class="p-error" *ngIf="!user.id && !user.password">La contraseña es obligatoria para un usuario nuevo.</small>
-                    </div>
-                    <div class="field">
-                        <label for="roles">Asignar Roles</label>
-                        <p-multiSelect [options]="availableRoles" [(ngModel)]="user.currentRoles" defaultLabel="Seleccione los Roles" optionLabel="label" optionValue="value" display="chip"></p-multiSelect>
+                    <div class="flex flex-col gap-4 mt-2">
+                        <div class="flex flex-col gap-2">
+                            <label for="name" class="font-semibold">Nombre</label>
+                            <input pInputText id="name" [(ngModel)]="user.name" required autofocus class="w-full" />
+                            <small class="text-red-500" *ngIf="!user.name">El nombre es obligatorio.</small>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label for="email" class="font-semibold">Correo Electrónico</label>
+                            <input pInputText type="email" id="email" [(ngModel)]="user.email" required class="w-full" />
+                            <small class="text-red-500" *ngIf="!user.email">El correo electrónico es obligatorio.</small>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label for="password" class="font-semibold">Contraseña 
+                                <span *ngIf="user.id" class="text-gray-400 font-normal text-sm ml-1">(Dejar en blanco para no cambiarla)</span>
+                            </label>
+                            <p-password [(ngModel)]="user.password" [toggleMask]="true" promptLabel="Introduce una contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte" styleClass="w-full" inputStyleClass="w-full"></p-password>
+                            <small class="text-red-500" *ngIf="!user.id && !user.password">La contraseña es obligatoria para un usuario nuevo.</small>
+                        </div>
+
+                        <div class="flex flex-col gap-2">
+                            <label for="roles" class="font-semibold">Asignar Roles</label>
+                            <p-multiSelect [options]="availableRoles" [(ngModel)]="user.currentRoles" defaultLabel="Seleccione los Roles" optionLabel="label" optionValue="value" display="chip" styleClass="w-full"></p-multiSelect>
+                        </div>
                     </div>
                 </ng-template>
 
                 <ng-template pTemplate="footer">
-                    <button pButton label="Cancelar" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
-                    <button pButton label="Guardar" icon="pi pi-check" class="p-button-text" (click)="saveUser()"></button>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <p-button label="Cancelar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="hideDialog()"></p-button>
+                        <p-button label="Guardar" icon="pi pi-check" [text]="true" severity="success" (onClick)="saveUser()"></p-button>
+                    </div>
                 </ng-template>
             </p-dialog>
