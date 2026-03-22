@@ -34,6 +34,11 @@ class CotizacionController extends Controller
         $query = Cotizacion::query()
             ->with(['pedido', 'tercero', 'user']);
 
+        $user = $request->user();
+        if (!$user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica'])) {
+            $query->where('user_id', $user->id);
+        }
+
         // Filtro por estado
         if ($request->filled('estado')) {
             $query->where('estado', $request->input('estado'));
