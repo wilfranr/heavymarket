@@ -28,10 +28,6 @@ class ArticuloController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Articulo::class, 'articulo');
-    }
     /**
      * Listar todos los artículos con filtros opcionales
      *
@@ -83,6 +79,7 @@ class ArticuloController extends Controller
      */
     public function store(StoreArticuloRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Articulo::class);
         $data = $request->validated();
         
         // Manejar carga de archivos
@@ -123,6 +120,7 @@ class ArticuloController extends Controller
      */
     public function update(UpdateArticuloRequest $request, Articulo $articulo): JsonResponse
     {
+        $this->authorize('update', $articulo);
         $data = $request->validated();
 
         // Manejar carga de archivos
@@ -159,6 +157,7 @@ class ArticuloController extends Controller
      */
     public function destroy(Articulo $articulo): JsonResponse
     {
+        $this->authorize('delete', $articulo);
         $articulo->delete();
 
         return response()->json([

@@ -24,10 +24,6 @@ class FabricanteController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Fabricante::class, 'fabricante');
-    }
     /**
      * Listar todos los fabricantes con filtros opcionales
      *
@@ -74,6 +70,7 @@ class FabricanteController extends Controller
      */
     public function store(StoreFabricanteRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Fabricante::class);
         $data = $request->validated();
         $data['nombre'] = ucwords($data['nombre']);
 
@@ -104,6 +101,7 @@ class FabricanteController extends Controller
      */
     public function update(UpdateFabricanteRequest $request, Fabricante $fabricante): JsonResponse
     {
+        $this->authorize('update', $fabricante);
         $data = $request->validated();
         if (isset($data['nombre'])) {
             $data['nombre'] = ucwords($data['nombre']);
@@ -126,6 +124,7 @@ class FabricanteController extends Controller
      */
     public function destroy(Fabricante $fabricante): JsonResponse
     {
+        $this->authorize('delete', $fabricante);
         $fabricante->delete();
 
         return response()->json([

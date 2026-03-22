@@ -33,10 +33,6 @@ class TerceroController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Tercero::class, 'tercero');
-    }
     /**
      * Listar todos los terceros con filtros
      */
@@ -91,6 +87,7 @@ class TerceroController extends Controller
      */
     public function store(StoreTerceroRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Tercero::class);
         return DB::transaction(function () use ($request) {
             try {
                 $data = $request->validated();
@@ -166,6 +163,7 @@ class TerceroController extends Controller
      */
     public function update(UpdateTerceroRequest $request, Tercero $tercero): JsonResponse
     {
+        $this->authorize('update', $tercero);
         return DB::transaction(function () use ($request, $tercero) {
             try {
                 $data = $request->validated();
@@ -244,6 +242,7 @@ class TerceroController extends Controller
      */
     public function destroy(Tercero $tercero): JsonResponse
     {
+        $this->authorize('delete', $tercero);
         try {
             $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
             foreach ($fileFields as $field) {

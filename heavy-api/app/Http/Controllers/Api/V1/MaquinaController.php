@@ -24,10 +24,6 @@ class MaquinaController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Maquina::class, 'maquina');
-    }
     /**
      * Listar todas las máquinas con filtros opcionales
      *
@@ -95,6 +91,7 @@ class MaquinaController extends Controller
      */
     public function store(StoreMaquinaRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Maquina::class);
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
@@ -135,6 +132,7 @@ class MaquinaController extends Controller
      */
     public function update(UpdateMaquinaRequest $request, Maquina $maquina): JsonResponse
     {
+        $this->authorize('update', $maquina);
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
@@ -165,6 +163,7 @@ class MaquinaController extends Controller
      */
     public function destroy(Maquina $maquina): JsonResponse
     {
+        $this->authorize('delete', $maquina);
         if ($maquina->foto) {
              Storage::disk('public')->delete($maquina->foto);
         }

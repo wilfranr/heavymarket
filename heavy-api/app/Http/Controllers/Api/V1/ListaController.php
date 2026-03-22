@@ -23,10 +23,6 @@ class ListaController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Lista::class, 'lista');
-    }
     /**
      * Listar todas las listas con filtros opcionales
      * 
@@ -125,6 +121,7 @@ class ListaController extends Controller
      */
     public function store(StoreListaRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Lista::class);
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
@@ -169,6 +166,7 @@ class ListaController extends Controller
      */
     public function update(UpdateListaRequest $request, Lista $lista): JsonResponse
     {
+        $this->authorize('update', $lista);
         $data = $request->validated();
         
         // Asegurar primera letra mayúscula en nombre si se actualiza
@@ -200,6 +198,7 @@ class ListaController extends Controller
      */
     public function destroy(Lista $lista): JsonResponse
     {
+        $this->authorize('delete', $lista);
         $lista->delete();
 
         return response()->json([

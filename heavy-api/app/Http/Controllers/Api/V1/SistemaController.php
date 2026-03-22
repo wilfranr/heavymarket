@@ -23,10 +23,6 @@ class SistemaController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Sistema::class, 'sistema');
-    }
     /**
      * Listar todos los sistemas con filtros opcionales
      *
@@ -73,6 +69,7 @@ class SistemaController extends Controller
      */
     public function store(StoreSistemaRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Sistema::class);
         $data = $request->validated();
         if (isset($data['descripcion'])) {
             $data['descripcion'] = ucwords($data['descripcion']);
@@ -105,6 +102,7 @@ class SistemaController extends Controller
      */
     public function update(UpdateSistemaRequest $request, Sistema $sistema): JsonResponse
     {
+        $this->authorize('update', $sistema);
         $data = $request->validated();
         if (isset($data['descripcion'])) {
             $data['descripcion'] = ucwords($data['descripcion']);
@@ -123,6 +121,7 @@ class SistemaController extends Controller
      */
     public function destroy(Sistema $sistema): JsonResponse
     {
+        $this->authorize('delete', $sistema);
         $sistema->delete();
 
         return response()->json([

@@ -24,10 +24,6 @@ class ReferenciaController extends Controller
 {
     use AuthorizesRequests;
 
-    public function __construct()
-    {
-        $this->authorizeResource(\App\Models\Referencia::class, 'referencia');
-    }
     /**
      * Buscar o crear referencias por lotes
      * 
@@ -161,6 +157,7 @@ class ReferenciaController extends Controller
      */
     public function store(StoreReferenciaRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Referencia::class);
         $referencia = Referencia::create($request->validated());
 
         return response()->json([
@@ -186,6 +183,7 @@ class ReferenciaController extends Controller
      */
     public function update(UpdateReferenciaRequest $request, Referencia $referencia): JsonResponse
     {
+        $this->authorize('update', $referencia);
         $data = $request->validated();
 
         // Si la referencia era temporal (de Landing), al editarla manualmente se convierte en oficial
@@ -206,6 +204,7 @@ class ReferenciaController extends Controller
      */
     public function destroy(Referencia $referencia): JsonResponse
     {
+        $this->authorize('delete', $referencia);
         $referencia->delete();
 
         return response()->json([
