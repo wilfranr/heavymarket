@@ -16,35 +16,47 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function stats(): JsonResponse
+    /**
+     * Helper para verificar si el usuario debe ver solo sus propios datos
+     */
+    private function shouldFilterByUser(Request $request): bool
     {
+        $user = $request->user();
+        return !$user->hasAnyRole(['super_admin', 'Administrador']);
+    }
+
+    public function stats(Request $request): JsonResponse
+    {
+        $user = $request->user();
+        $filter = $this->shouldFilterByUser($request);
+
         return response()->json([
-            'pedidos' => Pedido::count(),
-            'cotizaciones' => Cotizacion::count(),
-            'terceros' => Tercero::count(),
-            'ordenes' => OrdenCompra::count(),
+            'pedidos' => Pedido::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
+            'cotizaciones' => Cotizacion::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
+            'terceros' => Tercero::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
+            'ordenes' => OrdenCompra::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
         ]);
     }
 
-    public function revenueStream(): JsonResponse
+    public function revenueStream(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $filter = $this->shouldFilterByUser($request);
+
         // Get revenue for the last 6 months from OrdenCompra
-        // Assuming 'completed' or 'approved' status, but for now take all for "real data" demo
         $data = OrdenCompra::select(
                 DB::raw('SUM(valor_total) as total'),
                 DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period")
             )
             ->where('created_at', '>=', Carbon::now()->subMonths(6))
+            ->when($filter, fn($q) => $q->where('user_id', $user->id))
             ->groupBy('period')
             ->orderBy('period')
             ->get();
             
-        // Format for frontend chart
-        // Example: labels: ['Jan', 'Feb'], data: [100, 200]
         $labels = [];
         $values = [];
         
-        // Fill gaps if needed, but for now simple
         foreach ($data as $item) {
             $labels[] = Carbon::createFromFormat('Y-m', $item->period)->format('M');
             $values[] = (float) $item->total;
@@ -56,33 +68,42 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function bestSelling(): JsonResponse
+    public function bestSelling(Request $request): JsonResponse
     {
-        // Top 5 selling references based on OrdenCompra count (or quantity sum)
-        $topRefs = DB::table('orden_compra_referencia')
+        $user = $request->user();
+        $filter = $this->shouldFilterByUser($request);
+
+        // Top 5 selling references based on OrdenCompra count
+        $query = DB::table('orden_compra_referencia')
             ->join('referencias', 'orden_compra_referencia.referencia_id', '=', 'referencias.id')
+            ->join('orden_compras', 'orden_compra_referencia.orden_compra_id', '=', 'orden_compras.id')
             ->select(
                 'referencias.referencia as name',
                 'referencias.referencia as code',
                 DB::raw('SUM(orden_compra_referencia.cantidad) as total_quantity'),
                 DB::raw('SUM(orden_compra_referencia.valor_total) as total_value')
             )
+            ->when($filter, fn($q) => $q->where('orden_compras.user_id', $user->id))
             ->groupBy('referencias.id', 'referencias.referencia')
             ->orderByDesc('total_value')
-            ->limit(5)
-            ->get();
+            ->limit(5);
 
-
-
-        return response()->json($topRefs);
+        return response()->json($query->get());
     }
 
-    public function notifications(): JsonResponse
+    public function notifications(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $filter = $this->shouldFilterByUser($request);
         $notifications = [];
 
         // Latest Pedidos
-        $pedidos = Pedido::with('tercero')->latest()->take(5)->get();
+        $pedidos = Pedido::with('tercero')
+            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+            ->latest()
+            ->take(5)
+            ->get();
+
         foreach ($pedidos as $pedido) {
             $notifications[] = [
                 'id' => 'p-' . $pedido->id,
@@ -97,7 +118,12 @@ class DashboardController extends Controller
         }
 
         // Latest Cotizaciones
-        $cotizaciones = Cotizacion::with('tercero')->latest()->take(5)->get();
+        $cotizaciones = Cotizacion::with('tercero')
+            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+            ->latest()
+            ->take(5)
+            ->get();
+
         foreach ($cotizaciones as $cot) {
             $notifications[] = [
                 'id' => 'c-' . $cot->id,
@@ -112,7 +138,12 @@ class DashboardController extends Controller
         }
         
          // Latest Ordenes
-        $ordenes = OrdenCompra::with('proveedor')->latest()->take(5)->get();
+        $ordenes = OrdenCompra::with('proveedor')
+            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+            ->latest()
+            ->take(5)
+            ->get();
+
         foreach ($ordenes as $orden) {
             $notifications[] = [
                 'id' => 'o-' . $orden->id,
