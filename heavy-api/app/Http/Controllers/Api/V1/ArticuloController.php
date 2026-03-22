@@ -22,8 +22,16 @@ use Illuminate\Support\Facades\Storage;
  *
  * Maneja todas las operaciones CRUD de artículos a través del API REST.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class ArticuloController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Articulo::class, 'articulo');
+    }
     /**
      * Listar todos los artículos con filtros opcionales
      *

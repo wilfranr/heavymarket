@@ -18,8 +18,16 @@ use Illuminate\Support\Facades\DB;
  *
  * Maneja todas las operaciones CRUD de referencias a través del API REST.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class ReferenciaController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Referencia::class, 'referencia');
+    }
     /**
      * Buscar o crear referencias por lotes
      * 

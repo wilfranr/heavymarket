@@ -17,8 +17,16 @@ use Illuminate\Http\Request;
  *
  * Maneja todas las operaciones CRUD de sistemas a través del API REST.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class SistemaController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Sistema::class, 'sistema');
+    }
     /**
      * Listar todos los sistemas con filtros opcionales
      *

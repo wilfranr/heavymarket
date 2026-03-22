@@ -18,8 +18,16 @@ use Illuminate\Support\Facades\Storage;
  *
  * Maneja todas las operaciones CRUD de fabricantes a través del API REST.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class FabricanteController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Fabricante::class, 'fabricante');
+    }
     /**
      * Listar todos los fabricantes con filtros opcionales
      *

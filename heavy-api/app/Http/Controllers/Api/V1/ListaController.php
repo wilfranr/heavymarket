@@ -17,8 +17,16 @@ use Illuminate\Support\Facades\Storage;
  * Maneja todas las operaciones CRUD de listas (catálogos) a través del API REST.
  * Las listas se usan para tipos de máquinas, marcas, unidades de medida, etc.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class ListaController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Lista::class, 'lista');
+    }
     /**
      * Listar todas las listas con filtros opcionales
      * 

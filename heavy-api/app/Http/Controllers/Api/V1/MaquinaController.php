@@ -18,8 +18,16 @@ use Illuminate\Support\Facades\Storage;
  *
  * Maneja todas las operaciones CRUD de máquinas a través del API REST.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class MaquinaController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Maquina::class, 'maquina');
+    }
     /**
      * Listar todas las máquinas con filtros opcionales
      *

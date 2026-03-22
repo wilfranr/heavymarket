@@ -27,8 +27,16 @@ use Spatie\Permission\Models\Role;
  * Cuando landing_access=true, crea/actualiza un User vinculado con rol 'Cliente'
  * para permitir el inicio de sesión en la landing page.
  */
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+
 class TerceroController extends Controller
 {
+    use AuthorizesRequests;
+
+    public function __construct()
+    {
+        $this->authorizeResource(\App\Models\Tercero::class, 'tercero');
+    }
     /**
      * Listar todos los terceros con filtros
      */
