@@ -58,7 +58,7 @@ class StorePedidoRequest extends FormRequest
             'referencias.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
             'referencias.*.lista_id' => ['nullable', 'integer', 'exists:listas,id'],
             'referencias.*.marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
-            'referencias.*.definicion' => ['required_without:referencias.*.referencia_id', 'nullable', 'string', 'max:255'],
+            'referencias.*.definicion' => ['nullable', 'string', 'max:255'],
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],
             'referencias.*.comentario' => ['nullable', 'string'],
             'referencias.*.imagen' => ['nullable', 'string', 'max:255'],

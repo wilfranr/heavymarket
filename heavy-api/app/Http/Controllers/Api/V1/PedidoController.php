@@ -128,7 +128,7 @@ class PedidoController extends Controller
             if ($request->has('referencias')) {
                 foreach ($request->input('referencias') as $referencia) {
                     $pedido->referencias()->create([
-                        'referencia_id' => $referencia['referencia_id'],
+                        'referencia_id' => $referencia['referencia_id'] ?? null,
                         'sistema_id' => $referencia['sistema_id'] ?? null,
                         'lista_id' => $referencia['lista_id'] ?? null,
                         'marca_id' => $referencia['marca_id'] ?? null,
