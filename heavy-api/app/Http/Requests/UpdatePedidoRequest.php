@@ -20,7 +20,7 @@ class UpdatePedidoRequest extends FormRequest
         $pedido = $this->route('pedido');
         
         return $this->user()->can('update', $pedido)
-            || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+            || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
     }
 
     /**

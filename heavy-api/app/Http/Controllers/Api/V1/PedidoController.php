@@ -34,6 +34,8 @@ class PedidoController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', Pedido::class);
+
         $query = Pedido::query()
             ->with(['user', 'tercero', 'maquina', 'fabricante'])
             ->withCount(['referencias', 'articulos']);
@@ -182,6 +184,8 @@ class PedidoController extends Controller
      */
     public function show(Pedido $pedido): JsonResponse
     {
+        $this->authorize('view', $pedido);
+
         $pedido->load([
             'user',
             'tercero',
