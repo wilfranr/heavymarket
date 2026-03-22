@@ -32,9 +32,9 @@ class DashboardController extends Controller
 
         return response()->json([
             'pedidos' => Pedido::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
-            'cotizaciones' => Cotizacion::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
-            'terceros' => Tercero::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
-            'ordenes' => OrdenCompra::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
+            'cotizaciones' => Cotizacion::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))->count(),
+            'terceros' => Tercero::when($filter, fn($q) => $q->where(fn($sq) => $sq->where('user_id', $user->id)->orWhereNull('user_id')))->count(),
+            'ordenes' => OrdenCompra::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))->count(),
         ]);
     }
 
@@ -46,10 +46,10 @@ class DashboardController extends Controller
         // Get revenue for the last 6 months from OrdenCompra
         $data = OrdenCompra::select(
                 DB::raw('SUM(valor_total) as total'),
-                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period")
+                DB::raw("DATE_FORMAT(orden_compras.created_at, '%Y-%m') as period")
             )
-            ->where('created_at', '>=', Carbon::now()->subMonths(6))
-            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+            ->where('orden_compras.created_at', '>=', Carbon::now()->subMonths(6))
+            ->when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))
             ->groupBy('period')
             ->orderBy('period')
             ->get();
@@ -77,13 +77,14 @@ class DashboardController extends Controller
         $query = DB::table('orden_compra_referencia')
             ->join('referencias', 'orden_compra_referencia.referencia_id', '=', 'referencias.id')
             ->join('orden_compras', 'orden_compra_referencia.orden_compra_id', '=', 'orden_compras.id')
+            ->leftJoin('pedidos', 'orden_compras.pedido_id', '=', 'pedidos.id') // Join with pedidos to filter by user_id
             ->select(
                 'referencias.referencia as name',
                 'referencias.referencia as code',
                 DB::raw('SUM(orden_compra_referencia.cantidad) as total_quantity'),
                 DB::raw('SUM(orden_compra_referencia.valor_total) as total_value')
             )
-            ->when($filter, fn($q) => $q->where('orden_compras.user_id', $user->id))
+            ->when($filter, fn($q) => $q->where('pedidos.user_id', $user->id))
             ->groupBy('referencias.id', 'referencias.referencia')
             ->orderByDesc('total_value')
             ->limit(5);
@@ -118,8 +119,8 @@ class DashboardController extends Controller
         }
 
         // Latest Cotizaciones
-        $cotizaciones = Cotizacion::with('tercero')
-            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+        $cotizaciones = Cotizacion::with(['tercero', 'pedido'])
+            ->when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))
             ->latest()
             ->take(5)
             ->get();
@@ -138,8 +139,8 @@ class DashboardController extends Controller
         }
         
          // Latest Ordenes
-        $ordenes = OrdenCompra::with('proveedor')
-            ->when($filter, fn($q) => $q->where('user_id', $user->id))
+        $ordenes = OrdenCompra::with(['proveedor', 'pedido'])
+            ->when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))
             ->latest()
             ->take(5)
             ->get();
