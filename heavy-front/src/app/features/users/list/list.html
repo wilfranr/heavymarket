@@ -102,7 +102,7 @@
 
                         <div class="flex flex-col gap-2">
                             <label for="roles" class="font-semibold">Asignar Roles</label>
-                            <p-multiSelect [options]="availableRoles" [(ngModel)]="user.currentRoles" defaultLabel="Seleccione los Roles" optionLabel="label" optionValue="value" display="chip" styleClass="w-full"></p-multiSelect>
+                            <p-multiSelect [options]="availableRoles" [(ngModel)]="user.currentRoles" defaultLabel="Seleccione los Roles" optionLabel="label" optionValue="value" display="chip" styleClass="w-full" appendTo="body"></p-multiSelect>
                         </div>
                     </div>
                 </ng-template>
