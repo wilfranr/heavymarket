@@ -25,7 +25,11 @@ class UserController extends Controller
     {
         $this->authorize('viewAny', User::class);
 
-        $query = User::query()->with('roles');
+        $query = User::query()
+            ->whereDoesntHave('roles', function ($q) {
+                $q->where('name', 'Cliente');
+            })
+            ->with('roles');
 
         if ($request->filled('search')) {
             $search = $request->input('search');
