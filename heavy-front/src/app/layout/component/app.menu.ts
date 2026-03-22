@@ -25,6 +25,12 @@ export class AppMenu {
                 items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/app'] }]
             },
             {
+                label: 'Administración',
+                items: [
+                    { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] }
+                ]
+            },
+            {
                 label: 'Comercial',
                 items: [
                     { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
