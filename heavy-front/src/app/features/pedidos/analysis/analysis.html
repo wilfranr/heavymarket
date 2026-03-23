@@ -1,0 +1,512 @@
+<p-toast />
+<p-confirmDialog />
+
+@if (loading$ | async) {
+<div class="p-6">
+    <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
+    <p-skeleton width="100%" height="300px"></p-skeleton>
+</div>
+} @else {
+<div class="min-h-screen p-6 font-sans text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-transparent">
+    <div class="max-w-[1906px] mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 px-8">
+            <div>
+                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1"
+                    style="font-family: 'Figtree'">Análisis > Editar
+                </div>
+                <h1 class="text-3xl font-bold text-green-600 dark:text-brand-green" style="font-family: 'Figtree'; color: #22C55E;">
+                    Análisis #{{ pedidoId() }}
+                </h1>
+            </div>
+            <!-- Top Buttons -->
+            <div class="flex gap-4 items-center">
+                <button type="button" class="btn-pill btn-primary-green" (click)="guardar()" [disabled]="submitting">
+                    Guardar
+                </button>
+                <button type="button" class="btn-pill btn-secondary-green" (click)="cancelar()">
+                    Editar
+                </button>
+                <button type="button" class="btn-pill btn-finalizar" (click)="finalizar()" [disabled]="finalizing">
+                    Pasar a costeo
+                </button>
+            </div>
+        </div>
+
+        <!-- Info Cards -->
+        @let pedido = (pedido$ | async);
+        <div class="flex gap-6 mb-10 px-8">
+            <!-- Order Info Card -->
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 h-[220px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
+                <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-700">
+                    <span class="font-bold text-base pl-2">Información del pedido</span>
+                    <i class="pi pi-shopping-bag text-xl pr-2"></i>
+                </div>
+                <div class="p-4 space-y-1 flex-1 text-sm bg-[#334155]">
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Documento:</span>
+                        <span>Análisis</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Consecutivo:</span>
+                        <span>{{ pedido?.id }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Creación:</span>
+                        <span>{{ pedido?.created_at | date:'MMMM d, y' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Actualización:</span>
+                        <span>{{ pedido?.updated_at | date:'MMMM d, y' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Usuario:</span>
+                        <span>{{ pedido?.user?.name }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-green-400 font-semibold">Cargo:</span>
+                        <span>Asesor</span>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <span class="text-green-400 font-semibold">Estado:</span>
+                        <p-tag [value]="pedido?.estado" severity="info" styleClass="!bg-white !text-blue-600 px-3 py-1"></p-tag>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Machine Info Card -->
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 h-[220px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
+                @let maquina = pedido?.maquina;
+                <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                    <span class="font-bold text-base pl-2">Información de la máquina</span>
+                    <button type="button" pButton icon="pi pi-eye" [text]="true" [rounded]="true" styleClass="!text-white" (click)="viewMaquina(maquina)"></button>
+                </div>
+                <div class="p-4 space-y-1 flex-1 text-sm bg-[#334155]">
+                    <div class="flex gap-2">
+                        <span class="text-primary-400 font-semibold">Máquina:</span>
+                        <span>{{ maquina?.tipo || 'N/A' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-primary-400 font-semibold">Fabricante:</span>
+                        <span>{{ maquina?.marca || 'N/A' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-primary-400 font-semibold">Modelo:</span>
+                        <span>{{ maquina?.modelo || 'N/A' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-primary-400 font-semibold">Serie:</span>
+                        <span>{{ maquina?.serie || 'N/A' }}</span>
+                    </div>
+                    <div class="flex gap-2">
+                        <span class="text-primary-400 font-semibold">ID adicional:</span>
+                        <span>{{ maquina?.id_interno || '----' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    <!-- Machine Detail Modal -->
+    <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{width: '900px', 'max-width': '95vw'}"
+        [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body"
+        styleClass="machine-detail-modal">
+
+        <ng-template pTemplate="header">
+            <div class="w-full text-center">
+                <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquina">
+                    {{ selectedMaquina.modelo }}
+                </h2>
+            </div>
+        </ng-template>
+
+        <div class="p-6 rounded-lg dark:bg-[#1a1a1a]" *ngIf="selectedMaquina">
+
+            <!-- Photos Section -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <!-- Machine Photo -->
+                <div>
+                    <h3 class="font-bold mb-2 uppercase text-sm text-gray-700 dark:text-white">FOTO DE MÁQUINA
+                    </h3>
+                    <div
+                        class="aspect-video bg-gray-100 dark:bg-black/50 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <p-image [src]="selectedMaquina.imagen_url || 'assets/images/no-image.png'" alt="Foto Máquina"
+                            [preview]="true" width="100%" height="100%" imageClass="w-full h-full object-cover">
+                        </p-image>
+                    </div>
+                </div>
+
+                <!-- ID Photo -->
+                <div>
+                    <h3 class="font-bold mb-2 uppercase text-sm text-gray-700 dark:text-white">FOTO ID</h3>
+                    <div
+                        class="aspect-video bg-gray-100 dark:bg-black/50 rounded-lg overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <p-image [src]="selectedMaquina.imagen_placa_url || 'assets/images/no-image.png'"
+                            alt="Foto Placa" [preview]="true" width="100%" height="100%"
+                            imageClass="w-full h-full object-cover">
+                        </p-image>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Motor Section -->
+            <div class="mb-6">
+                <h3 class="font-bold mb-2 text-lg text-gray-800 dark:text-white">Motor</h3>
+                <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="grid grid-cols-5 machine-table-header text-sm">
+                        <div class="col-span-1">Marca</div>
+                        <div class="col-span-1">Modelo</div>
+                        <div class="col-span-1">Serie</div>
+                        <div class="col-span-1">Comentario</div>
+                        <div class="col-span-1">Foto</div>
+                    </div>
+                    <div
+                        class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[#262626] text-gray-800 dark:text-[#e5e5e5]">
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.marca_motor || 'N/A' }}
+                        </div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.modelo_motor || 'N/A' }}
+                        </div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.serie_motor || 'N/A' }}
+                        </div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.comentario_motor || 'N/A'
+                            }}</div>
+                        <div class="col-span-1 machine-table-cell">
+                            <div
+                                class="h-16 w-full max-w-[120px] bg-gray-100 dark:bg-black/30 rounded border border-gray-300 dark:border-gray-600 overflow-hidden">
+                                <p-image [src]="selectedMaquina.imagen_motor_url || 'assets/images/no-image.png'"
+                                    [preview]="true" width="100%" height="100%" imageClass="w-full h-full object-cover">
+                                </p-image>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transmisión Section -->
+            <div>
+                <h3 class="font-bold mb-2 text-lg text-gray-800 dark:text-white">Transmisión</h3>
+                <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
+                    <div class="grid grid-cols-5 machine-table-header text-sm">
+                        <div class="col-span-1">Marca</div>
+                        <div class="col-span-1">Modelo</div>
+                        <div class="col-span-1">Serie</div>
+                        <div class="col-span-1">Comentario</div>
+                        <div class="col-span-1">Foto</div>
+                    </div>
+                    <div
+                        class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[#262626] text-gray-800 dark:text-[#e5e5e5]">
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.marca_transmision || 'N/A'
+                            }}</div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.modelo_transmision ||
+                            'N/A' }}</div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.serie_transmision || 'N/A'
+                            }}</div>
+                        <div class="col-span-1 machine-table-cell">{{ selectedMaquina.comentario_transmision ||
+                            'N/A' }}</div>
+                        <div class="col-span-1 machine-table-cell">
+                            <div
+                                class="h-16 w-full max-w-[120px] bg-gray-100 dark:bg-black/30 rounded border border-gray-300 dark:border-gray-600 overflow-hidden">
+                                <p-image [src]="selectedMaquina.imagen_transmision_url || 'assets/images/no-image.png'"
+                                    [preview]="true" width="100%" height="100%" imageClass="w-full h-full object-cover">
+                                </p-image>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </p-dialog>
+
+        <!-- Items Accordion-style List -->
+        <div class="px-8 space-y-6">
+            @for (item of referenciasFormArray.controls; track $index; let i = $index) {
+                @let isPreparado = !!item.get('referencia_id')?.value;
+                <div class="item-card overflow-hidden rounded-xl bg-[#334155] text-white mb-6">
+                    <!-- Item Header Bar -->
+                    <div class="flex items-center gap-6 p-4 bg-[#334155] border-b border-gray-600">
+                        <!-- Badge local -->
+                        <div class="px-4 py-1.5 rounded-full font-medium text-xs" 
+                             [ngClass]="isPreparado ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'">
+                            {{ isPreparado ? 'Preparado' : 'Pendiente' }}
+                        </div>
+                        
+                        <!-- Name & Category Reactivo -->
+                        <div class="flex gap-8 flex-1 text-sm font-semibold">
+                            <span class="text-primary-400">{{ getTipoNombre(item.get('lista_id')?.value) }}</span>
+                            <span class="text-primary-400">{{ getSistemaNombre(item.get('sistema_id')?.value) }}</span>
+                            <span class="text-primary-400">Cant. {{ item.get('cantidad')?.value }}</span>
+                            @if (isPreparado) {
+                                <span class="text-primary-400">{{ item.get('definicion')?.value }}</span>
+                            }
+                        </div>
+
+                        <!-- Icons -->
+                        <div class="flex gap-4">
+                            <button type="button" class="icon-btn pi pi-image p-2 bg-green-500 rounded-full text-white border-none cursor-pointer" 
+                                    (click)="abrirModalImagenes(i)"></button>
+                            <button type="button" class="icon-btn pi pi-comments p-2 bg-green-500 rounded-full text-white border-none cursor-pointer"
+                                    (click)="abrirDialogoComentario(i)"></button>
+                            <button type="button" class="icon-btn pi pi-pencil p-2 bg-primary-500 rounded-full text-white border-none cursor-pointer" 
+                                    (click)="editItem(i)"></button>
+                            <button type="button" class="icon-btn pi pi-trash p-2 bg-red-500 rounded-full text-white border-none cursor-pointer" 
+                                    (click)="removeItem(i)"></button>
+                            <button type="button" class="icon-btn p-3 text-white flex items-center justify-center bg-transparent border-none cursor-pointer" 
+                                    (click)="toggleExpand(i)">
+                                <i class="pi" [ngClass]="item.get('expandido')?.value ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Item Expanded Section (Calculated Parts) -->
+                    <div class="p-6" [hidden]="!item.get('expandido')?.value">
+                        <div class="overflow-x-auto">
+                            <table class="w-full text-sm text-left border-separate border-spacing-y-2">
+                                <thead class="text-xs font-bold uppercase text-gray-300">
+                                    <tr>
+                                        <th class="w-10">Item</th>
+                                        <th class="w-20">Cantidad</th>
+                                        <th class="w-48">Referencia</th>
+                                        <th class="flex-1">Descripción</th>
+                                        <th class="w-48">Categoría comercial</th>
+                                        <th class="w-10 text-center">Comentar</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (parte of getPartesFormArray(i).controls; track $index; let j = $index) {
+                                        <tr [formGroup]="$any(parte)" class="item-row-bg rounded-lg">
+                                            <td class="p-3 pl-4 rounded-l-lg">
+                                                <p-checkbox [binary]="true"></p-checkbox>
+                                            </td>
+                                            <td class="p-2">
+                                                <input type="number" pInputText formControlName="cantidad" min="1" step="1" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
+                                            </td>
+                                            <td class="p-2">
+                                                <p-inputgroup styleClass="w-full shadow-sm rounded-md overflow-hidden">
+                                                    <p-select [options]="referenciasPorTipo[item.get('lista_id')?.value] || []" 
+                                                              formControlName="referencia_id" 
+                                                              optionLabel="label" 
+                                                              optionValue="value"
+                                                              [filter]="true" 
+                                                              placeholder="Seleccionar" 
+                                                              appendTo="body" 
+                                                              styleClass="w-full !bg-[#334155] border-none !text-white h-10"
+                                                              (onChange)="onReferenciaFilaChange($event, i, j)"></p-select>
+                                                    <p-inputgroup-addon styleClass="!bg-[#1e293b] border-none">
+                                                        <p-button icon="pi pi-plus" [text]="true" (click)="abrirCrearReferencia(i, j)" styleClass="!text-primary-400"></p-button>
+                                                    </p-inputgroup-addon>
+                                                </p-inputgroup>
+                                            </td>
+                                            <td class="p-2">
+                                                <input type="text" pInputText formControlName="descripcion" placeholder="Descripción..." class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
+                                            </td>
+                                            <td class="p-2">
+                                                <p-select [options]="tiposArticulo" formControlName="categoria" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
+                                            </td>
+                                            <td class="p-3 pr-4 text-center rounded-r-lg">
+                                                <div class="flex gap-2 justify-center">
+                                                    <button type="button" class="pi pi-comments p-2 bg-green-500 rounded-full text-white text-xs border-none"></button>
+                                                    @if (j > 0) {
+                                                        <button type="button" (click)="removeParte(i, j)" class="pi pi-minus p-2 bg-red-500 rounded-full text-white text-xs border-none"></button>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                            <div class="flex justify-end mt-2">
+                                <button type="button" pButton icon="pi pi-plus" label="Agregar referencia" class="p-button-text p-button-sm !text-primary-400" (click)="addParte(i)"></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Global Item Actions (Add more requirements) -->
+            <div class="flex justify-center gap-6 mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
+                <button type="button" class="px-8 py-3 bg-transparent border-2 border-white text-white rounded-full text-sm font-black flex items-center gap-2 hover:bg-white/10 transition-all uppercase tracking-widest"
+                        (click)="abrirDialogoLoteGlobal()">
+                    Agregar listado <i class="pi pi-bars"></i>
+                </button>
+                <button type="button" class="px-8 py-3 bg-green-500 border-none text-white rounded-full text-sm font-black flex items-center gap-2 hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 uppercase tracking-widest"
+                        (click)="agregarNuevoItem()">
+                    Agregar ítem <i class="pi pi-plus"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Global Action Footer -->
+        <div class="flex justify-center mt-12 mb-20">
+            <button type="button" class="btn-pill btn-finalizar text-lg px-12 py-4" 
+                    (click)="finalizar()" 
+                    [disabled]="finalizing">
+                <i class="pi pi-check-circle mr-2"></i>
+                FINALIZAR ANÁLISIS Y PASAR A COSTEO
+            </button>
+        </div>
+    </div>
+</div>
+}
+
+<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" (onReferenciaCreated)="onReferenciaCreada($event)">
+</app-referencia-create-modal>
+
+<!-- Diálogo Agregar Lote (Replicado de Edit) -->
+<p-dialog [(visible)]="displayLoteDialog" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}"
+    header="Agregar Referencias en Lote" appendTo="body" [closable]="true" [dismissableMask]="true" styleClass="p-fluid">
+    
+    <form [formGroup]="loteForm" class="flex flex-col gap-6 py-4">
+        <!-- 1. Sistema -->
+        <div class="field flex flex-col gap-2">
+            <label class="font-bold text-sm">1. Sistema <span class="text-red-500">*</span></label>
+            <p-select formControlName="sistema_id" [options]="sistemas" 
+                optionLabel="label" optionValue="value"
+                placeholder="Seleccionar sistema..."
+                [filter]="true" (onChange)="onSistemaLoteChange($event.value)"></p-select>
+        </div>
+
+        <!-- 2. Tipo de artículo -->
+        <div class="field flex flex-col gap-2">
+            <label class="font-bold text-sm">2. Tipo de artículo <span class="text-red-500">*</span></label>
+            <p-select formControlName="articulo_id" [options]="tiposLote" 
+                optionLabel="label" optionValue="value"
+                placeholder="Tipo de artículo"
+                [filter]="true" (onChange)="onTipoLoteChange($event.value)"></p-select>
+        </div>
+
+        <!-- 3. Seleccionar Referencias Múltiples -->
+        <div class="field flex flex-col gap-2">
+            <label class="font-bold text-sm">3. Seleccionar Referencias Múltiples <span class="text-red-500">*</span></label>
+            <p-multiSelect formControlName="referencias_seleccionadas" [options]="referenciasLote" 
+                optionLabel="label" optionValue="value"
+                placeholder="Seleccionar piezas..." [filter]="true" display="chip"></p-multiSelect>
+            <small class="text-gray-500 italic">Insertará estas piezas en el ítem que estás analizando.</small>
+        </div>
+
+        <!-- 4. Cantidad -->
+        <div class="field flex flex-col gap-2">
+            <label class="font-bold text-sm">Cantidad por pieza <span class="text-red-500">*</span></label>
+            <p-inputNumber formControlName="cantidad_lote" [min]="1" placeholder="Ej: 1"></p-inputNumber>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-700">
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="displayLoteDialog = false"></p-button>
+            <p-button label="Insertar Ítems" icon="pi pi-check" (onClick)="confirmarLote()" [disabled]="loteForm.invalid"></p-button>
+        </div>
+    </form>
+</p-dialog>
+
+<!-- Diálogo Editar Requerimiento -->
+<p-dialog [(visible)]="displayItemEditDialog" [modal]="true" [style]="{width: '500px'}"
+    header="Editar Requerimiento" appendTo="body" [closable]="true" [dismissableMask]="true" styleClass="p-fluid">
+    
+    @if (itemEditForm) {
+        <form [formGroup]="itemEditForm" class="flex flex-col gap-6 py-4">
+            <div class="field flex flex-col gap-2">
+                <label class="font-bold text-sm">Sistema</label>
+                <p-select formControlName="sistema_id" [options]="sistemas" 
+                    optionLabel="label" optionValue="value"
+                    placeholder="Seleccionar sistema..."
+                    [filter]="true" appendTo="body" (onChange)="onSistemaEditChange($event.value)"></p-select>
+            </div>
+
+            <div class="field flex flex-col gap-2">
+                <label class="font-bold text-sm">Tipo de Artículo</label>
+                <p-select formControlName="lista_id" [options]="tiposEdit" 
+                    optionLabel="label" optionValue="value"
+                    placeholder="Tipo de artículo"
+                    [filter]="true" appendTo="body"></p-select>
+            </div>
+
+            <div class="field flex flex-col gap-2">
+                <label class="font-bold text-sm">Cantidad Solicitada</label>
+                <p-inputNumber formControlName="cantidad" [min]="1" placeholder="Ej: 1"></p-inputNumber>
+            </div>
+
+            <div class="flex justify-end gap-3 mt-4 border-t border-gray-700 pt-4">
+                <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="displayItemEditDialog = false"></p-button>
+                <p-button label="Guardar Cambios" icon="pi pi-check" (onClick)="confirmarEdicionItem()"></p-button>
+            </div>
+        </form>
+    }
+</p-dialog>
+
+<!-- Modal Galleria de imágenes del ítem (estilo Sakai uikit/media) -->
+<p-dialog [(visible)]="displayImagenesCarouselModal" [modal]="true" [style]="{width: '640px', 'max-width': '95vw'}"
+    header="Imágenes del ítem" appendTo="body" (onHide)="cerrarModalImagenes()" styleClass="galleria-imagenes-modal">
+    @if (galleriaImages.length > 0) {
+    <p-galleria [value]="galleriaImages" [responsiveOptions]="galleriaResponsiveOptions"
+        [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
+        [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+        <ng-template #item let-item>
+            <div class="flex flex-col items-center gap-2">
+                <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[70vh] object-contain rounded" style="width: 100%;" />
+                @if (item.origen) {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Origen: {{ item.origen }}</span>
+                }
+            </div>
+        </ng-template>
+        <ng-template #thumbnail let-item>
+            <div class="galleria-thumbnail-cell">
+                <img [src]="item.thumbnailImageSrc" alt="Miniatura" class="w-20 h-20 object-cover rounded" />
+            </div>
+        </ng-template>
+    </p-galleria>
+    } @else {
+    <p class="text-gray-500 dark:text-gray-400 py-4">No hay imágenes asociadas a este ítem.</p>
+    }
+    <ng-template pTemplate="footer">
+        <p-button label="Cerrar" icon="pi pi-times" (onClick)="cerrarModalImagenes()"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal Comentario (Historial y Nuevo) -->
+<p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '520px'}"
+    header="Comentarios del ítem" appendTo="body" [closable]="true" [dismissableMask]="true" styleClass="p-fluid">
+    <div class="flex flex-col gap-4 mt-2">
+        <div>
+            <label class="font-bold text-sm text-gray-400 mb-2 block">Historial de comentarios</label>
+            @if (comentariosItemActual.length > 0) {
+            <div class="space-y-4 max-h-64 overflow-auto pr-2">
+                @for (c of comentariosItemActual; track $index) {
+                <div class="bg-gray-800/80 border border-gray-700/70 rounded-lg px-4 py-3 text-sm">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-[11px] font-bold text-green-400 uppercase tracking-wide">
+                            {{ c.origen }}
+                        </span>
+                        @if (c.fecha) {
+                        <span class="text-[10px] text-gray-500">
+                            {{ c.fecha | date:'dd/MM/yyyy HH:mm' }}
+                        </span>
+                        }
+                    </div>
+                    <p class="m-0 text-sm text-gray-200 whitespace-pre-wrap break-words leading-relaxed">
+                        {{ c.comentario }}
+                    </p>
+                </div>
+                }
+            </div>
+            } @else {
+            <p class="text-xs text-gray-500 italic py-4">Este ítem aún no tiene comentarios registrados.</p>
+            }
+        </div>
+
+        <div class="pt-4 border-t border-gray-700">
+            <div class="flex items-center justify-between mb-3">
+                <label class="font-bold text-sm text-gray-300">Agregar nuevo comentario</label>
+                <p-tag [value]="'Rol: ' + (origenComentarioControl.value || 'Analista')" severity="info"></p-tag>
+            </div>
+            <div class="flex flex-col gap-2">
+                <textarea pTextarea rows="3" [formControl]="comentarioControl"
+                    placeholder="Escriba aquí sus observaciones técnicas..."
+                    class="w-full rounded-lg !bg-gray-900/40 border-gray-700 focus:border-green-500 transition-colors"></textarea>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" [text]="true" severity="secondary"
+            (onClick)="displayComentarioDialog = false"></p-button>
+        <p-button label="Guardar Comentario" icon="pi pi-check" (onClick)="guardarComentario()"></p-button>
+    </ng-template>
+</p-dialog>

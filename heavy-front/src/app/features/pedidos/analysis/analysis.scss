@@ -1,0 +1,111 @@
+.btn-pill {
+    display: inline-block;
+    padding: 0.625rem 2rem;
+    border-radius: 9999px;
+    font-weight: 700;
+    font-size: 0.875rem;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    
+    &.btn-primary-green {
+        background-color: var(--p-primary-500);
+        color: white;
+        &:hover {
+            background-color: var(--p-primary-600);
+            transform: translateY(-1px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    }
+
+    &.btn-secondary-green {
+        background-color: var(--p-primary-100);
+        color: var(--p-primary-800);
+        &:hover {
+            background-color: var(--p-primary-200);
+            transform: translateY(-1px);
+        }
+    }
+
+    &.btn-finalizar {
+        background-color: var(--p-primary-700);
+        color: white;
+        &:hover {
+            background-color: var(--p-primary-800);
+            transform: translateY(-1px);
+        }
+    }
+}
+
+.figma-card-analysis {
+    border: none !important;
+    background-color: #1E293B !important; // Slate 800
+}
+
+.item-card {
+    background-color: #334155 !important; // Slate 700
+    border: 1px solid #475569;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.icon-btn {
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+    
+    &:hover {
+        transform: scale(1.1);
+        filter: brightness(1.2);
+    }
+}
+
+table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
+}
+
+tr.item-row-bg {
+    background-color: #1e293b !important;
+}
+
+input.p-inputtext {
+    background-color: #334155 !important;
+    color: white !important;
+    border: none !important;
+    
+    &:focus {
+        box-shadow: 0 0 0 2px var(--p-primary-500) !important;
+    }
+}
+
+:host ::v-deep {
+    .p-select {
+        background-color: #334155 !important;
+        border: none !important;
+        
+        .p-select-label {
+            color: white !important;
+        }
+        
+        .p-select-trigger {
+            color: white !important;
+        }
+    }
+
+    .p-checkbox .p-checkbox-box {
+        background-color: #334155 !important;
+        border: 2px solid white !important;
+        
+        &.p-highlight {
+            background-color: var(--p-primary-500) !important;
+            border-color: var(--p-primary-500) !important;
+        }
+    }
+}

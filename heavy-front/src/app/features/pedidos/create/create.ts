@@ -197,7 +197,7 @@ export class CreateComponent implements OnInit {
             cantidad_lote: [1, [Validators.required, Validators.min(1)]]
         });
 
-        // Listen for changes to update cards and filter dependent lists
+        // Suscribirse a cambios globales si es necesario
         this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => {
             this.terceroId.set(id);
             if (id) {
@@ -378,7 +378,7 @@ export class CreateComponent implements OnInit {
         const row = this.referenciasFormArray.at(index);
 
         if (clear && row) {
-            row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+            row.patchValue({ lista_id: null, articulo_id: null, referencia_id: null }, { emitEvent: false });
             this.tiposPorFila[index] = [];
             this.referenciasPorFila[index] = [];
         }
@@ -397,22 +397,40 @@ export class CreateComponent implements OnInit {
             next: (response) => {
                 const listasAsociadas = response.data;
 
-                this.articuloService.getAll({ per_page: 500 }).subscribe({
-                    next: (resArt) => {
-                        const opcionesUnicas: any[] = [];
+                this.tiposPorFila[index] = listasAsociadas.map(lista => ({
+                    label: lista.nombre,
+                    value: lista.id,
+                    descripcion: lista.definicion
+                }));
+            }
+        });
+    }
 
-                        listasAsociadas.forEach(lista => {
-                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
-                            opcionesUnicas.push({
-                                label: lista.nombre,
-                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
-                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
-                            });
-                        });
+    /**
+     * Maneja el cambio de tipo de artículo (lista) en una fila
+     */
+    onListaChange(listaId: number | null, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        row.patchValue({ articulo_id: null, referencia_id: null }, { emitEvent: false });
+        this.referenciasPorFila[index] = [];
 
-                        this.tiposPorFila[index] = opcionesUnicas;
-                    }
-                });
+        if (!listaId) return;
+
+        const opciones = this.tiposPorFila[index] || [];
+        const opcion = opciones.find((o: any) => o.value === listaId);
+        const listaNombre = opcion?.label ?? '';
+        if (!listaNombre) return;
+
+        this.articuloService.getAll({ per_page: 500 }).subscribe({
+            next: (resArt) => {
+                const articulo = resArt.data.find((a: any) =>
+                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
+                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
+                );
+                if (articulo) {
+                    row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
+                    this.onArticuloChange(articulo.id, index, false);
+                }
             }
         });
     }
@@ -504,6 +522,7 @@ export class CreateComponent implements OnInit {
         const referenciaForm = this.fb.group({
             estado: [data.estado ?? true],
             sistema_id: [data.sistema_id ?? defaultSistemaId],
+            lista_id: [data.lista_id ?? null],
             articulo_id: [data.articulo_id ?? null],
             referencia_id: [data.referencia_id ?? null],
             marca_id: [data.marca_id ?? null],
@@ -519,6 +538,11 @@ export class CreateComponent implements OnInit {
         // Suscribirse a cambios de sistema para cargar tipos
         referenciaForm.get('sistema_id')?.valueChanges.subscribe(sistemaId => {
             this.onSistemaChange(sistemaId as number | null, index); // por default clear = true
+        });
+
+        // Suscribirse a cambios de lista para cargar artículos
+        referenciaForm.get('lista_id')?.valueChanges.subscribe(listaId => {
+            this.onListaChange(listaId as number | null, index);
         });
 
         // Suscribirse a cambios de artículo para cargar referencias
@@ -671,25 +695,14 @@ export class CreateComponent implements OnInit {
         this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
-                this.articuloService.getAll({ per_page: 500 }).subscribe({
-                    next: (resArt) => {
-                        const opcionesUnicas: any[] = [];
-
-                        listasAsociadas.forEach(lista => {
-                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
-                            opcionesUnicas.push({
-                                label: lista.nombre,
-                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
-                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
-                            });
-                        });
-
-                        this.tiposLote = opcionesUnicas;
+                        this.tiposLote = listasAsociadas.map((lista: any) => ({
+                            label: lista.nombre,
+                            value: lista.id,
+                            descripcion: lista.definicion
+                        }));
                         if (this.tiposLote.length > 0) {
                             this.loteForm.get('articulo_id')?.enable();
                         }
-                    }
-                });
             }
         });
     }
@@ -734,7 +747,8 @@ export class CreateComponent implements OnInit {
             this.agregarReferencia({
                 estado: true,
                 sistema_id: data.sistema_id,
-                articulo_id: data.articulo_id,
+                lista_id: data.articulo_id, // El campo articulo_id del loteForm contiene en realidad el lista_id del tipo
+                articulo_id: null,
                 referencia_id: refId,
                 cantidad: data.cantidad_lote,
                 definicion: refModel?.definicion || '',
@@ -848,6 +862,7 @@ export class CreateComponent implements OnInit {
         // Si tenemos la data completa de la referencia, podemos pre-cargar más campos
         if (referenciaData) {
             data.marca_id = referenciaData.marca_id;
+            data.lista_id = referenciaData.lista_id;
             data.articulo_id = referenciaData.articulo_id;
             
             // Si tiene artículo y sistema, los usamos
@@ -946,11 +961,12 @@ export class CreateComponent implements OnInit {
             return {
                 referencia_id: referenciaId || undefined,
                 sistema_id: control.get('sistema_id')?.value || undefined,
+                lista_id: control.get('lista_id')?.value || undefined,
                 marca_id: control.get('marca_id')?.value || undefined,
                 cantidad: control.get('cantidad')?.value,
                 comentario: control.get('comentario')?.value || undefined,
                 estado: control.get('estado')?.value ?? true,
-                definicion: referenciaId ? undefined : (definicionRaw || 'Sin definición'),
+                definicion: (referenciaId || control.get('lista_id')?.value) ? undefined : (definicionRaw || 'Sin definición'),
                 imagen: control.get('imagen')?.value || undefined,
                 proveedores: (control.get('proveedores') as FormArray)?.value || []
             };
