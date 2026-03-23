@@ -40,6 +40,11 @@ class PedidoPolicy
      */
     public function update(User $user, Pedido $pedido): bool
     {
+        // El Analista solo puede trabajar con pedidos en estado 'Nuevo'
+        if ($user->hasRole('Analista')) {
+            return $pedido->estado === 'Nuevo';
+        }
+
         return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']) 
             || $user->id === $pedido->user_id;
     }

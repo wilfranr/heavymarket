@@ -36,7 +36,7 @@ class CotizacionController extends Controller
 
         $user = $request->user();
         if (!$user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica'])) {
-            $query->where('user_id', $user->id);
+            $query->whereHas('pedido', fn($q) => $q->where('user_id', $user->id));
         }
 
         // Filtro por estado
