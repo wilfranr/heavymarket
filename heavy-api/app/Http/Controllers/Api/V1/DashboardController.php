@@ -22,7 +22,7 @@ class DashboardController extends Controller
     private function shouldFilterByUser(Request $request): bool
     {
         $user = $request->user();
-        return !$user->hasAnyRole(['super_admin', 'Administrador']);
+        return !$user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
     }
 
     public function stats(Request $request): JsonResponse
@@ -31,10 +31,16 @@ class DashboardController extends Controller
         $filter = $this->shouldFilterByUser($request);
 
         return response()->json([
-            'pedidos' => Pedido::when($filter, fn($q) => $q->where('user_id', $user->id))->count(),
-            'cotizaciones' => Cotizacion::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))->count(),
+            'pedidos' => Pedido::when($filter, fn($q) => $q->where('user_id', $user->id))
+                              ->when($user->hasRole('Analista'), fn($q) => $q->where('estado', 'Nuevo'))
+                              ->count(),
+            'cotizaciones' => Cotizacion::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))
+                                        ->when($user->hasRole('Analista'), fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('estado', 'Nuevo')))
+                                        ->count(),
             'terceros' => Tercero::when($filter, fn($q) => $q->where(fn($sq) => $sq->where('user_id', $user->id)->orWhereNull('user_id')))->count(),
-            'ordenes' => OrdenCompra::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))->count(),
+            'ordenes' => OrdenCompra::when($filter, fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('user_id', $user->id)))
+                                    ->when($user->hasRole('Analista'), fn($q) => $q->whereHas('pedido', fn($pq) => $pq->where('estado', 'Nuevo')))
+                                    ->count(),
         ]);
     }
 

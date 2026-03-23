@@ -43,7 +43,13 @@ class PedidoController extends Controller
             ->withCount(['referencias', 'articulos']);
 
         $user = $request->user();
-        if (!$user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica'])) {
+        
+        // El Analista solo ve pedidos 'Nuevo' (de cualquier vendedor)
+        if ($user->hasRole('Analista')) {
+            $query->where('estado', 'Nuevo');
+        } 
+        // Vendedores y otros roles no administrativos solo ven sus propios pedidos
+        elseif (!$user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
             $query->where('user_id', $user->id);
         }
 
@@ -168,6 +174,19 @@ class PedidoController extends Controller
                 ['id' => $pedido->id]
             ));
 
+            // Notificar a todos los Analistas
+            $analistas = \App\Models\User::role('Analista')->get();
+            foreach ($analistas as $analista) {
+                $analista->notify(new SystemNotification(
+                    'pedido_creado',
+                    'Nuevo Pedido para Analizar #' . $pedido->id,
+                    'El vendedor ' . $request->user()->name . ' ha creado un nuevo pedido para ' . ($pedido->tercero->nombre ?? 'un cliente'),
+                    'pi-shopping-cart',
+                    'orange',
+                    ['id' => $pedido->id]
+                ));
+            }
+
             return response()->json([
                 'data' => new PedidoResource($pedido),
                 'message' => 'Pedido creado exitosamente',
@@ -196,7 +215,8 @@ class PedidoController extends Controller
         $pedido->load([
             'user',
             'tercero',
-            'maquina',
+            'maquina.fabricantes',
+            'maquina.listas',
             'fabricante',
             'contacto',
             'referencias.referencia',
@@ -234,7 +254,21 @@ class PedidoController extends Controller
 
             DB::commit();
 
-            $pedido->load(['user', 'tercero', 'maquina', 'fabricante', 'referencias', 'articulos']);
+            $pedido->load([
+                'user',
+                'tercero',
+                'maquina.fabricantes',
+                'maquina.listas',
+                'fabricante',
+                'contacto',
+                'referencias.referencia',
+                'referencias.sistema',
+                'referencias.lista',
+                'referencias.imagenes',
+                'referencias.proveedores.tercero',
+                'articulos.articulo',
+                'articulos.sistema'
+            ]);
 
             return response()->json([
                 'data' => new PedidoResource($pedido),
@@ -701,6 +735,57 @@ class PedidoController extends Controller
                     'estado' => $refData['estado'] ?? true,
                 ]);
             }
+        }
+    }
+
+    /**
+     * Enviar pedido a fase de costeo (Acción del Analista)
+     * 
+     * @param Request $request
+     * @param Pedido $pedido
+     * @return JsonResponse
+     */
+    public function enviarACosteo(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        if ($pedido->estado !== 'Nuevo') {
+            return response()->json([
+                'message' => 'Solo se pueden enviar a costeo los pedidos en estado Nuevo'
+            ], 422);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pedido->update(['estado' => 'En_Costeo']);
+
+            // Notificar al Vendedor (dueño del pedido)
+            $vendedor = $pedido->user;
+            if ($vendedor) {
+                $vendedor->notify(new \App\Notifications\SystemNotification(
+                    'pedido_actualizado',
+                    'Pedido listo para costeo #' . $pedido->id,
+                    'El analista ' . $request->user()->name . ' ha finalizado la revisión del pedido. Ya puedes iniciar el proceso de costeo.',
+                    'pi-dollar',
+                    'green',
+                    ['id' => $pedido->id]
+                ));
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'data' => new PedidoResource($pedido),
+                'message' => 'Pedido enviado a costeo exitosamente'
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'message' => 'Error al enviar a costeo',
+                'error' => $e->getMessage()
+            ], 500);
         }
     }
 }

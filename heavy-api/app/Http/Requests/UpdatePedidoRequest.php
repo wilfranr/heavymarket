@@ -56,7 +56,7 @@ class UpdatePedidoRequest extends FormRequest
             
             // Arrays de referencias (para sincronización)
             'referencias' => ['nullable', 'array'],
-            'referencias.*.id' => ['nullable', 'integer', 'exists:pedido_referencias,id'], // ID de la relación si existe
+            'referencias.*.id' => ['nullable', 'integer', 'exists:pedido_referencia,id'], // ID de la relación si existe
             'referencias.*.referencia_id' => ['nullable', 'integer', 'exists:referencias,id'],
             'referencias.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
             'referencias.*.lista_id' => ['nullable', 'integer', 'exists:listas,id'],
