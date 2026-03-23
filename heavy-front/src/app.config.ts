@@ -10,6 +10,11 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
 import { providePrimeNG } from 'primeng/config';
+import { LOCALE_ID } from '@angular/core';
+import { registerLocaleData } from '@angular/common';
+import localeEs from '@angular/common/locales/es';
+
+registerLocaleData(localeEs);
 
 const brandPalette = {
     50: '#fffaf0',
@@ -152,6 +157,7 @@ export const appConfig: ApplicationConfig = {
         ]),
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
-        ConfirmationService
+        ConfirmationService,
+        { provide: LOCALE_ID, useValue: 'es' }
     ]
 };

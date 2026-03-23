@@ -79,4 +79,10 @@ export class PedidoService extends ApiService {
     getByEstado(estado: PedidoEstado, params?: QueryParams): Observable<PaginatedResponse<Pedido>> {
         return this.list({ ...params, estado });
     }
+    /**
+     * Enviar pedido a fase de costeo (Acción del Analista)
+     */
+    enviarACosteo(id: number): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/enviar-a-costeo`, {});
+    }
 }

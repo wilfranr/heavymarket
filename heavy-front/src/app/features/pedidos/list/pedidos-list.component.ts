@@ -18,6 +18,7 @@ import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 
 /**
@@ -35,7 +36,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
             <!-- Header: Título + Acción principal -->
             <div class="flex justify-between items-center mb-4">
                 <h2 class="m-0">Gestión de Pedidos</h2>
-                <p-button label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
+                <p-button *ngIf="!isAnalista" label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
             </div>
 
             <!-- Tabs de Estados -->
@@ -53,7 +54,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
             </p-tabs>
 
             <!-- Tabla de Pedidos -->
-            <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']">
+            <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']" [rowHover]="true">
                 <ng-template pTemplate="caption">
                     <div class="flex justify-between items-center flex-column sm:flex-row">
                         <p-button label="Limpiar" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
@@ -88,12 +89,12 @@ import { TerceroService } from '../../../core/services/tercero.service';
                         <th>Estado</th>
                         <th>Dirección</th>
                         <th>Fecha</th>
-                        <th>Acciones</th>
+                        <th *ngIf="!isAnalista">Acciones</th>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-pedido>
-                    <tr>
+                    <tr (click)="onRowClick(pedido)" [ngClass]="{'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors': isAnalista}">
                         <td>{{ pedido.id }}</td>
                         <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                         <td>
@@ -101,10 +102,10 @@ import { TerceroService } from '../../../core/services/tercero.service';
                         </td>
                         <td>{{ pedido.direccion || 'N/A' }}</td>
                         <td>{{ pedido.created_at | date: 'short' }}</td>
-                        <td>
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewPedido(pedido.id)"> </p-button>
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id)"> </p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido)"> </p-button>
+                        <td *ngIf="!isAnalista">
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewPedido(pedido.id); $event.stopPropagation()"> </p-button>
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
                         </td>
                     </tr>
                 </ng-template>
@@ -125,6 +126,21 @@ export class PedidosListComponent implements OnInit {
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
     private terceroService = inject(TerceroService);
+    private authService = inject(AuthService);
+
+    get isAnalista(): boolean {
+        return this.authService.hasRole('Analista');
+    }
+
+    onRowClick(pedido: Pedido): void {
+        if (this.isAnalista) {
+            this.onAnalysisPedido(pedido.id);
+        }
+    }
+
+    onAnalysisPedido(id: number) {
+        this.router.navigate(['/app/pedidos', id, 'analysis']);
+    }
 
     // Signals para estado local
     pedidos = signal<Pedido[]>([]);
