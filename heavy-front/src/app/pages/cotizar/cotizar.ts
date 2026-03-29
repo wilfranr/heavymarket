@@ -11,11 +11,12 @@ import { ReferenciaService } from '../../core/services/referencia.service';
 
 import { RouterModule } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
+import { CarouselModule } from 'primeng/carousel';
 
 @Component({
     selector: 'app-cotizar',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection, DialogModule],
+    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection, DialogModule, CarouselModule],
     templateUrl: './cotizar.html',
     styleUrls: ['./cotizar.css']
 })
@@ -57,6 +58,11 @@ export class Cotizar implements OnInit {
     items: any[] = [
         { system: '', description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }
     ];
+
+    // Image Modal Control
+    displayImagesModal: boolean = false;
+    selectedItemIndex: number = -1;
+    imagePreviewUrls: string[] = [];
 
     userData = {
         name: '',
@@ -685,6 +691,12 @@ export class Cotizar implements OnInit {
             const toAdd = files.slice(0, remaining);
             this.items[index].files.push(...toAdd);
             
+            // Si el modal está abierto para este ítem, generar previsualizaciones adicionales
+            if (this.displayImagesModal && this.selectedItemIndex === index) {
+                const newUrls = toAdd.map(file => URL.createObjectURL(file));
+                this.imagePreviewUrls.push(...newUrls);
+            }
+            
             if (files.length > remaining) {
                 alert('Solo se agregaron ' + remaining + ' imágenes. Máximo 10 permitidas por ítem.');
             }
@@ -699,8 +711,44 @@ export class Cotizar implements OnInit {
     removeFile(itemIndex: number, fileIndex: number) {
         if (this.items[itemIndex].files) {
             this.items[itemIndex].files.splice(fileIndex, 1);
+            
+            // Si el modal está abierto para este ítem, actualizar las previsualizaciones
+            if (this.displayImagesModal && this.selectedItemIndex === itemIndex) {
+                if (this.imagePreviewUrls[fileIndex]) {
+                    URL.revokeObjectURL(this.imagePreviewUrls[fileIndex]);
+                    this.imagePreviewUrls.splice(fileIndex, 1);
+                }
+                
+                if (this.items[itemIndex].files.length === 0) {
+                    this.closeImagesModal();
+                }
+            }
             this.cd.markForCheck();
         }
+    }
+
+    openImagesModal(index: number) {
+        if (!this.items[index]?.files?.length) return;
+        
+        this.selectedItemIndex = index;
+        
+        // Limpiar previsualizaciones antiguas
+        this.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+        this.imagePreviewUrls = [];
+        
+        // Crear nuevas previsualizaciones
+        this.imagePreviewUrls = this.items[index].files.map((file: File) => URL.createObjectURL(file));
+        
+        this.displayImagesModal = true;
+        this.cd.markForCheck();
+    }
+
+    closeImagesModal() {
+        this.displayImagesModal = false;
+        this.selectedItemIndex = -1;
+        this.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
+        this.imagePreviewUrls = [];
+        this.cd.markForCheck();
     }
 
     selectItemSystem(index: number, system: any) {
