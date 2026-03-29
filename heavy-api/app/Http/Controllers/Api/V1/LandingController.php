@@ -208,6 +208,8 @@ class LandingController extends Controller
             'items.*.quantity' => 'required|integer|min:1',
             'items.*.reference' => 'nullable|string',
             'items.*.comment' => 'nullable|string',
+            'items.*.files' => 'nullable|array|max:10',
+            'items.*.files.*' => 'image|max:10240', // Máx 10MB por imagen
             'selectedBrand' => 'nullable|string',
             'selectedType' => 'nullable|string',
             'selectedModel' => 'nullable|string',
@@ -327,12 +329,25 @@ class LandingController extends Controller
                     ->first();
                 $articuloId = $articulo?->id;
 
+                // Definiciones básicas de ítems
                 // Si el frontend ya envió un ID de referencia procesado
                 $referenciaId = $itemData['referencia_id'] ?? null;
+                $referenceUser = isset($itemData['reference']) ? trim((string) $itemData['reference']) : '';
 
-                if (!$referenciaId) {
+                if ($referenciaId) {
+                    // Si ya existe el ID, aseguramos que tenga la marca de la cotización si es temporal o no tiene marca
+                    $referenciaExistente = \App\Models\Referencia::find($referenciaId);
+                    if ($referenciaExistente && $fabricanteId) {
+                        $updateData = [];
+                        if (!$referenciaExistente->marca_id || ($referenciaExistente->es_temporal && $referenciaExistente->marca_id !== $fabricanteId)) {
+                            $updateData['marca_id'] = $fabricanteId;
+                        }
+                        if (!empty($updateData)) {
+                            $referenciaExistente->update($updateData);
+                        }
+                    }
+                } else {
                     // Referencia del usuario (código libre); definicion en PedidoReferencia = solo esto
-                    $referenceUser = isset($itemData['reference']) ? trim((string) $itemData['reference']) : '';
                     $referenceText = $referenceUser !== '' ? $referenceUser : ('Pendiente - ' . $description);
 
                     $referencia = \App\Models\Referencia::where('referencia', $referenceText)->first();
@@ -345,29 +360,47 @@ class LandingController extends Controller
                             'es_temporal' => true, // Siempre temporal si viene de landing
                             'comentario' => 'Referencia manual desde Landing - Requiere revisión',
                         ]);
-                    } elseif ($articuloId && !$referencia->articulo_id) {
-                        $referencia->update(['articulo_id' => $articuloId]);
+                    } else {
+                        // Si la referencia existe, aseguramos que tenga la marca de la cotización
+                        // Especialmente si es temporal o no tiene marca asignada.
+                        $updateData = [];
+                        if ($articuloId && !$referencia->articulo_id) {
+                            $updateData['articulo_id'] = $articuloId;
+                        }
+                        
+                        // Si no tiene marca, o si es temporal y la marca es distinta, la actualizamos para que coincida con la cotización
+                        if ($fabricanteId && (!$referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $fabricanteId))) {
+                             $updateData['marca_id'] = $fabricanteId;
+                        }
+                        
+                        if (!empty($updateData)) {
+                            $referencia->update($updateData);
+                        }
                     }
 
                     $referenciaId = $referencia->id;
                 }
 
-                $imagePath = null;
-                if ($request->hasFile("items.{$index}.file")) {
-                    $file = $request->file("items.{$index}.file");
-                    if ($file && $file->isValid()) {
-                        $imagePath = $file->store('pedidos/referencias', 'public');
-                    }
-                }
-                if (!$imagePath && $request->hasFile('items')) {
-                    $itemsFiles = $request->file('items');
-                    if (isset($itemsFiles[$index]['file'])) {
-                        $file = $itemsFiles[$index]['file'];
+                // Manejo de múltiples imágenes (files array)
+                $imagePaths = [];
+                if ($request->hasFile("items.{$index}.files")) {
+                    $uploadedFiles = $request->file("items.{$index}.files");
+                    foreach ($uploadedFiles as $file) {
                         if ($file && $file->isValid()) {
-                            $imagePath = $file->store('pedidos/referencias', 'public');
+                            $imagePaths[] = $file->store('pedidos/referencias', 'public');
                         }
                     }
                 }
+                
+                // Compatibilidad con parámetro legacy 'file' (por si acaso)
+                if (empty($imagePaths)) {
+                    $legacyFile = $request->file("items.{$index}.file");
+                    if ($legacyFile && $legacyFile->isValid()) {
+                        $imagePaths[] = $legacyFile->store('pedidos/referencias', 'public');
+                    }
+                }
+
+                $mainImagePath = !empty($imagePaths) ? $imagePaths[0] : null;
 
                 $comentarioItem = isset($itemData['comment']) ? trim((string) $itemData['comment']) : '';
 
@@ -393,16 +426,16 @@ class LandingController extends Controller
                     'definicion' => $referenceUser,
                     'cantidad' => $itemData['quantity'],
                     'comentario' => $comentarioPedidoRef,
-                    'imagen' => $imagePath,
+                    'imagen' => $mainImagePath,
                     'estado' => 1,
                     'mostrar_referencia' => 1
                 ]);
 
-                // Registrar imagen en tabla de imágenes por ítem (origen: cliente)
-                if ($imagePath) {
+                // Registrar TODAS las imágenes en tabla de imágenes por ítem
+                foreach ($imagePaths as $path) {
                     \App\Models\PedidoReferenciaImagen::create([
                         'pedido_referencia_id' => $pedidoRef->id,
-                        'imagen' => $imagePath,
+                        'imagen' => $path,
                         'origen' => \App\Models\PedidoReferenciaImagen::ORIGEN_CLIENTE,
                     ]);
                 }

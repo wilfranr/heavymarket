@@ -891,52 +891,104 @@
 
 
 
-/* Upload Box */
-.upload-box {
-    border: 1px dashed #4B5563;
-    border-radius: 8px;
-    height: 42px;
+/* Compact Upload Styles */
+.compact-upload-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.icon-upload-btn {
+    position: relative;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #262E32;
+    border: 1.5px dashed #4B5563;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
     cursor: pointer;
-    background: #262E32;
-    transition: all 0.2s;
+    transition: all 0.3s ease;
+    color: #FDB831;
+    padding: 0;
 }
 
-.upload-box:hover {
+.icon-upload-btn:hover {
     border-color: #FDB831;
-    background: rgba(253, 184, 49, 0.05);
+    background: rgba(253, 184, 49, 0.1);
+    transform: scale(1.05);
 }
 
-.upload-text {
-    font-family: 'Figtree', sans-serif;
-    font-size: 12px;
-    color: #9CA3AF;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 120px;
-}
-
-.upload-box.has-file {
+.icon-upload-btn.has-files {
     border-style: solid;
     border-color: #4ADE80;
+    color: #4ADE80;
     background: rgba(74, 222, 128, 0.05);
 }
 
-.btn-remove-file {
-    background: transparent;
-    border: none;
-    color: #EF4444;
-    cursor: pointer;
-    padding: 2px 5px;
-    margin-left: auto;
+.icon-upload-btn i {
+    font-size: 20px;
+}
+
+.file-count-badge {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    background: #FDB831;
+    color: #000;
     font-size: 10px;
+    font-weight: 700;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
     display: flex;
     align-items: center;
+    justify-content: center;
+    border: 2px solid #262E32;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.icon-upload-btn.has-files .file-count-badge {
+    background: #4ADE80;
+}
+
+.files-preview-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    max-width: 200px;
+}
+
+.file-tag-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 3px 8px;
     border-radius: 4px;
+    font-size: 10px;
+    color: #CBD5E1;
+    max-width: 100%;
+}
+
+.file-tag-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 80px;
+}
+
+.remove-file-icon {
+    font-size: 10px;
+    cursor: pointer;
+    color: #EF4444;
+    transition: transform 0.2s;
+}
+
+.remove-file-icon:hover {
+    transform: scale(1.3);
 }
 
 .btn-remove-file:hover {
@@ -1712,13 +1764,9 @@
         font-size: 10px;
     }
 
-    .upload-box {
+    .icon-upload-btn {
+        width: 38px;
         height: 38px;
-    }
-
-    .upload-text {
-        font-size: 11px;
-        max-width: 100px;
     }
 
     .action-btn {

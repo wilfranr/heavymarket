@@ -10,13 +10,14 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
-import { FabricanteCreateModalComponent } from '../fabricante-create-modal/fabricante-create-modal.component';
 
 @Component({
     selector: 'app-referencia-create-modal',
@@ -32,9 +33,11 @@ import { FabricanteCreateModalComponent } from '../fabricante-create-modal/fabri
         ToastModule,
         InputGroupModule,
         InputGroupAddonModule,
-        FabricanteCreateModalComponent
+        TagModule,
+        TooltipModule
     ],
     templateUrl: './referencia-create-modal.component.html',
+    styles: [],
     providers: [MessageService]
 })
 export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
@@ -55,9 +58,6 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     loading = false;
     marcas: any[] = [];
     articulos: Articulo[] = [];
-
-    // Modales secundarios
-    showMarcaModal = false;
 
     ngOnInit(): void {
         this.initForm();
@@ -95,24 +95,6 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
             }
         });
     }
-
-    /**
-     * Abre el modal para crear una nueva marca
-     */
-    abrirCrearMarca(): void {
-        this.showMarcaModal = true;
-    }
-
-    /**
-     * Maneja la creación exitosa de una marca
-     */
-    onMarcaCreada(nuevaMarca: any): void {
-        this.cargarMarcas();
-        this.referenciaForm.patchValue({ marca_id: nuevaMarca.id });
-        this.showMarcaModal = false;
-    }
-
-
 
     resetForm(): void {
         if (this.referenciaForm) {

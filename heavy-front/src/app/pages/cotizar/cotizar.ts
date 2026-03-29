@@ -55,7 +55,7 @@ export class Cotizar implements OnInit {
 
     // Form Data Helpers
     items: any[] = [
-        { system: '', description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }
+        { system: '', description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }
     ];
 
     userData = {
@@ -493,9 +493,13 @@ export class Cotizar implements OnInit {
 
             this.formStep = 2;
         } else if (this.formStep === 2) {
-            // Validation Logic Step 2
-            if (!this.userData.name || !this.userData.email || !this.userData.phone) {
-                alert('Por favor complete los campos requeridos (Nombre, Email, Teléfono)');
+            // Validation & Submission in Confirmation Step
+            if (!this.userData.email || !this.userData.phone) {
+                alert('Por favor completa los campos obligatorios (*).');
+                return;
+            }
+            if (!this.currentUser && !this.userData.name) {
+                alert('Por favor ingresa tu nombre.');
                 return;
             }
             this.submit();
@@ -549,7 +553,7 @@ export class Cotizar implements OnInit {
     // Form Items Logic
     addItem() {
         const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
-        this.items.push({ system: defaultSys, description: '', quantity: 1, reference: '', file: null, openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
+        this.items.push({ system: defaultSys, description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
         this.cd.markForCheck();
     }
 
@@ -596,8 +600,12 @@ export class Cotizar implements OnInit {
         this.processingBulk = true;
         this.cd.markForCheck();
 
-        // Llamar al servicio optimizado con el flag esTemporal = true
-        this.referenciaService.bulkSearchOrCreate(referenciasParaProcesar, true).subscribe({
+        // Buscar el ID de la marca seleccionada
+        const brandObj = this.brands.find(b => b.nombre === this.selectedBrand);
+        const marcaId = brandObj ? brandObj.id : null;
+
+        // Llamar al servicio optimizado con el flag esTemporal = true y el marcaId
+        this.referenciaService.bulkSearchOrCreate(referenciasParaProcesar, true, marcaId).subscribe({
             next: (response: any) => {
                 this.processingBulk = false;
                 const resultados = response.data;
@@ -617,7 +625,7 @@ export class Cotizar implements OnInit {
                             quantity: item.cantidad,
                             reference: item.codigo,
                             referencia_id: item.referencia_id, // Guardamos el ID para el submit
-                            file: null,
+                            files: [] as File[],
                             openSystem: false,
                             systemSearch: '',
                             openDescription: false,
@@ -662,9 +670,35 @@ export class Cotizar implements OnInit {
     }
 
     onFileSelected(event: any, index: number) {
-        const file = event.target.files[0];
-        if (file) {
-            this.items[index].file = file;
+        const files = Array.from(event.target.files as FileList);
+        if (files.length > 0) {
+            if (!this.items[index].files) this.items[index].files = [] as File[];
+            
+            // Limit to 10 total
+            const remaining = 10 - this.items[index].files.length;
+            
+            if (remaining <= 0) {
+                alert('Ya has alcanzado el máximo de 10 imágenes por ítem.');
+                return;
+            }
+
+            const toAdd = files.slice(0, remaining);
+            this.items[index].files.push(...toAdd);
+            
+            if (files.length > remaining) {
+                alert('Solo se agregaron ' + remaining + ' imágenes. Máximo 10 permitidas por ítem.');
+            }
+            
+            // Reset input so searching the same file again triggers (change)
+            event.target.value = '';
+            
+            this.cd.markForCheck();
+        }
+    }
+
+    removeFile(itemIndex: number, fileIndex: number) {
+        if (this.items[itemIndex].files) {
+            this.items[itemIndex].files.splice(fileIndex, 1);
             this.cd.markForCheck();
         }
     }

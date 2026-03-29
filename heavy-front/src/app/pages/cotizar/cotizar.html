@@ -158,7 +158,7 @@
                         </div>
                     </ng-container>
 
-                    <!-- VIEW 2: FORM (STEP 1 & 2) -->
+                    <!-- VIEW 2: FORM -->
                     <ng-container *ngIf="currentView === 'form'">
                         <!-- Stepper -->
                         <div class="cotizador-stepper">
@@ -168,11 +168,6 @@
                             </div>
                             <div class="step-connector"></div>
                             <div class="step-item" [class.active]="formStep >= 2">
-                                <div class="step-icon"><i class="pi pi-user"></i></div>
-                                <span class="step-label">Datos del solicitante</span>
-                            </div>
-                            <div class="step-connector"></div>
-                            <div class="step-item" [class.active]="formStep >= 3">
                                 <div class="step-icon"><i class="pi pi-send"></i></div>
                                 <span class="step-label">Confirmar y enviar</span>
                             </div>
@@ -197,7 +192,6 @@
                                         Carga masiva <i class="pi pi-upload"></i>
                                     </button>
                                 </div>
-
                             </div>
 
                             <!-- Bulk Import Area -->
@@ -221,10 +215,10 @@
 
                             <div class="items-list">
                                 <div class="form-item-row" *ngFor="let item of items; let i = index">
-
                                     <div class="item-row-single">
                                         <!-- Sistema -->
                                         <div class="form-field item-field-sistema">
+                                            <label class="input-label">Sistema</label>
                                             <div class="cotizador-filter-group" style="position: relative;">
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemSystem(i)">
@@ -241,14 +235,13 @@
                                                     </div>
                                                     <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
                                                 </button>
-
                                                 <div class="cotizador-dropdown" *ngIf="item.openSystem"
                                                     style="width: 100%; top: 45px; left: 0; z-index: 100;">
                                                     <div class="cotizador-dropdown-search">
                                                         <input type="text" [(ngModel)]="item.systemSearch"
                                                             placeholder="Buscar sistema..."
                                                             (click)="$event.stopPropagation()"
-                                                            class="cotizador-dropdown-input">
+                                                            class="cotizador-dropdown-input" autofocus>
                                                         <i class="pi pi-search"></i>
                                                     </div>
                                                     <div class="cotizador-dropdown-item dropdown-item-with-avatar"
@@ -269,6 +262,7 @@
 
                                         <!-- Descripción -->
                                         <div class="form-field item-field-descripcion">
+                                            <label class="input-label">Tipo de artículo</label>
                                             <div class="cotizador-filter-group" style="position: relative;">
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemDescription(i)" [disabled]="!item.system">
@@ -293,7 +287,7 @@
                                                         <input type="text" [(ngModel)]="item.descriptionSearch"
                                                             placeholder="Buscar tipo..."
                                                             (click)="$event.stopPropagation()"
-                                                            class="cotizador-dropdown-input">
+                                                            class="cotizador-dropdown-input" autofocus>
                                                         <i class="pi pi-search"></i>
                                                     </div>
                                                     <div class="cotizador-dropdown-item dropdown-item-with-avatar"
@@ -305,33 +299,23 @@
                                                             class="dropdown-avatar dropdown-avatar-placeholder">
                                                             <i class="pi pi-box"></i>
                                                         </div>
-                                                        <span>{{ desc.nombre }}</span>
-                                                        <small *ngIf="desc.systemName && desc.systemName !== item.system" 
-                                                            style="opacity: 0.6; font-size: 0.75em; font-style: italic; margin-left: auto; padding-left: 10px;">
-                                                            (en {{ desc.systemName }})
-                                                        </small>
+                                                        <span>{{ desc.nombre || desc }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <!-- Cantidad -->
-                                        <div class="form-field item-field-cantidad" style="display: flex; flex-direction: column;">
-                                            <input type="number" class="custom-input" [(ngModel)]="items[i].quantity"
-                                                min="1" placeholder="Cant."
-                                                (keydown)="preventNegative($event)"
-                                                [ngStyle]="{'border-color': (items[i].quantity !== null && items[i].quantity < 1) ? '#ff4d4d' : ''}">
-                                            <small *ngIf="items[i].quantity !== null && items[i].quantity < 0" style="color: #ff4d4d; font-size: 11px; margin-top: 4px; display: block; line-height: 1.2;">
-                                                No se permiten datos negativos
-                                            </small>
-                                            <small *ngIf="items[i].quantity === 0" style="color: #ff4d4d; font-size: 11px; margin-top: 4px; display: block; line-height: 1.2;">
-                                                Debe ser mayor a 0
-                                            </small>
+                                        <div class="form-field item-field-cantidad">
+                                            <label class="input-label">Cantidad</label>
+                                            <input type="number" class="custom-input" [(ngModel)]="item.quantity"
+                                                min="1" placeholder="Cant.">
                                         </div>
 
                                         <!-- Referencia -->
                                         <div class="form-field item-field-referencia">
-                                            <input type="text" class="custom-input" [(ngModel)]="items[i].reference"
+                                            <label class="input-label">Referencia</label>
+                                            <input type="text" class="custom-input" [(ngModel)]="item.reference"
                                                 placeholder="Referencia">
                                         </div>
 
@@ -340,18 +324,20 @@
                                             <div class="upload-container">
                                                 <input type="file" #fileInput [style.display]="'none'"
                                                     (change)="onFileSelected($event, i)"
-                                                    accept="image/*,.pdf,.doc,.docx">
-                                                <div class="upload-box" (click)="fileInput.click()"
-                                                    [class.has-file]="items[i].file">
-                                                    <i [class]="items[i].file ? 'pi pi-file-check' : 'pi pi-image'"
-                                                        [style.color]="items[i].file ? '#4ADE80' : '#FDB831'"></i>
-                                                    <span class="upload-text">
-                                                        {{ items[i].file ? items[i].file.name : 'Imagen' }}
-                                                    </span>
-                                                    <button *ngIf="items[i].file" class="btn-remove-file"
-                                                        (click)="$event.stopPropagation(); items[i].file = null">
-                                                        <i class="pi pi-times"></i>
+                                                    accept="image/*" multiple>
+                                                <div class="compact-upload-wrapper">
+                                                    <button class="icon-upload-btn" (click)="fileInput.click()" 
+                                                        [class.has-files]="item.files?.length > 0" 
+                                                        [attr.title]="item.files?.length > 0 ? (item.files.length + ' imágenes seleccionadas') : 'Subir imágenes (Máx 10)'">
+                                                        <i class="pi pi-camera"></i>
+                                                        <span class="file-count-badge" *ngIf="item.files?.length > 0">{{ item.files.length }}</span>
                                                     </button>
+                                                    <div class="files-preview-list" *ngIf="item.files?.length > 0">
+                                                        <div class="file-tag-item" *ngFor="let f of item.files; let fi = index">
+                                                            <span class="file-tag-name" [title]="f.name">{{ f.name }}</span>
+                                                            <i class="pi pi-times remove-file-icon" (click)="removeFile(i, fi)"></i>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
@@ -360,15 +346,14 @@
                                         <div class="item-actions">
                                             <button class="action-btn btn-comment" title="Comentar"
                                                 (click)="openCommentModal(i)"
-                                                [class.has-comment]="items[i].comment && items[i].comment.length > 0"><i
+                                                [class.has-comment]="item.comment && item.comment.length > 0"><i
                                                     class="pi pi-comment"></i></button>
                                             <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
                                                 title="Duplicar"><i class="pi pi-copy"></i></button>
                                             <button class="action-btn btn-delete" (click)="removeItem(i)"
                                                 title="Eliminar"><i class="pi pi-trash"></i></button>
                                         </div>
-
-                                    </div><!-- /item-row-single -->
+                                    </div>
                                 </div>
 
                                 <button class="btn-add-item-row" (click)="addItem()">Agregar +</button>
@@ -380,199 +365,71 @@
                             </div>
                         </div>
 
-                        <!-- Step 2 Placeholder which will be implemented next -->
+
+                        <!-- Step 2: Confirmation & Summary (Fused) -->
                         <div class="form-step-content" *ngIf="formStep === 2">
                             <div class="form-section-header">
-                                <h3 class="section-title">Datos del solicitante</h3>
+                                <h3 class="section-title">Confirme su solicitud</h3>
                             </div>
 
-                            <div class="user-data-form">
-                                <!-- Name (Hide if logged in) -->
-                                <div class="form-field-row" *ngIf="!currentUser">
-                                    <div class="form-field full-width">
-                                        <label class="input-label">Nombre completo *</label>
-                                        <input type="text" class="custom-input" [(ngModel)]="userData.name"
-                                            placeholder="Ej: Juan Pérez">
-                                    </div>
-                                </div>
-
-                                <!-- Welcome message if logged in -->
-                                <div class="logged-in-greeting" *ngIf="currentUser"
-                                    style="margin-bottom: 24px; padding: 16px; background: rgba(253, 184, 49, 0.1); border-radius: 12px; border-left: 4px solid #fdb831;">
-                                    <p style="margin: 0; color: #fff; font-size: 1.1rem;">Hola, <strong
-                                            style="color: #fdb831;">{{ currentUser.name }}</strong></p>
-                                    <p style="margin: 4px 0 0 0; color: #ccc; font-size: 0.9rem;">Hemos pre-llenado tus
-                                        datos básicos. Por favor completa la información restante.</p>
-                                </div>
-
-                                <!-- Document Info (Hide if logged in) -->
-                                <div class="form-field-row two-col" *ngIf="!currentUser">
-                                    <div class="form-field">
-                                        <label class="input-label">Tipo de documento</label>
-                                        <select class="custom-input" [(ngModel)]="userData.documentType">
-                                            <option value="NIT">NIT</option>
-                                            <option value="CC">Cédula de Ciudadanía</option>
-                                            <option value="CE">Cédula de Extranjería</option>
-                                            <option value="RUT">RUT</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="input-label">Número de documento</label>
-                                        <input type="text" class="custom-input" [(ngModel)]="userData.documentNumber"
-                                            placeholder="Ej: 900123456">
-                                    </div>
-                                </div>
-
-                                <!-- Email & Phone -->
-                                <div class="form-field-row two-col">
-                                    <div class="form-field">
-                                        <label class="input-label">Correo electrónico *</label>
-                                        <input type="email" class="custom-input" [(ngModel)]="userData.email"
-                                            placeholder="Ej: juan@empresa.com">
-                                    </div>
-                                    <div class="form-field">
-                                        <label class="input-label">Teléfono / Celular *</label>
-                                        <input type="tel" class="custom-input" [(ngModel)]="userData.phone"
-                                            placeholder="Ej: +57 300 123 4567">
-                                    </div>
-                                </div>
-
-                                <!-- Company -->
-                                <div class="form-field-row">
-                                    <div class="form-field full-width">
-                                        <label class="input-label">Empresa</label>
-                                        <input type="text" class="custom-input" [(ngModel)]="userData.company"
-                                            placeholder="Nombre de la empresa">
-                                    </div>
-                                </div>
-
-                                <!-- Location -->
-                                <div class="form-field-row three-col">
-
-                                    <!-- País -->
-                                    <div class="form-field">
-                                        <label class="input-label">País</label>
-                                        <div class="cotizador-filter-group" style="position: relative;">
-                                            <button class="custom-input location-select-btn" (click)="toggleCountry()">
-                                                <span class="location-select-text">{{ userData.country?.name ||
-                                                    'Seleccionar país' }}</span>
-                                                <i class="pi pi-chevron-down" [class.rotated]="openCountry"
-                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
-                                            </button>
-                                            <div class="cotizador-dropdown" *ngIf="openCountry" style="top: 46px;">
-                                                <div class="cotizador-dropdown-search">
-                                                    <input type="text" [(ngModel)]="countrySearch"
-                                                        placeholder="Buscar país..." (click)="$event.stopPropagation()"
-                                                        class="cotizador-dropdown-input" autofocus>
-                                                    <i class="pi pi-search"></i>
-                                                </div>
-                                                <div class="cotizador-dropdown-item" *ngFor="let c of filteredCountries"
-                                                    (click)="selectCountry(c)">{{ c.name }}</div>
-                                                <div class="cotizador-dropdown-item"
-                                                    *ngIf="filteredCountries.length === 0"
-                                                    style="color: #666; font-style: italic; cursor: default;">Sin
-                                                    resultados</div>
-                                            </div>
+                            <div class="confirmation-container"
+                                style="display: grid; grid-template-columns: 1fr; gap: 24px;">
+                                
+                                <!-- Applicant Info Section -->
+                                <div class="confirmation-info-section">
+                                    <!-- Case 1: Logged In Card -->
+                                    <div class="applicant-summary-card" *ngIf="currentUser"
+                                        style="background: rgba(253, 184, 49, 0.05); border-radius: 20px; border: 1px solid rgba(253, 184, 49, 0.2); padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 6px solid #fdb831;">
+                                        <div class="user-avatar-placeholder"
+                                            style="width: 60px; height: 60px; border-radius: 50%; background: #fdb831; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; font-weight: 700;">
+                                            {{ (currentUser.name && currentUser.name.length > 0) ? (currentUser.name.substring(0, 1).toUpperCase()) : 'U' }}
+                                        </div>
+                                        <div class="user-info-brief">
+                                            <h4 style="margin: 0; color: #fdb831; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Información del solicitante</h4>
+                                            <p style="margin: 4px 0 0 0; color: #fff; font-size: 1.2rem; font-weight: 600;">{{
+                                                currentUser.name }}</p>
+                                            <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.95rem;">{{
+                                                currentUser.email }} | {{ currentUser.phone }}</p>
+                                        </div>
+                                        <div style="margin-left: auto;">
+                                            <i class="pi pi-check-circle" style="color: #4ade80; font-size: 28px;"></i>
                                         </div>
                                     </div>
 
-                                    <!-- Departamento -->
-                                    <div class="form-field">
-                                        <label class="input-label">Departamento</label>
-                                        <div class="cotizador-filter-group" style="position: relative;">
-                                            <button class="custom-input location-select-btn" (click)="toggleState()"
-                                                [disabled]="!userData.country"
-                                                [class.location-disabled]="!userData.country">
-                                                <span class="location-select-text">{{ userData.state?.name ||
-                                                    'Seleccionar departamento' }}</span>
-                                                <i class="pi pi-chevron-down" [class.rotated]="openState"
-                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
-                                            </button>
-                                            <div class="cotizador-dropdown" *ngIf="openState" style="top: 46px;">
-                                                <div class="cotizador-dropdown-search">
-                                                    <input type="text" [(ngModel)]="stateSearch"
-                                                        placeholder="Buscar departamento..."
-                                                        (click)="$event.stopPropagation()"
-                                                        class="cotizador-dropdown-input" autofocus>
-                                                    <i class="pi pi-search"></i>
+                                    <!-- Case 2: Minimal Form if not logged in -->
+                                    <div class="applicant-summary-card" *ngIf="!currentUser"
+                                        style="background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; border-left: 6px solid #fdb831;">
+                                        <h4 style="color: #fdb831; margin: 0 0 20px 0; font-size: 15px; font-weight: 600; text-transform: uppercase;">Completa tus datos de contacto</h4>
+                                        <div class="user-data-form">
+                                            <div class="form-field-row">
+                                                <div class="form-field full-width">
+                                                    <label class="input-label">Nombre completo *</label>
+                                                    <input type="text" class="custom-input" [(ngModel)]="userData.name"
+                                                        placeholder="Ej: Juan Pérez">
                                                 </div>
-                                                <div class="cotizador-dropdown-item" *ngFor="let s of filteredStates"
-                                                    (click)="selectState(s)">{{ s.name }}</div>
-                                                <div class="cotizador-dropdown-item" *ngIf="filteredStates.length === 0"
-                                                    style="color: #666; font-style: italic; cursor: default;">Sin
-                                                    resultados</div>
+                                            </div>
+                                            <div class="form-field-row two-col">
+                                                <div class="form-field">
+                                                    <label class="input-label">Correo electrónico *</label>
+                                                    <input type="email" class="custom-input" [(ngModel)]="userData.email"
+                                                        placeholder="Ej: juan@empresa.com">
+                                                </div>
+                                                <div class="form-field">
+                                                    <label class="input-label">Teléfono / Celular *</label>
+                                                    <input type="tel" class="custom-input" [(ngModel)]="userData.phone"
+                                                        placeholder="Ej: +57 300 123 4567">
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-
-                                    <!-- Ciudad -->
-                                    <div class="form-field">
-                                        <label class="input-label">Ciudad</label>
-                                        <div class="cotizador-filter-group" style="position: relative;">
-                                            <button class="custom-input location-select-btn" (click)="toggleCity()"
-                                                [disabled]="!userData.state"
-                                                [class.location-disabled]="!userData.state">
-                                                <span class="location-select-text">{{ userData.city?.name ||
-                                                    'Seleccionar ciudad' }}</span>
-                                                <i class="pi pi-chevron-down" [class.rotated]="openCity"
-                                                    style="font-size: 10px; color: #FDB831; flex-shrink: 0;"></i>
-                                            </button>
-                                            <div class="cotizador-dropdown" *ngIf="openCity" style="top: 46px;">
-                                                <div class="cotizador-dropdown-search">
-                                                    <input type="text" [(ngModel)]="citySearch"
-                                                        placeholder="Buscar ciudad..."
-                                                        (click)="$event.stopPropagation()"
-                                                        class="cotizador-dropdown-input" autofocus>
-                                                    <i class="pi pi-search"></i>
-                                                </div>
-                                                <div class="cotizador-dropdown-item" *ngFor="let c of filteredCities"
-                                                    (click)="selectCity(c)">{{ c.name }}</div>
-                                                <div class="cotizador-dropdown-item" *ngIf="filteredCities.length === 0"
-                                                    style="color: #666; font-style: italic; cursor: default;">Sin
-                                                    resultados</div>
-                                            </div>
-                                        </div>
-                                    </div>
-
                                 </div>
-                            </div>
-
-                            <div class="form-footer">
-                                <button class="btn-cancel" [disabled]="submitting"
-                                    (click)="prevFormStep()">Atrás</button>
-                                <button class="btn-continue" [disabled]="submitting" (click)="nextFormStep()">
-                                    <ng-container *ngIf="!submitting">Finalizar y enviar <i class="pi pi-send"
-                                            style="margin-left: 8px;"></i></ng-container>
-                                    <ng-container *ngIf="submitting">Enviando... <i class="pi pi-spin pi-spinner"
-                                            style="margin-left: 8px;"></i></ng-container>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Step 3: Success Message -->
-                        <div class="form-step-content success-step" *ngIf="formStep === 3">
-                            <div class="success-card">
-                                <div class="success-icon-wrapper">
-                                    <i class="pi pi-check-circle success-icon"></i>
-                                </div>
-                                <h2 class="success-title">¡Solicitud Enviada con Éxito!</h2>
-                                <p class="success-message">
-                                    Hemos recibido tu solicitud de cotización. Un correo de confirmación ha sido enviado
-                                    a
-                                    <span class="highlight">{{ userData.email }}</span>.
-                                </p>
-                                <p class="success-info">
-                                    Nuestro equipo comercial revisará tus requerimientos y se pondrá en contacto contigo
-                                    en
-                                    la mayor brevedad posible.
-                                </p>
 
                                 <!-- Solicitud Summary -->
-                                <div class="success-summary">
-                                    <h3 class="summary-title">
-                                        <i class="pi pi-list"></i> Resumen de tu solicitud
-                                    </h3>
-                                    
+                                <div class="success-summary" style="margin: 0; animation: none;">
+                                    <h4
+                                        style="color: #fdb831; margin: 0 0 16px 0; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        Detalle de la máquina e ítems</h4>
+
                                     <!-- Machine Details -->
                                     <div class="summary-machine" *ngIf="selectedBrand || selectedType || selectedModel">
                                         <div class="machine-tag" *ngIf="selectedBrand">
@@ -597,14 +454,45 @@
                                                 <div class="item-sub">
                                                     <span *ngIf="item.system">Sistema: {{ item.system }}</span>
                                                     <span *ngIf="item.reference"> | Ref: {{ item.reference }}</span>
+                                                    <span *ngIf="item.files?.length > 0" style="color: #4ade80;"> | <i class="pi pi-image"></i> {{ item.files.length }}</span>
                                                 </div>
                                             </div>
                                             <div class="item-qty">x{{ item.quantity }}</div>
                                         </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div class="success-actions">
+                            <div class="form-footer" style="margin-top: 40px;">
+                                <button class="btn-cancel" [disabled]="submitting" (click)="prevFormStep()">Atrás</button>
+                                <button class="btn-continue" [disabled]="submitting" (click)="nextFormStep()">
+                                    <ng-container *ngIf="!submitting">Finalizar y enviar <i class="pi pi-send"
+                                            style="margin-left: 8px;"></i></ng-container>
+                                    <ng-container *ngIf="submitting">Enviando... <i class="pi pi-spin pi-spinner"
+                                            style="margin-left: 8px;"></i></ng-container>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Step 3: Success Message -->
+                        <div class="form-step-content success-step" *ngIf="formStep === 3">
+                            <div class="success-card">
+                                <div class="success-icon-wrapper">
+                                    <i class="pi pi-check-circle success-icon"></i>
+                                </div>
+                                <h2 class="success-title">¡Solicitud Enviada con Éxito!</h2>
+                                <p class="success-message">
+                                    Hemos recibido tu solicitud de cotización. Un correo de confirmación ha sido enviado
+                                    a
+                                    <span class="highlight">{{ currentUser?.email || userData.email }}</span>.
+                                </p>
+                                <p class="success-info">
+                                    Nuestro equipo comercial revisará tus requerimientos y se pondrá en contacto contigo
+                                    en
+                                    la mayor brevedad posible.
+                                </p>
+
+                                <div class="success-actions" style="margin-top: 32px;">
                                     <button class="btn-primary" (click)="goBackToGrid()">Volver al inicio</button>
                                     <a routerLink="/" class="btn-secondary">Regresar a la landing</a>
                                 </div>

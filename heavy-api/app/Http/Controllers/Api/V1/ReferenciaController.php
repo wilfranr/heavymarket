@@ -37,10 +37,12 @@ class ReferenciaController extends Controller
             'items.*.codigo' => ['required', 'string'],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
             'es_temporal' => ['nullable', 'boolean'],
+            'marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
         ]);
 
         $items = $validated['items'];
         $esTemporal = $validated['es_temporal'] ?? false;
+        $marcaId = $validated['marca_id'] ?? null;
         $codigos = array_map('strtoupper', array_column($items, 'codigo'));
 
         // Buscar referencias existentes
@@ -60,10 +62,16 @@ class ReferenciaController extends Controller
                 
                 if ($existentes->has($codigo)) {
                     $referencia = $existentes->get($codigo);
+                    
+                    // Si ya existe pero no tiene marca (o es temporal y se proporciona una marca nueva), actualizamos
+                    if ($marcaId && (!$referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $marcaId))) {
+                        $referencia->update(['marca_id' => $marcaId]);
+                    }
                 } else {
                     // Crear si no existe
                     $referencia = Referencia::create([
                         'referencia' => $codigo,
+                        'marca_id' => $marcaId,
                         'es_temporal' => $esTemporal,
                         'comentario' => $esTemporal 
                             ? 'Referencia temporal desde Landing - Requiere revisión'

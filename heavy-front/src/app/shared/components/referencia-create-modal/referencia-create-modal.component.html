@@ -1,72 +1,64 @@
 <p-toast />
 <p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '450px' }" [draggable]="false"
     [resizable]="false" (onHide)="closeDialog()">
-    <form [formGroup]="referenciaForm" class="flex flex-col gap-4 mt-2">
-        <!-- Referencia -->
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-400">Código / Referencia<span
-                    class="text-red-500">*</span></label>
-            <input pInputText formControlName="referencia" placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
-            @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
-            <small class="text-red-500 font-medium">La referencia es requerida</small>
-            }
-        </div>
 
-        <!-- Marca (Fabricante) -->
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-400">Marca / Fabricante<span
-                    class="text-red-500">*</span></label>
-            <p-inputgroup>
-                <p-select [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
-                    placeholder="Seleccione marca" [filter]="true" filterBy="nombre" class="w-full">
+    <div class="mb-4 text-gray-400 text-sm">
+        Crea una nueva referencia y será asociada al artículo correspondiente
+    </div>
+
+    <form [formGroup]="referenciaForm" (ngSubmit)="saveReferencia()">
+        <div class="grid grid-cols-1 gap-4">
+            
+            <!-- Referencia -->
+            <div>
+                <label for="referencia" class="block mb-2 font-semibold">Código / Referencia<span class="text-red-500">*</span></label>
+                <input id="referencia" pInputText formControlName="referencia" 
+                       placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
+                @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
+                    <small class="text-red-500">El código es requerido</small>
+                }
+            </div>
+
+            <!-- Marca (Fabricante) -->
+            <div>
+                <label for="marca_id" class="block mb-2 font-semibold">Marca / Fabricante<span class="text-red-500">*</span></label>
+                <p-select id="marca_id" [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
+                    placeholder="Seleccione una opción" [filter]="true" filterBy="nombre" 
+                    styleClass="w-full" appendTo="body">
                 </p-select>
-                <p-inputgroup-addon class="bg-transparent border-gray-800">
-                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" class="p-0 h-full w-full"
-                        (onClick)="abrirCrearMarca()"></p-button>
-                </p-inputgroup-addon>
-            </p-inputgroup>
-            @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {
-            <small class="text-red-500 font-medium">La marca es requerida</small>
+                @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {
+                    <small class="text-red-500">La marca es requerida</small>
+                }
+            </div>
+
+            <!-- Artículo -->
+            @if (!articuloId) {
+                <div>
+                    <label for="articulo_id" class="block mb-2 font-semibold">Artículo Relacionado (Opcional)</label>
+                    <p-select id="articulo_id" [options]="articulos" formControlName="articulo_id" optionLabel="descripcionEspecifica"
+                        optionValue="id" placeholder="Vincule un artículo" [filter]="true"
+                        filterBy="descripcionEspecifica,definicion" styleClass="w-full" appendTo="body">
+                        <ng-template let-articulo pTemplate="item">
+                            <div class="flex flex-col">
+                                <span class="font-medium text-xs">{{ articulo.definicion }}</span>
+                                <small class="text-gray-500" style="font-size: 10px;">{{ articulo.descripcionEspecifica }}</small>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                </div>
             }
+
+            <!-- Comentario -->
+            <div>
+                <label for="comentario" class="block mb-2 font-semibold">Comentario</label>
+                <textarea id="comentario" pTextarea formControlName="comentario" rows="3" 
+                          placeholder="Detalles adicionales" class="w-full resize-none"></textarea>
+            </div>
         </div>
 
-        <!-- Artículo -->
-        @if (!articuloId) {
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-400">Artículo Relacionado</label>
-            <p-select [options]="articulos" formControlName="articulo_id" optionLabel="descripcionEspecifica"
-                optionValue="id" placeholder="Seleccione artículo (opcional)" [filter]="true"
-                filterBy="descripcionEspecifica,definicion" class="w-full">
-                <ng-template let-articulo pTemplate="item">
-                    <div class="flex flex-col">
-                        <span class="font-medium text-xs">{{ articulo.definicion }}</span>
-                        <small class="text-gray-500" style="font-size: 10px;">{{ articulo.descripcionEspecifica
-                            }}</small>
-                    </div>
-                </ng-template>
-            </p-select>
-        </div>
-        }
-
-        <!-- Comentario -->
-        <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-400">Comentario</label>
-            <textarea pTextarea formControlName="comentario" rows="3" placeholder="Opcional: Detalles adicionales"
-                class="w-full resize-none"></textarea>
+        <div class="flex justify-end gap-2 mt-6">
+            <p-button label="Guardar" type="submit" [loading]="loading" [disabled]="referenciaForm.invalid"></p-button>
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="closeDialog()"></p-button>
         </div>
     </form>
-
-    <ng-template pTemplate="footer">
-        <div class="flex justify-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
-                (onClick)="closeDialog()"></p-button>
-            <p-button label="Guardar" icon="pi pi-check" [loading]="loading" (onClick)="saveReferencia()"
-                styleClass="bg-[#fdb831] border-none text-black font-bold"></p-button>
-        </div>
-    </ng-template>
 </p-dialog>
-
-<!-- Modal para crear nueva Marca sobre la marcha -->
-<app-fabricante-create-modal [(visible)]="showMarcaModal" title="Nueva Marca / Fabricante"
-    (onFabricanteCreated)="onMarcaCreada($event)">
-</app-fabricante-create-modal>

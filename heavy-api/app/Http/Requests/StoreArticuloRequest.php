@@ -33,8 +33,8 @@ class StoreArticuloRequest extends FormRequest
             'comentarios' => ['nullable', 'string'],
             'fotoDescriptiva' => ['nullable', 'file', 'image', 'max:5120'],
             'foto_medida' => ['nullable', 'file', 'image', 'max:5120'],
-            'referencias_ids' => ['nullable', 'array'],
-            'referencias_ids.*' => ['exists:referencias,id'],
+            'referencias_ids' => ['required', 'array', 'min:1'],
+            'referencias_ids.*' => ['required', 'exists:referencias,id'],
         ];
     }
 
@@ -54,6 +54,8 @@ class StoreArticuloRequest extends FormRequest
             'peso.min' => 'El peso no puede ser negativo',
             'fotoDescriptiva.max' => 'La ruta de la foto descriptiva no puede exceder 255 caracteres',
             'foto_medida.max' => 'La ruta de la foto de medida no puede exceder 255 caracteres',
+            'referencias_ids.required' => 'Debe asociar al menos una referencia al artículo',
+            'referencias_ids.min' => 'Debe asociar al menos una referencia al artículo',
         ];
     }
 }

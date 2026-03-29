@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Observable, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -30,7 +30,7 @@ import { selectAllSistemas, selectSistemasLoading, selectSistemasPagination } fr
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
-export class ListComponent implements OnInit {
+export class ListComponent implements OnInit, OnDestroy {
     @ViewChild('dt') dt!: Table;
 
     private readonly store = inject(Store);
@@ -47,13 +47,34 @@ export class ListComponent implements OnInit {
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
+    
+    // Búsqueda reactiva
+    private searchSubject = new Subject<string>();
+    private destroy$ = new Subject<void>();
 
     ngOnInit(): void {
         this.sistemas$ = this.store.select(selectAllSistemas);
         this.loading$ = this.store.select(selectSistemasLoading);
         this.pagination$ = this.store.select(selectSistemasPagination);
 
+        // Configurar búsqueda con debounce
+        this.searchSubject.pipe(
+            debounceTime(400),
+            distinctUntilChanged(),
+            takeUntil(this.destroy$)
+        ).subscribe(term => {
+            this.searchTerm = term;
+            this.currentPage = 1; // Resetear a la primera página al buscar
+            this.first = 0;
+            this.cargarSistemas();
+        });
+
         this.cargarSistemas();
+    }
+
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     /**
@@ -67,6 +88,14 @@ export class ListComponent implements OnInit {
                 search: this.searchTerm || undefined
             })
         );
+    }
+
+    /**
+     * Maneja el evento de búsqueda
+     */
+    onSearch(event: Event): void {
+        const value = (event.target as HTMLInputElement).value;
+        this.searchSubject.next(value);
     }
 
     /**

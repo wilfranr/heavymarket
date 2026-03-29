@@ -108,8 +108,10 @@ export class LandingService {
 
             formData.append(`items[${index}][comment]`, item.comment || '');
 
-            if (item.file) {
-                formData.append(`items[${index}][file]`, item.file, item.file.name);
+            if (item.files && item.files.length > 0) {
+                item.files.forEach((file: File, fileIndex: number) => {
+                    formData.append(`items[${index}][files][${fileIndex}]`, file, file.name);
+                });
             }
         });
 

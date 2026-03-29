@@ -39,8 +39,12 @@ export class ReferenciaService extends ApiService {
     /**
      * Buscar o crear referencias por lotes
      */
-    bulkSearchOrCreate(items: { codigo: string; cantidad: number }[], esTemporal: boolean = false): Observable<ApiResponse<any[]>> {
-        return this.post<ApiResponse<any[]>>(`${this.endpoint}/bulk-search-or-create`, { items, es_temporal: esTemporal });
+    bulkSearchOrCreate(items: { codigo: string; cantidad: number }[], esTemporal: boolean = false, marcaId: number | null = null): Observable<ApiResponse<any[]>> {
+        const payload: any = { items, es_temporal: esTemporal };
+        if (marcaId) {
+            payload.marca_id = marcaId;
+        }
+        return this.post<ApiResponse<any[]>>(`${this.endpoint}/bulk-search-or-create`, payload);
     }
 
     /**

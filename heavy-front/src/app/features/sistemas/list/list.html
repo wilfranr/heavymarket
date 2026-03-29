@@ -21,7 +21,7 @@
                 <div class="flex">
                     <p-iconfield iconPosition="left" class="w-full">
                         <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                        <input pInputText type="text" (input)="onSearch($event)"
                             placeholder="Buscar sistemas..." class="w-full" />
                     </p-iconfield>
                 </div>

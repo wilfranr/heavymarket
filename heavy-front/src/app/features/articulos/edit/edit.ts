@@ -411,6 +411,17 @@ export class EditComponent implements OnInit {
      * Maneja el envío del formulario
      */
     onSubmit(): void {
+        const referenciasIds = this.articuloForm.get('referenciasCruzadas')?.value?.map((ref: any) => ref.referencia_id) || [];
+        
+        if (referenciasIds.length === 0) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Validación',
+                detail: 'Debe asociar al menos una referencia al artículo'
+            });
+            return;
+        }
+
         if (this.articuloForm.invalid) {
             this.markFormGroupTouched(this.articuloForm);
             this.messageService.add({
@@ -435,7 +446,6 @@ export class EditComponent implements OnInit {
         if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
         if (this.planoFile) formData.append('foto_medida', this.planoFile);
 
-        const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
         referenciasIds.forEach((id: number) => {
             formData.append('referencias_ids[]', id.toString());
         });
