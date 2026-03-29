@@ -43,14 +43,14 @@
                         </div>
 
                         <div class="flex flex-col gap-8">
-                            <!-- Tipo -->
+                            <!-- Pieza estándar -->
                             <div class="field">
                                 <label
                                     class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
-                                    Tipo <span class="text-red-500">*</span></label>
+                                    Pieza estándar <span class="text-red-500">*</span></label>
                                 <p-inputgroup styleClass="w-full">
                                     <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                                        optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true"
+                                        optionValue="nombre" placeholder="Seleccione una pieza estándar" [showClear]="true"
                                         [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
                                         styleClass="w-full rounded-l-2xl">
                                         <ng-template let-tipo pTemplate="item">
@@ -71,8 +71,8 @@
                                 </p-inputgroup>
                                 @if (articuloForm.get('definicion')?.touched && articuloForm.get('definicion')?.invalid)
                                 {
-                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El tipo es
-                                    requerido</small>
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">La pieza estándar es
+                                    requerida</small>
                                 }
                             </div>
 

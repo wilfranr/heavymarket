@@ -28,13 +28,13 @@
                 </div>
 
                 <div class="flex flex-col gap-6">
-                    <!-- Tipo -->
+                    <!-- Pieza estándar -->
                     <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Tipo <span
+                        <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Pieza estándar <span
                                 class="text-red-500">*</span></label>
                         <p-inputgroup>
                             <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                                optionValue="nombre" placeholder="Seleccione un tipo" [showClear]="true" [filter]="true"
+                                optionValue="nombre" placeholder="Seleccione una pieza estándar" [showClear]="true" [filter]="true"
                                 filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
                                 class="w-full h-12 bg-surface-50 border border-surface-border rounded-xl">
                                 <ng-template let-tipo pTemplate="item">

@@ -128,7 +128,7 @@ export class EditComponent implements OnInit {
     }
 
     /**
-     * Carga los tipos de artículo disponibles
+     * Carga las piezas estándar disponibles
      * @param search Término de búsqueda opcional
      */
     cargarTipos(search?: string): void {
@@ -137,7 +137,7 @@ export class EditComponent implements OnInit {
                 this.tipos = tipos;
             },
             error: (error) => {
-                console.error('Error al cargar tipos:', error);
+                 console.error('Error al cargar piezas estándar:', error);
             }
         });
     }
@@ -155,14 +155,14 @@ export class EditComponent implements OnInit {
     }
 
     /**
-     * Abre el modal para crear un nuevo tipo
+     * Abre el modal para crear una nueva pieza estándar
      */
     abrirCrearTipo(): void {
         this.showTipoModal = true;
     }
 
     /**
-     * Maneja la creación exitosa de un tipo
+     * Maneja la creación exitosa de una pieza estándar
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
