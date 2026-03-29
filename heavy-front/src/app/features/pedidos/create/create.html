@@ -408,12 +408,38 @@
                                         tooltipPosition="top">
                                         <i class="pi pi-comment text-sm"></i>
                                     </button>
-                                    <button type="button"
-                                        class="w-9 h-9 rounded-lg bg-purple-500/10 text-purple-400 hover:bg-purple-500/20 flex items-center justify-center transition-colors"
-                                        (click)="abrirDialogoImagen($index)" pTooltip="Adjuntar imagen"
-                                        tooltipPosition="top">
-                                        <i class="pi pi-image text-sm"></i>
-                                    </button>
+                                    
+                                    <!-- Selector de Imágenes Replicado de Landing -->
+                                    <div class="relative">
+                                        <input type="file" #fileInput [style.display]="'none'" 
+                                            accept="image/*" multiple 
+                                            (change)="onFilesSelected($event, $index)">
+                                        
+                                        <button type="button"
+                                            class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors relative"
+                                            [ngClass]="referencia.get('files')?.value?.length > 0 ? 'bg-green-500/20 text-green-400 hover:bg-green-500/30' : 'bg-purple-500/10 text-purple-400 hover:bg-purple-500/20'"
+                                            (click)="referencia.get('files')?.value?.length > 0 ? openGallery($index) : fileInput.click()" 
+                                            pTooltip="{{ referencia.get('files')?.value?.length > 0 ? 'Ver imágenes' : 'Subir imágenes' }}"
+                                            tooltipPosition="top">
+                                            <i class="pi pi-camera text-sm"></i>
+                                            <!-- Badge de conteo -->
+                                            <span *ngIf="referencia.get('files')?.value?.length > 0" 
+                                                class="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-green-500 text-[10px] text-white font-bold border border-slate-900">
+                                                {{ referencia.get('files')?.value?.length }}
+                                            </span>
+                                        </button>
+                                        
+                                        <!-- Botón para añadir más si ya hay -->
+                                        <button *ngIf="referencia.get('files')?.value?.length > 0"
+                                            type="button"
+                                            class="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors"
+                                            (click)="fileInput.click()"
+                                            pTooltip="Añadir más imágenes"
+                                            tooltipPosition="bottom">
+                                            <i class="pi pi-plus text-[8px]"></i>
+                                        </button>
+                                    </div>
+
                                     <button type="button"
                                         class="w-9 h-9 rounded-lg bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 flex items-center justify-center transition-colors"
                                         pTooltip="Editar detalles" tooltipPosition="top">
@@ -817,4 +843,62 @@
         </div>
 
     </div>
+</p-dialog>
+
+<!-- Galería de Imágenes (Replicada de Landing con estilos consistentes) -->
+<p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}" 
+    header="Galería de Imágenes" [draggable]="false" [resizable]="false" appendTo="body" 
+    styleClass="gallery-modal">
+    
+    <div class="gallery-container p-4" *ngIf="selectedItemIndex !== -1">
+        <p-galleria [value]="galleriaImages" [(activeIndex)]="activeIndexGallery" [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]" 
+            [containerStyle]="{'width': '100%'}" [numVisible]="5" 
+            [circular]="true" [showItemNavigators]="true" [showThumbnails]="true">
+            
+            <ng-template #item let-item>
+                <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
+                    <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
+                    
+                    <!-- Info overlay -->
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-white text-xs truncate">{{ item.alt }}</p>
+                    </div>
+                </div>
+            </ng-template>
+            
+            <ng-template #thumbnail let-item>
+                <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800">
+                    <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                </div>
+            </ng-template>
+        </p-galleria>
+
+        <!-- Listado de archivos con opción de eliminar -->
+        <div class="mt-6">
+            <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
+                <i class="pi pi-images text-purple-400"></i>
+                Archivos cargados ({{ galleriaImages.length }}/10)
+            </h5>
+            <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                <div *ngFor="let img of galleriaImages; let i = index" 
+                    class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
+                    <div class="flex items-center gap-3">
+                        <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
+                        <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.title }}</span>
+                    </div>
+                    <button pButton type="button" icon="pi pi-times" 
+                        class="p-button-rounded p-button-text p-button-danger p-button-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        (click)="removeFile(selectedItemIndex, i)"
+                        pTooltip="Eliminar imagen"></button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-between items-center w-full">
+            <span class="text-[10px] text-slate-500 italic">Formatos permitidos: JPG, PNG, WEBP. Máx 5MB por archivo.</span>
+            <p-button label="Cerrar" icon="pi pi-check" (onClick)="displayGallery = false" styleClass="btn-pill btn-primary"></p-button>
+        </div>
+    </ng-template>
 </p-dialog>

@@ -73,7 +73,9 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         TerceroCreateModalComponent,
         MaquinaCreateModalComponent,
         ContactoCreateModalComponent,
-        ImageModule
+        ImageModule,
+        GalleriaModule,
+        BadgeModule
     ],
     providers: [MessageService],
     templateUrl: './create.html',
@@ -176,6 +178,7 @@ export class CreateComponent implements OnInit {
     displayGallery = false;
     galleriaImages: any[] = [];
     selectedItemIndex: number = -1;
+    activeIndexGallery: number = 0;
 
     // Respaldos para filtrado flexible
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
@@ -865,6 +868,7 @@ export class CreateComponent implements OnInit {
         if (files.length === 0) return;
 
         this.selectedItemIndex = index;
+        this.activeIndexGallery = 0; // Resetear índice al abrir
         this.updateGalleriaImages(index);
         this.displayGallery = true;
     }

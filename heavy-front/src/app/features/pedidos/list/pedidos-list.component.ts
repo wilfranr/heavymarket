@@ -35,7 +35,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         <div class="card">
             <!-- Header: Título + Acción principal -->
             <div class="flex justify-between items-center mb-4">
-                <h2 class="m-0">Gestión de Pedidos</h2>
+                <h2 class="m-0">{{ isAnalista ? 'Gestión de Análisis' : 'Gestión de Pedidos' }}</h2>
                 <p-button *ngIf="!isAnalista" label="Nuevo Pedido" icon="pi pi-plus" (onClick)="onCreatePedido()"> </p-button>
             </div>
 
