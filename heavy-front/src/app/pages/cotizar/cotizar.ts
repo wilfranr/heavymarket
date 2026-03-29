@@ -11,12 +11,12 @@ import { ReferenciaService } from '../../core/services/referencia.service';
 
 import { RouterModule } from '@angular/router';
 import { DialogModule } from 'primeng/dialog';
-import { CarouselModule } from 'primeng/carousel';
+import { GalleriaModule } from 'primeng/galleria';
 
 @Component({
     selector: 'app-cotizar',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection, DialogModule, CarouselModule],
+    imports: [CommonModule, FormsModule, RouterModule, Navbar, FooterSection, DialogModule, GalleriaModule],
     templateUrl: './cotizar.html',
     styleUrls: ['./cotizar.css']
 })
@@ -62,7 +62,13 @@ export class Cotizar implements OnInit {
     // Image Modal Control
     displayImagesModal: boolean = false;
     selectedItemIndex: number = -1;
-    imagePreviews: { url: string, file: File }[] = [];
+    galleriaImages: any[] = [];
+    galleriaResponsiveOptions: any[] = [
+        { breakpoint: '1024px', numVisible: 5 },
+        { breakpoint: '960px', numVisible: 4 },
+        { breakpoint: '768px', numVisible: 3 },
+        { breakpoint: '560px', numVisible: 1 }
+    ];
 
     userData = {
         name: '',
@@ -693,11 +699,11 @@ export class Cotizar implements OnInit {
             
             // Si el modal está abierto para este ítem, generar previsualizaciones adicionales
             if (this.displayImagesModal && this.selectedItemIndex === index) {
-                const newPreviews = toAdd.map(file => ({
-                     url: URL.createObjectURL(file),
-                     file: file
-                }));
-                this.imagePreviews.push(...newPreviews);
+                const newPreviews = toAdd.map(file => {
+                    const url = URL.createObjectURL(file);
+                    return { itemImageSrc: url, thumbnailImageSrc: url, file: file };
+                });
+                this.galleriaImages.push(...newPreviews);
             }
             
             if (files.length > remaining) {
@@ -717,10 +723,13 @@ export class Cotizar implements OnInit {
             
             // Si el modal está abierto para este ítem, actualizar las previsualizaciones
             if (this.displayImagesModal && this.selectedItemIndex === itemIndex) {
-                if (this.imagePreviews[fileIndex]) {
-                    URL.revokeObjectURL(this.imagePreviews[fileIndex].url);
-                    this.imagePreviews.splice(fileIndex, 1);
+                if (this.galleriaImages[fileIndex]) {
+                    URL.revokeObjectURL(this.galleriaImages[fileIndex].itemImageSrc);
+                    this.galleriaImages.splice(fileIndex, 1);
                 }
+                
+                // Forzar refresco de p-galleria recreando el array
+                this.galleriaImages = [...this.galleriaImages];
                 
                 if (this.items[itemIndex].files.length === 0) {
                     this.closeImagesModal();
@@ -736,14 +745,14 @@ export class Cotizar implements OnInit {
         this.selectedItemIndex = index;
         
         // Limpiar previsualizaciones antiguas
-        this.imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
-        this.imagePreviews = [];
+        this.galleriaImages.forEach(p => URL.revokeObjectURL(p.itemImageSrc));
+        this.galleriaImages = [];
         
         // Crear nuevas previsualizaciones
-        this.imagePreviews = this.items[index].files.map((file: File) => ({
-            url: URL.createObjectURL(file),
-            file: file
-        }));
+        this.galleriaImages = this.items[index].files.map((file: File) => {
+            const url = URL.createObjectURL(file);
+            return { itemImageSrc: url, thumbnailImageSrc: url, file: file };
+        });
         
         this.displayImagesModal = true;
         this.cd.markForCheck();
@@ -752,8 +761,8 @@ export class Cotizar implements OnInit {
     closeImagesModal() {
         this.displayImagesModal = false;
         this.selectedItemIndex = -1;
-        this.imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
-        this.imagePreviews = [];
+        this.galleriaImages.forEach(p => URL.revokeObjectURL(p.itemImageSrc));
+        this.galleriaImages = [];
         this.cd.markForCheck();
     }
 

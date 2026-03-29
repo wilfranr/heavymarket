@@ -600,28 +600,35 @@
 <p-dialog [(visible)]="displayImagesModal" 
     [header]="'Galería de Imágenes - Solicitud de Cotización'" 
     [modal]="true" 
-    [style]="{width: '450px'}" 
+    [style]="{width: '640px', 'max-width': '95vw'}" 
     [draggable]="false" 
     [resizable]="false"
     styleClass="gallery-dialog"
     (onHide)="closeImagesModal()">
     
     <div class="gallery-modal-content" *ngIf="selectedItemIndex !== -1 && items[selectedItemIndex].files?.length > 0">
-        <p-carousel [value]="imagePreviews" [numVisible]="1" [numScroll]="1" [circular]="true">
-            <ng-template let-preview pTemplate="item">
-                <div class="gallery-slide">
-                    <div class="gallery-image-container">
-                        <img [src]="preview.url" class="gallery-main-img" />
-                        <button class="btn-delete-float" (click)="removeFile(selectedItemIndex, imagePreviews.indexOf(preview))" title="Eliminar imagen">
+        <p-galleria [value]="galleriaImages" [responsiveOptions]="galleriaResponsiveOptions"
+            [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
+            [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+            <ng-template #item let-item>
+                <div class="gallery-slide" style="width: 100%; position: relative;">
+                    <div class="gallery-image-container" style="background: transparent; border: none; height: auto;">
+                        <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[50vh] object-contain rounded" style="width: 100%; display: block;" />
+                        <button class="btn-delete-float" (click)="removeFile(selectedItemIndex, galleriaImages.indexOf(item))" title="Eliminar imagen">
                             <i class="pi pi-trash"></i>
                         </button>
                     </div>
                     <div class="gallery-file-info">
-                        <span class="file-name-text">{{ preview.file.name }}</span>
+                        <span class="file-name-text">{{ item.file.name }}</span>
                     </div>
                 </div>
             </ng-template>
-        </p-carousel>
+            <ng-template #thumbnail let-item>
+                <div class="galleria-thumbnail-cell" style="padding: 4px;">
+                    <img [src]="item.thumbnailImageSrc" alt="Miniatura" style="height: 60px; object-fit: cover; border-radius: 4px;" />
+                </div>
+            </ng-template>
+        </p-galleria>
         
         <div class="gallery-modal-footer">
             <button class="btn-add-gallery" (click)="fileInputGallery.click()">
