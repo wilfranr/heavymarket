@@ -179,7 +179,16 @@
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Ciudad: {{
                                 cliente?.ciudad?.name || '--'
                                 }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Contacto: --</span>
+                            <div class="flex items-center gap-2 mt-1">
+                                <p-select formControlName="contacto_id" [options]="contactos" [filter]="true"
+                                    placeholder="Seleccionar Contacto"
+                                    styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
+                                    [filterMatchMode]="filterMode">
+                                </p-select>
+                                <p-button icon="pi pi-plus" (onClick)="openCreateContactoDialog()" 
+                                    [text]="true" severity="secondary" 
+                                    pTooltip="Crear nuevo contacto" tooltipPosition="left"></p-button>
+                            </div>
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Teléfono: {{
                                 cliente?.telefono || '---'
                                 }}</span>
@@ -653,7 +662,13 @@
         }
         <ng-template pTemplate="footer">
             <p-button label="Cerrar" icon="pi pi-times" (onClick)="cerrarModalImagenes()"></p-button>
-        </ng-template>
     </p-dialog>
+
+    <!-- Modal para crear nuevo contacto -->
+    <app-contacto-create-modal
+        [(visible)]="displayCreateContactoDialog"
+        [terceroId]="pedidoForm.get('tercero_id')?.value"
+        (contactoCreated)="onContactoCreated($event)">
+    </app-contacto-create-modal>
 </div>
 }

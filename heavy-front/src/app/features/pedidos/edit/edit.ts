@@ -12,8 +12,11 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService, FilterService } from 'primeng/api';
+import { ContactoService } from '../../../core/services/contacto.service';
+import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
+import { TimelineModule } from 'primeng/timeline';
 import { ToggleButtonModule } from 'primeng/togglebutton';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { MultiSelectModule } from 'primeng/multiselect';
@@ -70,7 +73,9 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         TableModule,
         CheckboxModule,
         ImageModule,
-        GalleriaModule
+        GalleriaModule,
+        TimelineModule,
+        ContactoCreateModalComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -84,6 +89,7 @@ export class EditComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly filterService = inject(FilterService);
+    private readonly contactoService = inject(ContactoService);
     private readonly terceroService = inject(TerceroService);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly sistemaService = inject(SistemaService);
@@ -108,6 +114,8 @@ export class EditComponent implements OnInit {
     maquinasList: any[] = []; // Lista completa de máquinas con todos sus datos
     fabricantes: any[] = [];
     referencias: any[] = [];
+    contactos: any[] = [];
+    displayCreateContactoDialog = false;
 
     // Opciones en cascada por fila (índice del FormArray)
     tiposPorFila: any[][] = [];
@@ -231,6 +239,47 @@ export class EditComponent implements OnInit {
         this.tiposLote = this.tiposLoteOriginal.filter((t: any) => this.flexibleMatch(t._search, query));
     }
 
+    /**
+     * Muestra el diálogo para crear un nuevo contacto
+     */
+    openCreateContactoDialog(): void {
+        const terceroId = this.pedidoForm.get('tercero_id')?.value;
+        if (!terceroId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Atención',
+                detail: 'Debe seleccionar un cliente primero'
+            });
+            return;
+        }
+        this.displayCreateContactoDialog = true;
+    }
+
+    /**
+     * Maneja el evento cuando se crea un contacto exitosamente
+     */
+    onContactoCreated(contacto: any): void {
+        const clienteId = this.pedidoForm.get('tercero_id')?.value;
+        if (clienteId) {
+            this.loadContactos(clienteId);
+            // Seleccionar el nuevo contacto
+            setTimeout(() => {
+                this.pedidoForm.patchValue({ contacto_id: contacto.id });
+            }, 500);
+        }
+        this.displayCreateContactoDialog = false;
+    }
+
+    private loadContactos(terceroId: number): void {
+        this.contactoService.getAll({ tercero_id: terceroId }).subscribe({
+            next: (response) => {
+                this.contactos = response.data.map((c: any) => ({
+                    label: `${c.nombre}${c.cargo ? ' - ' + c.cargo : ''}`,
+                    value: c.id
+                }));
+            }
+        });
+    }
     onFilterTerceros(event: any) {
         const query = (event.filter || '').trim();
         if (!query) {
@@ -279,10 +328,12 @@ export class EditComponent implements OnInit {
         this.pedidoForm.get('tercero_id')?.valueChanges.subscribe((terceroId: number | null) => {
             if (terceroId) {
                 this.loadMaquinasPorCliente(terceroId);
+                this.loadContactos(terceroId);
             } else {
                 this.maquinas = [];
                 this.maquinasList = [];
-                this.pedidoForm.patchValue({ maquina_id: null }, { emitEvent: false });
+                this.contactos = [];
+                this.pedidoForm.patchValue({ maquina_id: null, contacto_id: null }, { emitEvent: false });
             }
         });
 
