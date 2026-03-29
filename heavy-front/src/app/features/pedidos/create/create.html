@@ -264,83 +264,8 @@
                     </div>
                 </div>
 
-                <!-- STEP 2: REFERENCIAS MASIVAS -->
+                <!-- STEP 2: REFERENCIAS (UNIFICADO) -->
                 <div *ngSwitchCase="1" class="animate-fade-in">
-                    <div class="max-w-4xl mx-auto">
-                        <!-- Instructional Header -->
-                        <div
-                            class="bg-gradient-to-r from-brand-yellow/10 to-transparent border border-brand-yellow/20 rounded-xl p-6 mb-6">
-                            <div class="flex items-start gap-4">
-                                <div
-                                    class="w-12 h-12 rounded-lg bg-brand-yellow/20 flex items-center justify-center shrink-0">
-                                    <i class="pi pi-upload text-brand-yellow text-xl"></i>
-                                </div>
-                                <div class="flex-1">
-                                    <h3 class="text-xl font-semibold theme-text-primary mb-2">Importación Masiva de
-                                        Referencias
-                                    </h3>
-                                    <p class="theme-text-secondary text-sm mb-3">Pegue su listado de referencias para
-                                        una
-                                        carga rápida. Puede omitir este paso si prefiere agregar ítems manualmente.</p>
-
-                                    <button type="button" (click)="openHelpDialog()"
-                                        class="text-brand-yellow text-sm hover:underline flex items-center gap-2 mb-4 font-medium">
-                                        <i class="pi pi-question-circle"></i> Ver guía visual y ejemplos
-                                    </button>
-                                    <div class="bg-slate-100 dark:bg-black/30 rounded-lg p-4 border theme-border">
-                                        <p class="theme-text-secondary text-xs mb-2 font-medium">Formato requerido (una
-                                            referencia por línea):</p>
-                                        <code
-                                            class="text-orange-600 dark:text-brand-yellow font-bold text-sm font-mono block mb-3">CANTIDAD [TAB o ESPACIO] CÓDIGO_REFERENCIA</code>
-                                        <div class="pt-3 border-t theme-border">
-                                            <p class="theme-text-secondary text-xs mb-1">Ejemplo:</p>
-                                            <pre
-                                                class="theme-text-secondary text-xs font-mono bg-white dark:bg-transparent p-2 rounded border border-slate-200 dark:border-transparent">10    REF-12345
-5     FILTRO-ABC
-20    SELLO-XYZ</pre>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Import Area -->
-                        <div class="theme-card rounded-xl border theme-border p-6">
-                            <label class="theme-text-secondary text-sm font-medium mb-3 block">
-                                <i class="pi pi-list mr-2"></i>Listado de Referencias
-                            </label>
-                            <textarea pTextarea formControlName="referencias_copiadas" rows="12"
-                                placeholder="Pegue aquí su listado...&#10;&#10;Ejemplo:&#10;10&#9;REF-12345&#10;5&#9;FILTRO-ABC&#10;20&#9;SELLO-XYZ"
-                                class="w-full    placeholder:theme-text-secondary font-mono text-sm rounded-lg resize-none"></textarea>
-
-                            @if (pedidoForm.get('referencias_copiadas')?.value) {
-                            <div class="mt-3 flex items-center gap-2 text-sm">
-                                <i class="pi pi-info-circle text-blue-400"></i>
-                                <span class="theme-text-secondary">{{ contarLineas() }} líneas detectadas</span>
-                            </div>
-                            }
-                        </div>
-
-                        <!-- Navigation -->
-                        <div class="flex justify-between mt-8">
-                            <button type="button" class="btn-pill btn-outline" (click)="prevStep()">
-                                <i class="pi pi-arrow-left mr-2"></i>Anterior
-                            </button>
-                            <div class="flex gap-3">
-                                <button type="button" class="btn-pill btn-dark border-0" (click)="nextStep()">
-                                    Omitir este paso
-                                </button>
-                                <button type="button" class="btn-pill btn-primary px-6"
-                                    (click)="procesarReferenciasMasivas(); nextStep()">
-                                    <i class="pi pi-check mr-2"></i>Procesar y Continuar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- STEP 3: REFERENCIAS DETALLADAS -->
-                <div *ngSwitchCase="2" class="animate-fade-in">
 
                     <!-- Header Section -->
                     <div class="flex justify-between items-center mb-6">
@@ -349,11 +274,11 @@
                             <p class="theme-text-secondary text-sm">Revise y ajuste los detalles de cada ítem</p>
                         </div>
                         <div class="flex items-center gap-4">
-                            <div class="theme-card border theme-border rounded-lg px-4 py-2 hidden sm:block">
-                                <span class="theme-text-secondary text-sm">Total de ítems:</span>
-                                <span class="text-brand-yellow font-bold text-lg ml-2">{{ referenciasFormArray.length
-                                    }}</span>
-                            </div>
+                            <button type="button" 
+                                class="btn-pill bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center gap-2 border-none transition-colors"
+                                (click)="showBulkImport = !showBulkImport">
+                                <i class="pi pi-upload"></i> Carga masiva
+                            </button>
                             <button type="button"
                                 class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 flex items-center gap-2 border-none transition-colors"
                                 (click)="abrirDialogoLote()">
@@ -364,6 +289,40 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Bulk Import Area (Toggleable) -->
+                    @if (showBulkImport) {
+                    <div class="theme-card rounded-xl border-2 border-brand-yellow/30 p-6 mb-8 bg-brand-yellow/5 animate-fade-in">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-lg bg-brand-yellow/20 flex items-center justify-center">
+                                    <i class="pi pi-list text-brand-yellow"></i>
+                                </div>
+                                <div>
+                                    <h4 class="theme-text-primary font-bold">Importación Masiva</h4>
+                                    <p class="theme-text-secondary text-xs">Pega tu listado (Cantidad [Espacio] Referencia)</p>
+                                </div>
+                            </div>
+                            <button type="button" (click)="openHelpDialog()" class="text-brand-yellow text-sm hover:underline font-medium">
+                                <i class="pi pi-question-circle mr-1"></i>Ver guía
+                            </button>
+                        </div>
+
+                        <textarea pTextarea formControlName="referencias_copiadas" rows="8"
+                            placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"
+                            class="w-full theme-card !bg-white dark:!bg-black/30 font-mono text-sm rounded-lg mb-4"></textarea>
+                        
+                        <div class="flex justify-end gap-3">
+                            <button type="button" class="btn-pill btn-outline text-xs px-4 py-2" (click)="showBulkImport = false">
+                                Cancelar
+                            </button>
+                            <button type="button" class="btn-pill btn-primary text-xs px-6 py-2" 
+                                (click)="procesarReferenciasMasivas(); showBulkImport = false">
+                                <i class="pi pi-check mr-1"></i>Procesar listado
+                            </button>
+                        </div>
+                    </div>
+                    }
 
                     <!-- Table Container -->
                     <div class="theme-card rounded-xl border theme-border overflow-hidden">
@@ -479,12 +438,16 @@
                                     <h4 class="text-lg font-semibold theme-text-primary mb-2">No hay ítems agregados
                                     </h4>
                                     <p class="theme-text-secondary text-sm mb-6">
-                                        Comience agregando ítems manualmente o importe referencias desde el paso
-                                        anterior
+                                        Comience agregando ítems manualmente o use la carga masiva para importar varios a la vez
                                     </p>
-                                    <button type="button" class="btn-pill btn-primary" (click)="agregarReferencia()">
-                                        <i class="pi pi-plus mr-2"></i>Agregar Primer Ítem
-                                    </button>
+                                    <div class="flex justify-center gap-4">
+                                        <button type="button" class="btn-pill btn-primary" (click)="showBulkImport = true">
+                                            <i class="pi pi-upload mr-2"></i>Carga Masiva
+                                        </button>
+                                        <button type="button" class="btn-pill btn-outline" (click)="agregarReferencia()">
+                                            <i class="pi pi-plus mr-2"></i>Agregar Manual
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                             }
@@ -493,7 +456,7 @@
 
                     <!-- Navigation Footer -->
                     <div class="flex justify-between items-center mt-8">
-                        <button type="button" class="btn-pill btn-outline" (click)="prevStep()">
+                        <button type="button" class="btn-pill btn-outline px-8" (click)="prevStep()">
                             <i class="pi pi-arrow-left mr-2"></i>Anterior
                         </button>
 

@@ -42,7 +42,7 @@ import { ContactoCreateModalComponent } from '../../../shared/components/contact
 import { AuthService } from '../../../core/auth/services/auth.service';
 
 /**
- * Componente de creación de pedido con Wizard de 3 pasos
+ * Componente de creación de pedido con Wizard de 2 pasos
  */
 @Component({
     selector: 'app-pedido-create',
@@ -98,6 +98,7 @@ export class CreateComponent implements OnInit {
     pedidoForm!: FormGroup;
     activeIndex = 0;
     loading = false;
+    showBulkImport = false;
 
     // Modales
     displayCreateTerceroDialog = false;
@@ -170,7 +171,7 @@ export class CreateComponent implements OnInit {
     imagenControl = new FormControl('');
 
     // Items del wizard
-    items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
+    items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
 
     ngOnInit(): void {
         this.registerFlexibleFilter();
@@ -953,9 +954,9 @@ export class CreateComponent implements OnInit {
                         detail: `${resultados.length} referencia(s) procesada(s) exitosamente`
                     });
                     
-                    // Limpiar el campo de texto y avanzar al siguiente paso
+                    // Limpiar el campo de texto y cerrar el área de importación
                     this.pedidoForm.get('referencias_copiadas')?.setValue('');
-                    this.nextStep();
+                    this.showBulkImport = false;
                 }
             },
             error: (err) => {
@@ -1016,29 +1017,6 @@ export class CreateComponent implements OnInit {
                     severity: 'warn',
                     summary: 'Validación',
                     detail: 'Por favor seleccione un cliente'
-                });
-                return;
-            }
-        } else if (this.activeIndex === 1) {
-            // Paso 2: Referencias Masivas - no requiere validación
-        } else if (this.activeIndex === 2) {
-            // Paso 3: Validar que haya al menos una referencia
-            if (this.referenciasFormArray.length === 0) {
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Validación',
-                    detail: 'Debe agregar al menos una referencia'
-                });
-                return;
-            }
-
-            // Validar todas las referencias
-            const invalid = this.referenciasFormArray.controls.find((c) => c.invalid);
-            if (invalid) {
-                this.messageService.add({
-                    severity: 'warn',
-                    summary: 'Validación',
-                    detail: 'Por favor complete todos los campos requeridos de las referencias'
                 });
                 return;
             }
