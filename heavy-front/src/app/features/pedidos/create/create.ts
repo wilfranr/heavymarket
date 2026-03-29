@@ -24,6 +24,8 @@ import { TagModule } from 'primeng/tag';
 import { SkeletonModule } from 'primeng/skeleton';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { ImageModule } from 'primeng/image';
+import { GalleriaModule } from 'primeng/galleria';
+import { BadgeModule } from 'primeng/badge';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -170,7 +172,12 @@ export class CreateComponent implements OnInit {
     comentariosItemActual: { origen: string; comentario: string; fecha?: string }[] = [];
     imagenControl = new FormControl('');
 
-    // Items del wizard
+    // Estado para la galería de imágenes (replicado de la landing)
+    displayGallery = false;
+    galleriaImages: any[] = [];
+    selectedItemIndex: number = -1;
+
+    // Respaldos para filtrado flexible
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
 
     ngOnInit(): void {
@@ -649,6 +656,7 @@ export class CreateComponent implements OnInit {
             comentario: [data.comentario ?? ''],
             definicion: [data.definicion ?? ''],
             imagen: [data.imagen ?? null],
+            files: [[]], // Campo para almacenar los objetos File seleccionados
             proveedores: this.fb.array(data.proveedores ?? [])
         });
 
@@ -794,6 +802,95 @@ export class CreateComponent implements OnInit {
         }
         this.displayImagenDialog = false;
         this.activeItemIndex = null;
+    }
+
+    /**
+     * Maneja la selección de archivos para un ítem específico
+     */
+    onFilesSelected(event: any, index: number): void {
+        const files = Array.from(event.target.files as FileList);
+        if (files.length > 0) {
+            const control = this.referenciasFormArray.at(index).get('files');
+            const currentFiles = control?.value || [];
+            
+            // Límite de 10 imágenes por ítem
+            const remaining = 10 - currentFiles.length;
+            if (remaining <= 0) {
+                this.messageService.add({ severity: 'warn', summary: 'Límite alcanzado', detail: 'Máximo 10 imágenes por ítem' });
+                return;
+            }
+
+            const toAdd = files.slice(0, remaining);
+            control?.setValue([...currentFiles, ...toAdd]);
+
+            if (files.length > remaining) {
+                this.messageService.add({ severity: 'info', summary: 'Límite parcial', detail: 'Solo se agregaron las primeras 10 imágenes' });
+            }
+            
+            // Si la galería está abierta, actualizarla
+            if (this.displayGallery && this.selectedItemIndex === index) {
+                this.updateGalleriaImages(index);
+            }
+        }
+        // Resetear input para permitir seleccionar el mismo archivo
+        event.target.value = '';
+    }
+
+    /**
+     * Elimina un archivo de la lista de un ítem
+     */
+    removeFile(itemIndex: number, fileIndex: number): void {
+        const control = this.referenciasFormArray.at(itemIndex).get('files');
+        const currentFiles = [...(control?.value || [])];
+        
+        if (currentFiles[fileIndex]) {
+            currentFiles.splice(fileIndex, 1);
+            control?.setValue(currentFiles);
+            
+            // Actualizar galería si es necesario
+            if (this.displayGallery && this.selectedItemIndex === itemIndex) {
+                this.updateGalleriaImages(itemIndex);
+                if (currentFiles.length === 0) {
+                    this.displayGallery = false;
+                }
+            }
+        }
+    }
+
+    /**
+     * Abre la galería de imágenes para un ítem
+     */
+    openGallery(index: number): void {
+        const files = this.referenciasFormArray.at(index).get('files')?.value || [];
+        if (files.length === 0) return;
+
+        this.selectedItemIndex = index;
+        this.updateGalleriaImages(index);
+        this.displayGallery = true;
+    }
+
+    /**
+     * Actualiza el array de previsualizaciones para la galería
+     */
+    private updateGalleriaImages(index: number): void {
+        const files = this.referenciasFormArray.at(index).get('files')?.value || [];
+        // Liberar URLs anteriores
+        this.galleriaImages.forEach(img => {
+            if (img.itemImageSrc.startsWith('blob:')) {
+                URL.revokeObjectURL(img.itemImageSrc);
+            }
+        });
+
+        this.galleriaImages = files.map((file: File) => {
+            const url = URL.createObjectURL(file);
+            return {
+                itemImageSrc: url,
+                thumbnailImageSrc: url,
+                alt: file.name,
+                title: file.name,
+                file: file
+            };
+        });
     }
 
     onSistemaLoteChange(sistemaId: number | null): void {
@@ -1052,36 +1149,45 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.pedidoForm.value;
-        const referencias: CreatePedidoReferenciaDto[] = this.referenciasFormArray.controls.map((control) => {
-            const referenciaId = control.get('referencia_id')?.value;
-            const definicionRaw = control.get('definicion')?.value || '';
+        const formData = new FormData();
 
-            return {
-                referencia_id: referenciaId || undefined,
-                sistema_id: control.get('sistema_id')?.value || undefined,
-                lista_id: control.get('lista_id')?.value || undefined,
-                marca_id: control.get('marca_id')?.value || undefined,
-                cantidad: control.get('cantidad')?.value,
-                comentario: control.get('comentario')?.value || undefined,
-                estado: control.get('estado')?.value ?? true,
-                definicion: (referenciaId || control.get('lista_id')?.value) ? undefined : (definicionRaw || 'Sin definición'),
-                imagen: control.get('imagen')?.value || undefined,
-                proveedores: (control.get('proveedores') as FormArray)?.value || []
-            };
+        // Datos básicos del pedido
+        formData.append('tercero_id', formValue.tercero_id.toString());
+        if (formValue.direccion) formData.append('direccion', formValue.direccion);
+        if (formValue.comentario) formData.append('comentario', formValue.comentario);
+        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
+        if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
+        if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
+        formData.append('estado', formValue.estado || 'Nuevo');
+
+        // Procesar referencias y sus imágenes
+        this.referenciasFormArray.controls.forEach((control, index) => {
+            const refId = control.get('referencia_id')?.value;
+            const definicionRaw = control.get('definicion')?.value || '';
+            const definicion = (refId || control.get('lista_id')?.value) ? '' : (definicionRaw || 'Sin definición');
+
+            formData.append(`referencias[${index}][referencia_id]`, refId ? refId.toString() : '');
+            formData.append(`referencias[${index}][sistema_id]`, control.get('sistema_id')?.value?.toString() || '');
+            formData.append(`referencias[${index}][lista_id]`, control.get('lista_id')?.value?.toString() || '');
+            formData.append(`referencias[${index}][marca_id]`, control.get('marca_id')?.value?.toString() || '');
+            formData.append(`referencias[${index}][cantidad]`, control.get('cantidad')?.value.toString());
+            formData.append(`referencias[${index}][comentario]`, control.get('comentario')?.value || '');
+            formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
+            formData.append(`referencias[${index}][definicion]`, definicion);
+            
+            // Adjuntar múltiples archivos por referencia
+            const files = control.get('files')?.value || [];
+            files.forEach((file: File, fileIndex: number) => {
+                formData.append(`referencias[${index}][imagenes][${fileIndex}]`, file);
+            });
+
+            // Proveedores (si existen en el array)
+            const proveedores = (control.get('proveedores') as FormArray)?.value || [];
+            formData.append(`referencias[${index}][proveedores]`, JSON.stringify(proveedores));
         });
 
-        const pedidoData: any = {
-            tercero_id: formValue.tercero_id,
-            direccion: formValue.direccion || undefined,
-            comentario: formValue.comentario || undefined,
-            maquina_id: formValue.maquina_id || undefined,
-            fabricante_id: formValue.fabricante_id || undefined,
-            contacto_id: formValue.contacto_id || undefined,
-            estado: formValue.estado || 'Nuevo',
-            referencias
-        };
-
-        this.store.dispatch(createPedido({ pedido: pedidoData }));
+        // Despachar la acción pasando FormData
+        this.store.dispatch(createPedido({ pedido: formData as any }));
 
         // Escuchar el resultado
         this.store

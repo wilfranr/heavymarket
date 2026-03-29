@@ -1208,6 +1208,30 @@
     padding-bottom: 0;
 }
 
+/* Gallery Modal Styles */
+.gallery-dialog .p-dialog-content {
+    /* Utiliza cotizador-dark-dialog */
+    padding: 1.5rem;
+}
+
+::ng-deep .gallery-dialog .p-galleria-thumbnail-wrapper {
+    background: transparent !important;
+}
+
+::ng-deep .gallery-dialog .p-galleria-item-nav {
+    color: #FDB831 !important;
+}
+
+::ng-deep .gallery-dialog .p-galleria-item-nav:hover {
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+.gallery-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .item-info {
     display: flex;
     flex-direction: column;
