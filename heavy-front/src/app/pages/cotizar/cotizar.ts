@@ -62,7 +62,7 @@ export class Cotizar implements OnInit {
     // Image Modal Control
     displayImagesModal: boolean = false;
     selectedItemIndex: number = -1;
-    imagePreviewUrls: string[] = [];
+    imagePreviews: { url: string, file: File }[] = [];
 
     userData = {
         name: '',
@@ -693,8 +693,11 @@ export class Cotizar implements OnInit {
             
             // Si el modal está abierto para este ítem, generar previsualizaciones adicionales
             if (this.displayImagesModal && this.selectedItemIndex === index) {
-                const newUrls = toAdd.map(file => URL.createObjectURL(file));
-                this.imagePreviewUrls.push(...newUrls);
+                const newPreviews = toAdd.map(file => ({
+                     url: URL.createObjectURL(file),
+                     file: file
+                }));
+                this.imagePreviews.push(...newPreviews);
             }
             
             if (files.length > remaining) {
@@ -714,9 +717,9 @@ export class Cotizar implements OnInit {
             
             // Si el modal está abierto para este ítem, actualizar las previsualizaciones
             if (this.displayImagesModal && this.selectedItemIndex === itemIndex) {
-                if (this.imagePreviewUrls[fileIndex]) {
-                    URL.revokeObjectURL(this.imagePreviewUrls[fileIndex]);
-                    this.imagePreviewUrls.splice(fileIndex, 1);
+                if (this.imagePreviews[fileIndex]) {
+                    URL.revokeObjectURL(this.imagePreviews[fileIndex].url);
+                    this.imagePreviews.splice(fileIndex, 1);
                 }
                 
                 if (this.items[itemIndex].files.length === 0) {
@@ -733,11 +736,14 @@ export class Cotizar implements OnInit {
         this.selectedItemIndex = index;
         
         // Limpiar previsualizaciones antiguas
-        this.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
-        this.imagePreviewUrls = [];
+        this.imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
+        this.imagePreviews = [];
         
         // Crear nuevas previsualizaciones
-        this.imagePreviewUrls = this.items[index].files.map((file: File) => URL.createObjectURL(file));
+        this.imagePreviews = this.items[index].files.map((file: File) => ({
+            url: URL.createObjectURL(file),
+            file: file
+        }));
         
         this.displayImagesModal = true;
         this.cd.markForCheck();
@@ -746,8 +752,8 @@ export class Cotizar implements OnInit {
     closeImagesModal() {
         this.displayImagesModal = false;
         this.selectedItemIndex = -1;
-        this.imagePreviewUrls.forEach(url => URL.revokeObjectURL(url));
-        this.imagePreviewUrls = [];
+        this.imagePreviews.forEach(p => URL.revokeObjectURL(p.url));
+        this.imagePreviews = [];
         this.cd.markForCheck();
     }
 

@@ -889,119 +889,25 @@
     transition: transform 0.2s ease;
 }
 
-
-
-/* Compact Upload Styles */
-.compact-upload-wrapper {
+/* Item Actions Column */
+.item-field-actions {
     display: flex;
     flex-direction: column;
     gap: 8px;
+    min-width: 160px;
 }
 
-.icon-upload-btn {
-    position: relative;
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    background: #262E32;
-    border: 1.5px dashed #4B5563;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    color: #FDB831;
-    padding: 0;
-}
-
-.icon-upload-btn:hover {
-    border-color: #FDB831;
-    background: rgba(253, 184, 49, 0.1);
-    transform: scale(1.05);
-}
-
-.icon-upload-btn.has-files {
-    border-style: solid;
-    border-color: #4ADE80;
-    color: #4ADE80;
-    background: rgba(74, 222, 128, 0.05);
-}
-
-.icon-upload-btn i {
-    font-size: 20px;
-}
-
-.file-count-badge {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    background: #FDB831;
-    color: #000;
-    font-size: 10px;
-    font-weight: 700;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid #262E32;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
-}
-
-.icon-upload-btn.has-files .file-count-badge {
-    background: #4ADE80;
-}
-
-.files-preview-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    max-width: 200px;
-}
-
-.file-tag-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 3px 8px;
-    border-radius: 4px;
-    font-size: 10px;
-    color: #CBD5E1;
-    max-width: 100%;
-}
-
-.file-tag-name {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 80px;
-}
-
-.remove-file-icon {
-    font-size: 10px;
-    cursor: pointer;
-    color: #EF4444;
-    transition: transform 0.2s;
-}
-
-.remove-file-icon:hover {
-    transform: scale(1.3);
-}
-
-.btn-remove-file:hover {
-    background: rgba(239, 68, 68, 0.1);
-}
-
-/* Action Buttons */
 .item-actions {
     display: flex;
-    gap: 8px;
     align-items: center;
-    flex-shrink: 0;
-    padding-bottom: 2px;
+    gap: 12px;
+}
+
+.photo-action-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 }
 
 .action-btn {
@@ -1034,6 +940,47 @@
 .btn-delete {
     background: #EF4444;
     color: #FFF;
+}
+
+.btn-camera {
+    background: #FDB831;
+    color: #000;
+}
+
+.btn-camera.has-files {
+    background: #4ADE80;
+    color: #000;
+}
+
+.btn-add-more-small {
+    width: 20px;
+    height: 20px;
+    font-size: 10px;
+    background: #334155;
+    color: #f8fafc;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+}
+
+.file-count-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #1e293b;
+    color: #4ADE80;
+    font-size: 10px;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #4ADE80;
+    z-index: 2;
 }
 
 .action-btn:hover {

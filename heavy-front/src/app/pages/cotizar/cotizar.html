@@ -319,39 +319,39 @@
                                                 placeholder="Referencia">
                                         </div>
 
-                                        <!-- Archivos -->
-                                        <div class="form-field item-field-archivos">
-                                            <div class="upload-container">
-                                                <input type="file" #fileInput [style.display]="'none'"
-                                                    (change)="onFileSelected($event, i)"
-                                                    accept="image/*" multiple>
-                                                <div class="compact-upload-wrapper">
-                                                    <button class="icon-upload-btn" (click)="fileInput.click()" 
-                                                        [class.has-files]="item.files?.length > 0" 
-                                                        [attr.title]="item.files?.length > 0 ? (item.files.length + ' imágenes seleccionadas') : 'Subir imágenes (Máx 10)'">
+
+                                        <!-- Acciones -->
+                                        <div class="form-field item-field-actions">
+                                            <label class="input-label">Acciones</label>
+                                            <div class="item-actions">
+                                                <!-- Cámara/Galería de imágenes -->
+                                                <div class="photo-action-wrapper">
+                                                    <input type="file" #fileInput [style.display]="'none'"
+                                                        (change)="onFileSelected($event, i)"
+                                                        accept="image/*" multiple>
+                                                    <button class="action-btn btn-camera" 
+                                                        (click)="item.files?.length > 0 ? openImagesModal(i) : fileInput.click()"
+                                                        [class.has-files]="item.files?.length > 0"
+                                                        [attr.title]="item.files?.length > 0 ? 'Ver imágenes' : 'Subir imágenes'">
                                                         <i class="pi pi-camera"></i>
                                                         <span class="file-count-badge" *ngIf="item.files?.length > 0">{{ item.files.length }}</span>
                                                     </button>
-                                                    <div class="files-preview-list" *ngIf="item.files?.length > 0">
-                                                        <div class="file-tag-item" *ngFor="let f of item.files; let fi = index">
-                                                            <span class="file-tag-name" [title]="f.name">{{ f.name }}</span>
-                                                            <i class="pi pi-times remove-file-icon" (click)="removeFile(i, fi)"></i>
-                                                        </div>
-                                                    </div>
+                                                    <!-- Botón extra para añadir más cuando ya hay -->
+                                                    <button class="action-btn btn-add-more-small" *ngIf="item.files?.length > 0"
+                                                        (click)="fileInput.click()" title="Añadir más imágenes">
+                                                        <i class="pi pi-plus"></i>
+                                                    </button>
                                                 </div>
-                                            </div>
-                                        </div>
 
-                                        <!-- Acciones -->
-                                        <div class="item-actions">
-                                            <button class="action-btn btn-comment" title="Comentar"
-                                                (click)="openCommentModal(i)"
-                                                [class.has-comment]="item.comment && item.comment.length > 0"><i
-                                                    class="pi pi-comment"></i></button>
-                                            <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
-                                                title="Duplicar"><i class="pi pi-copy"></i></button>
-                                            <button class="action-btn btn-delete" (click)="removeItem(i)"
-                                                title="Eliminar"><i class="pi pi-trash"></i></button>
+                                                <button class="action-btn btn-comment" title="Comentar"
+                                                    (click)="openCommentModal(i)"
+                                                    [class.has-comment]="item.comment && item.comment.length > 0"><i
+                                                        class="pi pi-comment"></i></button>
+                                                <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
+                                                    title="Duplicar"><i class="pi pi-copy"></i></button>
+                                                <button class="action-btn btn-delete" (click)="removeItem(i)"
+                                                    title="Eliminar"><i class="pi pi-trash"></i></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -596,5 +596,54 @@
         </p-dialog>
 
     </div>
+<!-- Modal Galería de Imágenes con Carrusel -->
+<p-dialog [(visible)]="displayImagesModal" 
+    [header]="'Galería de Imágenes - Solicitud de Cotización'" 
+    [modal]="true" 
+    [style]="{width: '450px'}" 
+    [draggable]="false" 
+    [resizable]="false"
+    styleClass="gallery-dialog"
+    (onHide)="closeImagesModal()">
+    
+    <div class="gallery-modal-content" *ngIf="selectedItemIndex !== -1 && items[selectedItemIndex].files?.length > 0">
+        <p-carousel [value]="imagePreviews" [numVisible]="1" [numScroll]="1" [circular]="true">
+            <ng-template let-preview pTemplate="item">
+                <div class="gallery-slide">
+                    <div class="gallery-image-container">
+                        <img [src]="preview.url" class="gallery-main-img" />
+                        <button class="btn-delete-float" (click)="removeFile(selectedItemIndex, imagePreviews.indexOf(preview))" title="Eliminar imagen">
+                            <i class="pi pi-trash"></i>
+                        </button>
+                    </div>
+                    <div class="gallery-file-info">
+                        <span class="file-name-text">{{ preview.file.name }}</span>
+                    </div>
+                </div>
+            </ng-template>
+        </p-carousel>
+        
+        <div class="gallery-modal-footer">
+            <button class="btn-add-gallery" (click)="fileInputGallery.click()">
+                <i class="pi pi-plus"></i> Agregar más imágenes
+            </button>
+            <input type="file" #fileInputGallery [style.display]="'none'"
+                (change)="onFileSelected($event, selectedItemIndex)"
+                accept="image/*" multiple>
+        </div>
+    </div>
+    
+    <div class="empty-gallery" *ngIf="selectedItemIndex !== -1 && (!items[selectedItemIndex].files || items[selectedItemIndex].files.length === 0)">
+        <i class="pi pi-images" style="font-size: 3rem; color: #4B5563;"></i>
+        <p>No hay imágenes adjuntas</p>
+        <button class="btn-add-gallery" (click)="fileInputGalleryEmpty.click()">
+            <i class="pi pi-plus"></i> Subir imágenes
+        </button>
+        <input type="file" #fileInputGalleryEmpty [style.display]="'none'"
+                (change)="onFileSelected($event, selectedItemIndex)"
+                accept="image/*" multiple>
+    </div>
+</p-dialog>
+
     <app-footer-section></app-footer-section>
 </div>
