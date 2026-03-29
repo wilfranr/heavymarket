@@ -566,6 +566,44 @@
                                     en
                                     la mayor brevedad posible.
                                 </p>
+
+                                <!-- Solicitud Summary -->
+                                <div class="success-summary">
+                                    <h3 class="summary-title">
+                                        <i class="pi pi-list"></i> Resumen de tu solicitud
+                                    </h3>
+                                    
+                                    <!-- Machine Details -->
+                                    <div class="summary-machine" *ngIf="selectedBrand || selectedType || selectedModel">
+                                        <div class="machine-tag" *ngIf="selectedBrand">
+                                            <span>Marca:</span> <strong>{{ selectedBrand }}</strong>
+                                        </div>
+                                        <div class="machine-tag" *ngIf="selectedType">
+                                            <span>Tipo:</span> <strong>{{ selectedType }}</strong>
+                                        </div>
+                                        <div class="machine-tag" *ngIf="selectedModel">
+                                            <span>Modelo:</span> <strong>{{ selectedModel }}</strong>
+                                        </div>
+                                        <div class="machine-tag" *ngIf="selectedSeries">
+                                            <span>Serie:</span> <strong>{{ selectedSeries }}</strong>
+                                        </div>
+                                    </div>
+
+                                    <!-- Items List -->
+                                    <div class="summary-items">
+                                        <div class="summary-item" *ngFor="let item of items">
+                                            <div class="item-info">
+                                                <div class="item-main">{{ item.description || 'Repuesto sin descripción específica' }}</div>
+                                                <div class="item-sub">
+                                                    <span *ngIf="item.system">Sistema: {{ item.system }}</span>
+                                                    <span *ngIf="item.reference"> | Ref: {{ item.reference }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="item-qty">x{{ item.quantity }}</div>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <div class="success-actions">
                                     <button class="btn-primary" (click)="goBackToGrid()">Volver al inicio</button>
                                     <a routerLink="/" class="btn-secondary">Regresar a la landing</a>
