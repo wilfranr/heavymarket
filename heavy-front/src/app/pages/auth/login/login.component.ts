@@ -47,6 +47,10 @@ export class LoginComponent {
      * Manejar envío del formulario
      */
     onSubmit(): void {
+        if (this.isLoading()) {
+            return;
+        }
+
         if (this.loginForm.invalid) {
             this.markFormGroupTouched(this.loginForm);
             this.toastService.warning('Por favor completa todos los campos requeridos');

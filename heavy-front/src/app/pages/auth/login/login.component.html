@@ -21,6 +21,7 @@
                             <label for="email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
                             <input id="email" type="email" formControlName="email" placeholder="Email" pInputText
                                 class="w-full custom-input"
+                                (keyup.enter)="onSubmit()"
                                 [ngClass]="{ 'ng-invalid ng-dirty': hasError('email', 'required') || hasError('email', 'email') }" />
 
                             @if (hasError('email', 'required')) {
@@ -37,7 +38,7 @@
                                 class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
                             <p-password id="password" formControlName="password" placeholder="Contraseña"
                                 [toggleMask]="true" styleClass="w-full custom-password" inputStyleClass="w-full"
-                                [feedback]="false">
+                                [feedback]="false" (keyup.enter)="onSubmit()">
                             </p-password>
 
                             @if (hasError('password', 'required')) {

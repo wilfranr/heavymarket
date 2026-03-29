@@ -11,7 +11,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService, ConfirmationService, FilterService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToggleButtonModule } from 'primeng/togglebutton';
@@ -83,6 +83,7 @@ export class EditComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
+    private readonly filterService = inject(FilterService);
     private readonly terceroService = inject(TerceroService);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly sistemaService = inject(SistemaService);
@@ -100,6 +101,7 @@ export class EditComponent implements OnInit {
 
     pedidoId = signal<number>(0);
     terceros: any[] = [];
+    tercerosOriginal: any[] = [];
     sistemas: any[] = [];
     marcas: any[] = [];
     maquinas: any[] = [];
@@ -144,7 +146,13 @@ export class EditComponent implements OnInit {
     displayLoteDialog = false;
     loteForm!: FormGroup;
     tiposLote: any[] = [];
+    tiposLoteOriginal: any[] = [];
     referenciasLote: any[] = [];
+    filterMode: any = 'flexible';
+
+    // Respaldos para filtrado flexible
+    sistemasOriginal: any[] = [];
+    tiposPorFilaOriginal: any[][] = [];
 
     // Dialogos de comentario e imagen
     displayComentarioDialog = false;
@@ -185,10 +193,70 @@ export class EditComponent implements OnInit {
 
     submitting = false;
 
+    private removeAccents(str: string): string {
+        return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+    }
+
+    public flexibleMatch(text: string, search: string): boolean {
+        if (!search) return true;
+        const normalizedText = this.removeAccents(text.toLowerCase());
+        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
+        return searchTerms.every(term => normalizedText.includes(term));
+    }
+
+    onFilterSistemas(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.sistemas = [...this.sistemasOriginal];
+            return;
+        }
+        this.sistemas = this.sistemasOriginal.filter(s => this.flexibleMatch(s._search, query));
+    }
+
+    onFilterTipos(event: any, index: number) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.tiposPorFila[index] = [...(this.tiposPorFilaOriginal[index] || [])];
+            return;
+        }
+        this.tiposPorFila[index] = (this.tiposPorFilaOriginal[index] || []).filter((t: any) => this.flexibleMatch(t._search, query));
+    }
+
+    onFilterTiposLote(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.tiposLote = [...this.tiposLoteOriginal];
+            return;
+        }
+        this.tiposLote = this.tiposLoteOriginal.filter((t: any) => this.flexibleMatch(t._search, query));
+    }
+
+    onFilterTerceros(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.terceros = [...this.tercerosOriginal];
+            return;
+        }
+        this.terceros = this.tercerosOriginal.filter(t => this.flexibleMatch(t.label, query));
+    }
+
     ngOnInit(): void {
+        this.registerFlexibleFilter();
         this.initForm();
         this.loadInitialData();
         this.loadPedido();
+    }
+
+    private registerFlexibleFilter(): void {
+        this.filterService.register('flexible', (value: any, filter: any): boolean => {
+            if (filter === undefined || filter === null || filter.trim() === '') {
+                return true;
+            }
+            if (value === undefined || value === null) {
+                return false;
+            }
+            return this.flexibleMatch(String(value), String(filter));
+        });
     }
 
     /**
@@ -237,22 +305,33 @@ export class EditComponent implements OnInit {
                     label: t.nombre || `Tercero ${t.id}`,
                     value: t.id
                 }));
+                this.tercerosOriginal = [...this.terceros];
             }
         });
 
-        // Cargar sistemas
-        this.sistemaService.getAll({ per_page: 100 }).subscribe({
+        // Cargar sistemas y enriquecer para búsqueda flexible
+        this.sistemaService.getAll({ per_page: 100, include: 'listas' }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map((s) => ({
-                    label: s.nombre,
-                    value: s.id
-                })).sort((a, b) => {
+                this.sistemas = response.data.map((s: any) => {
+                    // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
+                    const tiposRelacionados = (s.listas || [])
+                        .filter((l: any) => l.tipo === 'Tipo de Artículo')
+                        .map((l: any) => l.nombre)
+                        .join(' ');
+                    
+                    return {
+                        label: s.nombre,
+                        value: s.id,
+                        _search: `${s.nombre} ${tiposRelacionados}`
+                    };
+                }).sort((a, b) => {
                     const labelA = a.label.toLowerCase();
                     const labelB = b.label.toLowerCase();
                     if (labelA === 'por defecto') return -1;
                     if (labelB === 'por defecto') return 1;
                     return labelA.localeCompare(labelB);
                 });
+                this.sistemasOriginal = [...this.sistemas];
             }
         });
 
@@ -550,9 +629,12 @@ export class EditComponent implements OnInit {
                 const listasAsociadas = response.data;
                 const opciones = listasAsociadas.map((lista: any) => ({
                     label: lista.nombre,
-                    value: lista.id
+                    value: lista.id,
+                    descripcion: lista.definicion,
+                    _search: `${lista.nombre} ${lista.definicion || ''}`
                 }));
                 this.tiposPorFila[index] = opciones;
+                this.tiposPorFilaOriginal[index] = [...opciones];
 
                 if (listaIdPreseleccionado != null) {
                     const row = this.referenciasFormArray.at(index);
@@ -1041,18 +1123,13 @@ export class EditComponent implements OnInit {
                 const listasAsociadas = response.data;
                 this.articuloService.getAll({ per_page: 500 }).subscribe({
                     next: (resArt) => {
-                        const opcionesUnicas: any[] = [];
-
-                        listasAsociadas.forEach(lista => {
-                            const articuloRelacionado = resArt.data.find(a => a.definicion === lista.nombre);
-                            opcionesUnicas.push({
-                                label: lista.nombre,
-                                value: articuloRelacionado ? articuloRelacionado.id : lista.nombre,
-                                descripcion: articuloRelacionado ? articuloRelacionado.descripcionEspecifica : lista.definicion
-                            });
-                        });
-
-                        this.tiposLote = opcionesUnicas;
+                        this.tiposLote = listasAsociadas.map((lista: any) => ({
+                            label: lista.nombre,
+                            value: lista.id,
+                            descripcion: lista.definicion,
+                            _search: `${lista.nombre} ${lista.definicion || ''}`
+                        }));
+                        this.tiposLoteOriginal = [...this.tiposLote];
                         if (this.tiposLote.length > 0) {
                             this.loteForm.get('articulo_id')?.enable();
                         }

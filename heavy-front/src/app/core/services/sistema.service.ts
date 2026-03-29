@@ -18,7 +18,7 @@ export class SistemaService extends ApiService {
     /**
      * Obtener todos los sistemas con filtros
      */
-    getAll(params?: { search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Sistema>> {
+    getAll(params?: { search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number; include?: string }): Observable<PaginatedResponse<Sistema>> {
         return this.get<PaginatedResponse<Sistema>>(this.endpoint, params);
     }
 

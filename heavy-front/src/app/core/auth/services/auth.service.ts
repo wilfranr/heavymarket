@@ -107,6 +107,24 @@ export class AuthService {
     }
 
     /**
+     * Actualizar perfil del usuario autenticado
+     */
+    updateProfile(data: any): Observable<any> {
+        return this.http.put(`${this.API_URL}/profile`, data).pipe(
+            tap((response: any) => {
+                if (response.data) {
+                    // Actualizar el usuario local preservando los roles que vienen del backend
+                    const currentUser = this.currentUser();
+                    if (currentUser) {
+                        const updatedUser = { ...currentUser, ...response.data };
+                        this.setUser(updatedUser);
+                    }
+                }
+            })
+        );
+    }
+
+    /**
      * Refrescar el token de acceso
      */
     refreshToken(): Observable<{ data: { access_token: string } }> {

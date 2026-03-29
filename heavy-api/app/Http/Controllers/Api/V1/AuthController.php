@@ -259,4 +259,40 @@ class AuthController extends Controller
             'message' => 'Token revocado exitosamente',
         ]);
     }
+
+    /**
+     * Actualizar el perfil del usuario autenticado
+     * 
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function updateProfile(Request $request): JsonResponse
+    {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'password' => ['nullable', 'string', 'min:8', 'confirmed'],
+        ]);
+
+        $user->name = $validated['name'];
+        $user->email = $validated['email'];
+
+        if (!empty($validated['password'])) {
+            $user->password = $validated['password']; // Se hashea automáticamente por el cast en el modelo
+        }
+
+        $user->save();
+
+        return response()->json([
+            'message' => 'Perfil actualizado exitosamente',
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'roles' => $user->roles->pluck('name'),
+            ],
+        ]);
+    }
 }

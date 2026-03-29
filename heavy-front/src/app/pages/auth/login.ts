@@ -29,10 +29,10 @@ import { AppFloatingConfigurator } from '../../layout/component/app.floatingconf
 
                         <div>
                             <label for="email1" class="block text-surface-900 dark:text-surface-0 text-xl font-medium mb-2">Email</label>
-                            <input pInputText id="email1" type="email" placeholder="correo@ejemplo.com" class="w-full md:w-120 mb-8" [(ngModel)]="email" />
+                            <input pInputText id="email1" type="email" placeholder="correo@ejemplo.com" class="w-full md:w-120 mb-8" [(ngModel)]="email" (keyup.enter)="onLogin()" />
 
                             <label for="password1" class="block text-surface-900 dark:text-surface-0 font-medium text-xl mb-2">Contraseña</label>
-                            <p-password id="password1" [(ngModel)]="password" placeholder="Contraseña" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false"></p-password>
+                            <p-password id="password1" [(ngModel)]="password" placeholder="Contraseña" [toggleMask]="true" styleClass="mb-4" [fluid]="true" [feedback]="false" (keyup.enter)="onLogin()"></p-password>
 
                             <div class="flex items-center justify-between mt-2 mb-8 gap-8">
                                 <div class="flex items-center">
@@ -65,6 +65,10 @@ export class Login {
     isLoading = signal(false);
 
     onLogin(): void {
+        if (this.isLoading()) {
+            return;
+        }
+
         if (!this.email || !this.password) {
             this.toastService.warning('Por favor ingresa tu email y contraseña');
             return;

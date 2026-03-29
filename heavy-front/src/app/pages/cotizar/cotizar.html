@@ -306,6 +306,10 @@
                                                             <i class="pi pi-box"></i>
                                                         </div>
                                                         <span>{{ desc.nombre }}</span>
+                                                        <small *ngIf="desc.systemName && desc.systemName !== item.system" 
+                                                            style="opacity: 0.6; font-size: 0.75em; font-style: italic; margin-left: auto; padding-left: 10px;">
+                                                            (en {{ desc.systemName }})
+                                                        </small>
                                                     </div>
                                                 </div>
                                             </div>

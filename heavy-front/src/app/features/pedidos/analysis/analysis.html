@@ -224,10 +224,9 @@
                 <div class="item-card overflow-hidden rounded-xl bg-[#334155] text-white mb-6">
                     <!-- Item Header Bar -->
                     <div class="flex items-center gap-6 p-4 bg-[#334155] border-b border-gray-600">
-                        <!-- Badge local -->
-                        <div class="px-4 py-1.5 rounded-full font-medium text-xs" 
-                             [ngClass]="isPreparado ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'">
-                            {{ isPreparado ? 'Preparado' : 'Pendiente' }}
+                        <div class="px-4 py-1.5 rounded-full font-medium text-xs font-bold" 
+                             [ngClass]="isItemCompleto(i) ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'">
+                            {{ isItemCompleto(i) ? 'Analizado' : 'Pendiente' }}
                         </div>
                         
                         <!-- Name & Category Reactivo -->
@@ -268,7 +267,7 @@
                                         <th class="w-48">Referencia</th>
                                         <th class="flex-1">Descripción</th>
                                         <th class="w-48">Categoría comercial</th>
-                                        <th class="w-10 text-center">Comentar</th>
+                                        <th class="w-10 text-center"></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -300,11 +299,10 @@
                                                 <input type="text" pInputText formControlName="descripcion" placeholder="Descripción..." class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
                                             </td>
                                             <td class="p-2">
-                                                <p-select [options]="tiposArticulo" formControlName="categoria" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
+                                                <p-select [options]="tiposArticulo" formControlName="categoria" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
                                             </td>
                                             <td class="p-3 pr-4 text-center rounded-r-lg">
                                                 <div class="flex gap-2 justify-center">
-                                                    <button type="button" class="pi pi-comments p-2 bg-green-500 rounded-full text-white text-xs border-none"></button>
                                                     @if (j > 0) {
                                                         <button type="button" (click)="removeParte(i, j)" class="pi pi-minus p-2 bg-red-500 rounded-full text-white text-xs border-none"></button>
                                                     }

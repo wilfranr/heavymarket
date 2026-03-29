@@ -106,8 +106,9 @@
                                     </label>
                                     <div class="flex gap-2">
                                         <p-select formControlName="tercero_id" [options]="terceros" [filter]="true"
-                                            filterBy="label" placeholder="Buscar cliente..."
-                                            styleClass="flex-1 h-[42px]">
+                                            placeholder="Buscar cliente..."
+                                            styleClass="flex-1 h-[42px]"
+                                            [filterMatchMode]="filterMode">
                                         </p-select>
                                         <button type="button" (click)="openCreateTerceroDialog()"
                                             class="w-[42px] h-[42px] rounded-lg bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center justify-center transition-colors shrink-0">
@@ -397,14 +398,31 @@
                                 <!-- Sistema -->
                                 <div class="w-[15%]">
                                     <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Sistema"
-                                        [filter]="true" appendTo="body" styleClass="w-full    h-[42px]">
+                                        [filter]="true" appendTo="body" styleClass="w-full h-[42px]"
+                                        [filterMatchMode]="filterMode" filterBy="_search">
+                                        <ng-template pTemplate="item" let-sys>
+                                            <div class="flex flex-col">
+                                                <span>{{ sys.label }}</span>
+                                                <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="sys._search !== sys.label">
+                                                    {{ sys._search }}
+                                                </small>
+                                            </div>
+                                        </ng-template>
                                     </p-select>
                                 </div>
 
-                                <!-- Tipo Articulo -->
                                 <div class="w-[15%]">
                                     <p-select formControlName="lista_id" [options]="tiposPorFila[refIndex]"
-                                        placeholder="Tipo" [filter]="true" appendTo="body" styleClass="w-full h-[42px]">
+                                        placeholder="Tipo" [filter]="true" appendTo="body" styleClass="w-full h-[42px]"
+                                        [filterMatchMode]="filterMode" filterBy="_search">
+                                        <ng-template pTemplate="item" let-tipo>
+                                            <div class="flex flex-col">
+                                                <span>{{ tipo.label }}</span>
+                                                <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion">
+                                                    {{ tipo.descripcion }}
+                                                </small>
+                                            </div>
+                                        </ng-template>
                                     </p-select>
                                 </div>
 
@@ -602,7 +620,17 @@
                     class="text-red-500">*</span></label>
             <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar sistema..."
                 styleClass="w-full" [filter]="true" appendTo="body"
-                (onChange)="onSistemaLoteChange($event.value)"></p-select>
+                (onChange)="onSistemaLoteChange($event.value)"
+                [filterMatchMode]="filterMode" filterBy="_search">
+                <ng-template pTemplate="item" let-sys>
+                    <div class="flex flex-col">
+                        <span>{{ sys.label }}</span>
+                        <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="sys._search !== sys.label">
+                            {{ sys._search.substring(0, 60) }}...
+                        </small>
+                    </div>
+                </ng-template>
+            </p-select>
         </div>
 
         <div class="flex flex-col gap-2 relative">
@@ -610,7 +638,17 @@
                     class="text-red-500">*</span></label>
             <p-select formControlName="articulo_id" [options]="tiposLote" placeholder="Tipo de artículo"
                 styleClass="w-full" [filter]="true" appendTo="body"
-                (onChange)="onArticuloLoteChange($event.value)"></p-select>
+                (onChange)="onArticuloLoteChange($event.value)"
+                [filterMatchMode]="filterMode" filterBy="_search">
+                <ng-template pTemplate="item" let-tipo>
+                    <div class="flex flex-col">
+                        <span>{{ tipo.label }}</span>
+                        <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion">
+                            {{ tipo.descripcion }}
+                        </small>
+                    </div>
+                </ng-template>
+            </p-select>
         </div>
 
         <div class="flex flex-col gap-2 relative">

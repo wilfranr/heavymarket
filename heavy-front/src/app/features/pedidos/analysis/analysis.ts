@@ -344,6 +344,7 @@ export class AnalysisComponent implements OnInit {
                 this.referenciasPorTipo[tipoId] = resp.data.map((r: any) => ({
                     label: r.referencia,
                     value: r.id,
+                    descripcion: r.descripcion || '',
                     articulo_id: r.articulo_id,
                     articulo_nombre: r.articulo?.nombre || ''
                 }));
@@ -418,7 +419,7 @@ export class AnalysisComponent implements OnInit {
         }
 
         const hasRef = itemControl.get('referencia_id')?.value;
-        itemControl.get('estado_item')?.setValue(hasRef ? 'Preparado' : 'En proceso');
+        itemControl.get('estado_item')?.setValue(hasRef ? 'Analizado' : 'En proceso');
 
         this.displayItemEditDialog = false;
         
@@ -443,7 +444,7 @@ export class AnalysisComponent implements OnInit {
         
         if (refObj) {
             parte.patchValue({
-                descripcion: refObj.articulo_nombre || 'Sin descripción',
+                descripcion: refObj.descripcion || refObj.articulo_nombre || 'Sin descripción',
                 categoria: refObj.articulo_id
             });
         }
@@ -649,7 +650,7 @@ export class AnalysisComponent implements OnInit {
             this.loading$ = this.store.select(selectPedidosLoading);
 
             this.pedido$.pipe(
-                filter(p => !!p),
+                filter(p => !!p && p.referencias !== undefined),
                 take(1)
             ).subscribe(pedido => {
                 if (pedido && pedido.referencias) {
@@ -690,7 +691,7 @@ export class AnalysisComponent implements OnInit {
                 id: r.id,
                 referencia_id: r.referencia_id,
                 cantidad: r.cantidad,
-                descripcion: r.referencia?.referencia || r.definicion,
+                descripcion: r.referencia?.descripcion || r.definicion || r.referencia?.referencia || '',
                 categoria: r.lista_id
             });
         });
@@ -698,8 +699,8 @@ export class AnalysisComponent implements OnInit {
         // Poblar el formulario con los grupos procesados
         Object.values(grupos).forEach(g => {
             const itemGroup = this.fb.group({
-                id: [null], // El ID es individual por parte, no por tarjeta
-                estado_item: ['Procesado'],
+                id: [null], 
+                estado_item: ['Pendiente'],
                 sistema_id: [g.sistema_id],
                 lista_id: [g.lista_id],
                 definicion: [g.definicion],
@@ -726,6 +727,28 @@ export class AnalysisComponent implements OnInit {
         return this.referenciasFormArray.at(index).get('partes') as FormArray;
     }
 
+    isItemCompleto(index: number): boolean {
+        const partes = this.getPartesFormArray(index);
+        if (!partes || partes.length === 0) return false;
+        
+        // Un ítem está completo solo si TODAS sus filas tienen referencia y 
+        // una categoría que coincida con nuestro catálogo de Tipos de Artículo.
+        for (const control of partes.controls) {
+            const ref = control.get('referencia_id')?.value;
+            const cat = control.get('categoria')?.value;
+            
+            // Verificación de existencia real en el catálogo cargado
+            const catValida = this.tiposArticulo.some(t => t.value === cat);
+            const refOk = !!ref && (typeof ref === 'number' ? ref > 0 : ref.trim().length > 0);
+
+            if (!refOk || !catValida) {
+                return false;
+            }
+        }
+        
+        return true;
+    }
+
     toggleExpand(index: number): void {
         const control = this.referenciasFormArray.at(index).get('expandido');
         control?.setValue(!control.value);
@@ -749,7 +772,7 @@ export class AnalysisComponent implements OnInit {
                     id: parteValue.id || null, 
                     referencia_id: parteValue.referencia_id || null,
                     sistema_id: itemValue.sistema_id,
-                    lista_id: itemValue.lista_id,
+                    lista_id: parteValue.categoria || itemValue.lista_id, // Priorizar categoría comercial de la fila
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
                     comentario: itemValue.comentario,

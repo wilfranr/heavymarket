@@ -171,12 +171,13 @@
     top: 52px;
     left: 0;
     width: 100%;
-    max-height: 200px;
+    max-height: 350px;
     overflow-y: auto;
     background: #343743;
     border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     z-index: 100;
+    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .cotizador-dropdown-item {

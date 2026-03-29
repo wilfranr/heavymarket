@@ -153,8 +153,7 @@ export class AppTopbar {
             label: 'Mi Perfil',
             icon: 'pi pi-user',
             command: () => {
-                // TODO: Navegar a página de perfil cuando esté implementada
-                console.log('Ir a perfil');
+                this.router.navigate(['/app/profile']);
             }
         },
         {

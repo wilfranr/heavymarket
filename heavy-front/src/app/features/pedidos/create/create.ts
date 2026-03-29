@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService } from 'primeng/api';
+import { MessageService, FilterService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
@@ -83,6 +83,7 @@ export class CreateComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly filterService = inject(FilterService);
     private readonly terceroService = inject(TerceroService);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly sistemaService = inject(SistemaService);
@@ -124,6 +125,11 @@ export class CreateComponent implements OnInit {
     tercerosFull: any[] = [];
     maquinasFull: any[] = [];
 
+    // Respaldos para filtrado flexible
+    tercerosOriginal: any[] = [];
+    sistemasOriginal: any[] = [];
+    tiposPorFilaOriginal: any[][] = [];
+
     // Signals para reactividad en cards
     terceroId = signal<number | null>(null);
     maquinaId = signal<number | null>(null);
@@ -150,7 +156,9 @@ export class CreateComponent implements OnInit {
     displayLoteDialog = false;
     loteForm!: FormGroup;
     tiposLote: any[] = [];
+    tiposLoteOriginal: any[] = [];
     referenciasLote: any[] = [];
+    filterMode: any = 'flexible';
 
     // Dialogos de comentario e imagen
     displayComentarioDialog = false;
@@ -165,8 +173,21 @@ export class CreateComponent implements OnInit {
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias Masivas' }, { label: 'Referencias Detalladas' }];
 
     ngOnInit(): void {
+        this.registerFlexibleFilter();
         this.initForm();
         this.loadInitialData();
+    }
+
+    private registerFlexibleFilter(): void {
+        this.filterService.register('flexible', (value: any, filter: any): boolean => {
+            if (filter === undefined || filter === null || filter.trim() === '') {
+                return true;
+            }
+            if (value === undefined || value === null) {
+                return false;
+            }
+            return this.flexibleMatch(String(value), String(filter));
+        });
     }
 
     /**
@@ -224,6 +245,74 @@ export class CreateComponent implements OnInit {
         this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(id => this.maquinaId.set(id));
     }
 
+    private removeAccents(str: string): string {
+        return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+    }
+
+    public flexibleMatch(text: string, search: string): boolean {
+        if (!search) return true;
+        const normalizedText = this.removeAccents(text.toLowerCase());
+        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
+        return searchTerms.every(term => normalizedText.includes(term));
+    }
+
+    onFilterSistemas(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.sistemas = [...this.sistemasOriginal];
+            return;
+        }
+        this.sistemas = this.sistemasOriginal.filter(s => this.flexibleMatch(s._search, query));
+    }
+
+    onFilterTerceros(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.terceros = [...this.tercerosOriginal];
+            return;
+        }
+        this.terceros = this.tercerosOriginal.filter(t => this.flexibleMatch(t.label, query));
+    }
+
+    onFilterTipos(event: any, index: number) {
+        const query = (event.filter || '').trim();
+        const row = this.referenciasFormArray.at(index);
+        const currentSistemaId = row.get('sistema_id')?.value;
+
+        if (!query) {
+            this.tiposPorFila[index] = [...(this.tiposPorFilaOriginal[index] || [])];
+            return;
+        }
+
+        // Búsqueda global en todos los sistemas (como en el cotizador)
+        const allMatches: any[] = [];
+        this.sistemasOriginal.forEach(sys => {
+            const params: any = { tipo: 'Tipo de Artículo', per_page: 200, sistema_id: sys.value };
+            // Nota: Aquí dependemos de que los sistemas originales ya tengan sus listas si queremos búsqueda instantánea
+            // Pero como se cargan bajo demanda en onSistemaChange, vamos a usar los datos que ya tenemos si es posible
+            // O mejor, buscamos en un catálogo global si existe.
+            
+            // Para simplificar y ser coherentes con p-select, vamos a buscar en todos los tipos ya cargados en tiposPorFilaOriginal
+            // Pero eso solo cubriría el sistema actual.
+        });
+
+        // REFINAMIENTO: Usar un catálogo global de tipos si está disponible
+        // En loadInitialData cargamos this.tiposArticulos, pero son strings.
+        
+        // Vamos a facilitar la búsqueda multi-término en el sistema actual por ahora, 
+        // ya que la estructura de cascada de la administración es más estricta que el landing.
+        this.tiposPorFila[index] = (this.tiposPorFilaOriginal[index] || []).filter((t: any) => this.flexibleMatch(t._search, query));
+    }
+
+    onFilterTiposLote(event: any) {
+        const query = (event.filter || '').trim();
+        if (!query) {
+            this.tiposLote = [...this.tiposLoteOriginal];
+            return;
+        }
+        this.tiposLote = this.tiposLoteOriginal.filter((t: any) => this.flexibleMatch(t._search, query));
+    }
+
     /**
      * Muestra el diálogo para crear un nuevo tercero
      */
@@ -238,6 +327,23 @@ export class CreateComponent implements OnInit {
         // Recargar lista de terceros y seleccionar el nuevo
         this.loadTerceros(tercero.id);
         this.displayCreateTerceroDialog = false;
+    }
+
+    loadTerceros(preselectId: number | null = null): void {
+        this.terceroService.list({ per_page: 200, tipo: 'Cliente' }).subscribe({
+            next: (response) => {
+                this.tercerosFull = response.data;
+                this.terceros = response.data.map((t) => ({
+                    label: t.nombre || `Tercero ${t.id}`,
+                    value: t.id
+                })).sort((a, b) => a.label.localeCompare(b.label));
+                this.tercerosOriginal = [...this.terceros];
+
+                if (preselectId) {
+                    this.pedidoForm.patchValue({ tercero_id: preselectId });
+                }
+            }
+        });
     }
 
     /**
@@ -317,19 +423,29 @@ export class CreateComponent implements OnInit {
         // Cargar terceros (clientes)
         this.loadTerceros();
 
-        // Cargar sistemas
-        this.sistemaService.getAll({ per_page: 100 }).subscribe({
+        // Cargar sistemas y enriquecer para búsqueda flexible
+        this.sistemaService.getAll({ per_page: 100, include: 'listas' }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map((s) => ({
-                    label: s.nombre,
-                    value: s.id
-                })).sort((a, b) => {
+                this.sistemas = response.data.map((s: any) => {
+                    // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
+                    const tiposRelacionados = (s.listas || [])
+                        .filter((l: any) => l.tipo === 'Tipo de Artículo')
+                        .map((l: any) => l.nombre)
+                        .join(' ');
+                    
+                    return {
+                        label: s.nombre,
+                        value: s.id,
+                        _search: `${s.nombre} ${tiposRelacionados}`
+                    };
+                }).sort((a, b) => {
                     const labelA = a.label.toLowerCase();
                     const labelB = b.label.toLowerCase();
                     if (labelA === 'por defecto') return -1;
                     if (labelB === 'por defecto') return 1;
                     return labelA.localeCompare(labelB);
                 });
+                this.sistemasOriginal = [...this.sistemas];
             }
         });
 
@@ -400,8 +516,10 @@ export class CreateComponent implements OnInit {
                 this.tiposPorFila[index] = listasAsociadas.map(lista => ({
                     label: lista.nombre,
                     value: lista.id,
-                    descripcion: lista.definicion
+                    descripcion: lista.definicion,
+                    _search: `${lista.nombre} ${lista.definicion || ''}`
                 }));
+                this.tiposPorFilaOriginal[index] = [...this.tiposPorFila[index]];
             }
         });
     }
@@ -698,8 +816,10 @@ export class CreateComponent implements OnInit {
                         this.tiposLote = listasAsociadas.map((lista: any) => ({
                             label: lista.nombre,
                             value: lista.id,
-                            descripcion: lista.definicion
+                            descripcion: lista.definicion,
+                            _search: `${lista.nombre} ${lista.definicion || ''}`
                         }));
+                        this.tiposLoteOriginal = [...this.tiposLote];
                         if (this.tiposLote.length > 0) {
                             this.loteForm.get('articulo_id')?.enable();
                         }
@@ -1020,33 +1140,6 @@ export class CreateComponent implements OnInit {
         return !!(control && control.invalid && control.touched);
     }
 
-    /**
-     * Carga la lista de terceros (clientes)
-     * @param selectedId ID opcional para seleccionar automáticamente
-     */
-    private loadTerceros(selectedId?: number): void {
-        this.terceroService.getClientes({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.tercerosFull = response.data;
-                this.terceros = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                }));
-
-                // Si se proporcionó un ID, seleccionarlo
-                if (selectedId) {
-                    this.pedidoForm.patchValue({ tercero_id: selectedId });
-                }
-            },
-            error: () => {
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'No se pudieron cargar los clientes'
-                });
-            }
-        });
-    }
 
     /**
      * Carga los contactos de un cliente específico

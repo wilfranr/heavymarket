@@ -192,8 +192,7 @@ export class Cotizar implements OnInit {
             .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
 
         if (this.typeSearch) {
-            const search = this.typeSearch.toLowerCase();
-            types = types.filter(t => t.nombre.toLowerCase().includes(search));
+            types = types.filter(t => this.flexibleMatch(t.nombre, this.typeSearch));
         }
         return types;
     }
@@ -201,8 +200,7 @@ export class Cotizar implements OnInit {
     get filteredBrands() {
         if (!this.brands) return [];
         if (!this.brandSearch) return this.brands;
-        const search = this.brandSearch.toLowerCase();
-        return this.brands.filter(b => b.nombre.toLowerCase().includes(search));
+        return this.brands.filter(b => this.flexibleMatch(b.nombre, this.brandSearch));
     }
 
     get selectedBrandObj() {
@@ -213,6 +211,17 @@ export class Cotizar implements OnInit {
     get filteredSystems() {
         if (!this.systems) return [];
         return this.systems; // We use per-item search instead for better UX in lists
+    }
+
+    private removeAccents(str: string): string {
+        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+    }
+
+    private flexibleMatch(text: string, search: string): boolean {
+        if (!search) return true;
+        const normalizedText = this.removeAccents(text.toLowerCase());
+        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
+        return searchTerms.every(term => normalizedText.includes(term));
     }
 
     // Location Handlers
@@ -286,25 +295,22 @@ export class Cotizar implements OnInit {
         this.cd.markForCheck();
     }
 
+    get filteredCities() {
+        if (!this.cities) return [];
+        if (!this.citySearch) return this.cities;
+        return this.cities.filter(c => this.flexibleMatch(c.name, this.citySearch));
+    }
+
     get filteredCountries() {
         if (!this.countries) return [];
         if (!this.countrySearch) return this.countries;
-        const s = this.countrySearch.toLowerCase();
-        return this.countries.filter(c => c.name.toLowerCase().includes(s));
+        return this.countries.filter(c => this.flexibleMatch(c.name, this.countrySearch));
     }
 
     get filteredStates() {
         if (!this.states) return [];
         if (!this.stateSearch) return this.states;
-        const s = this.stateSearch.toLowerCase();
-        return this.states.filter(st => st.name.toLowerCase().includes(s));
-    }
-
-    get filteredCities() {
-        if (!this.cities) return [];
-        if (!this.citySearch) return this.cities;
-        const s = this.citySearch.toLowerCase();
-        return this.cities.filter(c => c.name.toLowerCase().includes(s));
+        return this.states.filter(st => this.flexibleMatch(st.name, this.stateSearch));
     }
 
     /**
@@ -676,6 +682,10 @@ export class Cotizar implements OnInit {
 
     selectItemDescription(index: number, desc: any) {
         this.items[index].description = desc.nombre;
+        // Si el ítem seleccionado pertenece a un sistema diferente al actual, actualizar el sistema del ítem
+        if (desc.systemName && this.items[index].system !== desc.systemName) {
+            this.items[index].system = desc.systemName;
+        }
         this.items[index].openDescription = false;
         this.items[index].descriptionSearch = '';
         this.cd.markForCheck();
@@ -684,20 +694,43 @@ export class Cotizar implements OnInit {
     getFilteredSystems(item: any) {
         if (!this.systems) return [];
         if (!item.systemSearch) return this.systems;
-        const search = item.systemSearch.toLowerCase();
-        return this.systems.filter(s => s.nombre.toLowerCase().includes(search));
+        return this.systems.filter(s => this.flexibleMatch(s.nombre, item.systemSearch));
     }
 
     getFilteredDescriptions(item: any) {
-        const selectedSys = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
-        if (!selectedSys || !selectedSys.listas) return [];
+        if (!this.systems) return [];
 
-        let descList = selectedSys.listas;
-        if (item.descriptionSearch) {
-            const search = item.descriptionSearch.toLowerCase();
-            descList = descList.filter((d: any) => d.nombre.toLowerCase().includes(search));
+        const search = item.descriptionSearch;
+        const currentSystem = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
+
+        // Si no hay búsqueda, mostrar solo los del sistema actual
+        if (!search) {
+            return currentSystem?.listas || [];
         }
-        return descList;
+
+        // Si hay búsqueda, buscar en TODOS los sistemas
+        let allMatches: any[] = [];
+        
+        this.systems.forEach(sys => {
+            const matches = (sys.listas || []).filter((d: any) => this.flexibleMatch(d.nombre, search));
+            
+            // Enriquecer con nombre del sistema si no es el actual
+            matches.forEach((m: any) => {
+                const enrichedMatch = { ...m, systemName: sys.nombre };
+                allMatches.push(enrichedMatch);
+            });
+        });
+
+        // Ordenar: primero los que coinciden con el sistema actual, luego el resto por nombre
+        return allMatches.sort((a, b) => {
+            const aIsCurrent = a.systemName === item.system;
+            const bIsCurrent = b.systemName === item.system;
+            
+            if (aIsCurrent && !bIsCurrent) return -1;
+            if (!aIsCurrent && bIsCurrent) return 1;
+            
+            return a.nombre.localeCompare(b.nombre);
+        });
     }
 
     getSelectedSystem(item: any) {

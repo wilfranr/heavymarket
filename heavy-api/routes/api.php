@@ -95,6 +95,7 @@ Route::prefix('v1')->group(function () {
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
         Route::get('/me', [AuthController::class, 'me']);
+        Route::put('/profile', [AuthController::class, 'updateProfile']);
         Route::post('/refresh', [AuthController::class, 'refresh']);
         Route::get('/tokens', [AuthController::class, 'tokens']);
         Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);

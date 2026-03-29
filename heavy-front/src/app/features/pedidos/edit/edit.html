@@ -155,9 +155,10 @@
                     <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743] relative">
                         <!-- Client Selector -->
                         <div class="mb-2">
-                            <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" filterBy="label"
+                            <p-select formControlName="tercero_id" [options]="terceros" [filter]="true"
                                 placeholder="Seleccionar Cliente"
-                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white">
+                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
+                                [filterMatchMode]="filterMode">
                             </p-select>
                         </div>
 
@@ -228,26 +229,44 @@
                                     styleClass="border-2 border-gray-400 dark:border-white rounded"></p-checkbox>
                             </div>
 
-                            <!-- Sistema (Cascada nivel 1) -->
                             <div class="w-[18%]">
                                 <p-select formControlName="sistema_id" [options]="sistemas"
                                     placeholder="Seleccionar sistema..." styleClass="w-full h-[48px] flex items-center"
                                     [class]="campoTieneErrorCosteo($index, 'sistema_id') ? 'campo-error' : ''"
                                     [filter]="true" appendTo="body"
-                                    (onChange)="onSistemaChange($event.value, $index)"></p-select>
+                                    (onChange)="onSistemaChange($event.value, $index)"
+                                    [filterMatchMode]="filterMode" filterBy="_search">
+                                    <ng-template pTemplate="item" let-sys>
+                                        <div class="flex flex-col">
+                                            <span>{{ sys.label }}</span>
+                                            <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="sys._search !== sys.label">
+                                                {{ sys._search }}
+                                            </small>
+                                        </div>
+                                    </ng-template>
+                                </p-select>
                                 @if (campoTieneErrorCosteo($index, 'sistema_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
                             </div>
 
-                            <!-- Tipo de Artículo (Lista asociada al sistema) -->
                             <div class="w-[18%]">
                                 <p-select formControlName="lista_id" [options]="tiposPorFila[$index]"
                                     placeholder="Tipo de artículo" styleClass="w-full h-[48px] flex items-center"
                                     [class]="campoTieneErrorCosteo($index, 'lista_id') ? 'campo-error' : ''"
                                     [filter]="true" appendTo="body" [disabled]="!referencia.get('sistema_id')?.value"
-                                    (onChange)="onListaChange($event.value, $index)"></p-select>
+                                    (onChange)="onListaChange($event.value, $index)"
+                                    [filterMatchMode]="filterMode" filterBy="_search">
+                                    <ng-template pTemplate="item" let-tipo>
+                                        <div class="flex flex-col">
+                                            <span>{{ tipo.label }}</span>
+                                            <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion">
+                                                {{ tipo.descripcion }}
+                                            </small>
+                                        </div>
+                                    </ng-template>
+                                </p-select>
                                 @if (campoTieneErrorCosteo($index, 'lista_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
@@ -475,7 +494,17 @@
                         class="text-red-500">*</span></label>
                 <p-select formControlName="sistema_id" [options]="sistemas" placeholder="Seleccionar sistema..."
                     styleClass="w-full" [filter]="true" appendTo="body"
-                    (onChange)="onSistemaLoteChange($event.value)"></p-select>
+                    (onChange)="onSistemaLoteChange($event.value)"
+                    [filterMatchMode]="filterMode" filterBy="_search">
+                    <ng-template pTemplate="item" let-sys>
+                        <div class="flex flex-col">
+                            <span>{{ sys.label }}</span>
+                            <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="sys._search !== sys.label">
+                                {{ sys._search.substring(0, 60) }}...
+                            </small>
+                        </div>
+                    </ng-template>
+                </p-select>
             </div>
 
             <div class="flex flex-col gap-2 relative">
@@ -483,7 +512,17 @@
                         class="text-red-500">*</span></label>
                 <p-select formControlName="articulo_id" [options]="tiposLote" placeholder="Tipo de artículo"
                     styleClass="w-full" [filter]="true" appendTo="body"
-                    (onChange)="onArticuloLoteChange($event.value)"></p-select>
+                    (onChange)="onArticuloLoteChange($event.value)"
+                    [filterMatchMode]="filterMode" filterBy="_search">
+                    <ng-template pTemplate="item" let-tipo>
+                        <div class="flex flex-col">
+                            <span>{{ tipo.label }}</span>
+                            <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion">
+                                {{ tipo.descripcion }}
+                            </small>
+                        </div>
+                    </ng-template>
+                </p-select>
             </div>
 
             <div class="flex flex-col gap-2 relative">
