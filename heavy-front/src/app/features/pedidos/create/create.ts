@@ -1197,18 +1197,22 @@ export class CreateComponent implements OnInit {
         this.store
             .select((state: any) => state.pedidos)
             .subscribe((pedidosState: any) => {
-                if (!pedidosState.loading && !pedidosState.error && this.loading) {
-                    this.loading = false;
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Pedido creado correctamente'
-                    });
-                    setTimeout(() => {
-                        this.router.navigate(['/app/pedidos']);
-                    }, 1500);
-                } else if (!pedidosState.loading && pedidosState.error && this.loading) {
-                    this.loading = false;
+                if (!pedidosState.loading && this.loading) {
+                    if (!pedidosState.error) {
+                        this.loading = false;
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Pedido creado correctamente'
+                        });
+                        setTimeout(() => {
+                            this.router.navigate(['/app/pedidos']);
+                        }, 1500);
+                    } else {
+                        this.loading = false;
+                        // El error ya debería ser manejado por un efecto o interceptor global, 
+                        // pero nos aseguramos de detener el loading local.
+                    }
                 }
             });
     }

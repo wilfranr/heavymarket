@@ -62,8 +62,10 @@ class StorePedidoRequest extends FormRequest
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],
             'referencias.*.comentario' => ['nullable', 'string'],
             'referencias.*.imagen' => ['nullable', 'string', 'max:255'],
-            'referencias.*.mostrar_referencia' => ['nullable', 'boolean'],
-            'referencias.*.estado' => ['nullable', 'boolean'],
+            'referencias.*.mostrar_referencia' => ['nullable', 'string'], // FormData envía booleans como string '1' o '0'
+            'referencias.*.estado' => ['nullable', 'string'],
+            'referencias.*.imagenes' => ['nullable', 'array'],
+            'referencias.*.imagenes.*' => ['file', 'image', 'max:5120'], // Máx 5MB por imagen
             
             'articulos' => ['nullable', 'array'],
             'articulos.*.articulo_id' => ['required_with:articulos', 'integer', 'exists:articulos,id'],

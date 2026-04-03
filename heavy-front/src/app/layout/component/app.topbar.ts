@@ -82,10 +82,15 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
                         <i class="pi pi-sign-in"></i>
                         <span>Iniciar Sesión</span>
                     </button>
-                    <button type="button" class="layout-topbar-action" #profileMenuButton (click)="profileMenu.toggle($event)" *ngIf="isAuthenticated()">
-                        <i class="pi pi-user"></i>
-                        <span>{{ currentUser()?.name || 'Usuario' }}</span>
-                    </button>
+                    <div class="flex items-center gap-3 ml-2" *ngIf="isAuthenticated()">
+                        <div class="text-right hidden lg:block cursor-pointer" (click)="profileMenu.toggle($event)">
+                            <div class="font-semibold text-sm text-color leading-none mb-1">{{ currentUser()?.name || 'Usuario' }}</div>
+                            <div class="text-xs text-muted-color capitalize leading-none">{{ currentUser()?.roles?.[0] || 'Usuario' }}</div>
+                        </div>
+                        <button type="button" class="layout-topbar-action" #profileMenuButton (click)="profileMenu.toggle($event)">
+                            <i class="pi pi-user"></i>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

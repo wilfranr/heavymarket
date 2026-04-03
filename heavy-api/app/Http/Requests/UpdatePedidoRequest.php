@@ -65,8 +65,10 @@ class UpdatePedidoRequest extends FormRequest
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],
             'referencias.*.comentario' => ['nullable', 'string'],
             'referencias.*.imagen' => ['nullable', 'string', 'max:255'],
-            'referencias.*.mostrar_referencia' => ['nullable', 'boolean'],
-            'referencias.*.estado' => ['nullable', 'boolean'],
+            'referencias.*.mostrar_referencia' => ['nullable', 'string'],
+            'referencias.*.estado' => ['nullable', 'string'],
+            'referencias.*.imagenes_nuevas' => ['nullable', 'array'],
+            'referencias.*.imagenes_nuevas.*' => ['file', 'image', 'max:5120'],
         ];
     }
 

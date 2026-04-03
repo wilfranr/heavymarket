@@ -313,14 +313,36 @@
                                     (click)="abrirDialogoComentario($index)" tooltipPosition="top">
                                     <i class="pi pi-comments text-lg"></i>
                                 </button>
-                                <button type="button" class="action-btn-circle relative" pTooltip="Ver imágenes"
-                                    (click)="abrirModalImagenes($index)" tooltipPosition="top"
-                                    [class.has-content]="getImagenesParaFila($index).length > 0">
-                                    <i class="pi pi-image text-lg"></i>
-                                    @if (getImagenesParaFila($index).length > 0) {
-                                    <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-yellow-500 text-white text-xs flex items-center justify-center">{{ getImagenesParaFila($index).length }}</span>
-                                    }
-                                </button>
+                                
+                                <div class="relative">
+                                    <input type="file" #fileInput [style.display]="'none'" 
+                                        accept="image/*" multiple 
+                                        (change)="onFilesSelected($event, $index)">
+                                    
+                                    <button type="button" class="action-btn-circle relative" 
+                                        [pTooltip]="getImagenesParaFila($index).length > 0 || (referencia.get('files')?.value?.length > 0) ? 'Ver imágenes' : 'Subir imágenes'"
+                                        (click)="(getImagenesParaFila($index).length > 0 || (referencia.get('files')?.value?.length > 0)) ? openGallery($index) : fileInput.click()" 
+                                        tooltipPosition="top"
+                                        [class.has-content]="getImagenesParaFila($index).length > 0 || (referencia.get('files')?.value?.length > 0)">
+                                        <i class="pi pi-camera text-lg"></i>
+                                        @if ((getImagenesParaFila($index).length + (referencia.get('files')?.value?.length || 0)) > 0) {
+                                            <span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] rounded-full bg-green-500 text-white text-[10px] flex items-center justify-center border border-slate-900">
+                                                {{ getImagenesParaFila($index).length + (referencia.get('files')?.value?.length || 0) }}
+                                            </span>
+                                        }
+                                    </button>
+
+                                    <!-- Botón pequeño para añadir más si ya hay -->
+                                    <button *ngIf="(getImagenesParaFila($index).length + (referencia.get('files')?.value?.length || 0)) > 0"
+                                        type="button"
+                                        class="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-slate-800 text-white flex items-center justify-center hover:bg-slate-700 transition-colors border border-slate-600 shadow-lg"
+                                        (click)="fileInput.click()"
+                                        pTooltip="Añadir más fotos"
+                                        tooltipPosition="bottom">
+                                        <i class="pi pi-plus text-[10px]"></i>
+                                    </button>
+                                </div>
+
                                 <button type="button" class="action-btn-circle action-btn-delete"
                                     (click)="eliminarReferencia($index)" pTooltip="Eliminar" tooltipPosition="top">
                                     <i class="pi pi-trash text-lg"></i>
@@ -671,5 +693,72 @@
         [terceroId]="pedidoForm.get('tercero_id')?.value"
         (contactoCreated)="onContactoCreated($event)">
     </app-contacto-create-modal>
+
+    <!-- Galería de Imágenes (Existentes + Nuevas) -->
+    <p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}" 
+        header="Galería de Imágenes" [draggable]="false" [resizable]="false" appendTo="body" 
+        styleClass="gallery-modal">
+        
+        <div class="gallery-container p-4" *ngIf="selectedItemIndex !== -1">
+            <p-galleria [value]="galleriaImagesArray" [(activeIndex)]="activeIndexGallery" 
+                [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]" 
+                [containerStyle]="{'width': '100%'}" [numVisible]="5" 
+                [circular]="true" [showItemNavigators]="true" [showThumbnails]="true">
+                
+                <ng-template #item let-item>
+                    <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
+                        <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
+                        
+                        <!-- Info overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p class="text-white text-xs truncate">{{ item.title }}</p>
+                            <span class="text-[10px] uppercase font-bold" [ngClass]="item.isExisting ? 'text-blue-400' : 'text-green-400'">
+                                {{ item.isExisting ? 'Guardada' : 'Nueva para cargar' }}
+                            </span>
+                        </div>
+                    </div>
+                </ng-template>
+                
+                <ng-template #thumbnail let-item>
+                    <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800 border-2" [ngClass]="item.isExisting ? 'border-blue-500/30' : 'border-green-500/30'">
+                        <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                    </div>
+                </ng-template>
+            </p-galleria>
+
+            <!-- Listado de archivos cargados en esta sesión -->
+            <div class="mt-6" *ngIf="galleriaImagesArray.length > 0">
+                <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
+                    <i class="pi pi-images text-purple-400"></i>
+                    Resumen de imágenes ({{ galleriaImagesArray.length }}/10)
+                </h5>
+                <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                    <div *ngFor="let img of galleriaImagesArray; let i = index" 
+                        class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
+                        <div class="flex items-center gap-3">
+                            <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.alt }}</span>
+                                <span class="text-[9px] uppercase font-bold" [ngClass]="img.isExisting ? 'text-blue-400' : 'text-green-400'">
+                                    {{ img.isExisting ? 'Ya en servidor' : 'Por subir' }}
+                                </span>
+                            </div>
+                        </div>
+                        <button *ngIf="!img.isExisting" pButton type="button" icon="pi pi-times" 
+                            class="p-button-rounded p-button-text p-button-danger p-button-sm"
+                            (click)="removeFile(selectedItemIndex, i - (galleriaImagesArray.length - (referenciasFormArray.at(selectedItemIndex).get('files')?.value?.length || 0)))"
+                            pTooltip="Eliminar nueva imagen"></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-between items-center w-full">
+                <span class="text-[10px] text-slate-500 italic">Las imágenes nuevas se guardarán al actualizar el pedido.</span>
+                <p-button label="Cerrar" icon="pi pi-check" (onClick)="displayGallery = false" styleClass="btn-pill btn-primary"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
 </div>
 }

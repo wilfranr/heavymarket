@@ -4,31 +4,38 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\{Pedido, PedidoReferencia, PedidoArticulo};
+use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\PedidoReferenciaImagen;
+use App\Models\PedidoReferenciaProveedor;
+use App\Models\Empresa;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 
 /**
- * Servicio de lógica de negocio para Pedidos
+ * Servicio de Pedidos
  * 
- * Contiene toda la lógica compleja relacionada con la gestión
- * de pedidos, separada de los controladores.
+ * Centraliza la lógica de negocio para la gestión de pedidos,
+ * incluyendo cálculos de TRM, fletes y sincronización de referencias.
  */
 class PedidoService
 {
     /**
-     * Crear un pedido completo con referencias y artículos
+     * Crear un nuevo pedido con sus referencias y artículos
      * 
-     * @param array<string, mixed> $data
+     * @param array $data
+     * @param User $user
      * @return Pedido
      * @throws \Exception
      */
-    public function crearPedido(array $data): Pedido
+    public function create(array $data, User $user): Pedido
     {
-        return DB::transaction(function () use ($data) {
-            // Crear el pedido principal
+        return DB::transaction(function () use ($data, $user) {
             $pedido = Pedido::create([
-                'user_id' => $data['user_id'],
+                'user_id' => $user->id,
                 'tercero_id' => $data['tercero_id'],
                 'direccion' => $data['direccion'] ?? null,
                 'comentario' => $data['comentario'] ?? null,
@@ -39,157 +46,192 @@ class PedidoService
             ]);
 
             // Agregar referencias si existen
-            if (isset($data['referencias']) && is_array($data['referencias'])) {
-                $this->agregarReferencias($pedido, $data['referencias']);
+            if (isset($data['referencias'])) {
+                foreach ($data['referencias'] as $index => $refData) {
+                    $referencia = $pedido->referencias()->create([
+                        'referencia_id' => $refData['referencia_id'] ?? null,
+                        'sistema_id' => $refData['sistema_id'] ?? null,
+                        'lista_id' => $refData['lista_id'] ?? null,
+                        'marca_id' => $refData['marca_id'] ?? null,
+                        'definicion' => $refData['definicion'] ?? null,
+                        'cantidad' => $refData['cantidad'] ?? 1,
+                        'comentario' => $refData['comentario'] ?? null,
+                        'imagen' => $refData['imagen'] ?? null,
+                        'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                        'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                    ]);
+
+                    // Las imágenes se manejarán mediante el request original si se pasan como archivos
+                    // El servicio asume que si hay archivos, se procesan externamente o se pasan rutas
+                }
             }
 
             // Agregar artículos si existen
-            if (isset($data['articulos']) && is_array($data['articulos'])) {
-                $this->agregarArticulos($pedido, $data['articulos']);
+            if (isset($data['articulos'])) {
+                foreach ($data['articulos'] as $artData) {
+                    $pedido->articulos()->create([
+                        'articulo_id' => $artData['articulo_id'],
+                        'cantidad' => $artData['cantidad'],
+                        'precio_unitario' => $artData['precio_unitario'] ?? null,
+                    ]);
+                }
             }
+
+            $this->notifyNewOrder($pedido, $user);
 
             return $pedido->load(['user', 'tercero', 'referencias', 'articulos']);
         });
     }
 
     /**
-     * Actualizar el estado de un pedido
+     * Actualizar un pedido existente
      * 
      * @param Pedido $pedido
-     * @param string $nuevoEstado
-     * @param string|null $motivoRechazo
+     * @param array $data
      * @return Pedido
      */
-    public function cambiarEstado(
-        Pedido $pedido,
-        string $nuevoEstado,
-        ?string $motivoRechazo = null
-    ): Pedido {
-        $pedido->update([
-            'estado' => $nuevoEstado,
-            'motivo_rechazo' => $nuevoEstado === 'Rechazado' ? $motivoRechazo : null,
-        ]);
-
-        // Aquí se podría disparar un evento
-        // event(new PedidoEstadoCambiado($pedido));
-
-        return $pedido;
-    }
-
-    /**
-     * Calcular el total de un pedido
-     * 
-     * @param Pedido $pedido
-     * @return float
-     */
-    public function calcularTotal(Pedido $pedido): float
+    public function update(Pedido $pedido, array $data): Pedido
     {
-        $totalReferencias = $pedido->referencias->sum(function ($item) {
-            return $item->cantidad * ($item->precio_unitario ?? 0);
-        });
+        return DB::transaction(function () use ($pedido, $data) {
+            $pedido->update($data);
 
-        $totalArticulos = $pedido->articulos->sum(function ($item) {
-            return $item->cantidad * ($item->precio_unitario ?? 0);
-        });
+            if (isset($data['referencias'])) {
+                $this->syncReferencias($pedido, $data['referencias']);
+            }
 
-        return $totalReferencias + $totalArticulos;
-    }
-
-    /**
-     * Obtener pedidos pendientes de un tercero
-     * 
-     * @param int $terceroId
-     * @return Collection<int, Pedido>
-     */
-    public function obtenerPedidosPendientes(int $terceroId): Collection
-    {
-        return Pedido::where('tercero_id', $terceroId)
-            ->whereIn('estado', ['Nuevo', 'Enviado', 'En_Costeo'])
-            ->with(['referencias', 'articulos'])
-            ->get();
-    }
-
-    /**
-     * Agregar referencias al pedido
-     * 
-     * @param Pedido $pedido
-     * @param array<int, array<string, mixed>> $referencias
-     * @return void
-     */
-    private function agregarReferencias(Pedido $pedido, array $referencias): void
-    {
-        foreach ($referencias as $referencia) {
-            PedidoReferencia::create([
-                'pedido_id' => $pedido->id,
-                'referencia_id' => $referencia['referencia_id'],
-                'cantidad' => $referencia['cantidad'],
-                'precio_unitario' => $referencia['precio_unitario'] ?? null,
+            return $pedido->load([
+                'user', 'tercero', 'maquina', 'fabricante', 'contacto',
+                'referencias.referencia', 'referencias.sistema', 'referencias.lista',
+                'referencias.imagenes', 'referencias.proveedores.tercero',
+                'articulos.articulo', 'articulos.sistema'
             ]);
+        });
+    }
+
+    /**
+     * Sincroniza las referencias de un pedido
+     * 
+     * @param Pedido $pedido
+     * @param array $referenciasData
+     */
+    public function syncReferencias(Pedido $pedido, array $referenciasData): void
+    {
+        $currentIds = $pedido->referencias()->pluck('id')->toArray();
+        $incomingIds = [];
+
+        foreach ($referenciasData as $refData) {
+            if (isset($refData['id']) && $refData['id']) {
+                $incomingIds[] = $refData['id'];
+            }
+        }
+
+        $toDelete = array_diff($currentIds, $incomingIds);
+        if (!empty($toDelete)) {
+            $pedido->referencias()->whereIn('id', $toDelete)->delete();
+        }
+
+        foreach ($referenciasData as $refData) {
+            if (isset($refData['id']) && $refData['id']) {
+                $referencia = $pedido->referencias()->find($refData['id']);
+                if ($referencia) {
+                    $referencia->update([
+                        'referencia_id' => $refData['referencia_id'] ?: null,
+                        'sistema_id' => $refData['sistema_id'] ?? null,
+                        'lista_id' => $refData['lista_id'] ?? null,
+                        'marca_id' => $refData['marca_id'] ?? null,
+                        'definicion' => $refData['definicion'] ?? null,
+                        'cantidad' => $refData['cantidad'],
+                        'comentario' => $refData['comentario'] ?? null,
+                        'imagen' => $refData['imagen'] ?? null,
+                        'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                        'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                    ]);
+                }
+            } else {
+                $pedido->referencias()->create([
+                    'referencia_id' => $refData['referencia_id'] ?: null,
+                    'sistema_id' => $refData['sistema_id'] ?? null,
+                    'lista_id' => $refData['lista_id'] ?? null,
+                    'marca_id' => $refData['marca_id'] ?? null,
+                    'definicion' => $refData['definicion'] ?? null,
+                    'cantidad' => $refData['cantidad'],
+                    'comentario' => $refData['comentario'] ?? null,
+                    'imagen' => $refData['imagen'] ?? null,
+                    'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                    'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
+                ]);
+            }
         }
     }
 
     /**
-     * Agregar artículos al pedido
-     * 
-     * @param Pedido $pedido
-     * @param array<int, array<string, mixed>> $articulos
-     * @return void
+     * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
+     *
+     * @param array $datos
+     * @param PedidoReferencia $pedidoReferencia
+     * @return array
      */
-    private function agregarArticulos(Pedido $pedido, array $articulos): void
+    public function calcularValores(array $datos, PedidoReferencia $pedidoReferencia): array
     {
-        foreach ($articulos as $articulo) {
-            PedidoArticulo::create([
-                'pedido_id' => $pedido->id,
-                'articulo_id' => $articulo['articulo_id'],
-                'cantidad' => $articulo['cantidad'],
-                'precio_unitario' => $articulo['precio_unitario'] ?? null,
-            ]);
+        $costo_unidad = (float) ($datos['costo_unidad'] ?? 0);
+        $utilidad = (float) ($datos['utilidad'] ?? 0);
+        $cantidad = (int) ($datos['cantidad'] ?? 1);
+        $ubicacion = $datos['ubicacion'] ?? 'Nacional';
+
+        if ($ubicacion === 'Internacional') {
+            $empresa = Empresa::where('estado', 1)->first();
+            $trm = (float) ($empresa?->trm ?? 1);
+            if ($trm <= 0) $trm = 1; // Evitar división/multiplicación por cero o negativo
+
+            $flete = (float) ($empresa?->flete ?? 0);
+
+            // Obtener peso, asegurando que si no existe o es nulo, sea 0
+            $referencia = $pedidoReferencia->referencia;
+            $peso = (float) ($referencia->peso ?? 0);
+
+            $peso_libras = $peso / 453.592;
+            $costo_base_usd = ($peso_libras * $flete) + $costo_unidad;
+            $costo_base_cop = $costo_base_usd * $trm;
+
+            $valor_unidad = $costo_base_cop + ($utilidad * $costo_base_cop / 100);
+            $valor_unidad = round($valor_unidad, -2);
+        } else {
+            $valor_unidad = $costo_unidad + ($costo_unidad * $utilidad / 100);
+            $valor_unidad = round($valor_unidad);
         }
+
+        return [
+            'valor_unidad' => $valor_unidad,
+            'valor_total' => $valor_unidad * $cantidad,
+        ];
     }
 
     /**
-     * Duplicar un pedido existente
-     * 
-     * @param Pedido $pedidoOriginal
-     * @param int $userId
-     * @return Pedido
+     * Envía notificaciones de nuevo pedido
      */
-    public function duplicarPedido(Pedido $pedidoOriginal, int $userId): Pedido
+    private function notifyNewOrder(Pedido $pedido, User $user): void
     {
-        return DB::transaction(function () use ($pedidoOriginal, $userId) {
-            // Crear nuevo pedido basado en el original
-            $nuevoPedido = Pedido::create([
-                'user_id' => $userId,
-                'tercero_id' => $pedidoOriginal->tercero_id,
-                'direccion' => $pedidoOriginal->direccion,
-                'comentario' => 'Duplicado de pedido #' . $pedidoOriginal->id,
-                'contacto_id' => $pedidoOriginal->contacto_id,
-                'estado' => 'Nuevo',
-                'maquina_id' => $pedidoOriginal->maquina_id,
-                'fabricante_id' => $pedidoOriginal->fabricante_id,
-            ]);
+        // Notificación al creador
+        $user->notify(new SystemNotification(
+            'pedido_creado',
+            'Nuevo Pedido #' . $pedido->id,
+            'Se ha creado el pedido para ' . ($pedido->tercero->nombre ?? 'cliente') . ' exitosamente.',
+            'pi-shopping-cart',
+            'blue',
+            ['id' => $pedido->id]
+        ));
 
-            // Copiar referencias
-            foreach ($pedidoOriginal->referencias as $referencia) {
-                PedidoReferencia::create([
-                    'pedido_id' => $nuevoPedido->id,
-                    'referencia_id' => $referencia->referencia_id,
-                    'cantidad' => $referencia->cantidad,
-                    'precio_unitario' => $referencia->precio_unitario,
-                ]);
-            }
-
-            // Copiar artículos
-            foreach ($pedidoOriginal->articulos as $articulo) {
-                PedidoArticulo::create([
-                    'pedido_id' => $nuevoPedido->id,
-                    'articulo_id' => $articulo->articulo_id,
-                    'cantidad' => $articulo->cantidad,
-                    'precio_unitario' => $articulo->precio_unitario,
-                ]);
-            }
-
-            return $nuevoPedido->load(['referencias', 'articulos']);
-        });
+        // Notificación a analistas
+        $analistas = User::role('Analista')->get();
+        foreach ($analistas as $analista) {
+            $analista->notify(new SystemNotification(
+                'pedido_creado',
+                'Nuevo Pedido para Analizar #' . $pedido->id,
+                'El vendedor ' . $user->name . ' ha creado un nuevo pedido para ' . ($pedido->tercero->nombre ?? 'un cliente'),
+                'pi-shopping-cart',
+                'orange',
+                ['id' => $pedido->id]
+            ));
+        }
     }
 }

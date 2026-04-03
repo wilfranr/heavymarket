@@ -23,16 +23,25 @@ class PedidoController extends Controller
     use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
     /**
+     * @var PedidoService
+     */
+    protected $pedidoService;
+
+    /**
+     * PedidoController constructor.
+     * 
+     * @param PedidoService $pedidoService
+     */
+    public function __construct(\App\Services\PedidoService $pedidoService)
+    {
+        $this->pedidoService = $pedidoService;
+    }
+
+    /**
      * Listar todos los pedidos con filtros opcionales
      * 
      * @param Request $request
      * @return JsonResponse
-     * 
-     * @queryParam page int Número de página. Example: 1
-     * @queryParam per_page int Elementos por página. Example: 15
-     * @queryParam estado string Filtrar por estado. Example: Nuevo
-     * @queryParam tercero_id int Filtrar por tercero. Example: 5
-     * @queryParam search string Buscar en comentarios. Example: urgente
      */
     public function index(Request $request): JsonResponse
     {
@@ -53,29 +62,11 @@ class PedidoController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        // Filtro por estado
-        if ($request->filled('estado')) {
-            $query->where('estado', $request->input('estado'));
-        }
-
-        // Filtro por tercero
-        if ($request->filled('tercero_id')) {
-            $query->where('tercero_id', $request->input('tercero_id'));
-        }
-
-        // Filtro por fabricante
-        if ($request->filled('fabricante_id')) {
-            $query->where('fabricante_id', $request->input('fabricante_id'));
-        }
-
-        // Filtro por máquina
-        if ($request->filled('maquina_id')) {
-            $query->where('maquina_id', $request->input('maquina_id'));
-        }
-
-        // Filtro por vendedor (user_id)
-        if ($request->filled('user_id')) {
-            $query->where('user_id', $request->input('user_id'));
+        // Filtros (Estado, Tercero, Fabricante, Máquina, Vendedor)
+        foreach (['estado', 'tercero_id', 'fabricante_id', 'maquina_id', 'user_id'] as $filter) {
+            if ($request->filled($filter)) {
+                $query->where($filter, $request->input($filter));
+            }
         }
 
         // Búsqueda en comentarios
@@ -87,14 +78,9 @@ class PedidoController extends Controller
             });
         }
 
-        // Ordenamiento
-        $sortBy = $request->input('sort_by', 'created_at');
-        $sortOrder = $request->input('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
-
-        // Paginación
-        $perPage = (int) $request->input('per_page', 15);
-        $pedidos = $query->paginate($perPage);
+        // Ordenamiento y Paginación
+        $pedidos = $query->orderBy($request->input('sort_by', 'created_at'), $request->input('sort_order', 'desc'))
+            ->paginate((int) $request->input('per_page', 15));
 
         return response()->json([
             'data' => PedidoResource::collection($pedidos),
@@ -116,75 +102,22 @@ class PedidoController extends Controller
     public function store(StorePedidoRequest $request): JsonResponse
     {
         try {
-            DB::beginTransaction();
+            $pedido = $this->pedidoService->create($request->validated(), $request->user());
 
-            // Crear el pedido
-            $pedido = Pedido::create([
-                'user_id' => $request->user()->id,
-                'tercero_id' => $request->input('tercero_id'),
-                'direccion' => $request->input('direccion'),
-                'comentario' => $request->input('comentario'),
-                'contacto_id' => $request->input('contacto_id'),
-                'estado' => $request->input('estado', 'Nuevo'),
-                'maquina_id' => $request->input('maquina_id'),
-                'fabricante_id' => $request->input('fabricante_id'),
-            ]);
-
-            // Agregar referencias si existen
+            // Procesar archivos de imagen si existen (la lógica de archivos permanece en el controller o request)
             if ($request->has('referencias')) {
-                foreach ($request->input('referencias') as $referencia) {
-                    $pedido->referencias()->create([
-                        'referencia_id' => $referencia['referencia_id'] ?? null,
-                        'sistema_id' => $referencia['sistema_id'] ?? null,
-                        'lista_id' => $referencia['lista_id'] ?? null,
-                        'marca_id' => $referencia['marca_id'] ?? null,
-                        'definicion' => $referencia['definicion'] ?? null,
-                        'cantidad' => $referencia['cantidad'],
-                        'comentario' => $referencia['comentario'] ?? null,
-                        'imagen' => $referencia['imagen'] ?? null,
-                        'mostrar_referencia' => $referencia['mostrar_referencia'] ?? true,
-                        'estado' => $referencia['estado'] ?? true,
-                    ]);
+                foreach ($request->input('referencias') as $index => $refData) {
+                    if ($request->hasFile("referencias.{$index}.imagenes")) {
+                        $referencia = $pedido->referencias[$index];
+                        foreach ($request->file("referencias.{$index}.imagenes") as $file) {
+                            $path = $file->store('pedidos/referencias', 'public');
+                            $referencia->imagenes()->create([
+                                'imagen' => $path,
+                                'origen' => \App\Models\PedidoReferenciaImagen::ORIGEN_ASESOR
+                            ]);
+                        }
+                    }
                 }
-            }
-
-            // Agregar artículos si existen
-            if ($request->has('articulos')) {
-                foreach ($request->input('articulos') as $articulo) {
-                    $pedido->articulos()->create([
-                        'articulo_id' => $articulo['articulo_id'],
-                        'cantidad' => $articulo['cantidad'],
-                        'precio_unitario' => $articulo['precio_unitario'] ?? null,
-                    ]);
-                }
-            }
-
-            DB::commit();
-
-            // Cargar relaciones para la respuesta
-            $pedido->load(['user', 'tercero', 'referencias', 'articulos']);
-
-            // Enviar notificación al usuario (confirmación)
-            $request->user()->notify(new SystemNotification(
-                'pedido_creado',
-                'Nuevo Pedido #' . $pedido->id,
-                'Se ha creado el pedido para ' . ($pedido->tercero->nombre ?? 'cliente') . ' exitosamente.',
-                'pi-shopping-cart',
-                'blue',
-                ['id' => $pedido->id]
-            ));
-
-            // Notificar a todos los Analistas
-            $analistas = \App\Models\User::role('Analista')->get();
-            foreach ($analistas as $analista) {
-                $analista->notify(new SystemNotification(
-                    'pedido_creado',
-                    'Nuevo Pedido para Analizar #' . $pedido->id,
-                    'El vendedor ' . $request->user()->name . ' ha creado un nuevo pedido para ' . ($pedido->tercero->nombre ?? 'un cliente'),
-                    'pi-shopping-cart',
-                    'orange',
-                    ['id' => $pedido->id]
-                ));
             }
 
             return response()->json([
@@ -193,8 +126,6 @@ class PedidoController extends Controller
             ], 201);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-            
             return response()->json([
                 'message' => 'Error al crear el pedido',
                 'error' => $e->getMessage(),
@@ -213,24 +144,12 @@ class PedidoController extends Controller
         $this->authorize('view', $pedido);
 
         $pedido->load([
-            'user',
-            'tercero',
-            'maquina.fabricantes',
-            'maquina.listas',
-            'fabricante',
-            'contacto',
-            'referencias.referencia',
-            'referencias.sistema',
-            'referencias.lista',
-            'referencias.imagenes',
-            'referencias.proveedores.tercero',
-            'articulos.articulo',
-            'articulos.sistema'
+            'user', 'tercero', 'maquina.fabricantes', 'maquina.listas', 'fabricante', 'contacto',
+            'referencias.referencia', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
+            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema'
         ]);
 
-        return response()->json([
-            'data' => new PedidoResource($pedido),
-        ]);
+        return response()->json(['data' => new PedidoResource($pedido)]);
     }
 
     /**
@@ -243,32 +162,24 @@ class PedidoController extends Controller
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
         try {
-            DB::beginTransaction();
+            $pedido = $this->pedidoService->update($pedido, $request->validated());
 
-            $pedido->update($request->validated());
-
-            // Sincronizar referencias si se envían
+            // Procesar imágenes nuevas de forma asíncrona si existen
             if ($request->has('referencias')) {
-                $this->syncReferencias($pedido, $request->input('referencias'));
+                foreach ($request->input('referencias') as $index => $refData) {
+                    if ($request->hasFile("referencias.{$index}.imagenes_nuevas")) {
+                        $referencia = $pedido->referencias()->find($refData['id'] ?? null);
+                        if ($referencia) {
+                            $imagePaths = [];
+                            foreach ($request->file("referencias.{$index}.imagenes_nuevas") as $file) {
+                                $imagePaths[] = $file->store('pedidos/referencias', 'public');
+                            }
+                            // Despachar Job para registro en DB
+                        \App\Jobs\SyncPedidoImages::dispatch($referencia, $imagePaths);
+                        }
+                    }
+                }
             }
-
-            DB::commit();
-
-            $pedido->load([
-                'user',
-                'tercero',
-                'maquina.fabricantes',
-                'maquina.listas',
-                'fabricante',
-                'contacto',
-                'referencias.referencia',
-                'referencias.sistema',
-                'referencias.lista',
-                'referencias.imagenes',
-                'referencias.proveedores.tercero',
-                'articulos.articulo',
-                'articulos.sistema'
-            ]);
 
             return response()->json([
                 'data' => new PedidoResource($pedido),
@@ -276,8 +187,6 @@ class PedidoController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            DB::rollBack();
-
             return response()->json([
                 'message' => 'Error al actualizar el pedido',
                 'error' => $e->getMessage(),
@@ -287,40 +196,16 @@ class PedidoController extends Controller
 
     /**
      * Eliminar un pedido
-     * 
-     * @param Pedido $pedido
-     * @return JsonResponse
      */
     public function destroy(Pedido $pedido): JsonResponse
     {
-        try {
-            // Verificar permisos
-            if (!auth()->user()->can('delete', $pedido)) {
-                return response()->json([
-                    'message' => 'No autorizado para eliminar este pedido',
-                ], 403);
-            }
-
-            $pedido->delete();
-
-            return response()->json([
-                'message' => 'Pedido eliminado exitosamente',
-            ], 204);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al eliminar el pedido',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        $this->authorize('delete', $pedido);
+        $pedido->delete();
+        return response()->json(['message' => 'Pedido eliminado exitosamente'], 204);
     }
 
     /**
      * Agregar una referencia a un pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @return JsonResponse
      */
     public function addReferencia(Request $request, Pedido $pedido): JsonResponse
     {
@@ -331,102 +216,23 @@ class PedidoController extends Controller
             'definicion' => ['nullable', 'string', 'max:255'],
             'cantidad' => ['required', 'integer', 'min:1'],
             'comentario' => ['nullable', 'string'],
-            'imagen' => ['nullable', 'string', 'max:255'],
             'mostrar_referencia' => ['nullable', 'boolean'],
             'estado' => ['nullable', 'boolean'],
         ]);
 
-        try {
-            $pedidoReferencia = $pedido->referencias()->create($validated);
-            $pedidoReferencia->load(['referencia', 'sistema', 'marca']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoReferenciaResource($pedidoReferencia),
-                'message' => 'Referencia agregada exitosamente',
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al agregar la referencia',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Actualizar una referencia de un pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @param int $referenciaId
-     * @return JsonResponse
-     */
-    public function updateReferencia(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
-    {
-        $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
-
-        $validated = $request->validate([
-            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
-            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
-            'definicion' => ['nullable', 'string', 'max:255'],
-            'cantidad' => ['sometimes', 'integer', 'min:1'],
-            'comentario' => ['nullable', 'string'],
-            'imagen' => ['nullable', 'string', 'max:255'],
-            'mostrar_referencia' => ['nullable', 'boolean'],
-            'estado' => ['nullable', 'boolean'],
-        ]);
-
-        try {
-            $pedidoReferencia->update($validated);
-            $pedidoReferencia->load(['referencia', 'sistema', 'marca']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoReferenciaResource($pedidoReferencia),
-                'message' => 'Referencia actualizada exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al actualizar la referencia',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Eliminar una referencia de un pedido
-     *
-     * @param Pedido $pedido
-     * @param int $referenciaId
-     * @return JsonResponse
-     */
-    public function deleteReferencia(Pedido $pedido, int $referenciaId): JsonResponse
-    {
-        try {
-            $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
-            $pedidoReferencia->delete();
-
-            return response()->json([
-                'message' => 'Referencia eliminada exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al eliminar la referencia',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        $referencia = $pedido->referencias()->create($validated);
+        return response()->json([
+            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia', 'sistema', 'marca'])),
+            'message' => 'Referencia agregada exitosamente',
+        ], 201);
     }
 
     /**
      * Agregar un proveedor a una referencia de pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @param int $referenciaId
-     * @return JsonResponse
      */
     public function addProveedor(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
     {
         $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
-
         $validated = $request->validate([
             'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
             'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
@@ -435,37 +241,19 @@ class PedidoController extends Controller
             'utilidad' => ['required', 'numeric', 'min:0'],
             'cantidad' => ['required', 'integer', 'min:1'],
             'ubicacion' => ['required', 'string', 'in:Nacional,Internacional'],
-            'estado' => ['nullable', 'boolean'],
         ]);
 
-        try {
-            // Calcular valores automáticamente
-            $valores = $this->calcularValores($validated, $pedidoReferencia);
-            $validated = array_merge($validated, $valores);
+        $valores = $this->pedidoService->calcularValores($validated, $pedidoReferencia);
+        $proveedor = $pedidoReferencia->proveedores()->create(array_merge($validated, $valores));
 
-            $proveedor = $pedidoReferencia->proveedores()->create($validated);
-            $proveedor->load(['tercero', 'marca']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor),
-                'message' => 'Proveedor agregado exitosamente',
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al agregar el proveedor',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
+        return response()->json([
+            'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
+            'message' => 'Proveedor agregado exitosamente',
+        ], 201);
     }
 
     /**
-     * Actualizar un proveedor de una referencia de pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @param int $referenciaId
-     * @param int $proveedorId
-     * @return JsonResponse
+     * Actualizar un proveedor
      */
     public function updateProveedor(Request $request, Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
     {
@@ -479,313 +267,37 @@ class PedidoController extends Controller
             'utilidad' => ['sometimes', 'numeric', 'min:0'],
             'cantidad' => ['sometimes', 'integer', 'min:1'],
             'ubicacion' => ['sometimes', 'string', 'in:Nacional,Internacional'],
-            'estado' => ['nullable', 'boolean'],
         ]);
 
-        try {
-            // Recalcular valores si cambió costo, utilidad, cantidad o ubicación
-            if (isset($validated['costo_unidad']) || isset($validated['utilidad']) || 
-                isset($validated['cantidad']) || isset($validated['ubicacion'])) {
-                $datosCompletos = array_merge($proveedor->toArray(), $validated);
-                $valores = $this->calcularValores($datosCompletos, $pedidoReferencia);
-                $validated = array_merge($validated, $valores);
-            }
+        $datosCompletos = array_merge($proveedor->toArray(), $validated);
+        $valores = $this->pedidoService->calcularValores($datosCompletos, $pedidoReferencia);
+        $proveedor->update(array_merge($validated, $valores));
 
-            $proveedor->update($validated);
-            $proveedor->load(['tercero', 'marca']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor),
-                'message' => 'Proveedor actualizado exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al actualizar el proveedor',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Eliminar un proveedor de una referencia de pedido
-     *
-     * @param Pedido $pedido
-     * @param int $referenciaId
-     * @param int $proveedorId
-     * @return JsonResponse
-     */
-    public function deleteProveedor(Pedido $pedido, int $referenciaId, int $proveedorId): JsonResponse
-    {
-        try {
-            $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
-            $proveedor = $pedidoReferencia->proveedores()->findOrFail($proveedorId);
-            $proveedor->delete();
-
-            return response()->json([
-                'message' => 'Proveedor eliminado exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al eliminar el proveedor',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Agregar un artículo a un pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @return JsonResponse
-     */
-    public function addArticulo(Request $request, Pedido $pedido): JsonResponse
-    {
-        $validated = $request->validate([
-            'articulo_id' => ['required', 'integer', 'exists:articulos,id'],
-            'cantidad' => ['required', 'integer', 'min:1'],
-            'comentario' => ['nullable', 'string'],
-            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
-            'imagen' => ['nullable', 'string', 'max:255'],
+        return response()->json([
+            'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
+            'message' => 'Proveedor actualizado exitosamente',
         ]);
-
-        try {
-            $pedidoArticulo = $pedido->articulos()->create($validated);
-            $pedidoArticulo->load(['articulo', 'sistema']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoArticuloResource($pedidoArticulo),
-                'message' => 'Artículo agregado exitosamente',
-            ], 201);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al agregar el artículo',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
     }
 
     /**
-     * Actualizar un artículo de un pedido
-     *
-     * @param Request $request
-     * @param Pedido $pedido
-     * @param int $articuloId
-     * @return JsonResponse
-     */
-    public function updateArticulo(Request $request, Pedido $pedido, int $articuloId): JsonResponse
-    {
-        $pedidoArticulo = $pedido->articulos()->findOrFail($articuloId);
-
-        $validated = $request->validate([
-            'cantidad' => ['sometimes', 'integer', 'min:1'],
-            'comentario' => ['nullable', 'string'],
-            'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
-            'imagen' => ['nullable', 'string', 'max:255'],
-        ]);
-
-        try {
-            $pedidoArticulo->update($validated);
-            $pedidoArticulo->load(['articulo', 'sistema']);
-
-            return response()->json([
-                'data' => new \App\Http\Resources\PedidoArticuloResource($pedidoArticulo),
-                'message' => 'Artículo actualizado exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al actualizar el artículo',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Eliminar un artículo de un pedido
-     *
-     * @param Pedido $pedido
-     * @param int $articuloId
-     * @return JsonResponse
-     */
-    public function deleteArticulo(Pedido $pedido, int $articuloId): JsonResponse
-    {
-        try {
-            $pedidoArticulo = $pedido->articulos()->findOrFail($articuloId);
-            $pedidoArticulo->delete();
-
-            return response()->json([
-                'message' => 'Artículo eliminado exitosamente',
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error al eliminar el artículo',
-                'error' => $e->getMessage(),
-            ], 500);
-        }
-    }
-
-    /**
-     * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
-     *
-     * @param array $datos
-     * @param \App\Models\PedidoReferencia $pedidoReferencia
-     * @return array
-     */
-    private function calcularValores(array $datos, \App\Models\PedidoReferencia $pedidoReferencia): array
-    {
-        $costo_unidad = (float) ($datos['costo_unidad'] ?? 0);
-        $utilidad = (float) ($datos['utilidad'] ?? 0);
-        $cantidad = (int) ($datos['cantidad'] ?? 1);
-        $ubicacion = $datos['ubicacion'] ?? 'Nacional';
-
-        if ($ubicacion === 'Internacional') {
-            // Obtener empresa activa para TRM y flete
-            $empresa = \App\Models\Empresa::where('estado', 1)->first();
-            $trm = $empresa?->trm ?? 1;
-            $flete = $empresa?->flete ?? 0;
-
-            // Obtener peso del artículo (necesitamos la referencia)
-            $referencia = $pedidoReferencia->referencia;
-            $peso = 0; // Por defecto, se puede obtener de la relación articulo->medidas
-
-            // Convertir peso de gramos a libras (1 libra = 453.592 gramos)
-            $peso_libras = $peso / 453.592;
-
-            // Calcular: costo_base_usd = (peso_libras * flete) + costo_unidad
-            $costo_base_usd = ($peso_libras * $flete) + $costo_unidad;
-            $costo_base_cop = $costo_base_usd * $trm;
-
-            // Aplicar utilidad
-            $valor_unidad = $costo_base_cop + ($utilidad * $costo_base_cop / 100);
-
-            // Redondear a centenas
-            $valor_unidad = round($valor_unidad, -2);
-        } else {
-            // Lógica para proveedores nacionales
-            $valor_unidad = $costo_unidad + ($costo_unidad * $utilidad / 100);
-            // Redondear a enteros
-            $valor_unidad = round($valor_unidad);
-        }
-
-        // Calcular valor total
-        $valor_total = $valor_unidad * $cantidad;
-
-        return [
-            'valor_unidad' => $valor_unidad,
-            'valor_total' => $valor_total,
-        ];
-    }
-
-    /**
-     * Sincroniza las referencias de un pedido
-     * 
-     * @param Pedido $pedido
-     * @param array $referenciasData
-     */
-    private function syncReferencias(Pedido $pedido, array $referenciasData): void
-    {
-        // Obtener Ids actuales
-        $currentIds = $pedido->referencias()->pluck('id')->toArray();
-        
-        // Obtener Ids que vienen en la petición (los que tienen ID son actualizaciones)
-        $incomingIds = [];
-        foreach ($referenciasData as $refData) {
-            if (isset($refData['id']) && $refData['id']) {
-                $incomingIds[] = $refData['id'];
-            }
-        }
-
-        // Eliminar los que no vienen en la petición
-        $toDelete = array_diff($currentIds, $incomingIds);
-        if (!empty($toDelete)) {
-            $pedido->referencias()->whereIn('id', $toDelete)->delete();
-        }
-
-        // Crear o actualizar
-        foreach ($referenciasData as $refData) {
-            if (isset($refData['id']) && $refData['id']) {
-                // Actualizar
-                $referencia = $pedido->referencias()->find($refData['id']);
-                if ($referencia) {
-                    $referencia->update([
-                        'referencia_id' => $refData['referencia_id'],
-                        'sistema_id' => $refData['sistema_id'] ?? null,
-                        'lista_id' => $refData['lista_id'] ?? null,
-                        'marca_id' => $refData['marca_id'] ?? null,
-                        'definicion' => $refData['definicion'] ?? null,
-                        'cantidad' => $refData['cantidad'],
-                        'comentario' => $refData['comentario'] ?? null,
-                        'imagen' => $refData['imagen'] ?? null,
-                        'mostrar_referencia' => $refData['mostrar_referencia'] ?? true,
-                        'estado' => $refData['estado'] ?? true,
-                    ]);
-                }
-            } else {
-                // Crear
-                $pedido->referencias()->create([
-                    'referencia_id' => $refData['referencia_id'],
-                    'sistema_id' => $refData['sistema_id'] ?? null,
-                    'lista_id' => $refData['lista_id'] ?? null,
-                    'marca_id' => $refData['marca_id'] ?? null,
-                    'definicion' => $refData['definicion'] ?? null,
-                    'cantidad' => $refData['cantidad'],
-                    'comentario' => $refData['comentario'] ?? null,
-                    'imagen' => $refData['imagen'] ?? null,
-                    'mostrar_referencia' => $refData['mostrar_referencia'] ?? true,
-                    'estado' => $refData['estado'] ?? true,
-                ]);
-            }
-        }
-    }
-
-    /**
-     * Enviar pedido a fase de costeo (Acción del Analista)
-     * 
-     * @param Request $request
-     * @param Pedido $pedido
-     * @return JsonResponse
+     * Enviar pedido a fase de costeo
      */
     public function enviarACosteo(Request $request, Pedido $pedido): JsonResponse
     {
         $this->authorize('update', $pedido);
-
         if ($pedido->estado !== 'Nuevo') {
-            return response()->json([
-                'message' => 'Solo se pueden enviar a costeo los pedidos en estado Nuevo'
-            ], 422);
+            return response()->json(['message' => 'Solo se pueden enviar a costeo los pedidos en estado Nuevo'], 422);
         }
 
-        try {
-            DB::beginTransaction();
-
-            $pedido->update(['estado' => 'En_Costeo']);
-
-            // Notificar al Vendedor (dueño del pedido)
-            $vendedor = $pedido->user;
-            if ($vendedor) {
-                $vendedor->notify(new \App\Notifications\SystemNotification(
-                    'pedido_actualizado',
-                    'Pedido listo para costeo #' . $pedido->id,
-                    'El analista ' . $request->user()->name . ' ha finalizado la revisión del pedido. Ya puedes iniciar el proceso de costeo.',
-                    'pi-dollar',
-                    'green',
-                    ['id' => $pedido->id]
-                ));
-            }
-
-            DB::commit();
-
-            return response()->json([
-                'data' => new PedidoResource($pedido),
-                'message' => 'Pedido enviado a costeo exitosamente'
-            ]);
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return response()->json([
-                'message' => 'Error al enviar a costeo',
-                'error' => $e->getMessage()
-            ], 500);
+        $pedido->update(['estado' => 'En_Costeo']);
+        if ($vendedor = $pedido->user) {
+            $vendedor->notify(new \App\Notifications\SystemNotification(
+                'pedido_actualizado', 'Pedido listo para costeo #' . $pedido->id,
+                'El analista ' . $request->user()->name . ' ha finalizado la revisión. Ya puedes iniciar el costeo.',
+                'pi-dollar', 'green', ['id' => $pedido->id]
+            ));
         }
+
+        return response()->json(['data' => new PedidoResource($pedido), 'message' => 'Pedido enviado a costeo exitosamente']);
     }
 }

@@ -166,6 +166,13 @@ export class EditComponent implements OnInit {
     displayComentarioDialog = false;
     displayImagenDialog = false;
     displayImagenesCarouselModal = false;
+    
+    // Estado para la galería de imágenes
+    displayGallery = false;
+    galleriaImagesArray: any[] = [];
+    selectedItemIndex: number = -1;
+    activeIndexGallery: number = 0;
+
     activeItemIndex: number | null = null;
     activeImagenesFilaIndex: number | null = null;
     comentarioControl = new FormControl('');
@@ -612,7 +619,8 @@ export class EditComponent implements OnInit {
             comentario: [data?.comentario ?? ''],
             definicion: [data?.definicion ?? ''],
             imagen: [data?.imagen ?? null],
-            imagenes: [data?.imagenes ?? []]
+            imagenes: [data?.imagenes ?? []],
+            files: [[]] // Nuevos archivos binarios
         });
 
         this.referenciasFormArray.push(referenciaForm);
@@ -1093,6 +1101,116 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Maneja la selección de nuevos archivos para un ítem
+     */
+    onFilesSelected(event: any, index: number): void {
+        const files = Array.from(event.target.files as FileList);
+        if (files.length > 0) {
+            const control = this.referenciasFormArray.at(index).get('files');
+            const currentFiles = control?.value || [];
+            const existingImages = this.referenciasFormArray.at(index).get('imagenes')?.value || [];
+            
+            // Límite total de 10 imágenes (existentes + nuevas)
+            const remaining = 10 - (currentFiles.length + existingImages.length);
+            if (remaining <= 0) {
+                this.messageService.add({ severity: 'warn', summary: 'Límite alcanzado', detail: 'Máximo 10 imágenes por ítem' });
+                return;
+            }
+
+            const toAdd = files.slice(0, remaining);
+            control?.setValue([...currentFiles, ...toAdd]);
+
+            if (files.length > remaining) {
+                this.messageService.add({ severity: 'info', summary: 'Límite parcial', detail: 'Solo se agregaron las imágenes permitidas hasta completar 10' });
+            }
+            
+            if (this.displayGallery && this.selectedItemIndex === index) {
+                this.updateGalleriaImages(index);
+            }
+        }
+        event.target.value = '';
+    }
+
+    /**
+     * Elimina un archivo nuevo (aún no guardado)
+     */
+    removeFile(itemIndex: number, fileIndex: number): void {
+        const control = this.referenciasFormArray.at(itemIndex).get('files');
+        const currentFiles = [...(control?.value || [])];
+        
+        if (currentFiles[fileIndex]) {
+            currentFiles.splice(fileIndex, 1);
+            control?.setValue(currentFiles);
+            
+            if (this.displayGallery && this.selectedItemIndex === itemIndex) {
+                this.updateGalleriaImages(itemIndex);
+            }
+        }
+    }
+
+    /**
+     * Abre la galería unificada
+     */
+    openGallery(index: number): void {
+        const files = this.referenciasFormArray.at(index).get('files')?.value || [];
+        const existing = this.referenciasFormArray.at(index).get('imagenes')?.value || [];
+        
+        if (files.length === 0 && existing.length === 0) return;
+
+        this.selectedItemIndex = index;
+        this.activeIndexGallery = 0;
+        this.updateGalleriaImages(index);
+        this.displayGallery = true;
+    }
+
+    /**
+     * Prepara las imágenes para Galleria (mezcla existentes de DB con nuevas de File)
+     */
+    private updateGalleriaImages(index: number): void {
+        const control = this.referenciasFormArray.at(index);
+        const newFiles = control.get('files')?.value || [];
+        const existingImages = control.get('imagenes')?.value || [];
+
+        // Limpiar blobs previos
+        this.galleriaImagesArray.forEach(img => {
+            if (img.itemImageSrc.startsWith('blob:')) {
+                URL.revokeObjectURL(img.itemImageSrc);
+            }
+        });
+
+        // 1. Mapear imágenes existentes (desde DB)
+        const mappedExisting = existingImages.map((img: any) => {
+            let src = img.imagen;
+            if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                src = `/storage/${src.replace(/^\/+/, '')}`;
+            }
+            return {
+                itemImageSrc: src,
+                thumbnailImageSrc: src,
+                alt: 'Imagen guardada',
+                title: 'Existente',
+                isExisting: true,
+                id: img.id
+            };
+        });
+
+        // 2. Mapear archivos nuevos (en memoria)
+        const mappedNew = newFiles.map((file: File) => {
+            const url = URL.createObjectURL(file);
+            return {
+                itemImageSrc: url,
+                thumbnailImageSrc: url,
+                alt: file.name,
+                title: 'Nueva para cargar',
+                isExisting: false,
+                file: file
+            };
+        });
+
+        this.galleriaImagesArray = [...mappedExisting, ...mappedNew];
+    }
+
+    /**
      * Devuelve todas las imágenes del ítem sin duplicar (legacy + imagenes[], evitando misma URL dos veces)
      */
     getImagenesParaFila(index: number): { url: string; origen?: string }[] {
@@ -1358,22 +1476,46 @@ export class EditComponent implements OnInit {
 
         this.submitting = true;
 
-        const pedidoData: UpdatePedidoDto = {
-            tercero_id: formValue.tercero_id,
-            direccion: formValue.direccion || undefined,
-            comentario: formValue.comentario || undefined,
-            maquina_id: formValue.maquina_id || undefined,
-            fabricante_id: formValue.fabricante_id || undefined,
-            contacto_id: formValue.contacto_id || undefined,
-            estado: nuevoEstado,
-            motivo_rechazo: nuevoEstado === 'Rechazado' ? formValue.motivo_rechazo : undefined,
-            referencias: this.referenciasFormArray.getRawValue()
-        };
+        const formData = new FormData();
+        formData.append('_method', 'PUT'); // Importante para que Laravel reconozca el PUT con FormData
+
+        // Datos básicos
+        formData.append('tercero_id', formValue.tercero_id.toString());
+        if (formValue.direccion) formData.append('direccion', formValue.direccion);
+        if (formValue.comentario) formData.append('comentario', formValue.comentario);
+        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
+        if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
+        if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
+        formData.append('estado', nuevoEstado);
+        if (nuevoEstado === 'Rechazado' && formValue.motivo_rechazo) {
+            formData.append('motivo_rechazo', formValue.motivo_rechazo);
+        }
+
+        // Referencias
+        this.referenciasFormArray.controls.forEach((control, index) => {
+            const rawRef = control.value;
+            if (rawRef.id) formData.append(`referencias[${index}][id]`, rawRef.id.toString());
+            
+            formData.append(`referencias[${index}][referencia_id]`, rawRef.referencia_id ? rawRef.referencia_id.toString() : '');
+            formData.append(`referencias[${index}][sistema_id]`, rawRef.sistema_id ? rawRef.sistema_id.toString() : '');
+            formData.append(`referencias[${index}][lista_id]`, rawRef.lista_id ? rawRef.lista_id.toString() : '');
+            formData.append(`referencias[${index}][marca_id]`, rawRef.marca_id ? rawRef.marca_id.toString() : '');
+            formData.append(`referencias[${index}][cantidad]`, rawRef.cantidad.toString());
+            formData.append(`referencias[${index}][comentario]`, rawRef.comentario || '');
+            formData.append(`referencias[${index}][estado]`, (rawRef.estado ?? true) ? '1' : '0');
+            formData.append(`referencias[${index}][definicion]`, rawRef.definicion || '');
+            
+            // Nuevos archivos de imagen
+            const files = rawRef.files || [];
+            files.forEach((file: File, fileIndex: number) => {
+                formData.append(`referencias[${index}][imagenes_nuevas][${fileIndex}]`, file);
+            });
+        });
 
         this.store.dispatch(
             updatePedido({
                 id: this.pedidoId(),
-                changes: pedidoData
+                changes: formData as any
             })
         );
 
@@ -1381,19 +1523,21 @@ export class EditComponent implements OnInit {
         this.store
             .select((state: any) => state.pedidos)
             .subscribe((pedidosState: any) => {
-                if (!pedidosState.loading && !pedidosState.error && this.submitting) {
-                    this.submitting = false;
-                    this.estadoActual = nuevoEstado; // Actualizar estado actual
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Pedido actualizado correctamente'
-                    });
-                    setTimeout(() => {
-                        this.router.navigate(['/app/pedidos', this.pedidoId()]);
-                    }, 1500);
-                } else if (!pedidosState.loading && pedidosState.error && this.submitting) {
-                    this.submitting = false;
+                if (!pedidosState.loading && this.submitting) {
+                    if (!pedidosState.error) {
+                        this.submitting = false;
+                        this.estadoActual = nuevoEstado;
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Pedido actualizado correctamente'
+                        });
+                        setTimeout(() => {
+                            this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                        }, 1500);
+                    } else {
+                        this.submitting = false;
+                    }
                 }
             });
     }

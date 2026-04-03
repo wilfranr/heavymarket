@@ -1,55 +1,34 @@
-# Contexto y Guía para Agentes de IA - HeavyMarket (Root)
+# HeavyMarket: Orquestador de Agentes
 
-## Descripción del Proyecto
-HeavyMarket es un sistema de gestión comercial moderno, resultado de la migración del sistema CYH. Es una aplicación monolito dividido (frontend y backend separados) que gestiona pedidos, cotizaciones, inventario y terceros.
+Bienvenido al sistema de gestión de HeavyMarket. Este archivo sirve como el punto de entrada principal para todos los agentes de IA, delegando tareas específicas a las **Skills** especializadas.
 
-## Estructura del Repositorio
-Este repositorio funciona como un monorepo que contiene:
-- `heavy-api/`: Backend (Laravel 12 API REST).
-- `heavy-front/`: Frontend (Angular 20 SPA).
-- `docker-compose.yml`: Orquestación local.
+## Información del Proyecto
+- **Propósito**: Gestión comercial moderna (pedidos, cotizaciones, inventario).
+- **Backend**: Laravel 12 API (en `heavy-api/`).
+- **Frontend**: Angular 20 SPA (en `heavy-front/`).
+- **Infraestructura**: Docker y Scripts de despliegue automatizados.
 
-## Reglas Generales de Desarrollo
-## Comportamiento del Agente (Reglas Estrictas)
-1. **Idioma**: ESPAÑOL OBLIGATORIO.
-   - **Respuestas de Chat**: SIEMPRE en español, en todas las sesiones, sin necesidad de recordatorio explícito.
-   - **Artefactos**: Todos los documentos generados (task.md, planes, walkthroughs) deben estar en español.
-   - **Estado del Agente**: Los campos `TaskStatus` y `TaskSummary` en `task_boundary` deben redactarse siempre en español.
-2. **Mentalidad**: Actuar como un desarrollador senior experto en el stack del proyecto.
+## Reglas de Oro
+1. **Idioma**: SIEMPRE en **ESPAÑOL** (interacciones y documentación).
+2. **Modo Oscuro**: Todo desarrollo de UI debe ser compatible con Dark Mode.
+3. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
 
-## Reglas Generales de Desarrollo
-1. **Idioma del Código**: El código, comentarios y commits deben estar preferiblemente en Español.
-2. **Commits**: Usar Conventional Commits.
-   - `feat: nueva funcionalidad`
-   - `fix: corrección de error`
-   - `docs: documentación`
-   - `style: formato sin cambios de lógica`
-   - `refactor: cambios de código que no arreglan errores ni añaden funcionalidades`
-3. **Flujo de Trabajo**:
-   - Analizar primero si el cambio afecta a frontend, backend o ambos.
-   - Mantener la sincronización entre los modelos de datos del backend y las interfaces del frontend.
+## Índice de Skills
+Invoca la skill necesaria según el contexto de la tarea:
 
-## Archivos de Contexto Específico
-Para instrucciones detalladas sobre cada parte del stack, consulta:
-- **Backend**: `heavy-api/AGENTS.md`
-- **Frontend**: `heavy-front/AGENTS.md`
+| Skill | Cuándo usarla |
+| :--- | :--- |
+| **`github_issue_manager`** | Listar, crear, ver o cerrar issues en GitHub. |
+| **`software_architect`** | Diseñar estructuras, patrones o diagramas Mermaid. |
+| **`ui_ux_design_expert`** | Cambios en frontend, estilos Tailwind o PrimeNG. |
+| **`sql_query_analyst`** | Consultas SQL, modelos Eloquent o migraciones. |
+| **`automated_tester`** | Escribir o ejecutar tests PHPUnit o Playwright. |
+| **`commit_expert`** | Preparar commits (Conventional) y revisar cambios. |
+| **`tech_doc_expert`** | Crear o actualizar archivos de documentación .md. |
+| **`devops_deployment_pro`** | Gestión de Docker y procesos de despliegue. |
+| **`testing_expert`** | Estrategias de QA y validación manual. |
 
-## Comandos Comunes
-- **Backend (Tests)**: `cd heavy-api && php artisan test`
-- **Frontend (Dev)**: `cd heavy-front && npm start`
-- **Frontend (Tests)**: `cd heavy-front && npm test`
-- **Linting**: Revisar `package.json` en root o subdirectorios para scripts de linting.
-
-## Despliegue a Producción
-
-> ⚠️ **CRÍTICO**: Después de un `git pull` en el servidor, **SIEMPRE ejecutar el script de despliegue** para recompilar el frontend. Sin este paso la URL seguirá mostrando la versión anterior.
-
-```bash
-# Desde la raíz del repositorio en el servidor:
-git pull
-./scripts/deploy.sh             # API + Frontend completo
-./scripts/deploy.sh --front     # Solo frontend
-./scripts/deploy.sh --api       # Solo backend
-```
-
-Ver detalles completos en [scripts/README.md](scripts/README.md).
+## Contexto de Referencia
+- Para detalles de implementación Backend: `heavy-api/AGENTS.md`
+- Para detalles de implementación Frontend: `heavy-front/AGENTS.md`
+- Historial de cambios: `PROGRESO.md`
