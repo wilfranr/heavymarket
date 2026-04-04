@@ -67,16 +67,11 @@
                                 <label for="fabricante_id"
                                     class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
                                     Fabricante <span class="text-red-500">*</span> </label>
-                                <p-inputgroup styleClass="w-full">
-                                    <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
-                                        optionLabel="nombre" optionValue="id" placeholder="Por Definir"
-                                        [showClear]="true" styleClass="w-full rounded-l-2xl" [filter]="true"
-                                        filterBy="nombre"> </p-select>
-                                    <p-inputgroup-addon styleClass="rounded-r-2xl">
-                                        <p-button icon="pi pi-plus" [text]="true" severity="secondary"
-                                            (onClick)="abrirCrearFabricante()"></p-button>
-                                    </p-inputgroup-addon>
-                                </p-inputgroup>
+                                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
+                                    optionLabel="nombre" optionValue="id" optionImage="foto" placeholder="Por Definir"
+                                    [showClear]="true" styleClass="w-full rounded-2xl" [filter]="true"
+                                    filterBy="nombre">
+                                </p-select>
                                 @if (maquinaForm.get('fabricante_id')?.invalid &&
                                 maquinaForm.get('fabricante_id')?.touched) {
                                 <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El fabricante es
@@ -167,8 +162,3 @@
 <app-lista-create-modal [(visible)]="showTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina"
     (onListaCreated)="onTipoCreado($event)">
 </app-lista-create-modal>
-
-<!-- Modal para crear fabricante -->
-<app-fabricante-create-modal [(visible)]="showFabricanteModal" title="Crear Fabricante"
-    (onFabricanteCreated)="onFabricanteCreado($event)">
-</app-fabricante-create-modal>

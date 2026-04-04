@@ -25,8 +25,8 @@ export class ListasEffects {
     loadListas$ = createEffect(() =>
         this.actions$.pipe(
             ofType(ListasActions.loadListas),
-            switchMap(({ tipo, search, page, per_page }) =>
-                this.listaService.getAll({ tipo, search, page, per_page }).pipe(
+            switchMap(({ tipo, search, page, per_page, sort_by, sort_order }) =>
+                this.listaService.getAll({ tipo, search, page, per_page, sort_by, sort_order }).pipe(
                     map((response) => {
                         return ListasActions.loadListasSuccess({
                             listas: response.data,

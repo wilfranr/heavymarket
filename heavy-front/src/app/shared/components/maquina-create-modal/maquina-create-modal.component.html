@@ -23,13 +23,10 @@
             <div>
                 <label for="fabricante_id" class="block mb-2 font-semibold">Fabricante<span
                         class="text-red-500">*</span></label>
-                <div class="flex gap-2">
-                    <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
-                        optionLabel="label" optionValue="value" [filter]="true" filterBy="label"
-                        placeholder="Seleccione una opción" styleClass="w-full flex-1"></p-select>
-                    <p-button icon="pi pi-plus" severity="secondary"
-                        (onClick)="openCreateFabricanteDialog()"></p-button>
-                </div>
+                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
+                    optionLabel="label" optionValue="value" optionImage="foto" [filter]="true" filterBy="label"
+                    placeholder="Seleccione una opción" styleClass="w-full">
+                </p-select>
             </div>
 
             <!-- Modelo -->
@@ -94,8 +91,3 @@
 <app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina"
     (onListaCreated)="onTipoCreated($event)">
 </app-lista-create-modal>
-
-<!-- Modal para crear fabricante -->
-<app-fabricante-create-modal [(visible)]="showCreateFabricanteModal" title="Crear Fabricante"
-    (onFabricanteCreated)="onFabricanteCreated($event)">
-</app-fabricante-create-modal>

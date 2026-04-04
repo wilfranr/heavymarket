@@ -37,7 +37,7 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
                 [suggestions]="searchResults" 
                 (completeMethod)="onSearch($event)" 
                 field="title" 
-                placeholder="Buscar pedidos, terceros, artículos, fabricantes..." 
+                placeholder="Buscar pedidos, terceros, artículos, listas..." 
                 [style]="{'width':'100%', 'max-width':'600px'}" 
                 [inputStyle]="{'width':'100%', 'border-radius': '20px', 'padding-left': '2.5rem'}" 
                 styleClass="w-full max-w-[600px] relative"

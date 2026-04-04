@@ -1,56 +1,25 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Fabricante, CreateFabricanteDto, UpdateFabricanteDto } from '../models/fabricante.model';
-import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
+import { Fabricante } from '../models/fabricante.model';
+import { ApiService, PaginatedResponse } from './api.service';
 
 /**
- * Servicio para gestión de Fabricantes
- *
- * Maneja todas las operaciones CRUD de fabricantes
+ * Catálogo de fabricantes (solo lectura).
+ * Ahora usa el endpoint de listas con tipo='Fabricantes'.
  */
 @Injectable({
     providedIn: 'root'
 })
 export class FabricanteService extends ApiService {
-    private readonly endpoint = 'fabricantes';
+    private readonly endpoint = 'listas/tipo/Fabricantes';
 
-    /**
-     * Obtener todos los fabricantes con filtros
-     */
-    getAll(params?: { search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Fabricante>> {
+    getAll(params?: {
+        search?: string;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        per_page?: number;
+        page?: number;
+    }): Observable<PaginatedResponse<Fabricante>> {
         return this.get<PaginatedResponse<Fabricante>>(this.endpoint, params);
-    }
-
-    /**
-     * Obtener un fabricante por ID
-     */
-    getById(id: number): Observable<ApiResponse<Fabricante>> {
-        return this.get<ApiResponse<Fabricante>>(`${this.endpoint}/${id}`);
-    }
-
-    /**
-     * Crear un nuevo fabricante
-     */
-    create(data: CreateFabricanteDto | FormData): Observable<ApiResponse<Fabricante>> {
-        return this.post<ApiResponse<Fabricante>>(this.endpoint, data);
-    }
-
-    /**
-     * Actualizar un fabricante existente
-     */
-    update(id: number, data: UpdateFabricanteDto | FormData): Observable<ApiResponse<Fabricante>> {
-        if (data instanceof FormData) {
-            data.append('_method', 'PUT');
-            return this.post<ApiResponse<Fabricante>>(`${this.endpoint}/${id}`, data);
-        }
-        return this.put<ApiResponse<Fabricante>>(`${this.endpoint}/${id}`, data);
-    }
-
-    /**
-     * Eliminar un fabricante
-     */
-    deleteFabricante(id: number): Observable<any> {
-        return this.delete(`${this.endpoint}/${id}`);
     }
 }

@@ -15,7 +15,7 @@ import { DividerModule } from 'primeng/divider';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createLista } from '../../../store/listas/actions/listas.actions';
-import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
+import { ListaTipo } from '../../../core/models/lista.model';
 
 /**
  * Componente de creación de lista
@@ -27,7 +27,6 @@ import { CreateListaDto, ListaTipo } from '../../../core/models/lista.model';
     imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
-    // styleUrl: './create.scss'
 })
 export class CreateComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -56,9 +55,6 @@ export class CreateComponent implements OnInit {
         this.initForm();
     }
 
-    /**
-     * Inicializa el formulario con validaciones
-     */
     private initForm(): void {
         this.listaForm = this.fb.group({
             tipo: [null, [Validators.required]],
@@ -78,10 +74,6 @@ export class CreateComponent implements OnInit {
         this.fotoMedidaFile = file;
     }
 
-
-    /**
-     * Maneja el envío del formulario
-     */
     onSubmit(): void {
         if (this.listaForm.invalid) {
             this.markFormGroupTouched(this.listaForm);
@@ -106,12 +98,8 @@ export class CreateComponent implements OnInit {
         if (this.fotoFile) formData.append('foto', this.fotoFile);
         if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
 
-        // Mantener compatibilidad con JSON si no se seleccionaron archivos nuevos? No, el backend debería manejar ambos o preferir FormData.
-        // Asumiendo que createAction ahora acepta FormData.
-
         this.store.dispatch(createLista({ data: formData }));
 
-        // Escuchar el resultado de la acción
         this.store
             .select((state) => (state as any).listas)
             .subscribe((listasState: any) => {
@@ -124,16 +112,10 @@ export class CreateComponent implements OnInit {
             });
     }
 
-    /**
-     * Cancela y regresa a la lista
-     */
     cancelar(): void {
         this.router.navigate(['/app/listas']);
     }
 
-    /**
-     * Marca todos los campos del formulario como touched
-     */
     private markFormGroupTouched(formGroup: FormGroup): void {
         Object.keys(formGroup.controls).forEach((key) => {
             const control = formGroup.get(key);

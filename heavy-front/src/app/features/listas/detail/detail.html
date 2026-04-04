@@ -5,7 +5,9 @@
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Detalle de Lista</h2>
                 <div class="flex gap-2">
+                    @if (lista.tipo !== 'Fabricantes') {
                     <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarLista()"> </p-button>
+                    }
                     <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true"
                         (onClick)="volver()"> </p-button>
                 </div>
@@ -36,6 +38,16 @@
                 <div class="field mb-4">
                     <label class="block text-sm font-medium text-gray-600 mb-1">Definición</label>
                     <p class="text-base whitespace-pre-wrap">{{ lista.definicion }}</p>
+                </div>
+                }
+
+                @if (lista.tipo === 'Fabricantes' && lista.fabricante_id) {
+                <div class="field mb-4">
+                    <label class="block text-sm font-medium text-gray-600 mb-1">ID en catálogo maestro (fabricantes)</label>
+                    <p class="text-base font-mono">{{ lista.fabricante_id }}</p>
+                    <p class="text-sm mt-2" style="color: var(--p-text-muted-color, var(--p-surface-500))">
+                        Este ítem se crea y actualiza automáticamente con el registro en la tabla fabricantes.
+                    </p>
                 </div>
                 }
             </div>

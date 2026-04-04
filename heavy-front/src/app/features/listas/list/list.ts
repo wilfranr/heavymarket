@@ -85,6 +85,7 @@ export class ListComponent implements OnInit {
     tipos: { label: string; value: string; tipoValue: ListaTipo | null; icon: string }[] = [
         { label: 'Todos', value: 'Todos', tipoValue: null, icon: 'pi pi-list' },
         { label: 'Marcas', value: 'Marca', tipoValue: 'Marca', icon: 'pi pi-bookmark' },
+        { label: 'Fabricantes', value: 'Fabricantes', tipoValue: 'Fabricantes', icon: 'pi pi-globe' },
         { label: 'Tipos de Máquina', value: 'Tipo de Máquina', tipoValue: 'Tipo de Máquina', icon: 'pi pi-cog' },
         { label: 'Tipos de Artículo', value: 'Tipo de Artículo', tipoValue: 'Tipo de Artículo', icon: 'pi pi-box' },
         { label: 'Unidades Medida', value: 'Unidad de Medida', tipoValue: 'Unidad de Medida', icon: 'pi pi-ruler-combined' },
@@ -230,6 +231,7 @@ export class ListComponent implements OnInit {
     getTipoSeverity(tipo: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
         const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
             Marca: 'success',
+            Fabricantes: 'info',
             'Tipo de Máquina': 'info',
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',

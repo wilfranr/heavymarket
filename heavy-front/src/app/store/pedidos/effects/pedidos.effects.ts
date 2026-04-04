@@ -1,9 +1,21 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { of } from 'rxjs';
-import { map, catchError, switchMap } from 'rxjs/operators';
+import { concat, from, of, timer } from 'rxjs';
+import { map, catchError, mergeMap, switchMap } from 'rxjs/operators';
 import { PedidoService } from '../../../core/services/pedido.service';
 import * as PedidosActions from '../actions/pedidos.actions';
+
+/** Payload multipart de pedido con archivos de referencia (crear/actualizar). */
+function pedidoPayloadHasReferenciaImagenes(payload: unknown): boolean {
+    if (typeof FormData !== 'undefined' && payload instanceof FormData) {
+        for (const key of payload.keys()) {
+            if (key.includes('imagenes')) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
 
 /**
  * Effects de Pedidos
@@ -71,7 +83,21 @@ export class PedidosEffects {
             ofType(PedidosActions.createPedido),
             switchMap(({ pedido }) =>
                 this.pedidoService.create(pedido).pipe(
-                    map((response) => PedidosActions.createPedidoSuccess({ pedido: response.data })),
+                    mergeMap((response) => {
+                        const id = response.data.id;
+                        const hasImages = pedidoPayloadHasReferenciaImagenes(pedido);
+                        const afterSuccess = from([
+                            PedidosActions.createPedidoSuccess({ pedido: response.data }),
+                            PedidosActions.loadPedido({ id })
+                        ]);
+                        if (!hasImages) {
+                            return afterSuccess;
+                        }
+                        return concat(
+                            afterSuccess,
+                            timer(2000).pipe(map(() => PedidosActions.loadPedido({ id })))
+                        );
+                    }),
                     catchError((error) =>
                         of(
                             PedidosActions.createPedidoFailure({
@@ -92,7 +118,21 @@ export class PedidosEffects {
             ofType(PedidosActions.updatePedido),
             switchMap(({ id, changes }) =>
                 this.pedidoService.update(id, changes).pipe(
-                    map((response) => PedidosActions.updatePedidoSuccess({ pedido: response.data })),
+                    mergeMap((response) => {
+                        const idPedido = response.data.id;
+                        const hasImages = pedidoPayloadHasReferenciaImagenes(changes);
+                        const afterSuccess = from([
+                            PedidosActions.updatePedidoSuccess({ pedido: response.data }),
+                            PedidosActions.loadPedido({ id: idPedido })
+                        ]);
+                        if (!hasImages) {
+                            return afterSuccess;
+                        }
+                        return concat(
+                            afterSuccess,
+                            timer(2000).pipe(map(() => PedidosActions.loadPedido({ id: idPedido })))
+                        );
+                    }),
                     catchError((error) =>
                         of(
                             PedidosActions.updatePedidoFailure({

@@ -61,7 +61,6 @@ export class AppMenu implements OnInit {
                     { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
                     { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
                     { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] },
-                    { label: 'Fabricantes', icon: 'pi pi-fw pi-globe', routerLink: ['/app/fabricantes'] },
                     { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
                     { label: 'Referencias', icon: 'pi pi-fw pi-hashtag', routerLink: ['/app/referencias'] }
                 ]

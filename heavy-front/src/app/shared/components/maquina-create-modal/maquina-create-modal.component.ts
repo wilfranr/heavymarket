@@ -13,8 +13,6 @@ import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
-import { FabricanteCreateModalComponent } from '../fabricante-create-modal/fabricante-create-modal.component';
-
 @Component({
     selector: 'app-maquina-create-modal',
     standalone: true,
@@ -27,8 +25,7 @@ import { FabricanteCreateModalComponent } from '../fabricante-create-modal/fabri
         SelectModule,
         ToastModule,
         FileUploadModule,
-        ListaCreateModalComponent,
-        FabricanteCreateModalComponent
+        ListaCreateModalComponent
     ],
     templateUrl: './maquina-create-modal.component.html',
     styles: []
@@ -54,7 +51,6 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
 
     // Modales secundarios
     showCreateTipoModal = false;
-    showCreateFabricanteModal = false;
 
     ngOnInit(): void {
         this.initForm();
@@ -115,15 +111,6 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     onTipoCreated(tipo: any): void {
         this.loadTiposMaquina();
         this.createMaquinaForm.patchValue({ tipo: tipo.id });
-    }
-
-    openCreateFabricanteDialog(): void {
-        this.showCreateFabricanteModal = true;
-    }
-
-    onFabricanteCreated(fabricante: any): void {
-        this.loadFabricantes();
-        this.createMaquinaForm.patchValue({ fabricante_id: fabricante.id });
     }
 
     onFileSelect(event: any, fieldName: string): void {

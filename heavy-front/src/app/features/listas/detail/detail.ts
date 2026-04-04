@@ -61,11 +61,13 @@ export class DetailComponent implements OnInit {
     getTipoSeverity(tipo: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
         const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
             Marca: 'success',
+            Fabricantes: 'info',
             'Tipo de Máquina': 'info',
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
-            'Nombre de Medida': 'contrast'
+            'Nombre de Medida': 'contrast',
+            'Piezas Estandar': 'warn'
         };
         return severityMap[tipo] || 'secondary';
     }

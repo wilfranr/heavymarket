@@ -17,7 +17,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 
 import { loadListaById, updateLista } from '../../../store/listas/actions/listas.actions';
 import { selectListaById } from '../../../store/listas/selectors/listas.selectors';
-import { UpdateListaDto, ListaTipo } from '../../../core/models/lista.model';
+import { Lista, ListaTipo } from '../../../core/models/lista.model';
 
 /**
  * Componente de edición de lista
@@ -29,7 +29,6 @@ import { UpdateListaDto, ListaTipo } from '../../../core/models/lista.model';
     imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
-    // styleUrl: './edit.scss'
 })
 export class EditComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
@@ -39,7 +38,7 @@ export class EditComponent implements OnInit {
     private readonly messageService = inject(MessageService);
 
     listaForm!: FormGroup;
-    lista$!: Observable<any>;
+    lista$!: Observable<Lista | null>;
     listaId!: number;
 
     tiposOptions = [
@@ -64,17 +63,24 @@ export class EditComponent implements OnInit {
             this.lista$ = this.store.select(selectListaById(this.listaId));
 
             this.lista$.subscribe((lista) => {
-                if (lista) {
-                    this.initForm(lista);
+                if (!lista) {
+                    return;
                 }
+                if (lista.tipo === 'Fabricantes') {
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'Catálogo sincronizado',
+                        detail: 'Los ítems tipo Fabricantes se actualizan desde el catálogo maestro, no se editan aquí.'
+                    });
+                    this.router.navigate(['/app/listas', lista.id]);
+                    return;
+                }
+                this.initForm(lista);
             });
         });
     }
 
-    /**
-     * Inicializa el formulario con los datos de la lista
-     */
-    private initForm(lista: any): void {
+    private initForm(lista: Lista): void {
         this.listaForm = this.fb.group({
             tipo: [lista.tipo, [Validators.required]],
             nombre: [lista.nombre, [Validators.required, Validators.maxLength(255)]],
@@ -93,9 +99,6 @@ export class EditComponent implements OnInit {
         this.fotoMedidaFile = file;
     }
 
-    /**
-     * Maneja el envío del formulario
-     */
     onSubmit(): void {
         if (this.listaForm.invalid) {
             this.markFormGroupTouched(this.listaForm);
@@ -121,11 +124,8 @@ export class EditComponent implements OnInit {
         if (this.fotoFile) formData.append('foto', this.fotoFile);
         if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
 
-        // El servicio manejará el _method: PUT si recibe FormData
-
         this.store.dispatch(updateLista({ id: this.listaId, data: formData }));
 
-        // Escuchar el resultado de la acción
         this.store
             .select((state) => (state as any).listas)
             .subscribe((listasState: any) => {
@@ -138,16 +138,10 @@ export class EditComponent implements OnInit {
             });
     }
 
-    /**
-     * Cancela y regresa al detalle
-     */
     cancelar(): void {
         this.router.navigate(['/app/listas', this.listaId]);
     }
 
-    /**
-     * Marca todos los campos del formulario como touched
-     */
     private markFormGroupTouched(formGroup: FormGroup): void {
         Object.keys(formGroup.controls).forEach((key) => {
             const control = formGroup.get(key);

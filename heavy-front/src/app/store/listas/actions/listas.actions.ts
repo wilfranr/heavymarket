@@ -6,7 +6,10 @@ import { Lista, CreateListaDto, UpdateListaDto, ListaTipo } from '../../../core/
  */
 
 // Cargar listas
-export const loadListas = createAction('[Listas] Load Listas', props<{ tipo?: ListaTipo; search?: string; page?: number; per_page?: number }>());
+export const loadListas = createAction(
+    '[Listas] Load Listas',
+    props<{ tipo?: ListaTipo; search?: string; page?: number; per_page?: number; sort_by?: string; sort_order?: 'asc' | 'desc' }>()
+);
 
 export const loadListasSuccess = createAction('[Listas] Load Listas Success', props<{ listas: Lista[]; total: number; currentPage: number; lastPage: number }>());
 

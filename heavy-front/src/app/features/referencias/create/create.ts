@@ -12,10 +12,6 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
-import { InputGroupModule } from 'primeng/inputgroup';
-import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { FabricanteCreateModalComponent } from '../../../shared/components/fabricante-create-modal/fabricante-create-modal.component';
-
 import { createReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
 import { FabricanteService } from '../../../core/services/fabricante.service';
@@ -39,10 +35,7 @@ import { Articulo } from '../../../core/models/articulo.model';
         TextareaModule,
         SelectModule,
         ToastModule,
-        DividerModule,
-        InputGroupModule,
-        InputGroupAddonModule,
-        FabricanteCreateModalComponent
+        DividerModule
     ],
     providers: [MessageService],
     templateUrl: './create.html'
@@ -59,8 +52,6 @@ export class CreateComponent implements OnInit {
     loading = false;
     marcas: Fabricante[] = [];
     articulos: Articulo[] = [];
-
-    showFabricanteModal = false;
 
     ngOnInit(): void {
         this.initForm();
@@ -94,21 +85,6 @@ export class CreateComponent implements OnInit {
                 console.error('Error al cargar marcas:', error);
             }
         });
-    }
-
-    /**
-     * Abre el modal para crear un nuevo fabricante
-     */
-    abrirCrearFabricante(): void {
-        this.showFabricanteModal = true;
-    }
-
-    /**
-     * Maneja la creación de un nuevo fabricante
-     */
-    onFabricanteCreado(nuevoFabricante: any): void {
-        this.cargarMarcas();
-        this.referenciaForm.patchValue({ marca_id: nuevoFabricante.id });
     }
 
     /**

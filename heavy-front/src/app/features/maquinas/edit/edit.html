@@ -61,7 +61,7 @@
                                     class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
                                     Fabricante <span class="text-red-500">*</span> </label>
                                 <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
-                                    optionLabel="nombre" optionValue="id" placeholder="Seleccione un fabricante"
+                                    optionLabel="nombre" optionValue="id" optionImage="foto" placeholder="Seleccione un fabricante"
                                     [showClear]="true" styleClass="w-full rounded-2xl" [filter]="true"
                                     filterBy="nombre"> </p-select>
                                 @if (maquinaForm.get('fabricante_id')?.invalid &&

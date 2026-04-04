@@ -11,18 +11,39 @@ export interface Lista {
     foto: string | null;
     fotoMedida: string | null;
     sistema_id: number | null;
+    parent_id: number | null;
+    fabricante_id: number | null;
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
 
     // Relaciones
-    sistemas?: any[];
+    sistemas?: unknown[];
+    fabricante?: ListaFabricanteResumen | null;
+}
+
+/** Registro maestro (tabla fabricantes) cuando la lista es tipo Fabricantes */
+export interface ListaFabricanteResumen {
+    id: number;
+    nombre: string;
+    descripcion: string | null;
+    logo: string | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 /**
  * Tipos de lista disponibles
  */
-export type ListaTipo = 'Marca' | 'Tipo de Máquina' | 'Tipo de Artículo' | 'Piezas Estandar' | 'Unidad de Medida' | 'Tipo de Medida' | 'Nombre de Medida';
+export type ListaTipo =
+    | 'Marca'
+    | 'Fabricantes'
+    | 'Tipo de Máquina'
+    | 'Tipo de Artículo'
+    | 'Piezas Estandar'
+    | 'Unidad de Medida'
+    | 'Tipo de Medida'
+    | 'Nombre de Medida';
 
 /**
  * Datos para crear una lista
@@ -34,6 +55,7 @@ export interface CreateListaDto {
     foto?: string;
     fotoMedida?: string;
     sistema_id?: number;
+    parent_id?: number;
 }
 
 /**
@@ -46,4 +68,5 @@ export interface UpdateListaDto {
     foto?: string;
     fotoMedida?: string;
     sistema_id?: number;
+    parent_id?: number;
 }

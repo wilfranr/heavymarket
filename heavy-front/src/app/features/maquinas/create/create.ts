@@ -15,8 +15,6 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
-import { FabricanteCreateModalComponent } from '../../../shared/components/fabricante-create-modal/fabricante-create-modal.component';
-
 import { createMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { CreateMaquinaDto } from '../../../core/models/maquina.model';
 import { ListaService } from '../../../core/services/lista.service';
@@ -43,8 +41,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
         InputGroupModule,
         InputGroupAddonModule,
         ImageUploadComponent,
-        ListaCreateModalComponent,
-        FabricanteCreateModalComponent
+        ListaCreateModalComponent
     ],
     providers: [MessageService],
     templateUrl: './create.html'
@@ -115,21 +112,6 @@ export class CreateComponent implements OnInit {
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos();
         this.maquinaForm.patchValue({ tipo: nuevoTipo.id });
-    }
-
-    /**
-     * Abre el modal para crear un nuevo fabricante
-     */
-    abrirCrearFabricante(): void {
-        this.showFabricanteModal = true;
-    }
-
-    /**
-     * Maneja la creación de un nuevo fabricante
-     */
-    onFabricanteCreado(nuevoFabricante: any): void {
-        this.cargarFabricantes();
-        this.maquinaForm.patchValue({ fabricante_id: nuevoFabricante.id });
     }
 
     /**
