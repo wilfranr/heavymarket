@@ -9,14 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Fabricante extends Model
 {
-    use HasFactory, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory;
+
     protected $table = 'fabricantes';
 
     protected $fillable = [
 
         'nombre',
         'descripcion',
-        'logo'
+        'logo',
 
     ];
 
@@ -27,7 +28,9 @@ class Fabricante extends Model
 
     public function getLogoAttribute($value): ?string
     {
-        if (!$value) return null;
+        if (! $value) {
+            return null;
+        }
 
         if (str_starts_with($value, 'http')) {
             return $value;
@@ -55,8 +58,6 @@ class Fabricante extends Model
         return asset("storage/Aplicativo/01. Fabricantes/{$value}");
     }
 
-
-
     // public function referencias(): HasMany
     // {
     //     return $this->hasMany(Referencia::class, 'marca_id');
@@ -70,5 +71,10 @@ class Fabricante extends Model
     public function terceros(): BelongsToMany
     {
         return $this->belongsToMany(Tercero::class, 'tercero_fabricantes', 'fabricante_id', 'tercero_id');
+    }
+
+    public function listas(): HasMany
+    {
+        return $this->hasMany(Lista::class, 'fabricante_id');
     }
 }

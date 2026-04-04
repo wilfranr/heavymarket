@@ -6,12 +6,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Lista extends Model
 {
-    use HasFactory, SoftDeletes, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory, SoftDeletes;
 
     protected $fillable = [
         'tipo',
@@ -21,13 +22,14 @@ class Lista extends Model
         'fotoMedida',
         'sistema_id',
         'parent_id',
+        'fabricante_id',
     ];
 
     protected $normalizableAttributes = [
         'nombre' => 'title',
         'definicion' => 'title',
     ];
-    
+
     public function sistemas(): BelongsToMany
     {
         return $this->belongsToMany(Sistema::class, 'sistema_lista', 'lista_id', 'sistema_id');
@@ -43,9 +45,48 @@ class Lista extends Model
         return $this->hasMany(Lista::class, 'parent_id');
     }
 
+    public function fabricante(): BelongsTo
+    {
+        return $this->belongsTo(Fabricante::class, 'fabricante_id');
+    }
+
+    public function esCatalogoFabricantes(): bool
+    {
+        return $this->tipo === 'Fabricantes';
+    }
+
+    /**
+     * Mantiene una fila en listas (tipo Fabricantes) alineada con el registro maestro en fabricantes.
+     */
+    public static function syncFromFabricante(Fabricante $fabricante): Lista
+    {
+        $attrs = $fabricante->getAttributes();
+        $logoRaw = $attrs['logo'] ?? null;
+
+        $lista = static::withTrashed()->firstOrNew([
+            'tipo' => 'Fabricantes',
+            'fabricante_id' => $fabricante->id,
+        ]);
+
+        $lista->fill([
+            'nombre' => $attrs['nombre'] ?? $fabricante->nombre,
+            'definicion' => $attrs['descripcion'] ?? null,
+            'foto' => $logoRaw,
+            'fotoMedida' => null,
+        ]);
+
+        if ($lista->trashed()) {
+            $lista->restore();
+        }
+
+        $lista->save();
+
+        return $lista;
+    }
+
     public function getFotoAttribute($value): ?string
     {
-        if (!$value) {
+        if (! $value) {
             return null;
         }
 
@@ -53,9 +94,9 @@ class Lista extends Model
             return $value;
         }
 
-        return asset('storage/' . $value);
+        return asset('storage/'.$value);
     }
-    
+
     public function getNombreAttribute($value): string
     {
         return ucfirst($value); // Asegura que siempre tenga la primera letra en mayúscula
