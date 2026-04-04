@@ -14,7 +14,7 @@ class TerceroFabricante extends Model
 
     protected $fillable = [
         'tercero_id',
-        'fabricante_id',
+        'lista_id',
     ];
 
     public function tercero(): BelongsTo
@@ -24,6 +24,6 @@ class TerceroFabricante extends Model
 
     public function fabricante(): BelongsTo
     {
-        return $this->belongsTo(Fabricante::class, 'fabricante_id');
+        return $this->belongsTo(Lista::class, 'lista_id')->where('tipo', 'Fabricantes');
     }
 }

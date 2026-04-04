@@ -27,11 +27,19 @@ class ListaPolicy
 
     public function update(User $user, Lista $lista): bool
     {
+        if ($lista->esCatalogoFabricantes()) {
+            return false;
+        }
+
         return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
     }
 
     public function delete(User $user, Lista $lista): bool
     {
+        if ($lista->esCatalogoFabricantes()) {
+            return false;
+        }
+
         return $user->hasAnyRole(['super_admin', 'Administrador']);
     }
 

@@ -186,7 +186,8 @@ class Tercero extends Model
      */
     public function fabricantes(): BelongsToMany
     {
-        return $this->belongsToMany(Fabricante::class, 'tercero_fabricantes', 'tercero_id', 'fabricante_id');
+        return $this->belongsToMany(Lista::class, 'tercero_fabricantes', 'tercero_id', 'lista_id')
+            ->where('tipo', 'Fabricantes');
     }
 
     /**

@@ -5,19 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{StoreListaRequest, UpdateListaRequest};
+use App\Http\Requests\StoreListaRequest;
+use App\Http\Requests\UpdateListaRequest;
 use App\Http\Resources\ListaResource;
 use App\Models\Lista;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\JsonResponse;
 /**
  * Controlador API para gestión de Listas
- * 
+ *
  * Maneja todas las operaciones CRUD de listas (catálogos) a través del API REST.
  * Las listas se usan para tipos de máquinas, marcas, unidades de medida, etc.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class ListaController extends Controller
 {
@@ -25,10 +25,8 @@ class ListaController extends Controller
 
     /**
      * Listar todas las listas con filtros opcionales
-     * 
-     * @param Request $request
-     * @return JsonResponse
-     * 
+     *
+     *
      * @queryParam page int Número de página. Example: 1
      * @queryParam per_page int Elementos por página. Example: 15
      * @queryParam tipo string Filtrar por tipo. Example: Marca
@@ -36,7 +34,7 @@ class ListaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Lista::query();
+        $query = Lista::query()->with('fabricante');
 
         // Filtro por tipo
         if ($request->filled('tipo')) {
@@ -46,11 +44,11 @@ class ListaController extends Controller
         // Filtro por sistema
         if ($request->filled('sistema_id')) {
             $sistemaId = $request->input('sistema_id');
-            $query->where(function($q) use ($sistemaId) {
+            $query->where(function ($q) use ($sistemaId) {
                 $q->where('sistema_id', $sistemaId)
-                  ->orWhereHas('sistemas', function($sq) use ($sistemaId) {
-                      $sq->where('sistemas.id', $sistemaId);
-                  });
+                    ->orWhereHas('sistemas', function ($sq) use ($sistemaId) {
+                        $sq->where('sistemas.id', $sistemaId);
+                    });
             });
         }
 
@@ -85,15 +83,12 @@ class ListaController extends Controller
 
     /**
      * Obtener listas por tipo (sin paginación, para dropdowns)
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function getByTipo(Request $request, string $tipo): JsonResponse
     {
-        if (!$tipo) {
+        if (! $tipo) {
             return response()->json([
-                'message' => 'El parámetro tipo es requerido'
+                'message' => 'El parámetro tipo es requerido',
             ], 422);
         }
 
@@ -104,20 +99,18 @@ class ListaController extends Controller
             $query->where('nombre', 'like', "%{$search}%");
         }
 
-        $listas = $query->orderBy('nombre', 'asc')
+        $listas = $query->with('fabricante')
+            ->orderBy('nombre', 'asc')
             ->limit(50) // Limitamos a 50 para que el dropdown sea instantáneo
             ->get();
 
         return response()->json([
-            'data' => ListaResource::collection($listas)
+            'data' => ListaResource::collection($listas),
         ]);
     }
 
     /**
      * Crear una nueva lista
-     * 
-     * @param StoreListaRequest $request
-     * @return JsonResponse
      */
     public function store(StoreListaRequest $request): JsonResponse
     {
@@ -135,6 +128,7 @@ class ListaController extends Controller
         $data['nombre'] = ucwords($data['nombre']);
 
         $lista = Lista::create($data);
+        $lista->load('fabricante');
 
         return response()->json([
             'message' => 'Lista creada exitosamente',
@@ -144,14 +138,11 @@ class ListaController extends Controller
 
     /**
      * Mostrar una lista específica
-     * 
-     * @param Lista $lista
-     * @return JsonResponse
      */
     public function show(Lista $lista): JsonResponse
     {
-        $lista->load('sistemas');
-        
+        $lista->load(['sistemas', 'fabricante']);
+
         return response()->json([
             'data' => new ListaResource($lista),
         ]);
@@ -159,16 +150,12 @@ class ListaController extends Controller
 
     /**
      * Actualizar una lista existente
-     * 
-     * @param UpdateListaRequest $request
-     * @param Lista $lista
-     * @return JsonResponse
      */
     public function update(UpdateListaRequest $request, Lista $lista): JsonResponse
     {
         $this->authorize('update', $lista);
         $data = $request->validated();
-        
+
         // Asegurar primera letra mayúscula en nombre si se actualiza
         if (isset($data['nombre'])) {
             $data['nombre'] = ucwords($data['nombre']);
@@ -183,6 +170,7 @@ class ListaController extends Controller
         }
 
         $lista->update($data);
+        $lista->load('fabricante');
 
         return response()->json([
             'message' => 'Lista actualizada exitosamente',
@@ -192,9 +180,6 @@ class ListaController extends Controller
 
     /**
      * Eliminar una lista (soft delete)
-     * 
-     * @param Lista $lista
-     * @return JsonResponse
      */
     public function destroy(Lista $lista): JsonResponse
     {

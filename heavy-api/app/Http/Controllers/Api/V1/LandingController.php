@@ -75,7 +75,8 @@ class LandingController extends Controller
      */
     public function brands()
     {
-        $brands = \App\Models\Fabricante::orderBy('nombre')
+        $brands = \App\Models\Lista::where('tipo', 'Fabricantes')
+            ->orderBy('nombre')
             ->get();
             
         return response()->json($brands);
@@ -144,7 +145,9 @@ class LandingController extends Controller
         }
 
         // 2. Fabricantes para el Formulario
-        $brands = \App\Models\Fabricante::orderBy('nombre')->get(['id', 'nombre', 'logo']);
+        $brands = \App\Models\Lista::where('tipo', 'Fabricantes')
+            ->orderBy('nombre')
+            ->get(['id', 'nombre', 'foto']);
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
         $allItemTypes = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
@@ -243,7 +246,9 @@ class LandingController extends Controller
             // 2. Buscar fabricante si se especificó
             $fabricanteId = null;
             if ($request->filled('selectedBrand')) {
-                $fabricante = \App\Models\Fabricante::where('nombre', $request->input('selectedBrand'))->first();
+                $fabricante = \App\Models\Lista::where('tipo', 'Fabricantes')
+                    ->where('nombre', $request->input('selectedBrand'))
+                    ->first();
                 $fabricanteId = $fabricante?->id;
             }
 

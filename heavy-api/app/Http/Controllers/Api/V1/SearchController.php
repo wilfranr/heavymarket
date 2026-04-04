@@ -3,17 +3,15 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\Pedido;
-use App\Models\Tercero;
-use App\Models\Cotizacion;
 use App\Models\Articulo;
-use App\Models\Referencia;
-use App\Models\Maquina;
+use App\Models\Cotizacion;
 use App\Models\Lista;
+use App\Models\Maquina;
+use App\Models\Pedido;
+use App\Models\Referencia;
 use App\Models\Sistema;
-use App\Models\Fabricante;
-use Illuminate\Support\Facades\DB;
+use App\Models\Tercero;
+use Illuminate\Http\Request;
 
 class SearchController extends Controller
 {
@@ -24,7 +22,7 @@ class SearchController extends Controller
     {
         $query = $request->input('q');
 
-        if (!$query || strlen($query) < 2) {
+        if (! $query || strlen($query) < 2) {
             return response()->json(['data' => []]);
         }
 
@@ -40,10 +38,10 @@ class SearchController extends Controller
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'title' => 'Pedido #' . $item->id,
-                    'description' => 'Estado: ' . $item->estado . ($item->tercero ? ' - Cliente: ' . $item->tercero->nombre : ''),
+                    'title' => 'Pedido #'.$item->id,
+                    'description' => 'Estado: '.$item->estado.($item->tercero ? ' - Cliente: '.$item->tercero->nombre : ''),
                     'type' => 'pedido',
-                    'route' => '/app/pedidos'
+                    'route' => '/app/pedidos',
                 ];
             });
         $results = array_merge($results, $pedidos->toArray());
@@ -57,9 +55,9 @@ class SearchController extends Controller
                 return [
                     'id' => $item->id,
                     'title' => $item->nombre,
-                    'description' => 'Documento: ' . $item->numero_documento . ' - Tipo: ' . ucfirst(strtolower($item->tipo)),
+                    'description' => 'Documento: '.$item->numero_documento.' - Tipo: '.ucfirst(strtolower($item->tipo)),
                     'type' => 'tercero',
-                    'route' => '/app/terceros'
+                    'route' => '/app/terceros',
                 ];
             });
         $results = array_merge($results, $terceros->toArray());
@@ -71,10 +69,10 @@ class SearchController extends Controller
             ->map(function ($item) {
                 return [
                     'id' => $item->id,
-                    'title' => 'Cotización #' . $item->id,
+                    'title' => 'Cotización #'.$item->id,
                     'description' => 'Cotización',
                     'type' => 'cotizacion',
-                    'route' => '/app/cotizaciones'
+                    'route' => '/app/cotizaciones',
                 ];
             });
         $results = array_merge($results, $cotizaciones->toArray());
@@ -90,7 +88,7 @@ class SearchController extends Controller
                     'title' => $item->definicion,
                     'description' => 'Artículo',
                     'type' => 'articulo',
-                    'route' => '/app/articulos'
+                    'route' => '/app/articulos',
                 ];
             });
         $results = array_merge($results, $articulos->toArray());
@@ -105,9 +103,9 @@ class SearchController extends Controller
                 return [
                     'id' => $item->id,
                     'title' => $item->modelo,
-                    'description' => 'Serie: ' . $item->serie . ' - Arreglo: ' . $item->arreglo,
+                    'description' => 'Serie: '.$item->serie.' - Arreglo: '.$item->arreglo,
                     'type' => 'maquina',
-                    'route' => '/app/maquinas'
+                    'route' => '/app/maquinas',
                 ];
             });
         $results = array_merge($results, $maquinas->toArray());
@@ -121,9 +119,9 @@ class SearchController extends Controller
                 return [
                     'id' => $item->id,
                     'title' => $item->referencia,
-                    'description' => mb_strimwidth($item->comentario ?? '', 0, 50, "..."),
+                    'description' => mb_strimwidth($item->comentario ?? '', 0, 50, '...'),
                     'type' => 'referencia',
-                    'route' => '/app/referencias'
+                    'route' => '/app/referencias',
                 ];
             });
         $results = array_merge($results, $referencias->toArray());
@@ -138,7 +136,7 @@ class SearchController extends Controller
                     'title' => $item->nombre,
                     'description' => 'Lista de sistema',
                     'type' => 'lista',
-                    'route' => '/app/listas'
+                    'route' => '/app/listas',
                 ];
             });
         $results = array_merge($results, $listas->toArray());
@@ -153,13 +151,14 @@ class SearchController extends Controller
                     'title' => $item->nombre,
                     'description' => 'Sistema de maquinaria',
                     'type' => 'sistema',
-                    'route' => '/app/sistemas'
+                    'route' => '/app/sistemas',
                 ];
             });
         $results = array_merge($results, $sistemas->toArray());
 
         // 9. Fabricantes
-        $fabricantes = Fabricante::where('nombre', 'like', "%{$query}%")
+        $fabricantes = Lista::where('tipo', 'Fabricantes')
+            ->where('nombre', 'like', "%{$query}%")
             ->limit($limit)
             ->get()
             ->map(function ($item) {
@@ -168,13 +167,13 @@ class SearchController extends Controller
                     'title' => $item->nombre,
                     'description' => 'Fabricante',
                     'type' => 'fabricante',
-                    'route' => '/app/fabricantes'
+                    'route' => '/app/listas',
                 ];
             });
         $results = array_merge($results, $fabricantes->toArray());
 
         return response()->json([
-            'data' => $results
+            'data' => $results,
         ]);
     }
 }

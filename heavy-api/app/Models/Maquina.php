@@ -63,10 +63,9 @@ class Maquina extends Model
         return $this->hasMany(Pedido::class);
     }
 
-    public function fabricantes(): BelongsTo
+    public function fabricante(): BelongsTo
     {
-        // Reference to the marcas table
-        return $this->belongsTo(Fabricante::class, 'fabricante_id');
+        return $this->belongsTo(Lista::class, 'fabricante_id')->where('tipo', 'Fabricantes');
     }
 
 

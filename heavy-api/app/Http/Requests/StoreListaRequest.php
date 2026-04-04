@@ -22,7 +22,7 @@ class StoreListaRequest extends FormRequest
 
     /**
      * Reglas de validación que aplican a la petición.
-     * 
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -40,9 +40,14 @@ class StoreListaRequest extends FormRequest
                     'Nombre de Medida',
                     'Categoría de Máquina',
                     'Piezas Estandar',
-                ])
+                ]),
             ],
-            'nombre' => ['required', 'string', 'max:255', 'unique:listas,nombre'],
+            'nombre' => [
+                'required',
+                'string',
+                'max:255',
+                Rule::unique('listas', 'nombre')->where(fn ($q) => $q->where('tipo', $this->input('tipo'))),
+            ],
             'definicion' => ['nullable', 'string'],
             'foto' => ['nullable', 'image', 'max:5120'],
             'fotoMedida' => ['nullable', 'image', 'max:5120'],
@@ -53,7 +58,7 @@ class StoreListaRequest extends FormRequest
 
     /**
      * Mensajes de error personalizados
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array
@@ -62,7 +67,7 @@ class StoreListaRequest extends FormRequest
             'tipo.required' => 'El tipo es obligatorio',
             'tipo.in' => 'El tipo seleccionado no es válido',
             'nombre.required' => 'El nombre es obligatorio',
-            'nombre.unique' => 'Ya existe una lista con este nombre',
+            'nombre.unique' => 'Ya existe una lista con este nombre para este tipo',
             'sistema_id.exists' => 'El sistema seleccionado no existe',
         ];
     }

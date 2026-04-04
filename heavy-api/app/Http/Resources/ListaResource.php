@@ -30,6 +30,7 @@ class ListaResource extends JsonResource
             'nombre' => $this->nombre,
             'definicion' => $this->definicion,
             'foto' => $this->foto && ! filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : ($this->foto ?? asset('images/no-image.png')),
+            'logo' => $this->foto, // Alias para compatibilidad con landing
             'fotoMedida' => $this->fotoMedida && ! filter_var($this->fotoMedida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoMedida) : $this->fotoMedida,
             'sistema_id' => $this->sistema_id,
             'parent_id' => $this->parent_id,
