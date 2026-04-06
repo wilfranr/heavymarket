@@ -1,0 +1,15 @@
+Migrar la tabla `fabricantes` independiente al sistema de listas existente. Los fabricantes actuales deben convertirse como registros en la tabla `listas` con `tipo=Fabricantes`.
+
+## Detalles tecnicos
+1. Crear migracion para insertar registros en `listas` donde tipo='Fabricantes' con los datos existentes de `fabricantes`
+2. Actualizar referencias: cambiar `fabricante_id` por `lista_id` en tabla `maquinas`
+3. Actualizar referencias en tabla `referencias` campo `marca_id` referring to listas
+4. Actualizar relaciones en modelo `Tercero` cambiar `fabricantes()` a usar `listas`
+5. Eliminar tabla `fabricantes` despues de migrar datos
+6. Eliminar modelo Fabricante y su Controller/Resource/Requests
+7. Actualizar validaciones en requests StoreMaquinaRequest, StorePedidoRequest, etc.
+
+## Etiquetas
+- backend
+- database
+- priority:high

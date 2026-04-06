@@ -91,6 +91,13 @@ DELETE /api/v1/pedidos/{id}
 ... (similar para todos los recursos)
 ```
 
+### Pedidos: imágenes por ítem (referencias) y cola
+
+Las respuestas **201** (`POST /api/v1/pedidos`) y **200** (`PUT /api/v1/pedidos/{id}`) con archivos (`referencias[n][imagenes]` al crear, `referencias[n][imagenes_nuevas]` al actualizar) pueden devolver el recurso **antes** de que existan filas en `pedido_referencia_imagen`: los archivos se guardan en disco en la petición y el registro en base de datos lo hace el job en cola `App\Jobs\SyncPedidoImages`.
+
+- Es **consistencia eventual**: los clientes deben aceptar que `referencias[].imagenes` puede llegar vacío en el JSON inmediato y poblarse tras un `GET` posterior, una vez el worker procese la cola (`php artisan queue:work` o `QUEUE_CONNECTION=database`/`redis` según `.env`).
+- No altera la lógica de **TRM** ni **fletes** (`PedidoService::calcularValores`), que solo aplica a proveedores de referencia.
+
 ## Testing
 
 ```bash

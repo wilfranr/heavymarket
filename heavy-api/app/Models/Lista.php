@@ -94,7 +94,25 @@ class Lista extends Model
             return $value;
         }
 
-        return asset('storage/'.$value);
+        $fabricante = $this->fabricante;
+        if ($fabricante) {
+            $nameSlug = str_replace([' ', '-', '.'], '', strtolower($fabricante->nombre));
+            $patternName = "fab-{$nameSlug}.png";
+
+            if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$patternName}"))) {
+                return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
+            }
+        }
+
+        if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
+        }
+
+        if (str_contains($value, '/')) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+        }
+
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
     }
 
     public function getNombreAttribute($value): string

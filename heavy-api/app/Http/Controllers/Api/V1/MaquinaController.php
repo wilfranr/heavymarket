@@ -36,7 +36,7 @@ class MaquinaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Maquina::query()->with(['fabricantes', 'listas']);
+        $query = Maquina::query()->with(['fabricante', 'listas']);
 
         // Búsqueda en modelo, serie o arreglo
         if ($request->filled('search')) {
@@ -111,7 +111,7 @@ class MaquinaController extends Controller
 
         return response()->json([
             'message' => 'Máquina creada exitosamente',
-            'data' => new MaquinaResource($maquina->load(['fabricantes', 'listas'])),
+            'data' => new MaquinaResource($maquina->load(['fabricante', 'listas'])),
         ], 201);
     }
 
@@ -120,7 +120,7 @@ class MaquinaController extends Controller
      */
     public function show(Maquina $maquina): JsonResponse
     {
-        $maquina->load(['fabricantes', 'listas']);
+        $maquina->load(['fabricante', 'listas']);
 
         return response()->json([
             'data' => new MaquinaResource($maquina),
@@ -154,7 +154,7 @@ class MaquinaController extends Controller
 
         return response()->json([
             'message' => 'Máquina actualizada exitosamente',
-            'data' => new MaquinaResource($maquina->fresh()->load(['fabricantes', 'listas'])),
+            'data' => new MaquinaResource($maquina->fresh()->load(['fabricante', 'listas'])),
         ]);
     }
 

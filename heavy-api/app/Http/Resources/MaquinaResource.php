@@ -37,7 +37,7 @@ class MaquinaResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
-            'fabricante' => $this->whenLoaded('fabricantes'),
+            'fabricante' => $this->whenLoaded('fabricante'),
             'tipoLista' => $this->whenLoaded('listas'),
         ];
     }

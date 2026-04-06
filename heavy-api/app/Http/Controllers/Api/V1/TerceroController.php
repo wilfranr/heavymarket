@@ -131,7 +131,7 @@ class TerceroController extends Controller
                 }
 
                 return response()->json([
-                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas', 'contactos'])),
+                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricante', 'sistemas', 'contactos'])),
                     'message' => 'Tercero creado exitosamente',
                 ], 201);
 

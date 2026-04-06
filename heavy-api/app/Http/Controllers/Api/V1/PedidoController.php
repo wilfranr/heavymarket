@@ -5,16 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{StorePedidoRequest, UpdatePedidoRequest};
-use App\Http\Resources\{PedidoResource, PedidoCollection};
+use App\Http\Requests\StorePedidoRequest;
+use App\Http\Requests\UpdatePedidoRequest;
+use App\Http\Resources\PedidoResource;
+use App\Jobs\SyncPedidoImages;
 use App\Models\Pedido;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\DB;
-use App\Notifications\SystemNotification;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Controlador API para gestión de Pedidos
- * 
+ *
  * Maneja todas las operaciones CRUD de pedidos a través del API REST.
  * Implementa filtros, búsqueda, paginación y manejo de relaciones.
  */
@@ -29,8 +30,8 @@ class PedidoController extends Controller
 
     /**
      * PedidoController constructor.
-     * 
-     * @param PedidoService $pedidoService
+     *
+     * @param  PedidoService  $pedidoService
      */
     public function __construct(\App\Services\PedidoService $pedidoService)
     {
@@ -39,9 +40,6 @@ class PedidoController extends Controller
 
     /**
      * Listar todos los pedidos con filtros opcionales
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -52,13 +50,13 @@ class PedidoController extends Controller
             ->withCount(['referencias', 'articulos']);
 
         $user = $request->user();
-        
+
         // El Analista solo ve pedidos 'Nuevo' (de cualquier vendedor)
         if ($user->hasRole('Analista')) {
             $query->where('estado', 'Nuevo');
-        } 
+        }
         // Vendedores y otros roles no administrativos solo ven sus propios pedidos
-        elseif (!$user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
+        elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
             $query->where('user_id', $user->id);
         }
 
@@ -95,27 +93,22 @@ class PedidoController extends Controller
 
     /**
      * Crear un nuevo pedido
-     * 
-     * @param StorePedidoRequest $request
-     * @return JsonResponse
      */
     public function store(StorePedidoRequest $request): JsonResponse
     {
         try {
             $pedido = $this->pedidoService->create($request->validated(), $request->user());
 
-            // Procesar archivos de imagen si existen (la lógica de archivos permanece en el controller o request)
+            // Archivos al disco en la petición; filas en BD vía cola (mismo criterio que update)
             if ($request->has('referencias')) {
                 foreach ($request->input('referencias') as $index => $refData) {
                     if ($request->hasFile("referencias.{$index}.imagenes")) {
                         $referencia = $pedido->referencias[$index];
+                        $imagePaths = [];
                         foreach ($request->file("referencias.{$index}.imagenes") as $file) {
-                            $path = $file->store('pedidos/referencias', 'public');
-                            $referencia->imagenes()->create([
-                                'imagen' => $path,
-                                'origen' => \App\Models\PedidoReferenciaImagen::ORIGEN_ASESOR
-                            ]);
+                            $imagePaths[] = $file->store('pedidos/referencias', 'public');
                         }
+                        SyncPedidoImages::dispatch($referencia, $imagePaths);
                     }
                 }
             }
@@ -135,18 +128,15 @@ class PedidoController extends Controller
 
     /**
      * Mostrar un pedido específico
-     * 
-     * @param Pedido $pedido
-     * @return JsonResponse
      */
     public function show(Pedido $pedido): JsonResponse
     {
         $this->authorize('view', $pedido);
 
         $pedido->load([
-            'user', 'tercero', 'maquina.fabricantes', 'maquina.listas', 'fabricante', 'contacto',
+            'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'fabricante', 'contacto',
             'referencias.referencia', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
-            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema'
+            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
         ]);
 
         return response()->json(['data' => new PedidoResource($pedido)]);
@@ -154,10 +144,6 @@ class PedidoController extends Controller
 
     /**
      * Actualizar un pedido existente
-     * 
-     * @param UpdatePedidoRequest $request
-     * @param Pedido $pedido
-     * @return JsonResponse
      */
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
@@ -174,8 +160,7 @@ class PedidoController extends Controller
                             foreach ($request->file("referencias.{$index}.imagenes_nuevas") as $file) {
                                 $imagePaths[] = $file->store('pedidos/referencias', 'public');
                             }
-                            // Despachar Job para registro en DB
-                        \App\Jobs\SyncPedidoImages::dispatch($referencia, $imagePaths);
+                            SyncPedidoImages::dispatch($referencia, $imagePaths);
                         }
                     }
                 }
@@ -201,6 +186,7 @@ class PedidoController extends Controller
     {
         $this->authorize('delete', $pedido);
         $pedido->delete();
+
         return response()->json(['message' => 'Pedido eliminado exitosamente'], 204);
     }
 
@@ -221,6 +207,7 @@ class PedidoController extends Controller
         ]);
 
         $referencia = $pedido->referencias()->create($validated);
+
         return response()->json([
             'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia', 'sistema', 'marca'])),
             'message' => 'Referencia agregada exitosamente',
@@ -292,8 +279,8 @@ class PedidoController extends Controller
         $pedido->update(['estado' => 'En_Costeo']);
         if ($vendedor = $pedido->user) {
             $vendedor->notify(new \App\Notifications\SystemNotification(
-                'pedido_actualizado', 'Pedido listo para costeo #' . $pedido->id,
-                'El analista ' . $request->user()->name . ' ha finalizado la revisión. Ya puedes iniciar el costeo.',
+                'pedido_actualizado', 'Pedido listo para costeo #'.$pedido->id,
+                'El analista '.$request->user()->name.' ha finalizado la revisión. Ya puedes iniciar el costeo.',
                 'pi-dollar', 'green', ['id' => $pedido->id]
             ));
         }
