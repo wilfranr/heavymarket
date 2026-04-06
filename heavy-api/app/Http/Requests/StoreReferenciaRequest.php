@@ -28,7 +28,7 @@ class StoreReferenciaRequest extends FormRequest
     {
         return [
             'referencia' => ['required', 'string', 'max:255', 'unique:referencias,referencia'],
-            'marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
             'articulo_id' => ['nullable', 'integer', 'exists:articulos,id'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];

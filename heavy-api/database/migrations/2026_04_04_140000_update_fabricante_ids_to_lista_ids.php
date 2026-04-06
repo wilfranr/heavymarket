@@ -8,6 +8,16 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // Solo ejecutar en MySQL (SQLite no soporta estas queries)
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+        
+        // Solo ejecutar si las tablas existen
+        if (!Schema::hasTable('listas') || !Schema::hasTable('maquinas') || !Schema::hasTable('referencias')) {
+            return;
+        }
+        
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
 
         $listas = Lista::where('tipo', 'Fabricantes')->get()->keyBy('fabricante_id');

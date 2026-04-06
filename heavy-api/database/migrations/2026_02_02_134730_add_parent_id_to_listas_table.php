@@ -11,9 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('listas', function (Blueprint $table) {
-            $table->foreignId('parent_id')->nullable()->after('sistema_id')->constrained('listas')->onDelete('set null');
-        });
+        // Solo agregar si no existe (para compatibilidad con SQLite in-memory y MySQL)
+        if (Schema::hasTable('listas') && !Schema::hasColumn('listas', 'parent_id')) {
+            Schema::table('listas', function (Blueprint $table) {
+                $table->foreignId('parent_id')->nullable()->after('sistema_id')->constrained('listas')->onDelete('set null');
+            });
+        }
     }
 
     /**

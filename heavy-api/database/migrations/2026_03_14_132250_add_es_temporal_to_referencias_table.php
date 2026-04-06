@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('referencias', function (Blueprint $column) {
-            $column->boolean('es_temporal')->default(false)->after('marca_id');
-        });
+        if (Schema::hasTable('referencias') && !Schema::hasColumn('referencias', 'es_temporal')) {
+            Schema::table('referencias', function (Blueprint $column) {
+                $column->boolean('es_temporal')->default(false)->after('marca_id');
+            });
+        }
     }
 
     /**

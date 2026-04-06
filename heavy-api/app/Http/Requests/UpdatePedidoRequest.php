@@ -50,7 +50,7 @@ class UpdatePedidoRequest extends FormRequest
                 ])
             ],
             'maquina_id' => ['nullable', 'integer', 'exists:maquinas,id'],
-            'fabricante_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
+            'fabricante_id' => ['nullable', 'integer', 'exists:listas,id'],
             'motivo_rechazo' => ['nullable', 'string', 'max:255'],
             'comentarios_rechazo' => ['nullable', 'string', 'max:255'],
             
@@ -60,7 +60,7 @@ class UpdatePedidoRequest extends FormRequest
             'referencias.*.referencia_id' => ['nullable', 'integer', 'exists:referencias,id'],
             'referencias.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
             'referencias.*.lista_id' => ['nullable', 'integer', 'exists:listas,id'],
-            'referencias.*.marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'], // Nota: En Store usa fabricantes,id
+            'referencias.*.marca_id' => ['nullable', 'integer', 'exists:listas,id'],
             'referencias.*.definicion' => ['required_without:referencias.*.referencia_id', 'nullable', 'string', 'max:255'],
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],
             'referencias.*.comentario' => ['nullable', 'string'],

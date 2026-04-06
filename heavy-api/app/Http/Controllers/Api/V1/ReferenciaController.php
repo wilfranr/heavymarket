@@ -37,7 +37,7 @@ class ReferenciaController extends Controller
             'items.*.codigo' => ['required', 'string'],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
             'es_temporal' => ['nullable', 'boolean'],
-            'marca_id' => ['nullable', 'integer', 'exists:fabricantes,id'],
+            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
         ]);
 
         $items = $validated['items'];
