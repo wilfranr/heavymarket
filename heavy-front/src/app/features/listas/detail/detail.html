@@ -114,8 +114,12 @@
                         <td>{{ sys.id }}</td>
                         <td>
                             @if (sys.imagen) {
-                            <img [src]="sys.imagen" [alt]="sys.nombre"
-                                class="w-10 h-10 object-cover rounded-md shadow-sm" />
+                            <div
+                                class="inline-block w-10 h-10 rounded-md shadow-sm overflow-hidden box-border"
+                                style="border: 1px solid var(--p-surface-border)">
+                                <img [src]="sys.imagen" [alt]="sys.nombre"
+                                    class="block h-full w-full min-h-0 min-w-0 object-contain" />
+                            </div>
                             } @else {
                             <div
                                 class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">

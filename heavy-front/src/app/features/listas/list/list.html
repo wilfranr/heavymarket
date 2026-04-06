@@ -67,8 +67,12 @@
                 </td>
                 <td>
                     @if (lista.foto) {
-                    <img [src]="lista.foto" [alt]="lista.nombre" appFallbackImage
-                        class="w-16 h-16 object-cover rounded shadow-sm" />
+                    <div
+                        class="inline-block align-middle w-28 h-28 rounded shadow-sm overflow-hidden p-1 box-border"
+                        style="border: 1px solid var(--p-surface-border)">
+                        <img [src]="lista.foto" [alt]="lista.nombre" appFallbackImage
+                            class="block h-full w-full min-h-0 min-w-0 object-contain" />
+                    </div>
                     } @else {
                     <span class="text-surface-400">-</span>
                     }
