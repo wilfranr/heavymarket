@@ -244,6 +244,14 @@
                         <span
                             class="text-xs uppercase text-muted-color font-semibold tracking-wider block mb-1">Equipo</span>
                         <span class="font-medium text-color block">{{ pedido.maquina.nombre }}</span>
+                        @if (pedido.maquina.estado_revision === 'por_revisar') {
+                        <div
+                            class="mt-3 flex items-center gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 dark:bg-orange-400/10 px-2.5 py-2">
+                            <i class="pi pi-exclamation-triangle text-orange-600 dark:text-orange-400 text-sm shrink-0"></i>
+                            <span class="text-xs font-medium text-orange-800 dark:text-orange-200">Máquina pendiente por
+                                revisar</span>
+                        </div>
+                        }
                     </div>
                     }
                     @if (pedido.fabricante) {

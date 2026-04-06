@@ -1,6 +1,8 @@
 # Contexto y Guía para Agentes de IA - HeavyMarket (Frontend)
 
 > **IMPORTANTE**: Todas las interacciones, documentación y reportes de estado deben ser en **ESPAÑOL**. Ver `AGENTS.md` en la raíz para reglas completas.
+>
+> **Engram (MCP)**: En `mem_search`, `mem_save` y `mem_session_summary` usar siempre `project: "heavymarket"`. Ver sección *Memoria persistente (Engram MCP)* en el `AGENTS.md` de la raíz del repositorio.
 
 ## Stack Tecnológico
 - **Framework**: Angular 20 (Última versión).

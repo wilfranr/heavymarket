@@ -13,6 +13,14 @@ Bienvenido al sistema de gestión de HeavyMarket. Este archivo sirve como el pun
 2. **Modo Oscuro**: Todo desarrollo de UI debe ser compatible con Dark Mode.
 3. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
 
+## Memoria persistente (Engram MCP)
+
+Las búsquedas sin proyecto suelen devolver **cero resultados** aunque existan memorias. Para este repositorio:
+
+1. **Siempre** incluir `project: "heavymarket"` al llamar a `mem_search`, `mem_save` y `mem_session_summary`, salvo que el usuario pida explícitamente otro proyecto o ámbito personal.
+2. Si `mem_search` devuelve vacío, **reintentar** la misma consulta con `project: "heavymarket"` antes de concluir que no hay contexto guardado.
+3. Si otro agente o documentación indica un **ID de observación** (p. ej. `#39`), usar `mem_get_observation` con ese `id` para leer el contenido completo; no depende del filtro por proyecto en la búsqueda.
+
 ## Índice de Skills
 Invoca la skill necesaria según el contexto de la tarea:
 

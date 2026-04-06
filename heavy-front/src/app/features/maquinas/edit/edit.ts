@@ -12,11 +12,12 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { TagModule } from 'primeng/tag';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadMaquinaById, updateMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.selectors';
-import { UpdateMaquinaDto } from '../../../core/models/maquina.model';
+import { ESTADO_REVISION_LABELS, Maquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { Lista } from '../../../core/models/lista.model';
@@ -28,7 +29,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquina-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule, TagModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -143,7 +144,6 @@ export class EditComponent implements OnInit {
         formData.append('fabricante_id', formValue.fabricante_id);
         if (formValue.serie) formData.append('serie', formValue.serie);
         if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
-
         if (this.fotoFile) formData.append('foto', this.fotoFile);
         if (this.fotoIdFile) formData.append('fotoId', this.fotoIdFile);
 
@@ -172,6 +172,18 @@ export class EditComponent implements OnInit {
     /**
      * Marca todos los campos del formulario como touched
      */
+    etiquetaEstadoRevision(m: Maquina): string {
+        return ESTADO_REVISION_LABELS[normalizeEstadoRevision(m.estado_revision)];
+    }
+
+    severidadEstadoRevision(m: Maquina): 'success' | 'warn' {
+        return normalizeEstadoRevision(m.estado_revision) === 'revisado' ? 'success' : 'warn';
+    }
+
+    esPorRevisar(m: Maquina): boolean {
+        return normalizeEstadoRevision(m.estado_revision) === 'por_revisar';
+    }
+
     private markFormGroupTouched(formGroup: FormGroup): void {
         Object.keys(formGroup.controls).forEach((key) => {
             const control = formGroup.get(key);

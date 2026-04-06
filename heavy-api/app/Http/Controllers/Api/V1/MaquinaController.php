@@ -102,6 +102,9 @@ class MaquinaController extends Controller
             $data['fotoId'] = $request->file('fotoId')->store('maquinas/ids', 'public');
         }
 
+        // Creada por asesor en la app: datos validados en origen
+        $data['estado_revision'] = 'revisado';
+
         $maquina = Maquina::create($data);
 
         // Si se envió un tercero_id, asociar la máquina
@@ -148,6 +151,12 @@ class MaquinaController extends Controller
                 Storage::disk('public')->delete($maquina->fotoId);
             }
             $data['fotoId'] = $request->file('fotoId')->store('maquinas/ids', 'public');
+        }
+
+        unset($data['estado_revision']);
+
+        if ($maquina->estado_revision === 'por_revisar') {
+            $data['estado_revision'] = 'revisado';
         }
 
         $maquina->update($data);

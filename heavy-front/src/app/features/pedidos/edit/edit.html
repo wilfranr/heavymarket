@@ -121,8 +121,11 @@
                         @let maquina = currentMaquinaInfo;
                         @if (maquina) {
                         <div class="flex flex-col gap-2 relative group">
-                            <!-- Eye Button -->
-                            <div class="absolute top-0 right-0 z-10">
+                            <!-- Ver / editar máquina -->
+                            <div class="absolute top-0 right-0 z-10 flex items-center gap-0.5">
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn"
+                                    (onClick)="abrirModalEditarMaquina(maquina)"
+                                    pTooltip="Editar máquina"></p-button>
                                 <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
                                     (onClick)="viewMaquina(maquina)" pTooltip="Ver detalle de máquina"></p-button>
                             </div>
@@ -134,6 +137,14 @@
                                 maquina.serie }}</span>
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">ID adicional:
                                 {{ maquina.id_interno || '----' }}</span>
+                            @if (maquina.estado_revision === 'por_revisar') {
+                            <div
+                                class="mt-3 flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-2.5 py-2">
+                                <i class="pi pi-exclamation-triangle text-amber-600 dark:text-amber-400 text-sm shrink-0"></i>
+                                <span class="text-xs font-medium text-amber-800 dark:text-amber-300 leading-tight">Máquina
+                                    pendiente por revisar</span>
+                            </div>
+                            }
                         </div>
                         }
                         }
@@ -693,6 +704,11 @@
         [terceroId]="pedidoForm.get('tercero_id')?.value"
         (contactoCreated)="onContactoCreated($event)">
     </app-contacto-create-modal>
+
+    <app-maquina-create-modal [visible]="displayEditMaquinaModal"
+        (visibleChange)="onEditMaquinaModalVisibleChange($event)" [terceroId]="null"
+        [maquinaId]="maquinaModalEdicionId" (onMaquinaUpdated)="onMaquinaActualizadaDesdeModal($event)">
+    </app-maquina-create-modal>
 
     <!-- Galería de Imágenes (Existentes + Nuevas) -->
     <p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}" 

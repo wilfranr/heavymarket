@@ -17,7 +17,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 
-import { Maquina } from '../../../core/models/maquina.model';
+import { Maquina, ESTADO_REVISION_LABELS, normalizeEstadoRevision } from '../../../core/models/maquina.model';
+import { TagModule } from 'primeng/tag';
 import { loadMaquinas, deleteMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectAllMaquinas, selectMaquinasLoading, selectMaquinasPagination } from '../../../store/maquinas/selectors/maquinas.selectors';
 import { ListaService } from '../../../core/services/lista.service';
@@ -31,7 +32,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquinas-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule, TagModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
 })
@@ -162,6 +163,14 @@ export class ListComponent implements OnInit {
     /**
      * Elimina una máquina
      */
+    etiquetaEstadoRevision(maquina: Maquina): string {
+        return ESTADO_REVISION_LABELS[normalizeEstadoRevision(maquina.estado_revision)];
+    }
+
+    severidadEstadoRevision(maquina: Maquina): 'success' | 'warn' {
+        return normalizeEstadoRevision(maquina.estado_revision) === 'revisado' ? 'success' : 'warn';
+    }
+
     eliminarMaquina(maquina: Maquina): void {
         this.confirmationService.confirm({
             message: `¿Está seguro de eliminar la máquina "${maquina.modelo}"?`,

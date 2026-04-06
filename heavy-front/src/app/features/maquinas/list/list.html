@@ -46,6 +46,7 @@
                     <th pSortableColumn="modelo">Modelo <p-sortIcon field="modelo"></p-sortIcon></th>
                     <th>Serie</th>
                     <th>Arreglo</th>
+                    <th>Revisión</th>
                     <th>Acciones</th>
                 </tr>
             </ng-template>
@@ -89,6 +90,10 @@
                         <span class="text-sm">{{ maquina.arreglo || '-' }}</span>
                     </td>
                     <td>
+                        <p-tag [value]="etiquetaEstadoRevision(maquina)"
+                            [severity]="severidadEstadoRevision(maquina)"></p-tag>
+                    </td>
+                    <td>
                         <div class="flex gap-2">
                             <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
                                 (onClick)="verDetalle(maquina)" pTooltip="Ver detalle" tooltipPosition="top">
@@ -105,7 +110,7 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="8" class="text-center py-8">
+                    <td colspan="9" class="text-center py-8">
                         <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
                         <p class="text-gray-600">No se encontraron máquinas</p>
                     </td>

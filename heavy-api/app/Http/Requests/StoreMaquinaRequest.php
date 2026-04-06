@@ -29,12 +29,14 @@ class StoreMaquinaRequest extends FormRequest
         return [
             'tipo' => ['required', 'integer', 'exists:listas,id'],
             'modelo' => ['required', 'string', 'max:255'],
-            'fabricante_id' => ['required', 'integer', 'exists:fabricantes,id'],
+            'fabricante_id' => ['required', 'integer', 'exists:listas,id'],
             'serie' => ['nullable', 'string', 'max:255'],
             'arreglo' => ['nullable', 'string', 'max:255'],
             'foto' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
             'fotoId' => ['nullable', 'file', 'image', 'max:10480'], // ~10MB
             'tercero_id' => ['nullable', 'integer', 'exists:terceros,id'],
+            // Solo la landing (LandingController) usa por_revisar; la app siempre revisado vía controlador
+            'estado_revision' => ['prohibited'],
         ];
     }
 

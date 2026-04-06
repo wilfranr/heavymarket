@@ -19,7 +19,8 @@ class Maquina extends Model
         'serie',
         'arreglo',
         'foto',
-        'fotoId'
+        'fotoId',
+        'estado_revision',
     ];
 
     /**

@@ -107,6 +107,8 @@ export class CreateComponent implements OnInit {
     // Modales
     displayCreateTerceroDialog = false;
     displayCreateMaquinaDialog = false;
+    /** Modo edición del mismo modal de máquina (lápiz en tarjeta). */
+    maquinaIdEdicionModal: number | null = null;
     displayCreateContactoDialog = false;
     displayHelpDialog = false;
 
@@ -402,7 +404,31 @@ export class CreateComponent implements OnInit {
             });
             return;
         }
+        this.maquinaIdEdicionModal = null;
         this.displayCreateMaquinaDialog = true;
+    }
+
+    onMaquinaModalFromPedidoVisibleChange(visible: boolean): void {
+        this.displayCreateMaquinaDialog = visible;
+        if (!visible) {
+            this.maquinaIdEdicionModal = null;
+        }
+    }
+
+    /** Abre el modal reutilizado (misma pieza que en terceros) para editar la máquina elegida. */
+    abrirModalEditarMaquina(maquina: { id: number }): void {
+        if (!maquina?.id) {
+            return;
+        }
+        this.maquinaIdEdicionModal = maquina.id;
+        this.displayCreateMaquinaDialog = true;
+    }
+
+    onMaquinaUpdatedFromPedidoModal(_m: any): void {
+        const clienteId = this.terceroId();
+        if (clienteId) {
+            this.loadMaquinasPorCliente(clienteId);
+        }
     }
 
     /**

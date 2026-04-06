@@ -200,7 +200,10 @@
                                 <!-- Machine Details -->
                                 @if (selectedMaquina()) {
                                 <div class="pt-3 border-t theme-border space-y-2 relative">
-                                    <div class="absolute top-0 right-0 z-10">
+                                    <div class="absolute top-0 right-0 z-10 flex items-center gap-0.5">
+                                        <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn"
+                                            (onClick)="abrirModalEditarMaquina(currentMaquinaInfo)"
+                                            pTooltip="Editar máquina"></p-button>
                                         <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
                                             (onClick)="viewMaquina(currentMaquinaInfo)"
                                             pTooltip="Ver detalle de máquina"></p-button>
@@ -232,6 +235,14 @@
                                                 selectedMaquina()?.arreglo }}
                                             </p>
                                         </div>
+                                    </div>
+                                    }
+                                    @if (selectedMaquina()?.estado_revision === 'por_revisar') {
+                                    <div
+                                        class="flex items-center gap-2 rounded-lg border border-amber-500/40 bg-amber-500/10 px-3 py-2 mt-1">
+                                        <i class="pi pi-exclamation-triangle text-amber-500 text-sm shrink-0"></i>
+                                        <span class="text-xs font-medium text-amber-700 dark:text-amber-300">Máquina
+                                            pendiente por revisar</span>
                                     </div>
                                     }
                                 </div>
@@ -513,9 +524,11 @@
 <app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" (onTerceroCreated)="onTerceroCreated($event)">
 </app-tercero-create-modal>
 
-<!-- Create Maquina Dialog -->
-<app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" [terceroId]="terceroId()"
-    (onMaquinaCreated)="onMaquinaCreated($event)">
+<!-- Crear / editar máquina (mismo modal que en terceros) -->
+<app-maquina-create-modal [visible]="displayCreateMaquinaDialog"
+    (visibleChange)="onMaquinaModalFromPedidoVisibleChange($event)"
+    [terceroId]="maquinaIdEdicionModal ? null : terceroId()" [maquinaId]="maquinaIdEdicionModal"
+    (onMaquinaCreated)="onMaquinaCreated($event)" (onMaquinaUpdated)="onMaquinaUpdatedFromPedidoModal($event)">
 </app-maquina-create-modal>
 
 <!-- Create Contacto Dialog -->

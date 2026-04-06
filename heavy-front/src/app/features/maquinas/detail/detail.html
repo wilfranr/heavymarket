@@ -40,6 +40,17 @@
                         <label class="text-sm font-medium text-gray-600">Arreglo</label>
                         <p class="text-base">{{ maquina.arreglo || '-' }}</p>
                     </div>
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Estado de revisión</label>
+                        <div class="mt-2">
+                            <p-tag [value]="etiquetaEstadoRevision(maquina)"
+                                [severity]="severidadEstadoRevision(maquina)"></p-tag>
+                        </div>
+                        <p class="text-xs mt-2" style="color: var(--p-text-muted-color);">
+                            «Por revisar» indica datos enviados desde la cotización web; el asesor confirma o corrige en la
+                            app.
+                        </p>
+                    </div>
                 </div>
             </div>
 

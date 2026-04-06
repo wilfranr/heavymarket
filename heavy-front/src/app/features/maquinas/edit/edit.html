@@ -105,6 +105,24 @@
                                 <input pInputText id="arreglo" formControlName="arreglo" placeholder="Arreglo"
                                     class="w-full rounded-2xl" />
                             </div>
+
+                            <!-- Estado de revisión (solo lectura; el servidor pasa a Revisado al guardar si venía de la landing) -->
+                            <div class="field md:col-span-2">
+                                <span
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Estado de revisión </span>
+                                <div class="flex flex-col gap-2 items-start">
+                                    <p-tag [value]="etiquetaEstadoRevision(maquina)"
+                                        [severity]="severidadEstadoRevision(maquina)"></p-tag>
+                                    @if (esPorRevisar(maquina)) {
+                                    <p class="text-xs font-medium max-w-xl"
+                                        style="color: var(--p-text-muted-color);">
+                                        Cotización desde la web: los datos pueden requerir corrección. Al guardar esta
+                                        ficha, la máquina quedará como revisada por un asesor (fotos de placa opcionales).
+                                    </p>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </p-card>

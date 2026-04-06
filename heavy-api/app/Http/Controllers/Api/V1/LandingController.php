@@ -284,6 +284,7 @@ class LandingController extends Controller
                         'serie' => $request->input('selectedSeries'), // NULL si no existe
                         'arreglo' => $request->input('selectedArrangement') ?? 'Por definir',
                         'fabricante_id' => $fabricanteId ?? 1, // Default si no hay fabricante
+                        'estado_revision' => 'por_revisar',
                     ]);
 
                     // Vincular la máquina al tercero

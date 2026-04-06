@@ -1,8 +1,10 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { take } from 'rxjs/operators';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
@@ -21,6 +23,7 @@ import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-mo
         ReactiveFormsModule,
         DialogModule,
         ButtonModule,
+        ProgressSpinnerModule,
         InputTextModule,
         SelectModule,
         ToastModule,
@@ -39,11 +42,19 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
 
     @Input() visible: boolean = false;
     @Input() terceroId: number | null = null;
+    /** Si se indica, el modal actúa en modo edición (misma UI que crear, con datos cargados). */
+    @Input() maquinaId: number | null = null;
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onMaquinaCreated = new EventEmitter<any>();
+    @Output() onMaquinaUpdated = new EventEmitter<any>();
 
     createMaquinaForm!: FormGroup;
     loading = false;
+    loadingMaquina = false;
+
+    get isEditMode(): boolean {
+        return this.maquinaId != null && this.maquinaId > 0;
+    }
 
     // Listas
     tiposMaquina: any[] = [];
@@ -59,9 +70,50 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
-        if (changes['visible'] && changes['visible'].currentValue === true) {
+        if (!this.visible) {
+            return;
+        }
+        if (this.isEditMode && (changes['visible'] || changes['maquinaId'])) {
+            this.loadMaquinaForEdit();
+            return;
+        }
+        if (changes['visible']?.currentValue === true && !this.isEditMode) {
             this.resetForm();
         }
+    }
+
+    private loadMaquinaForEdit(): void {
+        if (!this.maquinaId) {
+            return;
+        }
+        this.loadingMaquina = true;
+        this.maquinaService
+            .getById(this.maquinaId)
+            .pipe(take(1))
+            .subscribe({
+                next: (res) => {
+                    const m = res.data;
+                    this.createMaquinaForm.patchValue({
+                        tipo: m.tipo,
+                        fabricante_id: m.fabricante_id,
+                        modelo: m.modelo,
+                        serie: m.serie ?? '',
+                        arreglo: m.arreglo ?? '',
+                        foto: null,
+                        fotoId: null
+                    });
+                    this.loadingMaquina = false;
+                },
+                error: () => {
+                    this.loadingMaquina = false;
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'No se pudo cargar la máquina'
+                    });
+                    this.closeDialog();
+                }
+            });
     }
 
     private initForm(): void {
@@ -122,6 +174,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     closeDialog(): void {
         this.visible = false;
         this.visibleChange.emit(false);
+        this.loadingMaquina = false;
     }
 
     saveMaquina(createAnother: boolean = false): void {
@@ -132,14 +185,59 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
 
         this.loading = true;
         const formValue = this.createMaquinaForm.value;
+
+        if (this.isEditMode && this.maquinaId) {
+            const formData = new FormData();
+            formData.append('tipo', String(formValue.tipo));
+            formData.append('modelo', formValue.modelo);
+            formData.append('fabricante_id', String(formValue.fabricante_id));
+            if (formValue.serie) {
+                formData.append('serie', formValue.serie);
+            }
+            if (formValue.arreglo) {
+                formData.append('arreglo', formValue.arreglo);
+            }
+            if (formValue.foto instanceof File) {
+                formData.append('foto', formValue.foto);
+            }
+            if (formValue.fotoId instanceof File) {
+                formData.append('fotoId', formValue.fotoId);
+            }
+
+            this.maquinaService.update(this.maquinaId, formData).subscribe({
+                next: (response) => {
+                    this.loading = false;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Máquina actualizada correctamente'
+                    });
+                    this.onMaquinaUpdated.emit(response.data);
+                    this.closeDialog();
+                },
+                error: (error) => {
+                    this.loading = false;
+                    console.error('Error actualizando máquina', error);
+                    let msg = 'Fallo al actualizar la máquina';
+                    if (error.status === 422 && error.error?.errors) {
+                        const first = Object.values(error.error.errors)[0] as string[];
+                        msg = first[0] || msg;
+                    } else if (error.error?.message) {
+                        msg = error.error.message;
+                    }
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
+            return;
+        }
+
         const formData = new FormData();
 
-        // Agregar terceroId si existe
         if (this.terceroId) {
             formData.append('tercero_id', this.terceroId.toString());
         }
 
-        Object.keys(formValue).forEach(key => {
+        Object.keys(formValue).forEach((key) => {
             const value = formValue[key];
             if (value !== null && value !== undefined && value !== '') {
                 formData.append(key, value);

@@ -29,11 +29,12 @@ class UpdateMaquinaRequest extends FormRequest
         return [
             'tipo' => ['sometimes', 'required', 'integer', 'exists:listas,id'],
             'modelo' => ['sometimes', 'required', 'string', 'max:255'],
-            'fabricante_id' => ['sometimes', 'required', 'integer', 'exists:fabricantes,id'],
+            'fabricante_id' => ['sometimes', 'required', 'integer', 'exists:listas,id'],
             'serie' => ['nullable', 'string', 'max:255'],
             'arreglo' => ['nullable', 'string', 'max:255'],
             'foto' => ['nullable', 'image', 'max:10480'],
             'fotoId' => ['nullable', 'image', 'max:10480'],
+            'estado_revision' => ['sometimes', 'string', 'in:por_revisar,revisado'],
         ];
     }
 

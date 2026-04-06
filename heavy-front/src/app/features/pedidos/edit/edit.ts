@@ -14,6 +14,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService, ConfirmationService, FilterService } from 'primeng/api';
 import { ContactoService } from '../../../core/services/contacto.service';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
+import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimelineModule } from 'primeng/timeline';
@@ -75,7 +76,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         ImageModule,
         GalleriaModule,
         TimelineModule,
-        ContactoCreateModalComponent
+        ContactoCreateModalComponent,
+        MaquinaCreateModalComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -116,6 +118,9 @@ export class EditComponent implements OnInit {
     referencias: any[] = [];
     contactos: any[] = [];
     displayCreateContactoDialog = false;
+
+    displayEditMaquinaModal = false;
+    maquinaModalEdicionId: number | null = null;
 
     // Opciones en cascada por fila (índice del FormArray)
     tiposPorFila: any[][] = [];
@@ -493,6 +498,43 @@ export class EditComponent implements OnInit {
                 }));
             }
         });
+    }
+
+    /** Recarga opciones de máquina tras crear/editar en el modal. */
+    private reloadMaquinasParaPedido(): void {
+        const terceroId = this.pedidoForm.get('tercero_id')?.value;
+        if (terceroId) {
+            this.loadMaquinasPorCliente(terceroId);
+        } else {
+            this.maquinaService.getAll({ per_page: 100 }).subscribe({
+                next: (response) => {
+                    this.maquinasList = response.data;
+                    this.maquinas = response.data.map((m) => ({
+                        label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+                        value: m.id
+                    }));
+                }
+            });
+        }
+    }
+
+    onEditMaquinaModalVisibleChange(visible: boolean): void {
+        this.displayEditMaquinaModal = visible;
+        if (!visible) {
+            this.maquinaModalEdicionId = null;
+        }
+    }
+
+    abrirModalEditarMaquina(maquina: { id: number }): void {
+        if (!maquina?.id) {
+            return;
+        }
+        this.maquinaModalEdicionId = maquina.id;
+        this.displayEditMaquinaModal = true;
+    }
+
+    onMaquinaActualizadaDesdeModal(_m: any): void {
+        this.reloadMaquinasParaPedido();
     }
 
     /**

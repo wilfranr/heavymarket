@@ -7,10 +7,11 @@ import { Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
+import { TagModule } from 'primeng/tag';
 
 import { loadMaquinaById } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.selectors';
-import { Maquina } from '../../../core/models/maquina.model';
+import { ESTADO_REVISION_LABELS, Maquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
 
 /**
  * Componente de detalle de máquina
@@ -18,7 +19,7 @@ import { Maquina } from '../../../core/models/maquina.model';
 @Component({
     selector: 'app-maquina-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TagModule],
     templateUrl: './detail.html'
 })
 export class DetailComponent implements OnInit {
@@ -49,5 +50,13 @@ export class DetailComponent implements OnInit {
      */
     volver(): void {
         this.router.navigate(['/app/maquinas']);
+    }
+
+    etiquetaEstadoRevision(m: Maquina): string {
+        return ESTADO_REVISION_LABELS[normalizeEstadoRevision(m.estado_revision)];
+    }
+
+    severidadEstadoRevision(m: Maquina): 'success' | 'warn' {
+        return normalizeEstadoRevision(m.estado_revision) === 'revisado' ? 'success' : 'warn';
     }
 }
