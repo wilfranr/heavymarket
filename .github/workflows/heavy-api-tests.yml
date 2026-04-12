@@ -1,0 +1,58 @@
+# Tests automatizados del backend Laravel (heavy-api).
+# PHPUnit usa SQLite en memoria según phpunit.xml.
+
+name: Heavy API — PHPUnit
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'heavy-api/**'
+      - '.github/workflows/heavy-api-tests.yml'
+  pull_request:
+    paths:
+      - 'heavy-api/**'
+      - '.github/workflows/heavy-api-tests.yml'
+
+defaults:
+  run:
+    working-directory: heavy-api
+
+jobs:
+  php-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, fileinfo
+          coverage: none
+
+      - name: Directorio de cache Composer
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache dependencias Composer
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('heavy-api/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Instalar dependencias
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Preparar entorno Laravel
+        run: |
+          cp .env.example .env
+          php artisan key:generate --force
+
+      - name: Ejecutar PHPUnit
+        run: php artisan test
