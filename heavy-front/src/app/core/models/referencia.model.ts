@@ -14,7 +14,12 @@ export interface Referencia {
     updated_at: string;
 
     // Relaciones opcionales
-    articulo?: any;
+    articulo?: {
+        id?: number;
+        definicion?: string;
+        descripcionEspecifica?: string;
+        nombre?: string;
+    };
     marca?: {
         id: number;
         nombre: string;

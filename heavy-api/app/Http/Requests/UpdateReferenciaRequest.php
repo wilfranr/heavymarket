@@ -17,7 +17,7 @@ class UpdateReferenciaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'Administrador']);
+        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**
@@ -27,7 +27,8 @@ class UpdateReferenciaRequest extends FormRequest
      */
     public function rules(): array
     {
-        $referenciaId = $this->route('referencia');
+        $referenciaParam = $this->route('referencia');
+        $referenciaId = is_object($referenciaParam) ? $referenciaParam->getKey() : $referenciaParam;
 
         return [
             'referencia' => [

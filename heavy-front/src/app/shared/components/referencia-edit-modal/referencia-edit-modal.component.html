@@ -1,0 +1,104 @@
+<p-toast />
+<p-dialog
+    [(visible)]="visible"
+    [header]="title"
+    [modal]="true"
+    [style]="{ width: '480px', maxWidth: '95vw' }"
+    [draggable]="false"
+    [resizable]="false"
+    appendTo="body"
+    [dismissableMask]="true"
+    (onHide)="closeDialog()"
+>
+    <p class="text-sm mb-4" style="color: var(--p-text-muted-color)">
+        Los cambios se guardan en el catálogo y se reflejan en esta fila del análisis.
+    </p>
+
+    @if (loadingData) {
+        <div class="flex justify-center py-10">
+            <p-progressSpinner styleClass="w-12 h-12" strokeWidth="4" />
+        </div>
+    } @else {
+        <form [formGroup]="referenciaForm" (ngSubmit)="guardar()" class="grid grid-cols-1 gap-4">
+            <div class="field">
+                <label for="edit-referencia" class="block text-sm font-medium mb-2"
+                    >Código / referencia <span class="text-red-500">*</span></label
+                >
+                <input
+                    id="edit-referencia"
+                    pInputText
+                    formControlName="referencia"
+                    placeholder="Ej: 1R-0749"
+                    class="w-full"
+                />
+                @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
+                    <small class="text-red-500">El código es obligatorio</small>
+                }
+            </div>
+
+            <div class="field">
+                <label for="edit-marca_id" class="block text-sm font-medium mb-2">Marca / fabricante</label>
+                <p-select
+                    id="edit-marca_id"
+                    formControlName="marca_id"
+                    [options]="marcas"
+                    optionLabel="nombre"
+                    optionValue="id"
+                    placeholder="Seleccione una opción"
+                    [filter]="true"
+                    filterBy="nombre"
+                    [showClear]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                />
+            </div>
+
+            <div class="field">
+                <label for="edit-articulo_id" class="block text-sm font-medium mb-2">Artículo relacionado</label>
+                <p-select
+                    id="edit-articulo_id"
+                    formControlName="articulo_id"
+                    [options]="articulos"
+                    optionLabel="descripcionEspecifica"
+                    optionValue="id"
+                    placeholder="Vincule un artículo"
+                    [filter]="true"
+                    filterBy="descripcionEspecifica,definicion"
+                    [showClear]="true"
+                    styleClass="w-full"
+                    appendTo="body"
+                >
+                    <ng-template let-articulo pTemplate="item">
+                        <div class="flex flex-col">
+                            <span class="font-medium text-xs">{{ articulo.definicion }}</span>
+                            <small class="text-muted-color text-[10px]">{{ articulo.descripcionEspecifica }}</small>
+                        </div>
+                    </ng-template>
+                </p-select>
+            </div>
+
+            <div class="field">
+                <label for="edit-comentario" class="block text-sm font-medium mb-2">Descripción / comentario</label>
+                <textarea
+                    id="edit-comentario"
+                    pTextarea
+                    formControlName="comentario"
+                    [rows]="3"
+                    placeholder="Texto que ayuda a identificar la pieza en el análisis"
+                    class="w-full"
+                ></textarea>
+            </div>
+
+            <div class="flex justify-end gap-2 pt-4" style="border-top: 1px solid var(--p-content-border-color)">
+                <p-button label="Cancelar" severity="secondary" [text]="true" type="button" (onClick)="closeDialog()" />
+                <p-button
+                    label="Guardar"
+                    icon="pi pi-check"
+                    type="submit"
+                    [loading]="loading"
+                    [disabled]="referenciaForm.invalid"
+                />
+            </div>
+        </form>
+    }
+</p-dialog>

@@ -319,7 +319,7 @@
                                         <th class="w-48">Referencia</th>
                                         <th class="flex-1">Descripción</th>
                                         <th class="w-48">Categoría comercial</th>
-                                        <th class="w-10 text-center"></th>
+                                        <th class="w-24 text-center">Acciones</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -354,9 +354,26 @@
                                                 <p-select [options]="tiposArticulo" formControlName="categoria" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
                                             </td>
                                             <td class="p-3 pr-4 text-center rounded-r-lg">
-                                                <div class="flex gap-2 justify-center">
+                                                <div class="flex gap-1 justify-center items-center flex-wrap">
+                                                    @if (parte.get('referencia_id')?.value) {
+                                                        <p-button
+                                                            icon="pi pi-pencil"
+                                                            [rounded]="true"
+                                                            [text]="true"
+                                                            severity="secondary"
+                                                            styleClass="!text-white hover:!bg-white/10"
+                                                            pTooltip="Editar referencia en catálogo"
+                                                            tooltipPosition="top"
+                                                            (onClick)="abrirEditarReferencia(i, j)"
+                                                        />
+                                                    }
                                                     @if (j > 0) {
-                                                        <button type="button" (click)="removeParte(i, j)" class="pi pi-minus p-2 bg-red-500 rounded-full text-white text-xs border-none"></button>
+                                                        <p-button
+                                                            icon="pi pi-minus"
+                                                            [rounded]="true"
+                                                            severity="danger"
+                                                            (onClick)="removeParte(i, j)"
+                                                        />
                                                     }
                                                 </div>
                                             </td>
@@ -400,6 +417,14 @@
 
 <app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" (onReferenciaCreated)="onReferenciaCreada($event)">
 </app-referencia-create-modal>
+
+<app-referencia-edit-modal
+    [visible]="showReferenciaEditModal"
+    (visibleChange)="onReferenciaEditVisibleChange($event)"
+    [referenciaId]="editReferenciaId"
+    title="Editar referencia"
+    (onReferenciaUpdated)="onReferenciaActualizada($event)"
+/>
 
 <!-- Guía de importación masiva (misma contenido que creación de pedido, adaptado a análisis) -->
 <p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" [style]="{width: '70vw'}"

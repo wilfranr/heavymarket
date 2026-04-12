@@ -43,6 +43,8 @@ import { PedidoArticuloService } from '../../../core/services/pedido-articulo.se
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
+import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
+import { Referencia } from '../../../core/models/referencia.model';
 
 @Component({
     selector: 'app-pedido-analysis',
@@ -73,7 +75,8 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
         GalleriaModule,
         InputGroupModule,
         InputGroupAddonModule,
-        ReferenciaCreateModalComponent
+        ReferenciaCreateModalComponent,
+        ReferenciaEditModalComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './analysis.html',
@@ -134,6 +137,10 @@ export class AnalysisComponent implements OnInit {
 
     // Estados para modales de creación rápida (se mantienen los necesarios)
     showReferenciaModal = false;
+    showReferenciaEditModal = false;
+    editReferenciaId: number | null = null;
+    private editReferenciaItemIndex = -1;
+    private editReferenciaParteIndex = -1;
     activeItemIndex = -1;
     activeParteIndex = -1;
 
@@ -732,6 +739,69 @@ export class AnalysisComponent implements OnInit {
         this.activeParteIndex = -1;
         
         this.messageService.add({ severity: 'success', summary: 'Referencia Creada', detail: `La referencia ${nuevaRef.referencia} ha sido creada y asignada.` });
+    }
+
+    abrirEditarReferencia(itemIndex: number, parteIndex: number): void {
+        const parte = this.getPartesFormArray(itemIndex).at(parteIndex);
+        const refId = parte.get('referencia_id')?.value;
+        if (!refId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Sin referencia',
+                detail: 'Seleccione o cree una referencia antes de editarla en el catálogo.'
+            });
+            return;
+        }
+        this.editReferenciaItemIndex = itemIndex;
+        this.editReferenciaParteIndex = parteIndex;
+        this.editReferenciaId = typeof refId === 'number' ? refId : parseInt(String(refId), 10);
+        this.showReferenciaEditModal = true;
+    }
+
+    onReferenciaEditVisibleChange(visible: boolean): void {
+        this.showReferenciaEditModal = visible;
+        if (!visible) {
+            this.editReferenciaId = null;
+            this.editReferenciaItemIndex = -1;
+            this.editReferenciaParteIndex = -1;
+        }
+    }
+
+    onReferenciaActualizada(ref: Referencia): void {
+        const i = this.editReferenciaItemIndex;
+        const j = this.editReferenciaParteIndex;
+
+        this.loadReferencias();
+
+        if (i >= 0 && j >= 0) {
+            const parte = this.getPartesFormArray(i).at(j);
+            const articulo = ref.articulo;
+            const nuevaDescripcion =
+                (ref.comentario && String(ref.comentario).trim()) ||
+                articulo?.definicion ||
+                articulo?.descripcionEspecifica ||
+                parte.get('descripcion')?.value;
+
+            parte.patchValue({ descripcion: nuevaDescripcion });
+
+            const listaId = this.referenciasFormArray.at(i).get('lista_id')?.value;
+            if (listaId && this.referenciasPorTipo[listaId]) {
+                const idx = this.referenciasPorTipo[listaId].findIndex((x) => x.value === ref.id);
+                const entry = {
+                    label: ref.referencia,
+                    value: ref.id,
+                    descripcion: (ref.comentario as string) || articulo?.definicion || '',
+                    articulo_id: ref.articulo_id,
+                    articulo_nombre: articulo?.definicion || articulo?.descripcionEspecifica || ''
+                };
+                if (idx >= 0) {
+                    this.referenciasPorTipo[listaId][idx] = entry;
+                } else {
+                    this.referenciasPorTipo[listaId].push(entry);
+                }
+            }
+        }
+
     }
 
     private loadReferencias(): void {

@@ -27,7 +27,7 @@ class ReferenciaPolicy
 
     public function update(User $user, Referencia $referencia): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function delete(User $user, Referencia $referencia): bool
