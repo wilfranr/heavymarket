@@ -58,6 +58,10 @@ class PedidoPolicy
      */
     public function delete(User $user, Pedido $pedido): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador']);
+        if ($user->hasAnyRole(['super_admin', 'Administrador'])) {
+            return true;
+        }
+
+        return $user->hasRole('Vendedor') && $user->id === $pedido->user_id;
     }
 }

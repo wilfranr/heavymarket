@@ -44,7 +44,7 @@ class ListaResourceTest extends TestCase
         $lista->syncOriginal();
         $lista->setRelation('fabricante', $fabricante);
 
-        $request = Request::create('/api/v1/listas', 'GET');
+        $request = Request::create('/v1/listas', 'GET');
         $array = (new ListaResource($lista))->resolve($request);
 
         $this->assertArrayHasKey('fabricante', $array);
@@ -72,7 +72,7 @@ class ListaResourceTest extends TestCase
 
         $lista->unsetRelation('fabricante');
 
-        $request = Request::create('/api/v1/listas', 'GET');
+        $request = Request::create('/v1/listas', 'GET');
         $array = (new ListaResource($lista))->resolve($request);
 
         $this->assertArrayNotHasKey('fabricante', $array);

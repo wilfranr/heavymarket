@@ -31,6 +31,6 @@ class UserPolicy
 
     public function delete(User $user, User $model): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador']) && $user->id !== $model->id;
+        return $user->hasAnyRole(['super_admin', 'Administrador']);
     }
 }

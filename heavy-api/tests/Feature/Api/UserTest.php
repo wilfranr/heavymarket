@@ -16,9 +16,9 @@ class UserTest extends TestCase
         parent::setUp();
 
         // Aseguramos que existan los roles necesarios para las pruebas
-        Role::firstOrCreate(['name' => 'super_admin']);
-        Role::firstOrCreate(['name' => 'Administrador']);
-        Role::firstOrCreate(['name' => 'Vendedor']);
+        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
     }
 
     public function test_super_admin_puede_listar_usuarios(): void
@@ -27,8 +27,8 @@ class UserTest extends TestCase
         $admin->assignRole('super_admin');
         User::factory()->count(3)->create();
 
-        $response = $this->actingAs($admin)
-            ->getJson('/api/v1/users');
+        $response = $this->actingAs($admin, 'sanctum')
+            ->getJson('/v1/users');
 
         $response->assertStatus(200)
             ->assertJsonStructure(['data', 'meta']);
@@ -39,8 +39,8 @@ class UserTest extends TestCase
         $vendedor = User::factory()->create();
         $vendedor->assignRole('Vendedor');
 
-        $response = $this->actingAs($vendedor)
-            ->getJson('/api/v1/users');
+        $response = $this->actingAs($vendedor, 'sanctum')
+            ->getJson('/v1/users');
 
         $response->assertStatus(403);
     }
@@ -50,8 +50,8 @@ class UserTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('super_admin');
 
-        $response = $this->actingAs($admin)
-            ->postJson('/api/v1/users', [
+        $response = $this->actingAs($admin, 'sanctum')
+            ->postJson('/v1/users', [
                 'name' => 'Nuevo Test',
                 'email' => 'nuevo@test.com',
                 'password' => 'Password123!',
@@ -69,8 +69,8 @@ class UserTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('Administrador');
 
-        $response = $this->actingAs($admin)
-            ->postJson('/api/v1/users', [
+        $response = $this->actingAs($admin, 'sanctum')
+            ->postJson('/v1/users', [
                 'name' => 'Intento Admin',
                 'email' => 'intento@test.com',
                 'password' => 'Password123!',
@@ -86,8 +86,8 @@ class UserTest extends TestCase
         $admin = User::factory()->create();
         $admin->assignRole('super_admin');
 
-        $response = $this->actingAs($admin)
-            ->deleteJson("/api/v1/users/{$admin->id}");
+        $response = $this->actingAs($admin, 'sanctum')
+            ->deleteJson("/v1/users/{$admin->id}");
 
         $response->assertStatus(422)
             ->assertJsonPath('message', 'No puedes eliminar tu propio usuario');
@@ -100,8 +100,8 @@ class UserTest extends TestCase
 
         $otroUser = User::factory()->create();
 
-        $response = $this->actingAs($admin)
-            ->deleteJson("/api/v1/users/{$otroUser->id}");
+        $response = $this->actingAs($admin, 'sanctum')
+            ->deleteJson("/v1/users/{$otroUser->id}");
 
         $response->assertStatus(204);
         $this->assertDatabaseMissing('users', ['id' => $otroUser->id]);

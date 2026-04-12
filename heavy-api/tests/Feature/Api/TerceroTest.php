@@ -7,6 +7,7 @@ namespace Tests\Feature\Api;
 use App\Models\Tercero;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -22,103 +23,93 @@ class TerceroTest extends TestCase
     {
         parent::setUp();
 
+        foreach (['Vendedor', 'super_admin', 'Administrador', 'Analista', 'Logistica', 'Cliente'] as $roleName) {
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        }
+
         $this->user = User::factory()->create();
         $this->user->assignRole('Vendedor');
     }
 
-    /**
-     * Test: Listar terceros
-     */
     public function test_puede_listar_terceros(): void
     {
         Tercero::factory()->count(5)->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/terceros');
+            ->getJson('/v1/terceros');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
-                    '*' => ['id', 'documento', 'razon_social', 'tipo_tercero'],
+                    '*' => ['id', 'tipo_documento', 'numero_documento', 'nombre', 'tipo'],
                 ],
             ]);
     }
 
-    /**
-     * Test: Crear tercero con datos válidos
-     */
     public function test_puede_crear_tercero(): void
     {
         $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/api/v1/terceros', [
+            ->postJson('/v1/terceros', [
                 'tipo_documento' => 'NIT',
-                'documento' => '900123456-7',
-                'razon_social' => 'Empresa de Prueba S.A.S.',
-                'tipo_tercero' => 'Juridico',
+                'numero_documento' => '900123456-7',
+                'nombre' => 'Empresa de Prueba S.A.S.',
+                'tipo' => 'Cliente',
                 'email' => 'contacto@empresa.com',
-                'es_cliente' => true,
-                'es_proveedor' => false,
             ]);
 
         $response->assertStatus(201)
             ->assertJsonStructure(['data', 'message']);
 
         $this->assertDatabaseHas('terceros', [
-            'documento' => '900123456-7',
-            'razon_social' => 'Empresa de Prueba S.A.S.',
+            'numero_documento' => '900123456-7',
         ]);
+        $creado = Tercero::query()->where('numero_documento', '900123456-7')->first();
+        $this->assertNotNull($creado);
+        $this->assertStringContainsStringIgnoringCase('empresa', (string) $creado->nombre);
     }
 
-    /**
-     * Test: No puede crear tercero con documento duplicado
-     */
     public function test_no_puede_crear_tercero_con_documento_duplicado(): void
     {
-        Tercero::factory()->create(['documento' => '900123456-7']);
+        Tercero::factory()->create(['numero_documento' => '900123456-7']);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/api/v1/terceros', [
+            ->postJson('/v1/terceros', [
                 'tipo_documento' => 'NIT',
-                'documento' => '900123456-7',
-                'razon_social' => 'Otra Empresa',
-                'tipo_tercero' => 'Juridico',
+                'numero_documento' => '900123456-7',
+                'nombre' => 'Otra Empresa',
+                'tipo' => 'Cliente',
             ]);
 
         $response->assertStatus(422)
-            ->assertJsonValidationErrors(['documento']);
+            ->assertJsonValidationErrors(['numero_documento']);
     }
 
-    /**
-     * Test: Ver detalle de tercero
-     */
     public function test_puede_ver_detalle_de_tercero(): void
     {
         $tercero = Tercero::factory()->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson("/api/v1/terceros/{$tercero->id}");
+            ->getJson("/v1/terceros/{$tercero->id}");
 
         $response->assertStatus(200)
             ->assertJson([
                 'data' => [
                     'id' => $tercero->id,
-                    'documento' => $tercero->documento,
+                    'numero_documento' => $tercero->numero_documento,
                 ],
             ]);
     }
 
-    /**
-     * Test: Actualizar tercero
-     */
     public function test_puede_actualizar_tercero(): void
     {
         $tercero = Tercero::factory()->create([
-            'razon_social' => 'Nombre Original',
+            'nombre' => 'Nombre Original',
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/api/v1/terceros/{$tercero->id}", [
-                'razon_social' => 'Nombre Actualizado',
+            ->putJson("/v1/terceros/{$tercero->id}", [
+                'nombre' => 'Nombre Actualizado',
+                'tipo' => $tercero->tipo,
                 'telefono' => '3001234567',
             ]);
 
@@ -126,20 +117,20 @@ class TerceroTest extends TestCase
 
         $this->assertDatabaseHas('terceros', [
             'id' => $tercero->id,
-            'razon_social' => 'Nombre Actualizado',
+            'nombre' => 'Nombre Actualizado',
             'telefono' => '3001234567',
         ]);
     }
 
-    /**
-     * Test: Eliminar tercero
-     */
     public function test_puede_eliminar_tercero(): void
     {
+        $admin = User::factory()->create();
+        $admin->assignRole('Administrador');
+
         $tercero = Tercero::factory()->create();
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->deleteJson("/api/v1/terceros/{$tercero->id}");
+        $response = $this->actingAs($admin, 'sanctum')
+            ->deleteJson("/v1/terceros/{$tercero->id}");
 
         $response->assertStatus(204);
 
@@ -148,31 +139,25 @@ class TerceroTest extends TestCase
         ]);
     }
 
-    /**
-     * Test: Filtrar por tipo de tercero
-     */
     public function test_puede_filtrar_por_tipo_tercero(): void
     {
-        Tercero::factory()->create(['tipo_tercero' => 'Natural']);
-        Tercero::factory()->create(['tipo_tercero' => 'Juridico']);
+        Tercero::factory()->create(['tipo' => 'Cliente']);
+        Tercero::factory()->create(['tipo' => 'Proveedor']);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/terceros?tipo_tercero=Natural');
+            ->getJson('/v1/terceros?tipo=Cliente');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data');
     }
 
-    /**
-     * Test: Buscar terceros por nombre o documento
-     */
     public function test_puede_buscar_terceros(): void
     {
-        Tercero::factory()->create(['razon_social' => 'ABC Empresa']);
-        Tercero::factory()->create(['razon_social' => 'XYZ Compañía']);
+        Tercero::factory()->create(['nombre' => 'ABC Empresa SAS']);
+        Tercero::factory()->create(['nombre' => 'XYZ Compañía']);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/terceros?search=ABC');
+            ->getJson('/v1/terceros?search=ABC');
 
         $response->assertStatus(200)
             ->assertJsonCount(1, 'data');

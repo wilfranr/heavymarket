@@ -6,6 +6,7 @@ namespace Tests\Feature\Api;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -17,12 +18,19 @@ class AuthTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Role::firstOrCreate(['name' => 'panel_user', 'guard_name' => 'web']);
+    }
+
     /**
      * Test: Registro de usuario exitoso
      */
     public function test_usuario_puede_registrarse(): void
     {
-        $response = $this->postJson('/api/v1/register', [
+        $response = $this->postJson('/v1/register', [
             'name' => 'Juan Pérez',
             'email' => 'juan@example.com',
             'password' => 'Password123!',
@@ -50,7 +58,7 @@ class AuthTest extends TestCase
      */
     public function test_registro_falla_sin_datos_obligatorios(): void
     {
-        $response = $this->postJson('/api/v1/register', []);
+        $response = $this->postJson('/v1/register', []);
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['name', 'email', 'password']);
@@ -63,7 +71,7 @@ class AuthTest extends TestCase
     {
         User::factory()->create(['email' => 'existente@example.com']);
 
-        $response = $this->postJson('/api/v1/register', [
+        $response = $this->postJson('/v1/register', [
             'name' => 'Usuario Nuevo',
             'email' => 'existente@example.com',
             'password' => 'Password123!',
@@ -84,7 +92,7 @@ class AuthTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/v1/login', [
             'email' => 'test@example.com',
             'password' => 'password123',
         ]);
@@ -110,7 +118,7 @@ class AuthTest extends TestCase
             'password' => 'password123',
         ]);
 
-        $response = $this->postJson('/api/v1/login', [
+        $response = $this->postJson('/v1/login', [
             'email' => 'test@example.com',
             'password' => 'password_incorrecta',
         ]);
@@ -127,7 +135,7 @@ class AuthTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/me');
+            ->getJson('/v1/me');
 
         $response->assertStatus(200)
             ->assertJson([
@@ -147,7 +155,7 @@ class AuthTest extends TestCase
         $token = $user->createToken('test-device')->plainTextToken;
 
         $response = $this->withHeader('Authorization', 'Bearer '.$token)
-            ->postJson('/api/v1/logout');
+            ->postJson('/v1/logout');
 
         $response->assertStatus(200)
             ->assertJson(['message' => 'Sesión cerrada exitosamente']);
@@ -163,7 +171,7 @@ class AuthTest extends TestCase
      */
     public function test_rutas_protegidas_requieren_autenticacion(): void
     {
-        $response = $this->getJson('/api/v1/me');
+        $response = $this->getJson('/v1/me');
 
         $response->assertStatus(401);
     }
@@ -176,7 +184,7 @@ class AuthTest extends TestCase
         $user = User::factory()->create();
 
         $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/api/v1/refresh');
+            ->postJson('/v1/refresh');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -195,7 +203,7 @@ class AuthTest extends TestCase
         $user->createToken('dispositivo-2');
 
         $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/api/v1/tokens');
+            ->getJson('/v1/tokens');
 
         $response->assertStatus(200)
             ->assertJsonStructure([

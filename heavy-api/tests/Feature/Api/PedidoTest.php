@@ -177,6 +177,7 @@ class PedidoTest extends TestCase
     {
         $pedido = Pedido::factory()->create([
             'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
@@ -194,9 +195,21 @@ class PedidoTest extends TestCase
      */
     public function test_puede_filtrar_pedidos_por_estado(): void
     {
-        Pedido::factory()->create(['estado' => 'Nuevo']);
-        Pedido::factory()->create(['estado' => 'Enviado']);
-        Pedido::factory()->create(['estado' => 'Nuevo']);
+        Pedido::factory()->create([
+            'estado' => 'Nuevo',
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+        ]);
+        Pedido::factory()->create([
+            'estado' => 'Enviado',
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+        ]);
+        Pedido::factory()->create([
+            'estado' => 'Nuevo',
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+        ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->getJson('/v1/pedidos?estado=Nuevo');
@@ -210,7 +223,10 @@ class PedidoTest extends TestCase
      */
     public function test_paginacion_funciona_correctamente(): void
     {
-        Pedido::factory()->count(20)->create();
+        Pedido::factory()->count(20)->create([
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+        ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->getJson('/v1/pedidos?per_page=10');

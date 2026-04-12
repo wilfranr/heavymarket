@@ -16,29 +16,17 @@ class TerceroFactory extends Factory
 
     public function definition(): array
     {
-        $tipoTercero = fake()->randomElement(['Natural', 'Juridico']);
-        $tipoDocumento = $tipoTercero === 'Natural'
-            ? fake()->randomElement(['CC', 'CE', 'Pasaporte'])
-            : 'NIT';
+        $tipo = fake()->randomElement(['Cliente', 'Proveedor', 'Ambos']);
+        $tipoDocumento = fake()->randomElement(['NIT', 'CC', 'CE', 'Pasaporte']);
 
         return [
             'tipo_documento' => $tipoDocumento,
-            'documento' => $tipoDocumento === 'NIT'
-                ? fake()->numerify('9########-#')
-                : fake()->numerify('##########'),
-            'razon_social' => $tipoTercero === 'Natural'
-                ? fake()->name()
-                : fake()->company(),
-            'nombre_comercial' => fake()->optional()->company(),
-            'tipo_tercero' => $tipoTercero,
+            'numero_documento' => fake()->unique()->numerify('9#########'),
+            'nombre' => fake()->company(),
+            'tipo' => $tipo,
             'email' => fake()->optional()->safeEmail(),
             'telefono' => fake()->optional()->numerify('60# ### ####'),
-            'celular' => fake()->optional()->numerify('3## ### ####'),
             'direccion' => fake()->optional()->address(),
-            'ciudad' => fake()->optional()->city(),
-            'pais' => 'Colombia',
-            'es_cliente' => fake()->boolean(70),
-            'es_proveedor' => fake()->boolean(30),
             'estado' => fake()->randomElement(['Activo', 'Inactivo']),
         ];
     }

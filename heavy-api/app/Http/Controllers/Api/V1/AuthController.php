@@ -125,8 +125,10 @@ class AuthController extends Controller
      */
     public function logout(Request $request): JsonResponse
     {
-        // Revocar el token actual
-        $request->user()->currentAccessToken()->delete();
+        $token = $request->user()->currentAccessToken();
+        if ($token) {
+            $token->delete();
+        }
 
         return response()->json([
             'message' => 'Sesión cerrada exitosamente',
@@ -178,8 +180,10 @@ class AuthController extends Controller
     {
         $user = $request->user();
 
-        // Revocar token actual
-        $request->user()->currentAccessToken()->delete();
+        $current = $request->user()->currentAccessToken();
+        if ($current) {
+            $current->delete();
+        }
 
         // Crear nuevo token
         $token = $user->createToken(
