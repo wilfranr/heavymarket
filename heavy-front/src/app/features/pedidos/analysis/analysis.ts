@@ -448,6 +448,12 @@ export class AnalysisComponent implements OnInit {
         }
 
         this.displayLoteDialog = false;
+
+        const tipoLote = this.tiposLote.find((t) => t.value === articulo_id);
+        if (articulo_id != null && tipoLote?.label) {
+            this.nombresTipoListaPorId[articulo_id] = tipoLote.label;
+        }
+
         this.messageService.add({ severity: 'success', summary: 'Agregado exitoso', detail: `Se insertaron los elementos correctamente.` });
     }
 
@@ -518,6 +524,13 @@ export class AnalysisComponent implements OnInit {
     }
 
     referenciasPorTipo: { [tipoId: number]: any[] } = {};
+
+    /**
+     * Nombres de listas tipo "Tipo de Artículo" (id en pedido_referencia.lista_id).
+     * Se rellena desde la relación `lista` del API al cargar el pedido; `tiposArticulo` usa otro catálogo
+     * ("Categoría Comercial") y por eso no puede resolver el label en la primera pintada.
+     */
+    private nombresTipoListaPorId: Record<number, string> = {};
 
     private cargarReferenciasParaTipo(tipoId: number): void {
         if (!tipoId || this.referenciasPorTipo[tipoId]) return;
@@ -590,6 +603,10 @@ export class AnalysisComponent implements OnInit {
             // Actualizar definición para el banner con el nombre real del tipo
             definicion: selectedTipo?.label || 'Ítem definido'
         });
+
+        if (values.lista_id != null && selectedTipo?.label) {
+            this.nombresTipoListaPorId[values.lista_id] = selectedTipo.label;
+        }
         
         if (values.lista_id) {
             this.cargarReferenciasParaTipo(values.lista_id);
@@ -936,8 +953,12 @@ export class AnalysisComponent implements OnInit {
 
     getTipoNombre(id: number | null): string {
         if (!id) return 'Sin tipo';
-        // Buscar en tiposEdit (modal actual), luego en tiposArticulo (cache global)
-        const tipo = (this.tiposEdit || []).find(t => t.value === id) || 
+        const cached = this.nombresTipoListaPorId[id];
+        if (cached) {
+            return cached;
+        }
+        // tiposEdit: tipos del sistema (mismo origen que el modal de edición). tiposArticulo: otro catálogo.
+        const tipo = (this.tiposEdit || []).find(t => t.value === id) ||
                      (this.tiposArticulo || []).find(t => t.value === id);
         return tipo?.label || 'Tipo desconocido';
     }
@@ -968,12 +989,16 @@ export class AnalysisComponent implements OnInit {
 
     private cargarReferenciasAlFormArray(referencias: PedidoReferencia[]): void {
         this.referenciasFormArray.clear();
-        
+        this.nombresTipoListaPorId = {};
+
         // Agrupar las referencias por lista_id (el concepto/requerimiento) y sistema_id
         // Esto permite que el backend (lista plana) se vea como tarjetas agrupadas en el frontend
         const grupos: { [key: string]: any } = {};
 
         referencias.forEach(r => {
+            if (r.lista_id && r.lista?.nombre) {
+                this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
+            }
             // Clave única por requerimiento: sistema + tipo + descripcion (opcional para diferenciar ítems manuales similares)
             const key = `${r.sistema_id}_${r.lista_id}_${r.definicion}`;
             
