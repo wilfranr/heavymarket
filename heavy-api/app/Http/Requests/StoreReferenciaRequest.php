@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\Referencia;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class StoreReferenciaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'Administrador']);
+        return $this->user()->can('create', Referencia::class);
     }
 
     /**

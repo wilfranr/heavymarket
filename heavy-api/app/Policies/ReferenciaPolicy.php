@@ -22,7 +22,7 @@ class ReferenciaPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function update(User $user, Referencia $referencia): bool
