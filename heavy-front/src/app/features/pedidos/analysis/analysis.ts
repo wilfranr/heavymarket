@@ -128,6 +128,11 @@ export class AnalysisComponent implements OnInit {
     submitting = false;
     finalizing = false;
 
+    /** Solo analistas y administración pueden pasar el pedido a costeo (no vendedores). */
+    get puedePasarACosteo(): boolean {
+        return this.authService.hasAnyRole(['Analista', 'analista', 'Administrador', 'super_admin']);
+    }
+
     // Estados para modales (si se necesitan similares a edit)
     displayMaquinaDialog = false;
     selectedMaquina: any = null;
@@ -1264,6 +1269,9 @@ export class AnalysisComponent implements OnInit {
     }
 
     finalizar(): void {
+        if (!this.puedePasarACosteo) {
+            return;
+        }
         // Solo para pasar a costeo: exigir referencia, categoría válida y cantidades (no aplica al botón Guardar).
         let hayIncompleto = false;
         this.referenciasFormArray.controls.forEach((item, i) => {

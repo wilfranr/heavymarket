@@ -380,6 +380,10 @@ class PedidoController extends Controller
      */
     public function enviarACosteo(Request $request, Pedido $pedido): JsonResponse
     {
+        if (! $request->user()->hasAnyRole(['Analista', 'Administrador', 'super_admin'])) {
+            return response()->json(['message' => 'No tiene permiso para enviar el pedido a costeo.'], 403);
+        }
+
         $this->authorize('update', $pedido);
         if ($pedido->estado !== 'Nuevo') {
             return response()->json(['message' => 'Solo se pueden enviar a costeo los pedidos en estado Nuevo'], 422);

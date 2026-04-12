@@ -171,6 +171,31 @@ class PedidoTest extends TestCase
     }
 
     /**
+     * Test: Vendedor no puede pasar pedido a costeo vía actualización de estado
+     */
+    public function test_vendedor_no_puede_pasar_pedido_a_costeo(): void
+    {
+        $pedido = Pedido::factory()->create([
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+            'estado' => 'Nuevo',
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson("/v1/pedidos/{$pedido->id}", [
+                'estado' => 'En_Costeo',
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['estado']);
+
+        $this->assertDatabaseHas('pedidos', [
+            'id' => $pedido->id,
+            'estado' => 'Nuevo',
+        ]);
+    }
+
+    /**
      * Test: Eliminar pedido
      */
     public function test_puede_eliminar_pedido(): void

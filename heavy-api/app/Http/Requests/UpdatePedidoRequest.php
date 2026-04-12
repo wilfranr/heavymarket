@@ -93,6 +93,15 @@ class UpdatePedidoRequest extends FormRequest
                 return;
             }
 
+            if (! $this->user()->hasAnyRole(['Analista', 'Administrador', 'super_admin'])) {
+                $v->errors()->add(
+                    'estado',
+                    'Solo analistas o administración pueden pasar el pedido a costeo.'
+                );
+
+                return;
+            }
+
             $referenciasInput = $this->input('referencias');
 
             if (is_array($referenciasInput) && $referenciasInput !== []) {

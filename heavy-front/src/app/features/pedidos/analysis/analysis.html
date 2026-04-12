@@ -27,9 +27,11 @@
                 <button type="button" class="btn-pill btn-secondary-green" (click)="cancelar()">
                     Editar
                 </button>
+                @if (puedePasarACosteo) {
                 <button type="button" class="btn-pill btn-finalizar" (click)="finalizar()" [disabled]="finalizing">
                     Pasar a costeo
                 </button>
+                }
             </div>
         </div>
 
@@ -425,6 +427,7 @@
         </div>
 
         <!-- Global Action Footer -->
+        @if (puedePasarACosteo) {
         <div class="flex justify-center mt-12 mb-20">
             <button type="button" class="btn-pill btn-finalizar text-lg px-12 py-4" 
                     (click)="finalizar()" 
@@ -433,6 +436,7 @@
                 FINALIZAR ANÁLISIS Y PASAR A COSTEO
             </button>
         </div>
+        }
     </div>
 </div>
 }

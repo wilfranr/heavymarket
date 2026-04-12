@@ -1001,6 +1001,9 @@ export class EditComponent implements OnInit {
      * Campos obligatorios: sistema_id, articulo_id, referencia_id, cantidad
      */
     enviarACosteo(): void {
+        if (!this.puedeEnviarACosteo) {
+            return;
+        }
         const errores = new Map<number, string[]>();
         let hayErrores = false;
 
@@ -1143,7 +1146,9 @@ export class EditComponent implements OnInit {
      * Verifica si el botón de enviar a costeo debe estar habilitado
      */
     get puedeEnviarACosteo(): boolean {
-        // Solo se puede enviar a costeo si el estado actual permite la transición
+        if (!this.authService.hasAnyRole(['Analista', 'analista', 'Administrador', 'super_admin'])) {
+            return false;
+        }
         const transiciones = this.transicionesValidas[this.estadoActual] || [];
         return transiciones.includes('En_Costeo') && this.referenciasFormArray.length > 0;
     }
