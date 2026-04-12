@@ -4,7 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, filter, take, map, forkJoin } from 'rxjs';
+import { Actions, ofType } from '@ngrx/effects';
+import { Observable, filter, take, map, forkJoin, merge } from 'rxjs';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -29,7 +30,12 @@ import { GalleriaModule } from 'primeng/galleria';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
-import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
+import {
+    updatePedido,
+    loadPedido,
+    updatePedidoSuccess,
+    updatePedidoFailure
+} from '../../../store/pedidos/actions/pedidos.actions';
 import {
     Pedido,
     UpdatePedidoDto,
@@ -91,6 +97,7 @@ import { Referencia } from '../../../core/models/referencia.model';
 export class AnalysisComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly store = inject(Store);
+    private readonly actions$ = inject(Actions);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
@@ -223,7 +230,7 @@ export class AnalysisComponent implements OnInit {
         const opt = this.opcionReferenciaDesdeApi(ref);
         const parte = this.fb.group({
             id: [null],
-            referencia_id: [row.referencia_id, [Validators.required]],
+            referencia_id: [row.referencia_id],
             cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
             descripcion: [this.descripcionAnalisisDesdeOpcion(opt)],
             categoria: [null]
@@ -443,7 +450,7 @@ export class AnalysisComponent implements OnInit {
                     partes: this.fb.array([
                         this.fb.group({
                             cantidad: [cantidad_lote, [Validators.required, Validators.min(1)]],
-                            referencia_id: [refId, [Validators.required]],
+                            referencia_id: [refId],
                             descripcion: [
                                 this.descripcionAnalisisDesdeOpcion(
                                     refModel ?? { descripcion: '', articulo_nombre: '' }
@@ -489,7 +496,7 @@ export class AnalysisComponent implements OnInit {
             partes: this.fb.array([
                 this.fb.group({
                     cantidad: [1, [Validators.required, Validators.min(1)]],
-                    referencia_id: [null, [Validators.required]],
+                    referencia_id: [null],
                     descripcion: [''],
                     categoria: [null]
                 })
@@ -995,7 +1002,7 @@ export class AnalysisComponent implements OnInit {
         const partes = this.getPartesFormArray(index);
         partes.push(this.fb.group({
             cantidad: [1, [Validators.required, Validators.min(1)]],
-            referencia_id: [null, [Validators.required]],
+            referencia_id: [null],
             descripcion: [''],
             categoria: [null]
         }));
@@ -1138,7 +1145,7 @@ export class AnalysisComponent implements OnInit {
                 expandido: [true],
                 partes: this.fb.array(g.partes.map((p: any) => this.fb.group({
                     id: [p.id],
-                    referencia_id: [p.referencia_id || null, [Validators.required]],
+                    referencia_id: [p.referencia_id || null],
                     cantidad: [p.cantidad || 1, [Validators.required, Validators.min(1)]],
                     descripcion: [p.descripcion || ''],
                     categoria: [p.categoria || null]
@@ -1216,36 +1223,61 @@ export class AnalysisComponent implements OnInit {
     }
 
     guardar(): void {
+        if (this.submitting) {
+            return;
+        }
         this.submitting = true;
+        const id = this.pedidoId();
         const changes = this.buildPayload();
-        
-        this.store.dispatch(updatePedido({ 
-            id: this.pedidoId(), 
-            changes: changes 
-        }));
 
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Análisis guardado permanentemente.' });
-        
-        setTimeout(() => {
-            this.submitting = false;
-        }, 1000);
+        merge(
+            this.actions$.pipe(
+                ofType(updatePedidoSuccess),
+                filter((a) => a.pedido.id === id),
+                take(1)
+            ),
+            this.actions$.pipe(ofType(updatePedidoFailure), take(1))
+        )
+            .pipe(take(1))
+            .subscribe((action) => {
+                this.submitting = false;
+                if (action.type === updatePedidoSuccess.type) {
+                    const pedido = action.pedido;
+                    if (pedido.referencias != null) {
+                        this.cargarReferenciasAlFormArray(pedido.referencias);
+                    }
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Guardado',
+                        detail: 'Análisis guardado permanentemente.'
+                    });
+                } else {
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error al guardar',
+                        detail: action.error || 'No se pudo guardar el análisis.'
+                    });
+                }
+            });
+
+        this.store.dispatch(updatePedido({ id, changes }));
     }
 
     finalizar(): void {
-        // Validar que el formulario sea válido (esto incluye las cantidades > 0 y referencias seleccionadas)
-        if (this.pedidoForm.invalid) {
-            this.messageService.add({ 
-                severity: 'error', 
-                summary: 'Incompleto o Inválido', 
-                detail: 'Por favor, asegúrese de que todos los artículos tengan una referencia asignada y que las cantidades sean mayores a cero.' 
-            });
-            
-            // Expandir los items con errores para facilitar la corrección
-            this.referenciasFormArray.controls.forEach(item => {
-                const partes = item.get('partes') as FormArray;
-                if (partes.invalid) {
-                    item.get('expandido')?.setValue(true);
-                }
+        // Solo para pasar a costeo: exigir referencia, categoría válida y cantidades (no aplica al botón Guardar).
+        let hayIncompleto = false;
+        this.referenciasFormArray.controls.forEach((item, i) => {
+            if (!this.isItemCompleto(i)) {
+                hayIncompleto = true;
+                item.get('expandido')?.setValue(true);
+            }
+        });
+        if (hayIncompleto) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Incompleto o inválido',
+                detail:
+                    'Para pasar a costeo, cada fila debe tener referencia del catálogo, categoría comercial válida y cantidad mayor a cero. Puede guardar el borrador sin completar todo con el botón Guardar.'
             });
             return;
         }
