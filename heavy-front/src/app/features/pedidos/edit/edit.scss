@@ -83,6 +83,32 @@ $color-text-black: #0C0E0F;
             box-shadow: none;
         }
     }
+
+    &.btn-analisis {
+        background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+        color: #ffffff;
+        font-weight: 700;
+        box-shadow: 0 4px 14px rgba(59, 130, 246, 0.35);
+        letter-spacing: 0.02em;
+
+        &:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            box-shadow: 0 6px 20px rgba(59, 130, 246, 0.45);
+            transform: translateY(-1px);
+        }
+
+        &:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 8px rgba(59, 130, 246, 0.25);
+        }
+
+        &:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+    }
 }
 
 .action-btn-circle {

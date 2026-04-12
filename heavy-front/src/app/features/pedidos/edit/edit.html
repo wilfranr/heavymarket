@@ -20,6 +20,17 @@
             </div>
             <!-- Top Buttons -->
             <div class="flex gap-4 items-center">
+<!-- Enviar a Análisis Button -->
+                @if (puedeEnviarAAnalisis) {
+                <button type="button" class="btn-pill btn-analisis flex items-center gap-2" (click)="enviarAAnalisis()"
+                    [disabled]="submitting || maquinaRevisada === false"
+                    [pTooltip]="mensajeTooltipAnalisis"
+                    tooltipPosition="bottom">
+                    <i class="pi pi-search"></i>
+                    <span>Enviar a Análisis</span>
+                </button>
+                }
+
                 <!-- Enviar a Costeo Button -->
                 @if (puedeEnviarACosteo) {
                 <button type="button" class="btn-pill btn-costeo flex items-center gap-2" (click)="enviarACosteo()"
@@ -33,6 +44,16 @@
                     <i class="pi pi-send"></i>
                     <span>Enviar a Costeo</span>
                     }
+                </button>
+                }
+
+                <!-- Devolver al Vendedor Button (Solo Analista) -->
+                @if (puedeDevolver && estadoActual === 'En_Analisis') {
+                <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="devolverAVendedor()"
+                    pTooltip="Devolver al vendedor para que faça las correcciones"
+                    tooltipPosition="bottom">
+                    <i class="pi pi-user"></i>
+                    <span>Devolver al Vendedor</span>
                 </button>
                 }
                 <button type="button" class="btn-pill btn-primary" (click)="onSubmit()" [disabled]="submitting">
@@ -90,6 +111,7 @@
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Estado:</span>
                             <p-select formControlName="estado" [options]="getEstadosDisponibles()"
+                                optionLabel="label" optionValue="value" filterBy="label"
                                 styleClass="w-[140px] !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white h-[30px] flex items-center text-xs ml-2"
                                 (onChange)="onEstadoChange()" [filter]="true">
                             </p-select>
@@ -132,7 +154,7 @@
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Máquina: {{
                                 maquina.modelo }}</span>
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Fabricante: {{
-                                maquina.marca }}</span>
+                                maquina.marca || maquina.fabricante?.nombre || 'No registrado' }}</span>
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Serie: {{
                                 maquina.serie }}</span>
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">ID adicional:
@@ -420,9 +442,15 @@
 
         <ng-template pTemplate="header">
             <div class="w-full text-center">
-                <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquina">
-                    {{ selectedMaquina.modelo }}
-                </h2>
+                <div *ngIf="selectedMaquina" class="space-y-1">
+                    <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">
+                        {{ selectedMaquina.modelo }}
+                    </h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 m-0">
+                        Fabricante:
+                        {{ selectedMaquina.marca || selectedMaquina.fabricante?.nombre || 'No registrado' }}
+                    </p>
+                </div>
             </div>
         </ng-template>
 
@@ -773,6 +801,30 @@
             <div class="flex justify-between items-center w-full">
                 <span class="text-[10px] text-slate-500 italic">Las imágenes nuevas se guardarán al actualizar el pedido.</span>
                 <p-button label="Cerrar" icon="pi pi-check" (onClick)="displayGallery = false" styleClass="btn-pill btn-primary"></p-button>
+            </div>
+        </ng-template>
+    </p-dialog>
+
+    <!-- Modal Devolución al Vendedor -->
+    <p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '520px'}"
+        header="Devolver al Vendedor para corrección" appendTo="body">
+        <div class="flex flex-col gap-4 mt-2">
+            <p class="text-sm text-gray-300">
+                Indique al vendedor qué debe corregir en este pedido. El comentario será guardado en el pedido.
+            </p>
+            <div>
+                <label for="comentarioDevolucion" class="font-medium text-sm theme-text-secondary mb-2 block">
+                    Qué debe corregir <span class="text-red-400">*</span>
+                </label>
+                <textarea pTextarea id="comentarioDevolucion" [rows]="5" [formControl]="comentarioDevolucion"
+                    class="w-full" placeholder="Ej: Falta agregar las fotos de la máquina, Revisar quantities..."></textarea>
+            </div>
+        </div>
+
+        <ng-template pTemplate="footer">
+            <div class="flex justify-end gap-2">
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" (onClick)="displayDevolucionDialog = false" styleClass="btn-pill btn-outline"></p-button>
+                <p-button label="Devolver al Vendedor" icon="pi pi-user" (onClick)="confirmarDevolucion()" styleClass="btn-pill btn-primary"></p-button>
             </div>
         </ng-template>
     </p-dialog>

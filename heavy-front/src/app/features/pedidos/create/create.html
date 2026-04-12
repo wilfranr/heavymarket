@@ -23,7 +23,7 @@
                     <button type="button" class="btn-pill btn-outline" routerLink="/app/pedidos">
                         <i class="pi pi-times mr-2"></i>Cancelar
                     </button>
-                    <button type="button" class="btn-pill btn-primary" (click)="onSubmit()" [disabled]="loading">
+                    <button type="submit" class="btn-pill btn-primary" [class.opacity-50]="loading" [class.pointer-events-none]="loading">
                         <i class="pi pi-save mr-2"></i>{{ loading ? 'Guardando...' : 'Guardar Pedido' }}
                     </button>
                 </div>
@@ -215,6 +215,15 @@
                                             <p class="text-sm theme-text-primary font-medium">{{
                                                 selectedMaquina()?.modelo }}
                                             </p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-start gap-2">
+                                        <i class="pi pi-building theme-text-secondary text-xs mt-0.5"></i>
+                                        <div class="flex-1">
+                                            <p class="text-xs theme-text-secondary">Fabricante</p>
+                                            <p class="text-sm theme-text-primary font-medium">{{
+                                                selectedMaquina()?.marca || selectedMaquina()?.fabricante?.nombre ||
+                                                'No registrado' }}</p>
                                         </div>
                                     </div>
                                     <div class="flex items-start gap-2">
@@ -504,8 +513,7 @@
                                 Revise que todos los campos estén completos antes de crear el pedido
                             </div>
                             }
-                            <button type="button" class="btn-pill btn-primary px-8" (click)="onSubmit()"
-                                [disabled]="loading || referenciasFormArray.length === 0">
+                            <button type="submit" class="btn-pill btn-primary px-8" [class.opacity-50]="loading || referenciasFormArray.length === 0" [class.pointer-events-none]="loading || referenciasFormArray.length === 0">
                                 @if (loading) {
                                 <i class="pi pi-spin pi-spinner mr-2"></i>Creando...
                                 } @else {
@@ -754,9 +762,15 @@
 
     <ng-template pTemplate="header">
         <div class="w-full text-center">
-            <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquinaDetail">
-                {{ selectedMaquinaDetail.modelo }}
-            </h2>
+            <div *ngIf="selectedMaquinaDetail" class="space-y-1">
+                <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">
+                    {{ selectedMaquinaDetail.modelo }}
+                </h2>
+                <p class="text-sm text-gray-600 dark:text-gray-300 m-0">
+                    Fabricante:
+                    {{ selectedMaquinaDetail.marca || selectedMaquinaDetail.fabricante?.nombre || 'No registrado' }}
+                </p>
+            </div>
         </div>
     </ng-template>
 
@@ -915,3 +929,6 @@
         </div>
     </ng-template>
 </p-dialog>
+
+<!-- Confirm Dialog for Enviar a Análisis -->
+<p-confirmDialog></p-confirmDialog>

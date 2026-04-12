@@ -9,7 +9,9 @@ use App\Http\Requests\StorePedidoRequest;
 use App\Http\Requests\UpdatePedidoRequest;
 use App\Http\Resources\PedidoResource;
 use App\Jobs\SyncPedidoImages;
+use App\Models\Maquina;
 use App\Models\Pedido;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -51,9 +53,9 @@ class PedidoController extends Controller
 
         $user = $request->user();
 
-        // El Analista solo ve pedidos 'Nuevo' (de cualquier vendedor)
+        // El Analista solo ve pedidos en análisis de partes (En_Analisis), de cualquier vendedor
         if ($user->hasRole('Analista')) {
-            $query->where('estado', 'Nuevo');
+            $query->where('estado', 'En_Analisis');
         }
         // Vendedores y otros roles no administrativos solo ven sus propios pedidos
         elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
@@ -143,12 +145,75 @@ class PedidoController extends Controller
     }
 
     /**
+     * Enviar pedido a análisis (vendedor/admin). No usa multipart: evita pérdida de campos en actualizaciones con archivos.
+     */
+    public function enviarAAnalisis(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        if ($pedido->estado !== 'Nuevo') {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Nuevo pueden enviarse a análisis.',
+            ], 422);
+        }
+
+        if ($pedido->maquina_id) {
+            $pedido->loadMissing('maquina');
+            $maquina = $pedido->maquina;
+            if (! $maquina || $maquina->estado_revision !== 'revisado') {
+                return response()->json([
+                    'message' => 'La máquina debe estar en estado "Revisado" para enviar a análisis',
+                ], 422);
+            }
+        }
+
+        $pedido->update(['estado' => 'En_Analisis']);
+
+        try {
+            $this->notificarAnalistas($pedido->fresh(), $request->user());
+        } catch (\Exception $e) {
+            // No fallar la request si la notificación falla
+        }
+
+        $pedido->refresh();
+        $pedido->load([
+            'user', 'tercero', 'maquina.fabricante', 'fabricante', 'contacto',
+            'referencias.referencia', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
+            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
+        ]);
+
+        return response()->json([
+            'data' => new PedidoResource($pedido),
+            'message' => 'Pedido enviado a análisis exitosamente',
+        ]);
+    }
+
+    /**
      * Actualizar un pedido existente
      */
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
         try {
-            $pedido = $this->pedidoService->update($pedido, $request->validated());
+            $estadoAnterior = $pedido->estado;
+            $validated = $request->validated();
+            $nuevoEstado = $validated['estado'] ?? null;
+
+            // Validar máquina revisada antes de persistir (evita dejar el pedido en En_Analisis y responder 422).
+            if ($estadoAnterior !== 'En_Analisis' && $nuevoEstado === 'En_Analisis') {
+                $maquinaId = array_key_exists('maquina_id', $validated)
+                    ? $validated['maquina_id']
+                    : $pedido->maquina_id;
+                if ($maquinaId) {
+                    $maquina = Maquina::query()->find($maquinaId);
+                    if (! $maquina || $maquina->estado_revision !== 'revisado') {
+                        return response()->json([
+                            'message' => 'La máquina debe estar en estado "Revisado" para enviar a análisis',
+                        ], 422);
+                    }
+                }
+            }
+
+            $pedido = $this->pedidoService->update($pedido, $validated);
 
             // Procesar imágenes nuevas de forma asíncrona si existen
             if ($request->has('referencias')) {
@@ -166,6 +231,15 @@ class PedidoController extends Controller
                 }
             }
 
+            // Notificar a analistas cuando el pedido cambia a En_Analisis
+            if ($estadoAnterior !== 'En_Analisis' && $nuevoEstado === 'En_Analisis') {
+                try {
+                    $this->notificarAnalistas($pedido, $request->user());
+                } catch (\Exception $e) {
+                    // No fallar la request si la notificación falla
+                }
+            }
+
             return response()->json([
                 'data' => new PedidoResource($pedido),
                 'message' => 'Pedido actualizado exitosamente',
@@ -176,6 +250,32 @@ class PedidoController extends Controller
                 'message' => 'Error al actualizar el pedido',
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Notifica a todos los analistas cuando un pedido se envía a análisis
+     */
+    private function notificarAnalistas(Pedido $pedido, User $vendedor): void
+    {
+        try {
+            // Buscar usuarios con rol Analista (mismo rol definido en BD / Spatie)
+            $analistas = \App\Models\User::whereHas('roles', function ($q) {
+                $q->where('name', 'Analista');
+            })->get();
+
+            foreach ($analistas as $analista) {
+                $analista->notify(new \App\Notifications\SystemNotification(
+                    'pedido_en_analisis',
+                    'Pedido #'.$pedido->id.' enviado a Análisis',
+                    'El vendedor '.$vendedor->name.' ha enviado el pedido #'.$pedido->id.' para análisis. ¡Tómalo y comienza a trabajar!',
+                    'pi-search',
+                    'blue',
+                    ['id' => $pedido->id, 'tercero_id' => $pedido->tercero_id]
+                ));
+            }
+        } catch (\Exception $e) {
+            // Silenciar errores de notificación
         }
     }
 

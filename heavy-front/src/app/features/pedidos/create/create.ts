@@ -10,7 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
-import { MessageService, FilterService } from 'primeng/api';
+import { MessageService, FilterService, ConfirmationService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { StepsModule } from 'primeng/steps';
 import { MenuItem } from 'primeng/api';
@@ -26,6 +26,7 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { ImageModule } from 'primeng/image';
 import { GalleriaModule } from 'primeng/galleria';
 import { BadgeModule } from 'primeng/badge';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -75,9 +76,10 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         ContactoCreateModalComponent,
         ImageModule,
         GalleriaModule,
-        BadgeModule
+        BadgeModule,
+        ConfirmDialogModule
     ],
-    providers: [MessageService],
+    providers: [MessageService, ConfirmationService],
     templateUrl: './create.html',
     styleUrl: './create.scss'
 })
@@ -87,6 +89,7 @@ export class CreateComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly confirmationService = inject(ConfirmationService);
     private readonly filterService = inject(FilterService);
     private readonly terceroService = inject(TerceroService);
     private readonly referenciaService = inject(ReferenciaService);
@@ -500,8 +503,8 @@ export class CreateComponent implements OnInit {
         this.maquinaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
                 this.maquinasFull = response.data;
-                this.maquinas = response.data.map((m) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+                this.maquinas = response.data.map((m: any) => ({
+                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
                     value: m.id
                 }));
             }
@@ -1163,10 +1166,14 @@ export class CreateComponent implements OnInit {
         }
     }
 
-    /**
+/**
      * Envía el formulario para crear el pedido
      */
     onSubmit(): void {
+        // Habilitar campos deshabilitados para poder validar correctamente
+        this.pedidoForm.get('articulo_id')?.enable();
+        this.pedidoForm.get('referencias_seleccionadas')?.enable();
+
         if (this.pedidoForm.invalid) {
             this.messageService.add({
                 severity: 'warn',
@@ -1179,6 +1186,7 @@ export class CreateComponent implements OnInit {
         // Validar que haya al menos una referencia solo si NO es estado nuevo
         const estado = this.pedidoForm.get('estado')?.value;
         const tieneReferencias = this.referenciasFormArray.length > 0;
+        
         if (estado !== 'Nuevo' && !tieneReferencias) {
             this.messageService.add({
                 severity: 'warn',
@@ -1188,7 +1196,69 @@ export class CreateComponent implements OnInit {
             return;
         }
 
+        // Verificar si la máquina está seleccionada y revisada
+        const maquinaId = this.pedidoForm.get('maquina_id')?.value;
+        let puedeEnviarAAnalisis = false;
+        
+        if (maquinaId) {
+            const maquinaBuscada = this.maquinasFull.find((m: any) => m.id === maquinaId);
+            puedeEnviarAAnalisis = maquinaBuscada && maquinaBuscada.estado_revision === 'revisado';
+        }
+
+        // Si la máquina está revisada, preguntar si quiere enviar a análisis
+        if (puedeEnviarAAnalisis) {
+            this.confirmationService.confirm({
+                message: '¿Desea enviar este pedido a análisis ahora? Los analistas serán notificados.',
+                header: 'Enviar a Análisis',
+                icon: 'pi pi-search',
+                accept: () => {
+                    this.pedidoForm.patchValue({ estado: 'En_Analisis' });
+                    this.crearPedido();
+                },
+                reject: () => {
+                    this.pedidoForm.patchValue({ estado: 'Nuevo' });
+                    this.crearPedidoPendiente(true); // Usuario eligió no enviar a análisis
+                }
+            });
+        } else {
+            // Sin máquina o máquina sin revisar: crear directamente en estado Nuevo
+            this.pedidoForm.patchValue({ estado: 'Nuevo' });
+            this.crearPedidoPendiente();
+        }
+    }
+
+    /**
+     * Crea el pedido y lo envía a análisis
+     */
+    private crearPedido(): void {
         this.loading = true;
+        this.procesarYCrearPedido();
+    }
+
+    /**
+     * Crea el pedido en estado Nuevo
+     * @param esEnvioAnalisis - true si el usuario eligió NO enviar a análisis (confirm dialog)
+     *                     - false o undefined si es flujo automático (sin máquina revisada)
+     */
+    private crearPedidoPendiente(esEnvioAnalisis: boolean = false): void {
+        this.loading = true;
+        
+        // Solo mostrar mensaje si el usuario eligió NO enviar a análisis expresamente
+        if (esEnvioAnalisis) {
+            this.messageService.add({
+                severity: 'info',
+                summary: 'Pedido guardado',
+                detail: 'El pedido queda pendiente. Cuando esté listo, envíelo a Análisis desde el detalle.'
+            });
+        }
+        
+        this.procesarYCrearPedido();
+    }
+
+    /**
+     * Procesa y crea el pedido (lógica común)
+     */
+    private procesarYCrearPedido(): void {
 
         const formValue = this.pedidoForm.value;
         const formData = new FormData();
@@ -1291,9 +1361,9 @@ export class CreateComponent implements OnInit {
     private loadMaquinasPorCliente(terceroId: number): void {
         this.maquinaService.getAll({ tercero_id: terceroId }).subscribe({
             next: (response) => {
-                this.maquinasFull = response.data;
+                this.maquinasFull = response.data; // Guardar datos completos para validar estado_revision
                 this.maquinas = response.data.map((m: any) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
+                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
                     value: m.id
                 }));
             }

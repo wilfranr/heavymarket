@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, filter, take } from 'rxjs';
+import { Observable, combineLatest, filter, take } from 'rxjs';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -32,7 +32,8 @@ import { GalleriaModule } from 'primeng/galleria';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
-import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
+import { selectPedidoById, selectPedidosError, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
+import { PedidoService } from '../../../core/services/pedido.service';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { SistemaService } from '../../../core/services/sistema.service';
@@ -101,7 +102,27 @@ export class EditComponent implements OnInit {
     private readonly proveedorService = inject(PedidoReferenciaProveedorService);
     private readonly articuloService = inject(ArticuloService);
     private readonly pedidoArticuloService = inject(PedidoArticuloService);
+    private readonly pedidoApi = inject(PedidoService);
     private readonly authService = inject(AuthService);
+
+    // Verifica si el usuario actual tiene rol de Vendedor
+    private get isVendedor(): boolean {
+        const user = this.authService.currentUser();
+        return user?.roles?.includes('Vendedor') ?? false;
+    }
+
+    // Verifica si el usuario actual es Admin o Super_admin
+    private get isAdmin(): boolean {
+        const user = this.authService.currentUser();
+        const roles = user?.roles ?? [];
+        return roles.includes('Administrador') || roles.includes('super_admin');
+    }
+
+    // Verifica si el usuario actual es Analista
+    private get isAnalista(): boolean {
+        const user = this.authService.currentUser();
+        return user?.roles?.includes('Analista') ?? false;
+    }
 
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
@@ -171,6 +192,13 @@ export class EditComponent implements OnInit {
     displayComentarioDialog = false;
     displayImagenDialog = false;
     displayImagenesCarouselModal = false;
+
+    // Dialogo de devolución al vendedor
+    displayDevolucionDialog = false;
+    comentarioDevolucion = new FormControl('');
+
+    // Estado de revisión de la máquina
+    maquinaRevisada: boolean | null = null;
     
     // Estado para la galería de imágenes
     displayGallery = false;
@@ -214,6 +242,125 @@ export class EditComponent implements OnInit {
     };
 
     submitting = false;
+
+    /**
+     * Botón enviar a análisis - visible para Admin o Vendedor
+     */
+    get puedeEnviarAAnalisis(): boolean {
+        const transiciones = this.transicionesValidas[this.estadoActual] || [];
+        return (transiciones.includes('En_Analisis') && (this.isVendedor || this.isAdmin));
+    }
+
+    /**
+     * Tooltip del bouton envoyer a analisis
+     */
+    get mensajeTooltipAnalisis(): string {
+        if (this.maquinaRevisada === false) {
+            return 'La máquina debe estar en estado "Revisado" para enviar a análisis';
+        }
+        return 'Enviar a analistas para que comience el análisis';
+    }
+
+    /**
+     * Indica si el analyst peut devolver el pedido
+     */
+    get puedeDevolver(): boolean {
+        return this.isAnalista || this.isAdmin;
+    }
+
+    /**
+     * Envía le pedido a análisis, notificando aux analistas
+     */
+    enviarAAnalisis(): void {
+        if (this.maquinaRevisada === false) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Máquina sin revisar',
+                detail: 'La máquina debe estar en estado "Revisado" para enviar a análisis'
+            });
+            return;
+        }
+
+        this.confirmationService.confirm({
+            message: '¿Está seguro de enviar este pedido a análisis? Los analistas serán notificados.',
+            header: 'Enviar a Análisis',
+            icon: 'pi pi-search',
+            accept: () => {
+                this.pedidoApi.enviarAAnalisis(this.pedidoId()).subscribe({
+                    next: (res) => {
+                        this.estadoActual = 'En_Analisis';
+                        this.pedidoForm.patchValue({ estado: 'En_Analisis' });
+                        this.store.dispatch(loadPedido({ id: this.pedidoId() }));
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Enviado a análisis',
+                            detail: res.message ?? 'El pedido pasó a En análisis.'
+                        });
+                    },
+                    error: (err) => {
+                        const msg = err.error?.message ?? 'No se pudo enviar el pedido a análisis';
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: msg
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Renvoie le pedido al vendedor para correction
+     */
+    devolverAVendedor(): void {
+        this.displayDevolucionDialog = true;
+    }
+
+    /**
+     * Confirma la devolución al vendedor
+     */
+    confirmarDevolucion(): void {
+        const comentario = this.comentarioDevolucion?.value?.trim();
+        if (!comentario) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Comentario requerido',
+                detail: 'Indique qué debe corregir el vendedor'
+            });
+            return;
+        }
+
+        this.pedidoForm.patchValue({ 
+            estado: 'Nuevo',
+            comentario: (this.pedidoForm.get('comentario')?.value || '') + '\n\n[DEVOLUCIÓN]: ' + comentario
+        });
+
+        this.displayDevolucionDialog = false;
+        this.comentarioDevolucion?.setValue('');
+        this.onSubmit();
+
+        this.messageService.add({
+            severity: 'info',
+            summary: 'Pedido devuelto',
+            detail: 'El vendedor recibirá una notificación'
+        });
+    }
+
+    /**
+     * Force reload del estado de revisión de la máquina
+     */
+    forceReloadMaquinaRevision(): void {
+        const maquinaId = this.pedidoForm.get('maquina_id')?.value;
+        if (maquinaId) {
+            this.maquinaService.getById(maquinaId).subscribe({
+                next: (response: any) => {
+                    const maquinaData = response.data || response;
+                    this.maquinaRevisada = maquinaData?.estado_revision === 'revisado';
+                }
+            });
+        }
+    }
 
     private removeAccents(str: string): string {
         return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
@@ -537,6 +684,9 @@ export class EditComponent implements OnInit {
 
     onMaquinaActualizadaDesdeModal(_m: any): void {
         this.reloadMaquinasParaPedido();
+        
+        // Actualizar estado revisión
+        this.forceReloadMaquinaRevision();
     }
 
     /**
@@ -570,6 +720,21 @@ export class EditComponent implements OnInit {
                             fabricante_id: pedido.fabricante_id || null,
                             contacto_id: pedido.contacto_id || null
                         });
+
+                        // Cargar estado de revisión de la máquina
+                        if (pedido.maquina_id) {
+                            this.maquinaService.getById(pedido.maquina_id).subscribe({
+                                next: (response: any) => {
+                                    const maquinaData = response.data || response;
+                                    this.maquinaRevisada = maquinaData?.estado_revision === 'revisado';
+                                },
+                                error: () => {
+                                    this.maquinaRevisada = null;
+                                }
+                            });
+                        } else {
+                            this.maquinaRevisada = null;
+                        }
 
                         // Cargar referencias del pedido
                         if (pedido.referencias && pedido.referencias.length > 0) {
@@ -908,11 +1073,17 @@ export class EditComponent implements OnInit {
                     })
                 );
 
-                this.store
-                    .select((state: any) => state.pedidos)
-                    .subscribe((pedidosState: any) => {
-                        if (!pedidosState.loading && !pedidosState.error && this.enviandoACosteo) {
-                            this.enviandoACosteo = false;
+                combineLatest([this.store.select(selectPedidosLoading), this.store.select(selectPedidosError)])
+                    .pipe(
+                        filter(([loading]) => !loading && this.enviandoACosteo),
+                        take(1)
+                    )
+                    .subscribe(([_, error]) => {
+                        if (!this.enviandoACosteo) {
+                            return;
+                        }
+                        this.enviandoACosteo = false;
+                        if (!error) {
                             this.estadoActual = 'En_Costeo';
                             this.pedidoForm.patchValue({ estado: 'En_Costeo' });
                             this.messageService.add({
@@ -923,12 +1094,12 @@ export class EditComponent implements OnInit {
                             setTimeout(() => {
                                 this.router.navigate(['/app/pedidos', this.pedidoId()]);
                             }, 1500);
-                        } else if (!pedidosState.loading && pedidosState.error && this.enviandoACosteo) {
-                            this.enviandoACosteo = false;
+                        } else {
+                            this.pedidoForm.patchValue({ estado: this.estadoActual });
                             this.messageService.add({
                                 severity: 'error',
                                 summary: 'Error',
-                                detail: 'No se pudo enviar el pedido a costeo'
+                                detail: error || 'No se pudo enviar el pedido a costeo'
                             });
                         }
                     });
@@ -1444,7 +1615,7 @@ export class EditComponent implements OnInit {
      * Maneja el cambio de estado con validación
      */
     onEstadoChange(): void {
-        const nuevoEstado = this.pedidoForm.get('estado')?.value;
+        const nuevoEstado = this.normalizePedidoEstado(this.pedidoForm.get('estado')?.value);
 
         if (!this.validarTransicionEstado(this.estadoActual, nuevoEstado)) {
             this.messageService.add({
@@ -1490,6 +1661,16 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * El p-select de estado usa { label, value }; sin optionValue el control puede ser el objeto completo.
+     */
+    private normalizePedidoEstado(raw: unknown): PedidoEstado {
+        if (raw !== null && typeof raw === 'object' && 'value' in (raw as object)) {
+            return (raw as { value: PedidoEstado }).value;
+        }
+        return raw as PedidoEstado;
+    }
+
+    /**
      * Envía el formulario para actualizar el pedido
      */
     onSubmit(): void {
@@ -1506,7 +1687,7 @@ export class EditComponent implements OnInit {
         }
 
         const formValue = this.pedidoForm.value;
-        const nuevoEstado = formValue.estado;
+        const nuevoEstado = this.normalizePedidoEstado(formValue.estado);
 
         // Validar transición antes de enviar
         if (!this.validarTransicionEstado(this.estadoActual, nuevoEstado)) {
@@ -1563,25 +1744,33 @@ export class EditComponent implements OnInit {
             })
         );
 
-        // Escuchar el resultado
-        this.store
-            .select((state: any) => state.pedidos)
-            .subscribe((pedidosState: any) => {
-                if (!pedidosState.loading && this.submitting) {
-                    if (!pedidosState.error) {
-                        this.submitting = false;
-                        this.estadoActual = nuevoEstado;
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Éxito',
-                            detail: 'Pedido actualizado correctamente'
-                        });
-                        setTimeout(() => {
-                            this.router.navigate(['/app/pedidos', this.pedidoId()]);
-                        }, 1500);
-                    } else {
-                        this.submitting = false;
-                    }
+        combineLatest([this.store.select(selectPedidosLoading), this.store.select(selectPedidosError)])
+            .pipe(
+                filter(([loading]) => !loading && this.submitting),
+                take(1)
+            )
+            .subscribe(([_, error]) => {
+                if (!this.submitting) {
+                    return;
+                }
+                this.submitting = false;
+                if (!error) {
+                    this.estadoActual = nuevoEstado;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Pedido actualizado correctamente'
+                    });
+                    setTimeout(() => {
+                        this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                    }, 1500);
+                } else {
+                    this.pedidoForm.patchValue({ estado: this.estadoActual });
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: error
+                    });
                 }
             });
     }
