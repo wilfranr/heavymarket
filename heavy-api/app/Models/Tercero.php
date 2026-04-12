@@ -71,6 +71,7 @@ class Tercero extends Model
         'dv',                         // Dígito de verificación (Colombia)
         'estado',                     // Estado activo/inactivo del tercero
         'forma_pago',                 // Forma de pago preferida
+        'categoria_comercial_id',       // Categoría comercial del proveedor
         'email_factura_electronica',  // Email para facturación electrónica
         'rut',                        // Registro Único Tributario (Chile)
         'certificacion_bancaria',     // Certificación bancaria del tercero
@@ -178,6 +179,15 @@ class Tercero extends Model
     public function sistemas(): BelongsToMany
     {
         return $this->belongsToMany(Sistema::class, 'tercero_sistemas', 'tercero_id', 'sistema_id');
+    }
+
+    /**
+     * Relación con categoría comercial.
+     * Un tercero (proveedor) puede tener una categoría comercial asignada.
+     */
+    public function categoriaComercial(): BelongsTo
+    {
+        return $this->belongsTo(Lista::class, 'categoria_comercial_id');
     }
 
     /**

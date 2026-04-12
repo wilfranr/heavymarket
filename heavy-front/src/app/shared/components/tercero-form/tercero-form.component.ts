@@ -22,6 +22,7 @@ import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { SistemaService } from '../../../core/services/sistema.service';
+import { ListaService } from '../../../core/services/lista.service';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model';
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
@@ -137,6 +138,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
     private readonly sistemaService = inject(SistemaService);
+    private readonly listaService = inject(ListaService);
     private readonly messageService = inject(MessageService);
 
     @Input() terceroId: number | null = null;
@@ -162,6 +164,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     // Listas auxiliares
     maquinas: any[] = [];
     fabricantes: any[] = [];
+    categoriasComerciales: any[] = [];
     sistemas: any[] = [];
 
     tiposDocumento = [
@@ -188,7 +191,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         this.loadPaises();
         this.loadMaquinas();
         this.loadFabricantes();
-        this.loadSistemas();
+        this.loadCategoriasComerciales();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -235,7 +238,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             city_id: data.city_id,
             maquina_id: data.maquinas ? data.maquinas.map((m: any) => m.id) : [],
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
-            sistema_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
+            categoria_comercial_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
             contactos: [],
             landing_access: data.landing_access ?? false,
             landing_password: '',
@@ -309,7 +312,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
             maquina_id: [[]],
             fabricante_id: [[]],
-            sistema_id: [[]],
+            categoria_comercial_id: [[]],
 
             direccion: ['', [Validators.required]],
             country_id: [null],
@@ -366,7 +369,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 estado: 'activo',
                 maquina_id: [],
                 fabricante_id: [],
-                sistema_id: [],
+                categoria_comercial_id: [],
                 contactos: [],
                 landing_access: false,
                 landing_password: '',
@@ -455,7 +458,11 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
     private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
     private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
-    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas = r.data.map(s => ({ label: s.nombre, value: s.id })) }); }
+    private loadCategoriasComerciales(): void { 
+        this.listaService.getByTipo('Categoría Comercial').subscribe({
+            next: (listas) => this.categoriasComerciales = listas.map(l => ({ label: l.nombre, value: l.id }))
+        });
+    }
 
     saveTercero(): void {
         if (this.isViewMode) {
@@ -499,8 +506,8 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         if (formValue.fabricante_id && Array.isArray(formValue.fabricante_id)) {
             formValue.fabricante_id.forEach((id: any) => formData.append('fabricante_id[]', id));
         }
-        if (formValue.sistema_id && Array.isArray(formValue.sistema_id)) {
-            formValue.sistema_id.forEach((id: any) => formData.append('sistema_id[]', id));
+        if (formValue.categoria_comercial_id && Array.isArray(formValue.categoria_comercial_id)) {
+            formValue.categoria_comercial_id.forEach((id: any) => formData.append('categoria_comercial_id[]', id));
         }
 
         if (formValue.contactos && Array.isArray(formValue.contactos)) {

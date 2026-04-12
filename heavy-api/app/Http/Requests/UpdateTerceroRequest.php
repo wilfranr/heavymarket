@@ -61,10 +61,10 @@ class UpdateTerceroRequest extends FormRequest
             'cedula_representante_legal' => ['nullable', 'file', 'max:5120'],
 
             // Relations
-            'maquina_id' => ['nullable', 'array'],
-            'maquina_id.*' => ['integer', 'exists:maquinas,id'],
+'maquina_id' => ['nullable', 'array'],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],
+            'categoria_comercial_id' => ['nullable', 'integer', 'exists:listas,id'],
 
             // Contactos
             'contactos' => ['nullable', 'array'],
