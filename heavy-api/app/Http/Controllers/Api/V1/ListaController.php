@@ -101,7 +101,7 @@ class ListaController extends Controller
 
         $listas = $query->with('fabricante')
             ->orderBy('nombre', 'asc')
-            ->limit(50) // Limitamos a 50 para que el dropdown sea instantáneo
+            ->limit(100) // Listas completas para dropdowns
             ->get();
 
         return response()->json([
