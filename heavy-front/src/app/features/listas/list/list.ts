@@ -88,6 +88,7 @@ export class ListComponent implements OnInit {
         { label: 'Fabricantes', value: 'Fabricantes', tipoValue: 'Fabricantes', icon: 'pi pi-globe' },
         { label: 'Tipos de Máquina', value: 'Tipo de Máquina', tipoValue: 'Tipo de Máquina', icon: 'pi pi-cog' },
         { label: 'Tipos de Artículo', value: 'Tipo de Artículo', tipoValue: 'Tipo de Artículo', icon: 'pi pi-box' },
+        { label: 'Categorías Comerciales', value: 'Categoría Comercial', tipoValue: 'Categoría Comercial', icon: 'pi pi-tag' },
         { label: 'Unidades Medida', value: 'Unidad de Medida', tipoValue: 'Unidad de Medida', icon: 'pi pi-ruler-combined' },
         { label: 'Tipos de Medida', value: 'Tipo de Medida', tipoValue: 'Tipo de Medida', icon: 'pi pi-sliders-h' },
         { label: 'Nombres de Medida', value: 'Nombre de Medida', tipoValue: 'Nombre de Medida', icon: 'pi pi-tag' },

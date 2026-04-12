@@ -43,7 +43,8 @@ export type ListaTipo =
     | 'Piezas Estandar'
     | 'Unidad de Medida'
     | 'Tipo de Medida'
-    | 'Nombre de Medida';
+    | 'Nombre de Medida'
+    | 'Categoría Comercial';
 
 /**
  * Datos para crear una lista
