@@ -5,17 +5,19 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\{LoginRequest, RegisterRequest};
-use App\Models\User;
-use App\Models\Tercero;
+use App\Http\Requests\LoginRequest;
+use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\TerceroResource;
-use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\{Auth, Hash};
+use App\Models\Tercero;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 
 /**
  * Controlador de Autenticación
- * 
+ *
  * Maneja el registro, login, logout y gestión de tokens
  * de autenticación usando Laravel Sanctum.
  */
@@ -23,10 +25,8 @@ class AuthController extends Controller
 {
     /**
      * Registrar un nuevo usuario
-     * 
-     * @param RegisterRequest $request
-     * @return JsonResponse
-     * 
+     *
+     *
      * @bodyParam name string required Nombre completo del usuario. Example: Juan Pérez
      * @bodyParam email string required Email único del usuario. Example: juan@example.com
      * @bodyParam password string required Contraseña (mínimo 8 caracteres, mixta). Example: Password123!
@@ -78,10 +78,8 @@ class AuthController extends Controller
 
     /**
      * Iniciar sesión
-     * 
-     * @param LoginRequest $request
-     * @return JsonResponse
-     * 
+     *
+     *
      * @bodyParam email string required Email del usuario. Example: admin@heavymarket.net
      * @bodyParam password string required Contraseña. Example: password
      * @bodyParam device_name string optional Nombre del dispositivo. Example: Chrome Browser
@@ -92,7 +90,7 @@ class AuthController extends Controller
         $user = User::where('email', $request->input('email'))->first();
 
         // Verificar si el usuario existe y la contraseña es correcta
-        if (!$user || !Hash::check($request->input('password'), $user->password)) {
+        if (! $user || ! Hash::check($request->input('password'), $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Las credenciales proporcionadas son incorrectas.'],
             ]);
@@ -124,9 +122,6 @@ class AuthController extends Controller
 
     /**
      * Cerrar sesión (revocar token actual)
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logout(Request $request): JsonResponse
     {
@@ -140,9 +135,6 @@ class AuthController extends Controller
 
     /**
      * Cerrar sesión en todos los dispositivos
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function logoutAll(Request $request): JsonResponse
     {
@@ -156,9 +148,6 @@ class AuthController extends Controller
 
     /**
      * Obtener información del usuario autenticado
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function me(Request $request): JsonResponse
     {
@@ -184,14 +173,11 @@ class AuthController extends Controller
 
     /**
      * Refrescar token (crear nuevo token y revocar el actual)
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function refresh(Request $request): JsonResponse
     {
         $user = $request->user();
-        
+
         // Revocar token actual
         $request->user()->currentAccessToken()->delete();
 
@@ -214,9 +200,6 @@ class AuthController extends Controller
 
     /**
      * Listar tokens activos del usuario
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function tokens(Request $request): JsonResponse
     {
@@ -238,10 +221,6 @@ class AuthController extends Controller
 
     /**
      * Revocar un token específico
-     * 
-     * @param Request $request
-     * @param string $tokenId
-     * @return JsonResponse
      */
     public function revokeToken(Request $request, string $tokenId): JsonResponse
     {
@@ -249,7 +228,7 @@ class AuthController extends Controller
             ->where('id', $tokenId)
             ->delete();
 
-        if (!$deleted) {
+        if (! $deleted) {
             return response()->json([
                 'message' => 'Token no encontrado',
             ], 404);
@@ -262,9 +241,6 @@ class AuthController extends Controller
 
     /**
      * Actualizar el perfil del usuario autenticado
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function updateProfile(Request $request): JsonResponse
     {
@@ -272,14 +248,14 @@ class AuthController extends Controller
 
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,'.$user->id],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
         ]);
 
         $user->name = $validated['name'];
         $user->email = $validated['email'];
 
-        if (!empty($validated['password'])) {
+        if (! empty($validated['password'])) {
             $user->password = $validated['password']; // Se hashea automáticamente por el cast en el modelo
         }
 

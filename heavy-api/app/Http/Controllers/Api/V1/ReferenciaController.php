@@ -9,16 +9,16 @@ use App\Http\Requests\StoreReferenciaRequest;
 use App\Http\Requests\UpdateReferenciaRequest;
 use App\Http\Resources\ReferenciaResource;
 use App\Models\Referencia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
 /**
  * Controlador API para gestión de Referencias
  *
  * Maneja todas las operaciones CRUD de referencias a través del API REST.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 
 class ReferenciaController extends Controller
 {
@@ -87,9 +87,6 @@ class ReferenciaController extends Controller
 
     /**
      * Buscar o crear referencias por lotes
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function bulkSearchOrCreate(Request $request): JsonResponse
     {
@@ -98,7 +95,11 @@ class ReferenciaController extends Controller
             'items.*.codigo' => ['required', 'string'],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
             'es_temporal' => ['nullable', 'boolean'],
-            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'marca_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('listas', 'id')->whereIn('tipo', ['Marca', 'Fabricantes']),
+            ],
         ]);
 
         $items = $validated['items'];
@@ -115,17 +116,17 @@ class ReferenciaController extends Controller
             });
 
         $resultados = [];
-        
+
         DB::beginTransaction();
         try {
             foreach ($items as $item) {
                 $codigo = strtoupper($item['codigo']);
-                
+
                 if ($existentes->has($codigo)) {
                     $referencia = $existentes->get($codigo);
-                    
+
                     // Si ya existe pero no tiene marca (o es temporal y se proporciona una marca nueva), actualizamos
-                    if ($marcaId && (!$referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $marcaId))) {
+                    if ($marcaId && (! $referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $marcaId))) {
                         $referencia->update(['marca_id' => $marcaId]);
                     }
                 } else {
@@ -134,7 +135,7 @@ class ReferenciaController extends Controller
                         'referencia' => $codigo,
                         'marca_id' => $marcaId,
                         'es_temporal' => $esTemporal,
-                        'comentario' => $esTemporal 
+                        'comentario' => $esTemporal
                             ? 'Referencia temporal desde Landing - Requiere revisión'
                             : 'Creada desde importación masiva',
                     ]);
@@ -152,15 +153,16 @@ class ReferenciaController extends Controller
             DB::commit();
         } catch (\Exception $e) {
             DB::rollBack();
+
             return response()->json([
                 'message' => 'Error al procesar el lote de referencias',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
 
         return response()->json([
             'data' => $resultados,
-            'message' => count($resultados) . ' referencia(s) procesada(s) exitosamente',
+            'message' => count($resultados).' referencia(s) procesada(s) exitosamente',
         ]);
     }
 

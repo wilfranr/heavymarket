@@ -7,11 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 
 /**
  * Modelo Empresa - Gestiona la información de las empresas del sistema
- * 
+ *
  * Este modelo representa una empresa y contiene toda la información
  * necesaria para la operación del sistema, incluyendo configuración
  * de moneda (TRM) y costos de flete.
- * 
+ *
  * @property int $id Identificador único de la empresa
  * @property string $nombre Nombre completo de la empresa
  * @property string $direccion Dirección física de la empresa
@@ -29,21 +29,21 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $siglas Siglas o abreviatura de la empresa
  * @property float|null $flete Costo del flete por kilogramo (en pesos colombianos)
  * @property float|null $trm Tasa de cambio USD a COP (Tasa Representativa del Mercado)
- * 
  * @property-read Country $country Relación con el país
  * @property-read State $state Relación con el estado/provincia
  * @property-read City $city Relación con la ciudad
- * 
+ *
  * @since 1.0.0
+ *
  * @author Sistema CYH
  */
 class Empresa extends Model
 {
-    use HasFactory, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory;
 
     /**
      * Los atributos que son asignables masivamente.
-     * 
+     *
      * @var array<string>
      */
     protected $fillable = [
@@ -75,7 +75,7 @@ class Empresa extends Model
 
     /**
      * Los atributos que deben ser convertidos a tipos nativos.
-     * 
+     *
      * @var array<string, string>
      */
     protected $casts = [
@@ -84,7 +84,7 @@ class Empresa extends Model
 
     /**
      * Relación con el país donde opera la empresa.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function country()
@@ -94,7 +94,7 @@ class Empresa extends Model
 
     /**
      * Relación con la ciudad donde opera la empresa.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function city()
@@ -104,7 +104,7 @@ class Empresa extends Model
 
     /**
      * Relación con el estado/provincia donde opera la empresa.
-     * 
+     *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function state()
@@ -114,7 +114,7 @@ class Empresa extends Model
 
     /**
      * Método boot para interceptar eventos del modelo.
-     * 
+     *
      * @return void
      */
     protected static function boot()
@@ -123,11 +123,11 @@ class Empresa extends Model
 
         /**
          * Evento saving: Asegura que solo una empresa esté activa a la vez.
-         * 
+         *
          * Cuando se guarda una empresa con estado = true, automáticamente
          * se desactivan todas las demás empresas del sistema.
-         * 
-         * @param Empresa $model El modelo que se está guardando
+         *
+         * @param  Empresa  $model  El modelo que se está guardando
          */
         static::saving(function ($model) {
             if ($model->estado) {
@@ -139,18 +139,18 @@ class Empresa extends Model
 
     /**
      * Obtiene la ruta completa del logo dark si existe y es válido.
-     * 
+     *
      * @return string|null Ruta completa del logo o null si no existe
      */
     public function getLogoDarkPathAttribute()
     {
-        if (!$this->logo_dark || empty(trim($this->logo_dark))) {
+        if (! $this->logo_dark || empty(trim($this->logo_dark))) {
             return null;
         }
 
-        $path = public_path('storage/' . $this->logo_dark);
-        
-        if (file_exists($path) && !is_dir($path)) {
+        $path = public_path('storage/'.$this->logo_dark);
+
+        if (file_exists($path) && ! is_dir($path)) {
             return $path;
         }
 
@@ -159,18 +159,18 @@ class Empresa extends Model
 
     /**
      * Obtiene la ruta completa del logo light si existe y es válido.
-     * 
+     *
      * @return string|null Ruta completa del logo o null si no existe
      */
     public function getLogoLightPathAttribute()
     {
-        if (!$this->logo_light || empty(trim($this->logo_light))) {
+        if (! $this->logo_light || empty(trim($this->logo_light))) {
             return null;
         }
 
-        $path = public_path('storage/' . $this->logo_light);
-        
-        if (file_exists($path) && !is_dir($path)) {
+        $path = public_path('storage/'.$this->logo_light);
+
+        if (file_exists($path) && ! is_dir($path)) {
             return $path;
         }
 
@@ -179,7 +179,7 @@ class Empresa extends Model
 
     /**
      * Verifica si la empresa tiene un logo dark válido.
-     * 
+     *
      * @return bool
      */
     public function hasValidLogoDark()
@@ -189,7 +189,7 @@ class Empresa extends Model
 
     /**
      * Verifica si la empresa tiene un logo light válido.
-     * 
+     *
      * @return bool
      */
     public function hasValidLogoLight()

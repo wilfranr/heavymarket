@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
+use App\Models\SubcategoriaLanding;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use App\Models\SubcategoriaLanding;
-use Illuminate\Support\Facades\File;
 
 class NormalizeLandingImagesCommand extends Command
 {
@@ -34,8 +34,9 @@ class NormalizeLandingImagesCommand extends Command
         $disk = Storage::disk('public');
         $basePath = 'landing';
 
-        if (!$disk->exists($basePath)) {
+        if (! $disk->exists($basePath)) {
             $this->error("El directorio {$basePath} no existe en public.");
+
             return;
         }
 
@@ -47,28 +48,28 @@ class NormalizeLandingImagesCommand extends Command
         foreach ($allFiles as $file) {
             $parts = explode('/', $file);
             $newParts = [];
-            
+
             foreach ($parts as $index => $part) {
                 if ($index === count($parts) - 1) {
                     // Es el archivo
                     $filename = pathinfo($part, PATHINFO_FILENAME);
                     $extension = pathinfo($part, PATHINFO_EXTENSION);
                     $newFilename = Str::slug($filename);
-                    $newParts[] = $newFilename . '.' . strtolower($extension);
+                    $newParts[] = $newFilename.'.'.strtolower($extension);
                 } else {
                     // Es un directorio
                     $newParts[] = Str::slug($part);
                 }
             }
-            
+
             $newPath = implode('/', $newParts);
-            
+
             if ($file !== $newPath) {
                 $newDir = dirname($newPath);
-                if (!$disk->exists($newDir)) {
+                if (! $disk->exists($newDir)) {
                     $disk->makeDirectory($newDir);
                 }
-                
+
                 $disk->move($file, $newPath);
                 $this->line("Renombrado: {$file} -> {$newPath}");
                 $renamedFilesCount++;
@@ -80,9 +81,9 @@ class NormalizeLandingImagesCommand extends Command
         // Limpiar carpetas vacías (las antiguas que quedaron después de mover los archivos)
         $this->info('Limpiando carpetas vacías...');
         $allDirs = $disk->allDirectories($basePath);
-        
+
         // Ordenar de mayor a menor longitud para eliminar desde las ramas hijas hacia la raíz
-        usort($allDirs, function($a, $b) {
+        usort($allDirs, function ($a, $b) {
             return strlen($b) - strlen($a);
         });
 
@@ -108,13 +109,13 @@ class NormalizeLandingImagesCommand extends Command
                         if ($index === count($parts) - 1) {
                             $filename = pathinfo($part, PATHINFO_FILENAME);
                             $extension = pathinfo($part, PATHINFO_EXTENSION);
-                            $newParts[] = Str::slug($filename) . '.' . strtolower($extension);
+                            $newParts[] = Str::slug($filename).'.'.strtolower($extension);
                         } else {
                             $newParts[] = Str::slug($part);
                         }
                     }
                     $newPath = implode('/', $newParts);
-                    
+
                     if ($current !== $newPath) {
                         $sub->imagen = $newPath;
                         $sub->save();
@@ -137,7 +138,7 @@ class NormalizeLandingImagesCommand extends Command
     private function updateConfigAndSeeders()
     {
         $this->info('Actualizando archivo de configuración (config/productos_imagenes.php) y seeders locales...');
-        
+
         $configPath = config_path('productos_imagenes.php');
         if (File::exists($configPath)) {
             $map = config('productos_imagenes');
@@ -145,25 +146,26 @@ class NormalizeLandingImagesCommand extends Command
             foreach ($map as $key => $path) {
                 if ($path === 'no-image.png') {
                     $newMap[$key] = $path;
+
                     continue;
                 }
-                
+
                 $parts = explode('/', $path);
                 $newParts = [];
                 foreach ($parts as $index => $part) {
                     if ($index === count($parts) - 1) {
                         $filename = pathinfo($part, PATHINFO_FILENAME);
                         $extension = pathinfo($part, PATHINFO_EXTENSION);
-                        $newParts[] = Str::slug($filename) . '.' . strtolower($extension);
+                        $newParts[] = Str::slug($filename).'.'.strtolower($extension);
                     } else {
                         $newParts[] = Str::slug($part);
                     }
                 }
-                
+
                 $newMap[$key] = implode('/', $newParts);
             }
-            
-            $export = "<?php\n\nreturn " . var_export($newMap, true) . ";\n";
+
+            $export = "<?php\n\nreturn ".var_export($newMap, true).";\n";
             File::put($configPath, $export);
             $this->line('Configuración productos_imagenes.php actualizada.');
         }

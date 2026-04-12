@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 /**
  * Form Request para crear una nueva Referencia
@@ -28,7 +29,11 @@ class StoreReferenciaRequest extends FormRequest
     {
         return [
             'referencia' => ['required', 'string', 'max:255', 'unique:referencias,referencia'],
-            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'marca_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('listas', 'id')->whereIn('tipo', ['Marca', 'Fabricantes']),
+            ],
             'articulo_id' => ['nullable', 'integer', 'exists:articulos,id'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];

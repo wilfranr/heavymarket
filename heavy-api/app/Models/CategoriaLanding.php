@@ -11,7 +11,7 @@ class CategoriaLanding extends Model
     use HasFactory;
 
     protected $table = 'categorias_landing';
-    
+
     protected $fillable = ['nombre', 'descripcion_general', 'mostrar_en_navbar', 'orden_navbar', 'estado'];
 
     protected $casts = [
@@ -26,7 +26,7 @@ class CategoriaLanding extends Model
                 $count = static::where('mostrar_en_navbar', true)
                     ->where('id', '!=', $categoria->id)
                     ->count();
-                
+
                 if ($count >= 6) {
                     throw new \Exception('Solo se pueden seleccionar hasta 6 categorías para el mega menú.');
                 }
@@ -49,7 +49,7 @@ class CategoriaLanding extends Model
      */
     public function scopeConSubcategoriasLimitadas($query, $limit = 4)
     {
-        return $query->with(['subcategorias' => function($q) use ($limit) {
+        return $query->with(['subcategorias' => function ($q) use ($limit) {
             $q->take($limit);
         }]);
     }

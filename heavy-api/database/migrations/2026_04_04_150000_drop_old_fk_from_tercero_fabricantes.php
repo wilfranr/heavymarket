@@ -12,7 +12,7 @@ return new class extends Migration
         } catch (\Exception $e) {
             // FK might not exist
         }
-        
+
         try {
             DB::statement('ALTER TABLE tercero_fabricantes DROP FOREIGN KEY tercero_fabricantes_ibfk_1');
         } catch (\Exception $e) {
@@ -20,7 +20,5 @@ return new class extends Migration
         }
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

@@ -11,14 +11,14 @@ class SubcategoriaLanding extends Model
     use HasFactory;
 
     protected $table = 'subcategorias_landing';
-    
+
     protected $fillable = ['categoria_id', 'nombre', 'descripcion', 'imagen', 'mostrar_en_navbar', 'orden_navbar', 'estado'];
-    
+
     protected $casts = [
         'mostrar_en_navbar' => 'boolean',
         'estado' => 'boolean',
     ];
-    
+
     protected $appends = ['slug', 'imagen_url', 'imagen_secundaria_url'];
 
     protected static function booted()
@@ -30,7 +30,7 @@ class SubcategoriaLanding extends Model
                     ->where('mostrar_en_navbar', true)
                     ->where('id', '!=', $subcategoria->id)
                     ->count();
-                
+
                 if ($count >= 4) {
                     throw new \Exception('Solo se pueden seleccionar hasta 4 subcategorías por categoría para el mega menú.');
                 }
@@ -60,9 +60,9 @@ class SubcategoriaLanding extends Model
     public function getImagenUrlAttribute()
     {
         $imagen = $this->getRawOriginal('imagen') ?: null;
-        
+
         // Si no hay imagen en DB, buscar en el config
-        if (!$imagen) {
+        if (! $imagen) {
             $map = config('productos_imagenes');
             $imagen = is_array($map) ? ($map[$this->slug] ?? ($map['default'] ?? 'no-image.png')) : 'no-image.png';
         }
@@ -73,7 +73,7 @@ class SubcategoriaLanding extends Model
 
         // Si es una ruta de storage (nueva estructura)
         if (Str::startsWith($imagen, ['landing/', 'listas/'])) {
-            return asset('storage/' . $imagen);
+            return asset('storage/'.$imagen);
         }
 
         // Si ya trae el prefijo storage/
@@ -82,9 +82,9 @@ class SubcategoriaLanding extends Model
         }
 
         // Por defecto, si es solo el nombre del archivo, está en public/images/
-        return asset('images/' . $imagen);
+        return asset('images/'.$imagen);
     }
-    
+
     /**
      * Helper para obtener la URL de la segunda imagen, si existe.
      * Reemplaza "- 1" o "1" por "- 2" o "2" y verifica si el archivo existe.
@@ -92,42 +92,43 @@ class SubcategoriaLanding extends Model
     public function getImagenSecundariaUrlAttribute()
     {
         $imagen = $this->getRawOriginal('imagen') ?: null;
-        
-        if (!$imagen) {
+
+        if (! $imagen) {
             return $this->imagen_url;
         }
-        
+
         if (Str::startsWith($imagen, ['http://', 'https://'])) {
             return $this->imagen_url;
         }
 
         $extension = pathinfo($imagen, PATHINFO_EXTENSION);
         $basename = pathinfo($imagen, PATHINFO_BASENAME);
-        
+
         $secondaryImagen = null;
-        
+
         // Transform " - 1" to " - 2", "- 1" to "- 2", "-1" to "-2", or "1" to "2" immediately before extension
         if (Str::contains($basename, '- 1.')) {
             $secondaryImagen = str_replace('- 1.', '- 2.', $imagen);
         } elseif (Str::contains($basename, '-1.')) {
             $secondaryImagen = str_replace('-1.', '-2.', $imagen);
-        } elseif (preg_match('/1\.' . $extension . '$/', $basename)) {
-            $secondaryImagen = preg_replace('/1\.' . $extension . '$/', '2.' . $extension, $imagen);
+        } elseif (preg_match('/1\.'.$extension.'$/', $basename)) {
+            $secondaryImagen = preg_replace('/1\.'.$extension.'$/', '2.'.$extension, $imagen);
         }
 
         if ($secondaryImagen) {
-            $path = storage_path('app/public/' . $secondaryImagen);
+            $path = storage_path('app/public/'.$secondaryImagen);
             if (file_exists($path)) {
                 if (Str::startsWith($secondaryImagen, ['landing/', 'listas/'])) {
-                    return asset('storage/' . $secondaryImagen);
+                    return asset('storage/'.$secondaryImagen);
                 }
                 if (Str::startsWith($secondaryImagen, 'storage/')) {
                     return asset($secondaryImagen);
                 }
-                return asset('images/' . $secondaryImagen);
+
+                return asset('images/'.$secondaryImagen);
             }
         }
-        
+
         return $this->imagen_url;
     }
 
@@ -136,11 +137,12 @@ class SubcategoriaLanding extends Model
      */
     public function getImagenAttribute($value)
     {
-        if (!$value) {
+        if (! $value) {
             $map = config('productos_imagenes');
+
             return is_array($map) ? ($map[$this->slug] ?? ($map['default'] ?? 'no-image.png')) : 'no-image.png';
         }
-        
+
         return $value;
     }
 }

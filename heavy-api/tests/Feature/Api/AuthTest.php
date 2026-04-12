@@ -10,7 +10,7 @@ use Tests\TestCase;
 
 /**
  * Tests de Feature para Autenticación API
- * 
+ *
  * Prueba todos los endpoints de autenticación con Sanctum
  */
 class AuthTest extends TestCase
@@ -125,7 +125,7 @@ class AuthTest extends TestCase
     public function test_usuario_autenticado_puede_obtener_su_info(): void
     {
         $user = User::factory()->create();
-        
+
         $response = $this->actingAs($user, 'sanctum')
             ->getJson('/api/v1/me');
 
@@ -146,7 +146,7 @@ class AuthTest extends TestCase
         $user = User::factory()->create();
         $token = $user->createToken('test-device')->plainTextToken;
 
-        $response = $this->withHeader('Authorization', 'Bearer ' . $token)
+        $response = $this->withHeader('Authorization', 'Bearer '.$token)
             ->postJson('/api/v1/logout');
 
         $response->assertStatus(200)

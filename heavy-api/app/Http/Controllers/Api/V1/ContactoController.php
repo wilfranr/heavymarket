@@ -8,7 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreContactoRequest;
 use App\Http\Resources\ContactoResource;
 use App\Models\Contacto;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**

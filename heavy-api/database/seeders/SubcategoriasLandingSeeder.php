@@ -2,9 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
 use App\Models\SubcategoriaLanding;
+use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 
 class SubcategoriasLandingSeeder extends Seeder
@@ -16,10 +15,11 @@ class SubcategoriasLandingSeeder extends Seeder
      */
     public function run()
     {
-        $path = __DIR__ . '/subcategorias_data.json';
-        
-        if (!file_exists($path)) {
+        $path = __DIR__.'/subcategorias_data.json';
+
+        if (! file_exists($path)) {
             $this->command->error("File not found: $path");
+
             return;
         }
 
@@ -27,12 +27,14 @@ class SubcategoriasLandingSeeder extends Seeder
         $data = json_decode($json, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            $this->command->error("JSON Decode Error: " . json_last_error_msg());
+            $this->command->error('JSON Decode Error: '.json_last_error_msg());
+
             return;
         }
 
         if (empty($data)) {
-            $this->command->error("Data is empty.");
+            $this->command->error('Data is empty.');
+
             return;
         }
 
@@ -47,19 +49,19 @@ class SubcategoriasLandingSeeder extends Seeder
                     SubcategoriaLanding::updateOrCreate(
                         ['id' => $item['id']],
                         Arr::only($item, [
-                            'categoria_id', 
-                            'nombre', 
-                            'descripcion', 
-                            'imagen', 
-                            'mostrar_en_navbar', 
-                            'orden_navbar'
+                            'categoria_id',
+                            'nombre',
+                            'descripcion',
+                            'imagen',
+                            'mostrar_en_navbar',
+                            'orden_navbar',
                         ])
                     );
                 }
             });
             $this->command->info("Processed {$count} records successfully.");
         } catch (\Exception $e) {
-            $this->command->error("Error during processing: " . $e->getMessage());
+            $this->command->error('Error during processing: '.$e->getMessage());
         }
 
         SubcategoriaLanding::reguard();

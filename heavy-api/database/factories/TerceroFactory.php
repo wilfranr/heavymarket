@@ -17,13 +17,13 @@ class TerceroFactory extends Factory
     public function definition(): array
     {
         $tipoTercero = fake()->randomElement(['Natural', 'Juridico']);
-        $tipoDocumento = $tipoTercero === 'Natural' 
+        $tipoDocumento = $tipoTercero === 'Natural'
             ? fake()->randomElement(['CC', 'CE', 'Pasaporte'])
             : 'NIT';
 
         return [
             'tipo_documento' => $tipoDocumento,
-            'documento' => $tipoDocumento === 'NIT' 
+            'documento' => $tipoDocumento === 'NIT'
                 ? fake()->numerify('9########-#')
                 : fake()->numerify('##########'),
             'razon_social' => $tipoTercero === 'Natural'

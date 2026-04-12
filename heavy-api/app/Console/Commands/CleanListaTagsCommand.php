@@ -2,8 +2,8 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
 use App\Models\Lista;
+use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
 class CleanListaTagsCommand extends Command
@@ -28,13 +28,14 @@ class CleanListaTagsCommand extends Command
     public function handle()
     {
         $dryRun = $this->option('dry-run');
-        
+
         $listas = Lista::where('tipo', 'Tipo de Artículo')
             ->where('nombre', 'like', '%<%')
             ->get();
 
         if ($listas->isEmpty()) {
             $this->info('No se encontraron registros con etiquetas para limpiar.');
+
             return 0;
         }
 
@@ -49,24 +50,24 @@ class CleanListaTagsCommand extends Command
         try {
             foreach ($listas as $item) {
                 $nombreOriginal = $item->nombre;
-                
+
                 // 1. Eliminar contenido entre <> incluyendo los brackets
                 $nuevoNombre = preg_replace('/<[^>]*>/', '', $nombreOriginal);
-                
+
                 // 2. Normalizar espacios (eliminar espacios múltiples y trim)
                 $nuevoNombre = trim(preg_replace('/\s+/', ' ', $nuevoNombre));
 
                 if ($nombreOriginal !== $nuevoNombre) {
                     $this->line("Transformando: <comment>'{$nombreOriginal}'</comment> -> <info>'{$nuevoNombre}'</info>");
-                    
-                    if (!$dryRun) {
+
+                    if (! $dryRun) {
                         $item->update(['nombre' => $nuevoNombre]);
                     }
                     $count++;
                 }
             }
 
-            if (!$dryRun) {
+            if (! $dryRun) {
                 DB::commit();
                 $this->info("\nLimpieza completada. Se actualizaron {$count} registros.");
             } else {
@@ -76,7 +77,8 @@ class CleanListaTagsCommand extends Command
 
         } catch (\Exception $e) {
             DB::rollBack();
-            $this->error("\nError durante el proceso: " . $e->getMessage());
+            $this->error("\nError durante el proceso: ".$e->getMessage());
+
             return 1;
         }
 

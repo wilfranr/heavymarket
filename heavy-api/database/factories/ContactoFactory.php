@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\{Contacto, Tercero, Country};
+use App\Models\Contacto;
+use App\Models\Country;
+use App\Models\Tercero;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ContactoFactory extends Factory

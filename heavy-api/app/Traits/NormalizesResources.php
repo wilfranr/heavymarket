@@ -21,7 +21,7 @@ trait NormalizesResources
      */
     public function normalizeAttributes(): void
     {
-        if (!property_exists($this, 'normalizableAttributes')) {
+        if (! property_exists($this, 'normalizableAttributes')) {
             return;
         }
 
@@ -29,14 +29,14 @@ trait NormalizesResources
             // Only normalize if the attribute is present and dirty (or always? usually on save we want to ensure it)
             // If we only do checks on isDirty(), we save performance.
             // However, checking existence is enough for 'saving'.
-            
-            if ($this->getAttribute($attribute) !== null) {
-                 $originalValue = $this->getAttribute($attribute);
-                 $normalizedValue = $this->applyNormalizationRule($originalValue, $rule);
 
-                 if ($originalValue !== $normalizedValue) {
-                     $this->setAttribute($attribute, $normalizedValue);
-                 }
+            if ($this->getAttribute($attribute) !== null) {
+                $originalValue = $this->getAttribute($attribute);
+                $normalizedValue = $this->applyNormalizationRule($originalValue, $rule);
+
+                if ($originalValue !== $normalizedValue) {
+                    $this->setAttribute($attribute, $normalizedValue);
+                }
             }
         }
     }
@@ -44,9 +44,7 @@ trait NormalizesResources
     /**
      * Apply the specific normalization rule.
      *
-     * @param string $value
-     * @param string $rule
-     * @return string
+     * @param  string  $value
      */
     protected function applyNormalizationRule($value, string $rule): string
     {
@@ -63,20 +61,17 @@ trait NormalizesResources
 
     /**
      * Multibyte basic sentence case (first letter upper).
-     *
-     * @param string $string
-     * @return string
      */
     protected function mb_ucfirst(string $string): string
     {
         if (empty($string)) {
             return $string;
         }
-        
+
         $encoding = 'UTF-8';
         $firstChar = mb_substr($string, 0, 1, $encoding);
         $then = mb_substr($string, 1, null, $encoding);
-        
-        return mb_strtoupper($firstChar, $encoding) . $then;
+
+        return mb_strtoupper($firstChar, $encoding).$then;
     }
 }

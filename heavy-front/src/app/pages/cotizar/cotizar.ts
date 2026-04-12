@@ -451,23 +451,12 @@ export class Cotizar implements OnInit {
     // Navigation
     goToForm() {
         this.errorMessage = '';
-        console.log('goToForm called', {
-            brand: this.selectedBrand,
-            type: this.selectedType,
-            model: this.selectedModel,
-            series: this.selectedSeries,
-            card: this.selectedCard
-        });
 
-        if (!this.selectedBrand && !this.selectedType && !this.selectedCard && !this.selectedModel && !this.selectedSeries) {
-            this.errorMessage = 'Por favor selecciona una máquina o utiliza los filtros.';
+        // Validar campos obligatorios (Issue #59)
+        if (!this.selectedBrand || !this.selectedType || !this.selectedModel) {
+            this.errorMessage = 'Por favor selecciona marca, tipo de máquina y modelo para continuar.';
             this.cd.detectChanges();
             return;
-        }
-
-        // Populate inputs if selections exist
-        if (this.selectedCard) {
-            this.selectedType = this.selectedCard.nombre;
         }
 
         this.currentView = 'form';

@@ -18,7 +18,7 @@ class PiezasEstandarSistemaSeeder extends Seeder
 
         // 1. Obtener todas las Piezas Estándar
         $piezas = Lista::where('tipo', 'Piezas Estandar')->get();
-        
+
         // 2. Obtener todos los Sistemas
         $sistemas = Sistema::all();
 
@@ -42,16 +42,17 @@ class PiezasEstandarSistemaSeeder extends Seeder
         $vinculaciones = 0;
 
         foreach ($piezas as $pieza) {
-            $textoBusqueda = Str::lower($pieza->nombre . ' ' . $pieza->definicion);
+            $textoBusqueda = Str::lower($pieza->nombre.' '.$pieza->definicion);
             $sistemasEncontradosIds = [];
 
             foreach ($sistemas as $sistema) {
                 $nombreSistema = Str::lower($sistema->nombre);
-                
+
                 // Coincidencia Directa: Nombre del sistema está en el nombre/def de la pieza
                 // Ejemplo: Pieza "Bomba Hidráulica" -> Sistema "Bomba Hidráulica"
                 if (Str::contains($textoBusqueda, $nombreSistema) || Str::contains($nombreSistema, Str::lower($pieza->nombre))) {
                     $sistemasEncontradosIds[] = $sistema->id;
+
                     continue;
                 }
 
@@ -69,10 +70,10 @@ class PiezasEstandarSistemaSeeder extends Seeder
                     }
                 }
             }
-            
+
             // Si no encontró nada específico, intentar asignar a "General" o similar si existiera
             // Por ahora, solo vinculamos lo que encontramos
-            if (!empty($sistemasEncontradosIds)) {
+            if (! empty($sistemasEncontradosIds)) {
                 $uniqueIds = array_unique($sistemasEncontradosIds);
                 $pieza->sistemas()->syncWithoutDetaching($uniqueIds);
                 $vinculaciones += count($uniqueIds);

@@ -13,7 +13,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('listas')) {
+        if (! Schema::hasTable('listas')) {
             Schema::create('listas', function (Blueprint $table) {
                 $table->id();
                 $table->string('tipo')->comment('Tipo de lista: Fabricantes, Tipo de Máquina, Sistema, etc.');

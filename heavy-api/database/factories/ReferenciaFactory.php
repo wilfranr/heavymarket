@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\{Referencia, Articulo, Lista};
+use App\Models\Articulo;
+use App\Models\Lista;
+use App\Models\Referencia;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ReferenciaFactory extends Factory

@@ -6,7 +6,6 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\PedidoReferenciaProveedorResource;
 
 /**
  * API Resource para el modelo PedidoReferencia
@@ -25,8 +24,8 @@ class PedidoReferenciaResource extends JsonResource
     public function toArray(Request $request): array
     {
         $imagenUrl = $this->imagen;
-        if ($imagenUrl && !str_starts_with($imagenUrl, 'http')) {
-            $imagenUrl = asset('storage/' . ltrim($imagenUrl, '/'));
+        if ($imagenUrl && ! str_starts_with($imagenUrl, 'http')) {
+            $imagenUrl = asset('storage/'.ltrim($imagenUrl, '/'));
         }
 
         return [
@@ -45,8 +44,8 @@ class PedidoReferenciaResource extends JsonResource
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
-            // Relaciones opcionales
-            'referencia' => $this->whenLoaded('referencia'),
+            // Relaciones opcionales (incluye articulo con definicion / descripcionEspecifica cuando está cargado)
+            'referencia' => ReferenciaResource::make($this->whenLoaded('referencia')),
             'sistema' => $this->whenLoaded('sistema'),
             'lista' => $this->whenLoaded('lista'),
             'marca' => $this->whenLoaded('marca'),

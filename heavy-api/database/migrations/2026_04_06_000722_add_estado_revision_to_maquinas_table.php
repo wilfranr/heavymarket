@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('maquinas') && !Schema::hasColumn('maquinas', 'estado_revision')) {
+        if (Schema::hasTable('maquinas') && ! Schema::hasColumn('maquinas', 'estado_revision')) {
             Schema::table('maquinas', function (Blueprint $table) {
                 $table->enum('estado_revision', ['por_revisar', 'revisado'])
                     ->default('por_revisar')

@@ -9,16 +9,15 @@ use App\Http\Requests\StoreMaquinaRequest;
 use App\Http\Requests\UpdateMaquinaRequest;
 use App\Http\Resources\MaquinaResource;
 use App\Models\Maquina;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
 /**
  * Controlador API para gestión de Máquinas
  *
  * Maneja todas las operaciones CRUD de máquinas a través del API REST.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
 
 class MaquinaController extends Controller
 {
@@ -147,7 +146,7 @@ class MaquinaController extends Controller
         }
 
         if ($request->hasFile('fotoId')) {
-             if ($maquina->fotoId) {
+            if ($maquina->fotoId) {
                 Storage::disk('public')->delete($maquina->fotoId);
             }
             $data['fotoId'] = $request->file('fotoId')->store('maquinas/ids', 'public');
@@ -174,10 +173,10 @@ class MaquinaController extends Controller
     {
         $this->authorize('delete', $maquina);
         if ($maquina->foto) {
-             Storage::disk('public')->delete($maquina->foto);
+            Storage::disk('public')->delete($maquina->foto);
         }
         if ($maquina->fotoId) {
-             Storage::disk('public')->delete($maquina->fotoId);
+            Storage::disk('public')->delete($maquina->fotoId);
         }
 
         $maquina->delete();

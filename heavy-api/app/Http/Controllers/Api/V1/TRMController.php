@@ -8,7 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreTRMRequest;
 use App\Http\Resources\TRMResource;
 use App\Models\TRM;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -50,7 +51,7 @@ class TRMController extends Controller
     {
         $trm = TRM::latest('created_at')->first();
 
-        if (!$trm) {
+        if (! $trm) {
             return response()->json([
                 'message' => 'No se encontró ninguna TRM',
             ], 404);

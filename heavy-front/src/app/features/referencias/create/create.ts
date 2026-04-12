@@ -14,8 +14,8 @@ import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { createReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
-import { FabricanteService } from '../../../core/services/fabricante.service';
-import { Fabricante } from '../../../core/models/fabricante.model';
+import { ListaService } from '../../../core/services/lista.service';
+import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { Articulo } from '../../../core/models/articulo.model';
 

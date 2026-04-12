@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Lista;
+use Illuminate\Database\Seeder;
 
 class MachineTypeOrganizationSeeder extends Seeder
 {
@@ -18,7 +18,7 @@ class MachineTypeOrganizationSeeder extends Seeder
             'Miner' => 'Minería',
             'Pavim' => 'Pavimentación',
             'Tunel' => 'Subterráneo',
-            'Util'  => 'Utilitarios',
+            'Util' => 'Utilitarios',
         ];
 
         // 1. Asegurar que las categorías existan en la tabla listas
@@ -47,7 +47,7 @@ class MachineTypeOrganizationSeeder extends Seeder
                 // Obtenemos el nombre del archivo sin la ruta de la carpeta
                 $filename = basename($item->foto);
                 $parts = explode('_', $filename);
-                
+
                 if (count($parts) > 0 && isset($prefixMap[$parts[0]])) {
                     $prefixFound = $parts[0];
                 }

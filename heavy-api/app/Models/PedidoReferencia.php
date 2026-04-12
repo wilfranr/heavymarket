@@ -24,7 +24,7 @@ class PedidoReferencia extends Model
         'comentario',
         'imagen',
         'mostrar_referencia',
-        'estado'
+        'estado',
     ];
 
     public function pedido()

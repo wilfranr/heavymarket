@@ -16,5 +16,5 @@ class PedidoArticulo extends Model
         'comentario',
         'sistema_id',
         'imagen',
-    ]; 
+    ];
 }

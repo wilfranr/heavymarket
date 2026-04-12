@@ -45,7 +45,7 @@
                         <!-- 1. Tipo de Máquina -->
                         <div class="cotizador-filter-group">
                             <button class="cotizador-select" (click)="toggleType()">
-                                <span class="cotizador-select-text">{{ selectedType || 'Tipo de máquina' }}</span>
+                                <span class="cotizador-select-text">{{ selectedType || 'Tipo de máquina' }} <span class="text-red-500">*</span></span>
                                 <div class="cotizador-select-icon">
                                     <i class="pi pi-chevron-right"></i>
                                 </div>
@@ -68,7 +68,7 @@
                                 <div style="display: flex; align-items: center; gap: 10px;">
                                     <img *ngIf="selectedBrandObj?.logo" [src]="selectedBrandObj?.logo" 
                                         style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; padding: 2px;" alt="">
-                                    <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }}</span>
+                                    <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }} <span class="text-red-500">*</span></span>
                                 </div>
                                 <div class="cotizador-select-icon">
                                     <i class="pi pi-chevron-right"></i>
@@ -94,7 +94,7 @@
 
                         <!-- 3. Modelo (Opcional) - Input de texto -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel" placeholder="Modelo">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel" placeholder="Modelo *">
                         </div>
 
                         <!-- 4. Serie -->

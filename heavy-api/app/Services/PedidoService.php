@@ -73,7 +73,11 @@ class PedidoService
 
             $this->notifyNewOrder($pedido, $user);
 
-            return $pedido->load(['user', 'tercero', 'referencias', 'articulos']);
+            return $pedido->load([
+                'user', 'tercero',
+                'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista',
+                'articulos',
+            ]);
         });
     }
 
@@ -92,7 +96,7 @@ class PedidoService
 
             return $pedido->load([
                 'user', 'tercero', 'maquina', 'fabricante', 'contacto',
-                'referencias.referencia', 'referencias.sistema', 'referencias.lista',
+                'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista',
                 'referencias.imagenes', 'referencias.proveedores.tercero',
                 'articulos.articulo', 'articulos.sistema',
             ]);

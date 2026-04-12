@@ -28,10 +28,11 @@ class ArticuloResource extends JsonResource
             'id' => $this->id,
             'definicion' => $this->definicion,
             'descripcionEspecifica' => $this->descripcionEspecifica,
+            'es_pieza_estandar' => (bool) $this->es_pieza_estandar,
             'peso' => $this->peso,
             'comentarios' => $this->comentarios,
-            'fotoDescriptiva' => $this->fotoDescriptiva && !filter_var($this->fotoDescriptiva, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoDescriptiva) : $this->fotoDescriptiva,
-            'foto_medida' => $this->foto_medida && !filter_var($this->foto_medida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto_medida) : $this->foto_medida,
+            'fotoDescriptiva' => $this->fotoDescriptiva && ! filter_var($this->fotoDescriptiva, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoDescriptiva) : $this->fotoDescriptiva,
+            'foto_medida' => $this->foto_medida && ! filter_var($this->foto_medida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto_medida) : $this->foto_medida,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 

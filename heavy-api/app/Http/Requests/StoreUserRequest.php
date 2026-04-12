@@ -30,7 +30,7 @@ class StoreUserRequest extends FormRequest
     public function withValidator($validator)
     {
         $validator->after(function ($validator) {
-            if ($this->has('roles') && in_array('super_admin', $this->roles) && !$this->user()->hasRole('super_admin')) {
+            if ($this->has('roles') && in_array('super_admin', $this->roles) && ! $this->user()->hasRole('super_admin')) {
                 $validator->errors()->add('roles', 'No puedes asignar el rol super_admin si no eres uno.');
             }
         });

@@ -32,9 +32,6 @@ class SyncPedidoImages implements ShouldQueue
 
     /**
      * Create a new job instance.
-     * 
-     * @param PedidoReferencia $pedidoReferencia
-     * @param array $imagePaths
      */
     public function __construct(PedidoReferencia $pedidoReferencia, array $imagePaths)
     {
@@ -51,13 +48,13 @@ class SyncPedidoImages implements ShouldQueue
             foreach ($this->imagePaths as $path) {
                 $this->pedidoReferencia->imagenes()->create([
                     'imagen' => $path,
-                    'origen' => PedidoReferenciaImagen::ORIGEN_ASESOR
+                    'origen' => PedidoReferenciaImagen::ORIGEN_ASESOR,
                 ]);
             }
         } catch (\Exception $e) {
-            Log::error('Error procesando imágenes de pedido asíncronamente: ' . $e->getMessage(), [
+            Log::error('Error procesando imágenes de pedido asíncronamente: '.$e->getMessage(), [
                 'pedido_referencia_id' => $this->pedidoReferencia->id,
-                'paths' => $this->imagePaths
+                'paths' => $this->imagePaths,
             ]);
         }
     }

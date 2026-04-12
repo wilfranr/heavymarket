@@ -2,12 +2,11 @@
 
 namespace Tests\Unit\Services;
 
-use Tests\TestCase;
-use App\Services\PedidoService;
-use App\Models\PedidoReferencia;
-use App\Models\Referencia;
 use App\Models\Empresa;
+use App\Models\PedidoReferencia;
+use App\Services\PedidoService;
 use Mockery;
+use Tests\TestCase;
 
 class PedidoServiceTest extends TestCase
 {
@@ -16,7 +15,7 @@ class PedidoServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->pedidoService = new PedidoService();
+        $this->pedidoService = new PedidoService;
     }
 
     /** @test */
@@ -26,9 +25,9 @@ class PedidoServiceTest extends TestCase
             'costo_unidad' => 1000,
             'utilidad' => 20,
             'cantidad' => 2,
-            'ubicacion' => 'Nacional'
+            'ubicacion' => 'Nacional',
         ];
-        
+
         $pedidoReferencia = Mockery::mock(PedidoReferencia::class);
         $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);
 
@@ -44,18 +43,18 @@ class PedidoServiceTest extends TestCase
             'costo_unidad' => 100,
             'utilidad' => 10,
             'cantidad' => 1,
-            'ubicacion' => 'Internacional'
+            'ubicacion' => 'Internacional',
         ];
 
         // Usamos Mockery para interceptar la llamada estática a Empresa
         // En Laravel, esto se hace mejor mockeando el modelo antes de la llamada
         $empresaMock = Mockery::mock('alias:App\Models\Empresa');
-        $empresaMock->shouldReceive('where->first')->andReturn((object)[
+        $empresaMock->shouldReceive('where->first')->andReturn((object) [
             'trm' => 0, // Caso de borde: TRM cero
-            'flete' => 10
+            'flete' => 10,
         ]);
 
-        $referenciaObj = new \stdClass();
+        $referenciaObj = new \stdClass;
         $referenciaObj->peso = 0; // Caso de borde: peso cero
 
         // Usamos un objeto simple que el servicio pueda consumir

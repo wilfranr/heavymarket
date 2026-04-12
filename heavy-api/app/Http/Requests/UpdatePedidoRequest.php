@@ -18,14 +18,14 @@ class UpdatePedidoRequest extends FormRequest
     public function authorize(): bool
     {
         $pedido = $this->route('pedido');
-        
+
         return $this->user()->can('update', $pedido)
             || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
     }
 
     /**
      * Reglas de validación que aplican a la petición.
-     * 
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -47,14 +47,14 @@ class UpdatePedidoRequest extends FormRequest
                     'Rechazado',
                     'Cotizado',
                     'En_Costeo',
-                    'Aprobado'
-                ])
+                    'Aprobado',
+                ]),
             ],
             'maquina_id' => ['nullable', 'integer', 'exists:maquinas,id'],
             'fabricante_id' => ['nullable', 'integer', 'exists:listas,id'],
             'motivo_rechazo' => ['nullable', 'string', 'max:255'],
             'comentarios_rechazo' => ['nullable', 'string', 'max:255'],
-            
+
             // Arrays de referencias (para sincronización)
             'referencias' => ['nullable', 'array'],
             'referencias.*.id' => ['nullable', 'integer', 'exists:pedido_referencia,id'], // ID de la relación si existe
@@ -75,7 +75,7 @@ class UpdatePedidoRequest extends FormRequest
 
     /**
      * Mensajes de error personalizados
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array

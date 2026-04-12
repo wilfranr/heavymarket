@@ -8,7 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmpresaRequest;
 use App\Http\Resources\EmpresaResource;
 use App\Models\Empresa;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -115,13 +116,13 @@ class EmpresaController extends Controller
     public function update(Request $request, Empresa $empresa): JsonResponse
     {
         $validated = $request->validate([
-            'nombre' => ['sometimes', 'string', 'max:300', 'unique:empresas,nombre,' . $empresa->id],
+            'nombre' => ['sometimes', 'string', 'max:300', 'unique:empresas,nombre,'.$empresa->id],
             'siglas' => ['nullable', 'string', 'max:10'],
             'direccion' => ['sometimes', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:255'],
             'celular' => ['sometimes', 'string', 'max:255'],
-            'email' => ['sometimes', 'email', 'max:255', 'unique:empresas,email,' . $empresa->id],
-            'nit' => ['sometimes', 'string', 'max:255', 'unique:empresas,nit,' . $empresa->id],
+            'email' => ['sometimes', 'email', 'max:255', 'unique:empresas,email,'.$empresa->id],
+            'nit' => ['sometimes', 'string', 'max:255', 'unique:empresas,nit,'.$empresa->id],
             'representante' => ['sometimes', 'string', 'max:255'],
             'country_id' => ['nullable', 'integer', 'exists:countries,id'],
             'state_id' => ['nullable', 'integer', 'exists:states,id'],
@@ -136,14 +137,14 @@ class EmpresaController extends Controller
         try {
             if ($request->hasFile('logo_light')) {
                 if ($empresa->logo_light) {
-                     // Storage::disk('public')->delete($empresa->logo_light); // Optional cleanup
+                    // Storage::disk('public')->delete($empresa->logo_light); // Optional cleanup
                 }
                 $validated['logo_light'] = $request->file('logo_light')->store('empresas/logos', 'public');
             }
 
             if ($request->hasFile('logo_dark')) {
-                 if ($empresa->logo_dark) {
-                     // Storage::disk('public')->delete($empresa->logo_dark); // Optional cleanup
+                if ($empresa->logo_dark) {
+                    // Storage::disk('public')->delete($empresa->logo_dark); // Optional cleanup
                 }
                 $validated['logo_dark'] = $request->file('logo_dark')->store('empresas/logos', 'public');
             }

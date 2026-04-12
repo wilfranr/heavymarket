@@ -31,8 +31,8 @@ class ListaResource extends JsonResource
             'definicion' => $this->definicion,
             'foto' => $this->when(
                 $this->foto,
-                fn () => str_starts_with($this->foto, 'http') 
-                    ? $this->foto 
+                fn () => str_starts_with($this->foto, 'http')
+                    ? $this->foto
                     : Storage::disk('public')->url($this->foto)
             ),
             'logo' => $this->foto, // Alias para compatibilidad con landing

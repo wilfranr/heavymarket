@@ -16,7 +16,9 @@ class PedidoReferenciaImagen extends Model
     ];
 
     public const ORIGEN_CLIENTE = 'cliente';
+
     public const ORIGEN_ASESOR = 'asesor';
+
     public const ORIGEN_COSTEO = 'costeo';
 
     public function pedidoReferencia(): BelongsTo
@@ -30,12 +32,13 @@ class PedidoReferenciaImagen extends Model
     public function getImagenUrlAttribute(): string
     {
         $imagen = $this->imagen;
-        if (!$imagen) {
+        if (! $imagen) {
             return '';
         }
         if (str_starts_with($imagen, 'http')) {
             return $imagen;
         }
-        return asset('storage/' . ltrim($imagen, '/'));
+
+        return asset('storage/'.ltrim($imagen, '/'));
     }
 }

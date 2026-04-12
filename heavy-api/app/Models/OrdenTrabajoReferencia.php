@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class OrdenTrabajoReferencia extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'orden_trabajo_id',
         'pedido_referencia_id',
@@ -19,19 +20,19 @@ class OrdenTrabajoReferencia extends Model
         'observaciones',
     ];
 
-    //relación con orden de trabajo
+    // relación con orden de trabajo
     public function ordenTrabajo()
     {
         return $this->belongsTo(OrdenTrabajo::class);
     }
 
-    //relación  con PedidoReferencia
+    // relación  con PedidoReferencia
     public function pedidoReferencia()
     {
         return $this->belongsTo(PedidoReferencia::class, 'pedido_referencia_id');
     }
 
-//  Acceso rápido a la referencia base
+    //  Acceso rápido a la referencia base
     public function referencia()
     {
         return $this->hasOneThrough(

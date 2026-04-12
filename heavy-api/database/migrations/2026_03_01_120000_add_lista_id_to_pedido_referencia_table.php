@@ -13,7 +13,7 @@ return new class extends Migration
     public function up(): void
     {
         // Solo agregar si la tabla existe y la columna no
-        if (Schema::hasTable('pedido_referencia') && !Schema::hasColumn('pedido_referencia', 'lista_id')) {
+        if (Schema::hasTable('pedido_referencia') && ! Schema::hasColumn('pedido_referencia', 'lista_id')) {
             Schema::table('pedido_referencia', function (Blueprint $table) {
                 $table->unsignedBigInteger('lista_id')->nullable()->after('sistema_id');
                 $table->foreign('lista_id')->references('id')->on('listas')->nullOnDelete();

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{User, Maquina, Lista};
+use App\Models\Lista;
+use App\Models\Maquina;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -18,7 +20,9 @@ class MaquinaControllerTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Lista $tipoMaquina;
+
     private Lista $fabricante;
 
     protected function setUp(): void
@@ -102,7 +106,7 @@ class MaquinaControllerTest extends TestCase
         );
     }
 
-    private function getDatabaseMaquinaModel(): string|null
+    private function getDatabaseMaquinaModel(): ?string
     {
         return DB::table('maquinas')->where('serie', 'ABC123456')->first()?->modelo;
     }

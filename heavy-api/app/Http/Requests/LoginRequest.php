@@ -8,14 +8,14 @@ use Illuminate\Foundation\Http\FormRequest;
 
 /**
  * Form Request para autenticación (Login)
- * 
+ *
  * Valida las credenciales de acceso del usuario.
  */
 class LoginRequest extends FormRequest
 {
     /**
      * Determina si el usuario está autorizado para hacer esta petición.
-     * 
+     *
      * Login es público, por lo que siempre retorna true.
      */
     public function authorize(): bool
@@ -25,7 +25,7 @@ class LoginRequest extends FormRequest
 
     /**
      * Reglas de validación que aplican a la petición.
-     * 
+     *
      * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
      */
     public function rules(): array
@@ -39,7 +39,7 @@ class LoginRequest extends FormRequest
 
     /**
      * Mensajes de error personalizados
-     * 
+     *
      * @return array<string, string>
      */
     public function messages(): array

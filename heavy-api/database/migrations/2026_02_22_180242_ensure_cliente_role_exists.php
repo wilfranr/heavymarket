@@ -29,7 +29,7 @@ return new class extends Migration
 
     /**
      * Reverse the migrations.
-     * 
+     *
      * No eliminamos el rol en el rollback para evitar romper datos existentes.
      * Si necesitas eliminar el rol, hazlo manualmente con cuidado.
      */

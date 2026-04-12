@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class State extends Model
 {
-    use SoftDeletes, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, SoftDeletes;
 
     protected $fillable = [
-        'name', 'country_id', 'latitude', 'longitude', 'is_active'
+        'name', 'country_id', 'latitude', 'longitude', 'is_active',
     ];
 
     protected $normalizableAttributes = [
@@ -27,4 +27,3 @@ class State extends Model
         return $this->hasMany(City::class);
     }
 }
-

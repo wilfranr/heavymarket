@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Country extends Model
 {
-    use SoftDeletes, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, SoftDeletes;
 
     protected $fillable = [
-        'name', 'iso2', 'iso3', 'numeric_code', 'phonecode', 'capital', 
-        'currency', 'currency_name', 'currency_symbol', 'tld', 'native', 
-        'region', 'subregion', 'timezones', 'translations', 'latitude', 
-        'longitude', 'emoji', 'emojiU', 'flag', 'is_active'
+        'name', 'iso2', 'iso3', 'numeric_code', 'phonecode', 'capital',
+        'currency', 'currency_name', 'currency_symbol', 'tld', 'native',
+        'region', 'subregion', 'timezones', 'translations', 'latitude',
+        'longitude', 'emoji', 'emojiU', 'flag', 'is_active',
     ];
 
     protected $normalizableAttributes = [
@@ -35,4 +35,3 @@ class Country extends Model
         return $this->hasMany(City::class);
     }
 }
-

@@ -40,8 +40,8 @@ class EmpresaResource extends JsonResource
             'estado' => $this->estado,
             'flete' => $this->flete,
             'trm' => $this->trm,
-            'logo_light' => $this->logo_light && !filter_var($this->logo_light, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->logo_light) : $this->logo_light,
-            'logo_dark' => $this->logo_dark && !filter_var($this->logo_dark, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->logo_dark) : $this->logo_dark,
+            'logo_light' => $this->logo_light && ! filter_var($this->logo_light, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->logo_light) : $this->logo_light,
+            'logo_dark' => $this->logo_dark && ! filter_var($this->logo_dark, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->logo_dark) : $this->logo_dark,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Lista;
+use Illuminate\Database\Seeder;
 
 /**
  * Seeder para categorías comerciales desde CSV
@@ -14,9 +14,10 @@ class CategoriaComercialSeeder extends Seeder
     public function run(): void
     {
         $csvPath = base_path('../data/Categoria_comercial.csv');
-        
-        if (!file_exists($csvPath)) {
+
+        if (! file_exists($csvPath)) {
             $this->command->error("CSV no encontrado: $csvPath");
+
             return;
         }
 

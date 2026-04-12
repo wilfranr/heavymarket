@@ -8,7 +8,7 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     * 
+     *
      * Agrega el campo landing_access a la tabla terceros.
      * Cuando está activo, el tercero puede iniciar sesión en la landing
      * con su email y la contraseña asignada (vinculada a un User).

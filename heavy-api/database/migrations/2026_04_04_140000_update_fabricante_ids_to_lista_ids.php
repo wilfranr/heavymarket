@@ -1,8 +1,8 @@
 <?php
 
+use App\Models\Lista;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
-use App\Models\Lista;
 
 return new class extends Migration
 {
@@ -12,16 +12,16 @@ return new class extends Migration
         if (DB::connection()->getDriverName() !== 'mysql') {
             return;
         }
-        
+
         // Solo ejecutar si las tablas existen
-        if (!Schema::hasTable('listas') || !Schema::hasTable('maquinas') || !Schema::hasTable('referencias')) {
+        if (! Schema::hasTable('listas') || ! Schema::hasTable('maquinas') || ! Schema::hasTable('referencias')) {
             return;
         }
-        
+
         DB::statement('SET FOREIGN_KEY_CHECKS = 0');
 
         $listas = Lista::where('tipo', 'Fabricantes')->get()->keyBy('fabricante_id');
-        
+
         foreach ($listas as $oldId => $lista) {
             DB::table('maquinas')
                 ->where('fabricante_id', $oldId)
@@ -37,7 +37,5 @@ return new class extends Migration
         DB::statement('SET FOREIGN_KEY_CHECKS = 1');
     }
 
-    public function down(): void
-    {
-    }
+    public function down(): void {}
 };

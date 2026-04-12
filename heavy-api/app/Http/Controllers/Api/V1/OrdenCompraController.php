@@ -8,7 +8,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrdenCompraRequest;
 use App\Http\Resources\OrdenCompraResource;
 use App\Models\OrdenCompra;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -106,7 +107,7 @@ class OrdenCompraController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return response()->json([
                 'message' => 'Error al crear la orden de compra',
                 'error' => $e->getMessage(),

@@ -214,11 +214,12 @@ export class AnalysisComponent implements OnInit {
         const ref = row.referencia;
         const definicion = ref?.articulo?.definicion || ref?.referencia || row.codigo || 'Referencia';
 
+        const opt = this.opcionReferenciaDesdeApi(ref);
         const parte = this.fb.group({
             id: [null],
             referencia_id: [row.referencia_id, [Validators.required]],
             cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
-            descripcion: [ref?.articulo?.definicion || ref?.comentario || ''],
+            descripcion: [this.descripcionAnalisisDesdeOpcion(opt)],
             categoria: [null]
         });
 
@@ -321,8 +322,11 @@ export class AnalysisComponent implements OnInit {
                 label,
                 value: id,
                 descripcion: global?.descripcion ?? c.get('descripcion')?.value ?? '',
-                articulo_id: null,
-                articulo_nombre: global?.descripcion ?? ''
+                articulo_id: global?.articulo_id ?? null,
+                articulo_nombre: global?.articulo_nombre ?? global?.descripcion ?? '',
+                es_pieza_estandar: global?.es_pieza_estandar ?? false,
+                definicion_articulo: global?.definicion_articulo,
+                descripcion_especifica_articulo: global?.descripcion_especifica_articulo
             });
         }
 
@@ -383,8 +387,7 @@ export class AnalysisComponent implements OnInit {
         this.referenciaService.getAll({ articulo_id: tipoId, per_page: 500 }).subscribe({
             next: (response) => {
                 this.referenciasLote = response.data.map((r: any) => ({
-                    label: r.referencia,
-                    value: r.id,
+                    ...this.opcionReferenciaDesdeApi(r),
                     definicion: r.referencia
                 }));
                 this.loteForm.get('referencias_seleccionadas')?.enable();
@@ -405,7 +408,11 @@ export class AnalysisComponent implements OnInit {
                 partes.push(this.fb.group({
                     cantidad: [cantidad_lote],
                     referencia_id: [refId],
-                    descripcion: [refModel?.label || ''],
+                    descripcion: [
+                        this.descripcionAnalisisDesdeOpcion(
+                            refModel ?? { descripcion: '', articulo_nombre: '' }
+                        )
+                    ],
                     categoria: [articulo_id]
                 }));
             });
@@ -427,7 +434,11 @@ export class AnalysisComponent implements OnInit {
                         this.fb.group({
                             cantidad: [cantidad_lote, [Validators.required, Validators.min(1)]],
                             referencia_id: [refId, [Validators.required]],
-                            descripcion: [refModel?.label || ''],
+                            descripcion: [
+                                this.descripcionAnalisisDesdeOpcion(
+                                    refModel ?? { descripcion: '', articulo_nombre: '' }
+                                )
+                            ],
                             categoria: [articulo_id]
                         })
                     ])
@@ -513,13 +524,7 @@ export class AnalysisComponent implements OnInit {
         
         this.referenciaService.getAll({ articulo_id: tipoId, per_page: 500 }).subscribe({
             next: (resp) => {
-                this.referenciasPorTipo[tipoId] = resp.data.map((r: any) => ({
-                    label: r.referencia,
-                    value: r.id,
-                    descripcion: r.descripcion || '',
-                    articulo_id: r.articulo_id,
-                    articulo_nombre: r.articulo?.nombre || ''
-                }));
+                this.referenciasPorTipo[tipoId] = resp.data.map((r: any) => this.opcionReferenciaDesdeApi(r));
             }
         });
     }
@@ -618,7 +623,7 @@ export class AnalysisComponent implements OnInit {
         
         if (refObj) {
             parte.patchValue({
-                descripcion: refObj.descripcion || refObj.articulo_nombre || 'Sin descripción',
+                descripcion: this.descripcionAnalisisDesdeOpcion(refObj),
                 categoria: refObj.articulo_id
             });
         }
@@ -731,7 +736,11 @@ export class AnalysisComponent implements OnInit {
         // Asignar al formulario si hay un índice activo
         if (this.activeItemIndex !== -1 && this.activeParteIndex !== -1) {
             const partes = this.getPartesFormArray(this.activeItemIndex);
-            partes.at(this.activeParteIndex).get('referencia_id')?.setValue(nuevaRef.id);
+            const parte = partes.at(this.activeParteIndex);
+            parte.get('referencia_id')?.setValue(nuevaRef.id);
+            parte.patchValue({
+                descripcion: this.descripcionAnalisisDesdeOpcion(this.opcionReferenciaDesdeApi(nuevaRef))
+            });
         }
         
         this.showReferenciaModal = false;
@@ -775,25 +784,14 @@ export class AnalysisComponent implements OnInit {
 
         if (i >= 0 && j >= 0) {
             const parte = this.getPartesFormArray(i).at(j);
-            const articulo = ref.articulo;
-            const nuevaDescripcion =
-                (ref.comentario && String(ref.comentario).trim()) ||
-                articulo?.definicion ||
-                articulo?.descripcionEspecifica ||
-                parte.get('descripcion')?.value;
+            const opt = this.opcionReferenciaDesdeApi(ref);
 
-            parte.patchValue({ descripcion: nuevaDescripcion });
+            parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
 
             const listaId = this.referenciasFormArray.at(i).get('lista_id')?.value;
             if (listaId && this.referenciasPorTipo[listaId]) {
                 const idx = this.referenciasPorTipo[listaId].findIndex((x) => x.value === ref.id);
-                const entry = {
-                    label: ref.referencia,
-                    value: ref.id,
-                    descripcion: (ref.comentario as string) || articulo?.definicion || '',
-                    articulo_id: ref.articulo_id,
-                    articulo_nombre: articulo?.definicion || articulo?.descripcionEspecifica || ''
-                };
+                const entry = opt;
                 if (idx >= 0) {
                     this.referenciasPorTipo[listaId][idx] = entry;
                 } else {
@@ -807,13 +805,90 @@ export class AnalysisComponent implements OnInit {
     private loadReferencias(): void {
         this.referenciaService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
-                this.referencias = response.data.map((r: any) => ({
-                    label: r.referencia,
-                    value: r.id,
-                    descripcion: r.descripcion
-                }));
+                this.referencias = response.data.map((r: any) => this.opcionReferenciaDesdeApi(r));
             }
         });
+    }
+
+    /**
+     * Normaliza una fila del API de referencias para selectores del análisis (#69).
+     */
+    private opcionReferenciaDesdeApi(r: any): {
+        label: string;
+        value: number;
+        descripcion: string;
+        articulo_id: number | null;
+        articulo_nombre: string;
+        es_pieza_estandar: boolean;
+        definicion_articulo?: string;
+        descripcion_especifica_articulo?: string;
+    } {
+        const art = r.articulo;
+        const esPieza = !!(art?.es_pieza_estandar ?? r.articulo_es_pieza_estandar);
+        const def = (art?.definicion ?? r.articulo_definicion ?? '') as string;
+        const esp = (art?.descripcionEspecifica ?? r.articulo_descripcion_especifica ?? '') as string;
+        return {
+            label: r.referencia,
+            value: r.id,
+            descripcion: r.comentario || '',
+            articulo_id: r.articulo_id ?? null,
+            articulo_nombre: (def || esp || '').trim(),
+            es_pieza_estandar: esPieza,
+            definicion_articulo: def.trim() || undefined,
+            descripcion_especifica_articulo: esp.trim() || undefined
+        };
+    }
+
+    /**
+     * Si el artículo es pieza estándar, prellenar con definición + descripción específica (#69).
+     */
+    private descripcionAnalisisDesdeOpcion(opt: {
+        es_pieza_estandar?: boolean;
+        definicion_articulo?: string;
+        descripcion_especifica_articulo?: string;
+        articulo_nombre?: string;
+        descripcion?: string;
+    }): string {
+        if (opt.es_pieza_estandar) {
+            const texto = [opt.definicion_articulo, opt.descripcion_especifica_articulo]
+                .filter((x) => x && String(x).trim())
+                .join(' — ');
+            return (
+                texto ||
+                String(opt.articulo_nombre || '').trim() ||
+                String(opt.descripcion || '').trim() ||
+                'Sin descripción'
+            );
+        }
+        return opt.descripcion || opt.articulo_nombre || 'Sin descripción';
+    }
+
+    /** Misma lógica desde una línea `PedidoReferencia` con `referencia.articulo` cargado. */
+    private textoDescripcionArticuloDesdePedidoLinea(r: PedidoReferencia): string {
+        const art = r.referencia?.articulo;
+        const parts = [art?.definicion, art?.descripcionEspecifica].filter((x) => x && String(x).trim());
+        if (parts.length > 0) {
+            return parts.join(' — ');
+        }
+        const com = r.referencia?.comentario;
+        if (typeof com === 'string' && com.trim()) {
+            return com.trim();
+        }
+        return '';
+    }
+
+    /** Código de referencia para listados en modales. */
+    getEtiquetaCodigoReferenciaParte(itemIndex: number, parteIndex: number): string {
+        const parte = this.getPartesFormArray(itemIndex).at(parteIndex);
+        const refId = parte.get('referencia_id')?.value;
+        if (!refId) {
+            return '—';
+        }
+        const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
+        const opt =
+            (listaId ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId) : undefined) ??
+            this.referencias.find((x) => x.value === refId);
+        return opt?.label ?? String(refId);
     }
 
     private initForm(): void {
@@ -928,7 +1003,14 @@ export class AnalysisComponent implements OnInit {
                 id: r.id,
                 referencia_id: r.referencia_id,
                 cantidad: r.cantidad,
-                descripcion: r.referencia?.descripcion || r.definicion || r.referencia?.referencia || '',
+                descripcion: r.referencia
+                    ? this.descripcionAnalisisDesdeOpcion(
+                          this.opcionReferenciaDesdeApi({
+                              ...r.referencia,
+                              id: r.referencia.id ?? r.referencia_id
+                          })
+                      )
+                    : this.textoDescripcionArticuloDesdePedidoLinea(r) || r.definicion || '',
                 categoria: r.lista_id
             });
         });

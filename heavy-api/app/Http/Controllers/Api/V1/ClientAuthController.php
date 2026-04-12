@@ -4,15 +4,15 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Models\SocialIdentity;
+use App\Models\Tercero;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Laravel\Socialite\Facades\Socialite;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\DB;
-use App\Models\Tercero;
+use Laravel\Socialite\Facades\Socialite;
 
 class ClientAuthController extends Controller
 {
@@ -42,7 +42,7 @@ class ClientAuthController extends Controller
                 'email' => $request->email,
                 'tipo' => 'Cliente',
                 'estado' => 'Activo',
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
 
             $token = $user->createToken('client_auth_token')->plainTextToken;
@@ -72,12 +72,12 @@ class ClientAuthController extends Controller
 
         $user = User::where('email', $request->email)->first();
 
-        if (!$user || !Hash::check($request->password, $user->password)) {
+        if (! $user || ! Hash::check($request->password, $user->password)) {
             throw ValidationException::withMessages([
                 'email' => ['Invalid credentials'],
             ]);
         }
-        
+
         $token = $user->createToken('client_auth_token')->plainTextToken;
 
         return response()->json([
@@ -110,17 +110,17 @@ class ClientAuthController extends Controller
         try {
             $socialUser = Socialite::driver($provider)->stateless()->user();
         } catch (\Exception $e) {
-            return response()->json(['error' => 'Unable to authenticate with ' . $provider], 401);
+            return response()->json(['error' => 'Unable to authenticate with '.$provider], 401);
         }
 
         $user = $this->findOrCreateUser($socialUser, $provider);
 
         $token = $user->createToken('client_social_auth_token')->plainTextToken;
-        
+
         // Use env variable or default to localhost
         $frontendUrl = env('FRONTEND_URL', 'http://localhost:4200');
-        
-        return redirect()->to($frontendUrl . '/auth/callback?token=' . $token);
+
+        return redirect()->to($frontendUrl.'/auth/callback?token='.$token);
     }
 
     /**
@@ -133,29 +133,29 @@ class ClientAuthController extends Controller
             ->first();
 
         if ($socialIdentity) {
-            return $socialIdentity->user; 
+            return $socialIdentity->user;
         }
 
         $user = User::where('email', $socialUser->getEmail())->first();
 
-        if (!$user) {
+        if (! $user) {
             $user = User::create([
                 'name' => $socialUser->getName(),
                 'email' => $socialUser->getEmail(),
                 'password' => Hash::make(Str::random(24)),
                 'email_verified_at' => now(),
             ]);
-            
+
             $user->assignRole('Cliente');
         } else {
-             // If user exists but no social identity linked, link it now.
-             // This assumes email trust from social provider.
-             // Usually acceptable for Google/FB.
+            // If user exists but no social identity linked, link it now.
+            // This assumes email trust from social provider.
+            // Usually acceptable for Google/FB.
         }
 
         // Check if relationship exists to avoid duplicates if something went wrong
-        if (!$user->socialIdentities()->where('provider_name', $provider)->where('provider_id', $socialUser->getId())->exists()) {
-             $user->socialIdentities()->create([
+        if (! $user->socialIdentities()->where('provider_name', $provider)->where('provider_id', $socialUser->getId())->exists()) {
+            $user->socialIdentities()->create([
                 'provider_name' => $provider,
                 'provider_id' => $socialUser->getId(),
             ]);

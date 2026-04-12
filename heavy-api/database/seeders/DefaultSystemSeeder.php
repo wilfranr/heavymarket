@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Seeder;
 use App\Models\Sistema;
+use Illuminate\Database\Seeder;
 
 class DefaultSystemSeeder extends Seeder
 {
@@ -16,7 +16,7 @@ class DefaultSystemSeeder extends Seeder
             ['nombre' => 'Por defecto'],
             [
                 'descripcion' => 'Sistema general para todos los tipos de artículos',
-                'imagen' => 'default.png'
+                'imagen' => 'default.png',
             ]
         );
     }

@@ -18,7 +18,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $comentario Comentarios adicionales sobre la referencia
  * @property \Carbon\Carbon $created_at Fecha de creación de la referencia
  * @property \Carbon\Carbon $updated_at Fecha de última actualización
- *
  * @property-read Lista $marca Marca asociada a la referencia
  * @property-read Categoria $categoria Categoría de la referencia
  * @property-read \Illuminate\Database\Eloquent\Collection|Articulo[] $articulos Artículos asociados a la referencia
@@ -27,11 +26,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection|ArticuloJuego[] $articuloJuegos Juegos de artículos asociados
  *
  * @since 1.0.0
+ *
  * @author Sistema CYH
  */
 class Referencia extends Model
 {
-    use HasFactory, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory;
 
     /**
      * Los atributos que son asignables masivamente.
@@ -95,7 +95,7 @@ class Referencia extends Model
      */
     public function marca()
     {
-        return $this->belongsTo(Lista::class, 'marca_id')->where('tipo', 'Fabricantes');
+        return $this->belongsTo(Lista::class, 'marca_id')->whereIn('tipo', ['Marca', 'Fabricantes']);
     }
 
     /**

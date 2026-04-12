@@ -52,7 +52,17 @@ export interface PedidoReferencia {
     estado: boolean;
 
     // Relaciones
-    referencia?: any;
+    referencia?: {
+        id?: number;
+        referencia?: string;
+        comentario?: string | null;
+        articulo_id?: number | null;
+        articulo?: {
+            definicion?: string;
+            descripcionEspecifica?: string;
+            es_pieza_estandar?: boolean;
+        };
+    };
     sistema?: any;
     lista?: { id: number; nombre: string };
     marca?: any;

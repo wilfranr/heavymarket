@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('provider_name');
             $table->string('provider_id');
             $table->timestamps();
-            
+
             $table->unique(['provider_name', 'provider_id']);
         });
     }

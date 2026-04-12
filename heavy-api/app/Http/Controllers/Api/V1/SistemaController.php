@@ -9,15 +9,14 @@ use App\Http\Requests\StoreSistemaRequest;
 use App\Http\Requests\UpdateSistemaRequest;
 use App\Http\Resources\SistemaResource;
 use App\Models\Sistema;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-
 /**
  * Controlador API para gestión de Sistemas
  *
  * Maneja todas las operaciones CRUD de sistemas a través del API REST.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Http\Request;
 
 class SistemaController extends Controller
 {

@@ -348,7 +348,13 @@
                                                 </p-inputgroup>
                                             </td>
                                             <td class="p-2">
-                                                <input type="text" pInputText formControlName="descripcion" placeholder="Descripción..." class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
+                                                <input
+                                                    type="text"
+                                                    pInputText
+                                                    formControlName="descripcion"
+                                                    placeholder="Descripción del artículo"
+                                                    class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md"
+                                                />
                                             </td>
                                             <td class="p-2">
                                                 <p-select [options]="tiposArticulo" formControlName="categoria" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
@@ -549,6 +555,18 @@
     
     @if (itemEditForm) {
         <form [formGroup]="itemEditForm" class="flex flex-col gap-6 py-4">
+            @if (activeItemIndex >= 0) {
+            <div class="space-y-1 text-xs text-slate-400">
+                @for (p of getPartesFormArray(activeItemIndex).controls; track $index; let pj = $index) {
+                <p class="m-0 leading-snug">
+                    <span class="font-mono text-slate-300">{{ getEtiquetaCodigoReferenciaParte(activeItemIndex, pj) }}</span>
+                    @if (p.get('descripcion')?.value) {
+                    <span class="text-slate-400"> — {{ p.get('descripcion')?.value }}</span>
+                    }
+                </p>
+                }
+            </div>
+            }
             <div class="field flex flex-col gap-2">
                 <label class="font-bold text-sm">Sistema</label>
                 <p-select formControlName="sistema_id" [options]="sistemas" 

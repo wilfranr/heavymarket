@@ -9,20 +9,17 @@ use App\Http\Requests\StoreArticuloRequest;
 use App\Http\Requests\UpdateArticuloRequest;
 use App\Http\Resources\ArticuloResource;
 use App\Models\Articulo;
-use App\Models\ArticuloJuego;
-use App\Models\ArticuloReferencia;
 use App\Models\Medida;
 use App\Models\Referencia;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-
 /**
  * Controlador API para gestión de Artículos
  *
  * Maneja todas las operaciones CRUD de artículos a través del API REST.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Illuminate\Support\Facades\Storage;
 
 class ArticuloController extends Controller
 {
@@ -81,12 +78,12 @@ class ArticuloController extends Controller
     {
         $this->authorize('create', \App\Models\Articulo::class);
         $data = $request->validated();
-        
+
         // Manejar carga de archivos
         if ($request->hasFile('fotoDescriptiva')) {
             $data['fotoDescriptiva'] = $request->file('fotoDescriptiva')->store('articulos/fotos', 'public');
         }
-        
+
         if ($request->hasFile('foto_medida')) {
             $data['foto_medida'] = $request->file('foto_medida')->store('articulos/planos', 'public');
         }
@@ -131,7 +128,7 @@ class ArticuloController extends Controller
             }
             $data['fotoDescriptiva'] = $request->file('fotoDescriptiva')->store('articulos/fotos', 'public');
         }
-        
+
         if ($request->hasFile('foto_medida')) {
             // Eliminar anterior si existe
             if ($articulo->foto_medida) {

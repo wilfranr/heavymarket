@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Http\Resources;
 
 use App\Http\Resources\ListaResource;
-use App\Models\{Fabricante, Lista};
+use App\Models\Fabricante;
+use App\Models\Lista;
 use Illuminate\Http\Request;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;

@@ -38,6 +38,20 @@ class ReferenciaResource extends JsonResource
             'articulos' => $this->whenLoaded('articulos'),
             'categoriaComercial' => $this->whenLoaded('categoriaComercial'),
             'lista_id' => $this->lista_id,
+
+            // Cuando `articulo` está cargado (análisis / listados #69)
+            'articulo_es_pieza_estandar' => $this->when(
+                $this->relationLoaded('articulo') && $this->articulo,
+                fn () => (bool) $this->articulo->es_pieza_estandar
+            ),
+            'articulo_definicion' => $this->when(
+                $this->relationLoaded('articulo') && $this->articulo,
+                fn () => $this->articulo->definicion
+            ),
+            'articulo_descripcion_especifica' => $this->when(
+                $this->relationLoaded('articulo') && $this->articulo,
+                fn () => $this->articulo->descripcionEspecifica
+            ),
         ];
     }
 }

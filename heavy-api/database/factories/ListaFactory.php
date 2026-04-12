@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\{Lista, Sistema};
+use App\Models\Lista;
+use App\Models\Sistema;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class ListaFactory extends Factory
@@ -15,7 +16,7 @@ class ListaFactory extends Factory
     {
         return [
             'tipo' => 'Tipo de Máquina',
-            'nombre' => fake()->unique()->word() . ' ' . fake()->randomNumber(2),
+            'nombre' => fake()->unique()->word().' '.fake()->randomNumber(2),
             'definicion' => fake()->optional()->sentence(),
             'foto' => null,
             'fotoMedida' => null,
@@ -44,7 +45,7 @@ class ListaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tipo' => 'Tipo de Máquina',
-            'nombre' => fake()->unique()->word() . ' ' . fake()->randomNumber(2),
+            'nombre' => fake()->unique()->word().' '.fake()->randomNumber(2),
         ]);
     }
 

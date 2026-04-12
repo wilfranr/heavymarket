@@ -18,8 +18,6 @@ class UbicacionController extends Controller
 {
     /**
      * Obtener lista de países
-     *
-     * @return JsonResponse
      */
     public function countries(): JsonResponse
     {
@@ -28,15 +26,12 @@ class UbicacionController extends Controller
             ->get(['id', 'name', 'iso2', 'phonecode']);
 
         return response()->json([
-            'data' => $countries
+            'data' => $countries,
         ]);
     }
 
     /**
      * Obtener lista de departamentos (estados)
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function states(Request $request): JsonResponse
     {
@@ -49,15 +44,12 @@ class UbicacionController extends Controller
         $states = $query->orderBy('name', 'asc')->get(['id', 'name', 'country_id']);
 
         return response()->json([
-            'data' => $states
+            'data' => $states,
         ]);
     }
 
     /**
      * Obtener lista de ciudades
-     *
-     * @param Request $request
-     * @return JsonResponse
      */
     public function cities(Request $request): JsonResponse
     {
@@ -74,7 +66,7 @@ class UbicacionController extends Controller
         $cities = $query->orderBy('name', 'asc')->get(['id', 'name', 'state_id', 'country_id']);
 
         return response()->json([
-            'data' => $cities
+            'data' => $cities,
         ]);
     }
 }

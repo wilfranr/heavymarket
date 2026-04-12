@@ -19,7 +19,11 @@ export interface Referencia {
         definicion?: string;
         descripcionEspecifica?: string;
         nombre?: string;
+        es_pieza_estandar?: boolean;
     };
+    articulo_es_pieza_estandar?: boolean;
+    articulo_definicion?: string | null;
+    articulo_descripcion_especifica?: string | null;
     marca?: {
         id: number;
         nombre: string;

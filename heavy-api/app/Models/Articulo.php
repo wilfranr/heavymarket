@@ -2,14 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Articulo extends Model
 {
-    use HasFactory, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory;
 
     protected $fillable = [
         'definicion',
@@ -28,7 +28,7 @@ class Articulo extends Model
 
     public function getFotoDescriptivaAttribute($value): ?string
     {
-        if (!$value || str_starts_with($value, 'http')) {
+        if (! $value || str_starts_with($value, 'http')) {
             return $value;
         }
 
@@ -42,7 +42,7 @@ class Articulo extends Model
 
     public function getFotoMedidaAttribute($value): ?string
     {
-        if (!$value || str_starts_with($value, 'http')) {
+        if (! $value || str_starts_with($value, 'http')) {
             return $value;
         }
 
@@ -58,8 +58,6 @@ class Articulo extends Model
     {
         return $this->hasMany(ArticuloReferencia::class, 'articulo_id');
     }
-
-
 
     public function medidas()
     {
@@ -90,5 +88,27 @@ class Articulo extends Model
             'articulo_id',
             'referencia_id'
         );
+    }
+
+    /**
+     * Artículos generados desde el catálogo de listas tipo «Piezas Estandar» / «Piezas Estándar».
+     */
+    public static function comentariosIndicanPiezaEstandar(?string $comentarios): bool
+    {
+        if ($comentarios === null || trim($comentarios) === '') {
+            return false;
+        }
+
+        $n = mb_strtolower($comentarios, 'UTF-8');
+
+        return str_contains($n, 'piezas estándar')
+            || str_contains($n, 'pieza estándar')
+            || str_contains($n, 'piezas estandar')
+            || str_contains($n, 'pieza estandar');
+    }
+
+    public function getEsPiezaEstandarAttribute(): bool
+    {
+        return self::comentariosIndicanPiezaEstandar(is_string($this->comentarios) ? $this->comentarios : null);
     }
 }

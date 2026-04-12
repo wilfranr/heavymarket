@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Lista, CreateListaDto, UpdateListaDto, ListaTipo } from '../models/lista.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
@@ -21,6 +21,32 @@ export class ListaService extends ApiService {
     getByTipo(tipo: ListaTipo, search?: string): Observable<Lista[]> {
         const params = search ? { search } : {};
         return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${tipo}`, params).pipe(map((response) => response.data));
+    }
+
+    /**
+     * Opciones unificadas para selects de referencia: listas tipo Marca y Fabricantes,
+     * sin duplicar por id y ordenadas por nombre (issue #48).
+     */
+    getMarcasYFabricantesParaReferencia(): Observable<Lista[]> {
+        return forkJoin({
+            marcas: this.getByTipo('Marca'),
+            fabricantes: this.getByTipo('Fabricantes')
+        }).pipe(
+            map(({ marcas, fabricantes }) => {
+                const byId = new Map<number, Lista>();
+                for (const item of marcas) {
+                    byId.set(item.id, item);
+                }
+                for (const item of fabricantes) {
+                    if (!byId.has(item.id)) {
+                        byId.set(item.id, item);
+                    }
+                }
+                return Array.from(byId.values()).sort((a, b) =>
+                    a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
+                );
+            })
+        );
     }
 
     /**

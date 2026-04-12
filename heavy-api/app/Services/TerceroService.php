@@ -4,13 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\{Tercero, Contacto, Direccion};
+use App\Models\Contacto;
+use App\Models\Direccion;
+use App\Models\Tercero;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Servicio de lógica de negocio para Terceros
- * 
+ *
  * Maneja operaciones complejas relacionadas con
  * clientes y proveedores.
  */
@@ -18,9 +20,8 @@ class TerceroService
 {
     /**
      * Crear tercero con contactos y direcciones
-     * 
-     * @param array<string, mixed> $data
-     * @return Tercero
+     *
+     * @param  array<string, mixed>  $data
      */
     public function crearTerceroCompleto(array $data): Tercero
     {
@@ -76,8 +77,8 @@ class TerceroService
 
     /**
      * Buscar terceros por criterios múltiples
-     * 
-     * @param array<string, mixed> $criterios
+     *
+     * @param  array<string, mixed>  $criterios
      * @return Collection<int, Tercero>
      */
     public function buscar(array $criterios): Collection
@@ -85,11 +86,11 @@ class TerceroService
         $query = Tercero::query();
 
         if (isset($criterios['documento'])) {
-            $query->where('documento', 'like', '%' . $criterios['documento'] . '%');
+            $query->where('documento', 'like', '%'.$criterios['documento'].'%');
         }
 
         if (isset($criterios['razon_social'])) {
-            $query->where('razon_social', 'like', '%' . $criterios['razon_social'] . '%');
+            $query->where('razon_social', 'like', '%'.$criterios['razon_social'].'%');
         }
 
         if (isset($criterios['es_cliente'])) {
@@ -109,10 +110,6 @@ class TerceroService
 
     /**
      * Activar o desactivar tercero
-     * 
-     * @param Tercero $tercero
-     * @param bool $activar
-     * @return Tercero
      */
     public function cambiarEstado(Tercero $tercero, bool $activar = true): Tercero
     {
@@ -125,7 +122,7 @@ class TerceroService
 
     /**
      * Obtener clientes activos
-     * 
+     *
      * @return Collection<int, Tercero>
      */
     public function obtenerClientesActivos(): Collection
@@ -138,7 +135,7 @@ class TerceroService
 
     /**
      * Obtener proveedores activos
-     * 
+     *
      * @return Collection<int, Tercero>
      */
     public function obtenerProveedoresActivos(): Collection
@@ -151,10 +148,6 @@ class TerceroService
 
     /**
      * Verificar si un documento ya existe
-     * 
-     * @param string $documento
-     * @param int|null $exceptoId
-     * @return bool
      */
     public function documentoExiste(string $documento, ?int $exceptoId = null): bool
     {

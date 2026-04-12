@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\{Pedido, User, Tercero, Maquina, Lista, Contacto};
+use App\Models\Contacto;
+use App\Models\Lista;
+use App\Models\Maquina;
+use App\Models\Pedido;
+use App\Models\Tercero;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Models\{Maquina, Lista};
+use App\Models\Lista;
+use App\Models\Maquina;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class MaquinaFactory extends Factory
@@ -15,7 +16,7 @@ class MaquinaFactory extends Factory
     {
         return [
             'tipo' => Lista::factory()->tipoMaquina(),
-            'modelo' => fake()->word() . ' ' . fake()->randomNumber(3),
+            'modelo' => fake()->word().' '.fake()->randomNumber(3),
             'fabricante_id' => Lista::factory()->fabricante(),
             'serie' => fake()->unique()->uuid(),
             'arreglo' => fake()->optional()->sentence(),
@@ -41,7 +42,7 @@ class MaquinaFactory extends Factory
     public function withFoto(): static
     {
         return $this->state(fn (array $attributes) => [
-            'foto' => 'maquinas/' . fake()->uuid() . '.jpg',
+            'foto' => 'maquinas/'.fake()->uuid().'.jpg',
         ]);
     }
 
@@ -51,7 +52,7 @@ class MaquinaFactory extends Factory
     public function withFotoId(): static
     {
         return $this->state(fn (array $attributes) => [
-            'fotoId' => 'maquinas/ids/' . fake()->uuid() . '.jpg',
+            'fotoId' => 'maquinas/ids/'.fake()->uuid().'.jpg',
         ]);
     }
 

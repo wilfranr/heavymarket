@@ -2,15 +2,14 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Maquina extends Model
 {
-    use HasFactory, \App\Traits\NormalizesResources;
+    use \App\Traits\NormalizesResources, HasFactory;
 
     protected $fillable = [
         'tipo', // 'tipo' is a foreign key to the 'listas' table
@@ -38,7 +37,7 @@ class Maquina extends Model
         return $this->belongsToMany(Tercero::class, 'tercero_maquina', 'maquina_id', 'tercero_id');
     }
 
-    //función para traer los datos concatenados de la maquina
+    // función para traer los datos concatenados de la maquina
 
     public function getMaquinaAttribute()
     {
@@ -54,8 +53,9 @@ class Maquina extends Model
             $this->tipo,
             $this->modelo,
             $this->serie,
-            $this->arreglo
+            $this->arreglo,
         ]);
+
         return implode(' ', $parts);
     }
 
@@ -69,16 +69,14 @@ class Maquina extends Model
         return $this->belongsTo(Lista::class, 'fabricante_id')->where('tipo', 'Fabricantes');
     }
 
-
-
-    //relación con listas para traer lo tipos de maquina
+    // relación con listas para traer lo tipos de maquina
     public function listas(): BelongsTo
     {
         // Reference to the listas table
-        return $this->belongsTo(Lista::class, 'tipo')->where('tipo', "Tipo de Máquina");
+        return $this->belongsTo(Lista::class, 'tipo')->where('tipo', 'Tipo de Máquina');
     }
-    
-    //relación con pedidos para traer las referencias vendidas
+
+    // relación con pedidos para traer las referencias vendidas
     public function referenciasVendidas()
     {
         return $this->hasManyThrough(

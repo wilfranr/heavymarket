@@ -37,10 +37,10 @@ class CrearReferenciasParaArticulosSeeder extends Seeder
         foreach ($articulos as $articulo) {
             // Generar entre 1 y 3 referencias por artículo
             $cantidad = rand(1, 3);
-            
+
             for ($i = 0; $i < $cantidad; $i++) {
-                $codigo = strtoupper(substr($articulo->definicion, 0, 3)) . '-' . rand(1000, 9999) . '-' . Str::random(2);
-                
+                $codigo = strtoupper(substr($articulo->definicion, 0, 3)).'-'.rand(1000, 9999).'-'.Str::random(2);
+
                 Referencia::create([
                     'referencia' => $codigo,
                     'articulo_id' => $articulo->id,

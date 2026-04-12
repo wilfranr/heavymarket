@@ -137,7 +137,7 @@ class PedidoController extends Controller
 
         $pedido->load([
             'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'fabricante', 'contacto',
-            'referencias.referencia', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
+            'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
             'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
         ]);
 
@@ -178,7 +178,7 @@ class PedidoController extends Controller
         $pedido->refresh();
         $pedido->load([
             'user', 'tercero', 'maquina.fabricante', 'fabricante', 'contacto',
-            'referencias.referencia', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
+            'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
             'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
         ]);
 
@@ -309,7 +309,7 @@ class PedidoController extends Controller
         $referencia = $pedido->referencias()->create($validated);
 
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia', 'sistema', 'marca', 'lista'])),
+            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia.articulo', 'sistema', 'marca', 'lista'])),
             'message' => 'Referencia agregada exitosamente',
         ], 201);
     }

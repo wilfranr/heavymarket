@@ -13,8 +13,8 @@ class PedidoReferenciaImagenResource extends JsonResource
     {
         $imagen = $this->imagen;
         $imagenUrl = $imagen;
-        if ($imagen && !str_starts_with($imagen, 'http')) {
-            $imagenUrl = asset('storage/' . ltrim($imagen, '/'));
+        if ($imagen && ! str_starts_with($imagen, 'http')) {
+            $imagenUrl = asset('storage/'.ltrim($imagen, '/'));
         }
 
         return [

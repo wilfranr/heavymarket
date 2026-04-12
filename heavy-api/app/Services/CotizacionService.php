@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace App\Services;
 
-use App\Models\{Cotizacion, Pedido, CotizacionReferenciaProveedor, TRM};
+use App\Models\Cotizacion;
+use App\Models\CotizacionReferenciaProveedor;
+use App\Models\Pedido;
+use App\Models\TRM;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Servicio de lógica de negocio para Cotizaciones
- * 
+ *
  * Maneja los cálculos complejos de cotizaciones, conversiones
  * de moneda y generación de documentos.
  */
@@ -17,10 +20,8 @@ class CotizacionService
 {
     /**
      * Crear cotización desde un pedido
-     * 
-     * @param Pedido $pedido
-     * @param array<string, mixed> $datosAdicionales
-     * @return Cotizacion
+     *
+     * @param  array<string, mixed>  $datosAdicionales
      */
     public function crearDesdePedido(Pedido $pedido, array $datosAdicionales = []): Cotizacion
     {
@@ -50,10 +51,8 @@ class CotizacionService
 
     /**
      * Calcular precio total de una cotización
-     * 
-     * @param Cotizacion $cotizacion
-     * @param string $moneda 'COP' o 'USD'
-     * @return float
+     *
+     * @param  string  $moneda  'COP' o 'USD'
      */
     public function calcularPrecioTotal(Cotizacion $cotizacion, string $moneda = 'COP'): float
     {
@@ -72,10 +71,6 @@ class CotizacionService
 
     /**
      * Aplicar margen de ganancia
-     * 
-     * @param float $precioBase
-     * @param float $porcentajeMargen
-     * @return float
      */
     public function aplicarMargen(float $precioBase, float $porcentajeMargen): float
     {
@@ -84,9 +79,7 @@ class CotizacionService
 
     /**
      * Calcular precio con impuestos
-     * 
-     * @param float $precioBase
-     * @param float $porcentajeIVA
+     *
      * @return array{subtotal: float, iva: float, total: float}
      */
     public function calcularConImpuestos(float $precioBase, float $porcentajeIVA = 19): array
@@ -104,20 +97,16 @@ class CotizacionService
 
     /**
      * Obtener la TRM actual
-     * 
-     * @return float
      */
     private function obtenerTRM(): float
     {
         $trm = TRM::orderBy('fecha', 'desc')->first();
+
         return $trm?->valor ?? 4000.0; // Valor por defecto si no hay TRM
     }
 
     /**
      * Aprobar cotización
-     * 
-     * @param Cotizacion $cotizacion
-     * @return Cotizacion
      */
     public function aprobar(Cotizacion $cotizacion): Cotizacion
     {
@@ -136,10 +125,6 @@ class CotizacionService
 
     /**
      * Rechazar cotización
-     * 
-     * @param Cotizacion $cotizacion
-     * @param string $motivo
-     * @return Cotizacion
      */
     public function rechazar(Cotizacion $cotizacion, string $motivo): Cotizacion
     {

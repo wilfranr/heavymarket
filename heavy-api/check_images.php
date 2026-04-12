@@ -12,17 +12,17 @@ foreach ($config as $slug => $image) {
     // In config file Step 1506:
     // Some are just 'filename.png'.
     // Some are 'landing/category/filename.jpg'.
-    
+
     // We only care about checking existence.
     // Ideally we check if 'public/images/' . $image exists.
-    
-    $path = 'public/images/' . $image;
-    if (!file_exists($path)) {
-        $missing[] = $image . " (for $slug)";
+
+    $path = 'public/images/'.$image;
+    if (! file_exists($path)) {
+        $missing[] = $image." (for $slug)";
     }
 }
 
 echo "Missing images:\n";
 foreach ($missing as $m) {
-    echo $m . "\n";
+    echo $m."\n";
 }

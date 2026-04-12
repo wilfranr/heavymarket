@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (Schema::hasTable('referencias') && !Schema::hasColumn('referencias', 'es_temporal')) {
+        if (Schema::hasTable('referencias') && ! Schema::hasColumn('referencias', 'es_temporal')) {
             Schema::table('referencias', function (Blueprint $column) {
                 $column->boolean('es_temporal')->default(false)->after('marca_id');
             });
