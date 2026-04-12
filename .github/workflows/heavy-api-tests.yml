@@ -30,7 +30,8 @@ jobs:
       - name: Configurar PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.2'
+          # Debe coincidir con composer.lock (Symfony 8.x y maennchen/zipstream-php ^8.3).
+          php-version: '8.4'
           extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, fileinfo
           coverage: none
 

@@ -6,7 +6,7 @@
 
 ## Stack Tecnológico
 - **Framework**: Laravel 12.
-- **Lenguaje**: PHP 8.2+ (Tipado estricto).
+- **Lenguaje**: PHP 8.4+ (Tipado estricto).
 - **Base de Datos**: MySQL 8.
 - **API**: RESTful.
 - **Autenticación**: Laravel Sanctum.
@@ -27,7 +27,7 @@ El backend utiliza patrones de diseño para mantener los controladores limpios y
 ### 1. Codificación PHP
 - Seguir el estándar PSR-12.
 - Usar **Tipado Estricto** (`declare(strict_types=1);` opcional pero recomendado, tipar argumentos y retornos).
-- Usar las nuevas características de PHP 8.2 (Constructor promotion, Readonly classes, Enums) donde aporte claridad.
+- Usar las nuevas características de PHP 8.4 (Constructor promotion, Readonly classes, Enums) donde aporte claridad.
 
 ### 2. Diseño de API
 - **Rutas**: Nombrar recursos en plural (`/api/orders`).
