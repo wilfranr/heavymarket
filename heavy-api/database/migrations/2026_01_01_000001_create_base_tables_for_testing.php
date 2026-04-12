@@ -14,9 +14,9 @@ return new class extends Migration
     public function up(): void
     {
         // Tablas necesarias para tests - solo crear si no existen
-        
+
         // 1. users
-        if (!Schema::hasTable('users')) {
+        if (! Schema::hasTable('users')) {
             Schema::create('users', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -29,7 +29,7 @@ return new class extends Migration
         }
 
         // 2. terceros
-        if (!Schema::hasTable('terceros')) {
+        if (! Schema::hasTable('terceros')) {
             Schema::create('terceros', function (Blueprint $table) {
                 $table->id();
                 $table->string('tipo_documento', 20)->nullable();
@@ -51,7 +51,7 @@ return new class extends Migration
         }
 
         // 3. pedido_referencia (tabla pivot pedido-referencia)
-        if (!Schema::hasTable('pedido_referencia')) {
+        if (! Schema::hasTable('pedido_referencia')) {
             Schema::create('pedido_referencia', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pedido_id')->nullable();
@@ -70,7 +70,7 @@ return new class extends Migration
         }
 
         // 4. pedido_referencia_proveedor
-        if (!Schema::hasTable('pedido_referencia_proveedor')) {
+        if (! Schema::hasTable('pedido_referencia_proveedor')) {
             Schema::create('pedido_referencia_proveedor', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('pedido_referencia_id')->nullable();
@@ -89,7 +89,7 @@ return new class extends Migration
         }
 
         // 5. referencias
-        if (!Schema::hasTable('referencias')) {
+        if (! Schema::hasTable('referencias')) {
             Schema::create('referencias', function (Blueprint $table) {
                 $table->id();
                 $table->string('referencia', 255)->unique();
@@ -102,7 +102,7 @@ return new class extends Migration
         }
 
         // 6. maquinas
-        if (!Schema::hasTable('maquinas')) {
+        if (! Schema::hasTable('maquinas')) {
             Schema::create('maquinas', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tipo')->nullable();
@@ -118,7 +118,7 @@ return new class extends Migration
         }
 
         // 7. sistemas
-        if (!Schema::hasTable('sistemas')) {
+        if (! Schema::hasTable('sistemas')) {
             Schema::create('sistemas', function (Blueprint $table) {
                 $table->id();
                 $table->string('nombre', 255);
@@ -128,7 +128,7 @@ return new class extends Migration
         }
 
         // 8. articulos
-        if (!Schema::hasTable('articulos')) {
+        if (! Schema::hasTable('articulos')) {
             Schema::create('articulos', function (Blueprint $table) {
                 $table->id();
                 $table->string('nombre', 255);
@@ -141,7 +141,7 @@ return new class extends Migration
         }
 
         // 9. categorias
-        if (!Schema::hasTable('categorias')) {
+        if (! Schema::hasTable('categorias')) {
             Schema::create('categorias', function (Blueprint $table) {
                 $table->id();
                 $table->string('nombre', 255);
@@ -152,7 +152,7 @@ return new class extends Migration
         }
 
         // 10. contactos (tercero_contacto)
-        if (!Schema::hasTable('contactos')) {
+        if (! Schema::hasTable('contactos')) {
             Schema::create('contactos', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('tercero_id')->nullable();
@@ -168,7 +168,7 @@ return new class extends Migration
         }
 
         // 11. pedidos
-        if (!Schema::hasTable('pedidos')) {
+        if (! Schema::hasTable('pedidos')) {
             Schema::create('pedidos', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
@@ -185,8 +185,22 @@ return new class extends Migration
             });
         }
 
+        // 11b. pedido_articulos (requerido por withCount en PedidoController::index en tests SQLite)
+        if (! Schema::hasTable('pedido_articulos')) {
+            Schema::create('pedido_articulos', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('pedido_id')->nullable();
+                $table->unsignedBigInteger('articulo_id')->nullable();
+                $table->unsignedInteger('cantidad')->default(1);
+                $table->text('comentario')->nullable();
+                $table->unsignedBigInteger('sistema_id')->nullable();
+                $table->string('imagen', 255)->nullable();
+                $table->timestamps();
+            });
+        }
+
         // 12. fabricantes (tabla legacy)
-        if (!Schema::hasTable('fabricantes')) {
+        if (! Schema::hasTable('fabricantes')) {
             Schema::create('fabricantes', function (Blueprint $table) {
                 $table->id();
                 $table->string('nombre', 255);
@@ -197,7 +211,7 @@ return new class extends Migration
         }
 
         // 13. countries
-        if (!Schema::hasTable('countries')) {
+        if (! Schema::hasTable('countries')) {
             Schema::create('countries', function (Blueprint $table) {
                 $table->id();
                 $table->string('name', 100);
@@ -207,7 +221,7 @@ return new class extends Migration
         }
 
         // 14. role_has_permissions y relacionados (Spatie)
-        if (!Schema::hasTable('permissions')) {
+        if (! Schema::hasTable('permissions')) {
             Schema::create('permissions', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -216,7 +230,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('roles')) {
+        if (! Schema::hasTable('roles')) {
             Schema::create('roles', function (Blueprint $table) {
                 $table->id();
                 $table->string('name');
@@ -225,7 +239,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_permissions')) {
+        if (! Schema::hasTable('model_has_permissions')) {
             Schema::create('model_has_permissions', function (Blueprint $table) {
                 $table->unsignedBigInteger('permission_id');
                 $table->string('model_type');
@@ -234,7 +248,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('model_has_roles')) {
+        if (! Schema::hasTable('model_has_roles')) {
             Schema::create('model_has_roles', function (Blueprint $table) {
                 $table->unsignedBigInteger('role_id');
                 $table->string('model_type');
@@ -243,7 +257,7 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('role_has_permissions')) {
+        if (! Schema::hasTable('role_has_permissions')) {
             Schema::create('role_has_permissions', function (Blueprint $table) {
                 $table->unsignedBigInteger('permission_id');
                 $table->unsignedBigInteger('role_id');
@@ -265,6 +279,7 @@ return new class extends Migration
             Schema::dropIfExists('permissions');
             Schema::dropIfExists('countries');
             Schema::dropIfExists('fabricantes');
+            Schema::dropIfExists('pedido_articulos');
             Schema::dropIfExists('pedidos');
             Schema::dropIfExists('contactos');
             Schema::dropIfExists('categorias');

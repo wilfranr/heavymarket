@@ -120,6 +120,7 @@ Route::prefix('v1')->group(function () {
          * Recursos principales del sistema
          */
         Route::post('pedidos/{pedido}/enviar-a-costeo', [PedidoController::class, 'enviarACosteo'])->name('pedidos.enviar-a-costeo');
+        Route::post('pedidos/{pedido}/enviar-a-analisis', [PedidoController::class, 'enviarAAnalisis'])->name('pedidos.enviar-a-analisis');
         Route::apiResource('pedidos', PedidoController::class);
 
         // Rutas adicionales para gestión de referencias en pedidos

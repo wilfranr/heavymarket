@@ -28,11 +28,15 @@ class MaquinaResource extends JsonResource
             'id' => $this->id,
             'tipo' => $this->tipo,
             'modelo' => $this->modelo,
+            // Nombre del OEM (misma clave que en PedidoResource.maquina para el front)
+            'marca' => $this->relationLoaded('fabricante')
+                ? ($this->fabricante?->nombre ?? 'N/A')
+                : null,
             'fabricante_id' => $this->fabricante_id,
             'serie' => $this->serie,
             'arreglo' => $this->arreglo,
-            'foto' => $this->foto && !filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : $this->foto,
-            'fotoId' => $this->fotoId && !filter_var($this->fotoId, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoId) : $this->fotoId,
+            'foto' => $this->foto && ! filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : $this->foto,
+            'fotoId' => $this->fotoId && ! filter_var($this->fotoId, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoId) : $this->fotoId,
             'estado_revision' => $this->estado_revision,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

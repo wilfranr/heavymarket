@@ -163,6 +163,13 @@ export class PedidosListComponent implements OnInit {
         // Inicializar Tabs
         this.initTabs();
 
+        // Analista: el API solo expone En_Analisis; evitar pestañas que devuelvan lista vacía
+        if (this.isAnalista) {
+            this.estadosTabs = [{ label: 'En análisis', value: 'En_Analisis', icon: 'pi pi-cog' }];
+            this.selectedTabValue = 'En_Analisis';
+            this.selectedEstado = 'En_Analisis';
+        }
+
         // Cargar datos para filtros
         this.loadFilterOptions();
 
@@ -299,6 +306,7 @@ export class PedidosListComponent implements OnInit {
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
         const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
             Nuevo: 'info',
+            En_Analisis: 'warn',
             Enviado: 'info',
             En_Costeo: 'warn',
             Cotizado: 'warn',

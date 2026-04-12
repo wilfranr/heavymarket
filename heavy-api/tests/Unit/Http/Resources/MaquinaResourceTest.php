@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Http\Resources;
 
 use App\Http\Resources\MaquinaResource;
-use App\Models\{Maquina, Lista};
+use App\Models\Lista;
+use App\Models\Maquina;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Tests\TestCase;
@@ -22,7 +23,7 @@ class MaquinaResourceTest extends TestCase
         // Arrange: crear máquina con relaciones
         $tipo = Lista::factory()->tipoMaquina()->create();
         $fabricante = Lista::factory()->fabricante()->create();
-        
+
         $maquina = Maquina::factory()->create([
             'tipo' => $tipo->id,
             'fabricante_id' => $fabricante->id,
@@ -30,15 +31,17 @@ class MaquinaResourceTest extends TestCase
 
         $maquina->load(['fabricante', 'listas']);
 
-        // Act: transformar con resource
+        // Act: salida como en la respuesta HTTP (filtra MissingValue de whenLoaded)
         $resource = new MaquinaResource($maquina);
-        $array = $resource->toArray(new Request());
+        $array = $resource->resolve(new Request);
 
         // Assert: verificar campos
         $this->assertArrayHasKey('id', $array);
         $this->assertArrayHasKey('tipo', $array);
         $this->assertArrayHasKey('modelo', $array);
         $this->assertArrayHasKey('fabricante_id', $array);
+        $this->assertArrayHasKey('marca', $array);
+        $this->assertSame($fabricante->nombre, $array['marca']);
         $this->assertArrayHasKey('serie', $array);
         $this->assertArrayHasKey('arreglo', $array);
         $this->assertArrayHasKey('estado_revision', $array);
@@ -54,7 +57,7 @@ class MaquinaResourceTest extends TestCase
         // Arrange: máquina con estado revisada
         $tipo = Lista::factory()->tipoMaquina()->create();
         $fabricante = Lista::factory()->fabricante()->create();
-        
+
         $maquina = Maquina::factory()->revisada()->create([
             'tipo' => $tipo->id,
             'fabricante_id' => $fabricante->id,
@@ -62,7 +65,7 @@ class MaquinaResourceTest extends TestCase
 
         // Act
         $resource = new MaquinaResource($maquina);
-        $array = $resource->toArray(new Request());
+        $array = $resource->resolve(new Request);
 
         // Assert
         $this->assertEquals('revisado', $array['estado_revision']);
@@ -76,7 +79,7 @@ class MaquinaResourceTest extends TestCase
         // Arrange
         $tipo = Lista::factory()->tipoMaquina()->create();
         $fabricante = Lista::factory()->fabricante()->create();
-        
+
         $maquina = Maquina::factory()->create([
             'tipo' => $tipo->id,
             'fabricante_id' => $fabricante->id,
@@ -86,7 +89,7 @@ class MaquinaResourceTest extends TestCase
 
         // Act
         $resource = new MaquinaResource($maquina);
-        $array = $resource->toArray(new Request());
+        $array = $resource->resolve(new Request);
 
         // Assert
         $this->assertArrayHasKey('fabricante', $array);
@@ -101,7 +104,7 @@ class MaquinaResourceTest extends TestCase
         // Arrange
         $tipo = Lista::factory()->tipoMaquina()->create();
         $fabricante = Lista::factory()->fabricante()->create();
-        
+
         $maquina = Maquina::factory()->create([
             'tipo' => $tipo->id,
             'fabricante_id' => $fabricante->id,
@@ -109,10 +112,12 @@ class MaquinaResourceTest extends TestCase
 
         // Act (sin load)
         $resource = new MaquinaResource($maquina);
-        $array = $resource->toArray(new Request());
+        $array = $resource->resolve(new Request);
 
-        // Assert - no debe incluir fabricante ni tipoLista
+        // Assert - no debe incluir fabricante ni tipoLista (marca sin eager load queda null)
         $this->assertArrayNotHasKey('fabricante', $array);
         $this->assertArrayNotHasKey('tipoLista', $array);
+        $this->assertArrayHasKey('marca', $array);
+        $this->assertNull($array['marca']);
     }
 }

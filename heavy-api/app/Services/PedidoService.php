@@ -4,20 +4,17 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\Empresa;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
-use App\Models\PedidoReferenciaImagen;
-use App\Models\PedidoReferenciaProveedor;
-use App\Models\Empresa;
 use App\Models\User;
 use App\Notifications\SystemNotification;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Http\Request;
 
 /**
  * Servicio de Pedidos
- * 
+ *
  * Centraliza la lógica de negocio para la gestión de pedidos,
  * incluyendo cálculos de TRM, fletes y sincronización de referencias.
  */
@@ -25,10 +22,7 @@ class PedidoService
 {
     /**
      * Crear un nuevo pedido con sus referencias y artículos
-     * 
-     * @param array $data
-     * @param User $user
-     * @return Pedido
+     *
      * @throws \Exception
      */
     public function create(array $data, User $user): Pedido
@@ -85,15 +79,12 @@ class PedidoService
 
     /**
      * Actualizar un pedido existente
-     * 
-     * @param Pedido $pedido
-     * @param array $data
-     * @return Pedido
      */
     public function update(Pedido $pedido, array $data): Pedido
     {
         return DB::transaction(function () use ($pedido, $data) {
-            $pedido->update($data);
+            $attributes = Arr::only($data, $pedido->getFillable());
+            $pedido->update($attributes);
 
             if (isset($data['referencias'])) {
                 $this->syncReferencias($pedido, $data['referencias']);
@@ -103,16 +94,13 @@ class PedidoService
                 'user', 'tercero', 'maquina', 'fabricante', 'contacto',
                 'referencias.referencia', 'referencias.sistema', 'referencias.lista',
                 'referencias.imagenes', 'referencias.proveedores.tercero',
-                'articulos.articulo', 'articulos.sistema'
+                'articulos.articulo', 'articulos.sistema',
             ]);
         });
     }
 
     /**
      * Sincroniza las referencias de un pedido
-     * 
-     * @param Pedido $pedido
-     * @param array $referenciasData
      */
     public function syncReferencias(Pedido $pedido, array $referenciasData): void
     {
@@ -126,7 +114,7 @@ class PedidoService
         }
 
         $toDelete = array_diff($currentIds, $incomingIds);
-        if (!empty($toDelete)) {
+        if (! empty($toDelete)) {
             $pedido->referencias()->whereIn('id', $toDelete)->delete();
         }
 
@@ -166,10 +154,6 @@ class PedidoService
 
     /**
      * Calcula los valores de unidad y total según ubicación (Nacional/Internacional)
-     *
-     * @param array $datos
-     * @param PedidoReferencia $pedidoReferencia
-     * @return array
      */
     public function calcularValores(array $datos, PedidoReferencia $pedidoReferencia): array
     {
@@ -181,7 +165,9 @@ class PedidoService
         if ($ubicacion === 'Internacional') {
             $empresa = Empresa::where('estado', 1)->first();
             $trm = (float) ($empresa?->trm ?? 1);
-            if ($trm <= 0) $trm = 1; // Evitar división/multiplicación por cero o negativo
+            if ($trm <= 0) {
+                $trm = 1;
+            } // Evitar división/multiplicación por cero o negativo
 
             $flete = (float) ($empresa?->flete ?? 0);
 
@@ -214,8 +200,8 @@ class PedidoService
         // Notificación al creador
         $user->notify(new SystemNotification(
             'pedido_creado',
-            'Nuevo Pedido #' . $pedido->id,
-            'Se ha creado el pedido para ' . ($pedido->tercero->nombre ?? 'cliente') . ' exitosamente.',
+            'Nuevo Pedido #'.$pedido->id,
+            'Se ha creado el pedido para '.($pedido->tercero->nombre ?? 'cliente').' exitosamente.',
             'pi-shopping-cart',
             'blue',
             ['id' => $pedido->id]
@@ -226,8 +212,8 @@ class PedidoService
         foreach ($analistas as $analista) {
             $analista->notify(new SystemNotification(
                 'pedido_creado',
-                'Nuevo Pedido para Analizar #' . $pedido->id,
-                'El vendedor ' . $user->name . ' ha creado un nuevo pedido para ' . ($pedido->tercero->nombre ?? 'un cliente'),
+                'Nuevo Pedido para Analizar #'.$pedido->id,
+                'El vendedor '.$user->name.' ha creado un nuevo pedido para '.($pedido->tercero->nombre ?? 'un cliente'),
                 'pi-shopping-cart',
                 'orange',
                 ['id' => $pedido->id]

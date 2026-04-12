@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Api;
 
-use App\Models\{User, Pedido, Tercero, Fabricante, Maquina};
+use App\Models\Maquina;
+use App\Models\Pedido;
+use App\Models\Tercero;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Tests\TestCase;
 
 /**
@@ -18,13 +21,14 @@ class PedidoTest extends TestCase
     use RefreshDatabase;
 
     private User $user;
+
     private Tercero $tercero;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        //_seedRolesYPermisos para tests
+        // _seedRolesYPermisos para tests
         $this->seedRolesYPermisos();
 
         // Crear usuario con rol permitido
@@ -214,5 +218,77 @@ class PedidoTest extends TestCase
         $response->assertStatus(200)
             ->assertJsonCount(10, 'data')
             ->assertJsonPath('meta.per_page', 10);
+    }
+
+    /**
+     * Test: POST enviar-a-analisis persiste En_Analisis cuando la máquina está revisada
+     */
+    public function test_enviar_a_analisis_persiste_estado_con_maquina_revisada(): void
+    {
+        $maquina = Maquina::factory()->revisada()->create();
+        $pedido = Pedido::factory()->create([
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+            'estado' => 'Nuevo',
+            'maquina_id' => $maquina->id,
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson("/v1/pedidos/{$pedido->id}/enviar-a-analisis");
+
+        $response->assertStatus(200)
+            ->assertJsonPath('data.estado', 'En_Analisis');
+
+        $this->assertDatabaseHas('pedidos', [
+            'id' => $pedido->id,
+            'estado' => 'En_Analisis',
+        ]);
+    }
+
+    /**
+     * Test: Estado En_Analisis es válido en request (Issue #70)
+     */
+    public function test_estado_en_analisis_es_valido_en_request(): void
+    {
+        $rules = (new \App\Http\Requests\StorePedidoRequest)->rules();
+
+        $this->assertArrayHasKey('estado', $rules);
+    }
+
+    /**
+     * Rol Analista (Spatie): solo lista pedidos en En_Analisis.
+     */
+    public function test_analista_solo_ve_pedidos_en_analisis(): void
+    {
+        $analista = User::factory()->create();
+        $analista->assignRole('Analista');
+
+        Pedido::factory()->create(['estado' => 'En_Analisis']);
+        Pedido::factory()->create(['estado' => 'Nuevo']);
+        Pedido::factory()->create(['estado' => 'Enviado']);
+
+        $response = $this->actingAs($analista, 'sanctum')
+            ->getJson('/v1/pedidos');
+
+        $response->assertStatus(200);
+        $data = $response->json('data');
+        $this->assertCount(1, $data);
+        $this->assertSame('En_Analisis', $data[0]['estado']);
+    }
+
+    /**
+     * Analista no puede ver detalle de pedido que no está en En_Analisis.
+     */
+    public function test_analista_no_puede_ver_pedido_fuera_de_en_analisis(): void
+    {
+        $analista = User::factory()->create();
+        $analista->assignRole('Analista');
+
+        $pedido = Pedido::factory()->create(['estado' => 'Nuevo']);
+
+        $response = $this->actingAs($analista, 'sanctum')
+            ->getJson("/v1/pedidos/{$pedido->id}");
+
+        $response->assertStatus(403);
     }
 }

@@ -48,7 +48,14 @@ export class PedidoService extends ApiService {
     /**
      * Actualizar un pedido existente
      */
-    update(id: number, data: UpdatePedidoDto): Observable<ApiResponse<Pedido>> {
+    update(id: number, data: UpdatePedidoDto | FormData): Observable<ApiResponse<Pedido>> {
+        // multipart/form-data con HTTP PUT suele no parsearse bien en PHP/Laravel; mismo criterio que Maquina/Articulo.
+        if (data instanceof FormData) {
+            if (![...data.keys()].includes('_method')) {
+                data.append('_method', 'PUT');
+            }
+            return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Pedido>>(`${this.endpoint}/${id}`, data);
     }
 
@@ -84,5 +91,12 @@ export class PedidoService extends ApiService {
      */
     enviarACosteo(id: number): Observable<ApiResponse<Pedido>> {
         return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/enviar-a-costeo`, {});
+    }
+
+    /**
+     * Enviar pedido a análisis (sin FormData; el estado se persiste siempre en el servidor).
+     */
+    enviarAAnalisis(id: number): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/enviar-a-analisis`, {});
     }
 }

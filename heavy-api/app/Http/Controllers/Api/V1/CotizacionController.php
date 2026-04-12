@@ -9,11 +9,12 @@ use App\Http\Requests\StoreCotizacionRequest;
 use App\Http\Resources\CotizacionResource;
 use App\Models\Cotizacion;
 use App\Services\CotizacionService;
-use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * Controlador API para gestión de Cotizaciones
- * 
+ *
  * Maneja todas las operaciones CRUD de cotizaciones y
  * operaciones especiales como aprobar, rechazar y cálculos.
  */
@@ -25,9 +26,6 @@ class CotizacionController extends Controller
 
     /**
      * Listar todas las cotizaciones con filtros
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
     public function index(Request $request): JsonResponse
     {
@@ -35,8 +33,10 @@ class CotizacionController extends Controller
             ->with(['pedido', 'tercero', 'user']);
 
         $user = $request->user();
-        if (!$user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica'])) {
-            $query->whereHas('pedido', fn($q) => $q->where('user_id', $user->id));
+        if ($user->hasRole('Analista')) {
+            $query->whereHas('pedido', fn ($q) => $q->where('estado', 'En_Analisis'));
+        } elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
+            $query->whereHas('pedido', fn ($q) => $q->where('user_id', $user->id));
         }
 
         // Filtro por estado
@@ -76,20 +76,12 @@ class CotizacionController extends Controller
 
     /**
      * Crear una nueva cotización
-     * 
-     * @param Request $request
-     * @return JsonResponse
      */
-    public function store(Request $request): JsonResponse
+    public function store(StoreCotizacionRequest $request): JsonResponse
     {
-        $request->validate([
-            'pedido_id' => ['required', 'integer', 'exists:pedidos,id'],
-            'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
-        ]);
-
         try {
             $pedido = \App\Models\Pedido::findOrFail($request->input('pedido_id'));
-            
+
             $cotizacion = $this->cotizacionService->crearDesdePedido(
                 $pedido,
                 ['user_id' => $request->user()->id]
@@ -110,9 +102,6 @@ class CotizacionController extends Controller
 
     /**
      * Mostrar una cotización específica
-     * 
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function show(Cotizacion $cotizacion): JsonResponse
     {
@@ -127,7 +116,7 @@ class CotizacionController extends Controller
         ]);
 
         // Calcular totales si no están calculados
-        if (!$cotizacion->total) {
+        if (! $cotizacion->total) {
             $total = $this->cotizacionService->calcularPrecioTotal($cotizacion);
             $cotizacion->update(['total' => $total]);
         }
@@ -142,10 +131,6 @@ class CotizacionController extends Controller
 
     /**
      * Actualizar una cotización
-     * 
-     * @param Request $request
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function update(Request $request, Cotizacion $cotizacion): JsonResponse
     {
@@ -178,9 +163,6 @@ class CotizacionController extends Controller
 
     /**
      * Eliminar una cotización
-     * 
-     * @param Cotizacion $cotizacion
-     * @return JsonResponse
      */
     public function destroy(Cotizacion $cotizacion): JsonResponse
     {

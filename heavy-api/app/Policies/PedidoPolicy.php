@@ -23,7 +23,11 @@ class PedidoPolicy
      */
     public function view(User $user, Pedido $pedido): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista', 'Logistica']) 
+        if ($user->hasRole('Analista')) {
+            return $pedido->estado === 'En_Analisis';
+        }
+
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
             || $user->id === $pedido->user_id;
     }
 
@@ -40,12 +44,12 @@ class PedidoPolicy
      */
     public function update(User $user, Pedido $pedido): bool
     {
-        // El Analista solo puede trabajar con pedidos en estado 'Nuevo'
+        // El Analista solo puede trabajar con pedidos en análisis de partes/referencias
         if ($user->hasRole('Analista')) {
-            return $pedido->estado === 'Nuevo';
+            return $pedido->estado === 'En_Analisis';
         }
 
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']) 
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
             || $user->id === $pedido->user_id;
     }
 

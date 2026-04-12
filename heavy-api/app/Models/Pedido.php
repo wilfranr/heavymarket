@@ -26,6 +26,7 @@ class Pedido extends Model
         'fabricante_id',
         'estado',
         'motivo_rechazo',
+        'comentarios_rechazo',
     ];
 
     public function user(): BelongsTo
