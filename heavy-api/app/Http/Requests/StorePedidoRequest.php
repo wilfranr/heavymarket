@@ -40,6 +40,7 @@ class StorePedidoRequest extends FormRequest
                 'required',
                 Rule::in([
                     'Nuevo',
+                    'En_Analisis',
                     'Enviado',
                     'Entregado',
                     'Cancelado',

@@ -116,7 +116,7 @@ export interface PedidoReferenciaProveedor {
 /**
  * Estados posibles del pedido
  */
-export type PedidoEstado = 'Nuevo' | 'Enviado' | 'Entregado' | 'Cancelado' | 'Rechazado' | 'Cotizado' | 'En_Costeo' | 'Aprobado';
+export type PedidoEstado = 'Nuevo' | 'En_Analisis' | 'Enviado' | 'Entregado' | 'Cancelado' | 'Rechazado' | 'Cotizado' | 'En_Costeo' | 'Aprobado';
 
 /**
  * Datos para crear un pedido

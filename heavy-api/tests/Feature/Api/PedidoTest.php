@@ -6,6 +6,8 @@ namespace Tests\Feature\Api;
 
 use App\Models\{User, Pedido, Tercero, Fabricante, Maquina};
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Tests\TestCase;
 
 /**
@@ -22,6 +24,9 @@ class PedidoTest extends TestCase
     {
         parent::setUp();
 
+        //_seedRolesYPermisos para tests
+        $this->seedRolesYPermisos();
+
         // Crear usuario con rol permitido
         $this->user = User::factory()->create();
         $this->user->assignRole('Vendedor');
@@ -30,12 +35,24 @@ class PedidoTest extends TestCase
         $this->tercero = Tercero::factory()->create();
     }
 
+    private function seedRolesYPermisos(): void
+    {
+        // Crear roles necessários para tests
+        $roles = ['super_admin', 'panel_user', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'Cliente'];
+        foreach ($roles as $roleName) {
+            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        }
+        // Crear permisos básicos
+        Permission::firstOrCreate(['name' => 'view orders', 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => 'create orders', 'guard_name' => 'web']);
+    }
+
     /**
      * Test: Listar pedidos requiere autenticación
      */
     public function test_listar_pedidos_requiere_autenticacion(): void
     {
-        $response = $this->getJson('/api/v1/pedidos');
+        $response = $this->getJson('/v1/pedidos');
 
         $response->assertStatus(401);
     }
@@ -48,7 +65,7 @@ class PedidoTest extends TestCase
         Pedido::factory()->count(5)->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/pedidos');
+            ->getJson('/v1/pedidos');
 
         $response->assertStatus(200)
             ->assertJsonStructure([
@@ -65,7 +82,7 @@ class PedidoTest extends TestCase
     public function test_puede_crear_pedido_con_datos_validos(): void
     {
         $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/api/v1/pedidos', [
+            ->postJson('/v1/pedidos', [
                 'tercero_id' => $this->tercero->id,
                 'estado' => 'Nuevo',
                 'direccion' => 'Calle 123 #45-67',
@@ -90,7 +107,7 @@ class PedidoTest extends TestCase
     public function test_crear_pedido_falla_sin_tercero_id(): void
     {
         $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/api/v1/pedidos', [
+            ->postJson('/v1/pedidos', [
                 'estado' => 'Nuevo',
             ]);
 
@@ -109,7 +126,7 @@ class PedidoTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson("/api/v1/pedidos/{$pedido->id}");
+            ->getJson("/v1/pedidos/{$pedido->id}");
 
         $response->assertStatus(200)
             ->assertJson([
@@ -132,7 +149,7 @@ class PedidoTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/api/v1/pedidos/{$pedido->id}", [
+            ->putJson("/v1/pedidos/{$pedido->id}", [
                 'estado' => 'Enviado',
                 'comentario' => 'Actualizado',
             ]);
@@ -159,7 +176,7 @@ class PedidoTest extends TestCase
         ]);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->deleteJson("/api/v1/pedidos/{$pedido->id}");
+            ->deleteJson("/v1/pedidos/{$pedido->id}");
 
         $response->assertStatus(204);
 
@@ -178,7 +195,7 @@ class PedidoTest extends TestCase
         Pedido::factory()->create(['estado' => 'Nuevo']);
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/pedidos?estado=Nuevo');
+            ->getJson('/v1/pedidos?estado=Nuevo');
 
         $response->assertStatus(200)
             ->assertJsonCount(2, 'data');
@@ -192,7 +209,7 @@ class PedidoTest extends TestCase
         Pedido::factory()->count(20)->create();
 
         $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/api/v1/pedidos?per_page=10');
+            ->getJson('/v1/pedidos?per_page=10');
 
         $response->assertStatus(200)
             ->assertJsonCount(10, 'data')

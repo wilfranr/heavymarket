@@ -187,6 +187,7 @@ export class EditComponent implements OnInit {
 
     estadosOptions = [
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
+        { label: 'En Análisis', value: 'En_Analisis' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
         { label: 'En Costeo', value: 'En_Costeo' as PedidoEstado },
         { label: 'Cotizado', value: 'Cotizado' as PedidoEstado },
@@ -201,7 +202,8 @@ export class EditComponent implements OnInit {
 
     // Mapa de transiciones válidas
     transicionesValidas: Record<PedidoEstado, PedidoEstado[]> = {
-        Nuevo: ['Enviado', 'En_Costeo', 'Cancelado'],
+        Nuevo: ['En_Analisis', 'Enviado', 'En_Costeo', 'Cancelado'],
+        En_Analisis: ['Enviado', 'En_Costeo', 'Cancelado'],
         Enviado: ['En_Costeo', 'Cancelado'],
         En_Costeo: ['Cotizado', 'Rechazado', 'Cancelado'],
         Cotizado: ['Aprobado', 'Rechazado', 'Cancelado'],
