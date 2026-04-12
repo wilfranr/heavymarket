@@ -30,7 +30,13 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
-import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
+import {
+    Pedido,
+    UpdatePedidoDto,
+    PedidoEstado,
+    PedidoReferencia,
+    PedidoReferenciaImagen
+} from '../../../core/models/pedido.model';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
@@ -231,6 +237,8 @@ export class AnalysisComponent implements OnInit {
             definicion: [definicion],
             cantidad: [row.cantidad || 1],
             comentario: [''],
+            imagen: [null],
+            imagenes: [[] as PedidoReferenciaImagen[]],
             expandido: [true],
             partes: this.fb.array([parte])
         });
@@ -429,6 +437,8 @@ export class AnalysisComponent implements OnInit {
                     definicion: [refModel?.label || ''],
                     cantidad: [cantidad_lote],
                     comentario: [''],
+                    imagen: [null],
+                    imagenes: [[] as PedidoReferenciaImagen[]],
                     expandido: [true],
                     partes: this.fb.array([
                         this.fb.group({
@@ -473,6 +483,8 @@ export class AnalysisComponent implements OnInit {
             definicion: ['Nuevo ítem manual'],
             cantidad: [1],
             comentario: [''],
+            imagen: [null],
+            imagenes: [[] as PedidoReferenciaImagen[]],
             expandido: [true],
             partes: this.fb.array([
                 this.fb.group({
@@ -706,6 +718,88 @@ export class AnalysisComponent implements OnInit {
         return JSON.stringify(comentarios);
     }
 
+    /** Conteo para badge (#68); alineado con el historial del diálogo de comentarios. */
+    conteoComentariosItem(index: number): number {
+        const raw = this.referenciasFormArray.at(index)?.get('comentario')?.value;
+        return this.parseComentariosRaw(raw).length;
+    }
+
+    /** Conteo para badge (#68); misma lógica que la galería del modal de imágenes. */
+    conteoImagenesItem(index: number): number {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) {
+            return 0;
+        }
+        return this.buildImagenesListaDesdeItemRow(row).length;
+    }
+
+    private mergeImagenesPedidoReferencia(
+        base: PedidoReferenciaImagen[],
+        extra?: PedidoReferenciaImagen[] | null
+    ): PedidoReferenciaImagen[] {
+        const seen = new Set<string>();
+        const out: PedidoReferenciaImagen[] = [];
+        const pushUnique = (img: PedidoReferenciaImagen) => {
+            const url = this.urlNormalizadaImagenPedidoRef(img);
+            if (url && !seen.has(url)) {
+                seen.add(url);
+                out.push(img);
+            }
+        };
+        for (const img of base || []) {
+            pushUnique(img);
+        }
+        for (const img of extra || []) {
+            pushUnique(img);
+        }
+        return out;
+    }
+
+    private urlNormalizadaImagenPedidoRef(img: PedidoReferenciaImagen | Record<string, unknown>): string {
+        const raw = (img as { imagen?: unknown }).imagen;
+        if (typeof raw === 'string') {
+            return raw;
+        }
+        if (raw && typeof raw === 'object' && 'url' in raw && typeof (raw as { url: unknown }).url === 'string') {
+            return (raw as { url: string }).url;
+        }
+        return '';
+    }
+
+    private buildImagenesListaDesdeItemRow(row: AbstractControl): {
+        itemImageSrc: string;
+        thumbnailImageSrc: string;
+        origen?: string;
+    }[] {
+        const imagen = row.get('imagen')?.value;
+        const imagenes = row.get('imagenes')?.value || [];
+        const out: { itemImageSrc: string; thumbnailImageSrc: string; origen?: string }[] = [];
+        const seen = new Set<string>();
+
+        (imagenes as PedidoReferenciaImagen[]).forEach((img: PedidoReferenciaImagen) => {
+            const url = this.urlNormalizadaImagenPedidoRef(img);
+            if (url && !seen.has(url)) {
+                seen.add(url);
+                out.push({
+                    itemImageSrc: url,
+                    thumbnailImageSrc: url,
+                    origen: img.origen
+                });
+            }
+        });
+        if (imagen) {
+            const url =
+                typeof imagen === 'string'
+                    ? imagen
+                    : ((imagen as { url?: string }).url ?? (imagen as unknown as string));
+            if (url && typeof url === 'string' && !seen.has(url)) {
+                seen.add(url);
+                out.unshift({ itemImageSrc: url, thumbnailImageSrc: url, origen: 'Original' });
+            }
+        }
+        return out;
+    }
+
     abrirModalImagenes(index: number): void {
         this.activeImagenesFilaIndex = index;
         this.displayImagenesCarouselModal = true;
@@ -717,27 +811,10 @@ export class AnalysisComponent implements OnInit {
     }
 
     get galleriaImages(): { itemImageSrc: string; thumbnailImageSrc: string; origen?: string }[] {
-        if (this.activeImagenesFilaIndex === null) return [];
-        const row = this.referenciasFormArray.at(this.activeImagenesFilaIndex);
-        const imagen = row.get('imagen')?.value;
-        const imagenes = row.get('imagenes')?.value || [];
-        const out: any[] = [];
-        const seen = new Set();
-
-        imagenes.forEach((img: any) => {
-            const url = typeof img.imagen === 'string' ? img.imagen : (img.imagen?.url ?? img.imagen);
-            if (url && !seen.has(url)) {
-                seen.add(url);
-                out.push({ itemImageSrc: url, thumbnailImageSrc: url, origen: img.origen });
-            }
-        });
-        if (imagen) {
-            const url = typeof imagen === 'string' ? imagen : (imagen?.url ?? imagen);
-            if (url && !seen.has(url)) {
-                out.unshift({ itemImageSrc: url, thumbnailImageSrc: url, origen: 'Original' });
-            }
+        if (this.activeImagenesFilaIndex === null) {
+            return [];
         }
-        return out;
+        return this.buildImagenesListaDesdeItemRow(this.referenciasFormArray.at(this.activeImagenesFilaIndex));
     }
 
     abrirCrearReferencia(itemIndex: number, parteIndex: number): void {
@@ -1008,11 +1085,27 @@ export class AnalysisComponent implements OnInit {
                     lista_id: r.lista_id,
                     definicion: r.definicion || r.lista?.nombre || 'Sin definición',
                     cantidad: r.cantidad,
-                    comentario: r.comentario,
+                    comentario: r.comentario ?? null,
+                    imagen: r.imagen ?? null,
+                    imagenes: [...(r.imagenes ?? [])] as PedidoReferenciaImagen[],
                     partes: []
                 };
+            } else {
+                const g = grupos[key];
+                const comActual = g.comentario;
+                if (
+                    (!comActual || !String(comActual).trim()) &&
+                    r.comentario != null &&
+                    String(r.comentario).trim() !== ''
+                ) {
+                    g.comentario = r.comentario;
+                }
+                g.imagenes = this.mergeImagenesPedidoReferencia(g.imagenes, r.imagenes);
+                if (!g.imagen && r.imagen) {
+                    g.imagen = r.imagen;
+                }
             }
-            
+
             // Añadir esta referencia técnica como una fila dentro de la tarjeta
             grupos[key].partes.push({
                 id: r.id,
@@ -1040,6 +1133,8 @@ export class AnalysisComponent implements OnInit {
                 definicion: [g.definicion],
                 cantidad: [g.cantidad],
                 comentario: [g.comentario],
+                imagen: [g.imagen ?? null],
+                imagenes: [g.imagenes ?? []],
                 expandido: [true],
                 partes: this.fb.array(g.partes.map((p: any) => this.fb.group({
                     id: [p.id],

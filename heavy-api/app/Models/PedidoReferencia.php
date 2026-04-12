@@ -57,4 +57,54 @@ class PedidoReferencia extends Model
         // Aunque el campo se llama 'pedido_id', en realidad es el id de 'pedido_referencia'
         return $this->hasMany(PedidoReferenciaProveedor::class, 'pedido_referencia_id', 'id');
     }
+
+    /**
+     * Cantidad de entradas de comentario almacenadas en el campo JSON / texto legacy
+     * (misma semántica que el parseo en el frontend de análisis).
+     */
+    public function comentariosRegistrosCount(): int
+    {
+        $raw = $this->comentario;
+        if ($raw === null || $raw === '') {
+            return 0;
+        }
+        $trimmed = trim((string) $raw);
+        if ($trimmed === '' || $trimmed === 'Sin comentario adicional') {
+            return 0;
+        }
+        $decoded = json_decode($trimmed, true);
+        if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+            $n = 0;
+            foreach ($decoded as $c) {
+                if (is_array($c) && isset($c['comentario']) && is_string($c['comentario'])) {
+                    $n++;
+                }
+            }
+
+            return $n;
+        }
+
+        return 1;
+    }
+
+    /**
+     * Registros en pedido_referencia_imagen más imagen principal legacy en columna `imagen`.
+     */
+    public function imagenesRegistrosCount(): int
+    {
+        if (array_key_exists('imagenes_count', $this->attributes)) {
+            $n = (int) $this->attributes['imagenes_count'];
+        } elseif ($this->relationLoaded('imagenes')) {
+            $n = $this->imagenes->count();
+        } else {
+            $n = (int) $this->imagenes()->count();
+        }
+
+        $legacy = $this->imagen;
+        if (is_string($legacy) && trim($legacy) !== '') {
+            $n++;
+        }
+
+        return $n;
+    }
 }

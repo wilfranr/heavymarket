@@ -75,7 +75,10 @@ class PedidoService
 
             return $pedido->load([
                 'user', 'tercero',
-                'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista',
+                'referencias' => function ($query): void {
+                    $query->withCount('imagenes')
+                        ->with(['referencia.articulo', 'sistema', 'lista']);
+                },
                 'articulos',
             ]);
         });
@@ -96,8 +99,10 @@ class PedidoService
 
             return $pedido->load([
                 'user', 'tercero', 'maquina', 'fabricante', 'contacto',
-                'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista',
-                'referencias.imagenes', 'referencias.proveedores.tercero',
+                'referencias' => function ($query): void {
+                    $query->withCount('imagenes')
+                        ->with(['referencia.articulo', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+                },
                 'articulos.articulo', 'articulos.sistema',
             ]);
         });

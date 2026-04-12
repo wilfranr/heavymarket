@@ -47,7 +47,11 @@ export interface PedidoReferencia {
     definicion: string | null;
     cantidad: number;
     comentario: string | null;
+    /** Número de entradas de comentario (JSON / legacy), expuesto por API (#68) */
+    comentarios_count?: number;
     imagen: string | null;
+    /** Filas en pedido_referencia_imagen + imagen legacy; expuesto por API (#68) */
+    imagenes_count?: number;
     mostrar_referencia: boolean;
     estado: boolean;
 

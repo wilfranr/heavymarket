@@ -137,8 +137,11 @@ class PedidoController extends Controller
 
         $pedido->load([
             'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'fabricante', 'contacto',
-            'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
-            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
+            'referencias' => function ($query): void {
+                $query->withCount('imagenes')
+                    ->with(['referencia.articulo', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+            },
+            'articulos.articulo', 'articulos.sistema',
         ]);
 
         return response()->json(['data' => new PedidoResource($pedido)]);
@@ -178,8 +181,11 @@ class PedidoController extends Controller
         $pedido->refresh();
         $pedido->load([
             'user', 'tercero', 'maquina.fabricante', 'fabricante', 'contacto',
-            'referencias.referencia.articulo', 'referencias.sistema', 'referencias.lista', 'referencias.imagenes',
-            'referencias.proveedores.tercero', 'articulos.articulo', 'articulos.sistema',
+            'referencias' => function ($query): void {
+                $query->withCount('imagenes')
+                    ->with(['referencia.articulo', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+            },
+            'articulos.articulo', 'articulos.sistema',
         ]);
 
         return response()->json([
@@ -308,8 +314,11 @@ class PedidoController extends Controller
 
         $referencia = $pedido->referencias()->create($validated);
 
+        $referencia->loadCount('imagenes');
+        $referencia->load(['referencia.articulo', 'sistema', 'marca', 'lista']);
+
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia.articulo', 'sistema', 'marca', 'lista'])),
+            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia),
             'message' => 'Referencia agregada exitosamente',
         ], 201);
     }

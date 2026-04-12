@@ -291,12 +291,28 @@
                             }
                         </div>
 
-                        <!-- Icons -->
-                        <div class="flex gap-4">
-                            <button type="button" class="icon-btn pi pi-image p-2 bg-green-500 rounded-full text-white border-none cursor-pointer" 
-                                    (click)="abrirModalImagenes(i)"></button>
-                            <button type="button" class="icon-btn pi pi-comments p-2 bg-green-500 rounded-full text-white border-none cursor-pointer"
-                                    (click)="abrirDialogoComentario(i)"></button>
+                        <!-- Icons (#68: contadores visibles) -->
+                        <div class="flex gap-4 items-center">
+                            <div class="relative shrink-0">
+                                <button type="button" class="icon-btn pi pi-image p-2 bg-green-500 rounded-full text-white border-none cursor-pointer"
+                                        (click)="abrirModalImagenes(i)"
+                                        [attr.aria-label]="'Imágenes del ítem, ' + conteoImagenesItem(i) + ' en total'"></button>
+                                @if (conteoImagenesItem(i) > 0) {
+                                <span
+                                    class="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-0.5 flex items-center justify-center rounded-full bg-white text-green-700 dark:bg-slate-900 dark:text-green-400 text-[10px] font-bold leading-none shadow-sm border border-green-600/30 pointer-events-none"
+                                    aria-hidden="true">{{ conteoImagenesItem(i) }}</span>
+                                }
+                            </div>
+                            <div class="relative shrink-0">
+                                <button type="button" class="icon-btn pi pi-comments p-2 bg-green-500 rounded-full text-white border-none cursor-pointer"
+                                        (click)="abrirDialogoComentario(i)"
+                                        [attr.aria-label]="'Comentarios del ítem, ' + conteoComentariosItem(i) + ' en total'"></button>
+                                @if (conteoComentariosItem(i) > 0) {
+                                <span
+                                    class="absolute -top-1 -right-1 min-w-[1.125rem] h-[1.125rem] px-0.5 flex items-center justify-center rounded-full bg-white text-green-700 dark:bg-slate-900 dark:text-green-400 text-[10px] font-bold leading-none shadow-sm border border-green-600/30 pointer-events-none"
+                                    aria-hidden="true">{{ conteoComentariosItem(i) }}</span>
+                                }
+                            </div>
                             <button type="button" class="icon-btn pi pi-pencil p-2 bg-primary-500 rounded-full text-white border-none cursor-pointer" 
                                     (click)="editItem(i)"></button>
                             <button type="button" class="icon-btn pi pi-trash p-2 bg-red-500 rounded-full text-white border-none cursor-pointer" 
