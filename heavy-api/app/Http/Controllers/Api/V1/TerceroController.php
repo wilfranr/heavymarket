@@ -10,6 +10,7 @@ use App\Http\Requests\UpdateTerceroRequest;
 use App\Http\Resources\TerceroResource;
 use App\Models\Tercero;
 use App\Models\User;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -18,8 +19,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Spatie\Permission\Models\Role;
-
 /**
  * Controlador API para gestión de Terceros
  *
@@ -27,7 +26,7 @@ use Spatie\Permission\Models\Role;
  * Cuando landing_access=true, crea/actualiza un User vinculado con rol 'Cliente'
  * para permitir el inicio de sesión en la landing page.
  */
-use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Spatie\Permission\Models\Role;
 
 class TerceroController extends Controller
 {
@@ -88,9 +87,11 @@ class TerceroController extends Controller
     public function store(StoreTerceroRequest $request): JsonResponse
     {
         $this->authorize('create', \App\Models\Tercero::class);
+
         return DB::transaction(function () use ($request) {
             try {
                 $data = $request->validated();
+                $categoriaComercialIds = Arr::pull($data, 'categoria_comercial_id', []);
 
                 // Handle Files
                 $fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
@@ -124,14 +125,12 @@ class TerceroController extends Controller
                 if ($request->filled('sistema_id')) {
                     $tercero->sistemas()->sync($request->input('sistema_id'));
                 }
-
-                // Gestionar acceso a la landing
-                if ($landingAccess && $tercero->email) {
-                    $this->syncLandingUser($tercero, $landingPassword);
+                if (! empty($categoriaComercialIds)) {
+                    $tercero->categoriasComerciales()->sync($categoriaComercialIds);
                 }
 
                 return response()->json([
-                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricante', 'sistemas', 'contactos'])),
+                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas', 'contactos', 'categoriasComerciales'])),
                     'message' => 'Tercero creado exitosamente',
                 ], 201);
 
@@ -151,7 +150,7 @@ class TerceroController extends Controller
      */
     public function show(Tercero $tercero): JsonResponse
     {
-        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas', 'maquinas']);
+        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas', 'maquinas', 'categoriasComerciales']);
 
         return response()->json([
             'data' => new TerceroResource($tercero),
@@ -164,6 +163,7 @@ class TerceroController extends Controller
     public function update(UpdateTerceroRequest $request, Tercero $tercero): JsonResponse
     {
         $this->authorize('update', $tercero);
+
         return DB::transaction(function () use ($request, $tercero) {
             try {
                 $data = $request->validated();
@@ -214,6 +214,9 @@ class TerceroController extends Controller
                 if ($request->has('sistema_id')) {
                     $tercero->sistemas()->sync($request->input('sistema_id'));
                 }
+                if ($request->has('categoria_comercial_id')) {
+                    $tercero->categoriasComerciales()->sync($request->input('categoria_comercial_id', []));
+                }
 
                 // Gestionar acceso a la landing
                 if ($landingAccess && $tercero->email) {
@@ -224,7 +227,7 @@ class TerceroController extends Controller
                 }
 
                 return response()->json([
-                    'data' => new TerceroResource($tercero->load(['contactos', 'maquinas', 'fabricantes', 'sistemas'])),
+                    'data' => new TerceroResource($tercero->load(['contactos', 'maquinas', 'fabricantes', 'sistemas', 'categoriasComerciales'])),
                     'message' => 'Tercero actualizado exitosamente',
                 ]);
 

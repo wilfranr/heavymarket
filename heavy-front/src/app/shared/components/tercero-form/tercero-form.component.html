@@ -112,7 +112,7 @@
                         <p-multiselect id="maquina_id" formControlName="maquina_id" [options]="maquinas"
                             optionLabel="label" optionValue="value" [filter]="true" filterBy="label"
                             placeholder="Seleccione una o más máquinas" styleClass="w-full flex-1" display="chip"
-                            appendTo="body"></p-multiselect>
+                            [maxSelectedLabels]="100" appendTo="body"></p-multiselect>
                         <p-button icon="pi pi-plus" (onClick)="openCreateMaquinaDialog()"
                             severity="secondary"></p-button>
                     </div>
@@ -186,22 +186,18 @@
                         <div class="flex gap-2">
                             <p-multiselect id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
                                 optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                styleClass="w-full flex-1" display="chip" [filter]="true" filterBy="label"
-                                appendTo="body"></p-multiselect>
+                                styleClass="w-full flex-1" display="chip" [maxSelectedLabels]="100" [filter]="true"
+                                filterBy="label" appendTo="body"></p-multiselect>
                             <p-button icon="pi pi-plus" (onClick)="openCreateFabricanteDialog()"
                                 severity="secondary"></p-button>
                         </div>
                     </div>
                     <div>
-                        <label for="categoria_comercial_id" class="block mb-2 font-semibold text-sm">Categoría Comercial</label>
-                        <div class="flex gap-2">
-                            <p-multiselect id="categoria_comercial_id" formControlName="categoria_comercial_id" [options]="categoriasComerciales"
-                                optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                styleClass="w-full flex-1" display="chip" [filter]="true" filterBy="label"
-                                appendTo="body"></p-multiselect>
-                            <p-button icon="pi pi-plus" (onClick)="openCreateSistemaDialog()"
-                                severity="secondary"></p-button>
-                        </div>
+                        <label for="categoria_comercial_id" class="block mb-2 font-semibold text-sm">Categorías Comerciales</label>
+                        <p-multiselect id="categoria_comercial_id" formControlName="categoria_comercial_id" [options]="categoriasComerciales"
+                            optionLabel="label" optionValue="value" placeholder="Seleccione una o más"
+                            styleClass="w-full" display="chip" [maxSelectedLabels]="100" [filter]="true"
+                            filterBy="label" appendTo="body"></p-multiselect>
                     </div>
                 </div>
             </div>

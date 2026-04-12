@@ -123,7 +123,8 @@
                                 <p-multiselect id="fabricante_id" formControlName="fabricante_id"
                                     [options]="fabricantes" optionLabel="label" optionValue="value"
                                     placeholder="Seleccione una opción" styleClass="w-full flex-1" display="chip"
-                                    [filter]="true" filterBy="label" appendTo="body"></p-multiselect>
+                                    [maxSelectedLabels]="100" [filter]="true" filterBy="label"
+                                    appendTo="body"></p-multiselect>
                                 <p-button icon="pi pi-plus" (onClick)="openCreateFabricanteDialog()"
                                     severity="secondary"></p-button>
                             </div>
@@ -133,8 +134,8 @@
                             <div class="flex gap-2">
                                 <p-multiselect id="sistema_id" formControlName="sistema_id" [options]="sistemas"
                                     optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
-                                    styleClass="w-full flex-1" display="chip" [filter]="true" filterBy="label"
-                                    appendTo="body"></p-multiselect>
+                                    styleClass="w-full flex-1" display="chip" [maxSelectedLabels]="100"
+                                    [filter]="true" filterBy="label" appendTo="body"></p-multiselect>
                                 <p-button icon="pi pi-plus" (onClick)="openCreateSistemaDialog()"
                                     severity="secondary"></p-button>
                             </div>

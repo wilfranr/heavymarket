@@ -34,6 +34,17 @@ class TerceroResource extends JsonResource
             'telefono' => $this->telefono,
             'direccion' => $this->direccion,
             'forma_pago' => $this->forma_pago,
+            // Muchos-a-muchos vía pivot tercero_categoria_comercial (ya no hay columna en terceros)
+            'categoria_comercial_id' => $this->when(
+                $this->relationLoaded('categoriasComerciales'),
+                fn () => $this->categoriasComerciales->first()?->id,
+                null
+            ),
+            'categoria_comercial_ids' => $this->when(
+                $this->relationLoaded('categoriasComerciales'),
+                fn () => $this->categoriasComerciales->pluck('id')->values()->all(),
+                null
+            ),
             'email_factura_electronica' => $this->email_factura_electronica,
             'sitio_web' => $this->sitio_web,
             'dv' => $this->dv,
@@ -62,6 +73,7 @@ class TerceroResource extends JsonResource
             'direcciones' => $this->whenLoaded('direcciones'),
             'fabricantes' => $this->whenLoaded('fabricantes'),
             'sistemas' => $this->whenLoaded('sistemas'),
+            'categorias_comerciales' => $this->whenLoaded('categoriasComerciales'),
             'maquinas' => $this->whenLoaded('maquinas'),
         ];
     }

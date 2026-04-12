@@ -238,7 +238,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             city_id: data.city_id,
             maquina_id: data.maquinas ? data.maquinas.map((m: any) => m.id) : [],
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
-            categoria_comercial_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
+            categoria_comercial_id: data.categorias_comerciales ? data.categorias_comerciales.map((c: any) => c.id) : [],
             contactos: [],
             landing_access: data.landing_access ?? false,
             landing_password: '',
