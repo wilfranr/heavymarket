@@ -129,4 +129,15 @@ class Referencia extends Model
     {
         return $this->belongsTo(Categoria::class);
     }
+
+    /**
+     * Relación con la categoría comercial de la referencia.
+     * Apunta a la tabla listas con tipo = 'Categoría Comercial'.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function categoriaComercial()
+    {
+        return $this->belongsTo(Lista::class, 'lista_id')->where('tipo', 'Categoría Comercial');
+    }
 }

@@ -36,6 +36,8 @@ class ReferenciaResource extends JsonResource
             'articulo' => new ArticuloResource($this->whenLoaded('articulo')),
             'marca' => $this->whenLoaded('marca'),
             'articulos' => $this->whenLoaded('articulos'),
+            'categoriaComercial' => $this->whenLoaded('categoriaComercial'),
+            'lista_id' => $this->lista_id,
         ];
     }
 }

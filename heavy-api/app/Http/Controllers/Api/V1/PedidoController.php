@@ -309,7 +309,7 @@ class PedidoController extends Controller
         $referencia = $pedido->referencias()->create($validated);
 
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia', 'sistema', 'marca'])),
+            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia->load(['referencia', 'sistema', 'marca', 'lista'])),
             'message' => 'Referencia agregada exitosamente',
         ], 201);
     }

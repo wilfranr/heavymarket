@@ -780,8 +780,8 @@ export class AnalysisComponent implements OnInit {
             }
         });
 
-        // Cargar tipos de artículo (Listas)
-        this.listaService.getByTipo('Tipo de Artículo').subscribe({
+        // Cargar categorías comerciales (Listas) - Issue #64
+        this.listaService.getByTipo('Categoría Comercial').subscribe({
             next: (listas) => {
                 this.tiposArticulo = listas.map((l) => ({
                     label: l.nombre,
