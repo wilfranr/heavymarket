@@ -1167,11 +1167,23 @@ export class CreateComponent implements OnInit {
      * Envía el formulario para crear el pedido
      */
     onSubmit(): void {
-        if (this.pedidoForm.invalid || this.referenciasFormArray.length === 0) {
+        if (this.pedidoForm.invalid) {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Formulario inválido',
                 detail: 'Por favor complete todos los campos requeridos'
+            });
+            return;
+        }
+
+        // Validar que haya al menos una referencia solo si NO es estado nuevo
+        const estado = this.pedidoForm.get('estado')?.value;
+        const tieneReferencias = this.referenciasFormArray.length > 0;
+        if (estado !== 'Nuevo' && !tieneReferencias) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Referencias requeridas',
+                detail: 'Debe agregar al menos una referencia para estados diferentes de Nuevo'
             });
             return;
         }
