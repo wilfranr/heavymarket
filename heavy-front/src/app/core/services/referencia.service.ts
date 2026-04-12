@@ -37,6 +37,20 @@ export class ReferenciaService extends ApiService {
     }
 
     /**
+     * Buscar solo referencias ya existentes por lotes (no crea registros).
+     */
+    bulkSearch(items: { codigo: string; cantidad: number }[]): Observable<{
+        data: any[];
+        no_encontrados?: string[];
+        message?: string;
+    }> {
+        return this.post<{ data: any[]; no_encontrados?: string[]; message?: string }>(
+            `${this.endpoint}/bulk-search`,
+            { items }
+        );
+    }
+
+    /**
      * Buscar o crear referencias por lotes
      */
     bulkSearchOrCreate(items: { codigo: string; cantidad: number }[], esTemporal: boolean = false, marcaId: number | null = null): Observable<ApiResponse<any[]>> {

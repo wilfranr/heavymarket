@@ -227,6 +227,50 @@
 
         <!-- Items Accordion-style List -->
         <div class="px-8 space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
+                <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Requerimientos del análisis</span>
+                <button type="button"
+                    class="px-5 py-2.5 rounded-full text-sm font-bold flex items-center gap-2 border-2 border-amber-400/80 text-amber-100 bg-amber-500/20 hover:bg-amber-500/30 transition-colors"
+                    (click)="showBulkImport = !showBulkImport">
+                    Carga masiva <i class="pi pi-upload"></i>
+                </button>
+            </div>
+
+            @if (showBulkImport) {
+            <div class="rounded-xl border-2 p-6 mb-6 animate-fade-in"
+                style="border-color: color-mix(in srgb, var(--color-brand-yellow) 40%, transparent); background: color-mix(in srgb, var(--color-brand-yellow) 8%, transparent);">
+                <div class="flex flex-wrap justify-between items-start gap-4 mb-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                        <div class="w-10 h-10 rounded-lg shrink-0 flex items-center justify-center"
+                            style="background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent);">
+                            <i class="pi pi-list text-lg" style="color: var(--color-brand-yellow);"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-base m-0 text-slate-900 dark:text-white">Importación Masiva</h4>
+                            <p class="text-xs m-0 mt-0.5 text-slate-600 dark:text-slate-400">Pega tu listado (Cantidad [Espacio] Referencia)</p>
+                        </div>
+                    </div>
+                    <button type="button" (click)="openHelpDialog()"
+                        class="text-sm font-medium hover:underline flex items-center gap-1.5 shrink-0 border-none bg-transparent cursor-pointer"
+                        style="color: var(--color-brand-yellow);">
+                        <i class="pi pi-question-circle"></i>Ver guía
+                    </button>
+                </div>
+                <textarea pTextarea [(ngModel)]="bulkText" [rows]="8"
+                    placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"
+                    class="w-full font-mono text-sm rounded-lg mb-4 !bg-white dark:!bg-[#0f172a] border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"></textarea>
+                <div class="flex flex-wrap justify-end gap-3">
+                    <button type="button" class="btn-pill btn-secondary-green text-xs px-4 py-2"
+                        (click)="showBulkImport = false">Cancelar</button>
+                    <button type="button" class="btn-pill btn-primary-green text-xs px-6 py-2 flex items-center gap-1.5 disabled:opacity-60"
+                        [disabled]="processingBulk"
+                        (click)="procesarCargaMasiva()">
+                        <i class="pi pi-check"></i>Procesar listado
+                    </button>
+                </div>
+            </div>
+            }
+
             @for (item of referenciasFormArray.controls; track $index; let i = $index) {
                 @let isPreparado = !!item.get('referencia_id')?.value;
                 <div class="item-card overflow-hidden rounded-xl bg-[#334155] text-white mb-6">
@@ -289,7 +333,7 @@
                                             </td>
                                             <td class="p-2">
                                                 <p-inputgroup styleClass="w-full shadow-sm rounded-md overflow-hidden">
-                                                    <p-select [options]="referenciasPorTipo[item.get('lista_id')?.value] || []" 
+                                                    <p-select [options]="getOpcionesReferenciaParaFila(i)" 
                                                               formControlName="referencia_id" 
                                                               optionLabel="label" 
                                                               optionValue="value"
@@ -329,7 +373,7 @@
             }
 
             <!-- Global Item Actions (Add more requirements) -->
-            <div class="flex justify-center gap-6 mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
+            <div class="flex flex-wrap justify-center gap-6 mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
                 <button type="button" class="px-8 py-3 bg-transparent border-2 border-white text-white rounded-full text-sm font-black flex items-center gap-2 hover:bg-white/10 transition-all uppercase tracking-widest"
                         (click)="abrirDialogoLoteGlobal()">
                     Agregar listado <i class="pi pi-bars"></i>
@@ -356,6 +400,77 @@
 
 <app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" (onReferenciaCreated)="onReferenciaCreada($event)">
 </app-referencia-create-modal>
+
+<!-- Guía de importación masiva (misma contenido que creación de pedido, adaptado a análisis) -->
+<p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" [style]="{width: '70vw'}"
+    [draggable]="false" [resizable]="false" appendTo="body" [dismissableMask]="true">
+    <div class="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm"
+                            style="background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent); color: var(--color-brand-yellow);">1</span>
+                        Preparar datos
+                    </h4>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm ml-10">Tiene dos opciones para preparar sus datos:</p>
+                    <ul class="list-disc ml-14 mt-2 space-y-2 text-slate-600 dark:text-slate-400 text-sm">
+                        <li><strong class="text-slate-900 dark:text-slate-100">Desde Excel:</strong> Seleccione dos columnas (Cantidad y
+                            Referencia) y cópielas (Ctrl+C).</li>
+                        <li><strong class="text-slate-900 dark:text-slate-100">Desde Bloc de Notas:</strong> Escriba cada ítem en una
+                            nueva línea separando cantidad y referencia con un espacio o tabulador.</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm"
+                            style="background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent); color: var(--color-brand-yellow);">2</span>
+                        Formato aceptado
+                    </h4>
+                    <div
+                        class="ml-10 bg-slate-100 dark:bg-black/30 p-3 rounded-lg border border-slate-200 dark:border-slate-600 font-mono text-sm">
+                        <div class="flex justify-between text-xs text-slate-500 dark:text-slate-400 mb-2 border-b border-slate-200 dark:border-slate-600 pb-1">
+                            <span>Columna 1 (Cant.)</span>
+                            <span>Columna 2 (Ref.)</span>
+                        </div>
+                        <div class="text-emerald-600 dark:text-emerald-400 font-medium">10 &emsp; REF-12345</div>
+                        <div class="text-emerald-600 dark:text-emerald-400 font-medium">5 &emsp; FILTRO-ABC</div>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                        <span
+                            class="w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm"
+                            style="background: color-mix(in srgb, var(--color-brand-yellow) 22%, transparent); color: var(--color-brand-yellow);">3</span>
+                        Pegar y procesar
+                    </h4>
+                    <p class="text-slate-600 dark:text-slate-400 text-sm ml-10">
+                        Pegue los datos en el área de texto (Ctrl+V) y haga clic en
+                        <span class="font-medium" style="color: var(--color-brand-yellow);">"Procesar listado"</span>.
+                        El sistema validará las referencias y las agregará al análisis del pedido.
+                    </p>
+                </div>
+            </div>
+            <div
+                class="flex flex-col items-center justify-center bg-slate-50 dark:bg-black/20 rounded-xl border border-slate-200 dark:border-slate-600 p-4">
+                <p class="text-slate-900 dark:text-white font-medium mb-4">Ejemplo visual</p>
+                <div
+                    class="w-full aspect-video bg-slate-200 dark:bg-slate-800 rounded-lg flex items-center justify-center border border-slate-300 dark:border-slate-600 overflow-hidden">
+                    <img src="assets/images/guia-importacion.png" alt="Guía de importación"
+                        class="w-full h-full object-contain" />
+                </div>
+                <p class="text-xs text-slate-500 dark:text-slate-400 mt-4 text-center">
+                    Puede copiar directamente desde Excel, Google Sheets o cualquier editor de texto.
+                </p>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button type="button" class="btn-pill btn-secondary-green px-6" (click)="displayHelpDialog = false">Entendido</button>
+    </ng-template>
+</p-dialog>
 
 <!-- Diálogo Agregar Lote (Replicado de Edit) -->
 <p-dialog [(visible)]="displayLoteDialog" [modal]="true" [style]="{width: '600px', 'max-width': '95vw'}"

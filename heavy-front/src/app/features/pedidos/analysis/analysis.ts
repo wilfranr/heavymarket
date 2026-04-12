@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
@@ -48,6 +49,7 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         ReactiveFormsModule,
         RouterModule,
         CardModule,
@@ -141,11 +143,22 @@ export class AnalysisComponent implements OnInit {
     tiposLote: any[] = [];
     referenciasLote: any[] = [];
 
+    /** Carga masiva (mismo flujo que landing cotizar + API que create pedido): panel + bulkSearchOrCreate */
+    showBulkImport = false;
+    bulkText = '';
+    processingBulk = false;
+    /** Guía visual (misma UX que creación de pedido / importación masiva) */
+    displayHelpDialog = false;
+
     ngOnInit(): void {
         this.initForm();
         this.initLoteForm();
         this.loadInitialData();
         this.loadPedido();
+    }
+
+    openHelpDialog(): void {
+        this.displayHelpDialog = true;
     }
 
     private initLoteForm(): void {
@@ -155,6 +168,158 @@ export class AnalysisComponent implements OnInit {
             referencias_seleccionadas: [{ value: [], disabled: true }, [Validators.required, Validators.minLength(1)]],
             cantidad_lote: [1, [Validators.required, Validators.min(1)]]
         });
+    }
+
+    /**
+     * Igual que landing `cotizar.procesarMasivo`: una línea por referencia;
+     * formato "CANTIDAD [espacios/tab] REFERENCIA" o solo código (cantidad 1).
+     */
+    private parseLineasCargaMasivaComoCotizar(texto: string): { codigo: string; cantidad: number }[] {
+        const out: { codigo: string; cantidad: number }[] = [];
+        const lines = texto.split('\n');
+
+        for (const line of lines) {
+            const trimmed = line.trim();
+            if (!trimmed) {
+                continue;
+            }
+
+            const match = trimmed.match(/^(\d+)\s+(.+)$/);
+            if (match) {
+                const cantidad = parseInt(match[1], 10);
+                const codigoReferencia = match[2].trim().toUpperCase();
+                if (cantidad > 0 && codigoReferencia) {
+                    out.push({ cantidad, codigo: codigoReferencia });
+                }
+            } else {
+                out.push({ cantidad: 1, codigo: trimmed.toUpperCase() });
+            }
+        }
+
+        return out;
+    }
+
+    /**
+     * Una tarjeta por referencia (como una fila por ítem en cotizar tras procesar).
+     * Usa bulkSearchOrCreate como el paso 2 de creación de pedido (no temporal).
+     */
+    private agregarTarjetaDesdeResultadoBulk(row: any): void {
+        const ref = row.referencia;
+        const definicion = ref?.articulo?.definicion || ref?.referencia || row.codigo || 'Referencia';
+
+        const parte = this.fb.group({
+            id: [null],
+            referencia_id: [row.referencia_id, [Validators.required]],
+            cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
+            descripcion: [ref?.articulo?.definicion || ref?.comentario || ''],
+            categoria: [null]
+        });
+
+        const itemForm = this.fb.group({
+            id: [null],
+            estado_item: ['Pendiente'],
+            sistema_id: [null],
+            lista_id: [null],
+            definicion: [definicion],
+            cantidad: [row.cantidad || 1],
+            comentario: [''],
+            expandido: [true],
+            partes: this.fb.array([parte])
+        });
+
+        this.referenciasFormArray.push(itemForm);
+    }
+
+    /**
+     * Misma idea que cotizar: pegar listado y procesar; API como create pedido (bulkSearchOrCreate).
+     */
+    procesarCargaMasiva(): void {
+        if (!this.bulkText?.trim() || this.processingBulk) {
+            return;
+        }
+
+        const items = this.parseLineasCargaMasivaComoCotizar(this.bulkText);
+        if (items.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Listado vacío',
+                detail: 'Ingrese al menos una línea con un código de referencia.'
+            });
+            return;
+        }
+
+        this.processingBulk = true;
+        this.referenciaService.bulkSearchOrCreate(items).subscribe({
+            next: (response: any) => {
+                this.processingBulk = false;
+                const resultados = response.data;
+
+                if (resultados && resultados.length > 0) {
+                    resultados.forEach((row: any) => this.agregarTarjetaDesdeResultadoBulk(row));
+                    this.loadReferencias();
+                    this.bulkText = '';
+                    this.showBulkImport = false;
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Carga masiva',
+                        detail: `${resultados.length} referencia(s) procesada(s) e incorporada(s) al análisis.`
+                    });
+                } else {
+                    this.messageService.add({
+                        severity: 'warn',
+                        summary: 'Sin resultados',
+                        detail: 'No se pudo procesar ninguna línea del listado.'
+                    });
+                }
+            },
+            error: (err) => {
+                this.processingBulk = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail:
+                        err.error?.message ??
+                        err.error?.error ??
+                        err.message ??
+                        'No se pudieron procesar las referencias.'
+                });
+            }
+        });
+    }
+
+    /**
+     * Opciones del p-select de referencia: por tipo (lista_id) o, si aún no hay tipo, desde catálogo global / fila.
+     */
+    getOpcionesReferenciaParaFila(itemIndex: number): any[] {
+        const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
+        const porTipo = listaId ? this.referenciasPorTipo[listaId] : undefined;
+        if (porTipo && porTipo.length > 0) {
+            return porTipo;
+        }
+
+        const out: any[] = [];
+        const seen = new Set<number>();
+        const partes = this.getPartesFormArray(itemIndex);
+
+        for (const c of partes.controls) {
+            const id = c.get('referencia_id')?.value;
+            if (!id || seen.has(id)) {
+                continue;
+            }
+            seen.add(id);
+            const global = this.referencias.find((r) => r.value === id);
+            const descFila = String(c.get('descripcion')?.value ?? '').trim();
+            const label = (global?.label ?? descFila) || String(id);
+            out.push({
+                label,
+                value: id,
+                descripcion: global?.descripcion ?? c.get('descripcion')?.value ?? '',
+                articulo_id: null,
+                articulo_nombre: global?.descripcion ?? ''
+            });
+        }
+
+        return out;
     }
 
     abrirDialogoLote(index: number): void {
@@ -435,9 +600,11 @@ export class AnalysisComponent implements OnInit {
 
         const item = this.referenciasFormArray.at(itemIndex);
         const listaId = item.get('lista_id')?.value;
-        
-        // Buscar en el cache de ese tipo específico
-        const refObj = this.referenciasPorTipo[listaId]?.find(r => r.value === refId);
+
+        const refObj =
+            (listaId ? this.referenciasPorTipo[listaId]?.find((r) => r.value === refId) : undefined) ??
+            this.referencias.find((r) => r.value === refId) ??
+            this.getOpcionesReferenciaParaFila(itemIndex).find((r) => r.value === refId);
         
         const partes = this.getPartesFormArray(itemIndex);
         const parte = partes.at(parteIndex);

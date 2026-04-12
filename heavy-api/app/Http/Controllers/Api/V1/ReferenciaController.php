@@ -25,6 +25,67 @@ class ReferenciaController extends Controller
     use AuthorizesRequests;
 
     /**
+     * Buscar referencias existentes por lotes (no crea registros nuevos).
+     *
+     * Autorizado para quienes puedan listar referencias (Analista, Vendedor, etc.).
+     */
+    public function bulkSearch(Request $request): JsonResponse
+    {
+        $this->authorize('viewAny', Referencia::class);
+
+        $validated = $request->validate([
+            'items' => ['required', 'array', 'min:1'],
+            'items.*.codigo' => ['required', 'string'],
+            'items.*.cantidad' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $items = $validated['items'];
+        $codigosUnicos = [];
+        foreach ($items as $item) {
+            $c = strtoupper(trim($item['codigo']));
+            if ($c !== '') {
+                $codigosUnicos[$c] = true;
+            }
+        }
+        $codigosUnicos = array_keys($codigosUnicos);
+
+        $existentes = Referencia::query()
+            ->whereIn('referencia', $codigosUnicos)
+            ->with(['articulo', 'marca'])
+            ->get()
+            ->keyBy(fn ($ref) => strtoupper($ref->referencia));
+
+        $resultados = [];
+        $noEncontrados = [];
+
+        foreach ($items as $item) {
+            $codigo = strtoupper(trim($item['codigo']));
+            if ($codigo === '') {
+                continue;
+            }
+            if ($existentes->has($codigo)) {
+                $referencia = $existentes->get($codigo);
+                $resultados[] = [
+                    'referencia_id' => $referencia->id,
+                    'codigo' => $referencia->referencia,
+                    'cantidad' => $item['cantidad'],
+                    'referencia' => new ReferenciaResource($referencia),
+                ];
+            } else {
+                $noEncontrados[] = $codigo;
+            }
+        }
+
+        $noEncontrados = array_values(array_unique($noEncontrados));
+
+        return response()->json([
+            'data' => $resultados,
+            'no_encontrados' => $noEncontrados,
+            'message' => count($resultados).' referencia(s) encontrada(s)',
+        ]);
+    }
+
+    /**
      * Buscar o crear referencias por lotes
      * 
      * @param Request $request
