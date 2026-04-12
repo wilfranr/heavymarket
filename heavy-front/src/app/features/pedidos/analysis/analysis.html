@@ -281,10 +281,10 @@
                             {{ isItemCompleto(i) ? 'Analizado' : 'Pendiente' }}
                         </div>
                         
-                        <!-- Name & Category Reactivo -->
+                        <!-- Name & Category Reactivo (Orden: Sistema → Tipo → Cantidad) - Issue #67 -->
                         <div class="flex gap-8 flex-1 text-sm font-semibold">
-                            <span class="text-primary-400">{{ getTipoNombre(item.get('lista_id')?.value) }}</span>
                             <span class="text-primary-400">{{ getSistemaNombre(item.get('sistema_id')?.value) }}</span>
+                            <span class="text-primary-400">{{ getTipoNombre(item.get('lista_id')?.value) }}</span>
                             <span class="text-primary-400">Cant. {{ item.get('cantidad')?.value }}</span>
                             @if (isPreparado) {
                                 <span class="text-primary-400">{{ item.get('definicion')?.value }}</span>

@@ -30,10 +30,10 @@
 
                 <!-- Marca -->
                 <div class="field">
-                    <label for="marca_id" class="block text-sm font-medium mb-2"> Marca </label>
+                    <label for="marca_id" class="block text-sm font-medium mb-2">Marca / fabricante</label>
                     <p-select id="marca_id" formControlName="marca_id" [options]="marcas" optionLabel="nombre"
-                        optionValue="id" optionImage="foto" placeholder="Seleccione una marca" [showClear]="true" styleClass="w-full"
-                        [filter]="true" filterBy="nombre">
+                        optionValue="id" optionImage="foto" placeholder="Marca o fabricante" [showClear]="true" styleClass="w-full"
+                        [filter]="true" filterBy="nombre,definicion">
                     </p-select>
                 </div>
 

@@ -45,12 +45,12 @@ export class CreateComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
-    private readonly fabricanteService = inject(FabricanteService);
+    private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
 
     referenciaForm!: FormGroup;
     loading = false;
-    marcas: Fabricante[] = [];
+    marcas: Lista[] = [];
     articulos: Articulo[] = [];
 
     ngOnInit(): void {
@@ -77,12 +77,12 @@ export class CreateComponent implements OnInit {
      * Carga las marcas disponibles
      */
     cargarMarcas(): void {
-        this.fabricanteService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.marcas = response.data;
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (items) => {
+                this.marcas = items;
             },
             error: (error) => {
-                console.error('Error al cargar marcas:', error);
+                console.error('Error al cargar marcas y fabricantes:', error);
             }
         });
     }

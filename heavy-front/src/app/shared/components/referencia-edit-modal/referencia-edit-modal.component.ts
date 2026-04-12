@@ -22,7 +22,8 @@ import { MessageService } from 'primeng/api';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { ReferenciaService } from '../../../core/services/referencia.service';
-import { FabricanteService } from '../../../core/services/fabricante.service';
+import { ListaService } from '../../../core/services/lista.service';
+import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
@@ -48,7 +49,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     private readonly fb = inject(FormBuilder);
     private readonly referenciaService = inject(ReferenciaService);
-    private readonly fabricanteService = inject(FabricanteService);
+    private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
     private readonly messageService = inject(MessageService);
     private readonly cdr = inject(ChangeDetectorRef);
@@ -63,7 +64,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     referenciaForm!: FormGroup;
     loading = false;
     loadingData = false;
-    marcas: { id: number; nombre: string }[] = [];
+    marcas: Lista[] = [];
     articulos: Articulo[] = [];
 
     ngOnInit(): void {
@@ -88,9 +89,9 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     }
 
     private cargarMarcas(): void {
-        this.fabricanteService.getAll({ per_page: 200 }).subscribe({
-            next: (response) => {
-                this.marcas = response.data;
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (items) => {
+                this.marcas = items;
                 this.cdr.markForCheck();
             }
         });
@@ -123,6 +124,9 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                     articulo_id: r.articulo_id,
                     comentario: r.comentario ?? ''
                 });
+                if (r.marca && !this.marcas.some((m) => m.id === r.marca!.id)) {
+                    this.marcas = [r.marca as Lista, ...this.marcas];
+                }
                 this.loadingData = false;
                 this.cdr.markForCheck();
             },

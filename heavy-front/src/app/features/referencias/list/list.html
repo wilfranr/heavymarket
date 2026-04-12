@@ -12,8 +12,8 @@
 
         <div class="mb-4 flex gap-6 items-center">
             <p-select [(ngModel)]="selectedMarcaId" [options]="marcas" optionLabel="nombre" optionValue="id"
-                placeholder="Filtrar por marca" [showClear]="true" (ngModelChange)="onMarcaChange()"
-                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre"> </p-select>
+                placeholder="Filtrar por marca o fabricante" [showClear]="true" (ngModelChange)="onMarcaChange()"
+                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre,definicion"> </p-select>
 
             <div class="flex items-center gap-2">
                 <p-checkbox [(ngModel)]="filterTemporales" [binary]="true" inputId="temporal"
@@ -75,8 +75,8 @@
                         <p-cellEditor>
                             <ng-template pTemplate="input">
                                 <p-select [(ngModel)]="referencia.marca_id" [options]="marcas" optionLabel="nombre"
-                                    optionValue="id" placeholder="Marca" styleClass="w-full" appendTo="body"
-                                    [filter]="true" filterBy="nombre">
+                                    optionValue="id" placeholder="Marca o fabricante" styleClass="w-full" appendTo="body"
+                                    [filter]="true" filterBy="nombre,definicion">
                                 </p-select>
                             </ng-template>
                             <ng-template pTemplate="output">

@@ -17,8 +17,8 @@ import { DividerModule } from 'primeng/divider';
 import { loadReferenciaById, updateReferencia } from '../../../store/referencias/actions/referencias.actions';
 import { selectReferenciaById } from '../../../store/referencias/selectors/referencias.selectors';
 import { UpdateReferenciaDto } from '../../../core/models/referencia.model';
-import { FabricanteService } from '../../../core/services/fabricante.service';
-import { Fabricante } from '../../../core/models/fabricante.model';
+import { ListaService } from '../../../core/services/lista.service';
+import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { Articulo } from '../../../core/models/articulo.model';
 
@@ -38,14 +38,14 @@ export class EditComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
-    private readonly fabricanteService = inject(FabricanteService);
+    private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
 
     referenciaForm!: FormGroup;
     referencia$!: Observable<any>;
     referenciaId!: number;
     loading = false;
-    marcas: Fabricante[] = [];
+    marcas: Lista[] = [];
     articulos: Articulo[] = [];
 
     ngOnInit(): void {
@@ -91,12 +91,12 @@ export class EditComponent implements OnInit {
      * Carga las marcas disponibles
      */
     cargarMarcas(): void {
-        this.fabricanteService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.marcas = response.data;
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (items) => {
+                this.marcas = items;
             },
             error: (error) => {
-                console.error('Error al cargar marcas:', error);
+                console.error('Error al cargar marcas y fabricantes:', error);
             }
         });
     }
@@ -118,6 +118,10 @@ export class EditComponent implements OnInit {
         // Asegurar que el artículo asociado esté en la lista de opciones para que p-select lo encuentre
         if (referencia.articulo && !this.articulos.some((a) => a.id === referencia.articulo.id)) {
             this.articulos = [referencia.articulo, ...this.articulos];
+        }
+
+        if (referencia.marca && !this.marcas.some((m) => m.id === referencia.marca!.id)) {
+            this.marcas = [referencia.marca as Lista, ...this.marcas];
         }
     }
 

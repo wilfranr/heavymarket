@@ -85,12 +85,12 @@ export class ListComponent implements OnInit {
      * Carga las marcas disponibles
      */
     cargarMarcas(): void {
-        this.listaService.getByTipo('Marca').subscribe({
-            next: (marcas) => {
-                this.marcas = marcas;
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (items) => {
+                this.marcas = items;
             },
             error: (error) => {
-                console.error('Error al cargar marcas:', error);
+                console.error('Error al cargar marcas y fabricantes:', error);
             }
         });
     }

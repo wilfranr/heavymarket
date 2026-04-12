@@ -19,11 +19,11 @@
                 }
             </div>
 
-            <!-- Marca (Fabricante) -->
+            <!-- Marca / fabricante (listas Marca y Fabricantes) -->
             <div>
-                <label for="marca_id" class="block mb-2 font-semibold">Marca / Fabricante<span class="text-red-500">*</span></label>
+                <label for="marca_id" class="block mb-2 font-semibold">Marca / fabricante<span class="text-red-500">*</span></label>
                 <p-select id="marca_id" [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
-                    placeholder="Seleccione una opción" [filter]="true" filterBy="nombre" 
+                    placeholder="Marca o fabricante" [filter]="true" filterBy="nombre,definicion"
                     styleClass="w-full" appendTo="body">
                 </p-select>
                 @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {

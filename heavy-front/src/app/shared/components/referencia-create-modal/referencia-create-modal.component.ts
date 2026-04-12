@@ -14,7 +14,8 @@ import { TagModule } from 'primeng/tag';
 import { TooltipModule } from 'primeng/tooltip';
 
 import { ReferenciaService } from '../../../core/services/referencia.service';
-import { FabricanteService } from '../../../core/services/fabricante.service';
+import { ListaService } from '../../../core/services/lista.service';
+import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
@@ -43,7 +44,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     private readonly fb = inject(FormBuilder);
     private readonly referenciaService = inject(ReferenciaService);
-    private readonly fabricanteService = inject(FabricanteService);
+    private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
     private readonly messageService = inject(MessageService);
 
@@ -56,7 +57,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
 
     referenciaForm!: FormGroup;
     loading = false;
-    marcas: any[] = [];
+    marcas: Lista[] = [];
     articulos: Articulo[] = [];
 
     ngOnInit(): void {
@@ -81,9 +82,9 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     }
 
     private cargarMarcas(): void {
-        this.fabricanteService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.marcas = response.data;
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (items) => {
+                this.marcas = items;
             }
         });
     }
