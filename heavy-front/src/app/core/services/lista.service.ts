@@ -4,6 +4,15 @@ import { map } from 'rxjs/operators';
 import { Lista, CreateListaDto, UpdateListaDto, ListaTipo } from '../models/lista.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
+/** Clave estable para fusionar Marca vs Fabricantes cuando el mismo nombre tiene dos IDs distintos. */
+function claveNombreLista(nombre: string): string {
+    return nombre
+        .trim()
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/\p{M}/gu, '');
+}
+
 /**
  * Servicio para gestión de Listas
  *
@@ -24,8 +33,9 @@ export class ListaService extends ApiService {
     }
 
     /**
-     * Opciones unificadas para selects de referencia: listas tipo Marca y Fabricantes,
-     * sin duplicar por id y ordenadas por nombre (issue #48).
+     * Opciones unificadas para selects de referencia: listas tipo Marca y Fabricantes.
+     * Se deduplica por nombre (misma marca suele tener dos filas con IDs distintos) y,
+     * si chocan, se prioriza la entrada tipo Fabricantes (issue #48).
      */
     getMarcasYFabricantesParaReferencia(): Observable<Lista[]> {
         return forkJoin({
@@ -33,16 +43,31 @@ export class ListaService extends ApiService {
             fabricantes: this.getByTipo('Fabricantes')
         }).pipe(
             map(({ marcas, fabricantes }) => {
-                const byId = new Map<number, Lista>();
+                const porNombre = new Map<string, Lista>();
+
+                const añadir = (item: Lista, preferirSobreExistente: boolean) => {
+                    const key = claveNombreLista(item.nombre);
+                    if (key === '') {
+                        return;
+                    }
+                    const prev = porNombre.get(key);
+                    if (!prev) {
+                        porNombre.set(key, item);
+                        return;
+                    }
+                    if (preferirSobreExistente && prev.tipo !== 'Fabricantes' && item.tipo === 'Fabricantes') {
+                        porNombre.set(key, item);
+                    }
+                };
+
                 for (const item of marcas) {
-                    byId.set(item.id, item);
+                    añadir(item, false);
                 }
                 for (const item of fabricantes) {
-                    if (!byId.has(item.id)) {
-                        byId.set(item.id, item);
-                    }
+                    añadir(item, true);
                 }
-                return Array.from(byId.values()).sort((a, b) =>
+
+                return Array.from(porNombre.values()).sort((a, b) =>
                     a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
                 );
             })

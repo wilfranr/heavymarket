@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, filter, take, map } from 'rxjs';
+import { Observable, filter, take, map, forkJoin } from 'rxjs';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -915,28 +915,18 @@ export class AnalysisComponent implements OnInit {
     }
 
     private loadInitialData(): void {
-        // Cargar sistemas
-        this.sistemaService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.sistemas = response.data.map((s) => ({
-                    label: s.nombre,
-                    value: s.id
-                }));
+        // Cargar sistemas y categorías en paralelo (Fix: "Tipo Desconocido")
+        forkJoin({
+            sistemas: this.sistemaService.getAll({ per_page: 100 }),
+            tipos: this.listaService.getByTipo('Categoría Comercial')
+        }).subscribe({
+            next: ({ sistemas, tipos }) => {
+                this.sistemas = sistemas.data.map((s) => ({ label: s.nombre, value: s.id }));
+                this.tiposArticulo = tipos.map((l) => ({ label: l.nombre, value: l.id }));
+                // Cargar referencias solo cuando los catálogos estén listos
+                this.loadReferencias();
             }
         });
-
-        // Cargar categorías comerciales (Listas) - Issue #64
-        this.listaService.getByTipo('Categoría Comercial').subscribe({
-            next: (listas) => {
-                this.tiposArticulo = listas.map((l) => ({
-                    label: l.nombre,
-                    value: l.id
-                }));
-            }
-        });
-
-        // Cargar referencias para el selector
-        this.loadReferencias();
     }
 
     getSistemaNombre(id: number | null): string {
@@ -946,7 +936,7 @@ export class AnalysisComponent implements OnInit {
 
     getTipoNombre(id: number | null): string {
         if (!id) return 'Sin tipo';
-        // Buscar en tiposEdit (modal actual) y luego en tiposArticulo (cache global)
+        // Buscar en tiposEdit (modal actual), luego en tiposArticulo (cache global)
         const tipo = (this.tiposEdit || []).find(t => t.value === id) || 
                      (this.tiposArticulo || []).find(t => t.value === id);
         return tipo?.label || 'Tipo desconocido';
