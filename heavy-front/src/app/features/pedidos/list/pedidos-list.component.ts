@@ -107,9 +107,10 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                     </p-columnFilter>
                                 </div>
                             </th>
-                            <th>Estado</th>
-                            <th>Dirección</th>
-                            <th>Fecha</th>
+                            <th style="min-width: 8rem">Estado</th>
+                            <th style="min-width: 8rem">Dirección</th>
+                            <th style="min-width: 8rem">Fecha</th>
+                            <th style="min-width: 6rem" class="text-center">Comentarios</th>
                             <th>Acciones</th>
                         }
                     </tr>
@@ -151,7 +152,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                     <span class="text-muted-color">—</span>
                                 }
                             </td>
-                        } @else {
+} @else {
+                            @let comPed = resumenComentariosPedido(pedido);
                             <td>{{ pedido.id }}</td>
                             <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                             <td>
@@ -163,8 +165,26 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                 } @else {
                                     <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
                                 }
+                            </td>
                             <td>{{ pedido.direccion || 'N/A' }}</td>
                             <td>{{ pedido.created_at | date: 'short' }}</td>
+                            <td class="text-center" (click)="$event.stopPropagation()">
+                                @if (comPed.count > 0) {
+                                    <span
+                                        class="inline-flex items-center justify-center gap-1 rounded-md px-2 py-1"
+                                        style="color: var(--p-primary-color)"
+                                        [pTooltip]="comPed.texto"
+                                        tooltipPosition="top"
+                                        [showDelay]="200"
+                                        tooltipStyleClass="max-w-md whitespace-pre-wrap break-words"
+                                    >
+                                        <i class="pi pi-comments text-lg" aria-hidden="true"></i>
+                                        <span class="text-sm font-semibold">{{ comPed.count }}</span>
+                                    </span>
+                                } @else {
+                                    <span class="text-muted-color">—</span>
+                                }
+                            </td>
                             <td>
                                 <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
                                 <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
