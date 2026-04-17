@@ -129,6 +129,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/enviar', [PedidoController::class, 'enviar'])->name('pedidos.enviar');
         Route::post('pedidos/{pedido}/entregar', [PedidoController::class, 'entregar'])->name('pedidos.entregar');
         Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
+        Route::post('pedidos/{pedido}/devolver-vendedor', [PedidoController::class, 'devolverAVendedor'])->name('pedidos.devolver-vendedor');
         
         Route::apiResource('pedidos', PedidoController::class);
 

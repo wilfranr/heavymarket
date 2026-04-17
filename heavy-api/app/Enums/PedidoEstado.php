@@ -45,6 +45,7 @@ enum PedidoEstado: string
             ],
             self::En_Analisis => [
                 self::Cotizado,
+                self::Nuevo,  // Devolver al vendedor
                 self::Cancelado,
             ],
             self::En_Costeo => [

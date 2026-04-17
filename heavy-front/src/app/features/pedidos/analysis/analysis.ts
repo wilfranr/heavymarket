@@ -55,6 +55,7 @@ import { PedidoReferenciaProveedorService } from '../../../core/services/pedido-
 import { PedidoArticuloService } from '../../../core/services/pedido-articulo.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { PedidoService } from '../../../core/services/pedido.service';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
 import { Referencia } from '../../../core/models/referencia.model';
@@ -114,6 +115,7 @@ export class AnalysisComponent implements OnInit {
     private readonly fabricanteService = inject(FabricanteService);
     private readonly authService = inject(AuthService);
     private readonly articuloService = inject(ArticuloService);
+    private readonly pedidoService = inject(PedidoService);
 
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
@@ -135,6 +137,12 @@ export class AnalysisComponent implements OnInit {
     /** Solo analistas y administración pueden pasar el pedido a costeo (no vendedores). */
     get puedePasarACosteo(): boolean {
         return this.authService.hasAnyRole(['Analista', 'analista', 'Administrador', 'super_admin']);
+    }
+
+    /** Verifica si el usuario actual es Analista (no admin) */
+    get isAnalista(): boolean {
+        const user = this.authService.currentUser();
+        return user?.roles?.includes('Analista') ?? false;
     }
 
     // Estados para modales (si se necesitan similares a edit)
@@ -1315,6 +1323,47 @@ export class AnalysisComponent implements OnInit {
 
     cancelar(): void {
         this.router.navigate(['/app/pedidos']);
+    }
+
+    /**
+     * Mostrar diálogo para confirmar devolución al vendedor
+     */
+    displayDevolucionDialog = false;
+    devolucionComentario = '';
+
+    confirmarDevolucion(): void {
+        this.devolucionComentario = '';
+        this.displayDevolucionDialog = true;
+    }
+
+    ejecutarDevolucion(): void {
+        if (!this.devolucionComentario || this.devolucionComentario.trim().length < 10) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Comentario requerido',
+                detail: 'Debe proporcionar un motivo de devolución (mínimo 10 caracteres)'
+            });
+            return;
+        }
+
+        this.pedidoService.devolverAVendedor(this.pedidoId(), this.devolucionComentario).subscribe({
+            next: () => {
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Pedido devuelto',
+                    detail: 'El pedido ha sido devuelto al vendedor para completar información'
+                });
+                this.displayDevolucionDialog = false;
+                this.router.navigate(['/app/pedidos']);
+            },
+            error: (err) => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: err.error?.message ?? 'No se pudo devolver el pedido'
+                });
+            }
+        });
     }
 
     maquinasList: any[] = [];

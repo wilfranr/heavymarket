@@ -498,6 +498,49 @@ class PedidoController extends Controller
     }
 
     /**
+     * Devolver pedido al vendedor (desde En_Analisis a Nuevo)
+     * El analista devuelve el pedido porque necesita información adicional del cliente
+     */
+    public function devolverAVendedor(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'comentario' => ['required', 'string', 'min:10', 'max:500'],
+        ]);
+
+        $this->authorize('update', $pedido);
+
+        // Solo analistas y admin pueden devolver
+        if (! $request->user()->hasAnyRole(['Analista', 'Administrador', 'super_admin'])) {
+            return response()->json(['message' => 'Solo analistas o administradores pueden devolver pedidos al vendedor.'], 403);
+        }
+
+        try {
+            $pedido->transitarA(PedidoEstado::Nuevo);
+            $pedido->comentarios_rechazo = $validated['comentario']; // Usamos este campo para el motivo de devolución
+            $pedido->save();
+
+            // Notificar al vendedor
+            if ($vendedor = $pedido->user) {
+                $vendedor->notify(new \App\Notifications\SystemNotification(
+                    'pedido_devuelto',
+                    'Pedido #' . $pedido->id . ' devuelto por analista',
+                    'El analista ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
+                    'pi-arrow-left',
+                    'orange',
+                    ['id' => $pedido->id]
+                ));
+            }
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido devuelto al vendedor',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
      * Aprobar o rechazar un pedido cotizado
      */
     public function responder(Request $request, Pedido $pedido): JsonResponse

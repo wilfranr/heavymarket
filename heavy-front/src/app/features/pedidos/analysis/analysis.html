@@ -32,6 +32,11 @@
                     Pasar a costeo
                 </button>
                 }
+                @if (isAnalista) {
+                <button type="button" class="btn-pill btn-devolver" (click)="confirmarDevolucion()">
+                    Devolver al vendedor
+                </button>
+                }
             </div>
         </div>
 
@@ -692,5 +697,30 @@
         <p-button label="Cancelar" [text]="true" severity="secondary"
             (onClick)="displayComentarioDialog = false"></p-button>
         <p-button label="Guardar Comentario" icon="pi pi-check" (onClick)="guardarComentario()"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Diálogo de devolución al vendedor -->
+<p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '500px'}" header="Devolver al vendedor">
+    <div class="flex flex-col gap-4">
+        <p class="text-sm text-gray-300">
+            El pedido será devuelto al vendedor para que complete o verifique la información. 
+            Por favor indique el motivo de la devolución:
+        </p>
+        <div class="flex flex-col gap-2">
+            <label for="devolucionMotivo" class="text-sm font-medium">
+                Motivo de devolución <span class="text-red-500">*</span>
+            </label>
+            <textarea pTextarea id="devolucionMotivo" rows="4" [(ngModel)]="devolucionComentario"
+                placeholder="Ej: Falta confirmar referencia del ítem 3, cliente no responde por teléfono..."
+                class="w-full rounded-lg !bg-gray-900/40 border-gray-700 focus:border-orange-500 transition-colors"></textarea>
+            <small class="text-gray-400">Mínimo 10 caracteres</small>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" [text]="true" severity="secondary"
+            (onClick)="displayDevolucionDialog = false"></p-button>
+        <p-button label="Devolver" icon="pi pi-arrow-left" severity="danger"
+            (onClick)="ejecutarDevolucion()"></p-button>
     </ng-template>
 </p-dialog>

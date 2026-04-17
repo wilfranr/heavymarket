@@ -36,6 +36,15 @@
             transform: translateY(-1px);
         }
     }
+
+    &.btn-devolver {
+        background-color: #f97316; // Orange 500
+        color: white;
+        &:hover {
+            background-color: #ea580c; // Orange 600
+            transform: translateY(-1px);
+        }
+    }
 }
 
 .figma-card-analysis {

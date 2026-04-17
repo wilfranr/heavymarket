@@ -15,11 +15,18 @@ import { TabsModule } from 'primeng/tabs';
 import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 
-import { Pedido } from '../../../core/models/pedido.model';
+import { Pedido, PedidoReferencia } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { AuthService } from '../../../core/auth/services/auth.service';
+
+/** Entrada de historial de comentario de ítem (JSON en API o texto legacy). */
+export interface ComentarioReferenciaVista {
+    origen: string;
+    comentario: string;
+    fecha?: string;
+}
 
 /**
  * Componente de detalle de pedido
@@ -107,5 +114,56 @@ export class DetailComponent implements OnInit {
      */
     imprimirPedido(): void {
         window.print();
+    }
+
+    /** Comentarios de un ítem requerido para vista (parsea JSON o texto plano). */
+    comentariosDeItem(item: PedidoReferencia): ComentarioReferenciaVista[] {
+        return this.parseComentariosRaw(item?.comentario);
+    }
+
+    /** Notas generales del pedido (mismo formato que comentarios por ítem). */
+    comentariosDelPedido(pedido: Pedido): ComentarioReferenciaVista[] {
+        return this.parseComentariosRaw(pedido?.comentario);
+    }
+
+    private parseComentariosRaw(raw: unknown): ComentarioReferenciaVista[] {
+        if (!raw) {
+            return [];
+        }
+
+        if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (!trimmed || trimmed === 'Sin comentario adicional') {
+                return [];
+            }
+
+            try {
+                const parsed = JSON.parse(trimmed) as unknown;
+                if (Array.isArray(parsed)) {
+                    return parsed
+                        .filter((c): c is { comentario?: string; origen?: string; fecha?: string } => !!c && typeof c === 'object')
+                        .filter((c) => typeof c.comentario === 'string')
+                        .map((c) => ({
+                            origen: typeof c.origen === 'string' ? c.origen : 'Interno',
+                            comentario: c.comentario as string,
+                            fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                        }));
+                }
+            } catch {
+                // No es JSON: formato legacy
+            }
+
+            const sinPrefijo = trimmed.startsWith('Comentario del cliente:')
+                ? trimmed.replace('Comentario del cliente:', '').trim()
+                : trimmed;
+
+            if (!sinPrefijo) {
+                return [];
+            }
+
+            return [{ origen: 'Cliente', comentario: sinPrefijo }];
+        }
+
+        return [];
     }
 }
