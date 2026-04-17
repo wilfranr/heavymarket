@@ -49,7 +49,7 @@ class PedidoController extends Controller
         $this->authorize('viewAny', Pedido::class);
 
         $query = Pedido::query()
-            ->with(['user', 'tercero', 'maquina', 'fabricante'])
+            ->with(['user', 'tercero', 'maquina.listas', 'fabricante'])
             ->withCount(['referencias', 'articulos']);
 
         $user = $request->user();
