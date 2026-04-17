@@ -497,7 +497,7 @@ class PedidoController extends Controller
         }
     }
 
-    /**
+/**
      * Devolver pedido al vendedor (desde En_Analisis a Nuevo)
      * El analista devuelve el pedido porque necesita información adicional del cliente
      */
@@ -515,8 +515,25 @@ class PedidoController extends Controller
         }
 
         try {
+            // Guardar comentario en campo comentario como JSON estructurado
+            $comentariosExistentes = [];
+            if ($pedido->comentario) {
+                $decoded = json_decode($pedido->comentario, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $comentariosExistentes = $decoded;
+                }
+            }
+
+            // Agregar nuevo comentario de devolución
+            $comentariosExistentes[] = [
+                'origen' => 'Analista',
+                'comentario' => $validated['comentario'],
+                'tipo' => 'devolucion',
+                'fecha' => now()->toISOString(),
+            ];
+
+            $pedido->comentario = json_encode($comentariosExistentes, JSON_UNESCAPED_UNICODE);
             $pedido->transitarA(PedidoEstado::Nuevo);
-            $pedido->comentarios_rechazo = $validated['comentario']; // Usamos este campo para el motivo de devolución
             $pedido->save();
 
             // Notificar al vendedor
@@ -524,7 +541,7 @@ class PedidoController extends Controller
                 $vendedor->notify(new \App\Notifications\SystemNotification(
                     'pedido_devuelto',
                     'Pedido #' . $pedido->id . ' devuelto por analista',
-                    'El analista ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
+                    'El分析师 ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
                     'pi-arrow-left',
                     'orange',
                     ['id' => $pedido->id]
