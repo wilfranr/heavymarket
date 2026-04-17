@@ -175,19 +175,19 @@ class PedidoTest extends TestCase
 
         $response = $this->actingAs($this->user, 'sanctum')
             ->putJson("/v1/pedidos/{$pedido->id}", [
-                'estado' => 'Enviado',
+                'estado' => 'En_Analisis', // Transición válida: Nuevo -> En_Analisis
                 'comentario' => 'Actualizado',
             ]);
 
         $response->assertStatus(200)
             ->assertJson([
-                'data' => ['estado' => 'Enviado'],
+                'data' => ['estado' => 'En_Analisis'],
                 'message' => 'Pedido actualizado exitosamente',
             ]);
 
         $this->assertDatabaseHas('pedidos', [
             'id' => $pedido->id,
-            'estado' => 'Enviado',
+            'estado' => 'En_Analisis',
         ]);
     }
 
