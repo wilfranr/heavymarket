@@ -64,8 +64,11 @@ class PedidoPolicy
             return false;
         }
 
+        // Admin/Logística pueden editar todo
+        // Vendedor puede editar sus pedidos O pedidos sin asignar (de landing)
         return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
-            || $user->id === $pedido->user_id;
+            || $user->id === $pedido->user_id
+            || $pedido->user_id === null;
     }
 
     /**

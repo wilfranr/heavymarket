@@ -59,8 +59,12 @@ class PedidoController extends Controller
             $query->where('estado', 'En_Analisis');
         }
         // Vendedores y otros roles no administrativos solo ven sus propios pedidos
+        // O pedidos sin asignar (user_id = null) que vienen de la landing
         elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
-            $query->where('user_id', $user->id);
+            $query->where(function ($q) use ($user) {
+                $q->where('user_id', $user->id)
+                  ->orWhereNull('user_id');
+            });
         }
 
         // Filtros (Estado, Tercero, Fabricante, Máquina, Vendedor)
@@ -433,11 +437,16 @@ class PedidoController extends Controller
     /**
      * Publicar pedido de borrador a nuevo
      */
-    public function publicar(Pedido $pedido): JsonResponse
+    public function publicar(Request $request, Pedido $pedido): JsonResponse
     {
         $this->authorize('update', $pedido);
 
         try {
+            // Asignar usuario si no tiene
+            if ($pedido->user_id === null) {
+                $pedido->user_id = $request->user()->id;
+            }
+
             $pedido->transitarA(PedidoEstado::Nuevo);
             $pedido->save();
 
@@ -458,6 +467,12 @@ class PedidoController extends Controller
         $this->authorize('update', $pedido);
 
         try {
+            // Asignar usuario si no tiene (analista toma ownership)
+            if ($pedido->user_id === null) {
+                $pedido->user_id = $request->user()->id;
+                $pedido->save();
+            }
+
             $pedido->transitarA(PedidoEstado::Cotizado);
             $pedido->save();
 
