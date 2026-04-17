@@ -13,6 +13,7 @@ import { ConfirmationService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TabsModule } from 'primeng/tabs';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Pedido } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
@@ -30,7 +31,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 @Component({
     selector: 'app-pedidos-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule, TabsModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule, TabsModule, TooltipModule],
     providers: [ConfirmationService],
     template: `
         <div class="card">
@@ -55,7 +56,17 @@ import { AuthService } from '../../../core/auth/services/auth.service';
             </p-tabs>
 
             <!-- Tabla de Pedidos -->
-            <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="['tercero.nombre', 'id', 'direccion']" [rowHover]="true">
+            <p-table
+                #dt1
+                [value]="pedidos()"
+                [loading]="loading()"
+                [paginator]="true"
+                [rows]="15"
+                [totalRecords]="total()"
+                styleClass="p-datatable-gridlines"
+                [globalFilterFields]="globalFilterFields()"
+                [rowHover]="true"
+            >
                 <ng-template pTemplate="caption">
                     <div class="flex justify-between items-center flex-column sm:flex-row">
                         <p-button label="Limpiar" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
@@ -70,43 +81,95 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 
                 <ng-template pTemplate="header">
                     <tr>
-                        <th style="min-width: 5rem">ID</th>
-                        <th style="min-width: 15rem">
-                            <div class="flex justify-between items-center">
-                                Tercero
-                                <p-columnFilter field="tercero" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false" [showApplyButton]="false" [showClearButton]="false">
-                                    <ng-template pTemplate="header">
-                                        <div class="px-3 pt-3 pb-0">
-                                            <span class="font-bold">Filtrar por Cliente</span>
-                                        </div>
-                                    </ng-template>
-                                    <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                        <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
-                                        </p-select>
-                                    </ng-template>
-                                </p-columnFilter>
-                            </div>
-                        </th>
-                        <th>Estado</th>
-                        <th>Dirección</th>
-                        <th>Fecha</th>
-                        <th *ngIf="!isAnalista">Acciones</th>
+                        @if (isAnalista) {
+                            <th style="min-width: 5rem">ID</th>
+                            <th style="min-width: 12rem">Vendedor</th>
+                            <th style="min-width: 8rem">Estado</th>
+                            <th style="min-width: 8rem" class="text-center">Ítems solicitados</th>
+                            <th style="min-width: 10rem">Tipo de máquina</th>
+                            <th style="min-width: 10rem">Modelo</th>
+                            <th style="min-width: 6rem" class="text-center">Comentarios</th>
+                        } @else {
+                            <th style="min-width: 5rem">ID</th>
+                            <th style="min-width: 15rem">
+                                <div class="flex justify-between items-center">
+                                    Tercero
+                                    <p-columnFilter field="tercero" matchMode="in" display="menu" [showMatchModes]="false" [showOperator]="false" [showAddButton]="false" [showApplyButton]="false" [showClearButton]="false">
+                                        <ng-template pTemplate="header">
+                                            <div class="px-3 pt-3 pb-0">
+                                                <span class="font-bold">Filtrar por Cliente</span>
+                                            </div>
+                                        </ng-template>
+                                        <ng-template pTemplate="filter" let-value let-filter="filterCallback">
+                                            <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
+                                            </p-select>
+                                        </ng-template>
+                                    </p-columnFilter>
+                                </div>
+                            </th>
+                            <th>Estado</th>
+                            <th>Dirección</th>
+                            <th>Fecha</th>
+                            <th>Acciones</th>
+                        }
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-pedido>
                     <tr (click)="onRowClick(pedido)" class="cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
-                        <td>{{ pedido.id }}</td>
-                        <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
-                        <td>
-                            <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
-                        </td>
-                        <td>{{ pedido.direccion || 'N/A' }}</td>
-                        <td>{{ pedido.created_at | date: 'short' }}</td>
-                        <td *ngIf="!isAnalista">
-                            <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
-                            <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
-                        </td>
+                        @if (isAnalista) {
+                            @let comPed = resumenComentariosPedido(pedido);
+                            <td>{{ pedido.id }}</td>
+                            <td>{{ pedido.user?.name || 'Sin asignar' }}</td>
+                            <td>
+                                @if (tieneDevolucionReciente(pedido)) {
+                                    <span class="inline-flex items-center gap-1">
+                                        <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por analista'" tooltipPosition="top"></i>
+                                        <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
+                                    </span>
+                                } @else {
+                                    <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
+                                }
+                            </td>
+                            <td class="text-center">{{ contarItemsSolicitados(pedido) }}</td>
+                            <td>{{ pedido.maquina?.tipo || 'N/A' }}</td>
+                            <td>{{ pedido.maquina?.modelo || 'N/A' }}</td>
+                            <td class="text-center" (click)="$event.stopPropagation()">
+                                @if (comPed.count > 0) {
+                                    <span
+                                        class="inline-flex items-center justify-center gap-1 rounded-md px-2 py-1"
+                                        style="color: var(--p-primary-color)"
+                                        [pTooltip]="comPed.texto"
+                                        tooltipPosition="top"
+                                        [showDelay]="200"
+                                        tooltipStyleClass="max-w-md whitespace-pre-wrap break-words"
+                                    >
+                                        <i class="pi pi-comments text-lg" aria-hidden="true"></i>
+                                        <span class="text-sm font-semibold">{{ comPed.count }}</span>
+                                    </span>
+                                } @else {
+                                    <span class="text-muted-color">—</span>
+                                }
+                            </td>
+                        } @else {
+                            <td>{{ pedido.id }}</td>
+                            <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
+                            <td>
+                                @if (tieneDevolucionReciente(pedido)) {
+                                    <span class="inline-flex items-center gap-1">
+                                        <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por analista'" tooltipPosition="top"></i>
+                                        <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
+                                    </span>
+                                } @else {
+                                    <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
+                                }
+                            <td>{{ pedido.direccion || 'N/A' }}</td>
+                            <td>{{ pedido.created_at | date: 'short' }}</td>
+                            <td>
+                                <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
+                                <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
+                            </td>
+                        }
                     </tr>
                 </ng-template>
             </p-table>
@@ -276,8 +339,13 @@ export class PedidosListComponent implements OnInit {
         if (this.searchInput) {
             this.searchInput.nativeElement.value = '';
         }
-        this.selectedTabValue = 'Todos';
-        this.selectedEstado = null;
+        if (this.isAnalista) {
+            this.selectedTabValue = 'En_Analisis';
+            this.selectedEstado = 'En_Analisis';
+        } else {
+            this.selectedTabValue = 'Todos';
+            this.selectedEstado = null;
+        }
         this.selectedTercero = null;
         this.selectedVendedor = null;
         this.loadPedidos();
@@ -330,6 +398,75 @@ export class PedidosListComponent implements OnInit {
                 this.store.dispatch(PedidosActions.cancelarPedido({ id: pedido.id, motivo }));
             }
         });
+    }
+
+    globalFilterFields(): string[] {
+        return this.isAnalista ? ['id', 'user.name', 'maquina.tipo', 'maquina.modelo'] : ['tercero.nombre', 'id', 'direccion'];
+    }
+
+    contarItemsSolicitados(pedido: Pedido): number {
+        return (pedido.total_referencias ?? 0) + (pedido.total_articulos ?? 0);
+    }
+
+    /**
+     * `comentario` puede ser texto plano o JSON (array de entradas con origen/comentario/fecha).
+     */
+    resumenComentariosPedido(pedido: Pedido): { count: number; texto: string } {
+        const raw = pedido.comentario;
+        if (raw == null || String(raw).trim() === '') {
+            return { count: 0, texto: '' };
+        }
+        const s = String(raw).trim();
+        try {
+            const parsed = JSON.parse(s) as unknown;
+            if (Array.isArray(parsed)) {
+                const partes: string[] = [];
+                for (const item of parsed) {
+                    if (item && typeof item === 'object' && 'comentario' in item) {
+                        const texto = String((item as { comentario?: unknown }).comentario ?? '').trim();
+                        if (!texto) {
+                            continue;
+                        }
+                        const origenRaw = (item as { origen?: unknown }).origen;
+                        const origen = origenRaw != null ? String(origenRaw).trim() : '';
+                        partes.push(origen ? `[${origen}] ${texto}` : texto);
+                    }
+                }
+                if (partes.length) {
+                    return { count: partes.length, texto: partes.join('\n\n') };
+                }
+                return { count: 0, texto: '' };
+            }
+        } catch {
+            /* comentario no JSON */
+        }
+        return { count: 1, texto: s };
+    }
+
+    /**
+     * Verifica si el pedido tiene una devolución reciente del analista (tipo: 'devolucion')
+     */
+    tieneDevolucionReciente(pedido: Pedido): boolean {
+        const raw = pedido.comentario;
+        if (raw == null || String(raw).trim() === '') {
+            return false;
+        }
+        const s = String(raw).trim();
+        try {
+            const parsed = JSON.parse(s) as unknown;
+            if (Array.isArray(parsed)) {
+                // Buscar el último comentario con tipo 'devolucion'
+                for (let i = parsed.length - 1; i >= 0; i--) {
+                    const item = parsed[i];
+                    if (item && typeof item === 'object' && (item as { tipo?: unknown }).tipo === 'devolucion') {
+                        return true;
+                    }
+                }
+            }
+        } catch {
+            // No es JSON
+        }
+        return false;
     }
 
 }
