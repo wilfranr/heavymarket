@@ -1385,6 +1385,27 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Guarda el pedido como borrador.
+     */
+    onSaveDraft(): void {
+        if (this.loading) {
+            return;
+        }
+
+        if (!this.pedidoForm.get('tercero_id')?.value) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Cliente requerido',
+                detail: 'Seleccione un cliente para guardar el pedido como borrador'
+            });
+            return;
+        }
+
+        this.pedidoForm.patchValue({ estado: 'Borrador' as PedidoEstado });
+        this.crearPedidoPendiente();
+    }
+
+    /**
      * Crea el pedido y lo envía a análisis
      */
     private crearPedido(): void {

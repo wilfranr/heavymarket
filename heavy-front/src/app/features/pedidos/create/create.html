@@ -23,8 +23,8 @@
                     <button type="button" class="btn-pill btn-outline" routerLink="/app/pedidos">
                         <i class="pi pi-times mr-2"></i>Cancelar
                     </button>
-                    <button type="submit" class="btn-pill btn-primary" [class.opacity-50]="loading" [class.pointer-events-none]="loading">
-                        <i class="pi pi-save mr-2"></i>{{ loading ? 'Guardando...' : 'Guardar Pedido' }}
+                    <button type="button" class="btn-pill btn-outline" (click)="onSaveDraft()" [class.opacity-50]="loading" [class.pointer-events-none]="loading">
+                        <i class="pi pi-save mr-2"></i>{{ loading ? 'Guardando borrador...' : 'Guardar Borrador' }}
                     </button>
                 </div>
             </div>

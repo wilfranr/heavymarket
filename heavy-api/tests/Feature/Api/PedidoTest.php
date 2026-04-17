@@ -106,6 +106,27 @@ class PedidoTest extends TestCase
     }
 
     /**
+     * Test: Crear pedido en estado borrador.
+     */
+    public function test_puede_crear_pedido_en_estado_borrador(): void
+    {
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/v1/pedidos', [
+                'tercero_id' => $this->tercero->id,
+                'estado' => 'Borrador',
+                'direccion' => 'Calle 45 #12-34',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('data.estado', 'Borrador');
+
+        $this->assertDatabaseHas('pedidos', [
+            'tercero_id' => $this->tercero->id,
+            'estado' => 'Borrador',
+        ]);
+    }
+
+    /**
      * Test: Crear pedido falla sin tercero_id
      */
     public function test_crear_pedido_falla_sin_tercero_id(): void

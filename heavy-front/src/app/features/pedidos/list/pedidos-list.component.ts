@@ -263,6 +263,7 @@ export class PedidosListComponent implements OnInit {
 
     private initTabs() {
         this.estadosTabs = [
+            { label: 'Borrador', value: 'Borrador', icon: 'pi pi-save' },
             { label: 'Nuevo', value: 'Nuevo', icon: 'pi pi-star' },
             { label: 'Enviado', value: 'Enviado', icon: 'pi pi-send' },
             { label: 'En Costeo', value: 'En_Costeo', icon: 'pi pi-money-bill' },
@@ -305,6 +306,7 @@ export class PedidosListComponent implements OnInit {
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
         const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
+            Borrador: 'warn',
             Nuevo: 'info',
             En_Analisis: 'warn',
             Enviado: 'info',

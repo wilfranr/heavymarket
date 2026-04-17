@@ -39,6 +39,7 @@ class StorePedidoRequest extends FormRequest
             'estado' => [
                 'required',
                 Rule::in([
+                    'Borrador',
                     'Nuevo',
                     'En_Analisis',
                     'Enviado',

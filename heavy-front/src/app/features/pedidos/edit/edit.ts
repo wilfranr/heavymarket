@@ -217,6 +217,7 @@ export class EditComponent implements OnInit {
     imagenControl = new FormControl('');
 
     estadosOptions = [
+        { label: 'Borrador', value: 'Borrador' as PedidoEstado },
         { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
         { label: 'En Análisis', value: 'En_Analisis' as PedidoEstado },
         { label: 'Enviado', value: 'Enviado' as PedidoEstado },
@@ -233,7 +234,8 @@ export class EditComponent implements OnInit {
 
     // Mapa de transiciones válidas
     transicionesValidas: Record<PedidoEstado, PedidoEstado[]> = {
-        Nuevo: ['En_Analisis', 'Enviado', 'En_Costeo', 'Cancelado'],
+        Borrador: ['Nuevo', 'En_Analisis', 'Cancelado'],
+        Nuevo: ['Borrador', 'En_Analisis', 'Enviado', 'En_Costeo', 'Cancelado'],
         En_Analisis: ['Enviado', 'En_Costeo', 'Cancelado'],
         Enviado: ['En_Costeo', 'Cancelado'],
         En_Costeo: ['Cotizado', 'Rechazado', 'Cancelado'],

@@ -49,6 +49,7 @@ class UpdatePedidoRequest extends FormRequest
                 'sometimes',
                 'required',
                 Rule::in([
+                    'Borrador',
                     'Nuevo',
                     'En_Analisis',
                     'Enviado',
