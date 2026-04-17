@@ -31,6 +31,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
+import { PEDIDO_ESTADO_ETIQUETA } from '../../../core/utils/pedido-estado-tag';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { SistemaService } from '../../../core/services/sistema.service';
@@ -1429,7 +1430,7 @@ export class CreateComponent implements OnInit {
             this.messageService.add({
                 severity: 'info',
                 summary: 'Pedido guardado',
-                detail: 'El pedido queda pendiente. Cuando esté listo, envíelo a Análisis desde el detalle.'
+                detail: `El pedido queda pendiente. Cuando esté listo, envíelo a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis} desde el detalle.`
             });
         }
         

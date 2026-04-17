@@ -9,6 +9,7 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { CommonModule } from '@angular/common';
 import { Pedido } from '../../../core/models/pedido.model';
+import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectAllPedidos } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
 
@@ -34,7 +35,7 @@ import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
                     <td>#{{ pedido.id }}</td>
                     <td>{{ pedido.tercero?.nombre || 'Sin cliente' }}</td>
                     <td>
-                        <p-tag [value]="pedido.estado" [severity]="getEstadoSeverity(pedido.estado)"></p-tag>
+                        <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"></p-tag>
                     </td>
                     <td>{{ pedido.created_at | date: 'dd/MM/yyyy' }}</td>
                     <td>
@@ -46,6 +47,9 @@ import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
     </div>`
 })
 export class RecentSalesWidget implements OnInit {
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
+    readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
+
     private readonly store = inject(Store);
     private readonly router = inject(Router);
 
@@ -60,14 +64,4 @@ export class RecentSalesWidget implements OnInit {
         this.router.navigate(['/pedidos', id]);
     }
 
-    getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
-        const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
-            pendiente: 'warn',
-            en_proceso: 'info',
-            completado: 'success',
-            cancelado: 'danger',
-            entregado: 'success'
-        };
-        return severityMap[estado] || 'info';
-    }
 }

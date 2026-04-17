@@ -34,6 +34,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
+import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosError, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { PedidoService } from '../../../core/services/pedido.service';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -107,6 +108,8 @@ export class EditComponent implements OnInit {
     private readonly pedidoArticuloService = inject(PedidoArticuloService);
     private readonly pedidoApi = inject(PedidoService);
     private readonly authService = inject(AuthService);
+
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
     // Verifica si el usuario actual tiene rol de Vendedor
     private get isVendedor(): boolean {
@@ -217,16 +220,16 @@ export class EditComponent implements OnInit {
     imagenControl = new FormControl('');
 
     estadosOptions = [
-        { label: 'Borrador', value: 'Borrador' as PedidoEstado },
-        { label: 'Nuevo', value: 'Nuevo' as PedidoEstado },
-        { label: 'En Análisis', value: 'En_Analisis' as PedidoEstado },
-        { label: 'Enviado', value: 'Enviado' as PedidoEstado },
-        { label: 'En Costeo', value: 'En_Costeo' as PedidoEstado },
-        { label: 'Cotizado', value: 'Cotizado' as PedidoEstado },
-        { label: 'Aprobado', value: 'Aprobado' as PedidoEstado },
-        { label: 'Entregado', value: 'Entregado' as PedidoEstado },
-        { label: 'Rechazado', value: 'Rechazado' as PedidoEstado },
-        { label: 'Cancelado', value: 'Cancelado' as PedidoEstado }
+        { label: PEDIDO_ESTADO_ETIQUETA.Borrador, value: 'Borrador' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Nuevo, value: 'Nuevo' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.En_Analisis, value: 'En_Analisis' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Enviado, value: 'Enviado' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.En_Costeo, value: 'En_Costeo' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Cotizado, value: 'Cotizado' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Aprobado, value: 'Aprobado' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Entregado, value: 'Entregado' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Rechazado, value: 'Rechazado' as PedidoEstado },
+        { label: PEDIDO_ESTADO_ETIQUETA.Cancelado, value: 'Cancelado' as PedidoEstado }
     ];
 
     // Estado actual del pedido (para validar transiciones)
@@ -301,8 +304,8 @@ export class EditComponent implements OnInit {
                         this.store.dispatch(loadPedido({ id: this.pedidoId() }));
                         this.messageService.add({
                             severity: 'success',
-                            summary: 'Enviado a análisis',
-                            detail: res.message ?? 'El pedido pasó a En análisis.'
+                            summary: `Enviado a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}`,
+                            detail: res.message ?? `El pedido pasó a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}.`
                         });
                     },
                     error: (err) => {
@@ -372,7 +375,7 @@ export class EditComponent implements OnInit {
                     this.messageService.add({
                         severity: 'info',
                         summary: 'Pedido guardado',
-                        detail: 'El pedido queda pendiente. Cuando esté listo, envíelo a Análisis desde el detalle.'
+                        detail: `El pedido queda pendiente. Cuando esté listo, envíelo a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis} desde el detalle.`
                     });
                     this.onSubmit();
                 }
@@ -1284,7 +1287,7 @@ export class EditComponent implements OnInit {
 
         // Confirmar el envío a costeo
         this.confirmationService.confirm({
-            message: '¿Está seguro de enviar este pedido a costeo? El estado cambiará a "En Costeo".',
+            message: `¿Está seguro de enviar este pedido a costeo? El estado cambiará a "${PEDIDO_ESTADO_ETIQUETA.En_Costeo}".`,
             header: 'Confirmar envío a costeo',
             icon: 'pi pi-send',
             accept: () => {
@@ -1324,7 +1327,7 @@ export class EditComponent implements OnInit {
                             this.pedidoForm.patchValue({ estado: 'En_Costeo' });
                             this.messageService.add({
                                 severity: 'success',
-                                summary: '¡Enviado a Costeo!',
+                                summary: `Enviado a ${PEDIDO_ESTADO_ETIQUETA.En_Costeo}`,
                                 detail: 'El pedido ha sido enviado a costeo exitosamente'
                             });
                             setTimeout(() => {
@@ -1857,7 +1860,7 @@ export class EditComponent implements OnInit {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Transición inválida',
-                detail: `No se puede cambiar de "${this.estadoActual}" a "${nuevoEstado}". Transiciones válidas: ${this.transicionesValidas[this.estadoActual]?.join(', ') || 'ninguna'}`
+                detail: `No se puede cambiar de "${this.pedidoEstadoEtiqueta(this.estadoActual)}" a "${this.pedidoEstadoEtiqueta(nuevoEstado)}". Transiciones válidas: ${(this.transicionesValidas[this.estadoActual] ?? []).map((e) => this.pedidoEstadoEtiqueta(e)).join(', ') || 'ninguna'}`
             });
 
             // Revertir al estado anterior
@@ -1906,38 +1909,8 @@ export class EditComponent implements OnInit {
         return raw as PedidoEstado;
     }
 
-    getEstadoEtiqueta(estado: PedidoEstado): string {
-        const labels: Record<PedidoEstado, string> = {
-            Borrador: 'Borrador',
-            Nuevo: 'Nuevo',
-            En_Analisis: 'En análisis',
-            Enviado: 'Enviado',
-            En_Costeo: 'En costeo',
-            Cotizado: 'Cotizado',
-            Aprobado: 'Aprobado',
-            Entregado: 'Entregado',
-            Rechazado: 'Rechazado',
-            Cancelado: 'Cancelado'
-        };
-
-        return labels[estado] ?? estado;
-    }
-
     getEstadoClase(estado: PedidoEstado): string {
-        const classes: Record<PedidoEstado, string> = {
-            Borrador: 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30',
-            Nuevo: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30',
-            En_Analisis: 'bg-blue-500/15 text-blue-600 dark:text-blue-300 border border-blue-500/30',
-            Enviado: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border border-cyan-500/30',
-            En_Costeo: 'bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-500/30',
-            Cotizado: 'bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/30',
-            Aprobado: 'bg-green-500/15 text-green-600 dark:text-green-300 border border-green-500/30',
-            Entregado: 'bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/30',
-            Rechazado: 'bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30',
-            Cancelado: 'bg-slate-500/15 text-slate-600 dark:text-slate-300 border border-slate-500/30'
-        };
-
-        return classes[estado] ?? classes.Nuevo;
+        return pedidoEstadoTagClass(estado);
     }
 
     /**

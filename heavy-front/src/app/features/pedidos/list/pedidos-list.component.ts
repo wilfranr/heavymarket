@@ -14,7 +14,8 @@ import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
 import { TabsModule } from 'primeng/tabs';
 
-import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
+import { Pedido } from '../../../core/models/pedido.model';
+import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions';
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -98,7 +99,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                         <td>{{ pedido.id }}</td>
                         <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                         <td>
-                            <p-tag [value]="pedido.estado" [severity]="getEstadoSeverity(pedido.estado)"> </p-tag>
+                            <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
                         </td>
                         <td>{{ pedido.direccion || 'N/A' }}</td>
                         <td>{{ pedido.created_at | date: 'short' }}</td>
@@ -122,6 +123,9 @@ import { AuthService } from '../../../core/auth/services/auth.service';
     `]
 })
 export class PedidosListComponent implements OnInit {
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
+    readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
+
     private store = inject(Store);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
@@ -165,7 +169,7 @@ export class PedidosListComponent implements OnInit {
 
         // Analista: el API solo expone En_Analisis; evitar pestañas que devuelvan lista vacía
         if (this.isAnalista) {
-            this.estadosTabs = [{ label: 'En análisis', value: 'En_Analisis', icon: 'pi pi-cog' }];
+            this.estadosTabs = [{ label: 'Análisis', value: 'En_Analisis', icon: 'pi pi-cog' }];
             this.selectedTabValue = 'En_Analisis';
             this.selectedEstado = 'En_Analisis';
         }
@@ -266,7 +270,7 @@ export class PedidosListComponent implements OnInit {
             { label: 'Borrador', value: 'Borrador', icon: 'pi pi-save' },
             { label: 'Nuevo', value: 'Nuevo', icon: 'pi pi-star' },
             { label: 'Enviado', value: 'Enviado', icon: 'pi pi-send' },
-            { label: 'En Costeo', value: 'En_Costeo', icon: 'pi pi-money-bill' },
+            { label: 'Costeo', value: 'En_Costeo', icon: 'pi pi-money-bill' },
             { label: 'Cotizado', value: 'Cotizado', icon: 'pi pi-file' },
             { label: 'Aprobado', value: 'Aprobado', icon: 'pi pi-check-circle' },
             { label: 'Entregado', value: 'Entregado', icon: 'pi pi-box' },
@@ -304,19 +308,4 @@ export class PedidosListComponent implements OnInit {
         });
     }
 
-    getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' {
-        const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger'> = {
-            Borrador: 'warn',
-            Nuevo: 'info',
-            En_Analisis: 'warn',
-            Enviado: 'info',
-            En_Costeo: 'warn',
-            Cotizado: 'warn',
-            Aprobado: 'success',
-            Entregado: 'success',
-            Rechazado: 'danger',
-            Cancelado: 'danger'
-        };
-        return severityMap[estado] || 'info';
-    }
 }

@@ -71,7 +71,7 @@
                     </div>
                     <div class="flex gap-2 items-center">
                         <span class="text-green-400 font-semibold">Estado:</span>
-                        <p-tag [value]="pedido?.estado" severity="info" styleClass="!bg-white !text-blue-600 px-3 py-1"></p-tag>
+                        <p-tag [value]="pedidoEstadoEtiqueta(pedido?.estado)" [styleClass]="'px-3 py-1 ' + pedidoEstadoTagClass(pedido?.estado)"></p-tag>
                     </div>
                 </div>
             </div>

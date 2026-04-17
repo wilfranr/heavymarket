@@ -43,6 +43,7 @@ import {
     PedidoReferencia,
     PedidoReferenciaImagen
 } from '../../../core/models/pedido.model';
+import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
@@ -95,6 +96,9 @@ import { Referencia } from '../../../core/models/referencia.model';
     styleUrl: './analysis.scss'
 })
 export class AnalysisComponent implements OnInit {
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
+    readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
+
     private readonly fb = inject(FormBuilder);
     private readonly store = inject(Store);
     private readonly actions$ = inject(Actions);
@@ -1291,7 +1295,7 @@ export class AnalysisComponent implements OnInit {
         }
 
         this.confirmationService.confirm({
-            message: '¿Está seguro de finalizar el análisis? El pedido pasará a estado "En Costeo" y no podrá ser editado por usted.',
+            message: `¿Está seguro de finalizar el análisis? El pedido pasará a estado "${PEDIDO_ESTADO_ETIQUETA.En_Costeo}" y no podrá ser editado por usted.`,
             header: 'Finalizar Análisis',
             icon: 'pi pi-check-circle',
             accept: () => {

@@ -16,6 +16,7 @@ import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
 
 import { Pedido } from '../../../core/models/pedido.model';
+import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 
@@ -32,6 +33,9 @@ import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
     styleUrl: './detail.scss'
 })
 export class DetailComponent implements OnInit {
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
+    readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
+
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -62,20 +66,6 @@ export class DetailComponent implements OnInit {
             });
             this.router.navigate(['/app/pedidos']);
         }
-    }
-
-    /**
-     * Obtiene el color del tag según el estado del pedido
-     */
-    getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-        const severityMap: Record<string, 'success' | 'info' | 'warn' | 'danger' | 'secondary'> = {
-            pendiente: 'warn',
-            en_proceso: 'info',
-            completado: 'success',
-            cancelado: 'danger',
-            entregado: 'success'
-        };
-        return severityMap[estado] || 'secondary';
     }
 
     /**

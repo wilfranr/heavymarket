@@ -130,6 +130,7 @@ export interface PedidoReferenciaProveedor {
 /**
  * Estados posibles del pedido
  */
+/** Valores persistidos en API/BD. Etiquetas en UI: `PEDIDO_ESTADO_ETIQUETA` / `pedidoEstadoEtiqueta` en `core/utils/pedido-estado-tag`. */
 export type PedidoEstado = 'Borrador' | 'Nuevo' | 'En_Analisis' | 'Enviado' | 'Entregado' | 'Cancelado' | 'Rechazado' | 'Cotizado' | 'En_Costeo' | 'Aprobado';
 
 /**
