@@ -836,7 +836,8 @@ export class CreateComponent implements OnInit {
         const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
 
         const referenciaForm = this.fb.group({
-            estado: [data.estado ?? true],
+            estado: [true],
+            seleccionado: [false],
             sistema_id: [data.sistema_id ?? defaultSistemaId],
             lista_id: [data.lista_id ?? null],
             articulo_id: [data.articulo_id ?? null],
@@ -881,7 +882,53 @@ export class CreateComponent implements OnInit {
      * Elimina una referencia del FormArray
      */
     eliminarReferencia(index: number): void {
+        this.quitarFilaReferencia(index);
+    }
+
+    private quitarFilaReferencia(index: number): void {
         this.referenciasFormArray.removeAt(index);
+        if (index < this.tiposPorFila.length) {
+            this.tiposPorFila.splice(index, 1);
+        }
+        if (index < this.referenciasPorFila.length) {
+            this.referenciasPorFila.splice(index, 1);
+        }
+        if (index < this.tiposPorFilaOriginal.length) {
+            this.tiposPorFilaOriginal.splice(index, 1);
+        }
+    }
+
+    hayReferenciasSeleccionadas(): boolean {
+        return this.referenciasFormArray.controls.some((c) => c.get('seleccionado')?.value === true);
+    }
+
+    eliminarReferenciasSeleccionadas(): void {
+        const indices: number[] = [];
+        this.referenciasFormArray.controls.forEach((c, i) => {
+            if (c.get('seleccionado')?.value === true) {
+                indices.push(i);
+            }
+        });
+        if (indices.length === 0) {
+            return;
+        }
+        this.confirmationService.confirm({
+            message: `¿Eliminar ${indices.length} ítem(es) seleccionado(s)?`,
+            header: 'Confirmar eliminación',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                indices
+                    .sort((a, b) => b - a)
+                    .forEach((i) => {
+                        this.quitarFilaReferencia(i);
+                    });
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Ítems eliminados',
+                    detail: `Se quitaron ${indices.length} fila(s) del pedido.`
+                });
+            }
+        });
     }
 
     /**
@@ -1154,7 +1201,6 @@ export class CreateComponent implements OnInit {
             const refModel = this.referenciasLote.find(r => r.value === refId);
 
             this.agregarReferencia({
-                estado: true,
                 sistema_id: data.sistema_id,
                 lista_id: data.articulo_id, // El campo articulo_id del loteForm contiene en realidad el lista_id del tipo
                 articulo_id: null,
