@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\PedidoEstado;
 use App\Models\Pedido;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
@@ -48,18 +49,7 @@ class UpdatePedidoRequest extends FormRequest
             'estado' => [
                 'sometimes',
                 'required',
-                Rule::in([
-                    'Borrador',
-                    'Nuevo',
-                    'En_Analisis',
-                    'Enviado',
-                    'Entregado',
-                    'Cancelado',
-                    'Rechazado',
-                    'Cotizado',
-                    'En_Costeo',
-                    'Aprobado',
-                ]),
+                Rule::in(PedidoEstado::toArray()),
             ],
             'maquina_id' => ['nullable', 'integer', 'exists:maquinas,id'],
             'fabricante_id' => ['nullable', 'integer', 'exists:listas,id'],

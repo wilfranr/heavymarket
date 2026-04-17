@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/auth/guards/auth.guard';
+import { pedidoVendedorSoloLecturaEnAnalisisGuard } from './guards/pedido-vendedor-solo-lectura-en-analisis.guard';
 
 /**
  * Rutas del módulo de Pedidos
@@ -28,6 +29,7 @@ export const pedidosRoutes: Routes = [
             {
                 path: ':id/edit',
                 loadComponent: () => import('./edit/edit').then((m) => m.EditComponent),
+                canActivate: [pedidoVendedorSoloLecturaEnAnalisisGuard],
                 title: 'Editar Pedido'
             },
             {

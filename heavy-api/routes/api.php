@@ -121,6 +121,15 @@ Route::prefix('v1')->group(function () {
          */
         Route::post('pedidos/{pedido}/enviar-a-costeo', [PedidoController::class, 'enviarACosteo'])->name('pedidos.enviar-a-costeo');
         Route::post('pedidos/{pedido}/enviar-a-analisis', [PedidoController::class, 'enviarAAnalisis'])->name('pedidos.enviar-a-analisis');
+        
+        // Transiciones de estado
+        Route::post('pedidos/{pedido}/publicar', [PedidoController::class, 'publicar'])->name('pedidos.publicar');
+        Route::post('pedidos/{pedido}/cotizar', [PedidoController::class, 'cotizar'])->name('pedidos.cotizar');
+        Route::post('pedidos/{pedido}/responder', [PedidoController::class, 'responder'])->name('pedidos.responder');
+        Route::post('pedidos/{pedido}/enviar', [PedidoController::class, 'enviar'])->name('pedidos.enviar');
+        Route::post('pedidos/{pedido}/entregar', [PedidoController::class, 'entregar'])->name('pedidos.entregar');
+        Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
+        
         Route::apiResource('pedidos', PedidoController::class);
 
         // Rutas adicionales para gestión de referencias en pedidos

@@ -301,9 +301,11 @@ class LandingController extends Controller
             }
 
             // 4. Crear el Pedido
+            // Los pedidos de landing no tienen vendedor asignado (user_id = null)
+            // Serán visibles para admins/analistas y cualquier vendedor podrá asignárselos al editarlos
             $pedido = \App\Models\Pedido::create([
                 'tercero_id' => $tercero->id,
-                'user_id' => 1,
+                'user_id' => null,  // Pedido de landing sin asignar
                 'estado' => 'Nuevo',
                 'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} ".($request->input('selectedSeries') ? 'Series: '.$request->input('selectedSeries') : ''),
                 'fabricante_id' => $fabricanteId,

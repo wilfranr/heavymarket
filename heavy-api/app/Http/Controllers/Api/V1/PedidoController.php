@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\PedidoEstado;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePedidoRequest;
 use App\Http\Requests\UpdatePedidoRequest;
@@ -154,7 +155,8 @@ class PedidoController extends Controller
     {
         $this->authorize('update', $pedido);
 
-        if ($pedido->estado !== 'Nuevo') {
+        // Usar máquina de estados
+        if (! $pedido->puedeTransitarA(PedidoEstado::En_Analisis)) {
             return response()->json([
                 'message' => 'Solo los pedidos en estado Nuevo pueden enviarse a análisis.',
             ], 422);
@@ -170,7 +172,8 @@ class PedidoController extends Controller
             }
         }
 
-        $pedido->update(['estado' => 'En_Analisis']);
+        $pedido->transitarA(PedidoEstado::En_Analisis);
+        $pedido->save();
 
         try {
             $this->notificarAnalistas($pedido->fresh(), $request->user());
@@ -199,13 +202,25 @@ class PedidoController extends Controller
      */
     public function update(UpdatePedidoRequest $request, Pedido $pedido): JsonResponse
     {
+        if ($pedido->estado === PedidoEstado::Cancelado->value) {
+            return response()->json([
+                'message' => 'No se puede editar un pedido que ya ha sido cancelado.'
+            ], 422);
+        }
+
         try {
-            $estadoAnterior = $pedido->estado;
+            // Si el pedido no tiene usuario asignado, asignar al usuario actual (vendedor que lo edita)
+            if ($pedido->user_id === null) {
+                $pedido->user_id = $request->user()->id;
+                $pedido->save();
+            }
+
+            $estadoAnterior = $pedido->getEstadoEnum();
             $validated = $request->validated();
             $nuevoEstado = $validated['estado'] ?? null;
 
-            // Validar máquina revisada antes de persistir (evita dejar el pedido en En_Analisis y responder 422).
-            if ($estadoAnterior !== 'En_Analisis' && $nuevoEstado === 'En_Analisis') {
+            // Validar máquina revisada antes de transitar a En_Analisis
+            if ($nuevoEstado && $nuevoEstado === 'En_Analisis' && $estadoAnterior !== PedidoEstado::En_Analisis) {
                 $maquinaId = array_key_exists('maquina_id', $validated)
                     ? $validated['maquina_id']
                     : $pedido->maquina_id;
@@ -217,6 +232,12 @@ class PedidoController extends Controller
                         ], 422);
                     }
                 }
+            }
+
+            // Si cambia el estado, validar la transición
+            if ($nuevoEstado && $nuevoEstado !== $pedido->estado) {
+                $pedido->transitarA(PedidoEstado::from($nuevoEstado));
+                unset($validated['estado']); // Ya se manejó en transitarA
             }
 
             $pedido = $this->pedidoService->update($pedido, $validated);
@@ -238,7 +259,7 @@ class PedidoController extends Controller
             }
 
             // Notificar a analistas cuando el pedido cambia a En_Analisis
-            if ($estadoAnterior !== 'En_Analisis' && $nuevoEstado === 'En_Analisis') {
+            if ($estadoAnterior !== PedidoEstado::En_Analisis && $nuevoEstado === 'En_Analisis') {
                 try {
                     $this->notificarAnalistas($pedido, $request->user());
                 } catch (\Exception $e) {
@@ -326,9 +347,13 @@ class PedidoController extends Controller
     /**
      * Agregar un proveedor a una referencia de pedido
      */
-    public function addProveedor(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
+    public function updateReferencia(Request $request, Pedido $pedido, int $referenciaId): JsonResponse
     {
+        if ($pedido->estado === PedidoEstado::Cancelado->value) {
+            return response()->json(['message' => 'No se puede modificar un pedido cancelado.'], 422);
+        }
         $pedidoReferencia = $pedido->referencias()->findOrFail($referenciaId);
+
         $validated = $request->validate([
             'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
             'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
@@ -385,11 +410,15 @@ class PedidoController extends Controller
         }
 
         $this->authorize('update', $pedido);
-        if ($pedido->estado !== 'Nuevo') {
+
+        // Usar máquina de estados
+        if (! $pedido->puedeTransitarA(PedidoEstado::En_Costeo)) {
             return response()->json(['message' => 'Solo se pueden enviar a costeo los pedidos en estado Nuevo'], 422);
         }
 
-        $pedido->update(['estado' => 'En_Costeo']);
+        $pedido->transitarA(PedidoEstado::En_Costeo);
+        $pedido->save();
+
         if ($vendedor = $pedido->user) {
             $vendedor->notify(new \App\Notifications\SystemNotification(
                 'pedido_actualizado', 'Pedido listo para costeo #'.$pedido->id,
@@ -399,5 +428,183 @@ class PedidoController extends Controller
         }
 
         return response()->json(['data' => new PedidoResource($pedido), 'message' => 'Pedido enviado a costeo exitosamente']);
+    }
+
+    /**
+     * Publicar pedido de borrador a nuevo
+     */
+    public function publicar(Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        try {
+            $pedido->transitarA(PedidoEstado::Nuevo);
+            $pedido->save();
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido publicado exitosamente',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Marcar pedido como cotizado (desde En_Analisis o En_Costeo)
+     */
+    public function cotizar(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        try {
+            $pedido->transitarA(PedidoEstado::Cotizado);
+            $pedido->save();
+
+            // Notificar al vendedor
+            if ($vendedor = $pedido->user) {
+                $vendedor->notify(new \App\Notifications\SystemNotification(
+                    'pedido_cotizado',
+                    'Pedido #' . $pedido->id . ' cotizado',
+                    'El analista ha creado la cotización. Revísala y envíala al cliente.',
+                    'pi-file-edit',
+                    'green',
+                    ['id' => $pedido->id]
+                ));
+            }
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido marcado como cotizado',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Aprobar o rechazar un pedido cotizado
+     */
+    public function responder(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'respuesta' => ['required', 'string', 'in:aprobar,rechazar'],
+            'comentario' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->authorize('update', $pedido);
+
+        try {
+            if ($validated['respuesta'] === 'aprobar') {
+                $pedido->transitarA(PedidoEstado::Aprobado);
+                
+                // Notificar al vendedor
+                if ($vendedor = $pedido->user) {
+                    $vendedor->notify(new \App\Notifications\SystemNotification(
+                        'pedido_aprobado',
+                        'Pedido #' . $pedido->id . ' aprobado',
+                        'El cliente ha aprobado la cotización. Puedes generar la orden de trabajo.',
+                        'pi-check-circle',
+                        'green',
+                        ['id' => $pedido->id]
+                    ));
+                }
+
+                $pedido->save();
+
+                return response()->json([
+                    'data' => new PedidoResource($pedido->fresh()),
+                    'message' => 'Pedido aprobado',
+                ]);
+            } else {
+                $pedido->transitarA(PedidoEstado::Rechazado, $validated['comentario'] ?? null);
+                $pedido->comentarios_rechazo = $validated['comentario'] ?? null;
+                $pedido->save();
+
+                // Notificar al vendedor
+                if ($vendedor = $pedido->user) {
+                    $vendedor->notify(new \App\Notifications\SystemNotification(
+                        'pedido_rechazado',
+                        'Pedido #' . $pedido->id . ' rechazado',
+                        'El cliente ha rechazado la cotización: ' . ($validated['comentario'] ?? 'Sin comentario'),
+                        'pi-times-circle',
+                        'red',
+                        ['id' => $pedido->id]
+                    ));
+                }
+
+                return response()->json([
+                    'data' => new PedidoResource($pedido->fresh()),
+                    'message' => 'Pedido rechazado',
+                ]);
+            }
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Marcar como enviado
+     */
+    public function enviar(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        try {
+            $pedido->transitarA(PedidoEstado::Enviado);
+            $pedido->save();
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido marcado como enviado',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Marcar como entregado
+     */
+    public function entregar(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        try {
+            $pedido->transitarA(PedidoEstado::Entregado);
+            $pedido->save();
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido marcado como entregado',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Cancelar pedido (desde cualquier estado excepto finales)
+     */
+    public function cancelar(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'motivo' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $this->authorize('delete', $pedido);
+
+        try {
+            $pedido->transitarA(PedidoEstado::Cancelado);
+            $pedido->comentarios_rechazo = $validated['motivo'] ?? 'Cancelado por el usuario';
+            $pedido->save();
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido cancelado',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 }

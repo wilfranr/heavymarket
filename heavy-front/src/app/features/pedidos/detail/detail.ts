@@ -74,6 +74,11 @@ export class DetailComponent implements OnInit {
      * Vendedor: pedidos en análisis son solo lectura (edición la llevan analistas/admin).
      */
     puedeEditarPedido(pedido: Pedido): boolean {
+        // Pedido cancelado no se puede editar nunca
+        if (pedido.estado === 'Cancelado') {
+            return false;
+        }
+
         if (pedido.estado !== 'En_Analisis') {
             return true;
         }

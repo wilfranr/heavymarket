@@ -41,6 +41,26 @@ El núcleo operativo de la empresa, protegido por roles de seguridad.
 3.  **Procesamiento**: El asesor/administrador captura referencias (existentes o temporales) y el analista valida la `Referencia` correcta antes de costeo.
 4.  **Cierre**: Se envía la `Cotización` al cliente; si se aprueba, se genera la `Orden de Trabajo`.
 
+```mermaid
+sequenceDiagram
+    participant C as Cliente (Landing)
+    participant A as Admin (Dashboard)
+    participant P as Proveedores
+    
+    C->>A: Envía solicitud (Crea Pedido)
+    Note over A: Estado: Pendiente
+    A->>A: Analiza y valida Referencias (Temporales -> Reales)
+    Note over A: Estado: En Análisis
+    A->>P: Consulta disponibilidad/precios
+    P-->>A: Envía cotizaciones de costo
+    A->>A: Genera Cotización Final
+    Note over A: Estado: Cotizado
+    A->>C: Envía Cotización para aprobación
+    C-->>A: Aprueba Cotización
+    A->>A: Genera Orden de Trabajo
+    Note over A: Estado: Cerrado / En Ejecución
+```
+
 ## 4. Reglas por Estado (Pedidos)
 
 - **Nuevo**:

@@ -23,12 +23,22 @@ class PedidoPolicy
      */
     public function view(User $user, Pedido $pedido): bool
     {
+        // Analista solo ve pedidos en análisis
         if ($user->hasRole('Analista')) {
             return $pedido->estado === 'En_Analisis';
         }
 
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
-            || $user->id === $pedido->user_id;
+        // Admin/Logística ven todo
+        if ($user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
+            return true;
+        }
+
+        // Vendedor ve: sus pedidos (user_id = auth) O pedidos sin asignar (user_id = null)
+        if ($user->hasRole('Vendedor')) {
+            return $pedido->user_id === $user->id || $pedido->user_id === null;
+        }
+
+        return false;
     }
 
     /**

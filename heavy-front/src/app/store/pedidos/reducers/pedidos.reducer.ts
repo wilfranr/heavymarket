@@ -149,6 +149,30 @@ export const pedidosReducer = createReducer(
         error
     })),
 
+    // Cancelar Pedido
+    on(PedidosActions.cancelarPedido, (state) => ({
+        ...state,
+        isLoading: true,
+        error: null
+    })),
+
+    on(PedidosActions.cancelarPedidoSuccess, (state, { pedido }) =>
+        pedidosAdapter.updateOne(
+            { id: pedido.id, changes: pedido },
+            {
+                ...state,
+                isLoading: false,
+                error: null
+            }
+        )
+    ),
+
+    on(PedidosActions.cancelarPedidoFailure, (state, { error }) => ({
+        ...state,
+        isLoading: false,
+        error
+    })),
+
     // Select Pedido
     on(PedidosActions.selectPedido, (state, { id }) => ({
         ...state,

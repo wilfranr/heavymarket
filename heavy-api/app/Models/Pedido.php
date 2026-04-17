@@ -1,7 +1,11 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
+use App\Enums\PedidoEstado;
+use App\Traits\TransicionesEstado;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -12,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class Pedido extends Model
 {
-    use HasFactory;
+    use HasFactory, TransicionesEstado;
 
     protected $table = 'pedidos';
 

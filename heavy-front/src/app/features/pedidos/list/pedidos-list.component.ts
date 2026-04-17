@@ -141,6 +141,11 @@ export class PedidosListComponent implements OnInit {
 
     /** Vendedor: en análisis solo lectura; administración y logística siguen pudiendo gestionar. */
     vendedorPuedeMutarPedido(pedido: Pedido): boolean {
+        // Un pedido cancelado no se puede editar ni volver a anular
+        if (pedido.estado === 'Cancelado') {
+            return false;
+        }
+
         if (pedido.estado !== 'En_Analisis' || !this.isVendedor) {
             return true;
         }
@@ -313,11 +318,16 @@ export class PedidosListComponent implements OnInit {
 
     onDeletePedido(pedido: Pedido) {
         this.confirmationService.confirm({
-            message: `¿Está seguro de eliminar el pedido #${pedido.id}?`,
-            header: 'Confirmar Eliminación',
+            message: `¿Está seguro de anular el pedido #${pedido.id}? Esta acción no se puede deshacer pero mantendrá el registro histórico.`,
+            header: 'Confirmar Anulación',
             icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Anular',
+            rejectLabel: 'Volver',
+            acceptButtonStyleClass: 'p-button-danger',
             accept: () => {
-                this.store.dispatch(PedidosActions.deletePedido({ id: pedido.id }));
+                // Por ahora enviamos un motivo genérico, se podría mejorar con un prompt
+                const motivo = 'Cancelado por el usuario desde el listado';
+                this.store.dispatch(PedidosActions.cancelarPedido({ id: pedido.id, motivo }));
             }
         });
     }

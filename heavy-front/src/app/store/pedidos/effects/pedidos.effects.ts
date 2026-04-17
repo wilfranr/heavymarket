@@ -165,4 +165,25 @@ export class PedidosEffects {
             )
         )
     );
+
+    /**
+     * Effect: Cancelar Pedido
+     */
+    cancelarPedido$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(PedidosActions.cancelarPedido),
+            switchMap(({ id, motivo }) =>
+                this.pedidoService.cancelar(id, motivo).pipe(
+                    map((response) => PedidosActions.cancelarPedidoSuccess({ pedido: response.data })),
+                    catchError((error) =>
+                        of(
+                            PedidosActions.cancelarPedidoFailure({
+                                error: error.error?.message || 'Error al cancelar pedido'
+                            })
+                        )
+                    )
+                )
+            )
+        )
+    );
 }

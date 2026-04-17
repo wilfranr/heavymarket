@@ -36,10 +36,13 @@ export const updatePedidoFailure = createAction('[Pedidos] Update Pedido Failure
 
 // Delete Pedido
 export const deletePedido = createAction('[Pedidos] Delete Pedido', props<{ id: number }>());
-
 export const deletePedidoSuccess = createAction('[Pedidos] Delete Pedido Success', props<{ id: number }>());
-
 export const deletePedidoFailure = createAction('[Pedidos] Delete Pedido Failure', props<{ error: string }>());
+
+export const cancelarPedido = createAction('[Pedidos] Cancelar Pedido', props<{ id: number; motivo: string }>());
+export const cancelarPedidoSuccess = createAction('[Pedidos] Cancelar Pedido Success', props<{ pedido: Pedido }>());
+export const cancelarPedidoFailure = createAction('[Pedidos] Cancelar Pedido Failure', props<{ error: string }>());
+
 
 // Select Pedido
 export const selectPedido = createAction('[Pedidos] Select Pedido', props<{ id: number | null }>());
