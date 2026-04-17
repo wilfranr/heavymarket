@@ -15,11 +15,26 @@ Es la entidad núcleo del sistema. Representa a cualquier actor comercial (Clien
 
 ### 2. Pedidos (`pedidos`)
 Inicia el flujo comercial. Puede originarse desde la Landing Page o el Dashboard administrativo.
-*   **Campos Clave**: `user_id`, `tercero_id`, `maquina_id`, `estado` (Pendiente, En Análisis, Costeado, Cotizado, Rechazado).
+*   **Campos Clave**: `user_id`, `tercero_id`, `maquina_id`, `estado` (`Nuevo`, `En_Analisis`, `En_Costeo`, `Cotizado`, `Aprobado`, `Rechazado`, etc.).
 *   **Relaciones**:
     *   `N:1` con `Tercero` (Cliente) y `Maquina`.
     *   `1:N` con `PedidoReferencia` (Líneas de detalle del pedido).
     *   `1:N` con `Cotizacion`.
+
+### 2.1 Líneas de Pedido (`pedido_referencia`)
+Representa cada ítem del pedido y concentra el contexto técnico de análisis.
+*   **Campos Clave**:
+    *   `pedido_id`
+    *   `referencia_id` (vínculo técnico a catálogo de referencias)
+    *   `sistema_id`
+    *   `lista_id` (tipo de artículo)
+    *   `definicion` (texto de captura/soporte cuando no hay referencia definitiva)
+    *   `cantidad`, `comentario`, `estado`
+*   **Relaciones**:
+    *   `N:1` con `Pedido`
+    *   `N:1` con `Referencia`
+    *   `N:1` con `Sistema`
+    *   `N:1` con `Lista` (tipo de artículo)
 
 ### 3. Artículos y Referencias (`articulos`, `referencias`)
 El catálogo de productos se divide en Definiciones (Artículos) e Identificadores (Referencias).
@@ -52,7 +67,7 @@ El sistema utiliza una tabla genérica llamada `listas` para gestionar catálogo
 *   Tipos de Máquina.
 *   Marcas / Fabricantes.
 *   Categorías Comerciales.
-*   Definiciones de Artículo.
+*   Tipos de Artículo.
 
 ## Flujo de Datos Comercial
 1.  **Lead/Pedido**: Se registra un `Pedido` asociado a un `Tercero` y opcionalmente a una `Maquina`.
@@ -60,3 +75,9 @@ El sistema utiliza una tabla genérica llamada `listas` para gestionar catálogo
 3.  **Costeo**: Se consultan proveedores (vía `PedidoReferenciaProveedor`).
 4.  **Cotización**: Se consolida una `Cotizacion` con precios finales para el cliente.
 5.  **Orden**: (Siguientes estados) `OrdenCompra` (hacia proveedor) y `OrdenTrabajo` (interna).
+
+## Convención Funcional de Referencias
+
+- **`referencia_id`**: vínculo técnico definitivo a `referencias`.
+- **`definicion` en `pedido_referencia`**: texto operativo para captura manual y trazabilidad durante análisis.
+- **`es_temporal` en `referencias`**: indica código provisional pendiente de validación técnica.

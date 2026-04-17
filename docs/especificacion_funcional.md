@@ -40,3 +40,21 @@ El núcleo operativo de la empresa, protegido por roles de seguridad.
 2.  **Conversión**: El sistema crea un `Pedido` y notifica al administrador.
 3.  **Procesamiento**: El asesor/administrador captura referencias (existentes o temporales) y el analista valida la `Referencia` correcta antes de costeo.
 4.  **Cierre**: Se envía la `Cotización` al cliente; si se aprueba, se genera la `Orden de Trabajo`.
+
+## 4. Reglas por Estado (Pedidos)
+
+- **Nuevo**:
+  - Se permite guardar pedido con información parcial.
+  - Se permite captura de referencias manuales (con o sin asociación inmediata a catálogo).
+- **En_Analisis**:
+  - El analista completa/valida referencias, tipo de artículo, cantidades y contexto técnico.
+  - Puede trabajar con referencias temporales pendientes de validación.
+- **En_Costeo**:
+  - Debe existir referencia válida por línea para operar costeo y comparación de proveedores.
+  - El paso a costeo aplica validaciones estrictas de integridad por ítem.
+
+## 5. Comportamiento Esperado en el Campo Referencia
+
+- Si el usuario selecciona una sugerencia del catálogo, el sistema guarda el vínculo técnico (`referencia_id`).
+- Si el usuario escribe código libre sin coincidencia, el sistema crea referencia temporal al guardar.
+- La interfaz debe permitir operación continua del asesor sin bloquear captura por falta de catálogo previo.
