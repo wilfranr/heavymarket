@@ -23,10 +23,16 @@ export class BrandsSection implements OnInit {
 
     ngOnInit() {
         this.landingService.getBrands().subscribe((data) => {
-            console.log('Brands found:', data?.length);
-            const filtered = data.filter((b) => b.logo);
-            this.brands = this.shuffle(filtered);
-            console.log('Brands with logos:', this.brands.length);
+            const normalizedBrands: Brand[] = (data ?? [])
+                .map((brand) => ({
+                    id: brand.id,
+                    nombre: brand.nombre,
+                    // El backend expone la imagen como `foto`; mantenemos compatibilidad con `logo`.
+                    logo: brand.logo ?? brand.foto ?? ''
+                }))
+                .filter((brand) => !!brand.logo);
+
+            this.brands = this.shuffle(normalizedBrands);
         });
     }
 
