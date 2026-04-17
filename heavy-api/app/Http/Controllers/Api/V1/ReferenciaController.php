@@ -95,6 +95,7 @@ class ReferenciaController extends Controller
             'items.*.codigo' => ['required', 'string'],
             'items.*.cantidad' => ['required', 'integer', 'min:1'],
             'es_temporal' => ['nullable', 'boolean'],
+            'comentario_temporal' => ['nullable', 'string', 'max:255'],
             'marca_id' => [
                 'nullable',
                 'integer',
@@ -105,6 +106,7 @@ class ReferenciaController extends Controller
         $items = $validated['items'];
         $esTemporal = $validated['es_temporal'] ?? false;
         $marcaId = $validated['marca_id'] ?? null;
+        $comentarioTemporal = $validated['comentario_temporal'] ?? null;
         $codigos = array_map('strtoupper', array_column($items, 'codigo'));
 
         // Buscar referencias existentes
@@ -136,7 +138,7 @@ class ReferenciaController extends Controller
                         'marca_id' => $marcaId,
                         'es_temporal' => $esTemporal,
                         'comentario' => $esTemporal
-                            ? 'Referencia temporal desde Landing - Requiere revisión'
+                            ? ($comentarioTemporal ?: 'Referencia temporal desde Landing - Requiere revisión')
                             : 'Creada desde importación masiva',
                     ]);
                     // Añadir a existentes para evitar duplicados en el mismo lote
@@ -195,7 +197,15 @@ class ReferenciaController extends Controller
 
         // Filtro por artículo
         if ($request->filled('articulo_id')) {
-            $query->where('articulo_id', $request->input('articulo_id'));
+            $articuloId = (int) $request->input('articulo_id');
+            $query->where(function ($q) use ($articuloId) {
+                // Compatibilidad: referencias con FK directa
+                $q->where('articulo_id', $articuloId)
+                    // y referencias vinculadas por tabla pivote articulos_referencias
+                    ->orWhereHas('articulos', function ($sq) use ($articuloId) {
+                        $sq->where('articulos.id', $articuloId);
+                    });
+            });
         }
 
         // Filtro por referencias temporales (Landing)

@@ -27,6 +27,7 @@ import { ImageModule } from 'primeng/image';
 import { GalleriaModule } from 'primeng/galleria';
 import { BadgeModule } from 'primeng/badge';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { createPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { CreatePedidoDto, CreatePedidoReferenciaDto, PedidoEstado } from '../../../core/models/pedido.model';
@@ -43,6 +44,8 @@ import { TerceroCreateModalComponent } from '../../../shared/components/tercero-
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { Observable, forkJoin, of } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 /**
  * Componente de creación de pedido con Wizard de 2 pasos
@@ -77,7 +80,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         ImageModule,
         GalleriaModule,
         BadgeModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        AutoCompleteModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './create.html',
@@ -658,13 +662,166 @@ export class CreateComponent implements OnInit {
     }
 
     /**
-     * Validador personalizado para requerir referencia_id o definicion
+     * Validador personalizado para requerir referencia_id o texto manual.
      */
     private referenciaOrDefinicionValidator(group: FormGroup): any {
         const referenciaId = group.get('referencia_id')?.value;
-        const definicion = group.get('definicion')?.value;
-
+        const definicion = (group.get('definicion')?.value || '').toString().trim();
         return referenciaId || definicion ? null : { requiredReferenciaOrDefinicion: true };
+    }
+
+    onReferenciaManualInput(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        // Si el usuario modifica el texto manualmente, invalidamos la asociación previa.
+        row.patchValue({ referencia_id: null }, { emitEvent: false });
+    }
+
+    buscarReferencias(event: any, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        this.onReferenciaManualInput(index);
+        const search = (event?.query || '').toString().trim();
+        const articuloId = row.get('articulo_id')?.value;
+        const params: any = { search, per_page: 30 };
+        if (articuloId) {
+            params.articulo_id = articuloId;
+        }
+
+        this.referenciaService.getAll(params).subscribe({
+            next: (response) => {
+                // Si el filtro por artículo no devolvió nada, hacemos fallback global.
+                if (response.data.length === 0 && articuloId) {
+                    this.referenciaService.getAll({ search, per_page: 30 }).subscribe({
+                        next: (fallback) => {
+                            this.referenciasPorFila[index] = fallback.data.map((r) => ({
+                                label: r.referencia,
+                                value: r.id
+                            }));
+                        },
+                        error: () => {
+                            this.referenciasPorFila[index] = [];
+                        }
+                    });
+                    return;
+                }
+
+                this.referenciasPorFila[index] = response.data.map((r) => ({
+                    label: r.referencia,
+                    value: r.id
+                }));
+            },
+            error: () => {
+                this.referenciasPorFila[index] = [];
+            }
+        });
+    }
+
+    onReferenciaSelect(event: any, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        const rawValue = event?.value;
+        const suggestions = this.referenciasPorFila[index] || [];
+        const option =
+            rawValue && typeof rawValue === 'object'
+                ? rawValue
+                : suggestions.find(
+                    (o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()
+                ) ||
+                  (suggestions.length === 1 &&
+                  (suggestions[0]?.label || '').toString().toLowerCase().startsWith((rawValue || '').toString().toLowerCase())
+                      ? suggestions[0]
+                      : null);
+        const referenciaId = option && typeof option === 'object' ? (option.value ?? null) : null;
+        if (!referenciaId) return;
+
+        // Guardamos label explícito para evitar que quede el texto parcial escrito.
+        row.patchValue(
+            {
+                referencia_id: referenciaId,
+                definicion: option.label ?? ''
+            },
+            { emitEvent: false }
+        );
+    }
+
+    private getCodigoReferencia(row: FormGroup): string {
+        const raw = row.get('definicion')?.value;
+        if (raw && typeof raw === 'object') {
+            return ((raw.label || '') as string).trim().toUpperCase();
+        }
+        return (raw || '').toString().trim().toUpperCase();
+    }
+
+    resolverReferenciaFila(index: number): void {
+        this.resolverReferenciaFilaControl(index).subscribe();
+    }
+
+    private resolverReferenciaFilaControl(index: number): Observable<void> {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return of(void 0);
+
+        let referenciaId = row.get('referencia_id')?.value;
+        const codigo = this.getCodigoReferencia(row as FormGroup);
+
+        // Si no llegó referencia_id desde onSelect, intentar resolverla
+        // contra las sugerencias cargadas antes de crear temporal.
+        if (!referenciaId && codigo) {
+            const suggestions = this.referenciasPorFila[index] || [];
+            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) ||
+                (suggestions.length === 1 &&
+                (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo)
+                    ? suggestions[0]
+                    : null);
+            if (option?.value) {
+                referenciaId = option.value;
+                row.patchValue(
+                    {
+                        referencia_id: option.value,
+                        definicion: option.label ?? codigo
+                    },
+                    { emitEvent: false }
+                );
+            }
+        }
+
+        if (referenciaId || !codigo) return of(void 0);
+
+        const cantidad = Number(row.get('cantidad')?.value || 1);
+        const marcaId = row.get('marca_id')?.value ? Number(row.get('marca_id')?.value) : null;
+
+        return this.referenciaService
+            .bulkSearchOrCreate(
+                [{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }],
+                true,
+                marcaId,
+                'Referencia temporal desde pedido interno - Requiere revisión'
+            )
+            .pipe(
+                map((res) => {
+                    const created = res?.data?.[0];
+                    if (created?.referencia_id) {
+                        row.patchValue(
+                            {
+                                referencia_id: created.referencia_id,
+                                definicion: created.codigo || codigo
+                            },
+                            { emitEvent: false }
+                        );
+                    }
+                }),
+                catchError(() => of(void 0))
+            );
+    }
+
+    private resolverReferenciasAntesDeGuardar(): Observable<void> {
+        const tasks: Observable<void>[] = [];
+        this.referenciasFormArray.controls.forEach((_, index) => {
+            tasks.push(this.resolverReferenciaFilaControl(index));
+        });
+
+        if (tasks.length === 0) return of(void 0);
+        return forkJoin(tasks).pipe(map(() => void 0));
     }
 
     agregarReferencia(data: any = {}): void {
@@ -1259,70 +1416,84 @@ export class CreateComponent implements OnInit {
      * Procesa y crea el pedido (lógica común)
      */
     private procesarYCrearPedido(): void {
+        this.resolverReferenciasAntesDeGuardar().subscribe({
+            next: () => {
+                const formValue = this.pedidoForm.value;
+                const formData = new FormData();
 
-        const formValue = this.pedidoForm.value;
-        const formData = new FormData();
+                // Datos básicos del pedido
+                formData.append('tercero_id', formValue.tercero_id.toString());
+                if (formValue.direccion) formData.append('direccion', formValue.direccion);
+                if (formValue.comentario) formData.append('comentario', formValue.comentario);
+                if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
+                if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
+                if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
+                formData.append('estado', formValue.estado || 'Nuevo');
 
-        // Datos básicos del pedido
-        formData.append('tercero_id', formValue.tercero_id.toString());
-        if (formValue.direccion) formData.append('direccion', formValue.direccion);
-        if (formValue.comentario) formData.append('comentario', formValue.comentario);
-        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
-        if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
-        if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
-        formData.append('estado', formValue.estado || 'Nuevo');
+                // Procesar referencias y sus imágenes
+                this.referenciasFormArray.controls.forEach((control, index) => {
+                    const refId = control.get('referencia_id')?.value;
+                    const rawDef = control.get('definicion')?.value;
+                    const definicionRaw = rawDef && typeof rawDef === 'object'
+                        ? ((rawDef.label || '') as string).trim()
+                        : (rawDef || '').toString().trim();
+                    const definicion = refId ? '' : definicionRaw;
 
-        // Procesar referencias y sus imágenes
-        this.referenciasFormArray.controls.forEach((control, index) => {
-            const refId = control.get('referencia_id')?.value;
-            const definicionRaw = control.get('definicion')?.value || '';
-            const definicion = (refId || control.get('lista_id')?.value) ? '' : (definicionRaw || 'Sin definición');
+                    formData.append(`referencias[${index}][referencia_id]`, refId ? refId.toString() : '');
+                    formData.append(`referencias[${index}][sistema_id]`, control.get('sistema_id')?.value?.toString() || '');
+                    formData.append(`referencias[${index}][lista_id]`, control.get('lista_id')?.value?.toString() || '');
+                    formData.append(`referencias[${index}][marca_id]`, control.get('marca_id')?.value?.toString() || '');
+                    formData.append(`referencias[${index}][cantidad]`, control.get('cantidad')?.value.toString());
+                    formData.append(`referencias[${index}][comentario]`, control.get('comentario')?.value || '');
+                    formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
+                    formData.append(`referencias[${index}][definicion]`, definicion);
+                    
+                    // Adjuntar múltiples archivos por referencia
+                    const files = control.get('files')?.value || [];
+                    files.forEach((file: File, fileIndex: number) => {
+                        formData.append(`referencias[${index}][imagenes][${fileIndex}]`, file);
+                    });
 
-            formData.append(`referencias[${index}][referencia_id]`, refId ? refId.toString() : '');
-            formData.append(`referencias[${index}][sistema_id]`, control.get('sistema_id')?.value?.toString() || '');
-            formData.append(`referencias[${index}][lista_id]`, control.get('lista_id')?.value?.toString() || '');
-            formData.append(`referencias[${index}][marca_id]`, control.get('marca_id')?.value?.toString() || '');
-            formData.append(`referencias[${index}][cantidad]`, control.get('cantidad')?.value.toString());
-            formData.append(`referencias[${index}][comentario]`, control.get('comentario')?.value || '');
-            formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
-            formData.append(`referencias[${index}][definicion]`, definicion);
-            
-            // Adjuntar múltiples archivos por referencia
-            const files = control.get('files')?.value || [];
-            files.forEach((file: File, fileIndex: number) => {
-                formData.append(`referencias[${index}][imagenes][${fileIndex}]`, file);
-            });
+                    // Proveedores (si existen en el array)
+                    const proveedores = (control.get('proveedores') as FormArray)?.value || [];
+                    formData.append(`referencias[${index}][proveedores]`, JSON.stringify(proveedores));
+                });
 
-            // Proveedores (si existen en el array)
-            const proveedores = (control.get('proveedores') as FormArray)?.value || [];
-            formData.append(`referencias[${index}][proveedores]`, JSON.stringify(proveedores));
+                // Despachar la acción pasando FormData
+                this.store.dispatch(createPedido({ pedido: formData as any }));
+
+                // Escuchar el resultado
+                this.store
+                    .select((state: any) => state.pedidos)
+                    .subscribe((pedidosState: any) => {
+                        if (!pedidosState.loading && this.loading) {
+                            if (!pedidosState.error) {
+                                this.loading = false;
+                                this.messageService.add({
+                                    severity: 'success',
+                                    summary: 'Éxito',
+                                    detail: 'Pedido creado correctamente'
+                                });
+                                setTimeout(() => {
+                                    this.router.navigate(['/app/pedidos']);
+                                }, 1500);
+                            } else {
+                                this.loading = false;
+                                // El error ya debería ser manejado por un efecto o interceptor global, 
+                                // pero nos aseguramos de detener el loading local.
+                            }
+                        }
+                    });
+            },
+            error: () => {
+                this.loading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron resolver las referencias ingresadas'
+                });
+            }
         });
-
-        // Despachar la acción pasando FormData
-        this.store.dispatch(createPedido({ pedido: formData as any }));
-
-        // Escuchar el resultado
-        this.store
-            .select((state: any) => state.pedidos)
-            .subscribe((pedidosState: any) => {
-                if (!pedidosState.loading && this.loading) {
-                    if (!pedidosState.error) {
-                        this.loading = false;
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: 'Éxito',
-                            detail: 'Pedido creado correctamente'
-                        });
-                        setTimeout(() => {
-                            this.router.navigate(['/app/pedidos']);
-                        }, 1500);
-                    } else {
-                        this.loading = false;
-                        // El error ya debería ser manejado por un efecto o interceptor global, 
-                        // pero nos aseguramos de detener el loading local.
-                    }
-                }
-            });
     }
 
     /**

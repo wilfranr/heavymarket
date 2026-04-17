@@ -413,10 +413,14 @@
 
                                 <!-- Referencia -->
                                 <div class="flex-1">
-                                    <input pInputText type="text" formControlName="definicion"
-                                        placeholder="Escribir referencia..."
-                                        class="w-full h-[42px] font-semibold rounded-lg"
-                                        [class.border-red-500]="referencia.errors?.['requiredReferenciaOrDefinicion'] && (referencia.get('referencia_id')?.touched || referencia.get('definicion')?.touched)" />
+                                    <p-autocomplete formControlName="definicion" [suggestions]="referenciasPorFila[refIndex]"
+                                        optionLabel="label" placeholder="Escribir o buscar referencia..."
+                                        [forceSelection]="false" [dropdown]="true" appendTo="body"
+                                        inputStyleClass="w-full h-[42px] font-semibold rounded-lg"
+                                        (completeMethod)="buscarReferencias($event, $index)"
+                                        (onSelect)="onReferenciaSelect($event, $index)"
+                                        (onBlur)="resolverReferenciaFila($index)">
+                                    </p-autocomplete>
                                 </div>
 
                                 <!-- Actions -->

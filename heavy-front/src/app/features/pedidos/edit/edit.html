@@ -329,12 +329,15 @@
 
                             <!-- Referencia -->
                             <div class="flex-1">
-                                <input pInputText type="text" formControlName="definicion"
-                                    placeholder="Escriba la referencia..."
-                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white"
-                                    [class.border-red-500]="campoTieneErrorCosteo($index, 'definicion')"
-                                    [class.dark:border-red-500]="campoTieneErrorCosteo($index, 'definicion')" />
-                                @if (campoTieneErrorCosteo($index, 'definicion')) {
+                                <p-autocomplete formControlName="definicion" [suggestions]="referenciasPorFila[$index]"
+                                    optionLabel="label" placeholder="Escriba o busque la referencia..."
+                                    [forceSelection]="false" [dropdown]="true" appendTo="body"
+                                    inputStyleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white"
+                                    (completeMethod)="buscarReferencias($event, $index)"
+                                    (onSelect)="onReferenciaSelect($event, $index)"
+                                    (onBlur)="resolverReferenciaFila($index)">
+                                </p-autocomplete>
+                                @if (campoTieneErrorCosteo($index, 'referencia_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }

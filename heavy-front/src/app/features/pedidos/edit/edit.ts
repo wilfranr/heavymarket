@@ -3,7 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable, combineLatest, filter, take } from 'rxjs';
+import { Observable, combineLatest, filter, forkJoin, of, take } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -29,6 +30,7 @@ import { TableModule } from 'primeng/table';
 import { CheckboxModule } from 'primeng/checkbox';
 import { ImageModule } from 'primeng/image';
 import { GalleriaModule } from 'primeng/galleria';
+import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
@@ -76,6 +78,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         CheckboxModule,
         ImageModule,
         GalleriaModule,
+        AutoCompleteModule,
         TimelineModule,
         ContactoCreateModalComponent,
         MaquinaCreateModalComponent
@@ -775,6 +778,7 @@ export class EditComponent implements OnInit {
             this.referenciasPorFila[index] = [];
 
             const articuloId = (ref.referencia as any)?.articulo_id || null;
+            const codigoReferencia = (ref.referencia as any)?.referencia || null;
 
             const referenciaForm = this.fb.group({
                 id: [ref.id],
@@ -786,7 +790,7 @@ export class EditComponent implements OnInit {
                 marca_id: [ref.marca_id || null],
                 cantidad: [ref.cantidad, [Validators.required, Validators.min(1)]],
                 comentario: [ref.comentario || ''],
-                definicion: [ref.definicion || ''],
+                definicion: [codigoReferencia || ref.definicion || ''],
                 imagen: [ref.imagen || null],
                 imagenes: [ref.imagenes || []]
             });
@@ -886,11 +890,11 @@ export class EditComponent implements OnInit {
      * Carga los tipos de artículo (Listas) asociados a un sistema
      */
     private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, listaIdPreseleccionado?: number | null): void {
-        const system = this.sistemas.find(s => s.value === sistemaId);
         const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        if (system && system.label.toLowerCase() !== 'por defecto') {
-            params.sistema_id = sistemaId;
-        }
+        // En edición inicial, this.sistemas puede no estar cargado aún.
+        // Filtrar siempre por sistema_id evita traer una página genérica
+        // que no incluya el lista_id ya guardado y deje el select en blanco.
+        params.sistema_id = sistemaId;
 
         this.listaService.getAll(params).subscribe({
             next: (response) => {
@@ -982,6 +986,163 @@ export class EditComponent implements OnInit {
         this.cargarReferenciasPorArticulo(articuloId, index);
     }
 
+    onReferenciaManualInput(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        // Si cambia el código manual, invalidar referencia previamente enlazada.
+        row.patchValue({ referencia_id: null }, { emitEvent: false });
+    }
+
+    buscarReferencias(event: any, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        this.onReferenciaManualInput(index);
+        const articuloId = row.get('articulo_id')?.value;
+        const search = (event?.query || '').toString().trim();
+        const params: any = { search, per_page: 30 };
+        if (articuloId) {
+            params.articulo_id = articuloId;
+        }
+
+        this.referenciaService.getAll(params).subscribe({
+            next: (response) => {
+                // Si por artículo no hay coincidencias, buscar global por código.
+                if (response.data.length === 0 && articuloId) {
+                    this.referenciaService.getAll({ search, per_page: 30 }).subscribe({
+                        next: (fallback) => {
+                            this.referenciasPorFila[index] = fallback.data.map((r) => ({
+                                label: r.referencia,
+                                value: r.id
+                            }));
+                        },
+                        error: () => {
+                            this.referenciasPorFila[index] = [];
+                        }
+                    });
+                    return;
+                }
+
+                this.referenciasPorFila[index] = response.data.map((r) => ({
+                    label: r.referencia,
+                    value: r.id
+                }));
+            },
+            error: () => {
+                this.referenciasPorFila[index] = [];
+            }
+        });
+    }
+
+    onReferenciaSelect(event: any, index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return;
+        const rawValue = event?.value;
+        const suggestions = this.referenciasPorFila[index] || [];
+        const option =
+            rawValue && typeof rawValue === 'object'
+                ? rawValue
+                : suggestions.find(
+                    (o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()
+                ) ||
+                  (suggestions.length === 1 &&
+                  (suggestions[0]?.label || '').toString().toLowerCase().startsWith((rawValue || '').toString().toLowerCase())
+                      ? suggestions[0]
+                      : null);
+        const referenciaId = option && typeof option === 'object' ? (option.value ?? null) : null;
+        if (!referenciaId) return;
+
+        // Guardamos label explícito para evitar texto parcial.
+        row.patchValue(
+            {
+                referencia_id: referenciaId,
+                definicion: option.label ?? ''
+            },
+            { emitEvent: false }
+        );
+    }
+
+    private getCodigoReferencia(row: FormGroup): string {
+        const raw = row.get('definicion')?.value;
+        if (raw && typeof raw === 'object') {
+            return ((raw.label || '') as string).trim().toUpperCase();
+        }
+        return (raw || '').toString().trim().toUpperCase();
+    }
+
+    resolverReferenciaFila(index: number): void {
+        this.resolverReferenciaFilaControl(index).subscribe();
+    }
+
+    private resolverReferenciaFilaControl(index: number): Observable<void> {
+        const row = this.referenciasFormArray.at(index);
+        if (!row) return of(void 0);
+
+        let referenciaId = row.get('referencia_id')?.value;
+        const codigo = this.getCodigoReferencia(row as FormGroup);
+
+        // Fallback: si hubo selección visual pero no quedó referencia_id,
+        // mapear contra sugerencias cargadas antes de crear temporal.
+        if (!referenciaId && codigo) {
+            const suggestions = this.referenciasPorFila[index] || [];
+            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) ||
+                (suggestions.length === 1 &&
+                (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo)
+                    ? suggestions[0]
+                    : null);
+            if (option?.value) {
+                referenciaId = option.value;
+                row.patchValue(
+                    {
+                        referencia_id: option.value,
+                        definicion: option.label ?? codigo
+                    },
+                    { emitEvent: false }
+                );
+            }
+        }
+
+        if (referenciaId || !codigo) return of(void 0);
+
+        const cantidad = Number(row.get('cantidad')?.value || 1);
+        const marcaId = row.get('marca_id')?.value ? Number(row.get('marca_id')?.value) : null;
+
+        return this.referenciaService
+            .bulkSearchOrCreate(
+                [{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }],
+                true,
+                marcaId,
+                'Referencia temporal desde pedido interno - Requiere revisión'
+            )
+            .pipe(
+                map((res) => {
+                    const created = res?.data?.[0];
+                    if (created?.referencia_id) {
+                        row.patchValue(
+                            {
+                                referencia_id: created.referencia_id,
+                                definicion: created.codigo || codigo
+                            },
+                            { emitEvent: false }
+                        );
+                        const articuloId = created?.referencia?.articulo_id || row.get('articulo_id')?.value;
+                        if (articuloId) {
+                            this.cargarReferenciasPorArticulo(articuloId, index);
+                        }
+                    }
+                }),
+                catchError(() => of(void 0))
+            );
+    }
+
+    private resolverReferenciasAntesDeGuardar(): Observable<void> {
+        const tasks: Observable<void>[] = [];
+        this.referenciasFormArray.controls.forEach((_, index) => {
+            tasks.push(this.resolverReferenciaFilaControl(index));
+        });
+        if (tasks.length === 0) return of(void 0);
+        return forkJoin(tasks).pipe(map(() => void 0));
+    }
+
     /**
      * Carga las referencias asociadas a un artículo
      */
@@ -1016,7 +1177,7 @@ export class EditComponent implements OnInit {
             if (!control.get('lista_id')?.value) {
                 camposFaltantes.push('Tipo de artículo');
             }
-            if (!control.get('referencia_id')?.value && !control.get('definicion')?.value) {
+            if (!control.get('referencia_id')?.value) {
                 camposFaltantes.push('Referencia');
             }
             if (!control.get('cantidad')?.value || control.get('cantidad')?.value < 1) {
@@ -1135,7 +1296,6 @@ export class EditComponent implements OnInit {
             'sistema_id': 'Sistema',
             'lista_id': 'Tipo de artículo',
             'referencia_id': 'Referencia',
-            'definicion': 'Referencia',
             'cantidad': 'Cantidad'
         };
 
@@ -1501,11 +1661,10 @@ export class EditComponent implements OnInit {
 
         if (!sistemaId) return;
 
-        const system = this.sistemas.find(s => s.value === sistemaId);
         const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        if (system && system.label.toLowerCase() !== 'por defecto') {
-            params.sistema_id = sistemaId;
-        }
+        // Mantener misma lógica que en filas: al tener sistema seleccionado,
+        // filtrar siempre por sistema_id para obtener opciones consistentes.
+        params.sistema_id = sistemaId;
 
         this.listaService.getAll(params).subscribe({
             next: (response) => {
@@ -1705,79 +1864,94 @@ export class EditComponent implements OnInit {
         }
 
         this.submitting = true;
+        this.resolverReferenciasAntesDeGuardar().subscribe({
+            next: () => {
+                const formData = new FormData();
+                formData.append('_method', 'PUT'); // Importante para que Laravel reconozca el PUT con FormData
 
-        const formData = new FormData();
-        formData.append('_method', 'PUT'); // Importante para que Laravel reconozca el PUT con FormData
-
-        // Datos básicos
-        formData.append('tercero_id', formValue.tercero_id.toString());
-        if (formValue.direccion) formData.append('direccion', formValue.direccion);
-        if (formValue.comentario) formData.append('comentario', formValue.comentario);
-        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
-        if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
-        if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
-        formData.append('estado', nuevoEstado);
-        if (nuevoEstado === 'Rechazado' && formValue.motivo_rechazo) {
-            formData.append('motivo_rechazo', formValue.motivo_rechazo);
-        }
-
-        // Referencias
-        this.referenciasFormArray.controls.forEach((control, index) => {
-            const rawRef = control.value;
-            if (rawRef.id) formData.append(`referencias[${index}][id]`, rawRef.id.toString());
-            
-            formData.append(`referencias[${index}][referencia_id]`, rawRef.referencia_id ? rawRef.referencia_id.toString() : '');
-            formData.append(`referencias[${index}][sistema_id]`, rawRef.sistema_id ? rawRef.sistema_id.toString() : '');
-            formData.append(`referencias[${index}][lista_id]`, rawRef.lista_id ? rawRef.lista_id.toString() : '');
-            formData.append(`referencias[${index}][marca_id]`, rawRef.marca_id ? rawRef.marca_id.toString() : '');
-            formData.append(`referencias[${index}][cantidad]`, rawRef.cantidad.toString());
-            formData.append(`referencias[${index}][comentario]`, rawRef.comentario || '');
-            formData.append(`referencias[${index}][estado]`, (rawRef.estado ?? true) ? '1' : '0');
-            formData.append(`referencias[${index}][definicion]`, rawRef.definicion || '');
-            
-            // Nuevos archivos de imagen
-            const files = rawRef.files || [];
-            files.forEach((file: File, fileIndex: number) => {
-                formData.append(`referencias[${index}][imagenes_nuevas][${fileIndex}]`, file);
-            });
-        });
-
-        this.store.dispatch(
-            updatePedido({
-                id: this.pedidoId(),
-                changes: formData as any
-            })
-        );
-
-        combineLatest([this.store.select(selectPedidosLoading), this.store.select(selectPedidosError)])
-            .pipe(
-                filter(([loading]) => !loading && this.submitting),
-                take(1)
-            )
-            .subscribe(([_, error]) => {
-                if (!this.submitting) {
-                    return;
+                // Datos básicos
+                formData.append('tercero_id', formValue.tercero_id.toString());
+                if (formValue.direccion) formData.append('direccion', formValue.direccion);
+                if (formValue.comentario) formData.append('comentario', formValue.comentario);
+                if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id.toString());
+                if (formValue.fabricante_id) formData.append('fabricante_id', formValue.fabricante_id.toString());
+                if (formValue.contacto_id) formData.append('contacto_id', formValue.contacto_id.toString());
+                formData.append('estado', nuevoEstado);
+                if (nuevoEstado === 'Rechazado' && formValue.motivo_rechazo) {
+                    formData.append('motivo_rechazo', formValue.motivo_rechazo);
                 }
+
+                // Referencias
+                this.referenciasFormArray.controls.forEach((control, index) => {
+                    const rawRef = control.value;
+                    const definicionRaw = rawRef.definicion && typeof rawRef.definicion === 'object'
+                        ? (rawRef.definicion.label || '')
+                        : (rawRef.definicion || '');
+                    const definicion = rawRef.referencia_id ? '' : definicionRaw;
+                    if (rawRef.id) formData.append(`referencias[${index}][id]`, rawRef.id.toString());
+                    
+                    formData.append(`referencias[${index}][referencia_id]`, rawRef.referencia_id ? rawRef.referencia_id.toString() : '');
+                    formData.append(`referencias[${index}][sistema_id]`, rawRef.sistema_id ? rawRef.sistema_id.toString() : '');
+                    formData.append(`referencias[${index}][lista_id]`, rawRef.lista_id ? rawRef.lista_id.toString() : '');
+                    formData.append(`referencias[${index}][marca_id]`, rawRef.marca_id ? rawRef.marca_id.toString() : '');
+                    formData.append(`referencias[${index}][cantidad]`, rawRef.cantidad.toString());
+                    formData.append(`referencias[${index}][comentario]`, rawRef.comentario || '');
+                    formData.append(`referencias[${index}][estado]`, (rawRef.estado ?? true) ? '1' : '0');
+                    formData.append(`referencias[${index}][definicion]`, definicion);
+                    
+                    // Nuevos archivos de imagen
+                    const files = rawRef.files || [];
+                    files.forEach((file: File, fileIndex: number) => {
+                        formData.append(`referencias[${index}][imagenes_nuevas][${fileIndex}]`, file);
+                    });
+                });
+
+                this.store.dispatch(
+                    updatePedido({
+                        id: this.pedidoId(),
+                        changes: formData as any
+                    })
+                );
+
+                combineLatest([this.store.select(selectPedidosLoading), this.store.select(selectPedidosError)])
+                    .pipe(
+                        filter(([loading]) => !loading && this.submitting),
+                        take(1)
+                    )
+                    .subscribe(([_, error]) => {
+                        if (!this.submitting) {
+                            return;
+                        }
+                        this.submitting = false;
+                        if (!error) {
+                            this.estadoActual = nuevoEstado;
+                            this.messageService.add({
+                                severity: 'success',
+                                summary: 'Éxito',
+                                detail: 'Pedido actualizado correctamente'
+                            });
+                            setTimeout(() => {
+                                this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                            }, 1500);
+                        } else {
+                            this.pedidoForm.patchValue({ estado: this.estadoActual });
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: error
+                            });
+                        }
+                    });
+            },
+            error: () => {
                 this.submitting = false;
-                if (!error) {
-                    this.estadoActual = nuevoEstado;
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Pedido actualizado correctamente'
-                    });
-                    setTimeout(() => {
-                        this.router.navigate(['/app/pedidos', this.pedidoId()]);
-                    }, 1500);
-                } else {
-                    this.pedidoForm.patchValue({ estado: this.estadoActual });
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: error
-                    });
-                }
-            });
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron resolver las referencias ingresadas'
+                });
+            }
+        });
     }
 
     /**
