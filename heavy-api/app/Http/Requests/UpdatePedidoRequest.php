@@ -19,10 +19,10 @@ class UpdatePedidoRequest extends FormRequest
      */
     public function authorize(): bool
     {
+        /** @var Pedido $pedido */
         $pedido = $this->route('pedido');
 
-        return $this->user()->can('update', $pedido)
-            || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $this->user()->can('update', $pedido);
     }
 
     /**

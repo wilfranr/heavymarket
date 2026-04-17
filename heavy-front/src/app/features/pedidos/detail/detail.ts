@@ -19,6 +19,7 @@ import { Pedido } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
+import { AuthService } from '../../../core/auth/services/auth.service';
 
 /**
  * Componente de detalle de pedido
@@ -40,6 +41,7 @@ export class DetailComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly authService = inject(AuthService);
 
     pedido$!: Observable<Pedido | undefined>;
     loading$!: Observable<boolean>;
@@ -66,6 +68,19 @@ export class DetailComponent implements OnInit {
             });
             this.router.navigate(['/app/pedidos']);
         }
+    }
+
+    /**
+     * Vendedor: pedidos en análisis son solo lectura (edición la llevan analistas/admin).
+     */
+    puedeEditarPedido(pedido: Pedido): boolean {
+        if (pedido.estado !== 'En_Analisis') {
+            return true;
+        }
+        if (!this.authService.hasRole('Vendedor')) {
+            return true;
+        }
+        return this.authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica']);
     }
 
     /**

@@ -192,6 +192,42 @@ class PedidoTest extends TestCase
     }
 
     /**
+     * Test: Vendedor no puede actualizar un pedido propio en análisis (solo lectura)
+     */
+    public function test_vendedor_no_puede_actualizar_pedido_en_analisis(): void
+    {
+        $pedido = Pedido::factory()->create([
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+            'estado' => 'En_Analisis',
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson("/v1/pedidos/{$pedido->id}", [
+                'comentario' => 'Intento de edición',
+            ]);
+
+        $response->assertForbidden();
+    }
+
+    /**
+     * Test: Vendedor no puede eliminar un pedido en análisis
+     */
+    public function test_vendedor_no_puede_eliminar_pedido_en_analisis(): void
+    {
+        $pedido = Pedido::factory()->create([
+            'user_id' => $this->user->id,
+            'tercero_id' => $this->tercero->id,
+            'estado' => 'En_Analisis',
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->deleteJson("/v1/pedidos/{$pedido->id}");
+
+        $response->assertForbidden();
+    }
+
+    /**
      * Test: Vendedor no puede pasar pedido a costeo vía actualización de estado
      */
     public function test_vendedor_no_puede_pasar_pedido_a_costeo(): void

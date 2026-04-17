@@ -28,7 +28,9 @@
                 (onClick)="volver()"></p-button>
             <p-button label="Imprimir" icon="pi pi-print" severity="secondary" [outlined]="true"
                 (onClick)="imprimirPedido()"></p-button>
+            @if (puedeEditarPedido(pedido)) {
             <p-button label="Editar Pedido" icon="pi pi-pencil" (onClick)="editarPedido()"></p-button>
+            }
         </div>
     </div>
 

@@ -789,6 +789,16 @@ export class EditComponent implements OnInit {
                     if (pedido) {
                         this.estadoActual = this.normalizePedidoEstado(pedido.estado);
 
+                        if (this.isVendedor && pedido.estado === 'En_Analisis') {
+                            this.messageService.add({
+                                severity: 'info',
+                                summary: 'Solo lectura',
+                                detail: 'Un pedido en análisis solo puede consultarse. Use la vista de detalle.'
+                            });
+                            this.router.navigate(['/app/pedidos', pedidoId]);
+                            return;
+                        }
+
                         this.pedidoForm.patchValue({
                             tercero_id: pedido.tercero_id,
                             direccion: pedido.direccion || '',

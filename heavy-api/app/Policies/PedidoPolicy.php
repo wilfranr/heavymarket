@@ -49,6 +49,11 @@ class PedidoPolicy
             return $pedido->estado === 'En_Analisis';
         }
 
+        // El vendedor puede ver sus pedidos en análisis, pero no modificarlos (solo lectura)
+        if ($user->hasRole('Vendedor') && $pedido->estado === 'En_Analisis') {
+            return false;
+        }
+
         return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
             || $user->id === $pedido->user_id;
     }
@@ -62,6 +67,10 @@ class PedidoPolicy
             return true;
         }
 
-        return $user->hasRole('Vendedor') && $user->id === $pedido->user_id;
+        if ($user->hasRole('Vendedor') && $user->id === $pedido->user_id) {
+            return $pedido->estado !== 'En_Analisis';
+        }
+
+        return false;
     }
 }

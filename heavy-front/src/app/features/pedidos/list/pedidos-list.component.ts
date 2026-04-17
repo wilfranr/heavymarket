@@ -104,8 +104,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                         <td>{{ pedido.direccion || 'N/A' }}</td>
                         <td>{{ pedido.created_at | date: 'short' }}</td>
                         <td *ngIf="!isAnalista">
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
+                            <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
+                            <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
                         </td>
                     </tr>
                 </ng-template>
@@ -133,6 +133,18 @@ export class PedidosListComponent implements OnInit {
 
     get isAnalista(): boolean {
         return this.authService.hasRole('Analista');
+    }
+
+    get isVendedor(): boolean {
+        return this.authService.hasRole('Vendedor');
+    }
+
+    /** Vendedor: en análisis solo lectura; administración y logística siguen pudiendo gestionar. */
+    vendedorPuedeMutarPedido(pedido: Pedido): boolean {
+        if (pedido.estado !== 'En_Analisis' || !this.isVendedor) {
+            return true;
+        }
+        return this.authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica']);
     }
 
     onRowClick(pedido: Pedido): void {
@@ -270,6 +282,7 @@ export class PedidosListComponent implements OnInit {
         this.estadosTabs = [
             { label: 'Borrador', value: 'Borrador', icon: 'pi pi-save' },
             { label: 'Nuevo', value: 'Nuevo', icon: 'pi pi-star' },
+            { label: 'Análisis', value: 'En_Analisis', icon: 'pi pi-cog' },
             { label: 'Enviado', value: 'Enviado', icon: 'pi pi-send' },
             { label: 'Costeo', value: 'En_Costeo', icon: 'pi pi-money-bill' },
             { label: 'Cotizado', value: 'Cotizado', icon: 'pi pi-file' },
