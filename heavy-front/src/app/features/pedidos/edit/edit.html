@@ -31,6 +31,20 @@
                 </button>
                 }
 
+                @if (estadoActual === 'Borrador') {
+                <button type="button" class="btn-pill btn-primary flex items-center gap-2"
+                    (click)="generarPedidoDesdeBorrador()"
+                    [disabled]="submitting">
+                    @if (submitting) {
+                    <i class="pi pi-spin pi-spinner"></i>
+                    <span>Generando...</span>
+                    } @else {
+                    <i class="pi pi-check-circle"></i>
+                    <span>Generar Pedido</span>
+                    }
+                </button>
+                }
+
                 <!-- Enviar a Costeo Button -->
                 @if (puedeEnviarACosteo) {
                 <button type="button" class="btn-pill btn-costeo flex items-center gap-2" (click)="enviarACosteo()"
@@ -110,11 +124,10 @@
                         </div>
                         <div class="flex justify-between items-center mt-2">
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Estado:</span>
-                            <p-select formControlName="estado" [options]="getEstadosDisponibles()"
-                                optionLabel="label" optionValue="value" filterBy="label"
-                                styleClass="w-[140px] !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white h-[30px] flex items-center text-xs ml-2"
-                                (onChange)="onEstadoChange()" [filter]="true">
-                            </p-select>
+                            <span class="px-3 py-1 rounded-full text-xs font-semibold ml-2"
+                                [ngClass]="getEstadoClase(estadoActual)">
+                                {{ getEstadoEtiqueta(estadoActual) }}
+                            </span>
                         </div>
                     </div>
                 </div>

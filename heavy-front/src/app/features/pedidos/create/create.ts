@@ -1368,6 +1368,9 @@ export class CreateComponent implements OnInit {
                 message: '¿Desea enviar este pedido a análisis ahora? Los analistas serán notificados.',
                 header: 'Enviar a Análisis',
                 icon: 'pi pi-search',
+                acceptLabel: 'Sí',
+                rejectLabel: 'No',
+                rejectButtonProps: { severity: 'secondary' },
                 accept: () => {
                     this.pedidoForm.patchValue({ estado: 'En_Analisis' });
                     this.crearPedido();

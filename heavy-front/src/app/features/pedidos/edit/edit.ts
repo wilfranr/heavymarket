@@ -253,7 +253,7 @@ export class EditComponent implements OnInit {
      */
     get puedeEnviarAAnalisis(): boolean {
         const transiciones = this.transicionesValidas[this.estadoActual] || [];
-        return (transiciones.includes('En_Analisis') && (this.isVendedor || this.isAdmin));
+        return this.estadoActual !== 'Borrador' && (transiciones.includes('En_Analisis') && (this.isVendedor || this.isAdmin));
     }
 
     /**
@@ -290,6 +290,9 @@ export class EditComponent implements OnInit {
             message: '¿Está seguro de enviar este pedido a análisis? Los analistas serán notificados.',
             header: 'Enviar a Análisis',
             icon: 'pi pi-search',
+            acceptLabel: 'Sí',
+            rejectLabel: 'No',
+            rejectButtonProps: { severity: 'secondary' },
             accept: () => {
                 this.pedidoApi.enviarAAnalisis(this.pedidoId()).subscribe({
                     next: (res) => {
@@ -313,6 +316,71 @@ export class EditComponent implements OnInit {
                 });
             }
         });
+    }
+
+    /**
+     * Convierte un borrador en pedido operativo (Nuevo o pregunta si enviar a análisis, como en crear pedido).
+     */
+    generarPedidoDesdeBorrador(): void {
+        if (this.estadoActual !== 'Borrador' || this.submitting) {
+            return;
+        }
+
+        if (this.pedidoForm.invalid) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Formulario inválido',
+                detail: 'Por favor complete todos los campos requeridos'
+            });
+            Object.keys(this.pedidoForm.controls).forEach((key) => {
+                this.pedidoForm.get(key)?.markAsTouched();
+            });
+            return;
+        }
+
+        const tieneReferencias = this.referenciasFormArray.length > 0;
+        const maquinaId = this.pedidoForm.get('maquina_id')?.value;
+        let puedeEnviarAAnalisis = false;
+
+        if (maquinaId) {
+            const maquinaBuscada = this.maquinasList.find((m: any) => m.id === maquinaId);
+            puedeEnviarAAnalisis = !!(maquinaBuscada && maquinaBuscada.estado_revision === 'revisado');
+        }
+
+        if (puedeEnviarAAnalisis) {
+            this.confirmationService.confirm({
+                message: '¿Desea enviar este pedido a análisis ahora? Los analistas serán notificados.',
+                header: 'Enviar a Análisis',
+                icon: 'pi pi-search',
+                acceptLabel: 'Sí',
+                rejectLabel: 'No',
+                rejectButtonProps: { severity: 'secondary' },
+                accept: () => {
+                    if (!tieneReferencias) {
+                        this.messageService.add({
+                            severity: 'warn',
+                            summary: 'Referencias requeridas',
+                            detail: 'Debe agregar al menos una referencia para enviar a análisis'
+                        });
+                        return;
+                    }
+                    this.pedidoForm.patchValue({ estado: 'En_Analisis' });
+                    this.onSubmit();
+                },
+                reject: () => {
+                    this.pedidoForm.patchValue({ estado: 'Nuevo' });
+                    this.messageService.add({
+                        severity: 'info',
+                        summary: 'Pedido guardado',
+                        detail: 'El pedido queda pendiente. Cuando esté listo, envíelo a Análisis desde el detalle.'
+                    });
+                    this.onSubmit();
+                }
+            });
+        } else {
+            this.pedidoForm.patchValue({ estado: 'Nuevo' });
+            this.onSubmit();
+        }
     }
 
     /**
@@ -716,6 +784,8 @@ export class EditComponent implements OnInit {
                 )
                 .subscribe((pedido) => {
                     if (pedido) {
+                        this.estadoActual = this.normalizePedidoEstado(pedido.estado);
+
                         this.pedidoForm.patchValue({
                             tercero_id: pedido.tercero_id,
                             direccion: pedido.direccion || '',
@@ -1834,6 +1904,40 @@ export class EditComponent implements OnInit {
             return (raw as { value: PedidoEstado }).value;
         }
         return raw as PedidoEstado;
+    }
+
+    getEstadoEtiqueta(estado: PedidoEstado): string {
+        const labels: Record<PedidoEstado, string> = {
+            Borrador: 'Borrador',
+            Nuevo: 'Nuevo',
+            En_Analisis: 'En análisis',
+            Enviado: 'Enviado',
+            En_Costeo: 'En costeo',
+            Cotizado: 'Cotizado',
+            Aprobado: 'Aprobado',
+            Entregado: 'Entregado',
+            Rechazado: 'Rechazado',
+            Cancelado: 'Cancelado'
+        };
+
+        return labels[estado] ?? estado;
+    }
+
+    getEstadoClase(estado: PedidoEstado): string {
+        const classes: Record<PedidoEstado, string> = {
+            Borrador: 'bg-amber-500/15 text-amber-600 dark:text-amber-300 border border-amber-500/30',
+            Nuevo: 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-300 border border-emerald-500/30',
+            En_Analisis: 'bg-blue-500/15 text-blue-600 dark:text-blue-300 border border-blue-500/30',
+            Enviado: 'bg-cyan-500/15 text-cyan-600 dark:text-cyan-300 border border-cyan-500/30',
+            En_Costeo: 'bg-orange-500/15 text-orange-600 dark:text-orange-300 border border-orange-500/30',
+            Cotizado: 'bg-purple-500/15 text-purple-600 dark:text-purple-300 border border-purple-500/30',
+            Aprobado: 'bg-green-500/15 text-green-600 dark:text-green-300 border border-green-500/30',
+            Entregado: 'bg-teal-500/15 text-teal-600 dark:text-teal-300 border border-teal-500/30',
+            Rechazado: 'bg-red-500/15 text-red-600 dark:text-red-300 border border-red-500/30',
+            Cancelado: 'bg-slate-500/15 text-slate-600 dark:text-slate-300 border border-slate-500/30'
+        };
+
+        return classes[estado] ?? classes.Nuevo;
     }
 
     /**
