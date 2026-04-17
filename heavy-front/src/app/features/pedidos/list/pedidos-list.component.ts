@@ -95,7 +95,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                 </ng-template>
 
                 <ng-template pTemplate="body" let-pedido>
-                    <tr (click)="onRowClick(pedido)" [ngClass]="{'cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors': isAnalista}">
+                    <tr (click)="onRowClick(pedido)" class="cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
                         <td>{{ pedido.id }}</td>
                         <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                         <td>
@@ -104,7 +104,6 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                         <td>{{ pedido.direccion || 'N/A' }}</td>
                         <td>{{ pedido.created_at | date: 'short' }}</td>
                         <td *ngIf="!isAnalista">
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewPedido(pedido.id); $event.stopPropagation()"> </p-button>
                             <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
                             <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
                         </td>
@@ -139,6 +138,8 @@ export class PedidosListComponent implements OnInit {
     onRowClick(pedido: Pedido): void {
         if (this.isAnalista) {
             this.onAnalysisPedido(pedido.id);
+        } else {
+            this.onViewPedido(pedido.id);
         }
     }
 
