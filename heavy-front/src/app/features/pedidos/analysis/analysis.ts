@@ -1185,8 +1185,15 @@ export class AnalysisComponent implements OnInit {
     }
 
     isItemCompleto(index: number): boolean {
+        const itemControl = this.referenciasFormArray.at(index);
+        const itemRef = itemControl.get('referencia_id')?.value;
+        
+        // Verificar que el ítem principal tenga referencia asignada
+        const itemRefOk = !!itemRef && (typeof itemRef === 'number' ? itemRef > 0 : (typeof itemRef === 'string' && itemRef.trim().length > 0));
+        if (!itemRefOk) return false;
+        
         const partes = this.getPartesFormArray(index);
-        if (!partes || partes.length === 0) return false;
+        if (!partes || partes.length === 0) return true; // Si no hay partes, el item principal basta
         
         // Un ítem está completo solo si TODAS sus filas tienen referencia y 
         // una categoría que coincida con nuestro catálogo de Tipos de Artículo.
