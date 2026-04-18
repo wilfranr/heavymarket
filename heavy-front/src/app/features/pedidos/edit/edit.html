@@ -147,7 +147,7 @@
                         <!-- Machine Selector -->
                         <div class="mb-2">
                             <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true"
-                                [showClear]="true" placeholder="Seleccionar Máquina"
+                                [showClear]="true" placeholder="Seleccionar Máquina" appendTo="body"
                                 styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white">
                             </p-select>
                         </div>
@@ -202,7 +202,7 @@
                         <!-- Client Selector -->
                         <div class="mb-2">
                             <p-select formControlName="tercero_id" [options]="terceros" [filter]="true"
-                                placeholder="Seleccionar Cliente"
+                                placeholder="Seleccionar Cliente" appendTo="body"
                                 styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
                                 [filterMatchMode]="filterMode">
                             </p-select>
@@ -227,8 +227,8 @@
                                 }}</span>
                             <div class="flex items-center gap-2 mt-1">
                                 <p-select formControlName="contacto_id" [options]="contactos" [filter]="true"
-                                    placeholder="Seleccionar Contacto"
-                                    styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
+                                    placeholder="Seleccionar Contacto" appendTo="body"
+                                    styleClass="flex-1 !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
                                     [filterMatchMode]="filterMode">
                                 </p-select>
                                 <p-button icon="pi pi-plus" (onClick)="openCreateContactoDialog()" 

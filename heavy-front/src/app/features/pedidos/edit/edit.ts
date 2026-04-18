@@ -307,6 +307,9 @@ export class EditComponent implements OnInit {
                             summary: `Enviado a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}`,
                             detail: res.message ?? `El pedido pasó a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}.`
                         });
+                        setTimeout(() => {
+                            this.router.navigate(['/app/pedidos', this.pedidoId()]);
+                        }, 1500);
                     },
                     error: (err) => {
                         const msg = err.error?.message ?? 'No se pudo enviar el pedido a análisis';

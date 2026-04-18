@@ -123,7 +123,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                             <td>{{ pedido.id }}</td>
                             <td>{{ pedido.user?.name || 'Sin asignar' }}</td>
                             <td>
-                                @if (tieneDevolucionReciente(pedido)) {
+                                @if (pedido.estado === 'Nuevo' && tieneDevolucionReciente(pedido)) {
                                     <span class="inline-flex items-center gap-1">
                                         <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por analista'" tooltipPosition="top"></i>
                                         <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
@@ -157,7 +157,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                             <td>{{ pedido.id }}</td>
                             <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
                             <td>
-                                @if (tieneDevolucionReciente(pedido)) {
+                                @if (pedido.estado === 'Nuevo' && tieneDevolucionReciente(pedido)) {
                                     <span class="inline-flex items-center gap-1">
                                         <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por analista'" tooltipPosition="top"></i>
                                         <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
