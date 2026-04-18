@@ -1132,6 +1132,7 @@ export class AnalysisComponent implements OnInit {
             
             if (!grupos[key]) {
                 grupos[key] = {
+                    referencia_id: r.referencia_id, // Guardar referencia_id del primer item
                     sistema_id: r.sistema_id,
                     lista_id: r.lista_id,
                     definicion: r.definicion || r.lista?.nombre || 'Sin definición',
@@ -1176,9 +1177,13 @@ export class AnalysisComponent implements OnInit {
 
         // Poblar el formulario con los grupos procesados
         Object.values(grupos).forEach(g => {
+            // Verificar si el grupo tiene referencia_id (viene de la primera referencia del grupo)
+            const tieneRefId = g.referencia_id && typeof g.referencia_id === 'number' && g.referencia_id > 0;
+            
             const itemGroup = this.fb.group({
                 id: [null], 
-                estado_item: ['Pendiente'],
+                referencia_id: [g.referencia_id ?? null], // Campo de referencia del ítem principal
+                estado_item: [tieneRefId ? 'Analizado' : 'Pendiente'],
                 sistema_id: [g.sistema_id],
                 lista_id: [g.lista_id],
                 definicion: [g.definicion],
@@ -1213,7 +1218,7 @@ export class AnalysisComponent implements OnInit {
         
         // Verificar que el ítem principal tenga referencia asignada
         const itemRefOk = !!itemRef && (typeof itemRef === 'number' ? itemRef > 0 : (typeof itemRef === 'string' && itemRef.trim().length > 0));
-        if (!itemRefOk) return false;
+        if (itemRefOk) return true; // Si tiene referencia principal, está completo
         
         const partes = this.getPartesFormArray(index);
         if (!partes || partes.length === 0) return true; // Si no hay partes, el item principal basta
@@ -1360,7 +1365,9 @@ export class AnalysisComponent implements OnInit {
                         if (action.type === updatePedidoSuccess.type) {
                             const pedido = action.pedido;
                             this.messageService.add({ severity: 'success', summary: 'Pedido Finalizado', detail: 'El pedido ha sido enviado a costeo. El vendedor será notificado.' });
-                            this.router.navigate(['/app/pedidos']);
+                            setTimeout(() => {
+                                this.router.navigate(['/app/pedidos']);
+                            }, 1500);
                         } else {
                             this.messageService.add({
                                 severity: 'error',
@@ -1370,9 +1377,10 @@ export class AnalysisComponent implements OnInit {
                         }
                     });
 
+                const payload = this.buildPayload();
                 this.store.dispatch(updatePedido({ 
                     id: id, 
-                    changes: { estado: 'En_Costeo' } 
+                    changes: { ...payload, estado: 'En_Costeo' } 
                 }));
             }
         });
