@@ -130,6 +130,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/entregar', [PedidoController::class, 'entregar'])->name('pedidos.entregar');
         Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
         Route::post('pedidos/{pedido}/devolver-vendedor', [PedidoController::class, 'devolverAVendedor'])->name('pedidos.devolver-vendedor');
+        Route::post('pedidos/{pedido}/devolver-analista', [PedidoController::class, 'devolverAAnalista'])->name('pedidos.devolver-analista');
         
         Route::apiResource('pedidos', PedidoController::class);
 
@@ -187,8 +188,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class);
         Route::apiResource('transportadoras', TransportadoraController::class);
-        Route::apiResource('trms', TRMController::class);
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
+        Route::apiResource('trms', TRMController::class);
 
         /**
          * Gestión de Landing (Admin)

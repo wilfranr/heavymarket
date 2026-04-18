@@ -78,3 +78,18 @@ sequenceDiagram
 - Si el usuario selecciona una sugerencia del catálogo, el sistema guarda el vínculo técnico (`referencia_id`).
 - Si el usuario escribe código libre sin coincidencia, el sistema crea referencia temporal al guardar.
 - La interfaz debe permitir operación continua del asesor sin bloquear captura por falta de catálogo previo.
+
+## 6. Flujo de Costeo (Detalle Inicial)
+
+El proceso de costeo inicia una vez el Analista de Partes ha definido los repuestos requeridos por el cliente (cantidades y detalles técnicos) y envía el pedido a costeo. En este momento, el estado del pedido cambia a **En_Costeo**.
+
+**Objetivo:** Permitir al Asesor realizar un costeo detallado de cada referencia para seleccionar las mejores opciones (precio, tiempos de entrega) para el cliente.
+
+**Reglas y Comportamiento del Costeo por Ítem (Referencia):**
+- **Filtrado de Proveedores:** Para cada referencia, el sistema debe cargar los proveedores aplicables. Este filtro se realiza cruzando la información de la referencia con los proveedores:
+  - Se deben mostrar proveedores que manejen el **Sistema** del ítem (ej. "Aire Acondicionado") y la **Marca** o Fabricante de la referencia (ej. "Caterpillar").
+  - *Nota Técnica:* Queda pendiente definir exactamente la estructura relacional en base de datos para esta asociación (Proveedor <-> Sistema <-> Marca).
+- **Tipos de Proveedor:** La interfaz debe diferenciar claramente si el proveedor sugerido es **Nacional** o **Internacional**.
+- **Cálculo de Precio de Venta:** En esta vista se debe realizar el cálculo del precio de venta final para el cliente (considerando costos, moneda y margen de utilidad).
+- **Comparación y Selección:** Para un mismo ítem, el Asesor puede listar y comparar múltiples opciones de proveedores, evaluando principalmente sus costos y **tiempos de entrega**.
+- **Generación de Cotización:** Cada opción de proveedor ingresada en la vista de costeo contará con una casilla de selección (*checkbox*). El Asesor debe marcar las opciones más viables y, a partir de estas selecciones, el sistema generará el documento formal de **Cotización**. Este documento se entregará al cliente para su decisión final.

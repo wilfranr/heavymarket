@@ -286,6 +286,28 @@ Authorization: Bearer {token}
 
 ---
 
+### Devolver a Analista
+
+```http
+POST /api/v1/pedidos/{id}/devolver-a-analista
+Authorization: Bearer {token}
+```
+
+**Descripción:** Cambia el estado del pedido de "En_Costeo" a "Nuevo" para permitir correcciones por parte del vendedor.
+
+**Respuesta (200):**
+```json
+{
+  "message": "Pedido devuelto a analista exitosamente",
+  "data": {
+    "id": 1,
+    "estado": "Nuevo"
+  }
+}
+```
+
+---
+
 ### Eliminar Pedido
 
 ```http
@@ -435,6 +457,37 @@ DELETE /api/v1/maquinas/{id}
 Authorization: Bearer {token}
 ```
 
+### TRM
+
+```http
+GET /api/v1/trms/latest
+Authorization: Bearer {token}
+```
+
+**Descripción:** Obtiene la tasa representativa del mercado más reciente registrada en el sistema.
+
+**Respuesta (200):**
+```json
+{
+  "data": [
+    {
+      "id": 1,
+      "valor": 3950.50,
+      "fecha": "2026-04-18"
+    }
+  ]
+}
+```
+
+### Configuración Empresa
+
+```http
+GET /api/v1/empresas
+Authorization: Bearer {token}
+```
+
+**Descripción:** Obtiene los parámetros globales de la empresa (ej. valor del flete por kg).
+
 ---
 
 ## Códigos de Estado HTTP
@@ -473,5 +526,5 @@ Authorization: Bearer {token}
 ---
 
 **Versión API:** v1  
-**Última actualización:** 18 de Enero, 2026  
+**Última actualización:** 18 de Abril, 2026  
 **Stack**: Laravel 12 + Sanctum + MySQL

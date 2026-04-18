@@ -1,0 +1,301 @@
+<p-toast></p-toast>
+
+@if (loading$ | async) {
+<div class="p-6">
+    <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
+    <p-skeleton width="100%" height="300px"></p-skeleton>
+</div>
+} @else {
+<div class="min-h-screen p-6 font-sans text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-transparent">
+    <div class="max-w-[1906px] mx-auto">
+        <!-- Header -->
+        <div class="flex justify-between items-center mb-6 px-8">
+            <div>
+                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">
+                    Costeo > Editar
+                </div>
+                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500" style="font-family: 'Figtree'">
+                    Costeo asesor
+                </h1>
+            </div>
+            <!-- Top Buttons -->
+            <div class="flex gap-4 items-center">
+                <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="guardarCosteo()">
+                    <i class="pi pi-save"></i>
+                    <span>Guardar</span>
+                </button>
+                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()">
+                    <i class="pi pi-check-circle"></i>
+                    <span>Finalizar</span>
+                </button>
+                <button type="button" class="btn-pill bg-orange-500 hover:bg-orange-600 border-none text-white flex items-center gap-2" (click)="confirmarDevolucion()">
+                    <i class="pi pi-arrow-left"></i>
+                    <span>Devolver al analista</span>
+                </button>
+            </div>
+        </div>
+
+        @if (pedido$ | async; as pedido) {
+        <!-- Top Info Cards Grid -->
+        <div class="flex gap-6 mb-10 px-8">
+
+            <!-- Order Info -->
+            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del pedido</span>
+                    <div class="w-[47px] h-[44px] flex items-center justify-center">
+                        <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Documento:</span> <span>Análisis</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Consecutivo:</span> <span>{{ pedidoId() }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Creación:</span> <span>{{ pedido.created_at | date:'MMMM d, y' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Actualización:</span> <span>{{ pedido.updated_at | date:'MMMM d, y' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Usuario:</span> <span>{{ pedido.user?.name || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>Asesor</span></div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="text-blue-500 font-semibold">Estado:</span>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual)">
+                            {{ pedidoEstadoEtiqueta(estadoActual) }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Machine Info -->
+            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la máquina</span>
+                    <div class="w-[47px] h-[44px] flex items-center justify-center">
+                        <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
+                    </div>
+                </div>
+                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
+                    @if (pedido.maquina) {
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Máquina:</span> <span>{{ pedido.maquina.tipo || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Fabricante:</span> <span>{{ pedido.maquina.marca || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Modelo:</span> <span>{{ pedido.maquina.modelo || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Serie:</span> <span>{{ pedido.maquina.serie || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">ID adicional:</span> <span>{{ pedido.maquina.id_interno || '----' }}</span></div>
+                    } @else {
+                        <p class="text-gray-500">Sin máquina asociada</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Client Info -->
+            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
+                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de tercero</span>
+                    <div class="flex gap-1">
+                        <i class="pi pi-envelope text-gray-600 dark:text-white text-xl p-2"></i>
+                        <i class="pi pi-whatsapp text-gray-600 dark:text-white text-xl p-2"></i>
+                    </div>
+                </div>
+                <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[#343743]">
+                    @if (pedido.tercero) {
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo:</span> <span>{{ pedido.tercero.tipo || 'Cliente' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Razón social:</span> <span class="truncate">{{ pedido.tercero.nombre }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo de documento:</span> <span>{{ pedido.tercero.tipo_documento || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Número de documento:</span> <span>{{ pedido.tercero.numero_documento || '---' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Ciudad:</span> <span>{{ pedido.tercero.ciudad?.name || '--' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Contacto:</span> <span>{{ pedido.contacto?.nombre || '--' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>{{ pedido.contacto?.cargo || '--' }}</span></div>
+                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Teléfono:</span> <span>{{ pedido.tercero.telefono || '---' }}</span></div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Costeo Grid (Items) -->
+        <div class="px-8" [formGroup]="costeoForm">
+            @for (refGroup of referenciasFormArray.controls; track $index; let refIndex = $index) {
+                
+                <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 mb-6 shadow-sm border border-gray-200 dark:border-none" [formGroup]="$any(refGroup)">
+                    
+                    <!-- Item Header -->
+                    <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
+                        <div class="flex items-center gap-6 text-blue-500 font-semibold">
+                            <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider">
+                                {{ refGroup.get('estado_str')?.value }}
+                            </span>
+                            <span>{{ refGroup.get('sistema_nombre')?.value }}</span>
+                            <span>{{ refGroup.get('definicion')?.value }}</span>
+                            <span>Cant. {{ refGroup.get('cantidad')?.value }}</span>
+                            <span>{{ refGroup.get('referencia_codigo')?.value }}</span>
+                            <span>{{ refGroup.get('categoria_nombre')?.value }}</span>
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-image"></i></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-search"></i></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-trash"></i></button>
+                            <button type="button" class="w-8 h-8 rounded bg-transparent flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 ml-2"><i class="pi pi-chevron-down"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Providers Table Header -->
+                    <div class="flex gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
+                        <div class="w-[40px] text-center">Ítem</div>
+                        <div class="w-[70px] text-center">Cantidad</div>
+                        <div class="w-[220px]">Proveedor</div>
+                        <div class="w-[200px]">Marca</div>
+                        <div class="w-[180px]">Entrega</div>
+                        <div class="w-[160px]">Costo USD</div>
+                        <div class="w-[160px]">Costo COP</div>
+                        <div class="w-[70px] text-center">Utilidad</div>
+                        <div class="w-[250px]">Venta</div>
+                    </div>
+
+                    <!-- Providers Rows -->
+                    <div formArrayName="proveedores">
+                        @for (prov of getProveedoresParaReferencia(refIndex); track provIndex; let provIndex = $index) {
+                            <div class="flex items-center gap-2 mb-3" [formGroup]="$any(prov)">
+                                <!-- Check -->
+                                <div class="w-[40px] text-center flex justify-center">
+                                    <p-checkbox formControlName="seleccionado" [binary]="true"></p-checkbox>
+                                </div>
+                                <!-- Cantidad -->
+                                <div class="w-[70px]">
+                                    <input pInputText type="number" formControlName="cantidad" 
+                                        (input)="calcularFila(refIndex, provIndex)"
+                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded" />
+                                </div>
+                                <!-- Proveedor -->
+                                <div class="w-[220px]">
+                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                        <p-select formControlName="proveedor_id" [options]="proveedores" placeholder="Seleccionar" 
+                                            (onChange)="onProveedorChange(refIndex, provIndex)"
+                                            styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors">
+                                            <i class="pi pi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Marca -->
+                                <div class="w-[200px]">
+                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                        <p-select formControlName="marca_id" [options]="marcas" placeholder="Seleccionar" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors">
+                                            <i class="pi pi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Entrega -->
+                                <div class="w-[180px]">
+                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                        <p-select formControlName="entrega" [options]="entregas" placeholder="Seleccionar" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors">
+                                            <i class="pi pi-plus"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <!-- Costo USD -->
+                                <div class="w-[160px]">
+                                    <input pInputText type="number" formControlName="costo_usd" placeholder="0.00 USD" 
+                                        (input)="calcularFila(refIndex, provIndex)"
+                                        min="0"
+                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
+                                </div>
+                                <!-- Costo COP -->
+                                <div class="w-[160px]">
+                                    <input pInputText type="number" formControlName="costo_cop" placeholder="0 COP" 
+                                        (input)="calcularFila(refIndex, provIndex)"
+                                        min="0"
+                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
+                                </div>
+                                <!-- Utilidad -->
+                                <div class="w-[70px]">
+                                    <input pInputText type="number" formControlName="utilidad" placeholder="%" 
+                                        (input)="calcularFila(refIndex, provIndex)"
+                                        min="0"
+                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded px-2" />
+                                </div>
+                                <!-- Venta -->
+                                <div class="w-[250px] flex gap-2">
+                                    <input pInputText type="text" [value]="prov.get('venta')?.value | number:'1.0-0'" placeholder="0 COP" class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 font-bold" readonly />
+                                    <!-- Si hay mas de un proveedor, mostrar boton de borrar -->
+                                    @if (getProveedoresParaReferencia(refIndex).length > 1) {
+                                        <button class="w-[40px] h-[40px] text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded shrink-0 bg-transparent flex items-center justify-center transition-colors" (click)="eliminarProveedor(refIndex, provIndex)"><i class="pi pi-trash"></i></button>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Bottom Buttons per Item -->
+                    <div class="flex justify-end gap-3 mt-4">
+                        <button type="button" class="btn-pill bg-transparent border border-gray-500 text-white flex items-center gap-2 hover:bg-gray-800" (click)="agregarProveedorListado(refIndex)">
+                            <span>Agregar listado</span>
+                            <i class="pi pi-plus"></i>
+                        </button>
+                        <button type="button" class="btn-pill bg-blue-600 text-white flex items-center gap-2 border-none hover:bg-blue-700" (click)="agregarProveedorListado(refIndex)">
+                            <span>Agregar</span>
+                            <i class="pi pi-plus"></i>
+                        </button>
+                    </div>
+
+                </div>
+            }
+        </div>
+        
+        <!-- Resumen de Totales -->
+        <div class="px-8 mt-10 mb-20 flex justify-end">
+            <div class="bg-white dark:bg-[#2A2D36] p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-md animate-fade-in">
+                <h3 class="text-xl font-bold mb-6 text-blue-600 dark:text-blue-400 border-b border-gray-100 dark:border-gray-700 pb-3 flex items-center gap-2">
+                    <i class="pi pi-calculator"></i>
+                    Resumen de Cotización
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-lg">
+                        <span class="text-slate-500 dark:text-slate-400">Subtotal:</span>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200">{{ calcularSubtotal() | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-lg">
+                        <span class="text-slate-500 dark:text-slate-400">IVA (19%):</span>
+                        <span class="font-semibold text-slate-800 dark:text-slate-200">{{ calcularSubtotal() * 0.19 | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                    <div class="flex justify-between items-center text-2xl font-bold mt-6 pt-6 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-blue-600 dark:text-blue-400">TOTAL:</span>
+                        <span class="text-slate-900 dark:text-white">{{ calcularSubtotal() * 1.19 | currency:'COP':'symbol-narrow':'1.0-0' }}</span>
+                    </div>
+                </div>
+                <div class="mt-6 flex gap-3">
+                    <button type="button" class="flex-1 btn-pill bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-white border-none py-3" (click)="volver()">
+                        Cerrar
+                    </button>
+                    <button type="button" class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold" (click)="finalizarCosteo()">
+                        Generar Cotización
+                    </button>
+                </div>
+            </div>
+        </div>
+        }
+    </div>
+</div>
+}
+
+<!-- Diálogo de Devolución -->
+<p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '500px'}" header="Devolver al analista">
+    <div class="flex flex-col gap-4 py-2">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+            Explique el motivo por el cual devuelve este pedido al analista. Este comentario será visible para él.
+        </p>
+        <div class="flex flex-col gap-2">
+            <label for="comentario" class="font-semibold text-sm">Comentario de devolución (mínimo 10 caracteres)</label>
+            <textarea id="comentario" pTextarea [(ngModel)]="devolucionComentario" rows="5"
+                placeholder="Ej: Faltan referencias para el sistema de motor, o la cantidad es incorrecta..."
+                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white p-3 rounded"></textarea>
+        </div>
+    </div>
+    <ng-template #footer>
+        <div class="flex justify-end gap-3 pb-3 pr-3">
+            <p-button label="Cancelar" [text]="true" severity="secondary" (click)="displayDevolucionDialog = false"></p-button>
+            <p-button label="Confirmar Devolución" severity="warn" (click)="devolverAAnalista()" 
+                [disabled]="submitting || devolucionComentario.trim().length < 10" [loading]="submitting"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>

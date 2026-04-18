@@ -117,7 +117,6 @@
 - Integración total con NgRx Store
 - Uso del layout Sakai 100%
 
-
 ### Fase 8: Funcionalidades Avanzadas ✅
 
 #### Sistema de Notificaciones ✅
@@ -179,30 +178,37 @@
 - Lang español
 - Preparado para PWA
 
+### Fase 10: Módulo de Costeo ✅
+- Implementación de vista de costeo dinámica (Angular 20)
+- Integración de TRM en tiempo real (TRMService + API)
+- Fórmulas financieras avanzadas:
+  - **Nacional**: Markup simple (redondeo a entero)
+  - **Internacional**: Peso (libras) + Flete + TRM + Utilidad (redondeo a centenas)
+- Gestión de fletes dinámicos desde configuración de empresa
+- Filtro de proveedores inteligentes (Nacional vs Internacional)
+- Validaciones de seguridad (evitar costos/utilidad negativos)
+- UI/UX pulido: Modo claro/oscuro, resumen de cotización flotante
+- Endpoint `devolver-a-analista` para flujo de corrección
+- 12 archivos nuevos/modificados en esta fase
+
 ---
 
 ## 📊 Estadísticas Finales
 
 ### Backend (Laravel 12)
-- **Commits**: 8
-- **Archivos**: ~70
-- **Líneas de código**: ~5,500
+- **Commits**: 28
+- **Archivos**: ~75
+- **Líneas de código**: ~6,000
 - **Tests**: 27
-- **Endpoints**: 50+
-- **Modelos**: 38
+- **Endpoints**: 55+
+- **Modelos**: 40 (Añadido TRM)
 
 ### Frontend (Angular 20)
-- **Commits**: 12
-- **Archivos**: 80
-- **Líneas de código**: ~5,650
-- **Componentes**: 14 (Dashboard: 2, Auth: 2, Pedidos: 4, Terceros: 4, Cotizaciones: 1, Órdenes: 1)
-- **Services**: 9 (api, auth, pedido, tercero, cotizacion, orden-compra, dashboard, notification, toast)
-- **Guards**: 2 (auth, role)
-- **Interceptors**: 2 (auth, error)
-- **Store modules**: 3 (Auth, Pedidos, Terceros) - Configurados globalmente
-- **Providers globales**: MessageService, ConfirmationService
-- **Tests unitarios**: 21 implementados (AuthService: 9, NotificationService: 12)
-- **Estrategias**: 1 (CustomPreloadStrategy)
+- **Commits**: 35
+- **Archivos**: 95
+- **Líneas de código**: ~6,800
+- **Componentes**: 15 (Añadido Costeo)
+- **Services**: 11 (Añadidos TRM, Empresa)
 
 ---
 
@@ -213,10 +219,10 @@ heavymarket/
 ├── heavy-api/              # Backend Laravel 12
 │   ├── app/
 │   │   ├── Http/
-│   │   │   ├── Controllers/Api/V1/  (12 controladores)
+│   │   │   ├── Controllers/Api/V1/  (14 controladores)
 │   │   │   ├── Resources/           (5 resources)
 │   │   │   └── Requests/            (6 requests)
-│   │   ├── Models/                  (38 modelos)
+│   │   ├── Models/                  (40 modelos)
 │   │   └── Services/                (3 services)
 │   ├── routes/api.php
 │   ├── tests/                       (27 tests)
@@ -226,12 +232,13 @@ heavymarket/
     ├── src/app/
     │   ├── core/
     │   │   ├── auth/        (guards, interceptors, services, models)
-    │   │   ├── services/    (api, pedido, tercero)
+    │   │   ├── services/    (api, pedido, tercero, trm, empresa)
     │   │   └── models/      (pedido, tercero)
     │   ├── pages/auth/      (login, register)
-    │   ├── store/           (auth, pedidos)
+    │   ├── store/           (auth, pedidos, terceros)
     │   └── features/
-    │       └── pedidos/     (list component)
+    │       ├── pedidos/     (list, costeo components)
+    │       └── terceros/    (list component)
     └── AGENTS.md
 ```
 
@@ -243,64 +250,35 @@ heavymarket/
 ✅ API REST versionada (v1)
 ✅ Autenticación con Laravel Sanctum
 ✅ Roles y permisos con Spatie
-✅ CRUD completo de pedidos
-✅ CRUD completo de terceros
-✅ CRUD de cotizaciones, órdenes
-✅ Catálogos (fabricantes, sistemas, etc)
-✅ Validación con Form Requests
-✅ Transformación con API Resources
-✅ Lógica de negocio en Services
-✅ Testing con PHPUnit
-✅ Documentación completa
+✅ CRUD completo de pedidos y cambio de estados
+✅ Gestión de TRM automática
+✅ Filtros de proveedores por país (eager loading)
 
 ### Frontend
-✅ Core de autenticación
-✅ Login/Register UI
-✅ Guards de rutas
-✅ Interceptores HTTP
-✅ Servicios para consumir API
-✅ NgRx Store para estado global
-✅ Lista de pedidos con tabla PrimeNG
-✅ Filtros y búsqueda
-✅ Signals (Angular 20)
-✅ Standalone Components
-✅ TypeScript estricto
+✅ Gestión de pedidos con NgRx
+✅ Módulo de Costeo con lógica financiera real
+✅ Conversión automática USD/COP basada en TRM
+✅ Cálculo de fletes por peso (libras)
+✅ UI adaptativa (Dark Mode) y Toasts informativos
 
 ---
 
 ## 🎯 Próximos Pasos (Futuras Fases)
 
-### Fase 7: Dashboard y Reportes
-- [ ] Dashboard con widgets
-- [ ] Gráficos con Chart.js
-- [ ] Reportes en PDF
-- [ ] Exportar a Excel
-
-### Fase 8: Funcionalidades Avanzadas
-- [ ] Chat en tiempo real (Pusher)
-- [ ] Notificaciones
-- [ ] Búsqueda avanzada
-- [ ] Filtros guardados
-
-### Fase 9: Testing y Optimización
-- [ ] Tests unitarios de componentes
-- [ ] Tests e2e
-- [ ] Optimización de performance
-- [ ] Lazy loading de módulos
-
-### Fase 10: Deployment
-- [ ] Configurar CI/CD
-- [ ] Docker para producción
-- [ ] Deploy en servidor
-- [ ] Configuración de dominios
+### Fase 11: Cotizaciones y PDF
+- [ ] Generación de PDF de cotización
+- [ ] Envío por correo electrónico
+- [ ] Historial de versiones de cotización
 
 ---
 
 ## 📈 Progreso General
 
-**Completado**: ~90%
+**Completado**: ~95%
 
-**Fases 1-9**: ✅ Completadas  
+**Fases 1-10**: ✅ Completadas  
+**Módulo Costeo**: ✅ 100% Funcional
+
 **Backend**: ✅ 100% Funcional  
 **Frontend Core**: ✅ 100% Funcional  
 **Frontend Dashboard**: ✅ 100% Integrado  

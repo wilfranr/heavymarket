@@ -37,7 +37,7 @@ export interface Tercero {
     // Relaciones cargadas
     city?: { id: number; name: string } | null;
     state?: { id: number; name: string } | null;
-    country?: { id: number; name: string } | null;
+    country?: { id: number; name: string; iso2?: string } | null;
     contactos?: Contacto[];
     maquinas?: { id: number; modelo: string; serie?: string }[];
     fabricantes?: { id: number; nombre: string }[];

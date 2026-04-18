@@ -18,10 +18,12 @@
             (onPage)="onPageChange($event)" (onSort)="onSort($event)" responsiveLayout="scroll"
             styleClass="p-datatable-sm">
             <ng-template pTemplate="caption">
-                <div class="flex">
-                    <p-iconfield iconPosition="left" class="w-full">
+                <div class="flex justify-between items-center flex-column sm:flex-row">
+                    <p-button label="Limpiar" class="mb-2" icon="pi pi-filter-slash"
+                        (onClick)="limpiarBusqueda()" severity="secondary" [outlined]="true"></p-button>
+                    <p-iconfield iconPosition="left" class="ml-auto">
                         <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
+                        <input pInputText type="text" (input)="onSearch($any($event.target).value)"
                             placeholder="Buscar artículos..." class="w-full" />
                     </p-iconfield>
                 </div>

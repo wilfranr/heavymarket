@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -47,12 +48,40 @@ export class ListComponent implements OnInit {
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
+    private searchSubject = new Subject<string>();
 
     ngOnInit(): void {
         this.articulos$ = this.store.select(selectAllArticulos);
         this.loading$ = this.store.select(selectArticulosLoading);
         this.pagination$ = this.store.select(selectArticulosPagination);
 
+        this.searchSubject.pipe(
+            debounceTime(500),
+            distinctUntilChanged()
+        ).subscribe(term => {
+            this.searchTerm = term;
+            this.currentPage = 1;
+            this.first = 0;
+            this.cargarArticulos();
+        });
+
+        this.cargarArticulos();
+    }
+
+    /**
+     * Maneja la búsqueda
+     */
+    onSearch(term: string): void {
+        this.searchSubject.next(term);
+    }
+
+    /**
+     * Limpia la búsqueda
+     */
+    limpiarBusqueda(): void {
+        this.searchTerm = '';
+        this.currentPage = 1;
+        this.first = 0;
         this.cargarArticulos();
     }
 

@@ -23,6 +23,30 @@ export class AppMenu implements OnInit {
     ngOnInit() {
         const hasAdminRole = this.authService.hasAnyRole(['super_admin', 'Administrador']);
         const hasAnalistaRole = this.authService.hasAnyRole(['Analista', 'analista']);
+        const hasVendedorRole = this.authService.hasAnyRole(['Vendedor', 'vendedor']);
+
+        // Caso especial: Analista (y no Admin) solo ve lo solicitado
+        if (hasAnalistaRole && !hasAdminRole) {
+            this.model = [
+                {
+                    label: 'Comercial',
+                    items: [
+                        { label: 'Análisis', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }
+                    ]
+                },
+                {
+                    label: 'Catálogo de Productos',
+                    items: [
+                        { label: 'Máquinas', icon: 'pi pi-fw pi-cog', routerLink: ['/app/maquinas'] },
+                        { label: 'Sistemas', icon: 'pi pi-fw pi-wrench', routerLink: ['/app/sistemas'] },
+                        { label: 'Listas', icon: 'pi pi-fw pi-list-check', routerLink: ['/app/listas'] },
+                        { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
+                        { label: 'Referencias', icon: 'pi pi-fw pi-hashtag', routerLink: ['/app/referencias'] }
+                    ]
+                }
+            ];
+            return;
+        }
 
         this.model = [
             {
@@ -45,7 +69,7 @@ export class AppMenu implements OnInit {
                 label: 'Comercial',
                 items: [
                     { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
-                    { label: hasAnalistaRole ? 'Análisis' : 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
+                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
                     { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
                 ]
             },
@@ -64,25 +88,39 @@ export class AppMenu implements OnInit {
                     { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
                     { label: 'Referencias', icon: 'pi pi-fw pi-hashtag', routerLink: ['/app/referencias'] }
                 ]
-            },
-            {
-                label: 'CRM & Terceros',
-                items: [
-                    { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] },
-                    { label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] },
-                    { label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] },
-                    { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] }
-                ]
-            },
-            {
-                label: 'Configuración & Logística',
-                items: [
-                    { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
-                    { label: 'Categorías (ERP)', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] },
-                    { label: 'Tasa de Cambio (TRM)', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] }
-                ]
             }
         );
+
+        // CRM & Terceros (Condicional para Empresas)
+        const crmItems = [
+            { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] }
+        ];
+        if (!hasVendedorRole || hasAdminRole) {
+            crmItems.push({ label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] });
+        }
+        crmItems.push(
+            { label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] },
+            { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] }
+        );
+
+        this.model.push({
+            label: 'CRM & Terceros',
+            items: crmItems
+        });
+
+        // Configuración & Logística (Condicional para TRM)
+        const configItems = [
+            { label: 'Transportadoras', icon: 'pi pi-fw pi-truck', routerLink: ['/app/transportadoras'] },
+            { label: 'Categorías (ERP)', icon: 'pi pi-fw pi-tags', routerLink: ['/app/categorias'] }
+        ];
+        if (!hasVendedorRole || hasAdminRole) {
+            configItems.push({ label: 'Tasa de Cambio (TRM)', icon: 'pi pi-fw pi-dollar', routerLink: ['/app/trms'] });
+        }
+
+        this.model.push({
+            label: 'Configuración & Logística',
+            items: configItems
+        });
 
         if (hasAdminRole) {
             this.model.push({

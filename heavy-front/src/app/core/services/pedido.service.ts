@@ -113,4 +113,11 @@ export class PedidoService extends ApiService {
     devolverAVendedor(id: number, comentario: string): Observable<ApiResponse<Pedido>> {
         return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/devolver-vendedor`, { comentario });
     }
+
+    /**
+     * Devolver pedido al analista (Vendedor/Asesor devuelve a En_Analisis)
+     */
+    devolverAAnalista(id: number, comentario: string): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/devolver-analista`, { comentario });
+    }
 }

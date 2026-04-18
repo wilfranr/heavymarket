@@ -33,6 +33,11 @@ export const pedidosRoutes: Routes = [
                 title: 'Editar Pedido'
             },
             {
+                path: ':id/costeo',
+                loadComponent: () => import('./costeo/costeo').then((m) => m.CosteoComponent),
+                title: 'Costeo'
+            },
+            {
                 path: ':id/analysis',
                 loadComponent: () => import('./analysis/analysis').then((m) => m.AnalysisComponent),
                 title: 'Análisis de Pedido'

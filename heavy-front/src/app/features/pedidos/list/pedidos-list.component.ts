@@ -128,6 +128,11 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                         <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por analista'" tooltipPosition="top"></i>
                                         <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
                                     </span>
+                                } @else if (pedido.estado === 'En_Analisis' && tieneDevolucionAnalistaReciente(pedido)) {
+                                    <span class="inline-flex items-center gap-1">
+                                        <i class="pi pi-exclamation-circle text-orange-500" [pTooltip]="'Pedido devuelto por asesor'" tooltipPosition="top"></i>
+                                        <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
+                                    </span>
                                 } @else {
                                     <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
                                 }
@@ -236,6 +241,11 @@ export class PedidosListComponent implements OnInit {
     }
 
     onRowClick(pedido: Pedido): void {
+        if (pedido.estado === 'En_Costeo') {
+            this.router.navigate(['/app/pedidos', pedido.id, 'costeo']);
+            return;
+        }
+
         if (this.isAnalista) {
             this.onAnalysisPedido(pedido.id);
         } else {
@@ -479,6 +489,32 @@ export class PedidosListComponent implements OnInit {
                 for (let i = parsed.length - 1; i >= 0; i--) {
                     const item = parsed[i];
                     if (item && typeof item === 'object' && (item as { tipo?: unknown }).tipo === 'devolucion') {
+                        return true;
+                    }
+                }
+            }
+        } catch {
+            // No es JSON
+        }
+        return false;
+    }
+
+    /**
+     * Verifica si el pedido tiene una devolución reciente del asesor al analista (tipo: 'devolucion_analista')
+     */
+    tieneDevolucionAnalistaReciente(pedido: Pedido): boolean {
+        const raw = pedido.comentario;
+        if (raw == null || String(raw).trim() === '') {
+            return false;
+        }
+        const s = String(raw).trim();
+        try {
+            const parsed = JSON.parse(s) as unknown;
+            if (Array.isArray(parsed)) {
+                // Buscar el último comentario con tipo 'devolucion_analista'
+                for (let i = parsed.length - 1; i >= 0; i--) {
+                    const item = parsed[i];
+                    if (item && typeof item === 'object' && (item as { tipo?: unknown }).tipo === 'devolucion_analista') {
                         return true;
                     }
                 }
