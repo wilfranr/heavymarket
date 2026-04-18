@@ -1329,7 +1329,7 @@ export class AnalysisComponent implements OnInit {
                         this.finalizing = false;
                         if (action.type === updatePedidoSuccess.type) {
                             const pedido = action.pedido;
-                            this.messageService.add({ severity: 'success', summary: 'Pedido Finalizado', detail: 'El pedido ha sido enviado a costeo exitosamente' });
+                            this.messageService.add({ severity: 'success', summary: 'Pedido Finalizado', detail: 'El pedido ha sido enviado a costeo. El vendedor será notificado.' });
                             this.router.navigate(['/app/pedidos']);
                         } else {
                             this.messageService.add({

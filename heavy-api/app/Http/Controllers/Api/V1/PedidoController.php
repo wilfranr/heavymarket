@@ -271,6 +271,15 @@ class PedidoController extends Controller
                 }
             }
 
+            // Notificar al vendedor (asesor) cuando el pedido pasa a En_Costeo
+            if ($estadoAnterior !== PedidoEstado::En_Costeo && $nuevoEstado === 'En_Costeo') {
+                try {
+                    $this->notificarVendedorCosteo($pedido, $request->user());
+                } catch (\Exception $e) {
+                    // No fallar la request si la notificación falla
+                }
+            }
+
             return response()->json([
                 'data' => new PedidoResource($pedido),
                 'message' => 'Pedido actualizado exitosamente',
@@ -305,6 +314,31 @@ class PedidoController extends Controller
                     ['id' => $pedido->id, 'tercero_id' => $pedido->tercero_id]
                 ));
             }
+        } catch (\Exception $e) {
+            // Silenciar errores de notificación
+        }
+    }
+
+    /**
+     * Notifica al vendedor (asesor) cuando el pedido pasa a costeo
+     */
+    private function notificarVendedorCosteo(Pedido $pedido, User $analista): void
+    {
+        try {
+            // Obtener el vendedor asignado al pedido
+            $vendedor = $pedido->user;
+            if (!$vendedor) {
+                return;
+            }
+
+            $vendedor->notify(new \App\Notifications\SystemNotification(
+                'pedido_en_costeo',
+                'Pedido #'.$pedido->id.' en Costeo',
+                'El analista '.$analista->name.' ha finalizado el análisis. El pedido #'.$pedido->id.' está listo para costeo. ¡Revísalo y cotiza las mejores opciones!',
+                'pi-calculator',
+                'green',
+                ['id' => $pedido->id, 'tercero_id' => $pedido->tercero_id]
+            ));
         } catch (\Exception $e) {
             // Silenciar errores de notificación
         }
@@ -491,6 +525,69 @@ class PedidoController extends Controller
             return response()->json([
                 'data' => new PedidoResource($pedido->fresh()),
                 'message' => 'Pedido marcado como cotizado',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Devolver pedido al analista (desde En_Costeo a En_Analisis)
+     * El vendedor/asesor devuelve el pedido porque necesita cambios en las referencias
+     */
+    public function devolverAAnalista(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'comentario' => ['required', 'string', 'min:10', 'max:500'],
+        ]);
+
+        $this->authorize('update', $pedido);
+
+        try {
+            // Guardar comentario en campo comentario como JSON estructurado
+            $comentariosExistentes = [];
+            if ($pedido->comentario) {
+                $decoded = json_decode($pedido->comentario, true);
+                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                    $comentariosExistentes = $decoded;
+                }
+            }
+
+            // Agregar nuevo comentario de devolución
+            $comentariosExistentes[] = [
+                'origen' => 'Asesor',
+                'comentario' => $validated['comentario'],
+                'tipo' => 'devolucion_analista',
+                'fecha' => now()->toISOString(),
+            ];
+
+            $pedido->comentario = json_encode($comentariosExistentes, JSON_UNESCAPED_UNICODE);
+            $pedido->transitarA(PedidoEstado::En_Analisis);
+            $pedido->save();
+
+            // Notificar a los analistas
+            try {
+                $analistas = \App\Models\User::whereHas('roles', function ($q) {
+                    $q->where('name', 'Analista');
+                })->get();
+
+                foreach ($analistas as $analista) {
+                    $analista->notify(new \App\Notifications\SystemNotification(
+                        'pedido_devuelto_analista',
+                        'Pedido #' . $pedido->id . ' devuelto a Análisis',
+                        'El asesor ' . $request->user()->name . ' ha devuelto el pedido #' . $pedido->id . ' para corrección de referencias: ' . $validated['comentario'],
+                        'pi-arrow-right',
+                        'orange',
+                        ['id' => $pedido->id]
+                    ));
+                }
+            } catch (\Exception $e) {
+                // Silenciar errores de notificación
+            }
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido devuelto al analista',
             ]);
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
