@@ -684,6 +684,29 @@ export class AnalysisComponent implements OnInit {
                 categoria: refObj.articulo_id
             });
         }
+
+        // Actualizar estado del ítem: verificar referencia principal + partes
+        this.actualizarEstadoItem(itemIndex);
+    }
+
+    private actualizarEstadoItem(itemIndex: number): void {
+        const item = this.referenciasFormArray.at(itemIndex);
+        const itemRef = item.get('referencia_id')?.value;
+        
+        // Verificar estado basado en referencia del ítem Y partes
+        const partes = this.getPartesFormArray(itemIndex);
+        let partesConRef = 0;
+        let partesConCat = 0;
+        
+        for (const parte of partes.controls) {
+            if (parte.get('referencia_id')?.value) partesConRef++;
+            if (parte.get('categoria')?.value) partesConCat++;
+        }
+        
+        // Completo si tiene referencia principal O todas las partes tienen referencia + categoría
+        const itemCompleto = !!itemRef || (partesConRef === partes.length && partesConCat === partes.length);
+        
+        item.get('estado_item')?.setValue(itemCompleto ? 'Analizado' : 'En proceso');
     }
 
     // --- MÉTODOS DE COMENTARIOS E IMÁGENES (REPLICADOS DE EDIT) ---
