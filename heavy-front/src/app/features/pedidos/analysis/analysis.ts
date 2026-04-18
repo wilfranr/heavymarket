@@ -541,6 +541,8 @@ export class AnalysisComponent implements OnInit {
             message: '¿Está seguro de eliminar este requerimiento del pedido? Se perderá todo el análisis asociado a este ítem.',
             header: 'Eliminar Requerimiento',
             icon: 'pi pi-exclamation-triangle',
+            acceptLabel: 'Sí',
+            rejectLabel: 'No',
             accept: () => {
                 this.referenciasFormArray.removeAt(index);
                 this.messageService.add({ severity: 'warn', summary: 'Eliminado', detail: 'El requerimiento ha sido removido del pedido.' });
@@ -616,6 +618,8 @@ export class AnalysisComponent implements OnInit {
                 message: 'Cambiar el sistema o tipo de artículo reseteará las referencias seleccionadas en este análisis. ¿Desea continuar?',
                 header: 'Confirmar cambio estructural',
                 icon: 'pi pi-exclamation-triangle',
+                acceptLabel: 'Sí',
+                rejectLabel: 'No',
                 accept: () => {
                     this.aplicarCambiosRequerimiento(values, itemControl);
                     this.getPartesFormArray(this.activeItemIndex).clear();
@@ -1306,6 +1310,8 @@ export class AnalysisComponent implements OnInit {
             message: `¿Está seguro de finalizar el análisis? El pedido pasará a estado "${PEDIDO_ESTADO_ETIQUETA.En_Costeo}" y no podrá ser editado por usted.`,
             header: 'Finalizar Análisis',
             icon: 'pi pi-check-circle',
+            acceptLabel: 'Sí',
+            rejectLabel: 'No',
             accept: () => {
                 this.finalizing = true;
                 this.store.dispatch(updatePedido({ 

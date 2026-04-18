@@ -178,6 +178,10 @@ export class EditComponent implements OnInit {
     itemsConErrores = signal<Map<number, string[]>>(new Map());
     enviandoACosteo = false;
 
+    // Carga masiva
+    showBulkImport = false;
+    private loadingBulkImport = false;
+
     // Modal de detalle de máquina
     displayMaquinaDialog = false;
     selectedMaquina: any = null;
@@ -561,7 +565,8 @@ export class EditComponent implements OnInit {
             fabricante_id: [null],
             contacto_id: [null],
             referencias: this.fb.array([]),
-            motivo_rechazo: ['']
+            motivo_rechazo: [''],
+            referencias_copiadas: ['']
         });
 
         // Cuando cambia el tercero, filtrar las máquinas asociadas a ese cliente
@@ -921,6 +926,92 @@ export class EditComponent implements OnInit {
         if (referenciaForm.get('sistema_id')?.value) {
             this.cargarTiposPorSistema(referenciaForm.get('sistema_id')?.value, index);
         }
+    }
+
+    /**
+     * Procesa las referencias copiadas en carga masiva
+     */
+    procesarReferenciasMasivas(): void {
+        const texto = this.pedidoForm.get('referencias_copiadas')?.value || '';
+        if (!texto.trim()) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Advertencia',
+                detail: 'No hay referencias para procesar'
+            });
+            return;
+        }
+
+        this.loadingBulkImport = true;
+        const lineas = texto.split('\n');
+        const referenciasParaProcesar: Array<{ cantidad: number; codigo: string }> = [];
+
+        lineas.forEach((linea: string) => {
+            const trimmed = linea.trim();
+            if (!trimmed) return;
+
+            const match = trimmed.match(/^(\d+)\s+(.+)$/);
+            if (match) {
+                const cantidad = parseInt(match[1], 10);
+                const codigoReferencia = match[2].trim().toUpperCase();
+
+                if (cantidad > 0 && codigoReferencia) {
+                    referenciasParaProcesar.push({ cantidad, codigo: codigoReferencia });
+                }
+            }
+        });
+
+        if (referenciasParaProcesar.length === 0) {
+            this.loadingBulkImport = false;
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Advertencia',
+                detail: 'No se encontraron referencias válidas en el formato correcto (Cantidad [Espacio] Referencia)'
+            });
+            return;
+        }
+
+        this.referenciaService.bulkSearchOrCreate(referenciasParaProcesar).subscribe({
+            next: (response) => {
+                this.loadingBulkImport = false;
+                const resultados = response.data;
+
+                if (resultados && resultados.length > 0) {
+                    resultados.forEach((item: any) => {
+                        const existeEnGlobal = this.referencias.find(r => r.value === item.referencia_id);
+                        if (!existeEnGlobal) {
+                            this.referencias.push({
+                                label: item.codigo,
+                                value: item.referencia_id
+                            });
+                        }
+
+                        this.agregarReferencia({
+                            referencia_id: item.referencia_id,
+                            cantidad: item.cantidad,
+                            definicion: item.codigo
+                        });
+                    });
+
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: `${resultados.length} referencia(s) procesada(s) exitosamente`
+                    });
+
+                    this.pedidoForm.get('referencias_copiadas')?.setValue('');
+                    this.showBulkImport = false;
+                }
+            },
+            error: (err) => {
+                this.loadingBulkImport = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron procesar las referencias: ' + (err.error?.message || err.message)
+                });
+            }
+        });
     }
 
     /**

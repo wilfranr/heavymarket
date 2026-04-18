@@ -449,11 +449,15 @@
 
                     <!-- Bottom Buttons -->
                     <div class="flex justify-end gap-4 mt-8">
-                        <button type="button"
+                        <button type="button" class="btn-pill bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center gap-2 border-none transition-colors" (click)="showBulkImport = !showBulkImport">
+                            <i class="pi pi-upload"></i> Carga masiva
+                        </button>
+                        <!-- Botón temporalmente deshabilitado: buscar y agregar en lote -->
+                        <!-- <button type="button"
                             class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 flex items-center gap-2 border-none transition-colors"
                             (click)="abrirDialogoLote()">
                             <i class="pi pi-bars"></i> Buscar y agregar en lote
-                        </button>
+                        </button> -->
                         <button type="button" class="btn-pill btn-outline flex items-center gap-2"
                             (click)="agregarReferencia()">
                             Agregar ítem manual <i class="pi pi-plus"></i>
@@ -461,6 +465,30 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Bulk Import Area (Toggleable) -->
+            @if (showBulkImport) {
+            <div class="theme-card rounded-xl border-2 border-brand-yellow/30 p-6 mb-8 bg-brand-yellow/5 animate-fade-in">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-lg bg-brand-yellow/20 flex items-center justify-center">
+                            <i class="pi pi-list text-brand-yellow"></i>
+                        </div>
+                        <div>
+                            <h4 class="theme-text-primary font-bold">Importación Masiva</h4>
+                            <p class="theme-text-secondary text-xs">Pega tu listado (Cantidad [Espacio] Referencia)</p>
+                        </div>
+                    </div>
+                </div>
+
+                <textarea pTextarea formControlName="referencias_copiadas" rows="8" placeholder="Ej:&#10;10 REF-123&#10;5 REF-456" class="w-full theme-card !bg-white dark:!bg-black/30 font-mono text-sm rounded-lg mb-4"></textarea>
+
+                <div class="flex justify-end gap-3">
+                    <button type="button" class="btn-pill btn-outline text-xs px-4 py-2" (click)="showBulkImport = false">Cancelar</button>
+                    <button type="button" class="btn-pill btn-primary text-xs px-6 py-2" (click)="procesarReferenciasMasivas(); showBulkImport = false"><i class="pi pi-check mr-1"></i>Procesar listado</button>
+                </div>
+            </div>
+            }
 
             <div class="h-20"></div>
         </form>

@@ -261,13 +261,14 @@
                             <button type="button" class="btn-pill bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center gap-2 border-none transition-colors" (click)="showBulkImport = !showBulkImport">
                                 <i class="pi pi-upload"></i> Carga masiva
                             </button>
-                            <button
+                            <!-- Botón temporalmente deshabilitado: buscar en lote -->
+                            <!-- <button
                                 type="button"
                                 class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 flex items-center gap-2 border-none transition-colors"
                                 (click)="abrirDialogoLote()"
                             >
                                 <i class="pi pi-bars"></i> Buscar en lote
-                            </button>
+                            </button> -->
                             <button type="button" class="btn-pill btn-primary" (click)="agregarReferencia()"><i class="pi pi-plus mr-2"></i>Agregar Manual</button>
                             @if (hayReferenciasSeleccionadas()) {
                             <button
@@ -458,9 +459,10 @@
                                     <p class="theme-text-secondary text-sm mb-6">Comience agregando ítems manualmente o use la carga masiva para importar varios a la vez</p>
                                     <div class="flex flex-wrap justify-center gap-3">
                                         <button type="button" class="btn-pill btn-primary" (click)="showBulkImport = true"><i class="pi pi-upload mr-2"></i>Carga Masiva</button>
-                                        <button type="button" class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 border-none" (click)="abrirDialogoLote()">
+                                        <!-- Botón temporalmente deshabilitado: buscar en lote -->
+                                        <!-- <button type="button" class="btn-pill bg-purple-100 hover:bg-purple-200 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300 dark:hover:bg-purple-800/50 border-none" (click)="abrirDialogoLote()">
                                             <i class="pi pi-bars mr-2"></i>Buscar en lote
-                                        </button>
+                                        </button> -->
                                         <button type="button" class="btn-pill btn-outline" (click)="agregarReferencia()"><i class="pi pi-plus mr-2"></i>Agregar Manual</button>
                                     </div>
                                 </div>
