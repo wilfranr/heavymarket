@@ -61,6 +61,7 @@ export interface PedidoReferencia {
         referencia?: string;
         comentario?: string | null;
         articulo_id?: number | null;
+        marca_id?: number | null;
         articulo?: {
             definicion?: string;
             descripcionEspecifica?: string;

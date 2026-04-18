@@ -30,6 +30,8 @@ import { TerceroService } from '../../../core/services/tercero.service';
 import { Tercero } from '../../../core/models/tercero.model';
 import { TRMService } from '../../../core/services/trm.service';
 import { EmpresaService } from '../../../core/services/empresa.service';
+import { ListaService } from '../../../core/services/lista.service';
+import { Lista } from '../../../core/models/lista.model';
 
 @Component({
     selector: 'app-pedido-costeo',
@@ -69,11 +71,13 @@ export class CosteoComponent implements OnInit {
     private readonly terceroService = inject(TerceroService);
     private readonly trmService = inject(TRMService);
     private readonly empresaService = inject(EmpresaService);
+    private readonly listaService = inject(ListaService);
 
     readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
     pedidoId = signal<number>(0);
     pedido$!: Observable<Pedido | undefined>;
+    pedido = signal<Pedido | null>(null);
     loading$!: Observable<boolean>;
     
     estadoActual: PedidoEstado = 'En_Costeo';
@@ -103,15 +107,20 @@ export class CosteoComponent implements OnInit {
     ngOnInit(): void {
         this.initForm();
         this.loadPedido();
-        this.loadProveedores();
         this.loadTRM();
         this.loadEmpresaConfig();
-        
-        this.marcas = [
-            { label: 'Caterpillar', value: 1 },
-            { label: 'Komatsu', value: 2 },
-            { label: 'Genérica', value: 3 }
-        ];
+        this.loadMarcas();
+    }
+
+    private loadMarcas(): void {
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (marcas: Lista[]) => {
+                this.marcas = marcas.map((m: Lista) => ({
+                    label: m.nombre,
+                    value: m.id
+                }));
+            }
+        });
     }
 
     private loadProveedores(): void {
@@ -172,17 +181,25 @@ export class CosteoComponent implements OnInit {
             this.pedido$ = this.store.select(selectPedidoById(parsedId));
             this.loading$ = this.store.select(selectPedidosLoading);
 
-            this.pedido$
-                .pipe(
-                    filter((pedido) => !!pedido && pedido.referencias !== undefined),
-                    take(1)
-                )
-                .subscribe((pedido) => {
+            // Sincronizar carga de pedido y proveedores para evitar condiciones de carrera
+            import('rxjs').then(({ combineLatest }) => {
+                combineLatest([
+                    this.pedido$.pipe(filter((pedido) => !!pedido && pedido.referencias !== undefined)),
+                    this.terceroService.getProveedores({ per_page: 1000 })
+                ]).pipe(take(1)).subscribe(([pedido, providersResp]) => {
+                    this.proveedoresCompletos = providersResp.data;
+                    this.proveedores = providersResp.data.map(p => ({
+                        label: p.nombre,
+                        value: p.id
+                    }));
+                    
                     if (pedido) {
+                        this.pedido.set(pedido);
                         this.estadoActual = pedido.estado;
                         this.poblarFormulario(pedido);
                     }
                 });
+            });
         }
     }
 
@@ -193,6 +210,8 @@ export class CosteoComponent implements OnInit {
             pedido.referencias.forEach(ref => {
                 const refFormGroup = this.fb.group({
                     id: [ref.id],
+                    sistema_id: [ref.sistema_id],
+                    lista_id: [ref.lista_id],
                     sistema_nombre: [ref.sistema?.nombre || 'Sin Sistema'],
                     definicion: [ref.definicion || ref.referencia?.articulo?.definicion || 'Sin Definición'],
                     referencia_codigo: [ref.referencia?.referencia || 'N/A'],
@@ -200,31 +219,72 @@ export class CosteoComponent implements OnInit {
                     referencia_id: [ref.referencia_id],
                     categoria_nombre: [ref.lista?.nombre || 'General'],
                     peso: [ref.referencia?.articulo?.peso || 0],
-                    estado_str: ['Preparado'], // Mock state as seen in Figma
+                    estado_str: ['Preparado'], 
                     proveedores: this.fb.array([])
                 });
                 
-                // Cargar proveedores existentes si los hay
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
+                
+                // 1. Cargar proveedores que ya tienen datos guardados
                 if (ref.proveedores && ref.proveedores.length > 0) {
                     ref.proveedores.forEach(p => {
                         this.agregarProveedorFila(proveedoresArray, p);
                     });
-                    
-                    // Disparar validación para cada proveedor cargado
-                    setTimeout(() => {
-                        ref.proveedores?.forEach((_, idx) => {
-                            this.onProveedorChange(this.referenciasFormArray.length - 1, idx);
-                        });
-                    }, 500);
-                } else {
-                    // Añadir una fila vacía por defecto para empezar a costear
+                }
+
+                // 2. Cargar proveedores que coincidan con Fabricante y Categoría Comercial (si no están ya)
+                if (this.proveedoresCompletos.length > 0 && ref.referencia?.marca_id && ref.lista_id) {
+                    const coincidentes = this.proveedoresCompletos.filter(p => {
+                        const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(ref.referencia?.marca_id));
+                        const tieneCategoria = p.categoria_comercial_ids?.some(id => Number(id) === Number(ref.lista_id));
+                        return tieneFabricante && tieneCategoria;
+                    });
+
+                    coincidentes.forEach(p => {
+                        const yaExiste = ref.proveedores?.some(rp => rp.tercero_id === p.id);
+                        if (!yaExiste) {
+                            this.agregarProveedorFila(proveedoresArray, { tercero_id: p.id });
+                        }
+                    });
+                }
+
+                // Si después de todo no hay filas, añadir una vacía
+                if (proveedoresArray.length === 0) {
                     this.agregarProveedorVacio(proveedoresArray);
                 }
                 
+                // Disparar validación/cálculo inicial para cada fila
+                setTimeout(() => {
+                    const idx = this.referenciasFormArray.length;
+                    (refFormGroup.get('proveedores') as FormArray).controls.forEach((_, pIdx) => {
+                        this.onProveedorChange(idx, pIdx);
+                    });
+                }, 500);
+
                 this.referenciasFormArray.push(refFormGroup);
             });
         }
+    }
+
+    getProveedoresFiltrados(refIndex: number): any[] {
+        const refGroup = this.referenciasFormArray.at(refIndex);
+        if (!refGroup) return this.proveedores;
+        
+        const marcaId = refGroup.get('marca_id')?.value || this.pedido()?.referencias?.[refIndex]?.referencia?.marca_id;
+        const listaId = refGroup.get('lista_id')?.value;
+        
+        if (!marcaId || !listaId) return this.proveedores;
+
+        return this.proveedoresCompletos
+            .filter(p => {
+                const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(marcaId));
+                const tieneCategoria = p.categoria_comercial_ids?.some(id => Number(id) === Number(listaId));
+                return tieneFabricante && tieneCategoria;
+            })
+            .map(p => ({
+                label: p.nombre,
+                value: p.id
+            }));
     }
 
     agregarProveedorFila(proveedoresArray: FormArray, data?: any): void {

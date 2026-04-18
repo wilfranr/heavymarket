@@ -42,6 +42,9 @@ export interface Tercero {
     maquinas?: { id: number; modelo: string; serie?: string }[];
     fabricantes?: { id: number; nombre: string }[];
     sistemas?: { id: number; nombre: string }[];
+    categorias_comerciales?: { id: number; nombre: string }[];
+    categoria_comercial_ids?: number[];
+    fabricante_ids?: number[];
 }
 
 /**

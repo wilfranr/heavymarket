@@ -185,11 +185,11 @@
   - **Nacional**: Markup simple (redondeo a entero)
   - **Internacional**: Peso (libras) + Flete + TRM + Utilidad (redondeo a centenas)
 - Gestión de fletes dinámicos desde configuración de empresa
-- Filtro de proveedores inteligentes (Nacional vs Internacional)
-- Validaciones de seguridad (evitar costos/utilidad negativos)
-- UI/UX pulido: Modo claro/oscuro, resumen de cotización flotante
-- Endpoint `devolver-a-analista` para flujo de corrección
-- 12 archivos nuevos/modificados en esta fase
+- Filtro de proveedores inteligentes (Basado en Fabricante y Categoría Comercial)
+- Lógica de "Comodín" para proveedores sin restricciones de marca
+- Sincronización de carga de datos (combineLatest) para evitar condiciones de carrera
+- Carga automática de proveedores coincidentes al abrir el costeo
+- 15 archivos nuevos/modificados en esta fase
 
 ---
 

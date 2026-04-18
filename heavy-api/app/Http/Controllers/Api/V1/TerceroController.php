@@ -37,7 +37,7 @@ class TerceroController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Tercero::with(['country']);
+        $query = Tercero::with(['country', 'sistemas', 'categoriasComerciales', 'fabricantes']);
 
         if ($request->filled('tipo')) {
             $query->where('tipo', $request->input('tipo'));

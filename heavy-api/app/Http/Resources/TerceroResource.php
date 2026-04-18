@@ -45,6 +45,11 @@ class TerceroResource extends JsonResource
                 fn () => $this->categoriasComerciales->pluck('id')->values()->all(),
                 null
             ),
+            'fabricante_ids' => $this->when(
+                $this->relationLoaded('fabricantes'),
+                fn () => $this->fabricantes->pluck('id')->values()->all(),
+                null
+            ),
             'email_factura_electronica' => $this->email_factura_electronica,
             'sitio_web' => $this->sitio_web,
             'dv' => $this->dv,
