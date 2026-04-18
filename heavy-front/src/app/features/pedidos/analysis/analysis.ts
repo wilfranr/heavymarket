@@ -1314,15 +1314,36 @@ export class AnalysisComponent implements OnInit {
             rejectLabel: 'No',
             accept: () => {
                 this.finalizing = true;
+                const id = this.pedidoId();
+
+                merge(
+                    this.actions$.pipe(
+                        ofType(updatePedidoSuccess),
+                        filter((a) => a.pedido.id === id),
+                        take(1)
+                    ),
+                    this.actions$.pipe(ofType(updatePedidoFailure), take(1))
+                )
+                    .pipe(take(1))
+                    .subscribe((action) => {
+                        this.finalizing = false;
+                        if (action.type === updatePedidoSuccess.type) {
+                            const pedido = action.pedido;
+                            this.messageService.add({ severity: 'success', summary: 'Pedido Finalizado', detail: 'El pedido ha sido enviado a costeo exitosamente' });
+                            this.router.navigate(['/app/pedidos']);
+                        } else {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error al finalizar',
+                                detail: action.error || 'No se pudo enviar el pedido a costeo.'
+                            });
+                        }
+                    });
+
                 this.store.dispatch(updatePedido({ 
-                    id: this.pedidoId(), 
+                    id: id, 
                     changes: { estado: 'En_Costeo' } 
                 }));
-                
-                setTimeout(() => {
-                    this.messageService.add({ severity: 'success', summary: 'Pedido Finalizado', detail: 'El pedido ha sido enviado a costeo exitosamente' });
-                    this.router.navigate(['/app/pedidos']);
-                }, 1000);
             }
         });
     }
