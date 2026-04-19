@@ -35,7 +35,7 @@ class ArticuloController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Articulo::query()->with(['referencias']);
+        $query = Articulo::query()->with(['referencias.marca', 'referenciasDirectas.marca']);
 
         // Búsqueda en definición o descripción específica
         if ($request->filled('search')) {
@@ -96,7 +96,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Artículo creado exitosamente',
-            'data' => new ArticuloResource($articulo->load('referencias')),
+            'data' => new ArticuloResource($articulo->load(['referencias.marca', 'referenciasDirectas.marca'])),
         ], 201);
     }
 
@@ -105,7 +105,7 @@ class ArticuloController extends Controller
      */
     public function show(Articulo $articulo): JsonResponse
     {
-        $articulo->load(['referencias', 'medidas']);
+        $articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'medidas']);
 
         return response()->json([
             'data' => new ArticuloResource($articulo),
@@ -145,7 +145,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Artículo actualizado exitosamente',
-            'data' => new ArticuloResource($articulo->fresh()->load('referencias')),
+            'data' => new ArticuloResource($articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca'])),
         ]);
     }
 
@@ -175,7 +175,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Referencia asociada exitosamente',
-            'data' => $articulo->fresh()->load('referencias'),
+            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca']),
         ]);
     }
 
@@ -188,7 +188,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Referencia desasociada exitosamente',
-            'data' => $articulo->fresh()->load('referencias'),
+            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca']),
         ]);
     }
 

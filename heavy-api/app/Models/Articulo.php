@@ -90,6 +90,11 @@ class Articulo extends Model
         );
     }
 
+    public function referenciasDirectas(): HasMany
+    {
+        return $this->hasMany(Referencia::class, 'articulo_id');
+    }
+
     /**
      * Artículos generados desde el catálogo de listas tipo «Piezas Estandar» / «Piezas Estándar».
      */

@@ -27,20 +27,16 @@ import { loadPedidos } from '../../../store/pedidos/actions/pedidos.actions';
                     <th>Cliente</th>
                     <th>Estado</th>
                     <th>Fecha</th>
-                    <th>Acciones</th>
                 </tr>
             </ng-template>
             <ng-template pTemplate="body" let-pedido>
-                <tr>
+                <tr (click)="verDetalle(pedido.id)" class="cursor-pointer hover:bg-surface-100 dark:hover:bg-surface-800 transition-colors">
                     <td>#{{ pedido.id }}</td>
                     <td>{{ pedido.tercero?.nombre || 'Sin cliente' }}</td>
                     <td>
                         <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"></p-tag>
                     </td>
                     <td>{{ pedido.created_at | date: 'dd/MM/yyyy' }}</td>
-                    <td>
-                        <button pButton pRipple type="button" icon="pi pi-eye" class="p-button p-component p-button-text p-button-icon-only" (click)="verDetalle(pedido.id)"></button>
-                    </td>
                 </tr>
             </ng-template>
         </p-table>
@@ -61,7 +57,7 @@ export class RecentSalesWidget implements OnInit {
     }
 
     verDetalle(id: number): void {
-        this.router.navigate(['/pedidos', id]);
+        this.router.navigate(['/app/pedidos', id]);
     }
 
 }

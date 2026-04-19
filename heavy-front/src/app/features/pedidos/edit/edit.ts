@@ -222,6 +222,7 @@ export class EditComponent implements OnInit {
     origenComentarioControl = new FormControl('Asesor');
     comentariosItemActual: { origen: string; comentario: string; fecha?: string }[] = [];
     comentariosDelPedido: { origen: string; comentario: string; fecha?: string }[] = [];
+    displayComentariosPedidoDialog = false;
     imagenControl = new FormControl('');
 
     estadosOptions = [
@@ -2027,6 +2028,10 @@ export class EditComponent implements OnInit {
 
     getEstadoClase(estado: PedidoEstado): string {
         return pedidoEstadoTagClass(estado);
+    }
+
+    getLabelConteo(count: number): string {
+        return `Comentarios previos (${count})`;
     }
 
     /**

@@ -37,7 +37,14 @@ class ArticuloResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
-            'referencias' => $this->whenLoaded('referencias'),
+            'referencias' => $this->when(
+                $this->relationLoaded('referencias') || $this->relationLoaded('referenciasDirectas'),
+                function () {
+                    $pivot = $this->relationLoaded('referencias') ? $this->referencias : collect();
+                    $directas = $this->relationLoaded('referenciasDirectas') ? $this->referenciasDirectas : collect();
+                    return ReferenciaResource::collection($pivot->merge($directas)->unique('id'));
+                }
+            ),
             'medidas' => $this->whenLoaded('medidas'),
             'articuloJuegos' => $this->whenLoaded('articuloJuegos'),
         ];
