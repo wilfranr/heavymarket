@@ -26,6 +26,7 @@ class TRMResource extends JsonResource
         return [
             'id' => $this->id,
             'trm' => $this->trm,
+            'fecha' => $this->fecha?->format('Y-m-d'),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];

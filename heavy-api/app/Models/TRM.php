@@ -24,9 +24,11 @@ class TRM extends Model
 
     protected $fillable = [
         'trm',
+        'fecha',
     ];
 
     protected $casts = [
         'trm' => 'float',
+        'fecha' => 'date',
     ];
 }

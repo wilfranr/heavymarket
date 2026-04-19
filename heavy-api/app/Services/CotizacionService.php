@@ -102,7 +102,7 @@ class CotizacionService
     {
         $trm = TRM::orderBy('fecha', 'desc')->first();
 
-        return $trm?->valor ?? 4000.0; // Valor por defecto si no hay TRM
+        return $trm?->trm ?? 4000.0; // Valor por defecto si no hay TRM
     }
 
     /**
