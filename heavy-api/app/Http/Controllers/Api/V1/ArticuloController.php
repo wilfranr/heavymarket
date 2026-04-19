@@ -96,7 +96,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Artículo creado exitosamente',
-            'data' => new ArticuloResource($articulo->load(['referencias.marca', 'referenciasDirectas.marca'])),
+            'data' => new ArticuloResource($articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca'])),
         ], 201);
     }
 
@@ -105,7 +105,7 @@ class ArticuloController extends Controller
      */
     public function show(Articulo $articulo): JsonResponse
     {
-        $articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'medidas']);
+        $articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca', 'medidas']);
 
         return response()->json([
             'data' => new ArticuloResource($articulo),
@@ -145,7 +145,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Artículo actualizado exitosamente',
-            'data' => new ArticuloResource($articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca'])),
+            'data' => new ArticuloResource($articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca'])),
         ]);
     }
 
@@ -175,7 +175,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Referencia asociada exitosamente',
-            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca']),
+            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca']),
         ]);
     }
 
@@ -188,7 +188,7 @@ class ArticuloController extends Controller
 
         return response()->json([
             'message' => 'Referencia desasociada exitosamente',
-            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca']),
+            'data' => $articulo->fresh()->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca']),
         ]);
     }
 
