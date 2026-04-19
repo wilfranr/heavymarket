@@ -50,12 +50,13 @@ export class ToastService {
     /**
      * Muestra un mensaje informativo
      */
-    info(message: string, title: string = 'Información'): void {
+    info(message: string, title: string = 'Información', data?: any): void {
         this.messageService.add({
             severity: 'info',
             summary: title,
             detail: message,
-            life: 3000
+            life: 3000,
+            data: data
         });
     }
 

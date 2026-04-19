@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { MenuModule } from 'primeng/menu';
 import { BadgeModule } from 'primeng/badge';
@@ -31,7 +32,7 @@ import { NotificationService } from '../../../core/services/notification.service
         } @else {
             <div class="max-h-96 overflow-y-auto">
                 @for (notification of notifications(); track notification.id) {
-                    <div class="flex items-start py-3 border-b border-surface cursor-pointer hover:bg-surface-hover" (click)="markAsRead(notification.id)" [class.opacity-60]="notification.read">
+                    <div class="flex items-start py-3 border-b border-surface cursor-pointer hover:bg-surface-hover" (click)="handleNotificationClick(notification)" [class.opacity-60]="notification.read">
                         <div class="w-12 h-12 flex items-center justify-center rounded-full mr-4 shrink-0" [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
                             <i [class]="'pi ' + notification.icon + ' text-xl! text-' + notification.iconColor + '-500'"></i>
                         </div>
@@ -53,6 +54,7 @@ import { NotificationService } from '../../../core/services/notification.service
 })
 export class NotificationsWidget {
     private readonly notificationService = inject(NotificationService);
+    private readonly router = inject(Router);
 
     notifications = this.notificationService.notifications;
     unreadCount = this.notificationService.unreadCount;
@@ -65,8 +67,16 @@ export class NotificationsWidget {
         }
     ];
 
-    markAsRead(id: string | number): void {
-        this.notificationService.markAsRead(id);
+    handleNotificationClick(notification: any): void {
+        this.notificationService.markAsRead(notification.id);
+        
+        if (notification.data?.id) {
+            if (notification.type.startsWith('pedido_')) {
+                this.router.navigate(['/app/pedidos', notification.data.id]);
+            } else if (notification.type.startsWith('cotizacion_')) {
+                this.router.navigate(['/app/cotizaciones', notification.data.id]);
+            }
+        }
     }
 
     markAllAsRead(): void {

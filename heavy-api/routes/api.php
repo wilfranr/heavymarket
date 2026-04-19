@@ -27,6 +27,13 @@ use App\Http\Controllers\Api\V1\UbicacionController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Broadcast;
+
+/**
+ * Rutas de autenticación para canales privados de WebSockets (Reverb)
+ */
+Broadcast::routes(['middleware' => ['auth:sanctum']]);
+require __DIR__.'/channels.php';
 
 /**
  * Rutas API versión 1

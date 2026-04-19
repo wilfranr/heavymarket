@@ -56,25 +56,27 @@ export class DetailComponent implements OnInit {
     pedidoId = signal<number>(0);
 
     ngOnInit(): void {
-        const id = this.route.snapshot.paramMap.get('id');
+        this.route.paramMap.subscribe(params => {
+            const id = params.get('id');
 
-        if (id) {
-            const pedidoId = parseInt(id, 10);
-            this.pedidoId.set(pedidoId);
+            if (id) {
+                const pedidoId = parseInt(id, 10);
+                this.pedidoId.set(pedidoId);
 
-            this.pedido$ = this.store.select(selectPedidoById(pedidoId));
-            this.loading$ = this.store.select(selectPedidosLoading);
+                this.pedido$ = this.store.select(selectPedidoById(pedidoId));
+                this.loading$ = this.store.select(selectPedidosLoading);
 
-            // Cargar pedido si no está en store o para actualizar
-            this.store.dispatch(loadPedido({ id: pedidoId }));
-        } else {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'ID de pedido inválido'
-            });
-            this.router.navigate(['/app/pedidos']);
-        }
+                // Cargar pedido si no está en store o para actualizar
+                this.store.dispatch(loadPedido({ id: pedidoId }));
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'ID de pedido inválido'
+                });
+                this.router.navigate(['/app/pedidos']);
+            }
+        });
     }
 
     /**

@@ -308,7 +308,7 @@ class PedidoController extends Controller
                 $analista->notify(new \App\Notifications\SystemNotification(
                     'pedido_en_analisis',
                     'Pedido #'.$pedido->id.' enviado a Análisis',
-                    'El vendedor '.$vendedor->name.' ha enviado el pedido #'.$pedido->id.' para análisis. ¡Tómalo y comienza a trabajar!',
+                    'El vendedor '.$vendedor->name.' ha enviado el pedido #'.$pedido->id.' para análisis.',
                     'pi-search',
                     'blue',
                     ['id' => $pedido->id, 'tercero_id' => $pedido->tercero_id]
@@ -638,7 +638,7 @@ class PedidoController extends Controller
                 $vendedor->notify(new \App\Notifications\SystemNotification(
                     'pedido_devuelto',
                     'Pedido #' . $pedido->id . ' devuelto por analista',
-                    'El分析师 ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
+                    'El analista ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
                     'pi-arrow-left',
                     'orange',
                     ['id' => $pedido->id]

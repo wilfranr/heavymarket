@@ -779,25 +779,26 @@ export class EditComponent implements OnInit {
      * Carga los datos del pedido
      */
     private loadPedido(): void {
-        const id = this.route.snapshot.paramMap.get('id');
+        this.route.paramMap.subscribe(params => {
+            const id = params.get('id');
 
-        if (id) {
-            const pedidoId = parseInt(id, 10);
-            this.pedidoId.set(pedidoId);
+            if (id) {
+                const pedidoId = parseInt(id, 10);
+                this.pedidoId.set(pedidoId);
 
-            this.store.dispatch(loadPedido({ id: pedidoId }));
+                this.store.dispatch(loadPedido({ id: pedidoId }));
 
-            this.pedido$ = this.store.select(selectPedidoById(pedidoId));
-            this.loading$ = this.store.select(selectPedidosLoading);
+                this.pedido$ = this.store.select(selectPedidoById(pedidoId));
+                this.loading$ = this.store.select(selectPedidosLoading);
 
-            this.pedido$
-                .pipe(
-                    filter((pedido) => !!pedido && pedido.referencias !== undefined),
-                    take(1)
-                )
-                .subscribe((pedido) => {
-                    if (pedido) {
-                        this.estadoActual = this.normalizePedidoEstado(pedido.estado);
+                this.pedido$
+                    .pipe(
+                        filter((pedido) => !!pedido && pedido.referencias !== undefined),
+                        take(1)
+                    )
+                    .subscribe((pedido) => {
+                        if (pedido) {
+                            this.estadoActual = this.normalizePedidoEstado(pedido.estado);
 
                         this.pedidoForm.patchValue({
                             tercero_id: pedido.tercero_id,
@@ -853,6 +854,7 @@ export class EditComponent implements OnInit {
             });
             this.router.navigate(['/app/pedidos']);
         }
+        });
     }
 
     /**

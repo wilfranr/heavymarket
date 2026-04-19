@@ -111,7 +111,7 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
                         </div>
                     } @else {
                         @for (notification of notifications(); track notification.id) {
-                            <div class="flex items-start p-2 mb-2 cursor-pointer hover:bg-surface-hover rounded-border" [class.opacity-60]="notification.read" (click)="markNotificationAsRead(notification.id)">
+                            <div class="flex items-start p-2 mb-2 cursor-pointer hover:bg-surface-hover rounded-border" [class.opacity-60]="notification.read" (click)="handleNotificationClick(notification)">
                                 <div class="w-10 h-10 flex items-center justify-center rounded-full mr-3 shrink-0" [class]="'bg-' + notification.iconColor + '-100 dark:bg-' + notification.iconColor + '-400/10'">
                                     <i [class]="'pi ' + notification.icon + ' text-' + notification.iconColor + '-500'"></i>
                                 </div>
@@ -141,6 +141,7 @@ export class AppTopbar {
     public readonly layoutService = inject(LayoutService);
 
     @ViewChild('profileMenu') profileMenu: any;
+    @ViewChild('notificationsPanel') notificationsPanel: any;
 
     notifications = this.notificationService.notifications;
     unreadCount = this.notificationService.unreadCount;
@@ -238,6 +239,22 @@ export class AppTopbar {
     performSearch(): void {
         if (this.searchQuery.trim()) {
             this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
+        }
+    }
+
+    handleNotificationClick(notification: any): void {
+        this.notificationService.markAsRead(notification.id);
+        
+        if (notification.data?.id) {
+            if (notification.type.startsWith('pedido_')) {
+                this.router.navigate(['/app/pedidos', notification.data.id]);
+            } else if (notification.type.startsWith('cotizacion_')) {
+                this.router.navigate(['/app/cotizaciones', notification.data.id]);
+            }
+        }
+        
+        if (this.notificationsPanel) {
+            this.notificationsPanel.hide();
         }
     }
 

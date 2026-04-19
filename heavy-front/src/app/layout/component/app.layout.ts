@@ -13,7 +13,7 @@ import { LayoutService } from '../service/layout.service';
     standalone: true,
     imports: [CommonModule, AppTopbar, AppSidebar, RouterModule, AppFooter, ToastModule],
     template: `<div class="layout-wrapper" [ngClass]="containerClass">
-        <p-toast position="top-right" [life]="3000"></p-toast>
+        <p-toast position="top-right" [life]="5000" styleClass="cursor-pointer" (onClose)="onToastClick($event)"></p-toast>
         <app-topbar></app-topbar>
         <app-sidebar></app-sidebar>
         <div class="layout-main-container">
@@ -73,6 +73,20 @@ export class AppLayout {
             this.menuOutsideClickListener = null;
         }
         this.unblockBodyScroll();
+    }
+
+    onToastClick(event: any): void {
+        const message = event.message;
+        if (!message || !message.data) return;
+
+        const notification = message.data;
+        if (notification.data?.id) {
+            if (notification.type.startsWith('pedido_')) {
+                this.router.navigate(['/app/pedidos', notification.data.id]);
+            } else if (notification.type.startsWith('cotizacion_')) {
+                this.router.navigate(['/app/cotizaciones', notification.data.id]);
+            }
+        }
     }
 
     blockBodyScroll(): void {

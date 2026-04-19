@@ -220,12 +220,12 @@ class PedidoService
         $analistas = User::role('Analista')->get();
         foreach ($analistas as $analista) {
             $analista->notify(new SystemNotification(
-                'pedido_creado',
-                'Nuevo Pedido para Analizar #'.$pedido->id,
-                'El vendedor '.$user->name.' ha creado un nuevo pedido para '.($pedido->tercero->nombre ?? 'un cliente'),
-                'pi-shopping-cart',
-                'orange',
-                ['id' => $pedido->id]
+                'pedido_en_analisis',
+                'Pedido #'.$pedido->id.' enviado a Análisis',
+                'El vendedor '.$user->name.' ha enviado el pedido #'.$pedido->id.' para análisis.',
+                'pi-search',
+                'blue',
+                ['id' => $pedido->id, 'tercero_id' => $pedido->tercero_id]
             ));
         }
     }

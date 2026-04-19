@@ -1,13 +1,12 @@
-/**
- * Configuración de entorno para desarrollo
- */
 export const environment = {
     production: false,
     apiUrl: 'http://localhost:8000/v1',
     apiBaseUrl: 'http://localhost:8000',
-    pusherKey: '',
-    pusherCluster: 'mt1',
-    pusherEnabled: false,
+    reverbKey: 'efwwsue7nfzam7jjst6r',
+    reverbHost: 'localhost',
+    reverbPort: 8081,
+    reverbScheme: 'http',
+    pusherEnabled: true,
     appName: 'HeavyMarket',
     version: '1.0.0'
 };

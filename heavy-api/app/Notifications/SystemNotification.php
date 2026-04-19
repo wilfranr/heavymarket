@@ -3,6 +3,9 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Notifications\Messages\BroadcastMessage;
+use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
 class SystemNotification extends Notification
@@ -41,7 +44,7 @@ class SystemNotification extends Notification
      */
     public function via(object $notifiable): array
     {
-        return ['database'];
+        return ['database', 'broadcast'];
     }
 
     /**
@@ -59,5 +62,37 @@ class SystemNotification extends Notification
             'iconColor' => $this->iconColor,
             'data' => $this->data,
         ];
+    }
+
+    /**
+     * Get the broadcastable representation of the notification.
+     */
+    public function toBroadcast(object $notifiable): BroadcastMessage
+    {
+        return new BroadcastMessage([
+            'id' => $this->id,
+            'type' => $this->type,
+            'title' => $this->title,
+            'message' => $this->message,
+            'icon' => $this->icon,
+            'iconColor' => $this->iconColor,
+            'data' => $this->data,
+            'read' => false,
+            'created_at' => now()->toISOString(),
+        ]);
+    }
+
+    /**
+     * Get the mail representation of the notification.
+     */
+    public function toMail(object $notifiable): MailMessage
+    {
+        return (new MailMessage)
+            ->subject('HeavyMarket: ' . $this->title)
+            ->greeting('Hola ' . ($notifiable->name ?? 'Usuario') . '!')
+            ->line($this->message)
+            ->action('Ver en HeavyMarket', url('/#/dashboard/notifications'))
+            ->line('Este es un mensaje automático, por favor no responda a este correo.')
+            ->salutation('Atentamente, El equipo de HeavyMarket');
     }
 }

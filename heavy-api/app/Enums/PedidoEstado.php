@@ -138,6 +138,7 @@ enum PedidoEstado: string
         return [
             self::Borrador,
             self::Nuevo,
+            self::En_Analisis, // Permite enviar directamente a análisis (frontend valida máquina revisada)
         ];
     }
 
