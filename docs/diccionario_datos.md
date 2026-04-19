@@ -36,17 +36,42 @@ Representa cada ítem del pedido y concentra el contexto técnico de análisis.
     *   `N:1` con `Sistema`
     *   `N:1` con `Lista` (tipo de artículo)
 
-### 3. Artículos y Referencias (`articulos`, `referencias`)
-El catálogo de productos se divide en Definiciones (Artículos) e Identificadores (Referencias).
-*   **Articulo**: Contiene la definición técnica, fotos y descripción.
-*   **Referencia**: Contiene el código o número de parte, marca y relación con el artículo.
-    *   Soporta referencias **temporales** (`es_temporal`) para capturas iniciales cuando el código no existe en catálogo.
-    *   Puede guardar comentario de trazabilidad del origen (por ejemplo, landing o pedido interno).
+### 3. Catálogo Técnico: Artículos y Referencias
+
+El sistema separa la definición técnica (qué es el objeto) de su identificación comercial (cómo se pide).
+
+#### 3.1 Artículos (`articulos`)
+Es el contenedor de la "Ficha Técnica". Define la esencia del producto.
+*   **Campos Clave**:
+    *   `definicion`: Nombre técnico (ej. "Acople Dentado"). Generalmente amarrado a la lista de "Piezas Estándar".
+    *   `descripcionEspecifica`: Detalles adicionales para búsqueda.
+    *   `peso`: Peso en kilogramos (crucial para cálculo de fletes internacionales).
+    *   `fotoDescriptiva`: Imagen principal del repuesto.
+    *   `foto_medida`: Imagen del plano o diagrama técnico.
 *   **Relaciones**:
-    *   `N:M` entre `Articulos` y `Referencias` (vía `articulos_referencias`).
-    *   `N:1` opcional de `Referencia` hacia `Articulo` por `articulo_id` (compatibilidad con modelo legado + pivote).
-    *   `N:1` de `Referencia` hacia `Lista` (Marca/Fabricante).
-    *   `N:1` de `Referencia` hacia `Categoria`.
+    *   `N:M` con `Referencias` (vía `articulos_referencias`).
+    *   `1:N` con `ArticuloJuego` (componentes si el artículo es un kit).
+    *   `1:N` con `Medidas` (especificaciones técnicas).
+
+#### 3.2 Referencias (`referencias`)
+Es el identificador comercial o "Número de Parte".
+*   **Campos Clave**:
+    *   `referencia`: El código alfanumérico.
+    *   `marca_id`: FK a `listas` (Caterpillar, Komatsu, etc.).
+    *   `es_temporal`: Booleano que indica si es un código pendiente de validación técnica.
+*   **Relaciones**:
+    *   `N:M` con `Articulos`.
+    *   `N:1` con `Marca` (Lista).
+
+#### 3.3 Juegos de Artículos (`articulo_juegos`)
+Define la composición de "Kits" o juegos de reparación.
+*   **Campos Clave**: `articulo_id`, `referencia_id`, `cantidad`, `comentario`.
+*   **Lógica**: Un `Articulo` (el padre) contiene múltiples `Referencias` (los componentes) con sus respectivas cantidades.
+
+#### 3.4 Medidas Técnicas (`medidas`)
+Almacena las dimensiones físicas para validación de compatibilidad.
+*   **Campos Clave**: `identificador` (A, B, C, etc.), `nombre` (Diámetro, Largo), `valor`, `unidad`, `tipo` (Interna, Externa).
+*   **Relaciones**: `N:1` con `Articulo`.
 
 ### 4. Máquinas (`maquinas`)
 Representa el equipo pesado asociado a los clientes.

@@ -28,7 +28,11 @@ El núcleo operativo de la empresa, protegido por roles de seguridad.
 ### Gestión de Activos y Terceros
 *   **Directorio de Terceros**: CRM para gestionar Clientes y Proveedores, incluyendo sus contactos, direcciones y documentos legales (RUT, Certificaciones).
 *   **Gestión de Flotas (Máquinas)**: Registro detallado de maquinaria por serie, modelo y marca asociada a cada cliente.
-*   **Catálogo Técnico**: Administración de Artículos, Referencias Cruzadas y Juegos (Kits) de repuestos.
+*   **Catálogo Técnico**: Administración centralizada de la inteligencia de producto.
+    *   **Artículos vs Referencias**: Un artículo agrupa múltiples referencias que son técnicamente idénticas (intercambiables o marcas alternativas).
+    *   **Gestión de Juegos (Kits)**: Permite definir artículos compuestos (ej. "Kit de Sellos") listando las referencias que lo integran y sus cantidades.
+    *   **Ficha de Medidas**: Registro de dimensiones críticas (diámetros, largos) para soporte técnico y validación de compatibilidad sin necesidad de tener la pieza física.
+    *   **Normalización**: Conversión automática de pesos (libras, gramos, onzas) a Kilogramos para estandarizar el cálculo de fletes en el módulo de costeo.
 
 ### Administración y Configuración
 *   **Gestión de Usuarios**: Control de acceso y perfiles (Administradores, Vendedores, Super Admin).

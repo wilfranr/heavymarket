@@ -10,6 +10,8 @@ Este directorio reúne la documentación funcional y técnica del proyecto Heavy
    Entidades principales, relaciones y convenciones de modelado.
 3. [**Arquitectura del Sistema**](arquitectura.md)  
    Vista de backend/frontend, integración API y decisiones de diseño.
+4. [**Módulo de Artículos**](modulo_articulos.md)  
+   Funcionamiento de artículos, referencias y juegos.
 
 ## Convenciones de Terminología
 

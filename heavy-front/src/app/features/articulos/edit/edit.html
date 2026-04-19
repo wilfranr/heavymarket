@@ -1,241 +1,282 @@
 <p-toast />
 
-<div class="p-8 surface-ground min-h-screen text-900 pb-28">
+<div class="container mx-auto p-4 md:p-8 max-w-[1500px] relative overflow-hidden min-h-screen">
+
+
     <!-- Header -->
-    <div
-        class="flex justify-between items-center mb-8 surface-card p-4 rounded-xl border border-surface-border shadow-xl">
-        <div class="flex items-center gap-4">
-            <div class="w-10 h-10 rounded-lg bg-[#fdb831] flex items-center justify-center text-black">
-                <i class="pi pi-box text-xl"></i>
+    <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4 relative z-10">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <p-button icon="pi pi-arrow-left" [text]="true" severity="secondary" (onClick)="cancelar()"
+                    styleClass="p-0 h-8 w-8 text-gray-400 hover:text-[#fdb831]"></p-button>
+                <span class="text-xs font-black text-[#fdb831] tracking-[0.3em] uppercase">Módulo de Artículos</span>
             </div>
-            <h1 class="text-base font-bold tracking-tight">Editar Artículo</h1>
+            <h1 class="text-3xl md:text-4xl font-extrabold text-900 tracking-tight">Editar Artículo</h1>
+            @if (articuloActual) {
+            <p class="text-gray-400 mt-2 text-lg">Modificando: <span class="text-white font-medium">{{ articuloActual.definicion }}</span></p>
+            }
         </div>
-        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-            class="text-gray-400 hover:text-white transition-all"></p-button>
+        <div class="hidden md:block">
+            <div class="flex gap-4">
+                <p-button label="Cancelar" variant="text" severity="secondary"
+                    styleClass="text-sm font-bold px-6 py-4 rounded-2xl" (onClick)="cancelar()">
+                </p-button>
+                <p-button label="Guardar Cambios" icon="pi pi-check"
+                    styleClass="p-button-warning text-sm font-bold px-8 py-4 rounded-2xl shadow-xl shadow-orange-500/20"
+                    (onClick)="onSubmit()" [loading]="loading" [disabled]="articuloForm.invalid">
+                </p-button>
+            </div>
+        </div>
     </div>
 
     @if (articuloActual) {
-    <form [formGroup]="articuloForm" class="grid grid-cols-12 gap-8">
+    <form [formGroup]="articuloForm" (ngSubmit)="onSubmit()" class="relative z-10">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-        <!-- COLUMNA IZQUIERDA: Información General -->
-        <div class="col-span-12 lg:col-span-4 flex flex-col gap-6">
-            <div class="surface-card border border-surface-border shadow-xl">
-                <div class="flex items-center gap-3 mb-8">
-                    <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                        <i class="pi pi-info-circle text-sm"></i>
-                    </div>
-                    <h3 class="text-xs font-bold uppercase tracking-wider">Información General</h3>
-                </div>
+            <!-- Columna Izquierda: Información General (4 celdas) -->
+            <div class="lg:col-span-5 flex flex-col gap-8">
+                <p-card
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] h-full border border-surface-border">
+                    <div class="p-4 md:p-6">
+                        <div class="flex items-center gap-4 mb-10">
+                            <div
+                                class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                <i class="pi pi-info-circle text-xl"></i>
+                            </div>
+                            <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Información
+                                General
+                            </span>
+                        </div>
 
-                <div class="flex flex-col gap-6">
-                    <!-- Pieza estándar -->
-                    <div class="flex flex-col gap-2">
-                        <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Pieza estándar <span
-                                class="text-red-500">*</span></label>
-                        <p-inputgroup>
-                            <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
-                                optionValue="nombre" placeholder="Seleccione una pieza estándar" [showClear]="true" [filter]="true"
-                                filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
-                                class="w-full h-12 bg-surface-50 border border-surface-border rounded-xl">
-                                <ng-template let-tipo pTemplate="item">
-                                    <div class="flex items-center gap-3">
-                                        <img [src]="tipo.foto" appFallbackImage
-                                            class="w-8 h-8 object-cover rounded shadow-sm" />
-                                        <div class="flex flex-col">
-                                            <span class="font-medium text-sm">{{ tipo.nombre }}</span>
-                                            <span class="text-xs text-gray-500">{{ tipo.definicion }}</span>
-                                        </div>
+                        <div class="flex flex-col gap-8">
+                            <!-- Pieza estándar -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">
+                                    Pieza estándar <span class="text-red-500">*</span></label>
+                                <p-inputgroup styleClass="w-full">
+                                    <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
+                                        optionValue="nombre" placeholder="Seleccione una pieza estándar" [showClear]="true"
+                                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
+                                        styleClass="w-full rounded-l-2xl">
+                                        <ng-template let-tipo pTemplate="item">
+                                            <div class="flex items-center gap-3">
+                                                <img [src]="tipo.foto" appFallbackImage class="w-8 h-8 object-cover rounded shadow-sm" />
+                                                <div class="flex flex-col">
+                                                    <span class="font-medium text-sm">{{ tipo.nombre }}</span>
+                                                    <span class="text-xs text-gray-500 truncate max-w-[150px]">{{
+                                                        tipo.definicion }}</span>
+                                                </div>
+                                            </div>
+                                        </ng-template>
+                                    </p-select>
+                                    <p-inputgroup-addon styleClass="rounded-r-2xl">
+                                        <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                            (onClick)="abrirCrearTipo()"></p-button>
+                                    </p-inputgroup-addon>
+                                </p-inputgroup>
+                                @if (articuloForm.get('definicion')?.touched && articuloForm.get('definicion')?.invalid)
+                                {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">La pieza estándar es
+                                    requerida</small>
+                                }
+                            </div>
+
+                            <!-- Descripción -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Descripción</label>
+                                <textarea pTextarea formControlName="descripcionEspecifica" rows="3"
+                                    placeholder="Descripción específica..."
+                                    class="w-full rounded-2xl resize-none"></textarea>
+                                @if (articuloForm.get('descripcionEspecifica')?.touched &&
+                                    articuloForm.get('descripcionEspecifica')?.invalid) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">La descripción es
+                                    requerida</small>
+                                }
+                            </div>
+
+                            <!-- Peso -->
+                            <div class="field">
+                                <div class="flex justify-between items-center mb-3 ml-1">
+                                    <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Peso
+                                        (Kg)</label>
+                                    <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline"
+                                        (click)="abrirConversor()">
+                                        <i class="pi pi-calculator text-[10px]"></i>
+                                        <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
                                     </div>
-                                </ng-template>
-                            </p-select>
-                            <p-inputgroup-addon
-                                class="bg-surface-50 border border-surface-border border-l-0 rounded-r-xl">
-                                <p-button icon="pi pi-plus" [text]="true" severity="secondary"
-                                    (onClick)="abrirCrearTipo()"></p-button>
-                            </p-inputgroup-addon>
-                        </p-inputgroup>
-                    </div>
+                                </div>
+                                <p-inputgroup styleClass="w-full">
+                                    <input pInputText type="number" formControlName="peso" placeholder="0.00"
+                                        class="w-full rounded-l-2xl" />
+                                    <p-inputgroup-addon styleClass="rounded-r-2xl">
+                                        Kg
+                                    </p-inputgroup-addon>
+                                </p-inputgroup>
+                            </div>
 
-                    <!-- Descripción -->
-                    <div class="flex flex-col gap-2">
-                        <label
-                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Descripción</label>
-                        <input pInputText formControlName="descripcionEspecifica" placeholder="Ej. 0.10"
-                            class="w-full h-12 bg-surface-50 border border-surface-border rounded-xl px-4 focus:ring-1 focus:ring-[#fdb831]/50" />
-                    </div>
-
-                    <!-- Peso -->
-                    <div class="flex flex-col gap-2">
-                        <div class="flex justify-between items-center">
-                            <label class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Peso
-                                (Kg)</label>
-                            <div class="flex items-center gap-1.5 text-[#fdb831] cursor-pointer hover:opacity-80 transition-opacity"
-                                (click)="abrirConversor()">
-                                <i class="pi pi-sort-alt text-[10px]"></i>
-                                <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
+                            <!-- Comentarios -->
+                            <div class="field">
+                                <label
+                                    class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Comentarios</label>
+                                <textarea pTextarea formControlName="comentarios" rows="3"
+                                    placeholder="Notas internas..." class="w-full rounded-2xl resize-none"></textarea>
                             </div>
                         </div>
-                        <p-inputgroup>
-                            <input pInputText type="number" formControlName="peso" placeholder="0,00"
-                                class="h-12 bg-surface-50 border border-surface-border rounded-l-xl px-4" />
-                            <p-inputgroup-addon
-                                class="bg-surface-50 border border-surface-border border-l-0 rounded-r-xl text-gray-500 text-sm font-medium pr-4">
-                                Kg
-                            </p-inputgroup-addon>
-                        </p-inputgroup>
                     </div>
+                </p-card>
+            </div>
 
-                    <!-- Comentarios -->
-                    <div class="flex flex-col gap-2">
-                        <label
-                            class="text-[10px] font-black text-gray-500 tracking-widest uppercase">Comentarios</label>
-                        <textarea pTextarea formControlName="comentarios" placeholder="Notas adicionales..." [rows]="4"
-                            class="w-full bg-surface-50 border border-surface-border rounded-xl p-4 resize-none transition-all focus:ring-1 focus:ring-[#fdb831]/50">
-                        </textarea>
+            <!-- Columna Derecha: Referencias y Multimedia (8 celdas) -->
+            <div class="lg:col-span-7 flex flex-col gap-8">
+
+                <!-- Referencias Cruzadas -->
+                <p-card
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
+                    <div class="p-4 md:p-6">
+                        <div class="flex justify-between items-center mb-10">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                    <i class="pi pi-sync text-xl"></i>
+                                </div>
+                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Referencias
+                                    Cruzadas</span>
+                            </div>
+                            <div class="flex gap-2">
+                                <div class="relative hidden md:block">
+                                    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                                    <input pInputText placeholder="Buscar..."
+                                        [(ngModel)]="searchTermReferences" [ngModelOptions]="{standalone: true}"
+                                        class="w-48 h-9 pl-10 rounded-xl text-xs bg-surface-ground/50 border-surface-border focus:ring-1 focus:ring-[#fdb831]/30" />
+                                </div>
+                                <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
+                                    styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
+                                    (onClick)="agregarReferencia()"></p-button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-hidden rounded-2xl border border-surface-border bg-surface-ground/50">
+                            <table class="w-full text-left border-collapse">
+                                <thead>
+                                    <tr class="bg-surface-ground">
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Referencia / Código</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Marca</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">
+                                            Comentario</th>
+                                        <th
+                                            class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase text-center w-20">
+                                            Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody formArrayName="referenciasCruzadas">
+                                    @for (ref of referenciasCruzadas.controls; track $index) {
+                                    @if (shouldShowReference(ref.value.referencia_id)) {
+                                    <tr [formGroupName]="$index"
+                                        class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
+                                        <td class="px-4 py-2">
+                                            <p-inputgroup styleClass="w-full h-9">
+                                                <p-select formControlName="referencia_id"
+                                                    [options]="referenciasDisponibles" optionLabel="referencia"
+                                                    optionValue="id" placeholder="Seleccione..." [filter]="true"
+                                                    filterBy="referencia" (onFilter)="onFilterReferencias($event)"
+                                                    appendTo="body"
+                                                    styleClass="w-full rounded-l-xl border-surface-border">
+                                                    <ng-template let-item pTemplate="item">
+                                                        <div class="flex flex-col">
+                                                            <span class="font-bold text-sm">{{ item.referencia
+                                                                }}</span>
+                                                            <span class="text-[10px] text-gray-500">{{
+                                                                item.marca?.nombre }}</span>
+                                                        </div>
+                                                    </ng-template>
+                                                </p-select>
+                                                <p-inputgroup-addon styleClass="rounded-r-xl border-surface-border bg-surface-ground">
+                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary"
+                                                        styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
+                                                        (onClick)="abrirCrearReferencia($index)"></p-button>
+                                                </p-inputgroup-addon>
+                                            </p-inputgroup>
+                                        </td>
+                                        <td class="px-4 py-2 text-sm text-gray-400">
+                                            {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}
+                                        </td>
+                                        <td class="px-4 py-2 text-sm text-gray-500 italic">
+                                            {{ getReferenciaDetail(ref.value.referencia_id)?.comentario || 'Sin
+                                            comentarios...'
+                                            }}
+                                        </td>
+                                        <td class="px-4 py-2 text-center">
+                                            <button type="button" (click)="eliminarReferencia($index)"
+                                                class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
+                                                <i class="pi pi-trash text-sm"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    }
+                                    }
+                                    @if (referenciasCruzadas.length === 0) {
+                                    <tr>
+                                        <td colspan="4" class="px-4 py-8 text-center">
+                                            <p class="text-gray-500 text-xs italic">No hay referencias agregadas. Haga
+                                                clic en
+                                                <span class="text-[#fdb831] font-bold">AÑADIR</span> para comenzar.
+                                            </p>
+                                        </td>
+                                    </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                </p-card>
+
+                <!-- Multimedia Section -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Foto -->
+                    <p-card
+                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
+                        <div class="p-2">
+                            <app-image-upload label="Foto de Referencia" icon="pi pi-camera"
+                                [currentImage]="articuloActual.fotoDescriptiva" (fileSelected)="onFotoSelected($event)">
+                            </app-image-upload>
+                        </div>
+                    </p-card>
+
+                    <!-- Plano -->
+                    <p-card
+                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
+                        <div class="p-2">
+                            <app-image-upload label="Plano Esquemático" icon="pi pi-map"
+                                [currentImage]="articuloActual.foto_medida" (fileSelected)="onPlanoSelected($event)">
+                            </app-image-upload>
+                        </div>
+                    </p-card>
                 </div>
+
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: Referencias y Multimedia -->
-        <div class="col-span-12 lg:col-span-8 flex flex-col gap-8">
-
-            <!-- Referencias Cruzadas -->
-            <div class="surface-card border border-surface-border shadow-xl">
-                <div class="flex justify-between items-center mb-8">
-                    <div class="flex items-center gap-3">
-                        <div
-                            class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
-                            <i class="pi pi-sync text-sm"></i>
-                        </div>
-                        <h3 class="text-xs font-bold uppercase tracking-wider">Referencias Cruzadas</h3>
-                    </div>
-                    <div class="flex gap-2">
-                        <p-button label="Importar desde Excel" icon="pi pi-file-excel" [text]="true"
-                            styleClass="text-gray-400 hover:text-white text-xs font-semibold bg-white/5 px-4 py-2 rounded-lg"></p-button>
-                        <p-button label="Añadir Referencia" icon="pi pi-plus" (onClick)="agregarReferencia()"
-                            styleClass="bg-[#fdb831] border-none text-black text-xs font-bold px-4 py-2 rounded-lg hover:brightness-110 shadow-lg shadow-[#fdb831]/20"></p-button>
-                    </div>
-                </div>
-
-                <!-- Búsqueda / Filtro -->
-                <div class="mb-6">
-                    <div class="relative w-full max-w-sm">
-                        <i class="pi pi-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 text-sm"></i>
-                        <input pInputText placeholder="Filtrar por Referencia o Marca..."
-                            [(ngModel)]="searchTermReferences" [ngModelOptions]="{standalone: true}"
-                            class="w-full h-10 bg-surface-50 border border-surface-border rounded-lg pl-10 pr-4 text-sm focus:ring-1 focus:ring-[#fdb831]/30" />
-                    </div>
-                </div>
-
-                <!-- Tabla de Referencias -->
-                <div class="rounded-xl border border-surface-border">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="bg-surface-ground">
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Referencia / Código</th>
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Marca</th>
-                                <th class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase">
-                                    Comentario</th>
-                                <th
-                                    class="px-4 py-3 text-[10px] font-black text-gray-500 tracking-widest uppercase text-center w-20">
-                                    Acción</th>
-                            </tr>
-                        </thead>
-                        <tbody formArrayName="referenciasCruzadas">
-                            @for (ref of referenciasCruzadas.controls; track $index) {
-                            @if (shouldShowReference(ref.value.referencia_id)) {
-                            <tr [formGroupName]="$index"
-                                class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
-                                <td class="px-4 py-3">
-                                    <p-inputgroup>
-                                        <p-select formControlName="referencia_id" [options]="referenciasDisponibles"
-                                            optionLabel="referencia" optionValue="id" placeholder="Seleccione..."
-                                            [filter]="true" filterBy="referencia"
-                                            (onFilter)="onFilterReferencias($event)" appendTo="body"
-                                            class="w-full border-none bg-transparent h-10 text-sm focus:ring-0">
-                                            <ng-template let-item pTemplate="item">
-                                                <div class="flex flex-col">
-                                                    <span class="font-bold text-sm">{{ item.referencia }}</span>
-                                                    <span class="text-[10px] text-gray-500">{{ item.marca?.nombre
-                                                        }}</span>
-                                                </div>
-                                            </ng-template>
-                                        </p-select>
-                                        <p-inputgroup-addon
-                                            class="bg-transparent border-surface-border border-l-0 rounded-r-lg">
-                                            <p-button icon="pi pi-plus" [text]="true" severity="secondary"
-                                                (onClick)="abrirCrearReferencia($index)"></p-button>
-                                        </p-inputgroup-addon>
-                                    </p-inputgroup>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-400">
-                                    {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-500 italic">
-                                    {{ getReferenciaDetail(ref.value.referencia_id)?.comentario || 'Sin comentarios...'
-                                    }}
-                                </td>
-                                <td class="px-4 py-3 text-center">
-                                    <button type="button" (click)="eliminarReferencia($index)"
-                                        class="text-gray-500 hover:text-red-500 transition-colors p-2">
-                                        <i class="pi pi-trash text-sm"></i>
-                                    </button>
-                                </td>
-                            </tr>
-                            }
-                            }
-                            @if (referenciasCruzadas.length === 0) {
-                            <tr>
-                                <td colspan="4" class="px-4 py-12 text-center text-gray-600 italic text-sm">
-                                    No hay referencias cruzadas asociadas.
-                                </td>
-                            </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
-                <p class="mt-4 text-[10px] text-gray-600 italic text-center">
-                    Los cambios se guardan al confirmar la edición del artículo.
-                </p>
-            </div>
-
-            <!-- Multimedia: Foto y Plano -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <!-- Foto de Referencia -->
-                <div class="surface-card border border-surface-border shadow-xl flex flex-col gap-6">
-                    <app-image-upload label="Foto de Referencia" icon="pi pi-camera"
-                        [currentImage]="articuloActual.fotoDescriptiva" (fileSelected)="onFotoSelected($event)">
-                    </app-image-upload>
-                </div>
-
-                <!-- Plano Esquemático -->
-                <div class="surface-card border border-surface-border shadow-xl flex flex-col gap-6">
-                    <app-image-upload label="Plano Esquemático" icon="pi pi-map"
-                        [currentImage]="articuloActual.foto_medida" (fileSelected)="onPlanoSelected($event)">
-                    </app-image-upload>
-                </div>
-            </div>
-
+        <!-- Footer Actions -->
+        <div
+            class="flex flex-col md:flex-row justify-end items-center gap-8 mt-16 pt-10 border-t border-surface-border mb-10">
+            <p-button label="Cancelar y Salir" styleClass="p-button-secondary text-base font-bold p-button-text p-4"
+                (onClick)="cancelar()" [disabled]="loading">
+            </p-button>
+            <p-button label="Guardar Cambios" icon="pi pi-check"
+                styleClass="p-button-warning text-lg font-bold px-12 py-5 rounded-[2rem] shadow-2xl shadow-orange-500/20"
+                type="submit" [loading]="loading" [disabled]="articuloForm.invalid">
+            </p-button>
         </div>
     </form>
-
-    <!-- Bottom Action Bar -->
-    <div
-        class="fixed bottom-0 left-0 right-0 surface-section border-t border-surface-border p-6 flex justify-end items-center gap-6 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.1)]">
-        <button (click)="cancelar()"
-            class="text-gray-400 hover:text-white font-bold text-sm transition-colors uppercase tracking-widest">
-            Cancelar
-        </button>
-        <p-button label="Guardar Cambios" [loading]="loading" (onClick)="onSubmit()" icon="pi pi-check"
-            styleClass="bg-[#fdb831] border-none text-black font-black px-10 py-4 rounded-xl active:scale-95 transition-all shadow-xl shadow-[#fdb831]/10 hover:shadow-[#fdb831]/20 uppercase tracking-widest text-sm">
-        </p-button>
-    </div>
-
     } @else {
-    <div class="flex flex-col justify-center items-center h-[60vh] gap-4">
+    <div class="flex flex-col justify-center items-center h-[60vh] gap-4 relative z-10">
         <i class="pi pi-spin pi-spinner text-4xl text-[#fdb831]"></i>
         <p class="text-gray-500 animate-pulse text-sm font-medium">Cargando datos del artículo...</p>
     </div>

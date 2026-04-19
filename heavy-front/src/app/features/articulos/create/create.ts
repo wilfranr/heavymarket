@@ -73,10 +73,27 @@ export class CreateComponent implements OnInit {
     fotoFile: File | null = null;
     planoFile: File | null = null;
 
+    // Término de búsqueda para referencias cruzadas
+    searchTermReferences = '';
+
     ngOnInit(): void {
         this.initForm();
         this.cargarTipos();
         this.cargarReferencias();
+    }
+
+    /**
+     * Determina si una fila de referencia debe mostrarse según el término de búsqueda
+     */
+    shouldShowReference(id: number): boolean {
+        if (!this.searchTermReferences) return true;
+
+        const ref = this.getReferenciaDetail(id);
+        if (!ref) return false;
+
+        const term = this.searchTermReferences.toLowerCase();
+        return ref.referencia.toLowerCase().includes(term) ||
+            (ref.marca?.nombre?.toLowerCase().includes(term) || false);
     }
 
     /**

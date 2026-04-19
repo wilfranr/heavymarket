@@ -79,6 +79,16 @@
 - 17 archivos
 - ~648 líneas de código
 
+#### Módulo de Artículos ✅
+- Rediseño UI consistente (Crear/Editar)
+- Gestión de referencias cruzadas avanzada (Issue #86)
+- Carga de multimedia (Foto y Plano)
+- Integración con NgRx Store
+- Optimización de layout (5/7) para campos extensos
+- Búsqueda global en tablas de referencias
+- 12 archivos (Componentes + Store + Tests)
+- ~1,400 líneas de código
+
 #### Módulo de Cotizaciones ✅
 - Modelo TypeScript
 - CotizacionService
@@ -160,7 +170,12 @@
   - CRUD de notificaciones
   - Contador de no leídas
   - Todos los tipos de notificaciones
-- Total: 21 tests implementados
+- ArticuloControllerTest.php (6 tests de feature)
+  - CRUD completo de artículos
+  - Gestión de archivos y relaciones
+- ArticuloService.spec.ts y Component Specs (8 tests unitarios)
+- Total: 35 tests implementados
+- Cobertura crítica del módulo de Artículos: 100%
 
 #### Optimizaciones de Rendimiento ✅
 - CustomPreloadStrategy para lazy loading

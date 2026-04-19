@@ -131,11 +131,12 @@ return new class extends Migration
         if (! Schema::hasTable('articulos')) {
             Schema::create('articulos', function (Blueprint $table) {
                 $table->id();
-                $table->string('nombre', 255);
-                $table->text('descripcion')->nullable();
-                $table->unsignedBigInteger('categoria_id')->nullable();
-                $table->string('referencia', 255)->nullable();
-                $table->string('marca', 255)->nullable();
+                $table->string('definicion', 255);
+                $table->text('descripcionEspecifica')->nullable();
+                $table->text('comentarios')->nullable();
+                $table->decimal('peso', 15, 2)->nullable();
+                $table->string('fotoDescriptiva', 255)->nullable();
+                $table->string('foto_medida', 255)->nullable();
                 $table->timestamps();
             });
         }
@@ -262,6 +263,43 @@ return new class extends Migration
                 $table->unsignedBigInteger('permission_id');
                 $table->unsignedBigInteger('role_id');
                 $table->primary(['permission_id', 'role_id']);
+            });
+        }
+
+        // 15. articulos_referencias (pivot)
+        if (! Schema::hasTable('articulos_referencias')) {
+            Schema::create('articulos_referencias', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('articulo_id');
+                $table->unsignedBigInteger('referencia_id');
+                $table->timestamps();
+            });
+        }
+
+        // 16. articulo_juegos
+        if (! Schema::hasTable('articulo_juegos')) {
+            Schema::create('articulo_juegos', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('articulo_id');
+                $table->unsignedBigInteger('referencia_id');
+                $table->integer('cantidad')->default(1);
+                $table->text('comentario')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        // 17. medidas
+        if (! Schema::hasTable('medidas')) {
+            Schema::create('medidas', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('articulo_id');
+                $table->string('identificador')->nullable();
+                $table->string('nombre')->nullable();
+                $table->string('valor')->nullable();
+                $table->string('unidad')->nullable();
+                $table->string('tipo')->nullable();
+                $table->string('imagen', 255)->nullable();
+                $table->timestamps();
             });
         }
     }

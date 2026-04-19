@@ -1,13 +1,7 @@
 <p-toast />
 
-<div class="container mx-auto p-4 md:p-8 max-w-7xl relative overflow-hidden min-h-screen">
-    <!-- Decorative background elements -->
-    <div
-        class="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-[#fdb831]/10 rounded-full blur-[120px] pointer-events-none">
-    </div>
-    <div
-        class="absolute bottom-0 left-0 -ml-32 -mb-32 w-80 h-80 bg-[#fdb831]/5 rounded-full blur-[100px] pointer-events-none">
-    </div>
+<div class="container mx-auto p-4 md:p-8 max-w-[1500px] relative overflow-hidden min-h-screen">
+
 
     <!-- Header -->
     <div class="flex flex-col md:flex-row justify-between items-start mb-10 gap-4 relative z-10">
@@ -28,7 +22,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
             <!-- Columna Izquierda: Información General (4 celdas) -->
-            <div class="lg:col-span-4 flex flex-col gap-8">
+            <div class="lg:col-span-5 flex flex-col gap-8">
                 <p-card
                     styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] h-full border border-surface-border">
                     <div class="p-4 md:p-6">
@@ -123,7 +117,7 @@
             </div>
 
             <!-- Columna Derecha: Referencias y Multimedia (8 celdas) -->
-            <div class="lg:col-span-8 flex flex-col gap-8">
+            <div class="lg:col-span-7 flex flex-col gap-8">
 
                 <!-- Referencias Cruzadas -->
                 <p-card
@@ -138,9 +132,17 @@
                                 <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Referencias
                                     Cruzadas</span>
                             </div>
-                            <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
-                                styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
-                                (onClick)="agregarReferencia()"></p-button>
+                            <div class="flex gap-2">
+                                <div class="relative hidden md:block">
+                                    <i class="pi pi-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                                    <input pInputText placeholder="Buscar..."
+                                        [(ngModel)]="searchTermReferences" [ngModelOptions]="{standalone: true}"
+                                        class="w-48 h-9 pl-10 rounded-xl text-xs bg-surface-ground/50 border-surface-border focus:ring-1 focus:ring-[#fdb831]/30" />
+                                </div>
+                                <p-button label="Añadir" icon="pi pi-plus" [text]="true" size="small"
+                                    styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
+                                    (onClick)="agregarReferencia()"></p-button>
+                            </div>
                         </div>
 
                         <div class="overflow-hidden rounded-2xl border border-surface-border bg-surface-ground/50">
@@ -163,16 +165,17 @@
                                 </thead>
                                 <tbody formArrayName="referenciasCruzadas">
                                     @for (ref of referenciasCruzadas.controls; track $index) {
+                                    @if (shouldShowReference(ref.value.referencia_id)) {
                                     <tr [formGroupName]="$index"
                                         class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                         <td class="px-4 py-2">
-                                            <p-inputgroup>
+                                            <p-inputgroup styleClass="w-full h-9">
                                                 <p-select formControlName="referencia_id"
                                                     [options]="referenciasDisponibles" optionLabel="referencia"
                                                     optionValue="id" placeholder="Seleccione..." [filter]="true"
                                                     filterBy="referencia" (onFilter)="onFilterReferencias($event)"
                                                     appendTo="body"
-                                                    class="w-full border-none bg-transparent h-9 text-sm focus:ring-0">
+                                                    styleClass="w-full rounded-l-xl border-surface-border">
                                                     <ng-template let-item pTemplate="item">
                                                         <div class="flex flex-col">
                                                             <span class="font-bold text-sm">{{ item.referencia
@@ -182,7 +185,7 @@
                                                         </div>
                                                     </ng-template>
                                                 </p-select>
-                                                <p-inputgroup-addon class="bg-transparent border-none">
+                                                <p-inputgroup-addon styleClass="rounded-r-xl border-surface-border bg-surface-ground">
                                                     <p-button icon="pi pi-plus" [text]="true" severity="secondary"
                                                         styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
                                                         (onClick)="abrirCrearReferencia($index)"></p-button>
@@ -204,6 +207,7 @@
                                             </button>
                                         </td>
                                     </tr>
+                                    }
                                     }
                                     @if (referenciasCruzadas.length === 0) {
                                     <tr>
