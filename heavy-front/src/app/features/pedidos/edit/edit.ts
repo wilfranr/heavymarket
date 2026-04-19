@@ -221,6 +221,7 @@ export class EditComponent implements OnInit {
     comentarioControl = new FormControl('');
     origenComentarioControl = new FormControl('Asesor');
     comentariosItemActual: { origen: string; comentario: string; fecha?: string }[] = [];
+    comentariosDelPedido: { origen: string; comentario: string; fecha?: string }[] = [];
     imagenControl = new FormControl('');
 
     estadosOptions = [
@@ -806,6 +807,9 @@ export class EditComponent implements OnInit {
                             fabricante_id: pedido.fabricante_id || null,
                             contacto_id: pedido.contacto_id || null
                         });
+
+                        // Cargar comentarios del pedido para visualización
+                        this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
 
                         // Cargar estado de revisión de la máquina
                         if (pedido.maquina_id) {

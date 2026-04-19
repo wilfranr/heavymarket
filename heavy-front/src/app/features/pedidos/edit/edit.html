@@ -129,6 +129,26 @@
                                 {{ pedidoEstadoEtiqueta(estadoActual) }}
                             </span>
                         </div>
+
+                        <!-- Comentarios del pedido -->
+                        @if (comentariosDelPedido.length > 0) {
+                        <div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700">
+                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block mb-2"><i class="pi pi-comments mr-1"></i> Comentarios previos:</span>
+                            <div class="space-y-2 max-h-[110px] overflow-y-auto pr-1 custom-scrollbar">
+                                @for (c of comentariosDelPedido; track $index) {
+                                <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-2 border-yellow-500 p-2 rounded text-[11px]">
+                                    <div class="flex justify-between mb-1 opacity-70">
+                                        <span class="font-bold text-primary">{{ c.origen }}</span>
+                                        @if (c.fecha) {
+                                        <span>{{ c.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+                                        }
+                                    </div>
+                                    <p class="m-0 line-height-2 text-color-secondary">{{ c.comentario }}</p>
+                                </div>
+                                }
+                            </div>
+                        </div>
+                        }
                     </div>
                 </div>
 
