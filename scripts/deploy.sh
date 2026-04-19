@@ -127,6 +127,10 @@ if [[ "$DEPLOY_API" == "true" ]]; then
         run php artisan route:cache
         run php artisan view:cache
         run php artisan up
+        
+        log_info "Reiniciando colas y WebSockets..."
+        run php artisan queue:restart || true
+        run php artisan reverb:restart || true
     else
         log_warn "No existe heavy-api/.env; se omite migrate y cache (configura .env en el servidor)"
     fi
