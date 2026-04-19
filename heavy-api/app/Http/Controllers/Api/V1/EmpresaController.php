@@ -81,7 +81,7 @@ class EmpresaController extends Controller
 
             DB::commit();
 
-            $empresa->load(['country', 'city', 'states']);
+            $empresa->load(['country', 'city', 'state']);
 
             return response()->json([
                 'data' => new EmpresaResource($empresa),
@@ -103,7 +103,7 @@ class EmpresaController extends Controller
      */
     public function show(Empresa $empresa): JsonResponse
     {
-        $empresa->load(['country', 'city', 'states']);
+        $empresa->load(['country', 'city', 'state']);
 
         return response()->json([
             'data' => new EmpresaResource($empresa),
@@ -150,7 +150,7 @@ class EmpresaController extends Controller
             }
 
             $empresa->update($validated);
-            $empresa->load(['country', 'city', 'states']);
+            $empresa->load(['country', 'city', 'state']);
 
             return response()->json([
                 'data' => new EmpresaResource($empresa),

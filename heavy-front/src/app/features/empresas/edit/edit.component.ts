@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { updateEmpresa, loadEmpresaById } from '../../../store/empresas/actions/empresas.actions';
 import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.selectors';
 import { UpdateEmpresaDto } from '../../../core/models/empresa.model';
+import { DividerModule } from 'primeng/divider';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 /**
@@ -21,102 +22,9 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 @Component({
     selector: 'app-empresa-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, InputNumberModule, SelectModule, ToastModule, ImageUploadComponent, DividerModule],
     providers: [MessageService],
-    template: `
-        <div class="card">
-            <h2>Editar Empresa</h2>
-
-            @if (loading()) {
-                <div class="text-center py-8">
-                    <i class="pi pi-spin pi-spinner text-4xl"></i>
-                    <p class="mt-4">Cargando empresa...</p>
-                </div>
-            } @else if (empresaForm) {
-                <form [formGroup]="empresaForm" (ngSubmit)="onSubmit()">
-                    <div class="grid">
-                        <div class="col-12 md:col-6">
-                            <label for="nombre" class="block mb-2">Nombre</label>
-                            <input type="text" formControlName="nombre" pInputText placeholder="Nombre de la empresa" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="siglas" class="block mb-2">Siglas</label>
-                            <input type="text" formControlName="siglas" pInputText placeholder="Siglas (opcional)" styleClass="w-full" maxlength="10" />
-                        </div>
-
-                        <div class="col-12">
-                            <label for="direccion" class="block mb-2">Dirección</label>
-                            <input type="text" formControlName="direccion" pInputText placeholder="Dirección completa" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="telefono" class="block mb-2">Teléfono</label>
-                            <input type="tel" formControlName="telefono" pInputText placeholder="Teléfono fijo" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="celular" class="block mb-2">Celular</label>
-                            <input type="tel" formControlName="celular" pInputText placeholder="Celular" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="email" class="block mb-2">Email</label>
-                            <input type="email" formControlName="email" pInputText placeholder="correo@empresa.com" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="nit" class="block mb-2">NIT</label>
-                            <input type="text" formControlName="nit" pInputText placeholder="Número de identificación tributaria" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="representante" class="block mb-2">Representante</label>
-                            <input type="text" formControlName="representante" pInputText placeholder="Nombre del representante legal" styleClass="w-full" />
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="flete" class="block mb-2">Flete (por kg)</label>
-                            <p-inputNumber formControlName="flete" [min]="0" [step]="0.1" [showButtons]="true" styleClass="w-full"> </p-inputNumber>
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <p-inputNumber formControlName="trm" [min]="0" [step]="0.01" [showButtons]="true" styleClass="w-full"> </p-inputNumber>
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <app-image-upload 
-                                label="Logo Light" 
-                                icon="pi pi-image" 
-                                [currentImage]="empresaForm.get('logo_light')?.value"
-                                (fileSelected)="onLogoLightSelected($event)">
-                            </app-image-upload>
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <app-image-upload 
-                                label="Logo Dark" 
-                                icon="pi pi-image" 
-                                [currentImage]="empresaForm.get('logo_dark')?.value"
-                                (fileSelected)="onLogoDarkSelected($event)">
-                            </app-image-upload>
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="estado" class="block mb-2">Estado</label>
-                            <p-select formControlName="estado" [options]="estadoOptions" placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
-                        </div>
-                    </div>
-
-                    <div class="flex justify-content-end gap-2 mt-4">
-                        <p-button label="Cancelar" severity="secondary" icon="pi pi-times" type="button" [outlined]="true" (onClick)="onCancel()"> </p-button>
-                        <p-button label="Actualizar Empresa" icon="pi pi-check" type="submit" [loading]="saving()" [disabled]="empresaForm.invalid"> </p-button>
-                    </div>
-                </form>
-            }
-        </div>
-        <p-toast></p-toast>
-    `,
+    templateUrl: './edit.component.html',
     styles: []
 })
 export class EditComponent implements OnInit {

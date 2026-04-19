@@ -1,0 +1,134 @@
+<p-toast />
+
+<div class="container mx-auto p-4">
+    <p-card>
+        <ng-template pTemplate="header">
+            <div class="flex justify-between items-center p-4">
+                <h2 class="text-2xl font-bold">Crear Nueva Empresa</h2>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="onCancel()">
+                </p-button>
+            </div>
+        </ng-template>
+
+        <form [formGroup]="empresaForm" (ngSubmit)="onSubmit()">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nombre -->
+                <div class="field">
+                    <label for="nombre" class="block text-sm font-medium mb-2"> Nombre <span class="text-red-500">*</span> </label>
+                    <input pInputText id="nombre" formControlName="nombre" placeholder="Nombre de la empresa" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('nombre')?.invalid && empresaForm.get('nombre')?.touched" />
+                    @if (empresaForm.get('nombre')?.invalid && empresaForm.get('nombre')?.touched) {
+                    <small class="p-error">El nombre es requerido</small>
+                    }
+                </div>
+
+                <!-- Siglas -->
+                <div class="field">
+                    <label for="siglas" class="block text-sm font-medium mb-2"> Siglas </label>
+                    <input pInputText id="siglas" formControlName="siglas" placeholder="Siglas (máx. 10 chars)" class="w-full" maxlength="10" />
+                </div>
+
+                <!-- Dirección -->
+                <div class="field md:col-span-2">
+                    <label for="direccion" class="block text-sm font-medium mb-2"> Dirección <span class="text-red-500">*</span> </label>
+                    <input pInputText id="direccion" formControlName="direccion" placeholder="Dirección completa" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('direccion')?.invalid && empresaForm.get('direccion')?.touched" />
+                    @if (empresaForm.get('direccion')?.invalid && empresaForm.get('direccion')?.touched) {
+                    <small class="p-error">La dirección es requerida</small>
+                    }
+                </div>
+
+                <!-- Teléfono -->
+                <div class="field">
+                    <label for="telefono" class="block text-sm font-medium mb-2"> Teléfono </label>
+                    <input pInputText id="telefono" formControlName="telefono" placeholder="Teléfono fijo" class="w-full" />
+                </div>
+
+                <!-- Celular -->
+                <div class="field">
+                    <label for="celular" class="block text-sm font-medium mb-2"> Celular <span class="text-red-500">*</span> </label>
+                    <input pInputText id="celular" formControlName="celular" placeholder="Número celular" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('celular')?.invalid && empresaForm.get('celular')?.touched" />
+                    @if (empresaForm.get('celular')?.invalid && empresaForm.get('celular')?.touched) {
+                    <small class="p-error">El celular es requerido</small>
+                    }
+                </div>
+
+                <!-- Email -->
+                <div class="field">
+                    <label for="email" class="block text-sm font-medium mb-2"> Email <span class="text-red-500">*</span> </label>
+                    <input pInputText id="email" formControlName="email" placeholder="correo@empresa.com" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched" />
+                    @if (empresaForm.get('email')?.invalid && empresaForm.get('email')?.touched) {
+                    <small class="p-error">Email válido requerido</small>
+                    }
+                </div>
+
+                <!-- NIT -->
+                <div class="field">
+                    <label for="nit" class="block text-sm font-medium mb-2"> NIT <span class="text-red-500">*</span> </label>
+                    <input pInputText id="nit" formControlName="nit" placeholder="Número de identificación tributaria" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('nit')?.invalid && empresaForm.get('nit')?.touched" />
+                    @if (empresaForm.get('nit')?.invalid && empresaForm.get('nit')?.touched) {
+                    <small class="p-error">El NIT es requerido</small>
+                    }
+                </div>
+
+                <!-- Representante -->
+                <div class="field">
+                    <label for="representante" class="block text-sm font-medium mb-2"> Representante <span class="text-red-500">*</span> </label>
+                    <input pInputText id="representante" formControlName="representante" placeholder="Representante legal" class="w-full"
+                        [class.ng-invalid]="empresaForm.get('representante')?.invalid && empresaForm.get('representante')?.touched" />
+                    @if (empresaForm.get('representante')?.invalid && empresaForm.get('representante')?.touched) {
+                    <small class="p-error">El representante es requerido</small>
+                    }
+                </div>
+
+                <!-- Flete -->
+                <div class="field">
+                    <label for="flete" class="block text-sm font-medium mb-2"> Flete (por kg) </label>
+                    <p-inputNumber id="flete" formControlName="flete" [min]="0" [step]="0.1" [showButtons]="true" styleClass="w-full" mode="decimal" [minFractionDigits]="1"> </p-inputNumber>
+                </div>
+
+                <!-- TRM -->
+                <div class="field">
+                    <label for="trm" class="block text-sm font-medium mb-2"> TRM (Tasa de cambio) </label>
+                    <p-inputNumber id="trm" formControlName="trm" [min]="0" [step]="0.01" [showButtons]="true" styleClass="w-full" mode="decimal" [minFractionDigits]="2"> </p-inputNumber>
+                </div>
+
+                <!-- Estado -->
+                <div class="field">
+                    <label for="estado" class="block text-sm font-medium mb-2"> Estado </label>
+                    <p-select id="estado" formControlName="estado" [options]="estadoOptions" optionLabel="label" optionValue="value"
+                        placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
+                </div>
+
+                <!-- Logos -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Logo Light -->
+                    <div class="field">
+                        <app-image-upload label="Logo Light" icon="pi pi-image"
+                            (fileSelected)="onLogoLightSelected($event)">
+                        </app-image-upload>
+                    </div>
+
+                    <!-- Logo Dark -->
+                    <div class="field">
+                        <app-image-upload label="Logo Dark" icon="pi pi-image"
+                            (fileSelected)="onLogoDarkSelected($event)">
+                        </app-image-upload>
+                    </div>
+                </div>
+            </div>
+
+            <p-divider />
+
+            <div class="flex justify-end gap-2 mt-4">
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="onCancel()"
+                    [disabled]="loading"> </p-button>
+                <p-button label="Crear Empresa" icon="pi pi-check" type="submit" [loading]="loading"
+                    [disabled]="empresaForm.invalid"> </p-button>
+            </div>
+        </form>
+    </p-card>
+</div>

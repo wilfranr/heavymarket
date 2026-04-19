@@ -47,7 +47,7 @@ class EmpresaResource extends JsonResource
 
             // Relaciones opcionales
             'country' => $this->whenLoaded('country'),
-            'state' => $this->whenLoaded('states'),
+            'state' => $this->whenLoaded('state'),
             'city' => $this->whenLoaded('city'),
         ];
     }
