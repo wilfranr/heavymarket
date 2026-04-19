@@ -152,7 +152,12 @@ if [[ "$DEPLOY_FRONT" == "true" ]]; then
 
     run npm run build
 
-    log_info "Frontend listo. Salida en: heavy-front/dist/sakai-ng/"
+    log_info "Copiando build al directorio público de la API para Nginx..."
+    run rm -rf "$REPO_ROOT/heavy-api/public/dist"
+    run mkdir -p "$REPO_ROOT/heavy-api/public/dist/browser"
+    run cp -r "$REPO_ROOT/heavy-front/dist/sakai-ng/browser/"* "$REPO_ROOT/heavy-api/public/dist/browser/"
+
+    log_info "Frontend listo. Salida movida a: heavy-api/public/dist/browser/"
     echo ""
 fi
 
