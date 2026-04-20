@@ -13,7 +13,7 @@
         <div class="flex justify-between items-center mb-6 px-8">
             <div>
                 <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1"
-                    style="font-family: 'Figtree'">Análisis > Editar
+                    style="font-family: 'Figtree'">Análisis
                 </div>
                 <h1 class="text-3xl font-bold text-green-600 dark:text-brand-green" style="font-family: 'Figtree'; color: #22C55E;">
                     Análisis #{{ pedidoId() }}
@@ -24,9 +24,7 @@
                 <button type="button" class="btn-pill btn-primary-green" (click)="guardar()" [disabled]="submitting">
                     Guardar
                 </button>
-                <button type="button" class="btn-pill btn-secondary-green" (click)="cancelar()">
-                    Editar
-                </button>
+
                 @if (puedePasarACosteo) {
                 <button type="button" class="btn-pill btn-finalizar" (click)="finalizar()" [disabled]="finalizing">
                     Pasar a costeo
@@ -44,7 +42,7 @@
         @let pedido = (pedido$ | async);
         <div class="flex gap-6 mb-10 px-8">
             <!-- Order Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 h-[220px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
                 <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-700">
                     <span class="font-bold text-base pl-2">Información del pedido</span>
                     <i class="pi pi-shopping-bag text-xl pr-2"></i>
@@ -78,11 +76,24 @@
                         <span class="text-green-400 font-semibold">Estado:</span>
                         <p-tag [value]="pedidoEstadoEtiqueta(pedido?.estado)" [styleClass]="'px-3 py-1 ' + pedidoEstadoTagClass(pedido?.estado)"></p-tag>
                     </div>
+
+                    <!-- Botón Comentarios del pedido -->
+                    @if (comentariosDelPedido.length > 0) {
+                    <div class="mt-3 pt-2 border-t border-gray-100/10 dark:border-gray-700/50">
+                        <p-button 
+                            [label]="getLabelConteo(comentariosDelPedido.length)" 
+                            icon="pi pi-comments" 
+                            styleClass="text-sm !text-green-400" 
+                            [text]="true"
+                            (onClick)="displayComentariosPedidoDialog = true">
+                        </p-button>
+                    </div>
+                    }
                 </div>
             </div>
 
             <!-- Machine Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 h-[220px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
                 @let maquina = pedido?.maquina;
                 <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-200 dark:border-none">
                     <span class="font-bold text-base pl-2">Información de la máquina</span>
@@ -236,11 +247,6 @@
         <div class="px-8 space-y-6">
             <div class="flex flex-wrap items-center justify-between gap-4 mb-2">
                 <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Requerimientos del análisis</span>
-                <button type="button" 
-                    class="btn-pill bg-brand-yellow/10 text-brand-yellow hover:bg-brand-yellow/20 flex items-center gap-2 border-none transition-colors" 
-                    (click)="showBulkImport = !showBulkImport">
-                    <i class="pi pi-upload"></i> Carga masiva
-                </button>
             </div>
 
             <!-- Bulk Import Area (Toggleable) -->
@@ -336,7 +342,7 @@
                                     <tr>
                                         <th class="w-10">Item</th>
                                         <th class="w-20">Cantidad</th>
-                                        <th class="w-48">Referencia</th>
+                                        <th class="w-56">Referencia</th>
                                         <th class="flex-1">Descripción</th>
                                         <th class="w-48">Categoría comercial</th>
                                         <th class="w-24 text-center">Acciones</th>
@@ -352,7 +358,7 @@
                                                 <input type="number" pInputText formControlName="cantidad" min="1" step="1" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
                                             </td>
                                             <td class="p-2">
-                                                <p-inputgroup styleClass="w-full shadow-sm rounded-md overflow-hidden">
+                                                <div class="flex w-full shadow-sm rounded-md overflow-hidden h-10">
                                                     <p-select [options]="getOpcionesReferenciaParaFila(i)" 
                                                               formControlName="referencia_id" 
                                                               optionLabel="label" 
@@ -360,12 +366,13 @@
                                                               [filter]="true" 
                                                               placeholder="Seleccionar" 
                                                               appendTo="body" 
-                                                              styleClass="w-full !bg-[#334155] border-none !text-white h-10"
+                                                              styleClass="flex-1 !bg-[#334155] border-none !text-white h-full"
                                                               (onChange)="onReferenciaFilaChange($event, i, j)"></p-select>
-                                                    <p-inputgroup-addon styleClass="!bg-[#1e293b] border-none">
-                                                        <p-button icon="pi pi-plus" [text]="true" (click)="abrirCrearReferencia(i, j)" styleClass="!text-primary-400"></p-button>
-                                                    </p-inputgroup-addon>
-                                                </p-inputgroup>
+                                                    <p-button icon="pi pi-plus" [text]="true" 
+                                                              (click)="abrirCrearReferencia(i, j)" 
+                                                              styleClass="!bg-[#1e293b] border-none !text-primary-400 !rounded-none !h-full px-3">
+                                                    </p-button>
+                                                </div>
                                             </td>
                                             <td class="p-2">
                                                 <input
@@ -712,3 +719,32 @@
             (onClick)="ejecutarDevolucion()"></p-button>
     </ng-template>
 </p-dialog>
+
+<!-- Modal Comentarios del Pedido -->
+<p-dialog [(visible)]="displayComentariosPedidoDialog" [modal]="true" [style]="{width: '500px'}"
+    header="Comentarios del Pedido" appendTo="body" [closable]="true" [dismissableMask]="true">
+    <div class="flex flex-col gap-4 py-2">
+        @for (c of comentariosDelPedido; track $index) {
+        <div class="bg-slate-800/80 border border-gray-700/70 rounded-lg px-4 py-3 text-sm">
+            <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold text-green-400 uppercase tracking-wide">
+                    {{ c.origen }}
+                </span>
+                @if (c.fecha) {
+                <span class="text-[10px] text-gray-500">
+                    {{ c.fecha | date:'dd/MM/yyyy HH:mm' }}
+                </span>
+                }
+            </div>
+            <p class="m-0 text-sm text-gray-200 whitespace-pre-wrap break-words leading-relaxed">
+                {{ c.comentario }}
+            </p>
+        </div>
+        }
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cerrar" icon="pi pi-times" [text]="true" severity="secondary"
+            (onClick)="displayComentariosPedidoDialog = false"></p-button>
+    </ng-template>
+</p-dialog>
+

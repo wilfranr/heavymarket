@@ -155,6 +155,10 @@ export class AnalysisComponent implements OnInit {
     comentarioControl = new FormControl('');
     origenComentarioControl = new FormControl('');
 
+    // Comentarios generales del pedido
+    displayComentariosPedidoDialog = false;
+    comentariosDelPedido: any[] = [];
+
     // Gestión de Imágenes (Replicado de Edit)
     displayImagenesCarouselModal = false;
     activeImagenesFilaIndex: number | null = null;
@@ -1117,12 +1121,15 @@ export class AnalysisComponent implements OnInit {
                 filter(p => !!p && p.referencias !== undefined),
                 take(1)
             ).subscribe(pedido => {
-                if (pedido && pedido.referencias) {
-                    this.cargarReferenciasAlFormArray(pedido.referencias);
-                    // Pre-cargar catálogos por cada tipo de artículo único
-                    pedido.referencias.forEach(r => {
-                        if (r.lista_id) this.cargarReferenciasParaTipo(r.lista_id);
-                    });
+                if (pedido) {
+                    if (pedido.referencias) {
+                        this.cargarReferenciasAlFormArray(pedido.referencias);
+                        // Pre-cargar catálogos por cada tipo de artículo único
+                        pedido.referencias.forEach(r => {
+                            if (r.lista_id) this.cargarReferenciasParaTipo(r.lista_id);
+                        });
+                    }
+                    this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
                 }
             });
         }
@@ -1461,5 +1468,11 @@ export class AnalysisComponent implements OnInit {
     viewMaquina(maquina: any): void {
         this.selectedMaquina = maquina;
         this.displayMaquinaDialog = true;
+    }
+
+    getLabelConteo(conteo: number): string {
+        if (conteo === 0) return 'Sin comentarios';
+        if (conteo === 1) return '1 comentario';
+        return `${conteo} comentarios`;
     }
 }
