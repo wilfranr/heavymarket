@@ -101,11 +101,17 @@ class ReferenciaController extends Controller
                 'integer',
                 Rule::exists('listas', 'id')->whereIn('tipo', ['Marca', 'Fabricantes']),
             ],
+            'articulo_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('listas', 'id')->where('tipo', 'Tipo de Artículo'),
+            ],
         ]);
 
         $items = $validated['items'];
         $esTemporal = $validated['es_temporal'] ?? false;
         $marcaId = $validated['marca_id'] ?? null;
+        $articuloId = $validated['articulo_id'] ?? null;
         $comentarioTemporal = $validated['comentario_temporal'] ?? null;
         $codigos = array_map('strtoupper', array_column($items, 'codigo'));
 
@@ -127,15 +133,24 @@ class ReferenciaController extends Controller
                 if ($existentes->has($codigo)) {
                     $referencia = $existentes->get($codigo);
 
-                    // Si ya existe pero no tiene marca (o es temporal y se proporciona una marca nueva), actualizamos
+                    // Si ya existe pero no tiene marca/artículo (o es temporal y se proporciona una data nueva), actualizamos
+                    $updates = [];
                     if ($marcaId && (! $referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $marcaId))) {
-                        $referencia->update(['marca_id' => $marcaId]);
+                        $updates['marca_id'] = $marcaId;
+                    }
+                    if ($articuloId && (! $referencia->articulo_id || ($referencia->es_temporal && $referencia->articulo_id !== $articuloId))) {
+                        $updates['articulo_id'] = $articuloId;
+                    }
+
+                    if (! empty($updates)) {
+                        $referencia->update($updates);
                     }
                 } else {
                     // Crear si no existe
                     $referencia = Referencia::create([
                         'referencia' => $codigo,
                         'marca_id' => $marcaId,
+                        'articulo_id' => $articuloId,
                         'es_temporal' => $esTemporal,
                         'comentario' => $esTemporal
                             ? ($comentarioTemporal ?: 'Referencia temporal desde Landing - Requiere revisión')
