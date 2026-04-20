@@ -46,3 +46,7 @@ heavy-api/public/hot
 
 # Agent Configuration
 .agent/
+
+# Database dumps and temporary files
+*.sql
+scratch/

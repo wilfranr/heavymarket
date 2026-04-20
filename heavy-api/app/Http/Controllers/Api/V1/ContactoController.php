@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreContactoRequest;
+use App\Http\Requests\UpdateContactoRequest;
 use App\Http\Resources\ContactoResource;
 use App\Models\Contacto;
 use Illuminate\Http\JsonResponse;
@@ -106,18 +107,9 @@ class ContactoController extends Controller
     /**
      * Actualizar un contacto
      */
-    public function update(Request $request, Contacto $contacto): JsonResponse
+    public function update(UpdateContactoRequest $request, Contacto $contacto): JsonResponse
     {
-        $validated = $request->validate([
-            'tercero_id' => ['sometimes', 'integer', 'exists:terceros,id'],
-            'nombre' => ['sometimes', 'string', 'max:255'],
-            'cargo' => ['nullable', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:50'],
-            'indicativo' => ['nullable', 'string', 'max:10'],
-            'country_id' => ['nullable', 'integer', 'exists:countries,id'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'principal' => ['nullable', 'boolean'],
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
@@ -146,8 +138,12 @@ class ContactoController extends Controller
     /**
      * Eliminar un contacto
      */
-    public function destroy(Contacto $contacto): JsonResponse
+    public function destroy(Request $request, Contacto $contacto): JsonResponse
     {
+        if (! $request->user()->hasAnyRole(['super_admin', 'Administrador'])) {
+            return response()->json(['message' => 'No autorizado'], 403);
+        }
+
         try {
             $contacto->delete();
 

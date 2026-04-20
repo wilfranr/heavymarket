@@ -20,7 +20,7 @@ class StoreContactoRequest extends FormRequest
     public function authorize(): bool
     {
         return $this->user()->can('create', \App\Models\Contacto::class)
-            || $this->user()->hasAnyRole(['super_admin', 'Administrador']);
+            || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
     }
 
     /**
