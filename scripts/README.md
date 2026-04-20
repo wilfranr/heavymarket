@@ -57,4 +57,63 @@ REPO_ROOT=/ruta/al/repo ./scripts/deploy.sh
 1. `npm ci` (o `npm install --omit=dev` si no hay lock).
 2. `npm run build` (salida en `dist/sakai-ng/`).
 
-El contenido de `dist/sakai-ng/` debe servirse con tu servidor web (Nginx/Apache) o CDN en producción.
+El contenido de `dist/sakai-ng/browser` se copia automáticamente a `heavy-api/public/dist/browser` en cada despliegue, para que Nginx lo sirva sin intervención manual.
+
+### Configuración Nginx & WebSockets (Reverb) en Producción
+
+La convivencia de Angular, Laravel y Reverb en un mismo servidor requiere una configuración específica de Nginx y de `.env` para evitar colisiones:
+
+#### 1. Archivo `.env` (Producción)
+Las variables de entorno para Reverb deben reflejar la conexión HTTPS externa del cliente, pero escuchar en el puerto interno:
+```env
+BROADCAST_CONNECTION=reverb
+
+REVERB_APP_ID=535301
+REVERB_APP_KEY=efwwsue7nfzam7jjst6r
+REVERB_APP_SECRET=woglfqmjtgmtx6bi3nqq
+REVERB_HOST="heavymarket.net" # ¡Debe ser el dominio exacto!
+REVERB_PORT=443               # Puerto externo por el cual conecta el cliente
+REVERB_SCHEME=https           # Protocolo externo
+REVERB_SERVER_PORT=8080       # Puerto donde Reverb corre internamente
+```
+
+#### 2. Configuración de Nginx
+Se deben añadir dos bloques críticos dentro del bloque de configuración `server` (HTTPS, puerto 443):
+
+**A. Túnel WebSocket**
+Dado que Angular usa el prefijo `/app` para sus rutas (ej. `/app/dashboard`), configurar `location /app` rompería el frontend (Error 502). Se debe hacer match **exacto** con la App Key de Reverb:
+```nginx
+    # --- WEBSOCKETS (Laravel Reverb) ---
+    location /app/efwwsue7nfzam7jjst6r {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Host $http_host;
+        proxy_set_header Scheme $scheme;
+        proxy_set_header SERVER_PORT $server_port;
+        proxy_set_header REMOTE_ADDR $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+```
+
+**B. Endpoint de Autenticación**
+Pusher/Echo autentica canales privados en `/broadcasting/auth`. Como esto no empieza con `/api`, Nginx lo enviaría al frontend devolviendo un Error 405 (Not Allowed). Hay que capturarlo e invocar a Laravel:
+```nginx
+    # --- AUTENTICACIÓN WEBSOCKETS ---
+    location /broadcasting/auth {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/var/run/php/php8.4-fpm.sock;
+        fastcgi_param SCRIPT_FILENAME /var/www/heavymarket/heavy-api/public/index.php;
+        fastcgi_param SCRIPT_NAME /index.php;
+        fastcgi_param REQUEST_URI $request_uri;
+    }
+```
+
+#### 3. Mantenimiento del demonio Reverb
+Para arrancar Reverb:
+```bash
+cd /var/www/heavymarket/heavy-api
+php artisan reverb:start
+```
+*Recomendación: Configurar esto como un servicio bajo `supervisor` para asegurar disponibilidad continua.*
