@@ -26,10 +26,11 @@ export const pedidoVendedorSoloLecturaEnAnalisisGuard: CanActivateFn = (route) =
         return true;
     }
 
-    if (!authService.hasRole('Vendedor')) {
+    if (!authService.hasRole('Vendedor') && !authService.hasRole('Analista')) {
         return true;
     }
-    if (authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica', 'Analista'])) {
+
+    if (authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica'])) {
         return true;
     }
 
@@ -48,8 +49,13 @@ export const pedidoVendedorSoloLecturaEnAnalisisGuard: CanActivateFn = (route) =
                 return router.createUrlTree(['/app/pedidos', id]);
             }
 
+            // Analistas: Siempre redirigir a su vista de análisis si intentan entrar a edición
+            if (authService.hasRole('Analista') && !authService.hasAnyRole(['Administrador', 'super_admin'])) {
+                return router.createUrlTree(['/app/pedidos', id, 'analysis']);
+            }
+
             // Bloqueo específico para vendedores en análisis
-            if (pedido.estado === 'En_Analisis' && authService.hasRole('Vendedor') && !authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica', 'Analista'])) {
+            if (pedido.estado === 'En_Analisis' && authService.hasRole('Vendedor')) {
                 messageService.add({
                     severity: 'info',
                     summary: 'Solo lectura',

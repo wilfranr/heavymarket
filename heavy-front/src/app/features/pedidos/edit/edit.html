@@ -492,6 +492,9 @@
                             <p class="theme-text-secondary text-xs">Pega tu listado (Cantidad [Espacio] Referencia)</p>
                         </div>
                     </div>
+                    <button type="button" (click)="openHelpDialog()" class="text-brand-yellow text-sm hover:underline font-medium">
+                        <i class="pi pi-question-circle mr-1"></i>Ver guía
+                    </button>
                 </div>
 
                 <textarea pTextarea formControlName="referencias_copiadas" rows="8" placeholder="Ej:&#10;10 REF-123&#10;5 REF-456" class="w-full theme-card !bg-white dark:!bg-black/30 font-mono text-sm rounded-lg mb-4"></textarea>
@@ -920,3 +923,62 @@
     </p-dialog>
 </div>
 }
+<!-- Help Dialog -->
+<p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" [style]="{width: '70vw'}" [draggable]="false" [resizable]="false">
+    <div class="p-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Pasos -->
+            <div class="space-y-6">
+                <div>
+                    <h4 class="text-lg font-semibold theme-text-primary mb-2">
+                        <span class="bg-brand-yellow/20 text-brand-yellow w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm">1</span>
+                        Preparar datos
+                    </h4>
+                    <p class="theme-text-secondary text-sm ml-10">Tiene dos opciones para preparar sus datos:</p>
+                    <ul class="list-disc ml-14 mt-2 space-y-2 theme-text-secondary text-sm">
+                        <li><strong class="theme-text-primary">Desde Excel:</strong> Seleccione dos columnas (Cantidad y Referencia) y cópielas (Ctrl+C).</li>
+                        <li><strong class="theme-text-primary">Desde Bloc de Notas:</strong> Escriba cada ítem en una nueva línea separando cantidad y referencia con un espacio o tabulador.</li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold theme-text-primary mb-2">
+                        <span class="bg-brand-yellow/20 text-brand-yellow w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm">2</span>
+                        Formato aceptado
+                    </h4>
+                    <div class="ml-10 bg-slate-100 dark:bg-black/30 p-3 rounded-lg border theme-border font-mono text-sm">
+                        <div class="flex justify-between text-xs theme-text-secondary mb-2 border-b theme-border pb-1">
+                            <span>Columna 1 (Cant.)</span>
+                            <span>Columna 2 (Ref.)</span>
+                        </div>
+                        <div class="text-emerald-600 dark:text-emerald-400 font-medium">10 &emsp; REF-12345</div>
+                        <div class="text-emerald-600 dark:text-emerald-400 font-medium">5 &emsp; FILTRO-ABC</div>
+                    </div>
+                </div>
+
+                <div>
+                    <h4 class="text-lg font-semibold theme-text-primary mb-2">
+                        <span class="bg-brand-yellow/20 text-brand-yellow w-8 h-8 rounded-full inline-flex items-center justify-center mr-2 text-sm">3</span>
+                        Pegar y Procesar
+                    </h4>
+                    <p class="theme-text-secondary text-sm ml-10">
+                        Pegue los datos en el área de texto (Ctrl+V) y haga clic en
+                        <span class="text-brand-yellow font-medium">"Procesar listado"</span>. El sistema validará las referencias y las agregará al pedido.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Visual Example -->
+            <div class="flex flex-col items-center justify-center bg-slate-50 dark:bg-black/20 rounded-xl border theme-border p-4">
+                <p class="theme-text-primary font-medium mb-4">Ejemplo Visual</p>
+                <div class="w-full aspect-video bg-slate-200 dark:bg-slate-800 rounded-lg flex items-center justify-center border border-slate-300 dark:border-slate-600 relative overflow-hidden group">
+                    <img src="assets/images/guia-importacion.png" alt="Guía de importación" class="w-full h-full object-contain" />
+                </div>
+                <p class="text-xs text-slate-500 mt-4 text-center">Puede copiar directamente desde Excel, Google Sheets o cualquier editor de texto.</p>
+            </div>
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <button type="button" class="btn-pill btn-outline" (click)="displayHelpDialog = false">Entendido</button>
+    </ng-template>
+</p-dialog>

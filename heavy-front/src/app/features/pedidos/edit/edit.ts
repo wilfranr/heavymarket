@@ -181,6 +181,14 @@ export class EditComponent implements OnInit {
     // Carga masiva
     showBulkImport = false;
     private loadingBulkImport = false;
+    displayHelpDialog = false;
+
+    /**
+     * Abre el diálogo de ayuda para la importación masiva
+     */
+    openHelpDialog(): void {
+        this.displayHelpDialog = true;
+    }
 
     // Modal de detalle de máquina
     displayMaquinaDialog = false;

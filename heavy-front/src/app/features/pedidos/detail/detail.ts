@@ -81,6 +81,7 @@ export class DetailComponent implements OnInit {
 
     /**
      * Vendedor: pedidos en análisis son solo lectura (edición la llevan analistas/admin).
+     * Analista: siempre debe usar su vista de análisis, no la de edición.
      */
     puedeEditarPedido(pedido: Pedido): boolean {
         // Pedido cancelado no se puede editar nunca
@@ -88,13 +89,28 @@ export class DetailComponent implements OnInit {
             return false;
         }
 
+        // Si es analista puro, no debe editar (debe analizar)
+        if (this.authService.hasRole('Analista') && !this.authService.hasAnyRole(['Administrador', 'super_admin'])) {
+            return false;
+        }
+
         if (pedido.estado !== 'En_Analisis') {
             return true;
         }
+
         if (!this.authService.hasRole('Vendedor')) {
             return true;
         }
+
         return this.authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica']);
+    }
+
+    /**
+     * Determina si el usuario puede ver el botón de analizar (Analistas o Admins)
+     */
+    puedeAnalizarPedido(pedido: Pedido): boolean {
+        if (pedido.estado === 'Cancelado') return false;
+        return this.authService.hasAnyRole(['Analista', 'Administrador', 'super_admin']);
     }
 
     /**
@@ -102,6 +118,13 @@ export class DetailComponent implements OnInit {
      */
     editarPedido(): void {
         this.router.navigate(['/app/pedidos', this.pedidoId(), 'edit']);
+    }
+
+    /**
+     * Navega a la página de análisis
+     */
+    analizarPedido(): void {
+        this.router.navigate(['/app/pedidos', this.pedidoId(), 'analysis']);
     }
 
     /**
