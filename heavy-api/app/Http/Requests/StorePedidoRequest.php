@@ -57,7 +57,7 @@ class StorePedidoRequest extends FormRequest
             'referencias.*.mostrar_referencia' => ['nullable', 'string'], // FormData envía booleans como string '1' o '0'
             'referencias.*.estado' => ['nullable', 'string'],
             'referencias.*.imagenes' => ['nullable', 'array'],
-            'referencias.*.imagenes.*' => ['file', 'image', 'max:5120'], // Máx 5MB por imagen
+            'referencias.*.imagenes.*' => ['file', 'image', 'max:10240'], // Máx 10MB por imagen
 
             'articulos' => ['nullable', 'array'],
             'articulos.*.articulo_id' => ['required_with:articulos', 'integer', 'exists:articulos,id'],

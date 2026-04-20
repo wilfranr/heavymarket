@@ -73,7 +73,7 @@ class UpdatePedidoRequest extends FormRequest
             // El front envía 1/0 (int); antes era solo string y provocaba 422.
             'referencias.*.estado' => ['nullable', 'boolean'],
             'referencias.*.imagenes_nuevas' => ['nullable', 'array'],
-            'referencias.*.imagenes_nuevas.*' => ['file', 'image', 'max:5120'],
+            'referencias.*.imagenes_nuevas.*' => ['file', 'image', 'max:10240'],
         ];
     }
 
