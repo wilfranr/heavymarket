@@ -822,18 +822,6 @@ export class Cotizar implements OnInit {
         });
     }
 
-    getSelectedSystem(item: any) {
-        if (!item.system) return null;
-        return this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase()) || null;
-    }
-
-    getSelectedDescription(item: any) {
-        if (!item.description || !item.system) return null;
-        const sys = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
-        if (!sys?.listas) return null;
-        return sys.listas.find((d: any) => d.nombre === item.description) || null;
-    }
-
     clearFilters() {
         console.log('Clearing filters');
         this.selectedBrand = '';

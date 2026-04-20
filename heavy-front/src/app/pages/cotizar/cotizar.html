@@ -223,14 +223,6 @@
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemSystem(i)">
                                                     <div class="select-avatar-trigger">
-                                                        <img *ngIf="getSelectedSystem(item)?.imagen"
-                                                            [src]="getSelectedSystem(item)?.imagen"
-                                                            class="select-avatar-img" alt=""
-                                                            (error)="$any($event.target).style.display='none'">
-                                                        <div *ngIf="!getSelectedSystem(item)?.imagen"
-                                                            class="select-avatar-placeholder">
-                                                            <i class="pi pi-cog"></i>
-                                                        </div>
                                                         <span>{{ item.system || 'Sistema' }}</span>
                                                     </div>
                                                     <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
@@ -247,13 +239,6 @@
                                                     <div class="cotizador-dropdown-item dropdown-item-with-avatar"
                                                         *ngFor="let sys of getFilteredSystems(item)"
                                                         (click)="selectItemSystem(i, sys)">
-                                                        <img *ngIf="sys.imagen" [src]="sys.imagen"
-                                                            class="dropdown-avatar" alt=""
-                                                            (error)="$any($event.target).style.display='none'">
-                                                        <div *ngIf="!sys.imagen"
-                                                            class="dropdown-avatar dropdown-avatar-placeholder">
-                                                            <i class="pi pi-cog"></i>
-                                                        </div>
                                                         <span>{{ sys.nombre }}</span>
                                                     </div>
                                                 </div>
@@ -267,14 +252,6 @@
                                                 <button class="custom-input select-with-avatar"
                                                     (click)="toggleItemDescription(i)" [disabled]="!item.system">
                                                     <div class="select-avatar-trigger">
-                                                        <img *ngIf="getSelectedDescription(item)?.foto"
-                                                            [src]="getSelectedDescription(item)?.foto"
-                                                            class="select-avatar-img" alt=""
-                                                            (error)="$any($event.target).style.display='none'">
-                                                        <div *ngIf="!getSelectedDescription(item)?.foto"
-                                                            class="select-avatar-placeholder">
-                                                            <i class="pi pi-box"></i>
-                                                        </div>
                                                         <span>{{ item.description || (item.system ? 'Tipo de artículo' :
                                                             'Selecciona sistema') }}</span>
                                                     </div>
@@ -293,12 +270,6 @@
                                                     <div class="cotizador-dropdown-item dropdown-item-with-avatar"
                                                         *ngFor="let desc of getFilteredDescriptions(item)"
                                                         (click)="selectItemDescription(i, desc)">
-                                                        <img *ngIf="desc.foto" [src]="desc.foto" class="dropdown-avatar"
-                                                            alt="" (error)="$any($event.target).style.display='none'">
-                                                        <div *ngIf="!desc.foto"
-                                                            class="dropdown-avatar dropdown-avatar-placeholder">
-                                                            <i class="pi pi-box"></i>
-                                                        </div>
                                                         <span>{{ desc.nombre || desc }}</span>
                                                     </div>
                                                 </div>
