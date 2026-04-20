@@ -159,7 +159,10 @@ export class Cotizar implements OnInit {
             next: data => {
                 console.log('Quote data received:', data);
                 this.categories = data.categories || [];
-                this.brands = data.brands || [];
+                this.brands = (data.brands || []).map((b: any) => ({
+                    ...b,
+                    logo: b.logo || b.foto
+                }));
                 this.systems = data.systems || [];
                 this.models = data.models || [];
 
@@ -848,7 +851,10 @@ export class Cotizar implements OnInit {
 
     selectCard(card: any) {
         this.selectedCard = card;
-        this.goToForm();
+        this.selectedType = card.nombre;
+        this.openType = false;
+        this.typeSearch = '';
+        this.cd.markForCheck();
     }
 
     openCommentModal(index: number) {

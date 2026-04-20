@@ -148,7 +148,7 @@ class LandingController extends Controller
         // 2. Fabricantes para el Formulario
         $brands = \App\Models\Lista::where('tipo', 'Fabricantes')
             ->orderBy('nombre')
-            ->get(['id', 'nombre', 'foto']);
+            ->get();
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
         $allItemTypes = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
