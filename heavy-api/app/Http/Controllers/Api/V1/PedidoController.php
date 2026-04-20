@@ -110,12 +110,14 @@ class PedidoController extends Controller
             if ($request->has('referencias')) {
                 foreach ($request->input('referencias') as $index => $refData) {
                     if ($request->hasFile("referencias.{$index}.imagenes")) {
-                        $referencia = $pedido->referencias[$index];
-                        $imagePaths = [];
-                        foreach ($request->file("referencias.{$index}.imagenes") as $file) {
-                            $imagePaths[] = $file->store('pedidos/referencias', 'public');
+                        $referencia = $pedido->referencias->get($index);
+                        if ($referencia) {
+                            $imagePaths = [];
+                            foreach ($request->file("referencias.{$index}.imagenes") as $file) {
+                                $imagePaths[] = $file->store('pedidos/referencias', 'public');
+                            }
+                            SyncPedidoImages::dispatch($referencia, $imagePaths);
                         }
-                        SyncPedidoImages::dispatch($referencia, $imagePaths);
                     }
                 }
             }

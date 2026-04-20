@@ -331,7 +331,8 @@ export class AnalysisComponent implements OnInit {
      * Opciones del p-select de referencia: por tipo (lista_id) o, si aún no hay tipo, desde catálogo global / fila.
      */
     getOpcionesReferenciaParaFila(itemIndex: number): any[] {
-        const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
+        const item = this.referenciasFormArray.at(itemIndex);
+        const listaId = item?.get('lista_id')?.value;
         const porTipo = listaId ? this.referenciasPorTipo[listaId] : undefined;
         if (porTipo && porTipo.length > 0) {
             return porTipo;
@@ -545,6 +546,16 @@ export class AnalysisComponent implements OnInit {
             rejectLabel: 'No',
             accept: () => {
                 this.referenciasFormArray.removeAt(index);
+                
+                // Si el ítem eliminado era el que se estaba editando, cerrar el diálogo
+                if (this.activeItemIndex === index) {
+                    this.activeItemIndex = -1;
+                    this.displayItemEditDialog = false;
+                } else if (this.activeItemIndex > index) {
+                    // Si el ítem eliminado estaba antes que el editado, decrementar el índice activo
+                    this.activeItemIndex--;
+                }
+
                 this.messageService.add({ severity: 'warn', summary: 'Eliminado', detail: 'El requerimiento ha sido removido del pedido.' });
             }
         });
@@ -713,7 +724,8 @@ export class AnalysisComponent implements OnInit {
 
     abrirDialogoComentario(index: number): void {
         this.activeItemIndex = index;
-        const rawComentario = this.referenciasFormArray.at(index).get('comentario')?.value;
+        const item = this.referenciasFormArray.at(index);
+        const rawComentario = item?.get('comentario')?.value;
         this.comentariosItemActual = this.parseComentariosRaw(rawComentario);
         this.comentarioControl.setValue('');
         const user = this.authService.currentUser();
@@ -1024,12 +1036,13 @@ export class AnalysisComponent implements OnInit {
 
     /** Código de referencia para listados en modales. */
     getEtiquetaCodigoReferenciaParte(itemIndex: number, parteIndex: number): string {
+        const item = this.referenciasFormArray.at(itemIndex);
         const parte = this.getPartesFormArray(itemIndex).at(parteIndex);
-        const refId = parte.get('referencia_id')?.value;
+        const refId = parte?.get('referencia_id')?.value;
         if (!refId) {
             return '—';
         }
-        const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
+        const listaId = item?.get('lista_id')?.value;
         const opt =
             (listaId ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId) : undefined) ??
             this.referencias.find((x) => x.value === refId);
@@ -1209,11 +1222,16 @@ export class AnalysisComponent implements OnInit {
     }
 
     getPartesFormArray(index: number): FormArray {
-        return this.referenciasFormArray.at(index).get('partes') as FormArray;
+        const control = this.referenciasFormArray.at(index);
+        if (!control) {
+            return this.fb.array([]);
+        }
+        return control.get('partes') as FormArray;
     }
 
     isItemCompleto(index: number): boolean {
         const itemControl = this.referenciasFormArray.at(index);
+        if (!itemControl) return false;
         const itemRef = itemControl.get('referencia_id')?.value;
         
         // Verificar que el ítem principal tenga referencia asignada
@@ -1242,7 +1260,8 @@ export class AnalysisComponent implements OnInit {
     }
 
     toggleExpand(index: number): void {
-        const control = this.referenciasFormArray.at(index).get('expandido');
+        const item = this.referenciasFormArray.at(index);
+        const control = item?.get('expandido');
         control?.setValue(!control.value);
     }
 
