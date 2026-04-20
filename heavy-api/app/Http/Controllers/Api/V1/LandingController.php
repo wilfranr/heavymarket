@@ -247,8 +247,9 @@ class LandingController extends Controller
             // 2. Buscar fabricante si se especificó
             $fabricanteId = null;
             if ($request->filled('selectedBrand')) {
+                $brandName = trim($request->input('selectedBrand'));
                 $fabricante = \App\Models\Lista::where('tipo', 'Fabricantes')
-                    ->where('nombre', $request->input('selectedBrand'))
+                    ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($brandName)])
                     ->first();
                 $fabricanteId = $fabricante?->id;
             }
@@ -284,7 +285,7 @@ class LandingController extends Controller
                         'modelo' => $request->input('selectedModel') ?? 'Por definir',
                         'serie' => $request->input('selectedSeries'), // NULL si no existe
                         'arreglo' => $request->input('selectedArrangement') ?? 'Por definir',
-                        'fabricante_id' => $fabricanteId ?? 1, // Default si no hay fabricante
+                        'fabricante_id' => $fabricanteId, // Asignar marca seleccionada o null
                         'estado_revision' => 'por_revisar',
                     ]);
 

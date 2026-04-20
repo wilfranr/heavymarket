@@ -105,6 +105,9 @@ export class LandingService {
             formData.append(`items[${index}][description]`, item.description || '');
             formData.append(`items[${index}][quantity]`, item.quantity.toString());
             formData.append(`items[${index}][reference]`, item.reference || '');
+            if (item.referencia_id) {
+                formData.append(`items[${index}][referencia_id]`, item.referencia_id.toString());
+            }
 
             formData.append(`items[${index}][comment]`, item.comment || '');
 

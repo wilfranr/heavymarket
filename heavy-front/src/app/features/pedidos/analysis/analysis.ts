@@ -293,7 +293,11 @@ export class AnalysisComponent implements OnInit {
         }
 
         this.processingBulk = true;
-        this.referenciaService.bulkSearchOrCreate(items).subscribe({
+        
+        // Obtenemos la marca de la máquina actual para asignarla a las referencias nuevas/temporales
+        const marcaId = this.selectedMaquina?.fabricante_id || null;
+
+        this.referenciaService.bulkSearchOrCreate(items, false, marcaId).subscribe({
             next: (response: any) => {
                 this.processingBulk = false;
                 const resultados = response.data;
