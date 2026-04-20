@@ -443,34 +443,47 @@ export class PedidosListComponent implements OnInit {
      */
     resumenComentariosPedido(pedido: Pedido): { count: number; texto: string } {
         const raw = pedido.comentario;
-        if (raw == null || String(raw).trim() === '') {
+        if (raw == null) {
             return { count: 0, texto: '' };
         }
-        const s = String(raw).trim();
-        try {
-            const parsed = JSON.parse(s) as unknown;
-            if (Array.isArray(parsed)) {
-                const partes: string[] = [];
-                for (const item of parsed) {
-                    if (item && typeof item === 'object' && 'comentario' in item) {
-                        const texto = String((item as { comentario?: unknown }).comentario ?? '').trim();
-                        if (!texto) {
-                            continue;
-                        }
-                        const origenRaw = (item as { origen?: unknown }).origen;
-                        const origen = origenRaw != null ? String(origenRaw).trim() : '';
-                        partes.push(origen ? `[${origen}] ${texto}` : texto);
-                    }
+
+        let parsed: any[] = [];
+        let isJson = false;
+
+        if (Array.isArray(raw)) {
+            parsed = raw;
+            isJson = true;
+        } else {
+            const s = String(raw).trim();
+            if (s === '') return { count: 0, texto: '' };
+            try {
+                const p = JSON.parse(s);
+                if (Array.isArray(p)) {
+                    parsed = p;
+                    isJson = true;
                 }
-                if (partes.length) {
-                    return { count: partes.length, texto: partes.join('\n\n') };
-                }
-                return { count: 0, texto: '' };
+            } catch {
+                return { count: 1, texto: s };
             }
-        } catch {
-            /* comentario no JSON */
         }
-        return { count: 1, texto: s };
+
+        if (isJson) {
+            const partes: string[] = [];
+            for (const item of parsed) {
+                if (item && typeof item === 'object' && 'comentario' in item) {
+                    const texto = String(item.comentario ?? '').trim();
+                    if (!texto) continue;
+                    const origen = item.origen != null ? String(item.origen).trim() : '';
+                    partes.push(origen ? `[${origen}] ${texto}` : texto);
+                }
+            }
+            if (partes.length) {
+                return { count: partes.length, texto: partes.join('\n\n') };
+            }
+            return { count: 0, texto: '' };
+        }
+
+        return { count: 1, texto: String(raw) };
     }
 
     /**
@@ -478,23 +491,26 @@ export class PedidosListComponent implements OnInit {
      */
     tieneDevolucionReciente(pedido: Pedido): boolean {
         const raw = pedido.comentario;
-        if (raw == null || String(raw).trim() === '') {
-            return false;
-        }
-        const s = String(raw).trim();
-        try {
-            const parsed = JSON.parse(s) as unknown;
-            if (Array.isArray(parsed)) {
-                // Buscar el último comentario con tipo 'devolucion'
-                for (let i = parsed.length - 1; i >= 0; i--) {
-                    const item = parsed[i];
-                    if (item && typeof item === 'object' && (item as { tipo?: unknown }).tipo === 'devolucion') {
-                        return true;
-                    }
-                }
+        if (raw == null) return false;
+
+        let parsed: any[] = [];
+        if (Array.isArray(raw)) {
+            parsed = raw;
+        } else {
+            try {
+                const p = JSON.parse(String(raw));
+                if (Array.isArray(p)) parsed = p;
+            } catch {
+                return false;
             }
-        } catch {
-            // No es JSON
+        }
+
+        // Buscar el último comentario con tipo 'devolucion'
+        for (let i = parsed.length - 1; i >= 0; i--) {
+            const item = parsed[i];
+            if (item && typeof item === 'object' && item.tipo === 'devolucion') {
+                return true;
+            }
         }
         return false;
     }
@@ -504,23 +520,26 @@ export class PedidosListComponent implements OnInit {
      */
     tieneDevolucionAnalistaReciente(pedido: Pedido): boolean {
         const raw = pedido.comentario;
-        if (raw == null || String(raw).trim() === '') {
-            return false;
-        }
-        const s = String(raw).trim();
-        try {
-            const parsed = JSON.parse(s) as unknown;
-            if (Array.isArray(parsed)) {
-                // Buscar el último comentario con tipo 'devolucion_analista'
-                for (let i = parsed.length - 1; i >= 0; i--) {
-                    const item = parsed[i];
-                    if (item && typeof item === 'object' && (item as { tipo?: unknown }).tipo === 'devolucion_analista') {
-                        return true;
-                    }
-                }
+        if (raw == null) return false;
+
+        let parsed: any[] = [];
+        if (Array.isArray(raw)) {
+            parsed = raw;
+        } else {
+            try {
+                const p = JSON.parse(String(raw));
+                if (Array.isArray(p)) parsed = p;
+            } catch {
+                return false;
             }
-        } catch {
-            // No es JSON
+        }
+
+        // Buscar el último comentario con tipo 'devolucion_analista'
+        for (let i = parsed.length - 1; i >= 0; i--) {
+            const item = parsed[i];
+            if (item && typeof item === 'object' && item.tipo === 'devolucion_analista') {
+                return true;
+            }
         }
         return false;
     }

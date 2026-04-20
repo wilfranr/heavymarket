@@ -44,7 +44,7 @@ class UpdatePedidoRequest extends FormRequest
         return [
             'tercero_id' => ['sometimes', 'required', 'integer', 'exists:terceros,id'],
             'direccion' => ['nullable', 'string', 'max:200'],
-            'comentario' => ['nullable', 'string', 'max:255'],
+            'comentario' => ['nullable'],
             'contacto_id' => ['nullable', 'integer', 'exists:contactos,id'],
             'estado' => [
                 'sometimes',
@@ -53,8 +53,8 @@ class UpdatePedidoRequest extends FormRequest
             ],
             'maquina_id' => ['nullable', 'integer', 'exists:maquinas,id'],
             'fabricante_id' => ['nullable', 'integer', 'exists:listas,id'],
-            'motivo_rechazo' => ['nullable', 'string', 'max:255'],
-            'comentarios_rechazo' => ['nullable', 'string', 'max:255'],
+            'motivo_rechazo' => ['nullable', 'string', 'max:500'],
+            'comentarios_rechazo' => ['nullable'],
 
             // Arrays de referencias (para sincronización)
             'referencias' => ['nullable', 'array'],

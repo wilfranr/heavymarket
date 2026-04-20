@@ -33,6 +33,11 @@ class Pedido extends Model
         'comentarios_rechazo',
     ];
 
+    protected $casts = [
+        'comentario' => 'array',
+        'comentarios_rechazo' => 'array',
+    ];
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

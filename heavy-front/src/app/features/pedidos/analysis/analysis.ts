@@ -767,6 +767,16 @@ export class AnalysisComponent implements OnInit {
 
     private parseComentariosRaw(raw: unknown): { origen: string; comentario: string; fecha?: string }[] {
         if (!raw) return [];
+        
+        // Si ya es un array (nuevo formato del API con casts)
+        if (Array.isArray(raw)) {
+            return raw.filter(c => c && typeof c.comentario === 'string').map(c => ({
+                origen: (c.origen as string) || 'Interno',
+                comentario: c.comentario as string,
+                fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+            }));
+        }
+
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
             if (!trimmed || trimmed === 'Sin comentario adicional') return [];
@@ -785,8 +795,8 @@ export class AnalysisComponent implements OnInit {
         return [];
     }
 
-    private buildComentariosPayload(comentarios: any[]): string {
-        return JSON.stringify(comentarios);
+    private buildComentariosPayload(comentarios: any[]): any[] {
+        return comentarios;
     }
 
     /** Conteo para badge (#68); alineado con el historial del diálogo de comentarios. */

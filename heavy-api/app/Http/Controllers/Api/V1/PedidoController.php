@@ -547,13 +547,7 @@ class PedidoController extends Controller
 
         try {
             // Guardar comentario en campo comentario como JSON estructurado
-            $comentariosExistentes = [];
-            if ($pedido->comentario) {
-                $decoded = json_decode($pedido->comentario, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $comentariosExistentes = $decoded;
-                }
-            }
+            $comentariosExistentes = is_array($pedido->comentario) ? $pedido->comentario : [];
 
             // Agregar nuevo comentario de devolución
             $comentariosExistentes[] = [
@@ -563,7 +557,7 @@ class PedidoController extends Controller
                 'fecha' => now()->toISOString(),
             ];
 
-            $pedido->comentario = json_encode($comentariosExistentes, JSON_UNESCAPED_UNICODE);
+            $pedido->comentario = $comentariosExistentes;
             $pedido->transitarA(PedidoEstado::En_Analisis);
             $pedido->save();
 
@@ -615,13 +609,7 @@ class PedidoController extends Controller
 
         try {
             // Guardar comentario en campo comentario como JSON estructurado
-            $comentariosExistentes = [];
-            if ($pedido->comentario) {
-                $decoded = json_decode($pedido->comentario, true);
-                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
-                    $comentariosExistentes = $decoded;
-                }
-            }
+            $comentariosExistentes = is_array($pedido->comentario) ? $pedido->comentario : [];
 
             // Agregar nuevo comentario de devolución
             $comentariosExistentes[] = [
@@ -631,7 +619,7 @@ class PedidoController extends Controller
                 'fecha' => now()->toISOString(),
             ];
 
-            $pedido->comentario = json_encode($comentariosExistentes, JSON_UNESCAPED_UNICODE);
+            $pedido->comentario = $comentariosExistentes;
             $pedido->transitarA(PedidoEstado::Nuevo);
             $pedido->save();
 

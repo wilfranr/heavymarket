@@ -6,13 +6,13 @@ export interface Pedido {
     user_id: number;
     tercero_id: number;
     direccion: string | null;
-    comentario: string | null;
+    comentario: any | null;
     contacto_id: number | null;
     estado: PedidoEstado;
     maquina_id: number | null;
     fabricante_id: number | null;
     motivo_rechazo: string | null;
-    comentarios_rechazo: string | null;
+    comentarios_rechazo: any | null;
     created_at: string;
     updated_at: string;
 
@@ -46,7 +46,7 @@ export interface PedidoReferencia {
     marca_id: number | null;
     definicion: string | null;
     cantidad: number;
-    comentario: string | null;
+    comentario: any | null;
     /** Número de entradas de comentario (JSON / legacy), expuesto por API (#68) */
     comentarios_count?: number;
     imagen: string | null;
@@ -95,7 +95,7 @@ export interface PedidoArticulo {
     pedido_id: number;
     articulo_id: number;
     cantidad: number;
-    comentario: string | null;
+    comentario: any | null;
     sistema_id: number | null;
     imagen: string | null;
     created_at: string;
@@ -141,7 +141,7 @@ export type PedidoEstado = 'Borrador' | 'Nuevo' | 'En_Analisis' | 'Enviado' | 'E
 export interface CreatePedidoDto {
     tercero_id: number;
     direccion?: string;
-    comentario?: string;
+    comentario?: any;
     contacto_id?: number;
     estado?: PedidoEstado;
     maquina_id?: number;
@@ -156,7 +156,7 @@ export interface CreatePedidoDto {
 export interface CreatePedidoArticuloDto {
     articulo_id: number;
     cantidad: number;
-    comentario?: string;
+    comentario?: any;
     sistema_id?: number;
     imagen?: string;
 }
@@ -166,7 +166,7 @@ export interface CreatePedidoArticuloDto {
  */
 export interface UpdatePedidoArticuloDto {
     cantidad?: number;
-    comentario?: string;
+    comentario?: any;
     sistema_id?: number;
     imagen?: string;
 }
@@ -181,7 +181,7 @@ export interface CreatePedidoReferenciaDto {
     marca_id?: number;
     definicion?: string;
     cantidad: number;
-    comentario?: string;
+    comentario?: any;
     imagen?: string;
     mostrar_referencia?: boolean;
     estado?: boolean;
@@ -221,12 +221,12 @@ export interface UpdatePedidoReferenciaProveedorDto {
 export interface UpdatePedidoDto {
     tercero_id?: number;
     direccion?: string;
-    comentario?: string;
+    comentario?: any;
     contacto_id?: number;
     estado?: PedidoEstado;
     maquina_id?: number;
     fabricante_id?: number;
     motivo_rechazo?: string;
-    comentarios_rechazo?: string;
+    comentarios_rechazo?: any;
     referencias?: any[];
 }

@@ -156,6 +156,18 @@ export class DetailComponent implements OnInit {
             return [];
         }
 
+        // Si ya es un array (nuevo formato del API con casts)
+        if (Array.isArray(raw)) {
+            return raw
+                .filter((c): c is { comentario?: string; origen?: string; fecha?: string } => !!c && typeof c === 'object')
+                .filter((c) => typeof c.comentario === 'string')
+                .map((c) => ({
+                    origen: typeof c.origen === 'string' ? c.origen : 'Interno',
+                    comentario: c.comentario as string,
+                    fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                }));
+        }
+
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
             if (!trimmed || trimmed === 'Sin comentario adicional') {

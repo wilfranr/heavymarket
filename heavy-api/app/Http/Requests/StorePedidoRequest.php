@@ -35,7 +35,7 @@ class StorePedidoRequest extends FormRequest
         return [
             'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
             'direccion' => ['nullable', 'string', 'max:200'],
-            'comentario' => ['nullable', 'string', 'max:255'],
+            'comentario' => ['nullable'],
             'contacto_id' => ['nullable', 'integer', 'exists:contactos,id'],
             'estado' => [
                 'required',

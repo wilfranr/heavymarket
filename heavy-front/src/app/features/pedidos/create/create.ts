@@ -948,6 +948,15 @@ export class CreateComponent implements OnInit {
             return [];
         }
 
+        // Si ya es un array (nuevo formato del API con casts)
+        if (Array.isArray(raw)) {
+            return raw.filter((c) => c && typeof c.comentario === 'string').map((c) => ({
+                origen: (c.origen as string) || 'Interno',
+                comentario: c.comentario as string,
+                fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+            }));
+        }
+
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
             if (!trimmed || trimmed === 'Sin comentario adicional') {
@@ -988,8 +997,8 @@ export class CreateComponent implements OnInit {
         return [];
     }
 
-    private buildComentariosPayload(comentarios: { origen: string; comentario: string; fecha?: string }[]): string {
-        return JSON.stringify(comentarios);
+    private buildComentariosPayload(comentarios: { origen: string; comentario: string; fecha?: string }[]): any[] {
+        return comentarios;
     }
 
     abrirDialogoComentario(index: number): void {
