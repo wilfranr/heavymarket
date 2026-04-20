@@ -104,6 +104,11 @@ class ReferenciaController extends Controller
             'articulo_id' => [
                 'nullable',
                 'integer',
+                Rule::exists('articulos', 'id'),
+            ],
+            'lista_id' => [
+                'nullable',
+                'integer',
                 Rule::exists('listas', 'id')->where('tipo', 'Tipo de Artículo'),
             ],
         ]);
@@ -112,12 +117,13 @@ class ReferenciaController extends Controller
         $esTemporal = $validated['es_temporal'] ?? false;
         $marcaId = $validated['marca_id'] ?? null;
         $articuloId = $validated['articulo_id'] ?? null;
+        $listaId = $validated['lista_id'] ?? null;
         $comentarioTemporal = $validated['comentario_temporal'] ?? null;
         $codigos = array_map('strtoupper', array_column($items, 'codigo'));
 
         // Buscar referencias existentes
         $existentes = Referencia::whereIn('referencia', $codigos)
-            ->with(['articulo', 'marca'])
+            ->with(['articulo', 'marca', 'lista'])
             ->get()
             ->keyBy(function ($item) {
                 return strtoupper($item->referencia);
@@ -133,13 +139,16 @@ class ReferenciaController extends Controller
                 if ($existentes->has($codigo)) {
                     $referencia = $existentes->get($codigo);
 
-                    // Si ya existe pero no tiene marca/artículo (o es temporal y se proporciona una data nueva), actualizamos
+                    // Si ya existe pero no tiene marca/artículo/lista (o es temporal y se proporciona una data nueva), actualizamos
                     $updates = [];
                     if ($marcaId && (! $referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $marcaId))) {
                         $updates['marca_id'] = $marcaId;
                     }
                     if ($articuloId && (! $referencia->articulo_id || ($referencia->es_temporal && $referencia->articulo_id !== $articuloId))) {
                         $updates['articulo_id'] = $articuloId;
+                    }
+                    if ($listaId && (! $referencia->lista_id || ($referencia->es_temporal && $referencia->lista_id !== $listaId))) {
+                        $updates['lista_id'] = $listaId;
                     }
 
                     if (! empty($updates)) {
@@ -151,6 +160,7 @@ class ReferenciaController extends Controller
                         'referencia' => $codigo,
                         'marca_id' => $marcaId,
                         'articulo_id' => $articuloId,
+                        'lista_id' => $listaId,
                         'es_temporal' => $esTemporal,
                         'comentario' => $esTemporal
                             ? ($comentarioTemporal ?: 'Referencia temporal desde Landing - Requiere revisión')
@@ -214,8 +224,9 @@ class ReferenciaController extends Controller
         if ($request->filled('articulo_id')) {
             $articuloId = (int) $request->input('articulo_id');
             $query->where(function ($q) use ($articuloId) {
-                // Compatibilidad: referencias con FK directa
+                // Compatibilidad: referencias con FK directa a articulo o lista (tipo)
                 $q->where('articulo_id', $articuloId)
+                    ->orWhere('lista_id', $articuloId)
                     // y referencias vinculadas por tabla pivote articulos_referencias
                     ->orWhereHas('articulos', function ($sq) use ($articuloId) {
                         $sq->where('articulos.id', $articuloId);

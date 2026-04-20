@@ -41,7 +41,8 @@ class Referencia extends Model
     protected $fillable = [
         'id',
         'referencia',    // Código o número de referencia del artículo
-        'articulo_id',   // ID del artículo asociado
+        'articulo_id',
+        'lista_id',      // ID del tipo de artículo asociado (listas)
         'marca_id',      // ID de la marca asociada a la referencia
         'es_temporal',   // Indica si la referencia es temporal (creada desde landing)
         'comentario',    // Comentarios adicionales sobre la referencia
@@ -70,6 +71,16 @@ class Referencia extends Model
     public function articulo()
     {
         return $this->belongsTo(Articulo::class, 'articulo_id');
+    }
+
+    /**
+     * Relación con el tipo de artículo (Lista).
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function lista()
+    {
+        return $this->belongsTo(Lista::class, 'lista_id');
     }
 
     /**

@@ -58,7 +58,8 @@ export class ReferenciaService extends ApiService {
         esTemporal: boolean = false,
         marcaId: number | null = null,
         comentarioTemporal?: string,
-        articuloId: number | null = null
+        articuloId: number | null = null,
+        listaId: number | null = null
     ): Observable<ApiResponse<any[]>> {
         const payload: any = { items, es_temporal: esTemporal };
         if (marcaId) {
@@ -66,6 +67,9 @@ export class ReferenciaService extends ApiService {
         }
         if (articuloId) {
             payload.articulo_id = articuloId;
+        }
+        if (listaId) {
+            payload.lista_id = listaId;
         }
         if (comentarioTemporal) {
             payload.comentario_temporal = comentarioTemporal;
