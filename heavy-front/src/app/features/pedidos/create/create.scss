@@ -135,6 +135,8 @@ $color-text-black: #0C0E0F;
 
     .p-select-panel {
         .p-select-item {
+            white-space: normal !important;
+
             &.p-highlight {
                 background-color: $color-yellow !important;
                 color: #000000 !important;

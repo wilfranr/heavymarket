@@ -340,11 +340,12 @@
                                     [class]="campoTieneErrorCosteo($index, 'lista_id') ? 'campo-error' : ''"
                                     [filter]="true" appendTo="body" [disabled]="!referencia.get('sistema_id')?.value"
                                     (onChange)="onListaChange($event.value, $index)"
-                                    [filterMatchMode]="filterMode" filterBy="_search">
+                                    [filterMatchMode]="filterMode" filterBy="_search"
+                                    [panelStyle]="{'max-width': '450px'}">
                                     <ng-template pTemplate="item" let-tipo>
-                                        <div class="flex flex-col">
-                                            <span>{{ tipo.label }}</span>
-                                            <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion">
+                                        <div class="flex flex-col max-w-full">
+                                            <span class="font-semibold">{{ tipo.label }}</span>
+                                            <small class="text-[10px] theme-text-secondary opacity-60 whitespace-normal leading-tight mt-1" *ngIf="tipo.descripcion">
                                                 {{ tipo.descripcion }}
                                             </small>
                                         </div>
