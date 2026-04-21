@@ -49,7 +49,7 @@ class TRMController extends Controller
      */
     public function latest(): JsonResponse
     {
-        $trm = TRM::latest('created_at')->first();
+        $trm = TRM::orderBy('fecha', 'desc')->first();
 
         if (! $trm) {
             return response()->json([

@@ -195,8 +195,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class);
         Route::apiResource('transportadoras', TransportadoraController::class);
-        Route::apiResource('trms', TRMController::class);
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
+        Route::apiResource('trms', TRMController::class);
 
         /**
          * Gestión de Landing (Admin)
