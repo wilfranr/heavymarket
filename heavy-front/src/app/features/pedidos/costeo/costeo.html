@@ -127,15 +127,38 @@
                             <span>{{ refGroup.get('categoria_nombre')?.value }}</span>
                         </div>
                         <div class="flex gap-2 items-center">
-                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-image"></i></button>
-                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-search"></i></button>
-                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700"><i class="pi pi-trash"></i></button>
-                            <button type="button" class="w-8 h-8 rounded bg-transparent flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 ml-2"><i class="pi pi-chevron-down"></i></button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
+                                (click)="openGallery(refIndex)"
+                                [pTooltip]="getImagenesCount(refIndex) > 0 ? 'Ver imágenes' : 'Sin imágenes'"
+                                [disabled]="getImagenesCount(refIndex) === 0">
+                                <i class="pi pi-image"></i>
+                                @if (getImagenesCount(refIndex) > 0) {
+                                    <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center border border-white">
+                                        {{ getImagenesCount(refIndex) }}
+                                    </span>
+                                }
+                            </button>
+                            <button type="button" class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white hover:bg-amber-700 relative ml-1"
+                                (click)="abrirDialogoComentario(refIndex)"
+                                [pTooltip]="getComentariosCount(refIndex) > 0 ? 'Ver comentarios' : 'Sin comentarios'"
+                                [disabled]="getComentariosCount(refIndex) === 0">
+                                <i class="pi pi-comments"></i>
+                                @if (getComentariosCount(refIndex) > 0) {
+                                    <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center border border-white">
+                                        {{ getComentariosCount(refIndex) }}
+                                    </span>
+                                }
+                            </button>
+                            <button type="button" class="w-8 h-8 rounded bg-transparent flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 ml-2"
+                                (click)="expandedRefIndex = (expandedRefIndex === refIndex ? -1 : refIndex)">
+                                <i class="pi" [ngClass]="refIndex === expandedRefIndex ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Providers Table Header -->
-                    <div class="flex gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
+                    @if (expandedRefIndex === refIndex) {
+                        <!-- Providers Table Header -->
+                        <div class="flex gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
                         <div class="w-[40px] text-center">Ítem</div>
                         <div class="w-[70px] text-center">Cantidad</div>
                         <div class="w-[286px]">Proveedor</div>
@@ -236,11 +259,12 @@
                             <span>Agregar listado</span>
                             <i class="pi pi-plus"></i>
                         </button>
-                        <button type="button" class="btn-pill bg-blue-600 text-white flex items-center gap-2 border-none hover:bg-blue-700" (click)="agregarProveedorListado(refIndex)">
-                            <span>Agregar</span>
-                            <i class="pi pi-plus"></i>
-                        </button>
-                    </div>
+                            <button type="button" class="btn-pill bg-blue-600 text-white flex items-center gap-2 border-none hover:bg-blue-700" (click)="agregarProveedorListado(refIndex)">
+                                <span>Agregar</span>
+                                <i class="pi pi-plus"></i>
+                            </button>
+                        </div>
+                    }
 
                 </div>
             }
@@ -301,6 +325,71 @@
             <p-button label="Confirmar Devolución" severity="warn" (click)="devolverAAnalista()" 
                 [disabled]="submitting || devolucionComentario.trim().length < 10" [loading]="submitting"></p-button>
         </div>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal Galería (Solo ver) -->
+<p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '640px', 'max-width': '95vw'}"
+    header="Imágenes del ítem" appendTo="body" styleClass="galleria-imagenes-modal">
+    @if (galleriaImagesArray.length > 0) {
+        <p-galleria [value]="galleriaImagesArray" [responsiveOptions]="galleriaResponsiveOptions"
+            [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
+            [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+            <ng-template #item let-item>
+                <div class="flex flex-col items-center gap-2">
+                    <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[70vh] object-contain rounded" style="width: 100%;" />
+                    @if (item.origen) {
+                        <span class="text-xs text-gray-500 dark:text-gray-400">Origen: {{ item.origen }}</span>
+                    }
+                </div>
+            </ng-template>
+            <ng-template #thumbnail let-item>
+                <div class="galleria-thumbnail-cell">
+                    <img [src]="item.thumbnailImageSrc" alt="Miniatura" class="w-16 h-12 object-cover rounded" />
+                </div>
+            </ng-template>
+        </p-galleria>
+    } @else {
+        <p class="text-gray-500 dark:text-gray-400 py-4">No hay imágenes asociadas a este ítem.</p>
+    }
+    <ng-template pTemplate="footer">
+        <p-button label="Cerrar" icon="pi pi-times" (onClick)="displayGallery = false"></p-button>
+    </ng-template>
+</p-dialog>
+
+<!-- Modal Comentarios (Solo ver) -->
+<p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '520px'}"
+    header="Comentarios del ítem" appendTo="body">
+    <div class="flex flex-col gap-4 mt-2">
+        <div>
+            @if (comentariosItemActual.length > 0) {
+                <div class="space-y-2 max-h-64 overflow-auto">
+                    @for (c of comentariosItemActual; track $index) {
+                        <div class="bg-gray-100 dark:bg-[#1f2933] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[11px] font-semibold text-yellow-600 uppercase tracking-wide">
+                                    {{ c.origen || 'Nota' }}
+                                </span>
+                                @if (c.fecha) {
+                                    <span class="text-[10px] text-gray-500">
+                                        {{ c.fecha | date:'dd/MM/yyyy HH:mm' }}
+                                    </span>
+                                }
+                            </div>
+                            <p class="m-0 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
+                                {{ c.comentario }}
+                            </p>
+                        </div>
+                    }
+                </div>
+            } @else {
+                <p class="text-xs text-gray-500 italic">Este ítem no tiene comentarios.</p>
+            }
+        </div>
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cerrar" icon="pi pi-times" [text]="true" severity="secondary"
+            (onClick)="displayComentarioDialog = false"></p-button>
     </ng-template>
 </p-dialog>
 

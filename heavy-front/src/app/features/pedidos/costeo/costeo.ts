@@ -18,6 +18,7 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { DialogModule } from 'primeng/dialog';
+import { GalleriaModule } from 'primeng/galleria';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PedidoService } from '../../../core/services/pedido.service';
@@ -55,6 +56,7 @@ import { ListaCreateModalComponent } from '../../../shared/components/lista-crea
         InputGroupModule,
         InputGroupAddonModule,
         DialogModule,
+        GalleriaModule,
         TextareaModule,
         ConfirmDialogModule,
         TerceroCreateModalComponent,
@@ -101,6 +103,20 @@ export class CosteoComponent implements OnInit {
     showMarcaModal = false;
     activeRefIndex: number = -1;
     activeProvIndex: number = -1;
+    expandedRefIndex: number = 0;
+    
+    // Imágenes y Comentarios
+    displayGallery = false;
+    displayComentarioDialog = false;
+    selectedItemIndex = -1;
+    activeIndexGallery = 0;
+    galleriaImagesArray: any[] = [];
+    comentariosItemActual: any[] = [];
+    galleriaResponsiveOptions: any[] = [
+        { breakpoint: '1024px', numVisible: 5 },
+        { breakpoint: '768px', numVisible: 3 },
+        { breakpoint: '560px', numVisible: 1 }
+    ];
     
     // Datos maestros
     proveedores: any[] = [];
@@ -230,6 +246,9 @@ export class CosteoComponent implements OnInit {
                     categoria_nombre: [ref.lista?.nombre || 'General'],
                     peso: [ref.referencia?.articulo?.peso || 0],
                     estado_str: ['Preparado'], 
+                    imagen: [ref.imagen || null],
+                    imagenes: [ref.imagenes || []],
+                    comentario: [ref.comentario || ''],
                     proveedores: this.fb.array([])
                 });
                 
@@ -339,6 +358,98 @@ export class CosteoComponent implements OnInit {
 
     getEstadoClase(estado: PedidoEstado): string {
         return pedidoEstadoTagClass(estado);
+    }
+
+    // --- Imágenes y Galería ---
+    openGallery(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const imagen = row.get('imagen')?.value;
+        const imagenes = row.get('imagenes')?.value || [];
+        
+        if (!imagen && imagenes.length === 0) return;
+
+        this.selectedItemIndex = index;
+        this.activeIndexGallery = 0;
+        this.updateGalleriaImages(index);
+        this.displayGallery = true;
+    }
+
+    private updateGalleriaImages(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const imagen = row.get('imagen')?.value;
+        const imagenes = row.get('imagenes')?.value || [];
+
+        const mapped: any[] = [];
+        
+        // Imagen principal (legacy)
+        if (imagen) {
+            let src = imagen;
+            if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                src = `/storage/${src.replace(/^\/+/, '')}`;
+            }
+            mapped.push({
+                itemImageSrc: src,
+                thumbnailImageSrc: src,
+                alt: 'Imagen Principal',
+                title: 'Principal',
+                origen: 'Legacy'
+            });
+        }
+
+        // Imágenes adicionales
+        imagenes.forEach((img: any) => {
+            let src = img.imagen;
+            if (src && !src.startsWith('http') && !src.startsWith('data:')) {
+                src = `/storage/${src.replace(/^\/+/, '')}`;
+            }
+            mapped.push({
+                itemImageSrc: src,
+                thumbnailImageSrc: src,
+                alt: 'Imagen adicional',
+                title: img.origen || 'Adicional',
+                origen: img.origen
+            });
+        });
+
+        this.galleriaImagesArray = mapped;
+    }
+
+    getImagenesCount(index: number): number {
+        const row = this.referenciasFormArray.at(index);
+        const imagen = row.get('imagen')?.value;
+        const imagenes = row.get('imagenes')?.value || [];
+        return (imagen ? 1 : 0) + imagenes.length;
+    }
+
+    // --- Comentarios ---
+    abrirDialogoComentario(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const raw = row.get('comentario')?.value || '';
+        this.comentariosItemActual = this.parseComentariosRaw(raw);
+        this.selectedItemIndex = index;
+        this.displayComentarioDialog = true;
+    }
+
+    private parseComentariosRaw(raw: string): any[] {
+        if (!raw) return [];
+        try {
+            // Intentar parsear si es JSON
+            if (raw.startsWith('[') || raw.startsWith('{')) {
+                const parsed = JSON.parse(raw);
+                return Array.isArray(parsed) ? parsed : [parsed];
+            }
+        } catch (e) {
+            // Si falla, tratar como texto plano
+        }
+        
+        // Si no es JSON, dividir por separadores comunes o tratar como uno solo
+        return [{ comentario: raw, origen: 'Vendedor', fecha: new Date() }];
+    }
+
+    getComentariosCount(index: number): number {
+        const row = this.referenciasFormArray.at(index);
+        const raw = row.get('comentario')?.value || '';
+        return this.parseComentariosRaw(raw).length;
     }
 
     // --- Métodos de creación ---
