@@ -32,6 +32,8 @@ import { TRMService } from '../../../core/services/trm.service';
 import { EmpresaService } from '../../../core/services/empresa.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
+import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 
 @Component({
     selector: 'app-pedido-costeo',
@@ -54,7 +56,9 @@ import { Lista } from '../../../core/models/lista.model';
         InputGroupAddonModule,
         DialogModule,
         TextareaModule,
-        ConfirmDialogModule
+        ConfirmDialogModule,
+        TerceroCreateModalComponent,
+        ListaCreateModalComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './costeo.html',
@@ -91,6 +95,12 @@ export class CosteoComponent implements OnInit {
     
     // Formulario principal
     costeoForm!: FormGroup;
+
+    // Modales de creación
+    showTerceroModal = false;
+    showMarcaModal = false;
+    activeRefIndex: number = -1;
+    activeProvIndex: number = -1;
     
     // Datos maestros
     proveedores: any[] = [];
@@ -329,6 +339,60 @@ export class CosteoComponent implements OnInit {
 
     getEstadoClase(estado: PedidoEstado): string {
         return pedidoEstadoTagClass(estado);
+    }
+
+    // --- Métodos de creación ---
+    openCreateProveedor(refIndex: number, provIndex: number): void {
+        this.activeRefIndex = refIndex;
+        this.activeProvIndex = provIndex;
+        this.showTerceroModal = true;
+    }
+
+    onProveedorCreated(tercero: any): void {
+        if (this.activeRefIndex !== -1 && this.activeProvIndex !== -1) {
+            this.terceroService.getProveedores({ per_page: 1000 }).subscribe({
+                next: (resp) => {
+                    this.proveedoresCompletos = resp.data;
+                    this.proveedores = resp.data.map(p => ({
+                        label: p.nombre,
+                        value: p.id
+                    }));
+                    
+                    const proveedoresArray = this.referenciasFormArray.at(this.activeRefIndex).get('proveedores') as FormArray;
+                    const provGroup = proveedoresArray.at(this.activeProvIndex) as FormGroup;
+                    
+                    provGroup.patchValue({ proveedor_id: tercero.id });
+                    this.onProveedorChange(this.activeRefIndex, this.activeProvIndex);
+                }
+            });
+        }
+    }
+
+    openCreateMarca(refIndex: number, provIndex: number): void {
+        this.activeRefIndex = refIndex;
+        this.activeProvIndex = provIndex;
+        this.showMarcaModal = true;
+    }
+
+    onMarcaCreated(marca: any): void {
+        if (this.activeRefIndex !== -1 && this.activeProvIndex !== -1) {
+            this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+                next: (marcas: Lista[]) => {
+                    this.marcas = marcas.map((m: Lista) => ({
+                        label: m.nombre,
+                        value: m.id
+                    }));
+                    
+                    const proveedoresArray = this.referenciasFormArray.at(this.activeRefIndex).get('proveedores') as FormArray;
+                    const provGroup = proveedoresArray.at(this.activeProvIndex) as FormGroup;
+                    provGroup.patchValue({ marca_id: marca.id });
+                }
+            });
+        }
+    }
+
+    openCreateEntrega(refIndex: number, provIndex: number): void {
+        this.messageService.add({ severity: 'info', summary: 'Entrega', detail: 'Por ahora, selecciona una de las opciones predefinidas o contacta a soporte para añadir nuevos plazos.' });
     }
 
     onProveedorChange(refIndex: number, provIndex: number): void {
