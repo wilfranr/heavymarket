@@ -358,20 +358,27 @@
                                                 <input type="number" pInputText formControlName="cantidad" min="1" step="1" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
                                             </td>
                                             <td class="p-2">
-                                                <div class="flex w-full shadow-sm rounded-md overflow-hidden h-10">
-                                                    <p-select [options]="getOpcionesReferenciaParaFila(i)" 
-                                                              formControlName="referencia_id" 
-                                                              optionLabel="label" 
-                                                              optionValue="value"
-                                                              [filter]="true" 
-                                                              placeholder="Seleccionar" 
-                                                              appendTo="body" 
-                                                              styleClass="flex-1 !bg-[#334155] border-none !text-white h-full"
-                                                              (onChange)="onReferenciaFilaChange($event, i, j)"></p-select>
-                                                    <p-button icon="pi pi-plus" [text]="true" 
-                                                              (click)="abrirCrearReferencia(i, j)" 
-                                                              styleClass="!bg-[#1e293b] border-none !text-primary-400 !rounded-none !h-full px-3">
-                                                    </p-button>
+                                                <div class="flex items-center gap-1.5">
+                                                    <div class="flex w-full shadow-sm rounded-md overflow-hidden h-10">
+                                                        <p-select [options]="getOpcionesReferenciaParaFila(i)" 
+                                                                  formControlName="referencia_id" 
+                                                                  optionLabel="label" 
+                                                                  optionValue="value"
+                                                                  [filter]="true" 
+                                                                  placeholder="Seleccionar" 
+                                                                  appendTo="body" 
+                                                                  styleClass="flex-1 !bg-[#334155] border-none !text-white h-full"
+                                                                  (onChange)="onReferenciaFilaChange($event, i, j)"></p-select>
+                                                        <p-button icon="pi pi-plus" [text]="true" 
+                                                                  (click)="abrirCrearReferencia(i, j)" 
+                                                                  styleClass="!bg-[#1e293b] border-none !text-primary-400 !rounded-none !h-full px-3">
+                                                        </p-button>
+                                                    </div>
+                                                    @if (isReferenciaTemporal(i, j)) {
+                                                        <i class="pi pi-exclamation-triangle text-amber-400 text-lg shrink-0 animate-pulse"
+                                                           pTooltip="Referencia temporal — Requiere revisión del analista"
+                                                           tooltipPosition="top"></i>
+                                                    }
                                                 </div>
                                             </td>
                                             <td class="p-2">

@@ -995,6 +995,7 @@ export class AnalysisComponent implements OnInit {
         articulo_id: number | null;
         articulo_nombre: string;
         es_pieza_estandar: boolean;
+        es_temporal: boolean;
         definicion_articulo?: string;
         descripcion_especifica_articulo?: string;
     } {
@@ -1009,6 +1010,7 @@ export class AnalysisComponent implements OnInit {
             articulo_id: r.articulo_id ?? null,
             articulo_nombre: (def || esp || '').trim(),
             es_pieza_estandar: esPieza,
+            es_temporal: !!r.es_temporal,
             definicion_articulo: def.trim() || undefined,
             descripcion_especifica_articulo: esp.trim() || undefined
         };
@@ -1488,5 +1490,18 @@ export class AnalysisComponent implements OnInit {
         if (conteo === 0) return 'Sin comentarios';
         if (conteo === 1) return '1 comentario';
         return `${conteo} comentarios`;
+    }
+
+    /**
+     * Verifica si la referencia seleccionada en una parte es temporal.
+     */
+    isReferenciaTemporal(itemIndex: number, parteIndex: number): boolean {
+        const parte = this.getPartesFormArray(itemIndex).at(parteIndex);
+        const refId = parte?.get('referencia_id')?.value;
+        if (!refId) return false;
+        const listaId = this.referenciasFormArray.at(itemIndex)?.get('lista_id')?.value;
+        const opciones = listaId ? (this.referenciasPorTipo[listaId] || []) : this.referencias;
+        const ref = opciones.find((r: any) => r.value === refId);
+        return !!(ref?.es_temporal);
     }
 }

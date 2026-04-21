@@ -16,6 +16,7 @@ import { MessageService, ConfirmationService, FilterService } from 'primeng/api'
 import { ContactoService } from '../../../core/services/contacto.service';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
+import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimelineModule } from 'primeng/timeline';
@@ -82,7 +83,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         AutoCompleteModule,
         TimelineModule,
         ContactoCreateModalComponent,
-        MaquinaCreateModalComponent
+        MaquinaCreateModalComponent,
+        ReferenciaEditModalComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -232,6 +234,11 @@ export class EditComponent implements OnInit {
     comentariosDelPedido: { origen: string; comentario: string; fecha?: string }[] = [];
     displayComentariosPedidoDialog = false;
     imagenControl = new FormControl('');
+
+    // Modal de edición de referencia (inline desde pedido)
+    showReferenciaEditModal = false;
+    editReferenciaId: number | null = null;
+    editReferenciaIndex: number = -1;
 
     estadosOptions = [
         { label: PEDIDO_ESTADO_ETIQUETA.Borrador, value: 'Borrador' as PedidoEstado },
@@ -2534,5 +2541,39 @@ export class EditComponent implements OnInit {
         if (this.proveedoresComparacion.length < 2) {
             this.cerrarComparacion();
         }
+    }
+
+    // ── Modal edición de referencia (inline desde pedido) ──
+
+    abrirEditarReferenciaPedido(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const refId = row?.get('referencia_id')?.value;
+        if (!refId) return;
+        this.editReferenciaIndex = index;
+        this.editReferenciaId = typeof refId === 'number' ? refId : parseInt(String(refId), 10);
+        this.showReferenciaEditModal = true;
+    }
+
+    onReferenciaEditVisibleChange(visible: boolean): void {
+        this.showReferenciaEditModal = visible;
+        if (!visible) {
+            this.editReferenciaId = null;
+            this.editReferenciaIndex = -1;
+        }
+    }
+
+    onReferenciaActualizada(ref: any): void {
+        if (this.editReferenciaIndex >= 0) {
+            const row = this.referenciasFormArray.at(this.editReferenciaIndex);
+            if (row) {
+                row.patchValue({
+                    definicion: ref.referencia || row.get('definicion')?.value
+                }, { emitEvent: false });
+            }
+        }
+        this.showReferenciaEditModal = false;
+        this.editReferenciaId = null;
+        this.editReferenciaIndex = -1;
+        this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: `La referencia ${ref.referencia} ha sido actualizada en el catálogo.` });
     }
 }

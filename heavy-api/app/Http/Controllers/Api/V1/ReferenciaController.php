@@ -293,9 +293,16 @@ class ReferenciaController extends Controller
         $this->authorize('update', $referencia);
         $data = $request->validated();
 
-        // Si la referencia era temporal (de Landing), al editarla manualmente se convierte en oficial
+        // Si la referencia era temporal (de Landing/Pedido), al editarla manualmente se convierte en oficial
         if ($referencia->es_temporal) {
             $data['es_temporal'] = false;
+            // Limpiar el comentario auto-generado de revisión si no se proporcionó uno nuevo
+            if (!isset($data['comentario']) || $data['comentario'] === $referencia->comentario) {
+                $isAutoComment = str_starts_with($referencia->comentario ?? '', 'Referencia temporal');
+                if ($isAutoComment) {
+                    $data['comentario'] = null;
+                }
+            }
         }
 
         $referencia->update($data);

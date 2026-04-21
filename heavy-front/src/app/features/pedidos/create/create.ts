@@ -43,6 +43,7 @@ import { ArticuloService } from '../../../core/services/articulo.service';
 import { ContactoService } from '../../../core/services/contacto.service';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
+import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { Observable, forkJoin, of } from 'rxjs';
@@ -78,6 +79,7 @@ import { catchError, map } from 'rxjs/operators';
         TerceroCreateModalComponent,
         MaquinaCreateModalComponent,
         ContactoCreateModalComponent,
+        ReferenciaEditModalComponent,
         ImageModule,
         GalleriaModule,
         BadgeModule,
@@ -183,6 +185,11 @@ export class CreateComponent implements OnInit {
     origenComentarioControl = new FormControl('Asesor');
     comentariosItemActual: { origen: string; comentario: string; fecha?: string }[] = [];
     imagenControl = new FormControl('');
+
+    // Modal de edición de referencia (inline desde pedido)
+    showReferenciaEditModal = false;
+    editReferenciaId: number | null = null;
+    editReferenciaIndex: number = -1;
 
     // Estado para la galería de imágenes (replicado de la landing)
     displayGallery = false;
@@ -1700,5 +1707,40 @@ export class CreateComponent implements OnInit {
     viewMaquina(maquina: any): void {
         this.selectedMaquinaDetail = maquina;
         this.displayMaquinaDialog = true;
+    }
+
+    // ── Modal edición de referencia (inline desde pedido) ──
+
+    abrirEditarReferenciaPedido(index: number): void {
+        const row = this.referenciasFormArray.at(index);
+        const refId = row?.get('referencia_id')?.value;
+        if (!refId) return;
+        this.editReferenciaIndex = index;
+        this.editReferenciaId = typeof refId === 'number' ? refId : parseInt(String(refId), 10);
+        this.showReferenciaEditModal = true;
+    }
+
+    onReferenciaEditVisibleChange(visible: boolean): void {
+        this.showReferenciaEditModal = visible;
+        if (!visible) {
+            this.editReferenciaId = null;
+            this.editReferenciaIndex = -1;
+        }
+    }
+
+    onReferenciaActualizada(ref: any): void {
+        // Actualizar la fila del formulario con los datos frescos
+        if (this.editReferenciaIndex >= 0) {
+            const row = this.referenciasFormArray.at(this.editReferenciaIndex);
+            if (row) {
+                row.patchValue({
+                    definicion: ref.referencia || row.get('definicion')?.value
+                }, { emitEvent: false });
+            }
+        }
+        this.showReferenciaEditModal = false;
+        this.editReferenciaId = null;
+        this.editReferenciaIndex = -1;
+        this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: `La referencia ${ref.referencia} ha sido actualizada en el catálogo.` });
     }
 }

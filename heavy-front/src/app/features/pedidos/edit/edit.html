@@ -370,14 +370,10 @@
 
                             <!-- Referencia -->
                             <div class="flex-1">
-                                <p-autocomplete formControlName="definicion" [suggestions]="referenciasPorFila[$index]"
-                                    optionLabel="label" placeholder="Escriba o busque la referencia..."
-                                    [forceSelection]="false" [dropdown]="true" appendTo="body"
-                                    inputStyleClass="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white"
-                                    (completeMethod)="buscarReferencias($event, $index)"
-                                    (onSelect)="onReferenciaSelect($event, $index)"
-                                    (onBlur)="resolverReferenciaFila($index)">
-                                </p-autocomplete>
+                                <input pInputText formControlName="definicion"
+                                    placeholder="Escribir código de referencia..."
+                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white uppercase"
+                                    (blur)="resolverReferenciaFila($index)" />
                                 @if (campoTieneErrorCosteo($index, 'referencia_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i
                                         class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
@@ -385,7 +381,17 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="w-[180px] flex gap-3 justify-end pt-1 relative">
+                            <div class="w-[210px] flex gap-3 justify-end pt-1 relative">
+                                <!-- Editar referencia en catálogo -->
+                                <button type="button" class="action-btn-circle"
+                                    [class.opacity-40]="!referencia.get('referencia_id')?.value"
+                                    [class.cursor-not-allowed]="!referencia.get('referencia_id')?.value"
+                                    [disabled]="!referencia.get('referencia_id')?.value"
+                                    (click)="abrirEditarReferenciaPedido($index)"
+                                    pTooltip="Editar referencia en catálogo" tooltipPosition="top">
+                                    <i class="pi pi-pencil text-lg"></i>
+                                </button>
+
                                 <button type="button" class="action-btn-circle" pTooltip="Comentar"
                                     (click)="abrirDialogoComentario($index)" tooltipPosition="top">
                                     <i class="pi pi-comments text-lg"></i>
@@ -982,3 +988,12 @@
         <button type="button" class="btn-pill btn-outline" (click)="displayHelpDialog = false">Entendido</button>
     </ng-template>
 </p-dialog>
+
+<!-- Modal Edición de Referencia (inline desde pedido) -->
+<app-referencia-edit-modal
+    [visible]="showReferenciaEditModal"
+    (visibleChange)="onReferenciaEditVisibleChange($event)"
+    [referenciaId]="editReferenciaId"
+    title="Editar referencia"
+    (onReferenciaUpdated)="onReferenciaActualizada($event)"
+/>

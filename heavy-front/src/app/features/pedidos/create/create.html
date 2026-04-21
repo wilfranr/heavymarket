@@ -374,24 +374,30 @@
 
                                 <!-- Referencia -->
                                 <div class="flex-1">
-                                    <p-autocomplete
+                                    <input
+                                        pInputText
                                         formControlName="definicion"
-                                        [suggestions]="referenciasPorFila[refIndex]"
-                                        optionLabel="label"
-                                        placeholder="Escribir o buscar referencia..."
-                                        [forceSelection]="false"
-                                        [dropdown]="true"
-                                        appendTo="body"
-                                        inputStyleClass="w-full h-[42px] font-semibold rounded-lg"
-                                        (completeMethod)="buscarReferencias($event, $index)"
-                                        (onSelect)="onReferenciaSelect($event, $index)"
-                                        (onBlur)="resolverReferenciaFila($index)"
-                                    >
-                                    </p-autocomplete>
+                                        placeholder="Escribir código de referencia..."
+                                        class="w-full h-[42px] font-semibold rounded-lg uppercase"
+                                        (blur)="resolverReferenciaFila($index)"
+                                    />
                                 </div>
 
                                 <!-- Actions -->
-                                <div class="w-[180px] flex gap-2 justify-center shrink-0">
+                                <div class="w-[210px] flex gap-2 justify-center shrink-0">
+                                    <!-- Editar referencia en catálogo -->
+                                    <button
+                                        type="button"
+                                        class="w-9 h-9 rounded-lg flex items-center justify-center transition-colors"
+                                        [ngClass]="referencia.get('referencia_id')?.value ? 'bg-amber-500/10 text-amber-400 hover:bg-amber-500/20' : 'bg-slate-500/10 text-slate-500 cursor-not-allowed'"
+                                        [disabled]="!referencia.get('referencia_id')?.value"
+                                        (click)="abrirEditarReferenciaPedido($index)"
+                                        pTooltip="Editar referencia en catálogo"
+                                        tooltipPosition="top"
+                                    >
+                                        <i class="pi pi-pencil text-sm"></i>
+                                    </button>
+
                                     <button
                                         type="button"
                                         class="w-9 h-9 rounded-lg bg-blue-500/10 text-blue-400 hover:bg-blue-500/20 flex items-center justify-center transition-colors"
@@ -848,3 +854,11 @@
 <!-- Confirm Dialog for Enviar a Análisis -->
 <p-confirmDialog></p-confirmDialog>
 
+<!-- Modal Edición de Referencia (inline desde pedido) -->
+<app-referencia-edit-modal
+    [visible]="showReferenciaEditModal"
+    (visibleChange)="onReferenciaEditVisibleChange($event)"
+    [referenciaId]="editReferenciaId"
+    title="Editar referencia"
+    (onReferenciaUpdated)="onReferenciaActualizada($event)"
+/>
