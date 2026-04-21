@@ -21,6 +21,7 @@ import { DialogModule } from 'primeng/dialog';
 import { GalleriaModule } from 'primeng/galleria';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { PopoverModule, Popover } from 'primeng/popover';
 import { PedidoService } from '../../../core/services/pedido.service';
 
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
@@ -59,6 +60,7 @@ import { ListaCreateModalComponent } from '../../../shared/components/lista-crea
         GalleriaModule,
         TextareaModule,
         ConfirmDialogModule,
+        PopoverModule,
         TerceroCreateModalComponent,
         ListaCreateModalComponent
     ],
@@ -103,7 +105,19 @@ export class CosteoComponent implements OnInit {
     showMarcaModal = false;
     activeRefIndex: number = -1;
     activeProvIndex: number = -1;
-    expandedRefIndex: number = 0;
+    expandedRefIndices = new Set<number>([0]); // Por defecto el primero expandido
+    
+    // Popover info
+    popoverData: any = {
+        title: '',
+        subtitle: '',
+        description: '',
+        image: null,
+        type: '',
+        es_estandar: false,
+        peso: 0,
+        referencias_cruzadas: []
+    };
     
     // Imágenes y Comentarios
     displayGallery = false;
@@ -233,7 +247,7 @@ export class CosteoComponent implements OnInit {
         this.referenciasFormArray.clear();
         
         if (pedido.referencias && pedido.referencias.length > 0) {
-            pedido.referencias.forEach(ref => {
+            pedido.referencias.forEach((ref, refIdx) => {
                 const refFormGroup = this.fb.group({
                     id: [ref.id],
                     sistema_id: [ref.sistema_id],
@@ -248,8 +262,15 @@ export class CosteoComponent implements OnInit {
                     estado_str: ['Preparado'], 
                     imagen: [ref.imagen || null],
                     imagenes: [ref.imagenes || []],
-                    comentario: [ref.comentario || ''],
-                    proveedores: this.fb.array([])
+                    descripcion_especifica: [ref.referencia?.articulo?.descripcionEspecifica || 'Sin descripción adicional'],
+                    sistema_imagen: [ref.sistema?.imagen || null],
+                    sistema_descripcion: [ref.sistema?.descripcion || 'Sistema mecánico o funcional asociado a este ítem de la máquina.'],
+                    es_estandar: [ref.referencia?.articulo?.es_pieza_estandar || (ref.referencia as any)?.articulo_es_pieza_estandar || false],
+                    articulo_peso: [ref.referencia?.articulo?.peso || 0],
+                    articulo_definicion: [ref.referencia?.articulo?.definicion || null],
+                    referencias_cruzadas: [ref.referencia?.articulo?.referencias_cruzadas || ref.referencia?.articulo?.referencias || []],
+                    articulo_imagen: [ref.referencia?.articulo?.fotoDescriptiva || null],
+                    proveedores: this.fb.array(ref.proveedores ? ref.proveedores.map(prov => this.crearProveedorFormGroup(prov)) : [this.crearProveedorFormGroup()])
                 });
                 
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
@@ -284,9 +305,8 @@ export class CosteoComponent implements OnInit {
                 
                 // Disparar validación/cálculo inicial para cada fila
                 setTimeout(() => {
-                    const idx = this.referenciasFormArray.length;
                     (refFormGroup.get('proveedores') as FormArray).controls.forEach((_, pIdx) => {
-                        this.onProveedorChange(idx, pIdx);
+                        this.onProveedorChange(refIdx, pIdx);
                     });
                 }, 500);
 
@@ -316,36 +336,6 @@ export class CosteoComponent implements OnInit {
             }));
     }
 
-    agregarProveedorFila(proveedoresArray: FormArray, data?: any): void {
-        const group = this.fb.group({
-            seleccionado: [data?.seleccionado || false],
-            cantidad: [data?.cantidad || 1],
-            proveedor_id: [data?.tercero_id || null],
-            marca_id: [data?.marca_id || null],
-            entrega: [data?.dias_entrega?.toString() || null],
-            costo_usd: [data?.costo_unidad_usd || null],
-            costo_cop: [data?.costo_unidad || null],
-            utilidad: [data?.utilidad || null],
-            venta: [data?.precio_venta || null]
-        });
-        
-        proveedoresArray.push(group);
-    }
-
-    agregarProveedorVacio(proveedoresArray: FormArray): void {
-        proveedoresArray.push(this.fb.group({
-            seleccionado: [false],
-            cantidad: [1],
-            proveedor_id: [null],
-            marca_id: [null],
-            entrega: [null],
-            costo_usd: [null],
-            costo_cop: [null],
-            utilidad: [null],
-            venta: [null]
-        }));
-    }
-    
     agregarProveedorListado(refIndex: number): void {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         this.agregarProveedorVacio(proveedoresArray);
@@ -383,10 +373,7 @@ export class CosteoComponent implements OnInit {
         
         // Imagen principal (legacy)
         if (imagen) {
-            let src = imagen;
-            if (src && !src.startsWith('http') && !src.startsWith('data:')) {
-                src = `/storage/${src.replace(/^\/+/, '')}`;
-            }
+            const src = this.formatImageUrl(imagen);
             mapped.push({
                 itemImageSrc: src,
                 thumbnailImageSrc: src,
@@ -398,10 +385,7 @@ export class CosteoComponent implements OnInit {
 
         // Imágenes adicionales
         imagenes.forEach((img: any) => {
-            let src = img.imagen;
-            if (src && !src.startsWith('http') && !src.startsWith('data:')) {
-                src = `/storage/${src.replace(/^\/+/, '')}`;
-            }
+            const src = this.formatImageUrl(img.imagen);
             mapped.push({
                 itemImageSrc: src,
                 thumbnailImageSrc: src,
@@ -422,12 +406,93 @@ export class CosteoComponent implements OnInit {
     }
 
     // --- Comentarios ---
-    abrirDialogoComentario(index: number): void {
-        const row = this.referenciasFormArray.at(index);
-        const raw = row.get('comentario')?.value || '';
-        this.comentariosItemActual = this.parseComentariosRaw(raw);
-        this.selectedItemIndex = index;
+    abrirDialogoComentario(refIndex: number): void {
+        const refGroup = this.referenciasFormArray.at(refIndex);
+        this.comentariosItemActual = refGroup.get('comentarios')?.value || [];
         this.displayComentarioDialog = true;
+    }
+
+    // --- Popover y Expansión ---
+    
+    isExpanded(index: number): boolean {
+        return this.expandedRefIndices.has(index);
+    }
+
+    toggleExpand(index: number): void {
+        if (this.expandedRefIndices.has(index)) {
+            this.expandedRefIndices.delete(index);
+        } else {
+            this.expandedRefIndices.add(index);
+        }
+    }
+
+    showInfo(event: any, type: 'sistema' | 'articulo' | 'referencia', refIndex: number, op: Popover): void {
+        const refGroup = this.referenciasFormArray.at(refIndex);
+        
+        switch(type) {
+            case 'sistema':
+                this.popoverData = {
+                    title: 'Sistema',
+                    subtitle: refGroup.get('sistema_nombre')?.value,
+                    description: refGroup.get('sistema_descripcion')?.value,
+                    image: this.formatImageUrl(refGroup.get('sistema_imagen')?.value)
+                };
+                break;
+            case 'articulo':
+                const defOriginal = refGroup.get('articulo_definicion')?.value;
+                const descEsp = refGroup.get('descripcion_especifica')?.value;
+                this.popoverData = {
+                    title: 'Artículo',
+                    subtitle: descEsp || defOriginal,
+                    standard_name: defOriginal !== descEsp ? defOriginal : null,
+                    description: null, // Ya no necesitamos descripción duplicada
+                    image: this.formatImageUrl(refGroup.get('articulo_imagen')?.value),
+                    type: 'articulo',
+                    es_estandar: refGroup.get('es_estandar')?.value,
+                    peso: refGroup.get('articulo_peso')?.value,
+                    referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || []
+                };
+                break;
+            case 'referencia':
+                this.popoverData = {
+                    title: 'Referencia',
+                    subtitle: refGroup.get('referencia_codigo')?.value,
+                    description: 'Código de parte específico para esta pieza.',
+                    image: this.formatImageUrl(refGroup.get('imagen')?.value),
+                    type: 'referencia'
+                };
+                break;
+        }
+        
+        op.toggle(event);
+    }
+
+    private formatImageUrl(url: string | null): string | null {
+        if (!url) return null;
+        if (url.startsWith('http') || url.startsWith('data:')) return url;
+        return `/storage/${url.replace(/^\/+/, '')}`;
+    }
+
+    private crearProveedorFormGroup(data?: any): FormGroup {
+        return this.fb.group({
+            seleccionado: [data?.seleccionado || false],
+            proveedor_id: [data?.tercero_id || data?.proveedor_id || null],
+            marca_id: [data?.marca_id || null],
+            entrega: [data?.dias_entrega ? String(data.dias_entrega) : '0'],
+            costo_usd: [data?.costo_unidad || 0],
+            costo_cop: [0],
+            utilidad: [data?.utilidad || 0],
+            venta: [data?.valor_unidad || 0],
+            cantidad: [data?.cantidad || 1]
+        });
+    }
+
+    agregarProveedorFila(formArray: FormArray, data?: any): void {
+        formArray.push(this.crearProveedorFormGroup(data));
+    }
+
+    agregarProveedorVacio(formArray: FormArray): void {
+        this.agregarProveedorFila(formArray);
     }
 
     private parseComentariosRaw(raw: string): any[] {

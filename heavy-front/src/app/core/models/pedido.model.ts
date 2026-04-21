@@ -67,6 +67,9 @@ export interface PedidoReferencia {
             descripcionEspecifica?: string;
             es_pieza_estandar?: boolean;
             peso?: number | null;
+            fotoDescriptiva?: string | null;
+            referencias?: any[];
+            referencias_cruzadas?: any[];
         };
     };
     sistema?: any;

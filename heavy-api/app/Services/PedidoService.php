@@ -77,7 +77,7 @@ class PedidoService
                 'user', 'tercero',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
-                        ->with(['referencia.articulo', 'sistema', 'lista']);
+                        ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista']);
                 },
                 'articulos',
             ]);
@@ -101,7 +101,7 @@ class PedidoService
                 'user', 'tercero', 'maquina', 'fabricante', 'contacto',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
-                        ->with(['referencia.articulo', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+                        ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
                 },
                 'articulos.articulo', 'articulos.sistema',
             ]);
