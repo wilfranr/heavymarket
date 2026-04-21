@@ -31,6 +31,9 @@
             @if (puedeAnalizarPedido(pedido)) {
             <p-button label="Analizar Pedido" icon="pi pi-search" severity="warn" (onClick)="analizarPedido()"></p-button>
             }
+            @if (puedeCostearPedido(pedido)) {
+            <p-button label="Costear Pedido" icon="pi pi-dollar" (onClick)="costearPedido()"></p-button>
+            }
             @if (puedeEditarPedido(pedido)) {
             <p-button label="Editar Pedido" icon="pi pi-pencil" (onClick)="editarPedido()"></p-button>
             }

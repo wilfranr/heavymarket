@@ -89,6 +89,11 @@ export class DetailComponent implements OnInit {
             return false;
         }
 
+        // Pedidos en costeo no se editan desde esta vista (se costean)
+        if (pedido.estado === 'En_Costeo') {
+            return false;
+        }
+
         // Si es analista puro, no debe editar (debe analizar)
         if (this.authService.hasRole('Analista') && !this.authService.hasAnyRole(['Administrador', 'super_admin'])) {
             return false;
@@ -114,10 +119,25 @@ export class DetailComponent implements OnInit {
     }
 
     /**
+     * Determina si el usuario puede ver el botón de costear (Vendedor, Admin, SuperAdmin)
+     */
+    puedeCostearPedido(pedido: Pedido): boolean {
+        if (pedido.estado !== 'En_Costeo') return false;
+        return this.authService.hasAnyRole(['Vendedor', 'Administrador', 'super_admin']);
+    }
+
+    /**
      * Navega a la página de edición
      */
     editarPedido(): void {
         this.router.navigate(['/app/pedidos', this.pedidoId(), 'edit']);
+    }
+
+    /**
+     * Navega a la página de costeo
+     */
+    costearPedido(): void {
+        this.router.navigate(['/app/pedidos', this.pedidoId(), 'costeo']);
     }
 
     /**
