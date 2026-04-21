@@ -391,10 +391,6 @@ export class CosteoComponent implements OnInit {
         }
     }
 
-    openCreateEntrega(refIndex: number, provIndex: number): void {
-        this.messageService.add({ severity: 'info', summary: 'Entrega', detail: 'Por ahora, selecciona una de las opciones predefinidas o contacta a soporte para añadir nuevos plazos.' });
-    }
-
     onProveedorChange(refIndex: number, provIndex: number): void {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         const provGroup = proveedoresArray.at(provIndex) as FormGroup;

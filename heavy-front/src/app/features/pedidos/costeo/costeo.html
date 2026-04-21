@@ -188,16 +188,13 @@
                                         </button>
                                     </div>
                                 </div>
-                                <!-- Entrega -->
                                 <div class="w-[180px]">
                                     <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="entrega" [options]="entregas" placeholder="Seleccionar" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
-                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
-                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
-                                            (click)="openCreateEntrega(refIndex, provIndex)"
-                                            pTooltip="Crear nuevo plazo de entrega" tooltipPosition="top">
-                                            <i class="pi pi-plus"></i>
-                                        </button>
+                                        <p-select formControlName="entrega" [options]="entregas" 
+                                            [editable]="true"
+                                            placeholder="Entrega" 
+                                            optionLabel="label" optionValue="value"
+                                            styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
                                     </div>
                                 </div>
                                 <!-- Costo USD -->
