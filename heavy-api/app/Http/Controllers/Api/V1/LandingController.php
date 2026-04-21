@@ -367,6 +367,7 @@ class LandingController extends Controller
                             'referencia' => strtoupper($referenceText),
                             'articulo_id' => $articuloId,
                             'marca_id' => $fabricanteId,
+                            'lista_id' => $listaId, // Nuevo: asociar tipo de artículo
                             'es_temporal' => true, // Siempre temporal si viene de landing
                             'comentario' => 'Referencia manual desde Landing - Requiere revisión',
                         ]);
@@ -381,6 +382,11 @@ class LandingController extends Controller
                         // Si no tiene marca, o si es temporal y la marca es distinta, la actualizamos para que coincida con la cotización
                         if ($fabricanteId && (! $referencia->marca_id || ($referencia->es_temporal && $referencia->marca_id !== $fabricanteId))) {
                             $updateData['marca_id'] = $fabricanteId;
+                        }
+
+                        // Nuevo: Si es temporal y no tiene lista_id, o es distinto, lo actualizamos
+                        if ($listaId && (! $referencia->lista_id || ($referencia->es_temporal && $referencia->lista_id !== $listaId))) {
+                            $updateData['lista_id'] = $listaId;
                         }
 
                         if (! empty($updateData)) {
