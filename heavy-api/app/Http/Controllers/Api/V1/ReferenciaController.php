@@ -174,7 +174,7 @@ class ReferenciaController extends Controller
                     'referencia_id' => $referencia->id,
                     'codigo' => $referencia->referencia,
                     'cantidad' => $item['cantidad'],
-                    'referencia' => new ReferenciaResource($referencia->load(['marca', 'articulo'])),
+                    'referencia' => new ReferenciaResource($referencia->load(['marca', 'articulo.referencias.marca'])),
                 ];
             }
             DB::commit();
@@ -204,7 +204,7 @@ class ReferenciaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Referencia::query()->with(['articulo', 'marca', 'articulos']);
+        $query = Referencia::query()->with(['articulo.referencias.marca', 'marca', 'articulos']);
 
         // Búsqueda en referencia o comentario
         if ($request->filled('search')) {
@@ -269,7 +269,7 @@ class ReferenciaController extends Controller
 
         return response()->json([
             'message' => 'Referencia creada exitosamente',
-            'data' => new ReferenciaResource($referencia->load(['marca', 'articulo'])),
+            'data' => new ReferenciaResource($referencia->load(['marca', 'articulo.referencias.marca'])),
         ], 201);
     }
 
@@ -278,7 +278,7 @@ class ReferenciaController extends Controller
      */
     public function show(Referencia $referencia): JsonResponse
     {
-        $referencia->load(['marca', 'articulos', 'articulo']);
+        $referencia->load(['marca', 'articulos', 'articulo.referencias.marca']);
 
         return response()->json([
             'data' => new ReferenciaResource($referencia),
@@ -309,7 +309,7 @@ class ReferenciaController extends Controller
 
         return response()->json([
             'message' => 'Referencia actualizada exitosamente',
-            'data' => new ReferenciaResource($referencia->fresh()->load(['marca', 'articulo'])),
+            'data' => new ReferenciaResource($referencia->fresh()->load(['marca', 'articulo.referencias.marca'])),
         ]);
     }
 

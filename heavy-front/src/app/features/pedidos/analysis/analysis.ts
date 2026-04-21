@@ -29,6 +29,8 @@ import { ImageModule } from 'primeng/image';
 import { GalleriaModule } from 'primeng/galleria';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { PopoverModule } from 'primeng/popover';
+import { Popover } from 'primeng/popover';
 
 import {
     updatePedido,
@@ -90,7 +92,8 @@ import { Referencia } from '../../../core/models/referencia.model';
         InputGroupModule,
         InputGroupAddonModule,
         ReferenciaCreateModalComponent,
-        ReferenciaEditModalComponent
+        ReferenciaEditModalComponent,
+        PopoverModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './analysis.html',
@@ -130,6 +133,11 @@ export class AnalysisComponent implements OnInit {
     // Opciones en cascada por fila (si aplica)
     tiposPorFila: any[][] = [];
     referenciasPorFila: any[][] = [];
+
+    // Popover data
+    popoverData: any = null;
+    sistemasFull: any[] = [];
+    tiposArticuloFull: any[] = [];
 
     submitting = false;
     finalizing = false;
@@ -1021,6 +1029,9 @@ export class AnalysisComponent implements OnInit {
         es_temporal: boolean;
         definicion_articulo?: string;
         descripcion_especifica_articulo?: string;
+        articulo_imagen?: string;
+        articulo_peso?: number;
+        referencias_cruzadas?: any[];
     } {
         const art = r.articulo;
         const esPieza = !!(art?.es_pieza_estandar ?? r.articulo_es_pieza_estandar);
@@ -1035,7 +1046,10 @@ export class AnalysisComponent implements OnInit {
             es_pieza_estandar: esPieza,
             es_temporal: !!r.es_temporal,
             definicion_articulo: def.trim() || undefined,
-            descripcion_especifica_articulo: esp.trim() || undefined
+            descripcion_especifica_articulo: esp.trim() || undefined,
+            articulo_imagen: art?.fotoDescriptiva || r.articulo_imagen,
+            articulo_peso: art?.peso || r.articulo_peso,
+            referencias_cruzadas: art?.referencias || r.articulo_referencias || []
         };
     }
 
@@ -1122,6 +1136,8 @@ export class AnalysisComponent implements OnInit {
             tipos: this.listaService.getByTipo('Categoría Comercial')
         }).subscribe({
             next: ({ sistemas, tipos }) => {
+                this.sistemasFull = sistemas.data;
+                this.tiposArticuloFull = tipos;
                 this.sistemas = sistemas.data.map((s) => ({ label: s.nombre, value: s.id }));
                 this.tiposArticulo = tipos.map((l) => ({ label: l.nombre, value: l.id }));
                 // Cargar referencias solo cuando los catálogos estén listos
@@ -1526,5 +1542,90 @@ export class AnalysisComponent implements OnInit {
         const opciones = listaId ? (this.referenciasPorTipo[listaId] || []) : this.referencias;
         const ref = opciones.find((r: any) => r.value === refId);
         return !!(ref?.es_temporal);
+    }
+
+    // --- Lógica de Popovers Técnicos ---
+
+    showInfo(event: MouseEvent, type: string, id: number | null, popover: Popover, itemIndex?: number): void {
+        if (!id || !popover) return;
+
+        switch (type) {
+            case 'sistema':
+                const sistema = this.sistemasFull.find(s => s.id === id);
+                if (sistema) {
+                    this.popoverData = {
+                        title: 'Sistema',
+                        subtitle: sistema.nombre,
+                        description: sistema.descripcion || 'Sistema mecánico o funcional asociado a este ítem de la máquina.',
+                        image: this.formatImageUrl(sistema.imagen),
+                        type: 'sistema'
+                    };
+                    popover.toggle(event);
+                }
+                break;
+            case 'referencia':
+                // Buscar la data técnica de la referencia (artículo real)
+                let refId = id;
+                const idx = itemIndex;
+                if (idx === undefined) return;
+
+                const item = this.referenciasFormArray.at(idx);
+                
+                // Fallback: si no hay id de referencia en el ítem (común en manuales), usar la de la primera parte
+                if (!refId) {
+                    const partes = this.getPartesFormArray(idx);
+                    refId = partes.at(0)?.get('referencia_id')?.value;
+                }
+
+                if (!refId) return;
+
+                const listaId = item?.get('lista_id')?.value;
+                
+                // Búsqueda exhaustiva en catálogos
+                let ref = (listaId ? (this.referenciasPorTipo[listaId] || []) : []).find((r: any) => r.value === refId);
+                
+                if (!ref) {
+                    ref = this.referencias.find((r: any) => r.value === refId);
+                }
+
+                if (!ref) {
+                    // Buscar en cualquier otro catálogo cargado por si acaso
+                    for (const catId in this.referenciasPorTipo) {
+                        const found = this.referenciasPorTipo[catId].find((r: any) => r.value === refId);
+                        if (found) {
+                            ref = found;
+                            break;
+                        }
+                    }
+                }
+                
+                if (ref) {
+                    this.popoverData = {
+                        title: 'Artículo Analizado',
+                        subtitle: ref.descripcion_especifica_articulo || ref.articulo_nombre,
+                        standard_name: ref.definicion_articulo !== (ref.descripcion_especifica_articulo || ref.articulo_nombre) ? ref.definicion_articulo : null,
+                        description: null,
+                        image: this.formatImageUrl(ref.articulo_imagen),
+                        type: 'articulo',
+                        es_estandar: ref.es_pieza_estandar,
+                        peso: ref.articulo_peso,
+                        referencias_cruzadas: ref.referencias_cruzadas || []
+                    };
+                    popover.toggle(event);
+                }
+                break;
+        }
+    }
+
+    hideInfo(popover: Popover): void {
+        if (popover) {
+            popover.hide();
+        }
+    }
+
+    private formatImageUrl(url: string | null): string {
+        if (!url) return 'assets/images/no-image.png';
+        if (url.startsWith('http')) return url;
+        return `https://heavymarket.com.co/storage/${url}`;
     }
 }
