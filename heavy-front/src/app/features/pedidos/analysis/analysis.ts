@@ -339,41 +339,62 @@ export class AnalysisComponent implements OnInit {
      * Opciones del p-select de referencia: por tipo (lista_id) o, si aún no hay tipo, desde catálogo global / fila.
      */
     getOpcionesReferenciaParaFila(itemIndex: number): any[] {
-        const item = this.referenciasFormArray.at(itemIndex);
-        const listaId = item?.get('lista_id')?.value;
-        const porTipo = (listaId && this.referenciasPorTipo[listaId]) || [];
-        
-        // Empezamos con las opciones del catálogo (si hay)
-        const out: any[] = [...porTipo];
-        const seen = new Set<number>(out.map(o => o.value));
-        
-        // Obligatorio: Añadir las referencias que ya están en las filas de este ítem
-        // para que el p-select nunca se vea vacío si el catálogo no la devolvió (ej: temporales)
-        const partes = this.getPartesFormArray(itemIndex);
+        try {
+            if (!this.referenciasFormArray) return [];
+            const item = this.referenciasFormArray.at(itemIndex);
+            if (!item) return [];
 
-        for (const c of partes.controls) {
-            const id = c.get('referencia_id')?.value;
-            if (!id || seen.has(id)) {
-                continue;
+            const listaId = item.get('lista_id')?.value;
+            
+            // Verificación ultra-segura de catálogo por tipo
+            let porTipo: any[] = [];
+            if (listaId && this.referenciasPorTipo) {
+                const data = this.referenciasPorTipo[listaId];
+                if (Array.isArray(data)) {
+                    porTipo = data;
+                }
             }
-            seen.add(id);
-            const global = this.referencias.find((r) => r.value === id);
-            const descFila = String(c.get('descripcion')?.value ?? '').trim();
-            const label = (global?.label ?? descFila) || String(id);
-            out.push({
-                label,
-                value: id,
-                descripcion: global?.descripcion ?? c.get('descripcion')?.value ?? '',
-                articulo_id: global?.articulo_id ?? null,
-                articulo_nombre: global?.articulo_nombre ?? global?.descripcion ?? '',
-                es_pieza_estandar: global?.es_pieza_estandar ?? false,
-                es_temporal: global?.es_temporal ?? false,
-                definicion_articulo: global?.definicion_articulo,
-                descripcion_especifica_articulo: global?.descripcion_especifica_articulo
-            });
+            
+            // Clonamos el array base de forma segura sin usar spread operator (...)
+            const out: any[] = [].concat(porTipo as any);
+            const seen = new Set<number>();
+            
+            // Registrar IDs ya vistos en el catálogo
+            for (let k = 0; k < out.length; k++) {
+                if (out[k] && out[k].value) seen.add(out[k].value);
+            }
+            
+            const partes = this.getPartesFormArray(itemIndex);
+            if (partes && partes.controls) {
+                const controls = partes.controls;
+                for (let k = 0; k < controls.length; k++) {
+                    const c = controls[k];
+                    const id = c.get('referencia_id')?.value;
+                    if (!id || seen.has(id)) {
+                        continue;
+                    }
+                    seen.add(id);
+                    const global = (this.referencias || []).find((r: any) => r.value === id);
+                    const descFila = String(c.get('descripcion')?.value ?? '').trim();
+                    const label = (global?.label ?? descFila) || String(id);
+                    out.push({
+                        label,
+                        value: id,
+                        descripcion: global?.descripcion ?? c.get('descripcion')?.value ?? '',
+                        articulo_id: global?.articulo_id ?? null,
+                        articulo_nombre: global?.articulo_nombre ?? global?.descripcion ?? '',
+                        es_pieza_estandar: global?.es_pieza_estandar ?? false,
+                        es_temporal: global?.es_temporal ?? false,
+                        definicion_articulo: global?.definicion_articulo,
+                        descripcion_especifica_articulo: global?.descripcion_especifica_articulo
+                    });
+                }
+            }
+            return out;
+        } catch (e) {
+            console.error('Análisis Error (getOpcionesReferenciaParaFila):', e);
+            return [];
         }
-
-        return out;
     }
 
     abrirDialogoLote(index: number): void {
