@@ -16,7 +16,7 @@ class StoreMaquinaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**

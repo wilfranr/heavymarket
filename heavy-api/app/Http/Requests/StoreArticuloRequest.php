@@ -16,7 +16,7 @@ class StoreArticuloRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'Administrador']);
+        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
     }
 
     /**

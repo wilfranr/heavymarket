@@ -32,7 +32,7 @@ class ReferenciaPolicy
 
     public function delete(User $user, Referencia $referencia): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
     }
 
     public function restore(User $user, Referencia $referencia): bool

@@ -22,17 +22,17 @@ class ArticuloPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function update(User $user, Articulo $articulo): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function delete(User $user, Articulo $articulo): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
     }
 
     public function restore(User $user, Articulo $articulo): bool

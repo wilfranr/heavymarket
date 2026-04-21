@@ -204,6 +204,7 @@
 - Lógica de "Comodín" para proveedores sin restricciones de marca
 - Sincronización de carga de datos (combineLatest) para evitar condiciones de carrera
 - Carga automática de proveedores coincidentes al abrir el costeo
+- **Permisos CRUD Analista**: Habilitado CRUD completo para Artículos, Máquinas, Sistemas, Listas y Referencias.
 - 15 archivos nuevos/modificados en esta fase
 
 ---

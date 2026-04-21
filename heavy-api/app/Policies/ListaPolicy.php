@@ -22,7 +22,7 @@ class ListaPolicy
 
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function update(User $user, Lista $lista): bool
@@ -31,7 +31,7 @@ class ListaPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function delete(User $user, Lista $lista): bool
@@ -40,7 +40,7 @@ class ListaPolicy
             return false;
         }
 
-        return $user->hasAnyRole(['super_admin', 'Administrador']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
     }
 
     public function restore(User $user, Lista $lista): bool
