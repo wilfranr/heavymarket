@@ -94,10 +94,12 @@ input.p-inputtext {
     }
 }
 
-:host ::v-deep {
+:host ::ng-deep {
     .p-select {
         background-color: #334155 !important;
         border: none !important;
+        --p-select-color: white !important;
+        --p-select-placeholder-color: rgba(255, 255, 255, 0.5) !important;
         
         .p-select-label {
             color: white !important;
