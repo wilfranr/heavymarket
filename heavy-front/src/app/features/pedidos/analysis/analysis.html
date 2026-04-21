@@ -368,7 +368,6 @@
                                                                   placeholder="Seleccionar" 
                                                                   appendTo="body" 
                                                                   styleClass="flex-1 !bg-[#334155] border-none !text-white h-full"
-                                                                  [style]="{'color': 'white'}"
                                                                   (onChange)="onReferenciaFilaChange($event, i, j)"></p-select>
                                                         <p-button icon="pi pi-plus" [text]="true" 
                                                                   (click)="abrirCrearReferencia(i, j)" 
@@ -392,7 +391,7 @@
                                                 />
                                             </td>
                                             <td class="p-2">
-                                                <p-select [options]="tiposArticulo" formControlName="categoria" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10" [style]="{'color': 'white'}"></p-select>
+                                                <p-select [options]="tiposArticulo" formControlName="categoria" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccionar" appendTo="body" styleClass="w-full !bg-[#334155] border-none text-white h-10"></p-select>
                                             </td>
                                             <td class="p-3 pr-4 text-center rounded-r-lg">
                                                 <div class="flex gap-1 justify-center items-center flex-wrap">
