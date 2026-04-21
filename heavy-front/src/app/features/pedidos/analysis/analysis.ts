@@ -341,13 +341,14 @@ export class AnalysisComponent implements OnInit {
     getOpcionesReferenciaParaFila(itemIndex: number): any[] {
         const item = this.referenciasFormArray.at(itemIndex);
         const listaId = item?.get('lista_id')?.value;
-        const porTipo = listaId ? this.referenciasPorTipo[listaId] : undefined;
-        if (porTipo && porTipo.length > 0) {
-            return porTipo;
-        }
-
-        const out: any[] = [];
-        const seen = new Set<number>();
+        const porTipo = listaId ? this.referenciasPorTipo[listaId] : [];
+        
+        // Empezamos con las opciones del catálogo (si hay)
+        const out: any[] = [...porTipo];
+        const seen = new Set<number>(out.map(o => o.value));
+        
+        // Obligatorio: Añadir las referencias que ya están en las filas de este ítem
+        // para que el p-select nunca se vea vacío si el catálogo no la devolvió (ej: temporales)
         const partes = this.getPartesFormArray(itemIndex);
 
         for (const c of partes.controls) {
@@ -366,6 +367,7 @@ export class AnalysisComponent implements OnInit {
                 articulo_id: global?.articulo_id ?? null,
                 articulo_nombre: global?.articulo_nombre ?? global?.descripcion ?? '',
                 es_pieza_estandar: global?.es_pieza_estandar ?? false,
+                es_temporal: global?.es_temporal ?? false,
                 definicion_articulo: global?.definicion_articulo,
                 descripcion_especifica_articulo: global?.descripcion_especifica_articulo
             });
