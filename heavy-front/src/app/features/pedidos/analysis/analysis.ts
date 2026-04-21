@@ -341,7 +341,7 @@ export class AnalysisComponent implements OnInit {
     getOpcionesReferenciaParaFila(itemIndex: number): any[] {
         const item = this.referenciasFormArray.at(itemIndex);
         const listaId = item?.get('lista_id')?.value;
-        const porTipo = listaId ? this.referenciasPorTipo[listaId] : [];
+        const porTipo = (listaId && this.referenciasPorTipo[listaId]) || [];
         
         // Empezamos con las opciones del catálogo (si hay)
         const out: any[] = [...porTipo];
