@@ -1179,9 +1179,10 @@ export class AnalysisComponent implements OnInit {
         }).subscribe({
             next: ({ sistemas, tipos }) => {
                 this.sistemasFull = sistemas.data;
+                console.log('tipos loaded', tipos);
                 this.tiposArticuloFull = tipos;
                 this.sistemas = sistemas.data.map((s) => ({ label: s.nombre, value: s.id }));
-                this.tiposArticulo = tipos.map((l) => ({ label: l.nombre, value: l.id }));
+                this.tiposArticulo = tipos.map((l: any) => ({ label: l.nombre, value: l.id }));
                 // Cargar referencias solo cuando los catálogos estén listos
                 this.loadReferencias();
             }
@@ -1609,12 +1610,11 @@ export class AnalysisComponent implements OnInit {
                 }
                 break;
             case 'articulo':
-                const tipo = this.tiposArticuloFull?.find(t => t.value === id);
-                console.log('articulo click', id, tipo);
+                const tipo = this.tiposArticuloFull?.find((t: any) => t.id === id);
                 if (tipo) {
                     this.popoverData = {
                         title: 'Tipo de Artículo',
-                        subtitle: tipo.label,
+                        subtitle: tipo.nombre,
                         description: 'Tipo de artículo comercial.',
                         image: null,
                         type: 'articulo'
