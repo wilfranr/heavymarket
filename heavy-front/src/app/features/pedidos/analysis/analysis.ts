@@ -194,6 +194,7 @@ export class AnalysisComponent implements OnInit {
 
     /** Carga masiva (mismo flujo que landing cotizar + API que create pedido): panel + bulkSearchOrCreate */
     showBulkImport = false;
+    activeBulkImportIndex: number | null = null;
     bulkText = '';
     processingBulk = false;
     /** Guía visual (misma UX que creación de pedido / importación masiva) */
@@ -208,6 +209,18 @@ export class AnalysisComponent implements OnInit {
 
     openHelpDialog(): void {
         this.displayHelpDialog = true;
+    }
+
+    abrirCargaMasiva(index: number | null = null): void {
+        this.activeBulkImportIndex = index;
+        this.showBulkImport = true;
+        this.bulkText = '';
+    }
+
+    cerrarCargaMasiva(): void {
+        this.showBulkImport = false;
+        this.activeBulkImportIndex = null;
+        this.bulkText = '';
     }
 
     private initLoteForm(): void {
@@ -282,6 +295,22 @@ export class AnalysisComponent implements OnInit {
         this.referenciasFormArray.push(itemForm);
     }
 
+    private agregarParteDesdeResultadoBulk(itemIndex: number, row: any): void {
+        const ref = row.referencia;
+        const opt = this.opcionReferenciaDesdeApi(ref);
+        const partes = this.getPartesFormArray(itemIndex);
+        
+        const parte = this.fb.group({
+            id: [null],
+            referencia_id: [row.referencia_id],
+            cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
+            descripcion: [this.descripcionAnalisisDesdeOpcion(opt)],
+            categoria: [null]
+        });
+
+        partes.push(parte);
+    }
+
     /**
      * Misma idea que cotizar: pegar listado y procesar; API como create pedido (bulkSearchOrCreate).
      */
@@ -311,10 +340,14 @@ export class AnalysisComponent implements OnInit {
                 const resultados = response.data;
 
                 if (resultados && resultados.length > 0) {
-                    resultados.forEach((row: any) => this.agregarTarjetaDesdeResultadoBulk(row));
+                    if (this.activeBulkImportIndex !== null && this.activeBulkImportIndex >= 0) {
+                        resultados.forEach((row: any) => this.agregarParteDesdeResultadoBulk(this.activeBulkImportIndex!, row));
+                    } else {
+                        resultados.forEach((row: any) => this.agregarTarjetaDesdeResultadoBulk(row));
+                    }
+                    
                     this.loadReferencias();
-                    this.bulkText = '';
-                    this.showBulkImport = false;
+                    this.cerrarCargaMasiva();
                     this.messageService.add({
                         severity: 'success',
                         summary: 'Carga masiva',

@@ -259,7 +259,14 @@
                         </div>
                         <div>
                             <h4 class="theme-text-primary font-bold">Importación Masiva</h4>
-                            <p class="theme-text-secondary text-xs">Pega tu listado (Cantidad [Espacio] Referencia)</p>
+                            @if (activeBulkImportIndex !== null && activeBulkImportIndex >= 0) {
+                                <p class="text-brand-yellow text-xs font-semibold animate-pulse">
+                                    <i class="pi pi-info-circle mr-1"></i>
+                                    Importando al ítem: {{ getSistemaNombre(referenciasFormArray.at(activeBulkImportIndex).get('sistema_id')?.value) }} — {{ getTipoNombre(referenciasFormArray.at(activeBulkImportIndex).get('lista_id')?.value) }}
+                                </p>
+                            } @else {
+                                <p class="theme-text-secondary text-xs">Pega tu listado (Cantidad [Espacio] Referencia)</p>
+                            }
                         </div>
                     </div>
                     <button type="button" (click)="openHelpDialog()" class="text-brand-yellow text-sm hover:underline font-medium">
@@ -271,7 +278,7 @@
                     class="w-full font-mono text-sm rounded-lg mb-4 !bg-white dark:!bg-[#0f172a] border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"></textarea>
                 <div class="flex flex-wrap justify-end gap-3">
                     <button type="button" class="btn-pill btn-secondary-green text-xs px-4 py-2"
-                        (click)="showBulkImport = false">Cancelar</button>
+                        (click)="cerrarCargaMasiva()">Cancelar</button>
                     <button type="button" class="btn-pill btn-primary-green text-xs px-6 py-2 flex items-center gap-1.5 disabled:opacity-60"
                         [disabled]="processingBulk"
                         (click)="procesarCargaMasiva()">
@@ -431,7 +438,7 @@
                             </table>
                             <div class="flex justify-end mt-2">
                                 <button type="button" pButton icon="pi pi-plus" label="Agregar referencia" class="p-button-text p-button-sm !text-primary-400" (click)="addParte(i)"></button>
-                                <button type="button" pButton icon="pi pi-list" label="Agregar listado" class="p-button-text p-button-sm !text-yellow-400 ml-2" (click)="showBulkImport = true"></button>
+                                <button type="button" pButton icon="pi pi-list" label="Agregar listado" class="p-button-text p-button-sm !text-yellow-400 ml-2" (click)="abrirCargaMasiva(i)"></button>
                             </div>
                         </div>
                     </div>
@@ -440,10 +447,10 @@
 
             <!-- Global Item Actions (Add more requirements) -->
             <div class="flex flex-wrap justify-center gap-6 mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
-                <!-- Botón temporalmente deshabilitado: funcionalidad no usada actualmente, evaluar viabilidad -->
+                <!-- Botón de carga masiva global deshabilitado por solicitud del usuario -->
                 <!-- <button type="button" class="px-8 py-3 bg-transparent border-2 border-white text-white rounded-full text-sm font-black flex items-center gap-2 hover:bg-white/10 transition-all uppercase tracking-widest"
-                        (click)="abrirDialogoLoteGlobal()">
-                    Agregar listado <i class="pi pi-bars"></i>
+                        (click)="abrirCargaMasiva(null)">
+                    Agregar listado <i class="pi pi-list"></i>
                 </button> -->
                 <button type="button" class="px-8 py-3 bg-green-500 border-none text-white rounded-full text-sm font-black flex items-center gap-2 hover:bg-green-600 transition-all shadow-lg shadow-green-500/20 uppercase tracking-widest"
                         (click)="agregarNuevoItem()">
