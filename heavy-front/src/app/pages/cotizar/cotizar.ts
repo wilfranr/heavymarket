@@ -497,15 +497,7 @@ export class Cotizar implements OnInit {
 
             this.formStep = 2;
         } else if (this.formStep === 2) {
-            // Validation & Submission in Confirmation Step
-            if (!this.userData.email || !this.userData.phone) {
-                alert('Por favor completa los campos obligatorios (*).');
-                return;
-            }
-            if (!this.currentUser && !this.userData.name) {
-                alert('Por favor ingresa tu nombre.');
-                return;
-            }
+            // Solo validar marca, tipo y modelo - datos del cliente son opcionales
             this.submit();
         }
         this.cd.markForCheck();
