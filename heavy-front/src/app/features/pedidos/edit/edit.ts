@@ -1297,9 +1297,13 @@ export class EditComponent implements OnInit {
         if (referenciaId || !codigo) return of(void 0);
 
         const cantidad = Number(row.get('cantidad')?.value || 1);
-        const marcaId = row.get('marca_id')?.value ? Number(row.get('marca_id')?.value) : null;
+        let marcaId = row.get('marca_id')?.value ? Number(row.get('marca_id')?.value) : null;
         const articuloId = row.get('articulo_id')?.value ? Number(row.get('articulo_id')?.value) : null;
         const listaId = row.get('lista_id')?.value ? Number(row.get('lista_id')?.value) : null;
+
+        if (!marcaId && this.selectedMaquina?.fabricante_id) {
+            marcaId = Number(this.selectedMaquina.fabricante_id);
+        }
 
         return this.referenciaService
             .bulkSearchOrCreate(
