@@ -32,7 +32,7 @@ class MaquinaPolicy
 
     public function delete(User $user, Maquina $maquina): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     public function restore(User $user, Maquina $maquina): bool

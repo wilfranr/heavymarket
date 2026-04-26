@@ -166,8 +166,11 @@ export class Cotizar implements OnInit {
                 this.systems = data.systems || [];
                 this.models = data.models || [];
 
-                if (this.systems.length > 0 && this.items.length > 0 && !this.items[0].system) {
-                    this.items[0].system = this.systems[0].nombre;
+                if (this.items.length > 0 && !this.items[0].system) {
+                    const defaultSys = this.systems.find(s => s.nombre.toLowerCase() === 'por defecto') || this.systems[0];
+                    if (defaultSys) {
+                        this.items[0].system = defaultSys.nombre;
+                    }
                 }
 
                 if (this.categories.length > 0) {
@@ -548,8 +551,21 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        const defaultSys = this.systems.length > 0 ? this.systems[0].nombre : '';
-        this.items.push({ system: defaultSys, description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' });
+        const defaultSys = this.systems.find(s => s.nombre.toLowerCase() === 'por defecto') || (this.systems.length > 0 ? this.systems[0] : null);
+        const defaultSysName = defaultSys ? defaultSys.nombre : '';
+        
+        this.items.push({ 
+            system: defaultSysName, 
+            description: '', 
+            quantity: 1, 
+            reference: '', 
+            files: [] as File[], 
+            openSystem: false, 
+            systemSearch: '', 
+            openDescription: false, 
+            descriptionSearch: '', 
+            comment: '' 
+        });
         this.cd.markForCheck();
     }
 

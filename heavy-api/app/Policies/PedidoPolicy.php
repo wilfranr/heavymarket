@@ -33,9 +33,10 @@ class PedidoPolicy
             return true;
         }
 
-        // Vendedor ve: sus pedidos (user_id = auth) O pedidos sin asignar (user_id = null)
+        // Vendedor ve: sus pedidos O pedidos de clientes
         if ($user->hasRole('Vendedor')) {
-            return $pedido->user_id === $user->id || $pedido->user_id === null;
+            return $pedido->user_id === $user->id
+                || $pedido->user->hasRole('Cliente');
         }
 
         return false;
@@ -65,10 +66,10 @@ class PedidoPolicy
         }
 
         // Admin/Logística pueden editar todo
-        // Vendedor puede editar sus pedidos O pedidos sin asignar (de landing)
+        // Vendedor puede editar sus pedidos O pedidos de clientes (les toma el pedido)
         return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
             || $user->id === $pedido->user_id
-            || $pedido->user_id === null;
+            || ($pedido->user && $pedido->user->hasRole('Cliente'));
     }
 
     /**

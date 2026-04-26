@@ -58,12 +58,15 @@ class PedidoController extends Controller
         if ($user->hasRole('Analista')) {
             $query->where('estado', 'En_Analisis');
         }
-        // Vendedores y otros roles no administrativos solo ven sus propios pedidos
-        // O pedidos sin asignar (user_id = null) que vienen de la landing
+        // Vendedores ven: sus pedidos O pedidos de clientes (user con rol Cliente)
         elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
             $query->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)
-                  ->orWhereNull('user_id');
+                  ->orWhereHas('user', function ($q2) {
+                      $q2->whereHas('roles', function ($q3) {
+                          $q3->where('name', 'Cliente');
+                      });
+                  });
             });
         }
 
@@ -215,8 +218,8 @@ class PedidoController extends Controller
         }
 
         try {
-            // Si el pedido no tiene usuario asignado, asignar al usuario actual (vendedor que lo edita)
-            if ($pedido->user_id === null) {
+            // Auto-asignar: Si el pedido pertenece a un Cliente, el vendedor lo toma (se reemplaza al Cliente)
+            if ($pedido->user && $pedido->user->hasRole('Cliente')) {
                 $pedido->user_id = $request->user()->id;
                 $pedido->save();
             }

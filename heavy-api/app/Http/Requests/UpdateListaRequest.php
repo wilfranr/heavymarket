@@ -18,7 +18,7 @@ class UpdateListaRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
+        return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**
