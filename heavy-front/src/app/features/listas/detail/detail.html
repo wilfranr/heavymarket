@@ -5,9 +5,7 @@
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Detalle de Lista</h2>
                 <div class="flex gap-2">
-                    @if (lista.tipo !== 'Fabricantes') {
                     <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarLista()"> </p-button>
-                    }
                     <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true"
                         (onClick)="volver()"> </p-button>
                 </div>

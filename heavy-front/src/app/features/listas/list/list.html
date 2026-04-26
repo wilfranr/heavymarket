@@ -81,12 +81,10 @@
                     <div class="flex gap-2">
                         <p-button icon="pi pi-eye" severity="info" [text]="true" [rounded]="true"
                             (onClick)="verDetalle(lista)" pTooltip="Ver detalle" tooltipPosition="top"> </p-button>
-                        @if (lista.tipo !== 'Fabricantes') {
                         <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true"
                             (onClick)="editarLista(lista)" pTooltip="Editar" tooltipPosition="top"> </p-button>
                         <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
                             (onClick)="eliminarLista(lista)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
-                        }
                     </div>
                 </td>
             </tr>

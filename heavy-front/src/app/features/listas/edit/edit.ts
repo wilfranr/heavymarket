@@ -43,6 +43,7 @@ export class EditComponent implements OnInit {
 
     tiposOptions = [
         { label: 'Marca', value: 'Marca' as ListaTipo },
+        { label: 'Fabricantes', value: 'Fabricantes' as ListaTipo },
         { label: 'Tipo de Máquina', value: 'Tipo de Máquina' as ListaTipo },
         { label: 'Tipo de Artículo', value: 'Tipo de Artículo' as ListaTipo },
         { label: 'Unidad de Medida', value: 'Unidad de Medida' as ListaTipo },
@@ -64,15 +65,6 @@ export class EditComponent implements OnInit {
 
             this.lista$.subscribe((lista) => {
                 if (!lista) {
-                    return;
-                }
-                if (lista.tipo === 'Fabricantes') {
-                    this.messageService.add({
-                        severity: 'info',
-                        summary: 'Catálogo sincronizado',
-                        detail: 'Los ítems tipo Fabricantes se actualizan desde el catálogo maestro, no se editan aquí.'
-                    });
-                    this.router.navigate(['/app/listas', lista.id]);
                     return;
                 }
                 this.initForm(lista);
