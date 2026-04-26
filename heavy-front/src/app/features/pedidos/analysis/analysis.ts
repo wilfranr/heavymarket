@@ -1593,6 +1593,7 @@ export class AnalysisComponent implements OnInit {
     // --- Lógica de Popovers Técnicos ---
 
     showInfo(event: MouseEvent, type: string, id: number | null, popover: Popover, itemIndex?: number): void {
+        console.log('showInfo called', type, id);
         if (!id || !popover) return;
 
         switch (type) {
@@ -1611,6 +1612,7 @@ export class AnalysisComponent implements OnInit {
                 break;
             case 'articulo':
                 const tipo = this.tiposArticuloFull?.find((t: any) => t.id === id);
+                console.log('articulo case', id, this.tiposArticuloFull, tipo);
                 if (tipo) {
                     this.popoverData = {
                         title: 'Tipo de Artículo',
