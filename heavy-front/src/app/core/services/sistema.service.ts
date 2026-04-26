@@ -32,14 +32,19 @@ export class SistemaService extends ApiService {
     /**
      * Crear un nuevo sistema
      */
-    create(data: CreateSistemaDto): Observable<ApiResponse<Sistema>> {
+    create(data: CreateSistemaDto | FormData): Observable<ApiResponse<Sistema>> {
         return this.post<ApiResponse<Sistema>>(this.endpoint, data);
     }
 
     /**
      * Actualizar un sistema existente
      */
-    update(id: number, data: UpdateSistemaDto): Observable<ApiResponse<Sistema>> {
+    update(id: number, data: UpdateSistemaDto | FormData): Observable<ApiResponse<Sistema>> {
+        if (data instanceof FormData) {
+            // Spoofing PUT method for Laravel with FormData
+            data.append('_method', 'PUT');
+            return this.post<ApiResponse<Sistema>>(`${this.endpoint}/${id}`, data);
+        }
         return this.put<ApiResponse<Sistema>>(`${this.endpoint}/${id}`, data);
     }
 

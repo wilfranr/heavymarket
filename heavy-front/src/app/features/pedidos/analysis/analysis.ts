@@ -1643,7 +1643,7 @@ export class AnalysisComponent implements OnInit {
                     if (articuloId) break;
                 }
                 
-                // Si tenemos articulo_id, buscar refs cruzadas
+                // Si tenemos articulo_id, buscar refs cruzadas y datos del artículo
                 let refsCruzadas: any[] = [];
                 if (articuloId) {
                     refsCruzadas = this.referencias.filter((r: any) => r.articulo_id === articuloId);
@@ -1652,9 +1652,10 @@ export class AnalysisComponent implements OnInit {
                 this.popoverData = {
                     title: 'Tipo de Artículo',
                     subtitle: this.getTipoNombre(tipoId),
-                    description: 'Tipo de artículo comercial.',
+                    description: 'Tipo de artículo comercial. refs cruzadas: ' + refsCruzadas.length,
                     image: null,
                     type: 'articulo',
+                    peso: 0.45, // hardcoded para probar
                     referencias_cruzadas: refsCruzadas.slice(0, 20)
                 };
                 popover.toggle(event);

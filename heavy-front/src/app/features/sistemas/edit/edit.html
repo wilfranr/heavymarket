@@ -29,9 +29,11 @@
 
                 <!-- Imagen -->
                 <div class="field">
-                    <label for="imagen" class="block text-sm font-medium mb-2"> Imagen (URL) </label>
-                    <input pInputText id="imagen" formControlName="imagen" placeholder="URL de la imagen"
-                        class="w-full" />
+                    <label for="imagen" class="block text-sm font-medium mb-2"> Imagen </label>
+                    <app-image-upload 
+                        (imageSelected)="onImagenSelected($event)" 
+                        [previewUrl]="previewUrl">
+                    </app-image-upload>
                 </div>
 
                 <!-- Descripción -->

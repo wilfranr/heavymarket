@@ -20,14 +20,14 @@ export const loadSistemaByIdSuccess = createAction('[Sistemas] Load Sistema By I
 export const loadSistemaByIdFailure = createAction('[Sistemas] Load Sistema By Id Failure', props<{ error: string }>());
 
 // Crear sistema
-export const createSistema = createAction('[Sistemas] Create Sistema', props<{ data: CreateSistemaDto }>());
+export const createSistema = createAction('[Sistemas] Create Sistema', props<{ data: CreateSistemaDto | any }>());
 
 export const createSistemaSuccess = createAction('[Sistemas] Create Sistema Success', props<{ sistema: Sistema }>());
 
 export const createSistemaFailure = createAction('[Sistemas] Create Sistema Failure', props<{ error: string }>());
 
 // Actualizar sistema
-export const updateSistema = createAction('[Sistemas] Update Sistema', props<{ id: number; data: UpdateSistemaDto }>());
+export const updateSistema = createAction('[Sistemas] Update Sistema', props<{ id: number; data: UpdateSistemaDto | any }>());
 
 export const updateSistemaSuccess = createAction('[Sistemas] Update Sistema Success', props<{ sistema: Sistema }>());
 

@@ -11,6 +11,7 @@ import { TextareaModule } from 'primeng/textarea';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createSistema } from '../../../store/sistemas/actions/sistemas.actions';
 import { CreateSistemaDto } from '../../../core/models/sistema.model';
@@ -21,7 +22,7 @@ import { CreateSistemaDto } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -33,6 +34,7 @@ export class CreateComponent implements OnInit {
 
     sistemaForm!: FormGroup;
     loading = false;
+    imagenFile: File | null = null;
 
     ngOnInit(): void {
         this.initForm();
@@ -47,6 +49,13 @@ export class CreateComponent implements OnInit {
             descripcion: [''],
             imagen: [null]
         });
+    }
+
+    /**
+     * Maneja la selección de imagen
+     */
+    onImagenSelected(file: File): void {
+        this.imagenFile = file;
     }
 
     /**
@@ -66,13 +75,18 @@ export class CreateComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.sistemaForm.value;
-        const data: CreateSistemaDto = {
-            nombre: formValue.nombre,
-            descripcion: formValue.descripcion || undefined,
-            imagen: formValue.imagen || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(createSistema({ data }));
+        formData.append('nombre', formValue.nombre);
+        if (formValue.descripcion) formData.append('descripcion', formValue.descripcion);
+        
+        if (this.imagenFile) {
+            formData.append('imagen', this.imagenFile);
+        } else if (formValue.imagen) {
+            formData.append('imagen', formValue.imagen);
+        }
+
+        this.store.dispatch(createSistema({ data: formData as any }));
 
         // Escuchar el resultado de la acción
         this.store

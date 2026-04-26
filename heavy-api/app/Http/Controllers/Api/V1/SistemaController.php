@@ -11,6 +11,7 @@ use App\Http\Resources\SistemaResource;
 use App\Models\Sistema;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 /**
  * Controlador API para gestión de Sistemas
  *
@@ -74,6 +75,11 @@ class SistemaController extends Controller
         if (isset($data['descripcion'])) {
             $data['descripcion'] = ucwords($data['descripcion']);
         }
+        
+        // Manejar carga de imagen
+        if ($request->hasFile('imagen')) {
+            $data['imagen'] = $request->file('imagen')->store('sistemas', 'public');
+        }
 
         $sistema = Sistema::create($data);
 
@@ -106,6 +112,15 @@ class SistemaController extends Controller
         $data = $request->validated();
         if (isset($data['descripcion'])) {
             $data['descripcion'] = ucwords($data['descripcion']);
+        }
+
+        // Manejar carga de imagen
+        if ($request->hasFile('imagen')) {
+            // Eliminar anterior si existe y pertenece a sistemas (no legado)
+            if ($sistema->getRawOriginal('imagen') && str_starts_with($sistema->getRawOriginal('imagen'), 'sistemas/')) {
+                Storage::disk('public')->delete($sistema->getRawOriginal('imagen'));
+            }
+            $data['imagen'] = $request->file('imagen')->store('sistemas', 'public');
         }
 
         $sistema->update($data);

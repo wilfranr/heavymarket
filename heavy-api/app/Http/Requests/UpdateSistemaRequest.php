@@ -37,7 +37,7 @@ class UpdateSistemaRequest extends FormRequest
                 Rule::unique('sistemas', 'nombre')->ignore($sistemaId),
             ],
             'descripcion' => ['nullable', 'string'],
-            'imagen' => ['nullable', 'string', 'max:255'],
+            'imagen' => ['nullable', 'image', 'max:2048'],
         ];
     }
 

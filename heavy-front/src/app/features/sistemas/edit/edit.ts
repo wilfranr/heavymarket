@@ -13,6 +13,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadSistemaById, updateSistema } from '../../../store/sistemas/actions/sistemas.actions';
 import { selectSistemaById } from '../../../store/sistemas/selectors/sistemas.selectors';
@@ -24,7 +25,7 @@ import { UpdateSistemaDto } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, TableModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, TableModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -39,6 +40,8 @@ export class EditComponent implements OnInit {
     sistema$!: Observable<any>;
     sistemaId!: number;
     loading = false;
+    imagenFile: File | null = null;
+    previewUrl: string | null = null;
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
@@ -58,11 +61,19 @@ export class EditComponent implements OnInit {
      * Inicializa el formulario con los datos del sistema
      */
     private initForm(sistema: any): void {
+        this.previewUrl = sistema.imagen;
         this.sistemaForm = this.fb.group({
             nombre: [sistema.nombre, [Validators.required, Validators.maxLength(255)]],
             descripcion: [sistema.descripcion || ''],
             imagen: [sistema.imagen || null]
         });
+    }
+
+    /**
+     * Maneja la selección de imagen
+     */
+    onImagenSelected(file: File): void {
+        this.imagenFile = file;
     }
 
     /**
@@ -82,13 +93,16 @@ export class EditComponent implements OnInit {
         this.loading = true;
 
         const formValue = this.sistemaForm.value;
-        const data: UpdateSistemaDto = {
-            nombre: formValue.nombre,
-            descripcion: formValue.descripcion || undefined,
-            imagen: formValue.imagen || undefined
-        };
+        const formData = new FormData();
 
-        this.store.dispatch(updateSistema({ id: this.sistemaId, data }));
+        formData.append('nombre', formValue.nombre);
+        if (formValue.descripcion) formData.append('descripcion', formValue.descripcion);
+        
+        if (this.imagenFile) {
+            formData.append('imagen', this.imagenFile);
+        }
+
+        this.store.dispatch(updateSistema({ id: this.sistemaId, data: formData as any }));
 
         // Escuchar el resultado de la acción
         this.store

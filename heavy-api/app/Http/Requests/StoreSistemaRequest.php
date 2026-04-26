@@ -29,7 +29,7 @@ class StoreSistemaRequest extends FormRequest
         return [
             'nombre' => ['required', 'string', 'max:255', 'unique:sistemas,nombre'],
             'descripcion' => ['nullable', 'string'],
-            'imagen' => ['nullable', 'string', 'max:255'],
+            'imagen' => ['nullable', 'image', 'max:2048'],
         ];
     }
 
