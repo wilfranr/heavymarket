@@ -1179,7 +1179,6 @@ export class AnalysisComponent implements OnInit {
         }).subscribe({
             next: ({ sistemas, tipos }) => {
                 this.sistemasFull = sistemas.data;
-                console.log('tipos loaded', tipos);
                 this.tiposArticuloFull = tipos;
                 this.sistemas = sistemas.data.map((s) => ({ label: s.nombre, value: s.id }));
                 this.tiposArticulo = tipos.map((l: any) => ({ label: l.nombre, value: l.id }));
@@ -1593,7 +1592,6 @@ export class AnalysisComponent implements OnInit {
     // --- Lógica de Popovers Técnicos ---
 
     showInfo(event: MouseEvent, type: string, id: number | null, popover: Popover, itemIndex?: number): void {
-        console.log('showInfo called', type, id);
         if (!id || !popover) return;
 
         switch (type) {
@@ -1611,18 +1609,17 @@ export class AnalysisComponent implements OnInit {
                 }
                 break;
             case 'articulo':
-                const tipo = this.tiposArticuloFull?.find((t: any) => t.id === id);
-                console.log('find result', tipo);
-                if (tipo) {
-                    this.popoverData = {
-                        title: 'Tipo de Artículo',
-                        subtitle: tipo.nombre,
-                        description: 'Tipo de artículo comercial.',
-                        image: null,
-                        type: 'articulo'
-                    };
-                    popover.toggle(event);
-                }
+                // El tipo se obtiene del lista_id que se pasa como id
+                const tipoNombre = this.getTipoNombre(id);
+                console.log('opening articulo modal', id, tipoNombre);
+                this.popoverData = {
+                    title: 'Tipo de Artículo',
+                    subtitle: tipoNombre,
+                    description: 'Tipo de artículo comercial de la categoría.',
+                    image: null,
+                    type: 'articulo'
+                };
+                popover.toggle(event);
                 break;
             case 'referencia':
                 // Buscar la data técnica de la referencia (artículo real)
