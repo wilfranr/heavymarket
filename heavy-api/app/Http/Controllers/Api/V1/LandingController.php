@@ -96,15 +96,17 @@ class LandingController extends Controller
             $slug = \Illuminate\Support\Str::slug($cat->nombre);
             $subcategorias = [];
 
-            foreach ($cat->children as $item) {
-                $imageUrl = asset('images/no-image.png');
+            foreach ($cat->children->transform(function ($item) {
+                $imageUrl = null;
                 $rawFoto = $item->getRawOriginal('foto');
+                
                 if ($rawFoto) {
                     if (str_starts_with($rawFoto, 'http')) {
                         $imageUrl = $rawFoto;
                     } elseif (str_contains($rawFoto, '/')) {
                         $imageUrl = asset('storage/'.$rawFoto);
                     } else {
+                        // Lógica para rutas legadas en Tipos de Máquina
                         $oldPath = 'Aplicativo/03. Tipos de Maquina/'.$rawFoto;
                         if (file_exists(storage_path('app/public/'.$oldPath))) {
                             $imageUrl = asset('storage/'.$oldPath);
@@ -112,11 +114,15 @@ class LandingController extends Controller
                     }
                 }
 
+                $item->imagen_url = $imageUrl ?? asset('images/no-image.png');
+
+                return $item;
+            }) as $item) {
                 $subcategorias[] = [
                     'id' => $item->id,
                     'nombre' => $item->nombre,
                     'descripcion' => $item->definicion,
-                    'imagen_url' => $imageUrl,
+                    'imagen_url' => $item->imagen_url,
                     'slug' => \Illuminate\Support\Str::slug($item->nombre),
                 ];
             }
@@ -333,7 +339,8 @@ class LandingController extends Controller
             \Illuminate\Support\Facades\Log::info('Procesando items cotización:', ['count' => count($itemsData), 'data' => $itemsData]);
 
             foreach ($itemsData as $index => $itemData) {
-                $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first();
+                $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first()
+                    ?? \App\Models\Sistema::where('nombre', 'Por Defecto')->first();
                 $sistemaId = $sistema?->id;
 
                 // Tipo de artículo = Lista (tipo "Tipo de Artículo") relacionada con este sistema
@@ -343,6 +350,13 @@ class LandingController extends Controller
                     $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
                         ->whereHas('sistemas', fn ($q) => $q->where('sistemas.id', $sistemaId))
                         ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($description)])
+                        ->first();
+                }
+
+                // Fallback a "Por Defecto" si no se encuentra el tipo especificado
+                if (! $lista) {
+                    $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+                        ->where('nombre', 'Por Defecto')
                         ->first();
                 }
                 $listaId = $lista?->id;
