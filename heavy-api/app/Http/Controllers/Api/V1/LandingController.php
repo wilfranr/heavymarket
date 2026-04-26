@@ -197,7 +197,7 @@ class LandingController extends Controller
     public function submitQuote(Request $request)
     {
         $validated = $request->validate([
-            'userData' => 'required|array',
+            'userData' => 'nullable|array',
             'userData.name' => 'nullable|string|max:255',
             'userData.email' => 'nullable|email|max:255',
             'userData.phone' => 'nullable|string|max:20',
@@ -221,20 +221,35 @@ class LandingController extends Controller
         ]);
 
         return \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
-            $userData = $request->input('userData');
+            $userData = $request->input('userData') ?? [];
+            $authenticatedUser = $request->user(); // Usuario logueado via Sanctum (cliente registrado)
 
-            // 1. Buscar o Crear Tercero por email
-            $tercero = \App\Models\Tercero::where('email', $userData['email'])->first();
+            // 1. Determinar tercero y user_id
+            $tercero = null;
+            $userId = null;
 
-            if (! $tercero) {
+            if ($authenticatedUser) {
+                // Cliente logueado - usar su usuario y tercero existente
+                $userId = $authenticatedUser->id;
+                $tercero = \App\Models\Tercero::where('user_id', $userId)->first();
+            } else {
+                // Cliente no logueado - buscar por email
+                $email = $userData['email'] ?? null;
+                if ($email) {
+                    $tercero = \App\Models\Tercero::where('email', $email)->first();
+                }
+            }
+
+            // Crear tercero si no existe (para clientes no registrados)
+            if (! $tercero && $userData['email'] ?? null) {
                 $tercero = \App\Models\Tercero::create([
-                    'nombre' => $userData['name'],
+                    'nombre' => $userData['name'] ?? 'Sin nombre',
                     'email' => $userData['email'],
-                    'telefono' => $userData['phone'],
+                    'telefono' => $userData['phone'] ?? null,
                     'direccion' => $userData['address'] ?? '-',
-                    'country_id' => is_array($userData['country']) ? $userData['country']['id'] : $userData['country'],
-                    'state_id' => is_array($userData['state']) ? $userData['state']['id'] : $userData['state'],
-                    'city_id' => is_array($userData['city']) ? $userData['city']['id'] : $userData['city'],
+                    'country_id' => is_array($userData['country'] ?? null) ? $userData['country']['id'] : ($userData['country'] ?? null),
+                    'state_id' => is_array($userData['state'] ?? null) ? $userData['state']['id'] : ($userData['state'] ?? null),
+                    'city_id' => is_array($userData['city'] ?? null) ? $userData['city']['id'] : ($userData['city'] ?? null),
                     'tipo' => 'Cliente',
                     'estado' => 'Activo',
                     'tipo_documento' => $userData['documentType'] ?? 'NIT',
@@ -302,16 +317,15 @@ class LandingController extends Controller
             }
 
             // 4. Crear el Pedido
-            // Los pedidos de landing no tienen vendedor asignado (user_id = null)
-            // Serán visibles para admins/analistas y cualquier vendedor podrá asignárselos al editarlos
+            // Si hay usuario logueado, asignar user_id; si no, pedido sin asignar (para admins/analistas)
             $pedido = \App\Models\Pedido::create([
-                'tercero_id' => $tercero->id,
-                'user_id' => null,  // Pedido de landing sin asignar
+                'tercero_id' => $tercero?->id,
+                'user_id' => $userId, // null si cliente no registrado
                 'estado' => 'Nuevo',
                 'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} ".($request->input('selectedSeries') ? 'Series: '.$request->input('selectedSeries') : ''),
                 'fabricante_id' => $fabricanteId,
                 'maquina_id' => $maquinaId,
-                'direccion' => $userData['address'] ?? $tercero->direccion,
+                'direccion' => $userData['address'] ?? $tercero?->direccion,
             ]);
 
             // 5. Procesar Ítems
