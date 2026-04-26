@@ -1609,27 +1609,55 @@ export class AnalysisComponent implements OnInit {
                 }
                 break;
             case 'articulo':
-                const tipo = this.tiposArticuloFull?.find((t: any) => t.id === id);
-                if (tipo) {
-                    // Buscar referencias cruzadas de este tipo
-                    const refsCruzadas: any[] = [];
-                    for (const refList of Object.values(this.referenciasPorTipo)) {
-                        const found = (refList as any[]).filter((r: any) => r.lista_id === id);
-                        refsCruzadas.push(...found);
+                // El tipoId es el tipo de artículo. Buscar refs del pedido con este tipo para obtener articulo_id
+                const tipoId = id;
+                let articuloId: number | null = null;
+                
+                // Buscar en las referencias del formulario
+                for (let i = 0; i < this.referenciasFormArray.length; i++) {
+                    const item = this.referenciasFormArray.at(i);
+                    if (item.get('lista_id')?.value === tipoId) {
+                        // Buscar en las partes
+                        const partes = this.getPartesFormArray(i);
+                        for (let j = 0; j < partes.length; j++) {
+                            const refId = partes.at(j).get('referencia_id')?.value;
+                            if (refId) {
+                                const refData = this.referencias.find(r => r.value === refId);
+                                if (refData?.articulo_id) {
+                                    articuloId = refData.articulo_id;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!articuloId) {
+                            // También revisar la referencia principal del item
+                            const refId = item.get('referencia_id')?.value;
+                            if (refId) {
+                                const refData = this.referencias.find(r => r.value === refId);
+                                if (refData?.articulo_id) {
+                                    articuloId = refData.articulo_id;
+                                }
+                            }
+                        }
                     }
-                    this.popoverData = {
-                        title: 'Tipo de Artículo',
-                        subtitle: tipo.nombre,
-                        description: tipo.descripcion || 'Tipo de artículo comercial.',
-                        image: tipo.foto ? this.formatImageUrl(tipo.foto) : null,
-                        type: 'articulo',
-                        es_estandar: tipo.es_estandar ?? false,
-                        peso: tipo.peso,
-                        standard_name: tipo.standard_name,
-                        referencias_cruzadas: refsCruzadas.slice(0, 20) // max 20 refs
-                    };
-                    popover.toggle(event);
+                    if (articuloId) break;
                 }
+                
+                // Si tenemos articulo_id, buscar refs cruzadas
+                let refsCruzadas: any[] = [];
+                if (articuloId) {
+                    refsCruzadas = this.referencias.filter((r: any) => r.articulo_id === articuloId);
+                }
+                
+                this.popoverData = {
+                    title: 'Tipo de Artículo',
+                    subtitle: this.getTipoNombre(tipoId),
+                    description: 'Tipo de artículo comercial.',
+                    image: null,
+                    type: 'articulo',
+                    referencias_cruzadas: refsCruzadas.slice(0, 20)
+                };
+                popover.toggle(event);
                 break;
             case 'referencia':
                 // Buscar la data técnica de la referencia (artículo real)
