@@ -1610,6 +1610,7 @@ export class AnalysisComponent implements OnInit {
                 break;
             case 'articulo':
                 const tipo = this.tiposArticuloFull?.find(t => t.value === id);
+                console.log('articulo click', id, tipo);
                 if (tipo) {
                     this.popoverData = {
                         title: 'Tipo de Artículo',
