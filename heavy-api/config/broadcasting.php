@@ -16,6 +16,8 @@ return [
     */
 
     'default' => env('BROADCAST_CONNECTION', 'null'),
+// NOTA: Forzar 'null' para desactivar notificaciones en tiempo real temporalmente
+// Cambiar a 'pusher' o 'reverb' cuando se corrijan los errores
 
     /*
     |--------------------------------------------------------------------------

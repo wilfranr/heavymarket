@@ -6,7 +6,7 @@ export const environment = {
     reverbHost: 'heavymarket.net',
     reverbPort: 443,
     reverbScheme: 'https',
-    pusherEnabled: true,
+    pusherEnabled: false,
     appName: 'HeavyMarket',
     version: '1.0.0'
 };

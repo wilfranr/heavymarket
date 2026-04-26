@@ -29,8 +29,26 @@ export class NotificationService {
     constructor() {
         this.loadNotifications();
         
-        // Inicializar Echo cuando el usuario esté autenticado
+        // Inicializar Echo solo si está habilitado en entorno
+        if (environment.pusherEnabled) {
+            this.initEchoIfEnabled();
+        }
+    }
+
+    /**
+     * Inicializa el efecto para Echo solo si está habilitado
+     */
+    private initEchoIfEnabled(): void {
         effect(() => {
+            const user = this.authService.currentUser();
+            if (user && !this.echo) {
+                this.initializeEcho(user.id);
+            } else if (!user && this.echo) {
+                this.echo.disconnect();
+                this.echo = null;
+            }
+        });
+    }
             const user = this.authService.currentUser();
             if (user && !this.echo) {
                 this.initializeEcho(user.id);
