@@ -164,6 +164,12 @@ class PedidoController extends Controller
     {
         $this->authorize('update', $pedido);
 
+        // Auto-asignar si el pedido es de un Cliente
+        if ($pedido->user && $pedido->user->hasRole('Cliente')) {
+            $pedido->user_id = $request->user()->id;
+            $pedido->save();
+        }
+
         // Usar máquina de estados
         if (! $pedido->puedeTransitarA(PedidoEstado::En_Analisis)) {
             return response()->json([
@@ -481,8 +487,10 @@ class PedidoController extends Controller
         $this->authorize('update', $pedido);
 
         try {
-            // Asignar usuario si no tiene
-            if ($pedido->user_id === null) {
+            // Auto-asignar si el pedido es de un Cliente
+            if ($pedido->user && $pedido->user->hasRole('Cliente')) {
+                $pedido->user_id = $request->user()->id;
+            } elseif ($pedido->user_id === null) {
                 $pedido->user_id = $request->user()->id;
             }
 
