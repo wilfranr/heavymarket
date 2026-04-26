@@ -1609,17 +1609,27 @@ export class AnalysisComponent implements OnInit {
                 }
                 break;
             case 'articulo':
-                // El tipo se obtiene del lista_id que se pasa como id
-                const tipoNombre = this.getTipoNombre(id);
-                console.log('opening articulo modal', id, tipoNombre);
-                this.popoverData = {
-                    title: 'Tipo de Artículo',
-                    subtitle: tipoNombre,
-                    description: 'Tipo de artículo comercial de la categoría.',
-                    image: null,
-                    type: 'articulo'
-                };
-                popover.toggle(event);
+                const tipo = this.tiposArticuloFull?.find((t: any) => t.id === id);
+                if (tipo) {
+                    // Buscar referencias cruzadas de este tipo
+                    const refsCruzadas: any[] = [];
+                    for (const refList of Object.values(this.referenciasPorTipo)) {
+                        const found = (refList as any[]).filter((r: any) => r.lista_id === id);
+                        refsCruzadas.push(...found);
+                    }
+                    this.popoverData = {
+                        title: 'Tipo de Artículo',
+                        subtitle: tipo.nombre,
+                        description: tipo.descripcion || 'Tipo de artículo comercial.',
+                        image: tipo.foto ? this.formatImageUrl(tipo.foto) : null,
+                        type: 'articulo',
+                        es_estandar: tipo.es_estandar ?? false,
+                        peso: tipo.peso,
+                        standard_name: tipo.standard_name,
+                        referencias_cruzadas: refsCruzadas.slice(0, 20) // max 20 refs
+                    };
+                    popover.toggle(event);
+                }
                 break;
             case 'referencia':
                 // Buscar la data técnica de la referencia (artículo real)
