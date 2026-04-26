@@ -305,22 +305,42 @@
                 </div>
             </p-dialog>
 
-            <!-- Fabricantes y Sistemas (Solo para Proveedores) -->
+            <!-- Fabricantes, Categorías y Sistemas (Solo para Proveedores) -->
             @if (tercero.tipo === 'Proveedor' || tercero.tipo === 'Ambos') {
-
-            @if (tercero.fabricantes && tercero.fabricantes.length > 0) {
             <p-divider></p-divider>
-            <div>
-                <h3 class="section-title">
-                    <i class="pi pi-building mr-2"></i>Fabricantes
-                </h3>
-                <div class="flex flex-wrap gap-2">
-                    @for (fabricante of tercero.fabricantes; track fabricante.id) {
-                    <p-tag [value]="fabricante.nombre" severity="info"></p-tag>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Fabricantes -->
+                <div>
+                    <h3 class="section-title">
+                        <i class="pi pi-building mr-2"></i>Fabricantes
+                    </h3>
+                    @if (tercero.fabricantes && tercero.fabricantes.length > 0) {
+                    <div class="flex flex-wrap gap-2">
+                        @for (fabricante of tercero.fabricantes; track fabricante.id) {
+                        <p-tag [value]="fabricante.nombre" severity="info"></p-tag>
+                        }
+                    </div>
+                    } @else {
+                    <p class="text-sm text-gray-500 italic">No hay fabricantes asociados</p>
+                    }
+                </div>
+
+                <!-- Categorías Comerciales -->
+                <div>
+                    <h3 class="section-title">
+                        <i class="pi pi-tags mr-2"></i>Categorías Comerciales
+                    </h3>
+                    @if (tercero.categorias_comerciales && tercero.categorias_comerciales.length > 0) {
+                    <div class="flex flex-wrap gap-2">
+                        @for (categoria of tercero.categorias_comerciales; track categoria.id) {
+                        <p-tag [value]="categoria.nombre" severity="success"></p-tag>
+                        }
+                    </div>
+                    } @else {
+                    <p class="text-sm text-gray-500 italic">No hay categorías comerciales asociadas</p>
                     }
                 </div>
             </div>
-            }
 
             @if (tercero.sistemas && tercero.sistemas.length > 0) {
             <p-divider></p-divider>
