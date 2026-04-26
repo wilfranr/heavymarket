@@ -127,6 +127,12 @@ export class ArticuloCreateModalComponent implements OnInit {
             const found = this.tipos.find(t => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
+                
+                // Pre-diligenciar descripción específica si está vacía
+                const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+                if (!currentDesc && found.definicion) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                }
             }
         } else {
             this.selectedTipoData = null;
@@ -139,7 +145,15 @@ export class ArticuloCreateModalComponent implements OnInit {
 
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos();
-        this.articuloForm.patchValue({ definicion: nuevoTipo.nombre });
+        
+        const updates: any = { definicion: nuevoTipo.nombre };
+        // Pre-diligenciar descripción específica si está vacía
+        const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+        if (!currentDesc && nuevoTipo.definicion) {
+            updates.descripcionEspecifica = nuevoTipo.definicion;
+        }
+        
+        this.articuloForm.patchValue(updates);
         this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
     }

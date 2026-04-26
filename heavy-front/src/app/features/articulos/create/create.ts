@@ -150,7 +150,15 @@ export class CreateComponent implements OnInit {
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
-        this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        
+        const updates: any = { definicion: nuevoTipo.nombre };
+        // Pre-diligenciar descripción específica si está vacía
+        const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+        if (!currentDesc && nuevoTipo.definicion) {
+            updates.descripcionEspecifica = nuevoTipo.definicion;
+        }
+        
+        this.articuloForm.patchValue(updates); // Seleccionarlo
         this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
     }
@@ -220,6 +228,12 @@ export class CreateComponent implements OnInit {
             const found = this.tipos.find(t => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
+                
+                // Pre-diligenciar descripción específica si está vacía
+                const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+                if (!currentDesc && found.definicion) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                }
             }
         } else {
             this.selectedTipoData = null;
