@@ -342,7 +342,16 @@ export class EditComponent implements OnInit {
     cargarReferencias(search?: string): void {
         this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
             next: (res) => {
-                this.referenciasDisponibles = res.data;
+                const nuevas = res.data;
+                // Combinar con las que ya tiene el artículo para no perderlas de la vista
+                const actuales = this.articuloActual?.referencias || [];
+                
+                // Usar un Map para evitar duplicados por ID
+                const map = new Map();
+                actuales.forEach(r => map.set(r.id, r));
+                nuevas.forEach((r: any) => map.set(r.id, r));
+                
+                this.referenciasDisponibles = Array.from(map.values());
             }
         });
     }

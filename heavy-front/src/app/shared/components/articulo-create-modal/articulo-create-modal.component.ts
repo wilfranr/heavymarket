@@ -147,7 +147,19 @@ export class ArticuloCreateModalComponent implements OnInit {
     cargarReferencias(search?: string): void {
         this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
             next: (res) => {
-                this.referenciasDisponibles = res.data;
+                const nuevas = res.data;
+                // Preservar las que ya están seleccionadas en el formulario
+                const seleccionadasIds = this.referenciasCruzadas.value
+                    .map((r: any) => r.referencia_id)
+                    .filter((id: any) => id !== null);
+                
+                const yaCargadas = this.referenciasDisponibles.filter(r => seleccionadasIds.includes(r.id));
+                
+                const map = new Map();
+                yaCargadas.forEach(r => map.set(r.id, r));
+                nuevas.forEach((r: any) => map.set(r.id, r));
+                
+                this.referenciasDisponibles = Array.from(map.values());
             }
         });
     }
