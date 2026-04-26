@@ -33,6 +33,23 @@ class UpdateListaRequest extends FormRequest
         $listaId = $lista->id;
         $tipoForUnique = $this->input('tipo', $lista->tipo);
 
+        $nombreRules = [
+            'sometimes',
+            'string',
+            'max:255',
+        ];
+
+        // Solo validamos unicidad si el nombre o el tipo están cambiando.
+        // Esto permite actualizar otros campos (foto, definicion) de listas duplicadas heredadas.
+        $nombreInput = $this->input('nombre', $lista->nombre);
+        $tipoInput = $this->input('tipo', $lista->tipo);
+
+        if (strcasecmp($nombreInput, $lista->nombre) !== 0 || $tipoInput !== $lista->tipo) {
+            $nombreRules[] = Rule::unique('listas', 'nombre')
+                ->ignore($listaId)
+                ->where(fn ($q) => $q->where('tipo', $tipoForUnique));
+        }
+
         return [
             'tipo' => [
                 'sometimes',
@@ -57,12 +74,7 @@ class UpdateListaRequest extends FormRequest
                     }
                 },
             ],
-            'nombre' => [
-                'sometimes',
-                'string',
-                'max:255',
-                Rule::unique('listas', 'nombre')->ignore($listaId)->where(fn ($q) => $q->where('tipo', $tipoForUnique)),
-            ],
+            'nombre' => $nombreRules,
             'definicion' => ['nullable', 'string'],
             'foto' => ['nullable', 'image', 'max:5120'],
             'fotoMedida' => ['nullable', 'image', 'max:5120'],
