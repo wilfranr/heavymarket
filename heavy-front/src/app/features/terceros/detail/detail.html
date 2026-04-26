@@ -305,7 +305,7 @@
                 </div>
             </p-dialog>
 
-            <!-- Fabricantes, Categorías y Sistemas (Solo para Proveedores) -->
+            <!-- Fabricantes y Categorías Comerciales (Solo para Proveedores) -->
             @if (tercero.tipo === 'Proveedor' || tercero.tipo === 'Ambos') {
             <p-divider></p-divider>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -346,7 +346,7 @@
             <p-divider></p-divider>
             <div>
                 <h3 class="section-title">
-                    <i class="pi pi-sitemap mr-2"></i>Sistemas
+                    <i class="pi pi-sitemap mr-2"></i>Categorías Comerciales
                 </h3>
                 <div class="flex flex-wrap gap-2">
                     @for (sistema of tercero.sistemas; track sistema.id) {
