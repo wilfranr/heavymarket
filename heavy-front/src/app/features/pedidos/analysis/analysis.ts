@@ -1643,13 +1643,15 @@ export class AnalysisComponent implements OnInit {
                     if (articuloId) break;
                 }
                 
-                // Si tenemos articulo_id, buscar refs cruzadas y datos del artículo
+                // Si tenemos articulo_id, buscar refs cruzadas
                 let refsCruzadas: any[] = [];
                 if (articuloId) {
-                    console.log('buscando refs cruzadas para articulo_id:', articuloId);
-                    console.log('this.referencias sample:', this.referencias.slice(0, 3));
-                    refsCruzadas = this.referencias.filter((r: any) => r.articulo_id === articuloId);
-                    console.log('refsCruzadas encontradas:', refsCruzadas.length);
+                    // Buscar en referenciasPorTipo (que tiene la estructura completa)
+                    for (const tipoKey in this.referenciasPorTipo) {
+                        const refsDelTipo = this.referenciasPorTipo[tipoKey] || [];
+                        const encontradas = refsDelTipo.filter((r: any) => r.articulo_id === articuloId);
+                        refsCruzadas.push(...encontradas);
+                    }
                 }
                 
                 this.popoverData = {
