@@ -36,14 +36,17 @@ class Fabricante extends Model
             return $value;
         }
 
+        // 1. Si contiene una ruta explícita (e.g. 'listas/abc.jpg'), usarla directamente
         if (str_contains($value, '/')) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
         }
 
+        // 2. Intentar buscar el valor exacto en la carpeta de fabricantes (legado)
         if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
             return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
         }
 
+        // 3. Intentar con el patrón de nombre como fallback (legado)
         $nameSlug = str_replace([' ', '-', '.'], '', strtolower($this->nombre));
         $patternName = "fab-{$nameSlug}.png";
 
@@ -51,7 +54,8 @@ class Fabricante extends Model
             return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
         }
 
-        return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
+        // 4. Fallback final
+        return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
     }
 
     // public function referencias(): HasMany

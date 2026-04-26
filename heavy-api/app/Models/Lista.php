@@ -94,6 +94,18 @@ class Lista extends Model
             return $value;
         }
 
+        // 1. Si contiene una ruta explícita (e.g. 'listas/abc.jpg'), usarla directamente
+        // Esto cubre las imágenes subidas a través del panel administrativo.
+        if (str_contains($value, '/')) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+        }
+
+        // 2. Intentar buscar el valor exacto en la carpeta de fabricantes (legado)
+        if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
+            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
+        }
+
+        // 3. Intentar con el patrón de nombre como fallback (legado)
         $fabricante = $this->fabricante;
         if ($fabricante) {
             $nameSlug = str_replace([' ', '-', '.'], '', strtolower($fabricante->nombre));
@@ -104,14 +116,7 @@ class Lista extends Model
             }
         }
 
-        if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
-        }
-
-        if (str_contains($value, '/')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
-        }
-
+        // 4. Fallback final
         return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
     }
 
