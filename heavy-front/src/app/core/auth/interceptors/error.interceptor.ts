@@ -30,6 +30,11 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                     return throwError(() => error);
                 }
 
+                // Rutas públicas que no deben redirigir al login en caso de 401
+                if (req.url.includes('/cotizar') || req.url.includes('/auth/') || req.url.includes('/client/')) {
+                    return throwError(() => error);
+                }
+
                 // Token inválido o expirado - redirigir al login
                 // Evitamos llamar a logout().subscribe() aquí directamente si ya estamos en una ruta de auth
                 if (!router.url.includes('/auth/login')) {
