@@ -95,8 +95,6 @@ class ClearBusinessData extends Command
         $this->info('Iniciando limpieza de base de datos...');
 
         try {
-            DB::beginTransaction();
-            
             // Desactivar restricciones de llaves foráneas para permitir TRUNCATE
             DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 
@@ -112,14 +110,11 @@ class ClearBusinessData extends Command
             // Reactivar restricciones
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             
-            DB::commit();
-
             $this->info('-----------------------------------------');
             $this->info('¡Base de datos limpiada con éxito!');
             $this->info('-----------------------------------------');
             
         } catch (\Exception $e) {
-            DB::rollBack();
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             $this->error("Error durante la limpieza: " . $e->getMessage());
             return 1;
