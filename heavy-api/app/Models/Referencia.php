@@ -48,6 +48,24 @@ class Referencia extends Model
         'comentario',    // Comentarios adicionales sobre la referencia
     ];
 
+    /**
+     * El "booted" method del modelo.
+     */
+    protected static function booted()
+    {
+        static::created(function ($referencia) {
+            if ($referencia->articulo_id) {
+                $referencia->articulos()->syncWithoutDetaching([$referencia->articulo_id]);
+            }
+        });
+
+        static::updated(function ($referencia) {
+            if ($referencia->isDirty('articulo_id') && $referencia->articulo_id) {
+                $referencia->articulos()->syncWithoutDetaching([$referencia->articulo_id]);
+            }
+        });
+    }
+
     protected $normalizableAttributes = [
         'referencia' => 'code',
         'comentario' => 'sentence',

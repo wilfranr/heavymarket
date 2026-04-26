@@ -194,13 +194,17 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     onReferenciaCreada(nuevaRef: any): void {
-        this.cargarReferencias();
+        // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
+        if (nuevaRef && !this.referenciasDisponibles.find(r => r.id === nuevaRef.id)) {
+            this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
+        }
 
         if (this.currentReferenciaArrayIndex !== null) {
             const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
             control.patchValue({ referencia_id: nuevaRef.id });
         }
 
+        this.cargarReferencias(); // Sincronizar con el servidor en segundo plano
         this.showReferenciaModal = false;
         this.currentReferenciaArrayIndex = null;
     }
