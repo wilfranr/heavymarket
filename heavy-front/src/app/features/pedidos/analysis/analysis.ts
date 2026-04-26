@@ -1652,9 +1652,12 @@ export class AnalysisComponent implements OnInit {
                         const encontradas = refsDelTipo.filter((r: any) => r.articulo_id === articuloId);
                         refsCruzadas.push(...encontradas);
                     }
-                    // Buscar foto en cualquier ref cruzada
+                    // Buscar foto en cualquier ref cruzada (campo fotoDescriptiva viene del API)
                     const primeraRef = refsCruzadas[0];
-                    fotoArticulo = primeraRef?.articulo?.foto || primeraRef?.foto || null;
+                    fotoArticulo = primeraRef?.fotoDescriptiva || primeraRef?.imagen || null;
+                    if (fotoArticulo) {
+                        fotoArticulo = this.formatImageUrl(fotoArticulo);
+                    }
                 }
                 
                 this.popoverData = {
