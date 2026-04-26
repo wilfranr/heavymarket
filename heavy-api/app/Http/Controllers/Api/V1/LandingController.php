@@ -198,9 +198,9 @@ class LandingController extends Controller
     {
         $validated = $request->validate([
             'userData' => 'required|array',
-            'userData.name' => 'required|string|max:255',
-            'userData.email' => 'required|email|max:255',
-            'userData.phone' => 'required|string|max:20',
+            'userData.name' => 'nullable|string|max:255',
+            'userData.email' => 'nullable|email|max:255',
+            'userData.phone' => 'nullable|string|max:20',
             'userData.company' => 'nullable|string|max:255',
             'userData.country' => 'nullable',
             'userData.state' => 'nullable',
