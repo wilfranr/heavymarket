@@ -49,15 +49,6 @@ export class NotificationService {
             }
         });
     }
-            const user = this.authService.currentUser();
-            if (user && !this.echo) {
-                this.initializeEcho(user.id);
-            } else if (!user && this.echo) {
-                this.echo.disconnect();
-                this.echo = null;
-            }
-        });
-    }
 
     /**
      * Inicializa Laravel Echo para escuchar notificaciones en tiempo real
