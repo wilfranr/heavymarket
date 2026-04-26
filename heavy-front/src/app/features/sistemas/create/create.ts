@@ -54,7 +54,7 @@ export class CreateComponent implements OnInit {
     /**
      * Maneja la selección de imagen
      */
-    onImagenSelected(file: File): void {
+    onImagenSelected(file: any): void {
         this.imagenFile = file;
     }
 

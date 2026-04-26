@@ -22,10 +22,10 @@
 
                 <!-- Imagen -->
                 <div class="field">
-                    <label for="imagen" class="block text-sm font-medium mb-2"> Imagen </label>
+                    <label class="block text-sm font-medium mb-2"> Imagen </label>
                     <app-image-upload 
-                        (imageSelected)="onImagenSelected($event)" 
-                        [previewUrl]="null">
+                        (fileSelected)="onImagenSelected($event)" 
+                        [currentImage]="null">
                     </app-image-upload>
                 </div>
 
