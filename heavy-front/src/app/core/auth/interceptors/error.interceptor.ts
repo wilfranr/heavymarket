@@ -31,7 +31,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 }
 
                 // Rutas públicas que no deben redirigir al login en caso de 401
-                if (req.url.includes('/cotizar') || req.url.includes('/auth/') || req.url.includes('/client/')) {
+                if (req.url.includes('/cotizar') || req.url.includes('/auth/') || req.url.includes('/landing/') || req.url.includes('/me') || req.url.includes('/ubicaciones/')) {
                     return throwError(() => error);
                 }
 
