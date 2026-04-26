@@ -114,11 +114,25 @@ export class EditComponent implements OnInit {
             this.articulo$.subscribe((articulo) => {
                 if (articulo) {
                     this.articuloActual = articulo;
+                    
                     // Asegurar que tenemos el tipo en la lista para que el selector lo muestre
                     if (articulo.definicion) {
                         const exists = this.tipos.find(t => t.nombre === articulo.definicion);
                         if (!exists) {
-                            this.tipos = [...this.tipos, { nombre: articulo.definicion } as any];
+                            // Buscar el tipo específico en el backend para tener sus fotos
+                            this.listaService.getByTipo('Piezas Estandar', articulo.definicion).subscribe({
+                                next: (tiposEncontrados) => {
+                                    const found = tiposEncontrados.find(t => t.nombre === articulo.definicion);
+                                    if (found) {
+                                        this.tipos = [...this.tipos, found];
+                                        this.checkInitialInheritance(found);
+                                    } else {
+                                        this.tipos = [...this.tipos, { nombre: articulo.definicion } as any];
+                                    }
+                                }
+                            });
+                        } else {
+                            this.checkInitialInheritance(exists);
                         }
                     }
                     this.initForm(articulo);
@@ -162,11 +176,39 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Maneja el cambio de la pieza estándar seleccionada
+     */
+    onTipoChange(event: any): void {
+        const nombre = event.value;
+        if (nombre && this.articuloActual) {
+            const found = this.tipos.find(t => t.nombre === nombre);
+            if (found && found.fotoMedida) {
+                // Actualizar la previsualización
+                this.articuloActual = {
+                    ...this.articuloActual,
+                    foto_medida: found.fotoMedida
+                };
+                // Limpiar cualquier selección manual que haya hecho el usuario en el plano
+                this.planoFile = null;
+            }
+        }
+    }
+
+    /**
      * Maneja la creación exitosa de una pieza estándar
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
         this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        
+        if (nuevoTipo.fotoMedida && this.articuloActual) {
+            this.articuloActual = {
+                ...this.articuloActual,
+                foto_medida: nuevoTipo.fotoMedida
+            };
+            this.planoFile = null;
+        }
+        
         this.showTipoModal = false;
     }
 
@@ -221,6 +263,18 @@ export class EditComponent implements OnInit {
                     referencia_id: [ref.id, Validators.required]
                 }));
             });
+        }
+    }
+
+    /**
+     * Revisa si se debe heredar visualmente la fotoMedida al cargar la vista
+     */
+    private checkInitialInheritance(tipo: Lista): void {
+        if (this.articuloActual && !this.articuloActual.foto_medida && tipo.fotoMedida) {
+            this.articuloActual = {
+                ...this.articuloActual,
+                foto_medida: tipo.fotoMedida
+            };
         }
     }
 

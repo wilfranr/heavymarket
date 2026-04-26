@@ -155,4 +155,67 @@ class ArticuloControllerTest extends TestCase
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['definicion', 'descripcionEspecifica']);
     }
+
+    /**
+     * Test: Articulo hereda fotoMedida de Pieza Estandar
+     */
+    public function test_articulo_hereda_foto_medida_de_pieza_estandar(): void
+    {
+        Storage::fake('public');
+        
+        // 1. Crear la pieza estandar con su foto de medida
+        $fotoMaestra = 'listas/medidas/maestra.jpg';
+        Storage::disk('public')->put($fotoMaestra, 'fake content');
+        
+        \App\Models\Lista::create([
+            'tipo' => 'Piezas Estandar',
+            'nombre' => 'Abrazadera Maestra',
+            'fotoMedida' => $fotoMaestra
+        ]);
+
+        // 2. Crear un artículo usando esa definición pero SIN foto_medida propia
+        $referencia = \App\Models\Referencia::factory()->create();
+        $data = [
+            'definicion' => 'Abrazadera Maestra',
+            'descripcionEspecifica' => 'Prueba de herencia',
+            'referencias_ids' => [$referencia->id]
+        ];
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/v1/articulos', $data);
+
+        $response->assertStatus(201);
+        
+        // 3. Verificar que el artículo hereda el path de la foto maestra
+        $articulo = Articulo::where('descripcionEspecifica', 'Prueba de herencia')->first();
+        // El accesor devuelve la URL completa
+        $expectedUrl = rtrim(config('app.url'), '/') . '/storage/' . $fotoMaestra;
+        $this->assertEquals($expectedUrl, $articulo->foto_medida);
+        
+        // 4. Actualizar el artículo cambiando la pieza estándar a otra que también tiene foto
+        $fotoMaestra2 = 'listas/medidas/maestra2.jpg';
+        Storage::disk('public')->put($fotoMaestra2, 'fake content');
+        
+        \App\Models\Lista::create([
+            'tipo' => 'Piezas Estandar',
+            'nombre' => 'Abrazadera Maestra 2',
+            'fotoMedida' => $fotoMaestra2
+        ]);
+
+        $updateData = [
+            'definicion' => 'Abrazadera Maestra 2',
+            'referencias_ids' => [$referencia->id]
+        ];
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson("/v1/articulos/{$articulo->id}", $updateData);
+
+        $response->assertStatus(200);
+        $articulo->refresh();
+        $expectedUrl2 = rtrim(config('app.url'), '/') . '/storage/' . $fotoMaestra2;
+        $this->assertEquals($expectedUrl2, $articulo->foto_medida);
+        
+        // Verificar que la foto maestra original NO fue borrada (porque es heredada)
+        Storage::disk('public')->assertExists($fotoMaestra);
+    }
 }

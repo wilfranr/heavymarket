@@ -54,3 +54,8 @@ El backend utiliza patrones de diseño para mantener los controladores limpios y
 - `php artisan pint`: Formatear código automáticamente.
 - `php artisan route:list`: Ver rutas disponibles.
 - `php artisan model:show [Model]`: Ver detalles de un modelo.
+
+## Troubleshooting de Producción
+Para problemas con carga de imágenes o errores 404 en assets de storage, consultar la guía:
+`docs/SOLUCION_IMAGENES_STORAGE.md`
+

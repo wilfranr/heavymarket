@@ -45,11 +45,11 @@
                                 <p-inputgroup styleClass="w-full">
                                     <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre"
                                         optionValue="nombre" placeholder="Seleccione una pieza estándar" [showClear]="true"
-                                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)" appendTo="body"
+                                        [filter]="true" filterBy="nombre" (onFilter)="onFilter($event)" (onChange)="onTipoChange($event)" appendTo="body"
                                         styleClass="w-full rounded-l-2xl">
                                         <ng-template let-tipo pTemplate="item">
                                             <div class="flex items-center gap-3">
-                                                <img [src]="tipo.foto" class="w-8 h-8 object-cover rounded shadow-sm" />
+                                                <img [src]="tipo.foto || tipo.fotoMedida" class="w-8 h-8 object-cover rounded shadow-sm" />
                                                 <div class="flex flex-col">
                                                     <span class="font-medium text-sm">{{ tipo.nombre }}</span>
                                                     <span class="text-xs text-gray-500 truncate max-w-[150px]">{{
@@ -225,7 +225,7 @@
                     </div>
                 </p-card>
 
-                <!-- Multimedia Section (Locked) -->
+                <!-- Multimedia Section -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Foto -->
                     <p-card
@@ -236,15 +236,14 @@
                                     class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                                     <i class="pi pi-camera text-xl"></i>
                                 </div>
-                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Foto de
-                                    Referencia</span>
+                                <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Foto del Artículo (Físico)</span>
                             </div>
                             <div
                                 class="surface-section border-2 border-dashed border-surface-border rounded-2xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed mx-4 mb-4">
                                 <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
-                                    <i class="pi pi-lock text-color-secondary text-xl"></i>
+                                    <i class="pi pi-plus text-color-secondary text-xl"></i>
                                 </div>
-                                <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo
+                                <p class="text-xs text-color-secondary font-medium px-4 text-center">Subir foto real tras la creación
                                 </p>
                             </div>
                         </div>
@@ -252,7 +251,7 @@
 
                     <!-- Plano -->
                     <p-card
-                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border opacity-75">
+                        styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border transition-opacity" [class.opacity-75]="!selectedTipoData?.fotoMedida">
                         <div class="p-2">
                             <div class="flex items-center gap-4 mb-6 px-4 pt-2">
                                 <div
@@ -262,14 +261,22 @@
                                 <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase">Plano
                                     Esquemático</span>
                             </div>
-                            <div
-                                class="surface-section border-2 border-dashed border-surface-border rounded-2xl h-48 flex flex-col items-center justify-center gap-3 cursor-not-allowed mx-4 mb-4">
-                                <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
-                                    <i class="pi pi-lock text-color-secondary text-xl"></i>
+                            
+                            @if (selectedTipoData?.fotoMedida) {
+                                <div class="mx-4 mb-4 surface-section border border-surface-border rounded-2xl h-48 flex items-center justify-center relative p-2">
+                                    <img [src]="selectedTipoData?.fotoMedida" class="max-h-full max-w-full object-contain" />
+                                    <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                                        Heredado de {{ selectedTipoData?.nombre }}
+                                    </div>
                                 </div>
-                                <p class="text-xs text-color-secondary font-medium">Disponible tras crear el artículo
-                                </p>
-                            </div>
+                            } @else {
+                                <div class="surface-section border-2 border-dashed border-surface-border rounded-2xl h-48 flex flex-col items-center justify-center gap-3 mx-4 mb-4">
+                                    <div class="w-12 h-12 rounded-xl surface-100 flex items-center justify-center">
+                                        <i class="pi pi-image text-color-secondary text-xl"></i>
+                                    </div>
+                                    <p class="text-[10px] text-color-secondary font-medium text-center px-6">Seleccione una pieza estándar con plano para heredar, o súbalo tras crear</p>
+                                </div>
+                            }
                         </div>
                     </p-card>
                 </div>

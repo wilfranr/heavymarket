@@ -88,6 +88,17 @@ class ArticuloController extends Controller
             $data['foto_medida'] = $request->file('foto_medida')->store('articulos/planos', 'public');
         }
 
+        // Heredar foto de medida desde Piezas Estándar si no se proporciona una nueva
+        if (!isset($data['foto_medida']) && isset($data['definicion'])) {
+            $lista = \App\Models\Lista::where('tipo', 'Piezas Estandar')
+                ->where('nombre', $data['definicion'])
+                ->first();
+            
+            if ($lista && $lista->fotoMedida) {
+                $data['foto_medida'] = $lista->fotoMedida;
+            }
+        }
+
         $articulo = Articulo::create($data);
 
         if ($request->has('referencias_ids')) {
@@ -122,19 +133,34 @@ class ArticuloController extends Controller
 
         // Manejar carga de archivos
         if ($request->hasFile('fotoDescriptiva')) {
-            // Eliminar anterior si existe
-            if ($articulo->fotoDescriptiva) {
+            // Eliminar anterior si existe y pertenece a articulos (no heredada)
+            if ($articulo->fotoDescriptiva && str_starts_with($articulo->fotoDescriptiva, 'articulos/')) {
                 Storage::disk('public')->delete($articulo->fotoDescriptiva);
             }
             $data['fotoDescriptiva'] = $request->file('fotoDescriptiva')->store('articulos/fotos', 'public');
         }
 
         if ($request->hasFile('foto_medida')) {
-            // Eliminar anterior si existe
-            if ($articulo->foto_medida) {
+            // Eliminar anterior si existe y pertenece a articulos (no heredada)
+            if ($articulo->foto_medida && str_starts_with($articulo->foto_medida, 'articulos/')) {
                 Storage::disk('public')->delete($articulo->foto_medida);
             }
             $data['foto_medida'] = $request->file('foto_medida')->store('articulos/planos', 'public');
+        }
+
+        // Heredar foto de medida desde Piezas Estándar si cambió la definición y no se subió una foto nueva
+        if (!$request->hasFile('foto_medida') && isset($data['definicion']) && $articulo->definicion !== $data['definicion']) {
+            $lista = \App\Models\Lista::where('tipo', 'Piezas Estandar')
+                ->where('nombre', $data['definicion'])
+                ->first();
+            
+            if ($lista && $lista->fotoMedida) {
+                // Eliminar anterior si existe y pertenece a articulos (no heredada)
+                if ($articulo->foto_medida && str_starts_with($articulo->foto_medida, 'articulos/')) {
+                    Storage::disk('public')->delete($articulo->foto_medida);
+                }
+                $data['foto_medida'] = $lista->fotoMedida;
+            }
         }
 
         $articulo->update($data);

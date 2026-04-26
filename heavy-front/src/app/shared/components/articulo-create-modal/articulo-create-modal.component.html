@@ -12,11 +12,11 @@
                 <p-inputgroup>
                     <p-select formControlName="definicion" [options]="tipos" optionLabel="nombre" optionValue="nombre"
                         placeholder="Seleccione un tipo" [showClear]="true" [filter]="true" filterBy="nombre"
-                        (onFilter)="onFilter($event)" appendTo="body"
+                        (onFilter)="onFilter($event)" (onChange)="onTipoChange($event)" appendTo="body"
                         class="w-full h-10 bg-[#0c0c0e] border-white/5 rounded-l-lg">
                         <ng-template let-tipo pTemplate="item">
                             <div class="flex items-center gap-3">
-                                <img [src]="tipo.foto" class="w-8 h-8 object-cover rounded shadow-sm" />
+                                <img [src]="tipo.foto || tipo.fotoMedida" class="w-8 h-8 object-cover rounded shadow-sm" />
                                 <div class="flex flex-col">
                                     <span class="font-medium text-sm">{{ tipo.nombre }}</span>
                                     <span class="text-xs text-gray-500">{{ tipo.definicion }}</span>
@@ -152,38 +152,47 @@
 
         <!-- Multimedia: Foto y Plano (Vista previa placeholder) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Foto de Referencia -->
+            <!-- Foto de Referencia (Artículo Físico) -->
             <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-lg flex flex-col gap-4 opacity-75">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                         <i class="pi pi-camera text-sm"></i>
                     </div>
-                    <h3 class="text-xs font-black text-gray-400 tracking-widest uppercase">Foto de Referencia</h3>
+                    <h3 class="text-xs font-black text-gray-400 tracking-widest uppercase">Foto del Artículo (Físico)</h3>
                 </div>
                 <div
                     class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-xl h-40 flex flex-col items-center justify-center gap-2 group cursor-not-allowed">
                     <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-1">
-                        <i class="pi pi-lock text-gray-600"></i>
+                        <i class="pi pi-plus text-gray-600"></i>
                     </div>
-                    <p class="text-[10px] text-gray-500 text-center">Disponible tras crear el artículo</p>
+                    <p class="text-[10px] text-gray-500 text-center px-4">Subir foto real tras la creación</p>
                 </div>
             </div>
 
             <!-- Plano Esquemático -->
-            <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-lg flex flex-col gap-4 opacity-75">
+            <div class="bg-[#18181b] border border-white/5 rounded-xl p-6 shadow-lg flex flex-col gap-4" [class.opacity-75]="!selectedTipoData?.fotoMedida">
                 <div class="flex items-center gap-3">
                     <div class="w-8 h-8 rounded-full bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
                         <i class="pi pi-map text-sm"></i>
                     </div>
                     <h3 class="text-xs font-black text-gray-400 tracking-widest uppercase">Plano Esquemático</h3>
                 </div>
-                <div
-                    class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-xl h-40 flex flex-col items-center justify-center gap-2 group cursor-not-allowed">
-                    <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-1">
-                        <i class="pi pi-lock text-gray-600"></i>
+                
+                @if (selectedTipoData?.fotoMedida) {
+                    <div class="surface-section border border-surface-border rounded-xl h-40 flex items-center justify-center relative p-2">
+                        <img [src]="selectedTipoData?.fotoMedida" class="max-h-full max-w-full object-contain" />
+                        <div class="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded uppercase tracking-wider">
+                            Heredado de {{ selectedTipoData?.nombre }}
+                        </div>
                     </div>
-                    <p class="text-[10px] text-gray-500 text-center">Disponible tras crear el artículo</p>
-                </div>
+                } @else {
+                    <div class="bg-[#0c0c0e] border-2 border-dashed border-white/5 rounded-xl h-40 flex flex-col items-center justify-center gap-2">
+                        <div class="w-10 h-10 rounded-xl bg-white/5 flex items-center justify-center mb-1">
+                            <i class="pi pi-image text-gray-600"></i>
+                        </div>
+                        <p class="text-[10px] text-gray-500 text-center px-4">Seleccione un tipo con plano para heredar, o súbalo tras crear</p>
+                    </div>
+                }
             </div>
         </div>
     </form>

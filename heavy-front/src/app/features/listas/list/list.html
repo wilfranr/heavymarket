@@ -66,15 +66,15 @@
                     </span>
                 </td>
                 <td>
-                    @if (lista.foto) {
+                    @if (lista.foto || lista.fotoMedida) {
                     <div
-                        class="inline-block align-middle w-28 h-28 rounded shadow-sm overflow-hidden p-1 box-border"
+                        class="inline-block align-middle w-20 h-20 rounded shadow-sm overflow-hidden p-1 box-border"
                         style="border: 1px solid var(--p-surface-border)">
-                        <img [src]="lista.foto" [alt]="lista.nombre" appFallbackImage
+                        <img [src]="lista.foto || lista.fotoMedida" [alt]="lista.nombre" appFallbackImage
                             class="block h-full w-full min-h-0 min-w-0 object-contain" />
                     </div>
                     } @else {
-                    <span class="text-surface-400">-</span>
+                    <span class="text-surface-400 text-xs italic">Sin imagen</span>
                     }
                 </td>
                 <td>

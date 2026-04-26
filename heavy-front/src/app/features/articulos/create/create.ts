@@ -56,6 +56,9 @@ export class CreateComponent implements OnInit {
     showReferenciaModal = false;
     currentReferenciaArrayIndex: number | null = null;
 
+    // Tipo seleccionado para previsualización
+    selectedTipoData: Lista | null = null;
+
     // Variables para el conversor de peso
     showWeightConverter = false;
     pesoOrigen: number | null = null;
@@ -136,6 +139,7 @@ export class CreateComponent implements OnInit {
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
         this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
     }
 
@@ -188,6 +192,21 @@ export class CreateComponent implements OnInit {
             this.cargarTipos(search);
         } else if (!search) {
             this.cargarTipos();
+        }
+    }
+
+    /**
+     * Maneja el cambio de selección en el dropdown
+     */
+    onTipoChange(event: any): void {
+        const nombre = event.value;
+        if (nombre) {
+            const found = this.tipos.find(t => t.nombre === nombre);
+            if (found) {
+                this.selectedTipoData = found;
+            }
+        } else {
+            this.selectedTipoData = null;
         }
     }
 

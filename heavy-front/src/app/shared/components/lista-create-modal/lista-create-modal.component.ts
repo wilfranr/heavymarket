@@ -116,6 +116,11 @@ export class ListaCreateModalComponent implements OnInit, OnChanges {
 
         Object.keys(formValue).forEach(key => {
             const value = formValue[key];
+            
+            // Lógica para no enviar fotos cruzadas
+            if (formValue.tipo === 'Piezas Estandar' && key === 'foto') return;
+            if (formValue.tipo !== 'Piezas Estandar' && key === 'fotoMedida') return;
+
             if (value !== null && value !== undefined && value !== '') {
                 formData.append(key, value);
             }

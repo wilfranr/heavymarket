@@ -28,8 +28,18 @@ class UpdateListaRequest extends FormRequest
      */
     public function rules(): array
     {
-        /** @var Lista $lista */
+        /** @var Lista|null $lista */
         $lista = $this->route('lista');
+        
+        // Fallback en caso de que el binding no sea un objeto
+        if (!$lista instanceof \App\Models\Lista) {
+            $lista = \App\Models\Lista::find($lista);
+        }
+
+        if (!$lista) {
+            return []; // O manejar error de no encontrado
+        }
+
         $listaId = $lista->id;
         $tipoForUnique = $this->input('tipo', $lista->tipo);
 

@@ -66,6 +66,9 @@ export class ArticuloCreateModalComponent implements OnInit {
     showReferenciaModal = false;
     currentReferenciaArrayIndex: number | null = null;
 
+    // Tipo seleccionado para previsualización
+    selectedTipoData: Lista | null = null;
+
     // Conversor de peso
     showWeightConverter = false;
     pesoOrigen: number | null = null;
@@ -117,6 +120,19 @@ export class ArticuloCreateModalComponent implements OnInit {
         }
     }
 
+    onTipoChange(event: any): void {
+        const nombre = event.value;
+        if (nombre) {
+            // Buscamos el objeto completo en la lista actual para la previsualización
+            const found = this.tipos.find(t => t.nombre === nombre);
+            if (found) {
+                this.selectedTipoData = found;
+            }
+        } else {
+            this.selectedTipoData = null;
+        }
+    }
+
     abrirCrearTipo(): void {
         this.showTipoModal = true;
     }
@@ -124,6 +140,7 @@ export class ArticuloCreateModalComponent implements OnInit {
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos();
         this.articuloForm.patchValue({ definicion: nuevoTipo.nombre });
+        this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
     }
 

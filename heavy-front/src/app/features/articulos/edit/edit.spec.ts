@@ -22,8 +22,9 @@ describe('ArticuloEditComponent', () => {
         id: 1,
         definicion: 'Test',
         descripcionEspecifica: 'Test Desc',
+        peso: 10,
         referencias: [{ id: 10, referencia: 'REF1' }]
-    };
+    } as any;
 
     beforeEach(async () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
@@ -89,5 +90,18 @@ describe('ArticuloEditComponent', () => {
     it('should navigate back on cancel', () => {
         component.cancelar();
         expect(router.navigate).toHaveBeenCalledWith(['/app/articulos', 1]);
+    });
+
+    it('should update articuloActual.foto_medida when tipo changes (inheritance)', () => {
+        // Mock data
+        const mockTipo = { nombre: 'Abrazadera', fotoMedida: 'inherited.jpg' };
+        component.tipos = [mockTipo as any];
+        component.articuloActual = { ...mockArticulo } as any;
+
+        // Trigger change
+        component.onTipoChange({ value: 'Abrazadera' });
+
+        expect(component.articuloActual?.foto_medida).toBe('inherited.jpg');
+        expect(component.planoFile).toBeNull();
     });
 });

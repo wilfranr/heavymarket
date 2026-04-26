@@ -51,20 +51,23 @@
                     }
                 </div>
 
-                <!-- Foto -->
-                <div class="field">
-                    <app-image-upload label="Foto" icon="pi pi-camera" [currentImage]="listaForm.get('foto')?.value"
-                        (fileSelected)="onFotoSelected($event)">
-                    </app-image-upload>
-                </div>
-
-                <!-- Foto Medida -->
-                <div class="field">
-                    <app-image-upload label="Foto Medida" icon="pi pi-image"
-                        [currentImage]="listaForm.get('fotoMedida')?.value"
-                        (fileSelected)="onFotoMedidaSelected($event)">
-                    </app-image-upload>
-                </div>
+                <!-- Multimedia: Foto o Plano según tipo -->
+                @if (listaForm.get('tipo')?.value === 'Piezas Estandar') {
+                    <!-- Para Piezas Estándar, solo mostramos Plano Esquemático -->
+                    <div class="field md:col-span-2">
+                        <app-image-upload label="Plano Esquemático" icon="pi pi-map"
+                            [currentImage]="listaForm.get('fotoMedida')?.value"
+                            (fileSelected)="onFotoMedidaSelected($event)">
+                        </app-image-upload>
+                    </div>
+                } @else {
+                    <!-- Para el resto, mostramos Foto -->
+                    <div class="field md:col-span-2">
+                        <app-image-upload label="Foto" icon="pi pi-camera" [currentImage]="listaForm.get('foto')?.value"
+                            (fileSelected)="onFotoSelected($event)">
+                        </app-image-upload>
+                    </div>
+                }
             </div>
 
             <p-divider />

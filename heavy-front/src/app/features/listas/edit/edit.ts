@@ -121,8 +121,10 @@ export class EditComponent implements OnInit {
         if (formValue.definicion) formData.append('definicion', formValue.definicion);
         if (formValue.sistema_id) formData.append('sistema_id', formValue.sistema_id);
 
-        if (this.fotoFile) formData.append('foto', this.fotoFile);
-        if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
+        const isPiezaEstandar = formValue.tipo === 'Piezas Estandar';
+
+        if (!isPiezaEstandar && this.fotoFile) formData.append('foto', this.fotoFile);
+        if (isPiezaEstandar && this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
 
         this.store.dispatch(updateLista({ id: this.listaId, data: formData }));
 
