@@ -1643,21 +1643,25 @@ export class AnalysisComponent implements OnInit {
                     if (articuloId) break;
                 }
                 
-                // Si tenemos articulo_id, buscar refs cruzadas
+                // Si tenemos articulo_id, buscar refs cruzadas y datos del artículo
                 let refsCruzadas: any[] = [];
+                let fotoArticulo: string | null = null;
                 if (articuloId) {
                     for (const tipoKey in this.referenciasPorTipo) {
                         const refsDelTipo = this.referenciasPorTipo[tipoKey] || [];
                         const encontradas = refsDelTipo.filter((r: any) => r.articulo_id === articuloId);
                         refsCruzadas.push(...encontradas);
                     }
+                    // Buscar foto en cualquier ref cruzada
+                    const primeraRef = refsCruzadas[0];
+                    fotoArticulo = primeraRef?.articulo?.foto || primeraRef?.foto || null;
                 }
                 
                 this.popoverData = {
                     title: 'Tipo de Artículo',
                     subtitle: this.getTipoNombre(tipoId),
                     description: 'Tipo de artículo comercial.',
-                    image: null,
+                    image: fotoArticulo,
                     type: 'articulo',
                     peso: 0.45,
                     referencias_cruzadas: refsCruzadas.slice(0, 20)
