@@ -120,4 +120,10 @@ export class PedidoService extends ApiService {
     devolverAAnalista(id: number, comentario: string): Observable<ApiResponse<Pedido>> {
         return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/devolver-analista`, { comentario });
     }
+    /**
+     * Guardar datos de costeo de forma masiva
+     */
+    guardarCosteo(id: number, data: any): Observable<ApiResponse<any>> {
+        return this.post<ApiResponse<any>>(`${this.endpoint}/${id}/guardar-costeo`, data);
+    }
 }

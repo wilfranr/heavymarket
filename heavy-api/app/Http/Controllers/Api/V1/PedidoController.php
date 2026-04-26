@@ -769,4 +769,85 @@ class PedidoController extends Controller
             return response()->json(['message' => $e->getMessage()], 422);
         }
     }
+
+    /**
+     * Guardar datos de costeo de forma masiva
+     */
+    public function guardarCosteo(Request $request, Pedido $pedido): JsonResponse
+    {
+        $this->authorize('update', $pedido);
+
+        $validated = $request->validate([
+            'referencias' => ['required', 'array'],
+            'referencias.*.id' => ['required', 'exists:pedido_referencias,id'],
+            'referencias.*.proveedores' => ['required', 'array'],
+            'referencias.*.proveedores.*.id' => ['nullable', 'exists:pedido_referencia_proveedores,id'],
+            'referencias.*.proveedores.*.tercero_id' => ['required', 'exists:terceros,id'],
+            'referencias.*.proveedores.*.marca_id' => ['nullable', 'exists:listas,id'],
+            'referencias.*.proveedores.*.dias_entrega' => ['required', 'integer', 'min:0'],
+            'referencias.*.proveedores.*.costo_unidad' => ['required', 'numeric', 'min:0'],
+            'referencias.*.proveedores.*.utilidad' => ['required', 'numeric', 'min:0'],
+            'referencias.*.proveedores.*.cantidad' => ['required', 'integer', 'min:1'],
+            'referencias.*.proveedores.*.seleccionado' => ['required', 'boolean'],
+        ]);
+
+        try {
+            \Illuminate\Support\Facades\DB::transaction(function () use ($pedido, $validated) {
+                foreach ($validated['referencias'] as $refData) {
+                    $pedidoReferencia = $pedido->referencias()->findOrFail($refData['id']);
+
+                    // Obtener IDs de proveedores enviados para borrar los que ya no están
+                    $incomingProvIds = collect($refData['proveedores'])
+                        ->filter(fn($p) => isset($p['id']) && $p['id'])
+                        ->pluck('id')
+                        ->toArray();
+
+                    $pedidoReferencia->proveedores()->whereNotIn('id', $incomingProvIds)->delete();
+
+                    foreach ($refData['proveedores'] as $provData) {
+                        $ubicacion = 'Nacional';
+                        $tercero = \App\Models\Tercero::with('country')->find($provData['tercero_id']);
+                        if ($tercero && ($tercero->country_id != 48 && ($tercero->country->iso2 ?? '') != 'CO')) {
+                            $ubicacion = 'Internacional';
+                        }
+
+                        $calcData = array_merge($provData, [
+                            'ubicacion' => $ubicacion, 
+                            'costo_unidad' => $provData['costo_unidad']
+                        ]);
+                        $valores = $this->pedidoService->calcularValores($calcData, $pedidoReferencia);
+                        
+                        $updateData = [
+                            'tercero_id' => $provData['tercero_id'],
+                            'marca_id' => $provData['marca_id'],
+                            'dias_entrega' => $provData['dias_entrega'],
+                            'costo_unidad' => $provData['costo_unidad'],
+                            'utilidad' => $provData['utilidad'],
+                            'cantidad' => $provData['cantidad'],
+                            'ubicacion' => $ubicacion,
+                            'valor_unidad' => $valores['valor_unidad'],
+                            'valor_total' => $valores['valor_total'],
+                            'estado' => $provData['seleccionado'] ? 1 : 0
+                        ];
+
+                        if (isset($provData['id']) && $provData['id']) {
+                            $pedidoReferencia->proveedores()->where('id', $provData['id'])->update($updateData);
+                        } else {
+                            $pedidoReferencia->proveedores()->create($updateData);
+                        }
+                    }
+                }
+            });
+
+            return response()->json([
+                'message' => 'Costeo guardado exitosamente',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al guardar el costeo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

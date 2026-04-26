@@ -8,6 +8,8 @@ use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
 use App\Models\Pedido;
 use App\Models\TRM;
+use App\Models\Empresa;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -134,5 +136,71 @@ class CotizacionService
         ]);
 
         return $cotizacion;
+    }
+
+    /**
+     * Generar PDF de la cotización
+     */
+    public function generarPDF(Cotizacion $cotizacion)
+    {
+        $cotizacion->load([
+            'pedido.tercero.ciudad',
+            'pedido.contacto',
+            'pedido.maquina',
+            'user',
+            'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo',
+            'referenciasProveedores.pedidoReferenciaProveedor.marca',
+        ]);
+
+        $empresa = Empresa::where('estado', true)->first();
+
+        $pdf = Pdf::loadView('pdf.cotizacion', [
+            'cotizacion' => $cotizacion,
+            'empresa' => $empresa,
+        ]);
+
+        return $pdf;
+    }
+
+    /**
+     * Finalizar el proceso de costeo y generar la cotización
+     *
+     * @param array $items Seleccionados (IDs de pedido_referencia_proveedor)
+     */
+    public function finalizarCosteo(Pedido $pedido, array $items, int $userId): Cotizacion
+    {
+        return DB::transaction(function () use ($pedido, $items, $userId) {
+            // 1. Crear la cotización
+            $cotizacion = Cotizacion::create([
+                'pedido_id' => $pedido->id,
+                'tercero_id' => $pedido->tercero_id,
+                'user_id' => $userId,
+                'estado' => 'Enviada', // O el estado inicial deseado
+                'fecha_emision' => now(),
+                'fecha_vencimiento' => now()->addDays(15),
+            ]);
+
+            // 2. Asociar los items seleccionados
+            $total = 0;
+            foreach ($items as $itemId) {
+                CotizacionReferenciaProveedor::create([
+                    'cotizacion_id' => $cotizacion->id,
+                    'pedido_referencia_proveedor_id' => $itemId,
+                ]);
+
+                // Sumar al total (asumiendo que el precio ya está en el proveedor)
+                $prov = \App\Models\PedidoReferenciaProveedor::find($itemId);
+                if ($prov) {
+                    $total += $prov->valor_total;
+                }
+            }
+
+            $cotizacion->update(['total' => $total]);
+
+            // 3. Actualizar estado del pedido
+            $pedido->update(['estado' => 'Cotizado']);
+
+            return $cotizacion;
+        });
     }
 }

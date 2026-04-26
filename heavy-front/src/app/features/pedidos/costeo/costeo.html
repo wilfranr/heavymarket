@@ -24,9 +24,9 @@
                     <i class="pi pi-save"></i>
                     <span>Guardar</span>
                 </button>
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()">
+                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()" [disabled]="submitting">
                     <i class="pi pi-check-circle"></i>
-                    <span>Finalizar</span>
+                    <span>Generar Cotización</span>
                 </button>
                 <button type="button" class="btn-pill bg-orange-500 hover:bg-orange-600 border-none text-white flex items-center gap-2" (click)="confirmarDevolucion()">
                     <i class="pi pi-arrow-left"></i>
@@ -311,6 +311,8 @@
     </div>
 </div>
 }
+
+<p-confirmDialog></p-confirmDialog>
 
 <!-- Diálogo de Devolución -->
 <p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '500px'}" header="Devolver al analista">

@@ -49,4 +49,19 @@ export class CotizacionService extends ApiService {
     deleteCotizacion(id: number): Observable<void> {
         return this.delete<void>(`${this.getBaseUrl()}/${id}`);
     }
+    /**
+     * Finalizar costeo y generar cotización
+     */
+    finalizarCosteo(data: { pedido_id: number; items: number[] }): Observable<{ data: Cotizacion; message: string }> {
+        return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/finalizar-costeo`, data);
+    }
+
+    /**
+     * Descargar PDF de la cotización
+     */
+    downloadPDF(id: number): Observable<Blob> {
+        return this.http.get(`${this.getBaseUrl()}/${id}/download-pdf`, {
+            responseType: 'blob'
+        });
+    }
 }

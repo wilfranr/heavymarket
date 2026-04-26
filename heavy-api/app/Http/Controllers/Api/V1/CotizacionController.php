@@ -180,4 +180,52 @@ class CotizacionController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Generar y descargar el PDF de la cotización
+     */
+    public function downloadPDF(Cotizacion $cotizacion)
+    {
+        try {
+            $pdf = $this->cotizacionService->generarPDF($cotizacion);
+            return $pdf->download("COT-{$cotizacion->id}.pdf");
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al generar el PDF',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Finalizar costeo y crear cotización
+     */
+    public function finalizarCosteo(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'pedido_id' => ['required', 'exists:pedidos,id'],
+            'items' => ['required', 'array'],
+            'items.*' => ['exists:pedido_referencia_proveedores,id'],
+        ]);
+
+        try {
+            $pedido = \App\Models\Pedido::findOrFail($validated['pedido_id']);
+            $cotizacion = $this->cotizacionService->finalizarCosteo(
+                $pedido,
+                $validated['items'],
+                $request->user()->id
+            );
+
+            return response()->json([
+                'data' => new CotizacionResource($cotizacion),
+                'message' => 'Cotización generada exitosamente',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al finalizar el costeo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }

@@ -138,6 +138,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
         Route::post('pedidos/{pedido}/devolver-vendedor', [PedidoController::class, 'devolverAVendedor'])->name('pedidos.devolver-vendedor');
         Route::post('pedidos/{pedido}/devolver-analista', [PedidoController::class, 'devolverAAnalista'])->name('pedidos.devolver-analista');
+        Route::post('pedidos/{pedido}/guardar-costeo', [PedidoController::class, 'guardarCosteo'])->name('pedidos.guardar-costeo');
         
         Route::apiResource('pedidos', PedidoController::class);
 
@@ -156,6 +157,8 @@ Route::prefix('v1')->group(function () {
         Route::put('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'updateArticulo'])->name('pedidos.articulos.update');
         Route::delete('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'deleteArticulo'])->name('pedidos.articulos.destroy');
         Route::apiResource('terceros', TerceroController::class);
+        Route::post('cotizaciones/finalizar-costeo', [CotizacionController::class, 'finalizarCosteo'])->name('cotizaciones.finalizar-costeo');
+        Route::get('cotizaciones/{cotizacion}/download-pdf', [CotizacionController::class, 'downloadPDF'])->name('cotizaciones.download-pdf');
         Route::apiResource('cotizaciones', CotizacionController::class);
         Route::apiResource('ordenes-compra', OrdenCompraController::class);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);

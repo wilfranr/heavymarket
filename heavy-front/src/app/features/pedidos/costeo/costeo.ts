@@ -32,6 +32,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
 import { Tercero } from '../../../core/models/tercero.model';
 import { TRMService } from '../../../core/services/trm.service';
 import { EmpresaService } from '../../../core/services/empresa.service';
+import { CotizacionService } from '../../../core/services/cotizacion.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
@@ -80,6 +81,7 @@ export class CosteoComponent implements OnInit {
     private readonly trmService = inject(TRMService);
     private readonly empresaService = inject(EmpresaService);
     private readonly listaService = inject(ListaService);
+    private readonly cotizacionService = inject(CotizacionService);
 
     readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
@@ -681,11 +683,99 @@ export class CosteoComponent implements OnInit {
     }
 
     guardarCosteo(): void {
-        this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Costeo guardado exitosamente.' });
+        const payload = {
+            referencias: this.referenciasFormArray.value.map((ref: any) => ({
+                id: ref.id,
+                proveedores: ref.proveedores.map((prov: any) => ({
+                    id: prov.id,
+                    tercero_id: prov.proveedor_id,
+                    marca_id: prov.marca_id,
+                    dias_entrega: parseInt(prov.entrega, 10) || 0,
+                    costo_unidad: prov.costo_usd || prov.costo_cop || 0,
+                    utilidad: prov.utilidad || 0,
+                    cantidad: prov.cantidad || 1,
+                    seleccionado: prov.seleccionado || false
+                }))
+            }))
+        };
+
+        this.submitting = true;
+        this.pedidoService.guardarCosteo(this.pedidoId(), payload).subscribe({
+            next: () => {
+                this.submitting = false;
+                this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Costeo guardado exitosamente.' });
+            },
+            error: (err: any) => {
+                this.submitting = false;
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo guardar el costeo' });
+            }
+        });
     }
     
     finalizarCosteo(): void {
-        this.messageService.add({ severity: 'info', summary: 'Finalizar', detail: 'Aquí se generaría la cotización con los seleccionados.' });
+        // 1. Verificar que haya al menos un item seleccionado
+        const selectedItems: number[] = [];
+        this.referenciasFormArray.value.forEach((ref: any) => {
+            ref.proveedores.forEach((prov: any) => {
+                if (prov.seleccionado && prov.id) {
+                    selectedItems.push(prov.id);
+                }
+            });
+        });
+
+        if (selectedItems.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Debe seleccionar al menos un proveedor (check) para generar la cotización.' });
+            return;
+        }
+
+        // 2. Confirmación
+        this.confirmationService.confirm({
+            message: `¿Está seguro de finalizar el costeo y generar la cotización? El estado del pedido cambiará a "Cotizado".`,
+            header: 'Confirmar Finalización',
+            icon: 'pi pi-exclamation-triangle',
+            accept: () => {
+                this.ejecutarFinalizacion(selectedItems);
+            }
+        });
+    }
+
+    private ejecutarFinalizacion(selectedItems: number[]): void {
+        this.submitting = true;
+        this.cotizacionService.finalizarCosteo({
+            pedido_id: this.pedidoId(),
+            items: selectedItems
+        }).subscribe({
+            next: (resp: any) => {
+                this.submitting = false;
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización generada correctamente.' });
+                
+                // Opción: Descargar PDF automáticamente o redirigir
+                if (resp.data && resp.data.id) {
+                    this.descargarPDF(resp.data.id);
+                    setTimeout(() => this.router.navigate(['/app/cotizaciones']), 2000);
+                }
+            },
+            error: (err: any) => {
+                this.submitting = false;
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo finalizar el costeo' });
+            }
+        });
+    }
+
+    private descargarPDF(cotizacionId: number): void {
+        this.cotizacionService.downloadPDF(cotizacionId).subscribe({
+            next: (blob: Blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `COT-${cotizacionId}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error PDF', detail: 'No se pudo descargar el archivo PDF.' });
+            }
+        });
     }
 
     volver(): void {
