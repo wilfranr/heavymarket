@@ -389,4 +389,69 @@ class PedidoTest extends TestCase
 
         $response->assertStatus(403);
     }
+
+    /**
+     * Vendedor ve pedidos de clientes (usuarios con rol Cliente).
+     */
+    public function test_vendedor_ve_pedidos_de_clientes(): void
+    {
+        $cliente = User::factory()->create();
+        $cliente->assignRole('Cliente');
+
+        $pedidoDelCliente = Pedido::factory()->create(['user_id' => $cliente->id]);
+        $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson('/v1/pedidos');
+
+        $response->assertStatus(200);
+        $data = $response->json('data');
+
+        $this->assertCount(2, $data);
+        $ids = array_column($data, 'id');
+        $this->assertContains($pedidoDelCliente->id, $ids);
+        $this->assertContains($pedidoDelVendedor->id, $ids);
+    }
+
+    /**
+     * Vendedor no ve pedidos de otros vendedores.
+     */
+    public function test_vendedor_no_ve_pedidos_de_otros_vendedores(): void
+    {
+        $otroVendedor = User::factory()->create();
+        $otroVendedor->assignRole('Vendedor');
+
+        $pedidoDelOtro = Pedido::factory()->create(['user_id' => $otroVendedor->id]);
+        $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->getJson('/v1/pedidos');
+
+        $response->assertStatus(200);
+        $data = $response->json('data');
+
+        $this->assertCount(1, $data);
+        $this->assertSame($pedidoDelVendedor->id, $data[0]['id']);
+    }
+
+    /**
+     * Auto-asignar pedido de cliente al editar.
+     */
+    public function test_auto_asignar_al_editar_pedido_de_cliente(): void
+    {
+        $cliente = User::factory()->create();
+        $cliente->assignRole('Cliente');
+
+        $pedido = Pedido::factory()->create(['user_id' => $cliente->id]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->putJson("/v1/pedidos/{$pedido->id}", [
+                'comentario' => 'Comentario actualizado por vendedor',
+            ]);
+
+        $response->assertStatus(200);
+
+        $pedido->refresh();
+        $this->assertSame($this->user->id, $pedido->user_id);
+    }
 }
