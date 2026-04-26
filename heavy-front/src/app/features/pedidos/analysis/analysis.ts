@@ -1609,13 +1609,13 @@ export class AnalysisComponent implements OnInit {
                 }
                 break;
             case 'articulo':
-                const tipo = this.tiposArticuloFull?.find(t => t.id === id);
+                const tipo = this.tiposArticuloFull?.find(t => t.value === id);
                 if (tipo) {
                     this.popoverData = {
                         title: 'Tipo de Artículo',
-                        subtitle: tipo.nombre,
-                        description: tipo.descripcion || 'Tipo de artículo comercial.',
-                        image: this.formatImageUrl(tipo.foto),
+                        subtitle: tipo.label,
+                        description: 'Tipo de artículo comercial.',
+                        image: null,
                         type: 'articulo'
                     };
                     popover.toggle(event);
