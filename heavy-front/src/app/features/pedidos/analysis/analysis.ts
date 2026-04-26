@@ -727,6 +727,15 @@ export class AnalysisComponent implements OnInit {
             definicion: selectedTipo?.label || 'Ítem definido'
         });
 
+        // IMPORTANTE: Sincronizar el sistema y tipo con todas las partes técnicas de este requerimiento
+        // Esto evita que al guardar se usen los valores antiguos que estaban en las filas
+        const partes = itemControl.get('partes') as FormArray;
+        partes.controls.forEach(parte => {
+            parte.patchValue({
+                categoria: values.lista_id
+            });
+        });
+
         if (values.lista_id != null && selectedTipo?.label) {
             this.nombresTipoListaPorId[values.lista_id] = selectedTipo.label;
         }
@@ -1235,8 +1244,10 @@ export class AnalysisComponent implements OnInit {
             if (r.lista_id && r.lista?.nombre) {
                 this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
             }
-            // Clave única por requerimiento: sistema + tipo + descripcion (opcional para diferenciar ítems manuales similares)
-            const key = `${r.sistema_id}_${r.lista_id}_${r.definicion}`;
+            // Clave única por requerimiento: sistema + tipo + descripcion + cantidad + id
+            // Se incluye el r.id para asegurar que cada línea del pedido sea un card independiente si ya existe en DB.
+            // Si el id es nulo (items nuevos), se agrupan por metadata para permitir añadir alternativas.
+            const key = `${r.sistema_id}_${r.lista_id}_${r.definicion}_${r.cantidad}_${r.id || 'new'}`;
             
             if (!grupos[key]) {
                 grupos[key] = {
@@ -1378,7 +1389,7 @@ export class AnalysisComponent implements OnInit {
                     id: parteValue.id || null, 
                     referencia_id: parteValue.referencia_id || null,
                     sistema_id: itemValue.sistema_id,
-                    lista_id: parteValue.categoria || itemValue.lista_id, // Priorizar categoría comercial de la fila
+                    lista_id: itemValue.lista_id, // Usar SIEMPRE el del requerimiento/tarjeta
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
                     comentario: itemValue.comentario,
@@ -1525,7 +1536,8 @@ export class AnalysisComponent implements OnInit {
             return;
         }
 
-        this.pedidoService.devolverAVendedor(this.pedidoId(), this.devolucionComentario).subscribe({
+        const payload = this.buildPayload();
+        this.pedidoService.devolverAVendedor(this.pedidoId(), this.devolucionComentario, payload).subscribe({
             next: () => {
                 this.messageService.add({
                     severity: 'success',
@@ -1592,6 +1604,19 @@ export class AnalysisComponent implements OnInit {
                         description: sistema.descripcion || 'Sistema mecánico o funcional asociado a este ítem de la máquina.',
                         image: this.formatImageUrl(sistema.imagen),
                         type: 'sistema'
+                    };
+                    popover.toggle(event);
+                }
+                break;
+            case 'articulo':
+                const tipo = this.tiposArticuloFull?.find(t => t.id === id);
+                if (tipo) {
+                    this.popoverData = {
+                        title: 'Tipo de Artículo',
+                        subtitle: tipo.nombre,
+                        description: tipo.descripcion || 'Tipo de artículo comercial.',
+                        image: this.formatImageUrl(tipo.foto),
+                        type: 'articulo'
                     };
                     popover.toggle(event);
                 }

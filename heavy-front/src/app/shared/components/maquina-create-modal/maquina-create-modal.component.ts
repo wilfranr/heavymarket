@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
 import { take } from 'rxjs/operators';
+import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -94,8 +95,8 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
                 next: (res) => {
                     const m = res.data;
                     this.createMaquinaForm.patchValue({
-                        tipo: m.tipo,
-                        fabricante_id: m.fabricante_id,
+                        tipo: m.tipo ? Number(m.tipo) : null,
+                        fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : null,
                         modelo: m.modelo,
                         serie: m.serie ?? '',
                         arreglo: m.arreglo ?? '',
@@ -135,7 +136,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     }
 
     private loadTiposMaquina(): void {
-        this.listaService.getAll({ tipo: 'Tipo de Máquina' }).subscribe({
+        this.listaService.getAll({ tipo: 'Tipo de Máquina', per_page: 500 }).subscribe({
             next: (response) => {
                 this.tiposMaquina = response.data.map(t => ({
                     label: t.nombre,

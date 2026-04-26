@@ -310,37 +310,38 @@ export class EditComponent implements OnInit {
             return;
         }
 
+        if (this.pedidoForm.invalid) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Formulario incompleto',
+                detail: 'Por favor complete todos los campos requeridos antes de enviar a análisis'
+            });
+            Object.keys(this.pedidoForm.controls).forEach((key) => {
+                this.pedidoForm.get(key)?.markAsTouched();
+            });
+            return;
+        }
+
+        const tieneReferencias = this.referenciasFormArray.length > 0;
+        if (!tieneReferencias) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Referencias requeridas',
+                detail: 'Debe agregar al menos una referencia para enviar a análisis'
+            });
+            return;
+        }
+
         this.confirmationService.confirm({
-            message: '¿Está seguro de enviar este pedido a análisis? Los analistas serán notificados.',
+            message: '¿Está seguro de enviar este pedido a análisis? Se guardarán los cambios actuales y los analistas serán notificados.',
             header: 'Enviar a Análisis',
             icon: 'pi pi-search',
             acceptLabel: 'Sí',
             rejectLabel: 'No',
             rejectButtonProps: { severity: 'secondary' },
             accept: () => {
-                this.pedidoApi.enviarAAnalisis(this.pedidoId()).subscribe({
-                    next: (res) => {
-                        this.estadoActual = 'En_Analisis';
-                        this.pedidoForm.patchValue({ estado: 'En_Analisis' });
-                        this.store.dispatch(loadPedido({ id: this.pedidoId() }));
-                        this.messageService.add({
-                            severity: 'success',
-                            summary: `Enviado a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}`,
-                            detail: res.message ?? `El pedido pasó a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis}.`
-                        });
-                        setTimeout(() => {
-                            this.router.navigate(['/app/pedidos', this.pedidoId()]);
-                        }, 1500);
-                    },
-                    error: (err) => {
-                        const msg = err.error?.message ?? 'No se pudo enviar el pedido a análisis';
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: msg
-                        });
-                    }
-                });
+                this.pedidoForm.patchValue({ estado: 'En_Analisis' });
+                this.onSubmit();
             }
         });
     }

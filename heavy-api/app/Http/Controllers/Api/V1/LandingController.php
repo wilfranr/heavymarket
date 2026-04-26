@@ -339,12 +339,13 @@ class LandingController extends Controller
             \Illuminate\Support\Facades\Log::info('Procesando items cotización:', ['count' => count($itemsData), 'data' => $itemsData]);
 
             foreach ($itemsData as $index => $itemData) {
-                $sistema = \App\Models\Sistema::where('nombre', $itemData['system'])->first()
+                $systemName = trim($itemData['system'] ?? '');
+                $sistema = \App\Models\Sistema::whereRaw('LOWER(nombre) = ?', [mb_strtolower($systemName)])->first()
                     ?? \App\Models\Sistema::where('nombre', 'Por Defecto')->first();
                 $sistemaId = $sistema?->id;
 
                 // Tipo de artículo = Lista (tipo "Tipo de Artículo") relacionada con este sistema
-                $description = $itemData['description'] ?? '';
+                $description = trim($itemData['description'] ?? '');
                 $lista = null;
                 if ($sistemaId && $description !== '') {
                     $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
@@ -356,7 +357,7 @@ class LandingController extends Controller
                 // Fallback a "Por Defecto" si no se encuentra el tipo especificado
                 if (! $lista) {
                     $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
-                        ->where('nombre', 'Por Defecto')
+                        ->whereRaw('LOWER(nombre) = ?', ['por defecto'])
                         ->first();
                 }
                 $listaId = $lista?->id;

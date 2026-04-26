@@ -631,6 +631,13 @@ class PedidoController extends Controller
             ];
 
             $pedido->comentario = $comentariosExistentes;
+            
+            // Sincronizar referencias si se proporcionan (guardado automático del análisis #101)
+            if ($request->has('referencias')) {
+                $pedidoService = app(\App\Services\PedidoService::class);
+                $pedidoService->syncReferencias($pedido, $request->input('referencias'));
+            }
+
             $pedido->transitarA(PedidoEstado::Nuevo);
             $pedido->save();
 

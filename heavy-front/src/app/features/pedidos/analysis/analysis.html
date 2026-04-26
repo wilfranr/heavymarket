@@ -304,16 +304,11 @@
                                   (click)="showInfo($event, 'sistema', item.get('sistema_id')?.value, op)">
                                 {{ getSistemaNombre(item.get('sistema_id')?.value) }}
                             </span>
-                            <span class="text-primary-400">
+                            <span class="text-primary-400 cursor-help hover:text-white transition-colors"
+                                  (click)="showInfo($event, 'articulo', item.get('lista_id')?.value, op)">
                                 {{ getTipoNombre(item.get('lista_id')?.value) }}
                             </span>
                             <span class="text-primary-400">Cant. {{ item.get('cantidad')?.value }}</span>
-                            @if (isPreparado) {
-                                <span class="text-primary-400 cursor-help hover:text-white transition-colors"
-                                      (click)="showInfo($event, 'referencia', item.get('referencia_id')?.value, op, $index)">
-                                    {{ item.get('definicion')?.value }}
-                                </span>
-                            }
                         </div>
 
                         <!-- Icons (#68: contadores visibles) -->
