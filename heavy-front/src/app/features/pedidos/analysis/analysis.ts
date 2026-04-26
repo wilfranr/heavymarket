@@ -1646,6 +1646,7 @@ export class AnalysisComponent implements OnInit {
                 // Si tenemos articulo_id, buscar refs cruzadas e imagen del artículo
                 let refsCruzadas: any[] = [];
                 let fotoArticulo: string | null = null;
+                let pesoArticulo: number | null = null;
                 if (articuloId) {
                     // Buscar refs cruzadas
                     for (const tipoKey in this.referenciasPorTipo) {
@@ -1653,10 +1654,11 @@ export class AnalysisComponent implements OnInit {
                         const encontradas = refsDelTipo.filter((r: any) => r.articulo_id === articuloId);
                         refsCruzadas.push(...encontradas);
                     }
-                    // Buscar foto del artículo en las refs (viene incluido cuando se carga la referencia)
-                    const refConArticulo = refsCruzadas.find((r: any) => r.imagen || r.fotoDescriptiva);
-                    if (refConArticulo) {
-                        fotoArticulo = refConArticulo.fotoDescriptiva || refConArticulo.imagen || null;
+                    // Buscar foto y peso del artículo en las refs (viene incluido cuando se carga la referencia)
+                    const refConInfo = refsCruzadas.find((r: any) => r.articulo_imagen || r.articulo_peso);
+                    if (refConInfo) {
+                        fotoArticulo = refConInfo.articulo_imagen || null;
+                        pesoArticulo = refConInfo.articulo_peso || null;
                         if (fotoArticulo) {
                             fotoArticulo = this.formatImageUrl(fotoArticulo);
                         }
@@ -1666,20 +1668,10 @@ export class AnalysisComponent implements OnInit {
                 this.popoverData = {
                     title: 'Tipo de Artículo',
                     subtitle: this.getTipoNombre(tipoId),
-                    description: 'Tipo de artículo comercial.',
+                    description: 'Tipo de artículo comercial. refs cruzadas: ' + refsCruzadas.length,
                     image: fotoArticulo,
                     type: 'articulo',
-                    peso: 0.45,
-                    referencias_cruzadas: refsCruzadas.slice(0, 20)
-                };
-                
-                this.popoverData = {
-                    title: 'Tipo de Artículo',
-                    subtitle: this.getTipoNombre(tipoId),
-                    description: 'Tipo de artículo comercial. refs cruzadas: ' + refsCruzadas.length,
-                    image: null,
-                    type: 'articulo',
-                    peso: 0.45,
+                    peso: pesoArticulo || 0,
                     referencias_cruzadas: refsCruzadas.slice(0, 20)
                 };
                 popover.toggle(event);
