@@ -206,6 +206,7 @@
 - Carga automática de proveedores coincidentes al abrir el costeo
 - **Permisos CRUD Analista**: Habilitado CRUD completo para Artículos, Máquinas, Sistemas, Listas y Referencias.
 - 15 archivos nuevos/modificados en esta fase
+- **Paginación Sistemas**: Corregido error en Issue #105 que impedía navegar entre páginas en el módulo de sistemas.
 
 ---
 

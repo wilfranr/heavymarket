@@ -6,7 +6,7 @@ import { Sistema, CreateSistemaDto, UpdateSistemaDto } from '../../../core/model
  */
 
 // Cargar sistemas
-export const loadSistemas = createAction('[Sistemas] Load Sistemas', props<{ search?: string; page?: number; per_page?: number }>());
+export const loadSistemas = createAction('[Sistemas] Load Sistemas', props<{ search?: string; page?: number; per_page?: number; sort_by?: string; sort_order?: 'asc' | 'desc' }>());
 
 export const loadSistemasSuccess = createAction('[Sistemas] Load Sistemas Success', props<{ sistemas: Sistema[]; total: number; currentPage: number; lastPage: number }>());
 

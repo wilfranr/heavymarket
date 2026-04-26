@@ -47,6 +47,8 @@ export class ListComponent implements OnInit, OnDestroy {
     rowsPerPage = 20;
     first = 0;
     searchTerm = '';
+    sortField = 'nombre';
+    sortOrder: 'asc' | 'desc' = 'asc';
     
     // Búsqueda reactiva
     private searchSubject = new Subject<string>();
@@ -85,7 +87,9 @@ export class ListComponent implements OnInit, OnDestroy {
             loadSistemas({
                 page: this.currentPage,
                 per_page: this.rowsPerPage,
-                search: this.searchTerm || undefined
+                search: this.searchTerm || undefined,
+                sort_by: this.sortField,
+                sort_order: this.sortOrder
             })
         );
     }
@@ -103,8 +107,8 @@ export class ListComponent implements OnInit, OnDestroy {
      */
     onPageChange(event: any): void {
         this.first = event.first;
-        this.currentPage = event.page + 1;
         this.rowsPerPage = event.rows;
+        this.currentPage = Math.floor(event.first / event.rows) + 1;
         this.cargarSistemas();
     }
 
@@ -112,6 +116,8 @@ export class ListComponent implements OnInit, OnDestroy {
      * Maneja el ordenamiento
      */
     onSort(event: any): void {
+        this.sortField = event.field;
+        this.sortOrder = event.order === 1 ? 'asc' : 'desc';
         this.cargarSistemas();
     }
 

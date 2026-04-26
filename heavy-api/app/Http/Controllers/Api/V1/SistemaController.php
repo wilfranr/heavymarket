@@ -50,10 +50,11 @@ class SistemaController extends Controller
 
         // Paginación
         $perPage = (int) $request->input('per_page', 15);
-        $sistemas = $query->paginate($perPage);
+        $page = (int) $request->input('page', 1);
+        $sistemas = $query->paginate($perPage, ['*'], 'page', $page);
 
         return response()->json([
-            'data' => SistemaResource::collection($sistemas),
+            'data' => SistemaResource::collection($sistemas->items()),
             'meta' => [
                 'current_page' => $sistemas->currentPage(),
                 'last_page' => $sistemas->lastPage(),

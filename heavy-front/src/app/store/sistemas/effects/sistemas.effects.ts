@@ -21,8 +21,8 @@ export class SistemasEffects {
     loadSistemas$ = createEffect(() =>
         this.actions$.pipe(
             ofType(SistemasActions.loadSistemas),
-            switchMap(({ search, page, per_page }) =>
-                this.sistemaService.getAll({ search, page, per_page }).pipe(
+            switchMap(({ search, page, per_page, sort_by, sort_order }) =>
+                this.sistemaService.getAll({ search, page, per_page, sort_by, sort_order }).pipe(
                     map((response) => {
                         return SistemasActions.loadSistemasSuccess({
                             sistemas: response.data,
