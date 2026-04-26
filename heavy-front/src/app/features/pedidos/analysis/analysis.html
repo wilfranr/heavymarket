@@ -809,8 +809,8 @@
                             <tbody>
                                 @for (ref of popoverData.referencias_cruzadas; track $index) {
                                     <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                                        <td class="p-2 font-bold text-blue-600 dark:text-blue-400">{{ ref.referencia }}</td>
-                                        <td class="p-2 text-gray-500 dark:text-gray-400">{{ ref.marca?.nombre || 'N/A' }}</td>
+                                        <td class="p-2 font-bold text-blue-600 dark:text-blue-400">{{ ref.label || ref.referencia }}</td>
+                                        <td class="p-2 text-gray-500 dark:text-gray-400">{{ ref.marca?.nombre || (ref.marca_nombre || 'N/A') }}</td>
                                     </tr>
                                 }
                             </tbody>
