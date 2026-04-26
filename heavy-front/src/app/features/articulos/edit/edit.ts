@@ -182,14 +182,22 @@ export class EditComponent implements OnInit {
         const nombre = event.value;
         if (nombre && this.articuloActual) {
             const found = this.tipos.find(t => t.nombre === nombre);
-            if (found && found.fotoMedida) {
-                // Actualizar la previsualización
-                this.articuloActual = {
-                    ...this.articuloActual,
-                    foto_medida: found.fotoMedida
-                };
-                // Limpiar cualquier selección manual que haya hecho el usuario en el plano
-                this.planoFile = null;
+            if (found) {
+                // Pre-diligenciar descripción específica si está vacía
+                const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+                if (!currentDesc && found.definicion) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                }
+
+                if (found.fotoMedida) {
+                    // Actualizar la previsualización
+                    this.articuloActual = {
+                        ...this.articuloActual,
+                        foto_medida: found.fotoMedida
+                    };
+                    // Limpiar cualquier selección manual que haya hecho el usuario en el plano
+                    this.planoFile = null;
+                }
             }
         }
     }
@@ -199,7 +207,16 @@ export class EditComponent implements OnInit {
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
-        this.articuloForm.patchValue({ definicion: nuevoTipo.nombre }); // Seleccionarlo
+        
+        const updates: any = { definicion: nuevoTipo.nombre };
+        
+        // Pre-diligenciar descripción específica si está vacía
+        const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
+        if (!currentDesc && nuevoTipo.definicion) {
+            updates.descripcionEspecifica = nuevoTipo.definicion;
+        }
+
+        this.articuloForm.patchValue(updates); // Seleccionarlo
         
         if (nuevoTipo.fotoMedida && this.articuloActual) {
             this.articuloActual = {
