@@ -2,7 +2,7 @@ import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, Simp
 import { take } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
 import { ButtonModule } from 'primeng/button';
 import { ProgressSpinnerModule } from 'primeng/progressspinner';
@@ -11,10 +11,15 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { FileUploadModule } from 'primeng/fileupload';
+import { DividerModule } from 'primeng/divider';
+import { TextareaModule } from 'primeng/textarea';
+import { PopoverModule } from 'primeng/popover';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { ListaService } from '../../../core/services/lista.service';
+import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
 @Component({
     selector: 'app-maquina-create-modal',
@@ -29,6 +34,10 @@ import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-mo
         SelectModule,
         ToastModule,
         FileUploadModule,
+        DividerModule,
+        TextareaModule,
+        PopoverModule,
+        TooltipModule,
         ListaCreateModalComponent
     ],
     templateUrl: './maquina-create-modal.component.html',
@@ -39,6 +48,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
     private readonly listaService = inject(ListaService);
+    private readonly sistemaService = inject(SistemaService);
     private readonly messageService = inject(MessageService);
 
     @Input() visible: boolean = false;
@@ -60,6 +70,8 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     // Listas
     tiposMaquina: any[] = [];
     fabricantes: any[] = [];
+    sistemas: any[] = [];
+    marcasYFabricantes: any[] = [];
 
     // Modales secundarios
     showCreateTipoModal = false;
@@ -68,6 +80,8 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
         this.initForm();
         this.loadTiposMaquina();
         this.loadFabricantes();
+        this.loadSistemas();
+        this.loadMarcasYFabricantes();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -92,17 +106,26 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
             .getById(this.maquinaId)
             .pipe(take(1))
             .subscribe({
-                next: (res) => {
+                next: (res: any) => {
                     const m = res.data;
                     this.createMaquinaForm.patchValue({
-                        tipo: m.tipo ? Number(m.tipo) : null,
-                        fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : null,
+                        tipo: m.tipo_id ? Number(m.tipo_id) : (m.tipo?.id ? Number(m.tipo.id) : (m.tipo ? Number(m.tipo) : null)),
+                        fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : (m.fabricante?.id ? Number(m.fabricante.id) : null),
                         modelo: m.modelo,
                         serie: m.serie ?? '',
                         arreglo: m.arreglo ?? '',
                         foto: null,
                         fotoId: null
                     });
+
+                    // Cargar componentes
+                    this.componentes.clear();
+                    if (m.componentes && m.componentes.length > 0) {
+                        m.componentes.forEach((comp: any) => {
+                            this.addComponente(comp);
+                        });
+                    }
+
                     this.loadingMaquina = false;
                 },
                 error: () => {
@@ -125,7 +148,45 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
             serie: [''],
             arreglo: [''],
             foto: [null],
-            fotoId: [null]
+            fotoId: [null],
+            componentes: this.fb.array([])
+        });
+    }
+
+    /** Getter para componentes */
+    get componentes(): FormArray {
+        return this.createMaquinaForm.get('componentes') as FormArray;
+    }
+
+    /** Agrega un nuevo componente */
+    addComponente(data?: any): void {
+        const componenteForm = this.fb.group({
+            id: [data?.id ? Number(data.id) : null],
+            sistema_id: [data?.sistema_id ? Number(data.sistema_id) : null],
+            marca_id: [data?.marca_id ? Number(data.marca_id) : null],
+            modelo: [data?.modelo || ''],
+            serie: [data?.serie || ''],
+            comentario: [data?.comentario || ''],
+            foto_placa: [data?.foto_placa || null],
+            fotoPlacaFile: [null]
+        });
+        this.componentes.push(componenteForm);
+    }
+
+    /** Elimina un componente */
+    removeComponente(index: number): void {
+        this.componentes.removeAt(index);
+    }
+
+    /** Duplica un componente */
+    duplicateComponente(index: number): void {
+        const source = this.componentes.at(index).value;
+        this.addComponente({
+            sistema_id: source.sistema_id,
+            marca_id: source.marca_id,
+            modelo: source.modelo,
+            serie: source.serie,
+            comentario: source.comentario
         });
     }
 
@@ -149,10 +210,23 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.fabricantes = response.data.map(f => ({
-                    label: f.nombre,
-                    value: f.id
-                }));
+                this.fabricantes = response.data;
+            }
+        });
+    }
+
+    private loadSistemas(): void {
+        this.sistemaService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.sistemas = response.data;
+            }
+        });
+    }
+
+    private loadMarcasYFabricantes(): void {
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (marcas) => {
+                this.marcasYFabricantes = marcas;
             }
         });
     }
@@ -179,32 +253,38 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     }
 
     saveMaquina(createAnother: boolean = false): void {
-        if (this.createMaquinaForm.invalid) {
-            this.createMaquinaForm.markAllAsTouched();
-            return;
-        }
-
         this.loading = true;
         const formValue = this.createMaquinaForm.value;
 
-        if (this.isEditMode && this.maquinaId) {
-            const formData = new FormData();
-            formData.append('tipo', String(formValue.tipo));
-            formData.append('modelo', formValue.modelo);
-            formData.append('fabricante_id', String(formValue.fabricante_id));
-            if (formValue.serie) {
-                formData.append('serie', formValue.serie);
-            }
-            if (formValue.arreglo) {
-                formData.append('arreglo', formValue.arreglo);
-            }
-            if (formValue.foto instanceof File) {
-                formData.append('foto', formValue.foto);
-            }
-            if (formValue.fotoId instanceof File) {
-                formData.append('fotoId', formValue.fotoId);
-            }
+        const formData = new FormData();
 
+        // Datos básicos
+        formData.append('tipo', String(formValue.tipo));
+        formData.append('modelo', formValue.modelo);
+        formData.append('fabricante_id', String(formValue.fabricante_id));
+        if (formValue.serie) formData.append('serie', formValue.serie);
+        if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
+        if (this.terceroId) formData.append('tercero_id', this.terceroId.toString());
+
+        // Fotos
+        if (formValue.foto instanceof File) formData.append('foto', formValue.foto);
+        if (formValue.fotoId instanceof File) formData.append('fotoId', formValue.fotoId);
+
+        // Componentes
+        formValue.componentes.forEach((comp: any, index: number) => {
+            if (comp.id) formData.append(`componentes[${index}][id]`, String(comp.id));
+            if (comp.sistema_id) formData.append(`componentes[${index}][sistema_id]`, String(comp.sistema_id));
+            if (comp.marca_id) formData.append(`componentes[${index}][marca_id]`, String(comp.marca_id));
+            if (comp.modelo) formData.append(`componentes[${index}][modelo]`, comp.modelo);
+            if (comp.serie) formData.append(`componentes[${index}][serie]`, comp.serie);
+            if (comp.comentario) formData.append(`componentes[${index}][comentario]`, comp.comentario);
+            
+            if (comp.fotoPlacaFile) {
+                formData.append(`componentes[${index}][foto_placa]`, comp.fotoPlacaFile);
+            }
+        });
+
+        if (this.isEditMode && this.maquinaId) {
             this.maquinaService.update(this.maquinaId, formData).subscribe({
                 next: (response) => {
                     this.loading = false;
@@ -232,19 +312,6 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
             return;
         }
 
-        const formData = new FormData();
-
-        if (this.terceroId) {
-            formData.append('tercero_id', this.terceroId.toString());
-        }
-
-        Object.keys(formValue).forEach((key) => {
-            const value = formValue[key];
-            if (value !== null && value !== undefined && value !== '') {
-                formData.append(key, value);
-            }
-        });
-
         this.maquinaService.create(formData).subscribe({
             next: (response) => {
                 this.loading = false;
@@ -258,6 +325,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
 
                 if (createAnother) {
                     this.resetForm();
+                    this.componentes.clear();
                 } else {
                     this.closeDialog();
                 }
@@ -269,5 +337,10 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
             }
         });
+    }
+
+    onFotoPlacaSelected(file: File, index: number): void {
+        const control = this.componentes.at(index);
+        control.patchValue({ fotoPlacaFile: file });
     }
 }

@@ -1,6 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -10,9 +10,12 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
+import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
+import { TextareaModule } from 'primeng/textarea';
+import { PopoverModule } from 'primeng/popover';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadMaquinaById, updateMaquina } from '../../../store/maquinas/actions/maquinas.actions';
@@ -20,6 +23,7 @@ import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.se
 import { ESTADO_REVISION_LABELS, Maquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
+import { SistemaService } from '../../../core/services/sistema.service';
 import { Lista } from '../../../core/models/lista.model';
 import { Fabricante } from '../../../core/models/fabricante.model';
 
@@ -29,7 +33,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquina-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, DividerModule, TagModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, TooltipModule, DividerModule, TagModule, TextareaModule, PopoverModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -41,6 +45,7 @@ export class EditComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly listaService = inject(ListaService);
     private readonly fabricanteService = inject(FabricanteService);
+    private readonly sistemaService = inject(SistemaService);
 
     maquinaForm!: FormGroup;
     maquina$!: Observable<any>;
@@ -48,6 +53,8 @@ export class EditComponent implements OnInit {
     loading = false;
     tipos: Lista[] = [];
     fabricantes: Fabricante[] = [];
+    sistemas: any[] = [];
+    marcasYFabricantes: Lista[] = [];
 
     fotoFile: File | null = null;
     fotoIdFile: File | null = null;
@@ -55,6 +62,8 @@ export class EditComponent implements OnInit {
     ngOnInit(): void {
         this.cargarTipos();
         this.cargarFabricantes();
+        this.cargarSistemas();
+        this.cargarMarcasYFabricantes();
 
         this.route.params.subscribe((params) => {
             this.maquinaId = +params['id'];
@@ -98,18 +107,107 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Carga los sistemas disponibles
+     */
+    cargarSistemas(): void {
+        this.sistemaService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => {
+                this.sistemas = response.data;
+            },
+            error: (error) => {
+                console.error('Error al cargar sistemas:', error);
+            }
+        });
+    }
+
+    /**
+     * Carga las marcas y fabricantes unificados
+     */
+    cargarMarcasYFabricantes(): void {
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (marcas) => {
+                this.marcasYFabricantes = marcas;
+            },
+            error: (error) => {
+                console.error('Error al cargar marcas y fabricantes:', error);
+            }
+        });
+    }
+
+    /**
      * Inicializa el formulario con los datos de la máquina
      */
     private initForm(maquina: any): void {
         this.maquinaForm = this.fb.group({
-            tipo: [maquina.tipo, [Validators.required]],
+            tipo: [maquina.tipo_id ? +maquina.tipo_id : (maquina.tipo?.id ? +maquina.tipo.id : (maquina.tipo ? +maquina.tipo : null)), [Validators.required]],
             modelo: [maquina.modelo, [Validators.required, Validators.maxLength(255)]],
-            fabricante_id: [maquina.fabricante_id, [Validators.required]],
+            fabricante_id: [maquina.fabricante_id ? +maquina.fabricante_id : (maquina.fabricante?.id ? +maquina.fabricante.id : null), [Validators.required]],
             serie: [maquina.serie || ''],
             arreglo: [maquina.arreglo || ''],
             foto: [maquina.foto || null],
-            fotoId: [maquina.fotoId || null]
+            fotoId: [maquina.fotoId || null],
+            componentes: this.fb.array([])
         });
+
+        // Poblar componentes si existen
+        if (maquina.componentes && maquina.componentes.length > 0) {
+            maquina.componentes.forEach((comp: any) => {
+                this.addComponente(comp);
+            });
+        }
+    }
+
+    /**
+     * Getter para el FormArray de componentes
+     */
+    get componentes(): FormArray {
+        return this.maquinaForm.get('componentes') as FormArray;
+    }
+
+    /**
+     * Agrega un nuevo componente al formulario
+     */
+    addComponente(data?: any): void {
+        const componenteForm = this.fb.group({
+            id: [data?.id ? +data.id : null],
+            sistema_id: [data?.sistema_id ? +data.sistema_id : null],
+            marca_id: [data?.marca_id ? +data.marca_id : null],
+            modelo: [data?.modelo || ''],
+            serie: [data?.serie || ''],
+            comentario: [data?.comentario || ''],
+            foto_placa: [data?.foto_placa || null],
+            fotoPlacaFile: [null]
+        });
+        this.componentes.push(componenteForm);
+    }
+
+    /**
+     * Elimina un componente del formulario
+     */
+    removeComponente(index: number): void {
+        this.componentes.removeAt(index);
+    }
+
+    /**
+     * Duplica un componente existente
+     */
+    duplicateComponente(index: number): void {
+        const source = this.componentes.at(index).value;
+        this.addComponente({
+            sistema_id: source.sistema_id,
+            marca_id: source.marca_id,
+            modelo: source.modelo,
+            serie: source.serie,
+            comentario: source.comentario
+        });
+    }
+
+    /**
+     * Maneja la selección de foto de placa para un componente
+     */
+    onFotoPlacaSelected(file: File, index: number): void {
+        const control = this.componentes.at(index);
+        control.patchValue({ fotoPlacaFile: file });
     }
 
     onFotoSelected(file: File): void {
@@ -146,6 +244,20 @@ export class EditComponent implements OnInit {
         if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
         if (this.fotoFile) formData.append('foto', this.fotoFile);
         if (this.fotoIdFile) formData.append('fotoId', this.fotoIdFile);
+
+        // Agregar componentes
+        formValue.componentes.forEach((comp: any, index: number) => {
+            if (comp.id) formData.append(`componentes[${index}][id]`, comp.id);
+            if (comp.sistema_id) formData.append(`componentes[${index}][sistema_id]`, comp.sistema_id);
+            if (comp.marca_id) formData.append(`componentes[${index}][marca_id]`, comp.marca_id);
+            if (comp.modelo) formData.append(`componentes[${index}][modelo]`, comp.modelo);
+            if (comp.serie) formData.append(`componentes[${index}][serie]`, comp.serie);
+            if (comp.comentario) formData.append(`componentes[${index}][comentario]`, comp.comentario);
+            
+            if (comp.fotoPlacaFile) {
+                formData.append(`componentes[${index}][foto_placa]`, comp.fotoPlacaFile);
+            }
+        });
 
         this.store.dispatch(updateMaquina({ id: this.maquinaId, data: formData }));
 

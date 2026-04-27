@@ -19,6 +19,34 @@ export function normalizeEstadoRevision(value: unknown): EstadoRevisionMaquina {
 }
 
 /**
+ * Modelo de Componente de Máquina
+ */
+export interface ComponenteMaquina {
+    id?: number;
+    maquina_id?: number;
+    sistema_id: number | null;
+    marca_id: number | null;
+    modelo: string | null;
+    serie: string | null;
+    comentario: string | null;
+    foto_placa: string | null;
+
+    // UI helper for files
+    fotoPlacaFile?: File | null;
+
+    // Relaciones
+    sistema?: {
+        id: number;
+        nombre: string;
+        imagen?: string;
+    };
+    marca?: {
+        id: number;
+        nombre: string;
+    };
+}
+
+/**
  * Modelo de Máquina
  *
  * Representa las máquinas pesadas en el sistema
@@ -46,6 +74,7 @@ export interface Maquina {
         nombre: string;
         tipo: string;
     };
+    componentes?: ComponenteMaquina[];
 }
 
 /**

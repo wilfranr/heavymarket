@@ -8,10 +8,12 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { DividerModule } from 'primeng/divider';
 import { TagModule } from 'primeng/tag';
+import { ImageModule } from 'primeng/image';
+import { DialogModule } from 'primeng/dialog';
 
 import { loadMaquinaById } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.selectors';
-import { ESTADO_REVISION_LABELS, Maquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
+import { ESTADO_REVISION_LABELS, Maquina, ComponenteMaquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
 
 /**
  * Componente de detalle de máquina
@@ -19,7 +21,7 @@ import { ESTADO_REVISION_LABELS, Maquina, normalizeEstadoRevision } from '../../
 @Component({
     selector: 'app-maquina-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TagModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TagModule, ImageModule, DialogModule],
     templateUrl: './detail.html'
 })
 export class DetailComponent implements OnInit {
@@ -29,6 +31,10 @@ export class DetailComponent implements OnInit {
 
     maquina$!: Observable<Maquina | null>;
     maquinaId!: number;
+
+    // Estado del diálogo de componentes
+    componenteDialog: boolean = false;
+    selectedComponente: ComponenteMaquina | null = null;
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
@@ -58,5 +64,21 @@ export class DetailComponent implements OnInit {
 
     severidadEstadoRevision(m: Maquina): 'success' | 'warn' {
         return normalizeEstadoRevision(m.estado_revision) === 'revisado' ? 'success' : 'warn';
+    }
+
+    esPorRevisar(m: Maquina): boolean {
+        return normalizeEstadoRevision(m.estado_revision) !== 'revisado';
+    }
+
+    verComponente(comp: ComponenteMaquina): void {
+        this.selectedComponente = comp;
+        this.componenteDialog = true;
+    }
+
+    cerrarComponenteDialog(): void {
+        this.componenteDialog = false;
+        setTimeout(() => {
+            this.selectedComponente = null;
+        }, 300); // limpiar después de la animación
     }
 }

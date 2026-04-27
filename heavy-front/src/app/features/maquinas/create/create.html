@@ -1,6 +1,6 @@
 <p-toast />
 
-<div class="container mx-auto p-4 md:p-8 max-w-7xl relative overflow-hidden min-h-screen">
+<div class="container mx-auto p-4 md:p-8 max-w-[1600px] relative overflow-hidden min-h-screen">
     <!-- Decorative background elements -->
     <div
         class="absolute top-0 right-0 -mr-32 -mt-32 w-96 h-96 bg-[#fdb831]/10 rounded-full blur-[120px] pointer-events-none">
@@ -27,9 +27,9 @@
     <form [formGroup]="maquinaForm" (ngSubmit)="onSubmit()" class="relative z-10">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
             <!-- Left Column: Technical Info -->
-            <div class="lg:col-span-7 xl:col-span-8">
+            <div class="lg:col-span-8 flex flex-col gap-8">
                 <p-card
-                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] h-full border border-surface-border">
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
                     <div class="p-4 md:p-6">
                         <div class="flex items-center gap-4 mb-10">
                             <div
@@ -49,7 +49,7 @@
                                     Tipo de Máquina <span class="text-red-500">*</span> </label>
                                 <p-inputgroup styleClass="w-full">
                                     <p-select id="tipo" formControlName="tipo" [options]="tipos" optionLabel="nombre"
-                                        optionValue="id" placeholder="Por Definir" [showClear]="true"
+                                        optionValue="id" placeholder="Por Definir" [showClear]="true" appendTo="body"
                                         styleClass="w-full rounded-l-2xl" [filter]="true" filterBy="nombre"> </p-select>
                                     <p-inputgroup-addon styleClass="rounded-r-2xl">
                                         <p-button icon="pi pi-plus" [text]="true" severity="secondary"
@@ -69,7 +69,7 @@
                                     Fabricante <span class="text-red-500">*</span> </label>
                                 <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
                                     optionLabel="nombre" optionValue="id" optionImage="foto" placeholder="Por Definir"
-                                    [showClear]="true" styleClass="w-full rounded-2xl" [filter]="true"
+                                    [showClear]="true" styleClass="w-full rounded-2xl" [filter]="true" appendTo="body"
                                     filterBy="nombre">
                                 </p-select>
                                 @if (maquinaForm.get('fabricante_id')?.invalid &&
@@ -116,10 +116,116 @@
                         </div>
                     </div>
                 </p-card>
+
+                <!-- Components Section -->
+                <p-card
+                    styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
+                    <div class="p-4 md:p-6">
+                        <div class="flex items-center justify-between mb-8">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 rounded-2xl bg-[#fdb831]/10 flex items-center justify-center text-[#fdb831]">
+                                    <i class="pi pi-cog text-xl"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xs font-black text-gray-400 tracking-[0.3em] uppercase block">Gestión Técnica</span>
+                                    <h2 class="text-xl font-bold">Componentes de Maquinaria</h2>
+                                </div>
+                            </div>
+                            <p-button label="Agregar Componente" icon="pi pi-plus" [rounded]="true" severity="warn"
+                                styleClass="text-xs font-bold px-6 uppercase tracking-wider" (onClick)="addComponente()"></p-button>
+                        </div>
+
+                        <div formArrayName="componentes" class="flex flex-col gap-4">
+                            <div class="hidden lg:grid grid-cols-12 gap-4 px-6 mb-2">
+                                <div class="col-span-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">Sistema</div>
+                                <div class="col-span-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">Marca</div>
+                                <div class="col-span-2 text-[10px] font-black text-gray-500 uppercase tracking-widest">Modelo</div>
+                                <div class="col-span-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">Serie</div>
+                                <div class="col-span-3 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Acciones</div>
+                            </div>
+
+                            @for (comp of componentes.controls; track $index) {
+                            <div [formGroupName]="$index"
+                                class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center p-4 rounded-3xl bg-surface-ground/40 border border-surface-border hover:border-[#fdb831]/30 transition-all">
+                                <!-- Sistema -->
+                                <div class="field col-span-1 lg:col-span-2">
+                                    <label class="lg:hidden block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Sistema</label>
+                                    <p-select formControlName="sistema_id" [options]="sistemas" optionLabel="nombre"
+                                        optionValue="id" placeholder="Sistema..." [showClear]="true" appendTo="body"
+                                        styleClass="w-full rounded-xl text-sm" [filter]="true" filterBy="nombre"></p-select>
+                                </div>
+                                <!-- Marca -->
+                                <div class="field col-span-1 lg:col-span-2">
+                                    <label class="lg:hidden block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Marca</label>
+                                    <p-select formControlName="marca_id" [options]="marcasYFabricantes"
+                                        optionLabel="nombre" optionValue="id" placeholder="Marca..."
+                                        [showClear]="true" styleClass="w-full rounded-xl text-sm" [filter]="true" appendTo="body"
+                                        filterBy="nombre"></p-select>
+                                </div>
+                                <!-- Modelo -->
+                                <div class="field col-span-1 lg:col-span-2">
+                                    <label class="lg:hidden block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Modelo</label>
+                                    <input pInputText formControlName="modelo" placeholder="Modelo"
+                                        class="w-full rounded-xl text-sm p-3" />
+                                </div>
+                                <!-- Serie -->
+                                <div class="field col-span-1 lg:col-span-3">
+                                    <label class="lg:hidden block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Serie</label>
+                                    <input pInputText formControlName="serie" placeholder="Serie"
+                                        class="w-full rounded-xl text-sm p-3" />
+                                </div>
+
+                                <!-- Acciones -->
+                                <div class="col-span-1 lg:col-span-3 flex items-center justify-end gap-1">
+                                    <!-- Foto Plaqueta -->
+                                    <div class="relative">
+                                        <input type="file" #fileInput class="hidden" accept="image/*"
+                                            (change)="onFotoPlacaSelected($any($event.target).files[0], $index)">
+                                        <p-button icon="pi pi-camera" [rounded]="true" [text]="true"
+                                            [severity]="comp.get('fotoPlacaFile')?.value ? 'success' : 'warn'"
+                                            [pTooltip]="comp.get('fotoPlacaFile')?.value ? 'Foto cargada' : 'Foto placa'"
+                                            (onClick)="fileInput.click()"></p-button>
+                                    </div>
+
+                                    <!-- Comentario -->
+                                    <p-button icon="pi pi-comment" [rounded]="true" [text]="true"
+                                        [severity]="comp.get('comentario')?.value ? 'warn' : 'secondary'"
+                                        [pTooltip]="'Observaciones'"
+                                        (onClick)="op.toggle($event)"></p-button>
+                                    
+                                    <p-popover #op>
+                                        <div class="p-3 w-80">
+                                            <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Observaciones del Componente</label>
+                                            <textarea pTextarea formControlName="comentario" rows="3" class="w-full rounded-xl text-sm p-3 border-surface-border bg-surface-ground/20" placeholder="Escriba aquí..."></textarea>
+                                        </div>
+                                    </p-popover>
+
+                                    <!-- Duplicar -->
+                                    <p-button icon="pi pi-copy" [rounded]="true" [text]="true" severity="warn"
+                                        [pTooltip]="'Duplicar fila'" (onClick)="duplicateComponente($index)"></p-button>
+
+                                    <!-- Eliminar -->
+                                    <p-button icon="pi pi-trash" [rounded]="true" severity="danger" [text]="true"
+                                        [pTooltip]="'Eliminar'" (onClick)="removeComponente($index)"></p-button>
+                                </div>
+                            </div>
+                            }
+
+                            @if (componentes.length === 0) {
+                                <div class="flex flex-col items-center justify-center py-12 border-2 border-dashed border-surface-border rounded-[2rem] bg-surface-ground/20">
+                                    <i class="pi pi-box text-3xl text-gray-600 mb-4"></i>
+                                    <p class="text-gray-500 font-medium">No se han registrado componentes adicionales.</p>
+                                    <p-button label="Añadir el primer componente" [text]="true" severity="warn" (onClick)="addComponente()" styleClass="mt-2 text-xs font-bold"></p-button>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </p-card>
             </div>
 
             <!-- Right Column: Photos -->
-            <div class="lg:col-span-5 xl:col-span-4 flex flex-col gap-8">
+            <div class="lg:col-span-4 flex flex-col gap-8">
                 <!-- Foto Card -->
                 <p-card
                     styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">

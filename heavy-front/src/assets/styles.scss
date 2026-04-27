@@ -83,3 +83,22 @@
   height: 100% !important;
   object-fit: cover;
 }
+
+/* Estandarizar el tamaño de las previsualizaciones de p-image */
+.p-image-mask .p-image-original {
+  min-width: 800px !important;
+  min-height: 600px !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  object-fit: contain;
+  background-color: var(--p-surface-ground);
+  border-radius: 12px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+@media (max-width: 1024px) {
+  .p-image-mask .p-image-original {
+    min-width: 90vw !important;
+    min-height: 60vh !important;
+  }
+}

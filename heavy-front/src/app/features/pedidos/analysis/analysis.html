@@ -289,7 +289,6 @@
             }
 
             @for (item of referenciasFormArray.controls; track $index; let i = $index) {
-                @let isPreparado = !!item.get('referencia_id')?.value || !!getPartesFormArray(i).at(0).get('referencia_id')?.value;
                 <div class="item-card overflow-hidden rounded-xl bg-[#334155] text-white mb-6">
                     <!-- Item Header Bar -->
                     <div class="flex items-center gap-6 p-4 bg-[#334155] border-b border-gray-600">
