@@ -1,11 +1,15 @@
 
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges, ViewChild, ElementRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DialogModule } from 'primeng/dialog';
+import { ButtonModule } from 'primeng/button';
+import { ImageModule } from 'primeng/image';
+import { TooltipModule } from 'primeng/tooltip';
 
 @Component({
     selector: 'app-image-upload',
     standalone: true,
-    imports: [CommonModule],
+    imports: [CommonModule, DialogModule, ButtonModule, ImageModule, TooltipModule],
     templateUrl: './image-upload.component.html'
 })
 export class ImageUploadComponent implements OnChanges {
@@ -20,6 +24,7 @@ export class ImageUploadComponent implements OnChanges {
     @ViewChild('fileInput') fileInput!: ElementRef<HTMLInputElement>;
 
     previewUrl: string | null = null;
+    showZoom: boolean = false;
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['currentImage'] && this.currentImage) {
@@ -29,6 +34,12 @@ export class ImageUploadComponent implements OnChanges {
 
     triggerFileInput(): void {
         this.fileInput.nativeElement.click();
+    }
+
+    abrirZoom(): void {
+        if (this.previewUrl) {
+            this.showZoom = true;
+        }
     }
 
     onFileSelected(event: Event): void {

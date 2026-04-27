@@ -29,7 +29,7 @@ import { ArticuloService } from '../../../core/services/articulo.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ListaService } from '../../../core/services/lista.service';
-import { Lista } from '../../../core/models/lista.model';
+import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
@@ -63,8 +63,12 @@ export class EditComponent implements OnInit {
     referenciasDisponibles: Referencia[] = [];
     articuloActual: Articulo | null = null;
 
-    // Variables para el modal de creación de tipo
+    // Variables para el modal de creación de tipo (Piezas Estandar)
     showTipoModal = false;
+
+    // Variables para creación de listas genéricas (Medidas)
+    showListaModal = false;
+    currentListaTipo: ListaTipo = 'Unidad de Medida';
 
     // Variables para el modal de creación de referencia
     showReferenciaModal = false;
@@ -95,6 +99,11 @@ export class EditComponent implements OnInit {
 
 
 
+    // Variables para el CRUD de medidas
+    unidadesMedida: Lista[] = [];
+    tiposMedida: Lista[] = [];
+    nombresMedida: Lista[] = [];
+
     // Archivos seleccionados
     fotoFile: File | null = null;
     planoFile: File | null = null;
@@ -105,6 +114,7 @@ export class EditComponent implements OnInit {
     ngOnInit(): void {
         this.cargarTipos();
         this.cargarReferencias();
+        this.cargarListasMedidas();
 
         this.route.params.subscribe((params) => {
             this.articuloId = +params['id'];
@@ -142,6 +152,15 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Carga las listas de configuración para medidas
+     */
+    cargarListasMedidas(): void {
+        this.listaService.getByTipo('Unidad de Medida').subscribe(res => this.unidadesMedida = res);
+        this.listaService.getByTipo('Tipo de Medida').subscribe(res => this.tiposMedida = res);
+        this.listaService.getByTipo('Nombre de Medida').subscribe(res => this.nombresMedida = res);
+    }
+
+    /**
      * Carga las piezas estándar disponibles
      * @param search Término de búsqueda opcional
      */
@@ -173,6 +192,32 @@ export class EditComponent implements OnInit {
      */
     abrirCrearTipo(): void {
         this.showTipoModal = true;
+    }
+
+    /**
+     * Abre el modal para crear cualquier tipo de lista (Medidas)
+     */
+    abrirCrearLista(tipo: ListaTipo): void {
+        this.currentListaTipo = tipo;
+        this.showListaModal = true;
+    }
+
+    /**
+     * Maneja la creación de listas genéricas
+     */
+    onListaGeneralCreated(nueva: any): void {
+        this.cargarListasMedidas(); // Recargar todas por seguridad
+        
+        // Seleccionar automáticamente en el objeto de medida que se está editando
+        if (this.currentListaTipo === 'Unidad de Medida') {
+            this.medidaData.unidad = nueva.nombre;
+        } else if (this.currentListaTipo === 'Tipo de Medida') {
+            this.medidaData.tipo = nueva.nombre;
+        } else if (this.currentListaTipo === 'Nombre de Medida') {
+            this.medidaData.nombre = nueva.nombre;
+        }
+        
+        this.showListaModal = false;
     }
 
     /**

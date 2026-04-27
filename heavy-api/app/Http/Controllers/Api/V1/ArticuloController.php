@@ -105,6 +105,15 @@ class ArticuloController extends Controller
             $articulo->referencias()->sync($request->input('referencias_ids'));
         }
 
+        if ($request->has('medidas')) {
+            $medidas = json_decode($request->input('medidas'), true);
+            if (is_array($medidas)) {
+                foreach ($medidas as $medidaData) {
+                    $articulo->medidas()->create($medidaData);
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Artículo creado exitosamente',
             'data' => new ArticuloResource($articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca'])),

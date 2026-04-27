@@ -35,6 +35,7 @@ class StoreArticuloRequest extends FormRequest
             'foto_medida' => ['nullable', 'file', 'image', 'max:5120'],
             'referencias_ids' => ['required', 'array', 'min:1'],
             'referencias_ids.*' => ['required', 'exists:referencias,id'],
+            'medidas' => ['nullable', 'string'],
         ];
     }
 

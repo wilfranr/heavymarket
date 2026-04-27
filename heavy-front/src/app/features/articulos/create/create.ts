@@ -16,13 +16,16 @@ import { DialogModule } from 'primeng/dialog';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TabsModule } from 'primeng/tabs';
+import { TagModule } from 'primeng/tag';
 
 import { createArticulo } from '../../../store/articulos/actions/articulos.actions';
 import { CreateArticuloDto } from '../../../core/models/articulo.model';
 import { ListaService } from '../../../core/services/lista.service';
-import { Lista } from '../../../core/models/lista.model';
+import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ReferenciaService } from '../../../core/services/referencia.service';
+import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 
@@ -32,7 +35,7 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, InputGroupModule, InputGroupAddonModule, TabsModule, TagModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -48,9 +51,24 @@ export class CreateComponent implements OnInit {
     tipos: Lista[] = [];
     referenciasDisponibles: Referencia[] = [];
     referenciaService = inject(ReferenciaService);
+    articuloService = inject(ArticuloService);
+
+    // Variables para el CRUD de medidas
+    unidadesMedida: Lista[] = [];
+    tiposMedida: Lista[] = [];
+    nombresMedida: Lista[] = [];
+    medidasLocales: any[] = [];
+    showMedidaDialog = false;
+    isEditingMedida = false;
+    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    editingMedidaIndex: number | null = null;
 
     // Variables para el modal de creación de tipo
     showTipoModal = false;
+
+    // Variables para creación de listas genéricas (Medidas)
+    showListaModal = false;
+    currentListaTipo: ListaTipo = 'Unidad de Medida';
 
     // Variables para el modal de creación de referencia
     showReferenciaModal = false;
@@ -83,6 +101,45 @@ export class CreateComponent implements OnInit {
         this.initForm();
         this.cargarTipos();
         this.cargarReferencias();
+        this.cargarListasMedidas();
+    }
+
+    /**
+     * Carga las listas de configuración para medidas
+     */
+    cargarListasMedidas(): void {
+        this.listaService.getByTipo('Unidad de Medida').subscribe(res => this.unidadesMedida = res);
+        this.listaService.getByTipo('Tipo de Medida').subscribe(res => this.tiposMedida = res);
+        this.listaService.getByTipo('Nombre de Medida').subscribe(res => this.nombresMedida = res);
+    }
+
+    /**
+     * Gestión de Medidas Técnicas Locales
+     */
+    abrirDialogoMedida(): void {
+        this.isEditingMedida = false;
+        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.showMedidaDialog = true;
+    }
+
+    editarMedida(medida: any, index: number): void {
+        this.isEditingMedida = true;
+        this.editingMedidaIndex = index;
+        this.medidaData = { ...medida };
+        this.showMedidaDialog = true;
+    }
+
+    guardarMedida(): void {
+        if (this.isEditingMedida && this.editingMedidaIndex !== null) {
+            this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
+        } else {
+            this.medidasLocales.push({ ...this.medidaData });
+        }
+        this.showMedidaDialog = false;
+    }
+
+    eliminarMedida(index: number): void {
+        this.medidasLocales.splice(index, 1);
     }
 
     /**
@@ -146,6 +203,14 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * Abre el modal para crear cualquier tipo de lista (Medidas)
+     */
+    abrirCrearLista(tipo: ListaTipo): void {
+        this.currentListaTipo = tipo;
+        this.showListaModal = true;
+    }
+
+    /**
      * Maneja la creación exitosa de una pieza estándar
      */
     onTipoCreado(nuevoTipo: any): void {
@@ -161,6 +226,24 @@ export class CreateComponent implements OnInit {
         this.articuloForm.patchValue(updates); // Seleccionarlo
         this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
+    }
+
+    /**
+     * Maneja la creación de listas genéricas
+     */
+    onListaGeneralCreated(nueva: any): void {
+        this.cargarListasMedidas(); // Recargar todas por seguridad
+        
+        // Seleccionar automáticamente en el objeto de medida que se está editando
+        if (this.currentListaTipo === 'Unidad de Medida') {
+            this.medidaData.unidad = nueva.nombre;
+        } else if (this.currentListaTipo === 'Tipo de Medida') {
+            this.medidaData.tipo = nueva.nombre;
+        } else if (this.currentListaTipo === 'Nombre de Medida') {
+            this.medidaData.nombre = nueva.nombre;
+        }
+        
+        this.showListaModal = false;
     }
 
     /**
@@ -369,6 +452,10 @@ export class CreateComponent implements OnInit {
         referenciasIds.forEach((id: number) => {
             formData.append('referencias_ids[]', id.toString());
         });
+
+        if (this.medidasLocales.length > 0) {
+            formData.append('medidas', JSON.stringify(this.medidasLocales));
+        }
 
         this.store.dispatch(createArticulo({ data: formData }));
 
