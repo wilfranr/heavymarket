@@ -7,6 +7,7 @@ namespace Tests\Feature\Api;
 use App\Models\Lista;
 use App\Models\Maquina;
 use App\Models\User;
+use App\Models\ComponenteMaquina;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Spatie\Permission\Models\Role;
@@ -251,5 +252,86 @@ class MaquinaControllerTest extends TestCase
 
         $response->assertStatus(200)
             ->assertJsonPath('data.estado_revision', 'revisado');
+    }
+
+    /**
+     * Test: Puede crear máquina con componentes
+     */
+    public function test_puede_crear_maquina_con_componentes(): void
+    {
+        $sistema = Lista::factory()->create(['tipo' => 'Sistema']);
+        $marca = Lista::factory()->create(['tipo' => 'Marca']);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson('/v1/maquinas', [
+                'tipo' => $this->tipoMaquina->id,
+                'modelo' => 'CAT 320 CON COMPONENTES',
+                'fabricante_id' => $this->fabricante->id,
+                'serie' => 'COMP123',
+                'componentes' => [
+                    [
+                        'sistema_id' => $sistema->id,
+                        'marca_id' => $marca->id,
+                        'modelo' => 'Motor 123',
+                        'serie' => 'S123',
+                        'comentario' => 'Motor original'
+                    ]
+                ]
+            ]);
+
+        $response->assertStatus(201);
+        
+        $maquinaId = $response->json('data.id');
+        $this->assertDatabaseHas('componentes_maquina', [
+            'maquina_id' => $maquinaId,
+            'modelo' => 'Motor 123'
+        ]);
+    }
+
+    /**
+     * Test: Puede actualizar componentes de una máquina
+     */
+    public function test_puede_actualizar_componentes_de_maquina(): void
+    {
+        $maquina = Maquina::factory()->create([
+            'tipo' => $this->tipoMaquina->id,
+            'fabricante_id' => $this->fabricante->id,
+        ]);
+        
+        $sistema = Lista::factory()->create(['tipo' => 'Sistema']);
+        $componenteExistente = ComponenteMaquina::create([
+            'maquina_id' => $maquina->id,
+            'sistema_id' => $sistema->id,
+            'modelo' => 'Modelo Antiguo'
+        ]);
+
+        $response = $this->actingAs($this->user, 'sanctum')
+            ->postJson("/v1/maquinas/{$maquina->id}", [
+                '_method' => 'PUT',
+                'modelo' => $maquina->modelo,
+                'componentes' => [
+                    [
+                        'id' => $componenteExistente->id,
+                        'sistema_id' => $sistema->id,
+                        'modelo' => 'Modelo Actualizado'
+                    ],
+                    [
+                        'sistema_id' => $sistema->id,
+                        'modelo' => 'Nuevo Componente'
+                    ]
+                ]
+            ]);
+
+        $response->assertStatus(200);
+        
+        $this->assertDatabaseHas('componentes_maquina', [
+            'id' => $componenteExistente->id,
+            'modelo' => 'Modelo Actualizado'
+        ]);
+        
+        $this->assertDatabaseHas('componentes_maquina', [
+            'maquina_id' => $maquina->id,
+            'modelo' => 'Nuevo Componente'
+        ]);
     }
 }

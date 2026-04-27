@@ -106,6 +106,11 @@ class MaquinaController extends Controller
 
         $maquina = Maquina::create($data);
 
+        // Si se enviaron componentes, guardarlos
+        if ($request->filled('componentes')) {
+            $this->saveComponentes($maquina, $request->input('componentes'));
+        }
+
         // Si se envió un tercero_id, asociar la máquina
         if ($request->filled('tercero_id')) {
             $maquina->terceros()->attach($request->input('tercero_id'));
@@ -113,7 +118,7 @@ class MaquinaController extends Controller
 
         return response()->json([
             'message' => 'Máquina creada exitosamente',
-            'data' => new MaquinaResource($maquina->load(['fabricante', 'listas'])),
+            'data' => new MaquinaResource($maquina->load(['fabricante', 'listas', 'componentes'])),
         ], 201);
     }
 
@@ -122,7 +127,7 @@ class MaquinaController extends Controller
      */
     public function show(Maquina $maquina): JsonResponse
     {
-        $maquina->load(['fabricante', 'listas']);
+        $maquina->load(['fabricante', 'listas', 'componentes.sistema', 'componentes.marca']);
 
         return response()->json([
             'data' => new MaquinaResource($maquina),
@@ -160,9 +165,14 @@ class MaquinaController extends Controller
 
         $maquina->update($data);
 
+        // Actualizar componentes si se enviaron
+        if ($request->has('componentes')) {
+            $this->saveComponentes($maquina, $request->input('componentes') ?? []);
+        }
+
         return response()->json([
             'message' => 'Máquina actualizada exitosamente',
-            'data' => new MaquinaResource($maquina->fresh()->load(['fabricante', 'listas'])),
+            'data' => new MaquinaResource($maquina->fresh()->load(['fabricante', 'listas', 'componentes.sistema', 'componentes.marca'])),
         ]);
     }
 
@@ -184,5 +194,44 @@ class MaquinaController extends Controller
         return response()->json([
             'message' => 'Máquina eliminada exitosamente',
         ]);
+    }
+
+    /**
+     * Guarda o actualiza los componentes de una máquina
+     */
+    private function saveComponentes(Maquina $maquina, array $componentesData): void
+    {
+        $idsToKeep = [];
+
+        foreach ($componentesData as $index => $data) {
+            // Limpiar datos nulos o vacíos para evitar errores de BD si se envían strings vacíos en campos opcionales
+            $cleanData = array_filter($data, function ($value) {
+                return $value !== null && $value !== '' && !($value instanceof \Illuminate\Http\UploadedFile);
+            });
+
+            if (isset($data['id']) && !empty($data['id'])) {
+                $componente = $maquina->componentes()->find($data['id']);
+                if ($componente) {
+                    $componente->update($cleanData);
+                    $idsToKeep[] = $componente->id;
+                }
+            } else {
+                $componente = $maquina->componentes()->create($cleanData);
+                $idsToKeep[] = $componente->id;
+            }
+
+            // Manejar carga de imagen para cada componente
+            $fileKey = "componentes.{$index}.foto_placa";
+            if (request()->hasFile($fileKey)) {
+                if ($componente->foto_placa) {
+                    Storage::disk('public')->delete($componente->foto_placa);
+                }
+                $path = request()->file($fileKey)->store('maquinas/componentes', 'public');
+                $componente->update(['foto_placa' => $path]);
+            }
+        }
+
+        // Eliminar componentes que no están en la lista (sincronización)
+        $maquina->componentes()->whereNotIn('id', $idsToKeep)->delete();
     }
 }

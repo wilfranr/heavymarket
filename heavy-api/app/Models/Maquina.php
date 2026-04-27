@@ -23,6 +23,21 @@ class Maquina extends Model
     ];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'tipo' => 'integer',
+        'fabricante_id' => 'integer',
+    ];
+
+    public function componentes()
+    {
+        return $this->hasMany(ComponenteMaquina::class);
+    }
+
+    /**
      * Attributes to be automatically normalized.
      */
     protected $normalizableAttributes = [

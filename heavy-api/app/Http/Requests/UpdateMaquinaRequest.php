@@ -35,6 +35,14 @@ class UpdateMaquinaRequest extends FormRequest
             'foto' => ['nullable', 'image', 'max:10480'],
             'fotoId' => ['nullable', 'image', 'max:10480'],
             'estado_revision' => ['sometimes', 'string', 'in:por_revisar,revisado'],
+            'componentes' => ['nullable', 'array'],
+            'componentes.*.id' => ['nullable', 'integer', 'exists:componentes_maquina,id'],
+            'componentes.*.sistema_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'componentes.*.marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'componentes.*.modelo' => ['nullable', 'string', 'max:255'],
+            'componentes.*.serie' => ['nullable', 'string', 'max:255'],
+            'componentes.*.comentario' => ['nullable', 'string'],
+            'componentes.*.foto_placa' => ['nullable', 'file', 'image', 'max:10480'],
         ];
     }
 

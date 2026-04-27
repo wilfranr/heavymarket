@@ -37,6 +37,13 @@ class StoreMaquinaRequest extends FormRequest
             'tercero_id' => ['nullable', 'integer', 'exists:terceros,id'],
             // Solo la landing (LandingController) usa por_revisar; la app siempre revisado vía controlador
             'estado_revision' => ['prohibited'],
+            'componentes' => ['nullable', 'array'],
+            'componentes.*.sistema_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'componentes.*.marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'componentes.*.modelo' => ['nullable', 'string', 'max:255'],
+            'componentes.*.serie' => ['nullable', 'string', 'max:255'],
+            'componentes.*.comentario' => ['nullable', 'string'],
+            'componentes.*.foto_placa' => ['nullable', 'file', 'image', 'max:10480'],
         ];
     }
 

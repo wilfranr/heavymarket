@@ -44,6 +44,7 @@ class MaquinaResource extends JsonResource
             // Relaciones opcionales
             'fabricante' => $this->whenLoaded('fabricante'),
             'tipoLista' => $this->whenLoaded('listas'),
+            'componentes' => ComponenteMaquinaResource::collection($this->whenLoaded('componentes')),
         ];
     }
 }
