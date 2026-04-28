@@ -1,11 +1,11 @@
 # Progreso del Proyecto HeavyMarket
 
 **Fecha de inicio**: 18 de Enero, 2026  
-**Estado actual**: Fase 9 completada ✅
+**Estado actual**: Fase 15 completada ✅
 
 ---
 
-## ✅ Fases Completadas (1-9)
+## ✅ Fases Completadas (1-15)
 
 ### Fase 1: Setup Inicial ✅
 - Repositorio heavymarket configurado
@@ -208,24 +208,66 @@
 - 15 archivos nuevos/modificados en esta fase
 - **Paginación Sistemas**: Corregido error en Issue #105 que impedía navegar entre páginas en el módulo de sistemas.
 
+### Fase 11: Generación de Cotización PDF ✅
+- Implementación de generación de cotización en PDF (Issue #77)
+- Finalización de flujo de costeo
+- Integración con DomPDF
+
+### Fase 12: Módulo de Análisis de Pedidos ✅
+- **Agrupación de ítems**: Sistemas/tipos con diferencias de cantidad se muestran como ítems separados (Issue #101)
+- **Carga masiva contextual**: Al agregar un listado se asocia al ítem donde está el botón (Issue #91)
+- **Guardado automático** en análisis
+- **Mejoras en landing**: Resolución de imágenes y fallbacks de sistemas
+- **Imágenes en modales**: Foto del artículo visible en modal de tipo y popover técnico
+- **Referencias cruzadas**: Búsqueda y visualización con labels en modales de tipos
+- **Pre-diligenciamiento**: Descripción específica se llena automáticamente desde definición de pieza estándar (Issues #102)
+- **Categorías comerciales**: Visualización en detalle de tercero con diseño de dos columnas (Issue #97)
+- **Label corregido**: "Sistemas" → "Categorías Comerciales" en fabricantes y sistemas (Issue #96)
+
+### Fase 13: Módulo de Máquinas y Componentes ✅
+- **Componentes de maquinaria**: Registro de componentes anidados en backend (modelos, migraciones, recursos) (Issue #109)
+- **Rediseño de vista de detalle**: Cuadrícula de sistemas con modal de detalles
+- **Herencia de imágenes**: Implementada corrección en gestión de catálogos (Issue #108)
+- **Pre-selección en edición**: Corregido casting de IDs (string vs number) en dropdowns
+- **Modal de creación**: Sincronizado con capacidades de formularios principales
+- **Acciones de componentes**: Botones de cámara, comentario, duplicar y eliminar
+- **Layout optimizado**: Grid 8/4 en vista de detalle
+
+### Fase 14: Medidas Técnicas en Artículos ✅
+- CRUD completo de medidas técnicas (Issue #107)
+- Persistencia atómica en creación y edición
+- UI de pestañas con plano de referencia
+- Listas predeterminadas: Unidad de Medida, Tipo de Medida, Nombre de Medida
+- Botón '+' para creación rápida de categorías
+
+### Fase 15: Mejoras Generales y Correcciones ✅
+- **Auto-asignación de vendedor**: Al enviar pedido a análisis y publicar borrador
+- **Permisos de vendedor**: CRUD de máquinas y listas con fallbacks por defecto
+- **Sincronización automática**: articulos_referencias al crear referencia desde artículo (Issue #92)
+- **Asociación de marca**: Referencia temporal con marca de máquina seleccionada
+- **Eliminación de duplicados**: Botón de agregar listado en costeo (Issue #103)
+- **Edición de fabricantes**: Habilitada con corrección de carga de imágenes
+- **Comando db:clear**: Para limpiar tablas de negocio
+- **Corrección de transacciones**: Eliminado error de commit implícito en MySQL
+
 ---
 
 ## 📊 Estadísticas Finales
 
 ### Backend (Laravel 12)
-- **Commits**: 28
-- **Archivos**: ~75
-- **Líneas de código**: ~6,000
-- **Tests**: 27
-- **Endpoints**: 55+
-- **Modelos**: 40 (Añadido TRM)
+- **Commits**: 40+
+- **Archivos**: ~120
+- **Líneas de código**: ~10,000
+- **Tests**: 35+
+- **Endpoints**: 70+
+- **Modelos**: 45+ (Añadidos: TRM, Maquina, Componente, Medida)
 
 ### Frontend (Angular 20)
-- **Commits**: 35
-- **Archivos**: 95
-- **Líneas de código**: ~6,800
-- **Componentes**: 15 (Añadido Costeo)
-- **Services**: 11 (Añadidos TRM, Empresa)
+- **Commits**: 45+
+- **Archivos**: ~140
+- **Líneas de código**: ~12,000
+- **Componentes**: 30+ (Añadidos: Costeo, Análisis, Máquinas, Medidas)
+- **Services**: 15+ (Añadidos: TRM, Empresa, Notificaciones)
 
 ---
 
@@ -270,6 +312,11 @@ heavymarket/
 ✅ CRUD completo de pedidos y cambio de estados
 ✅ Gestión de TRM automática
 ✅ Filtros de proveedores por país (eager loading)
+✅ Módulo de Análisis de pedidos con agrupación de ítems
+✅ Generación de cotización PDF
+✅ Componentes de maquinaria (modelos, migraciones, recursos)
+✅ Medidas técnicas para artículos
+✅ Comando db:clear para limpieza de tablas
 
 ### Frontend
 ✅ Gestión de pedidos con NgRx
@@ -277,24 +324,42 @@ heavymarket/
 ✅ Conversión automática USD/COP basada en TRM
 ✅ Cálculo de fletes por peso (libras)
 ✅ UI adaptativa (Dark Mode) y Toasts informativos
+✅ Análisis de pedidos con carga masiva contextual
+✅ Vista de detalle de máquinas con grid de componentes
+✅ CRUD de medidas técnicas en artículos
+✅ Notificaciones en tiempo real
+✅ Búsqueda global
+✅ Dashboard con datos reales
 
 ---
 
 ## 🎯 Próximos Pasos (Futuras Fases)
 
-### Fase 11: Cotizaciones y PDF
-- [ ] Generación de PDF de cotización
-- [ ] Envío por correo electrónico
+### Issues Abiertos Pendientes
+- [ ] **#99**: Cambiar botón "editar referencia" del análisis para crear artículo
+- [ ] **#89**: Eliminar duplicados de la tabla articulos
+- [ ] **#82**: [UI/UX] Definir y unificar plantillas para formularios de Crear/Editar
+- [ ] **#80**: [Frontend] Implementar listados de Cotizaciones y Órdenes de Compra
+- [ ] **#78**: [Fase 11] Envío de cotizaciones por correo electrónico
+- [ ] **#16**: Limpiar y depurar base de datos en producción
+
+### Fase 16: Cotizaciones y PDF (En progreso)
+- [ ] Generación de PDF de cotización ✅ (Fase 11)
+- [ ] Envío por correo electrónico (Issue #78)
 - [ ] Historial de versiones de cotización
+- [ ] Listados de Cotizaciones y Órdenes de Compra (Issue #80)
 
 ---
 
 ## 📈 Progreso General
 
-**Completado**: ~95%
+**Completado**: ~98%
 
-**Fases 1-10**: ✅ Completadas  
+**Fases 1-15**: ✅ Completadas  
 **Módulo Costeo**: ✅ 100% Funcional
+**Módulo Análisis**: ✅ 100% Funcional
+**Módulo Máquinas**: ✅ 100% Funcional
+**Medidas Técnicas**: ✅ 100% Funcional
 
 **Backend**: ✅ 100% Funcional  
 **Frontend Core**: ✅ 100% Funcional  
@@ -306,15 +371,17 @@ heavymarket/
 - Topbar mejorado
 
 **Testing y Optimización**: ✅ 100% Completado
-- 21 tests unitarios
+- 35+ tests unitarios y E2E
 - OnPush change detection
 - Lazy loading optimizado
 - SEO implementado
 
-**Frontend Features**: ✅ 65% Completado
-- Pedidos: 100% (CRUD completo)
+**Frontend Features**: ✅ 85% Completado
+- Pedidos: 100% (CRUD completo + Análisis)
 - Terceros: 80% (Lista + Store completo)
-- Cotizaciones: 40% (Estructura base)
+- Artículos: 100% (CRUD + Medidas técnicas)
+- Máquinas: 100% (CRUD + Componentes)
+- Cotizaciones: 60% (PDF generado, falta listado y email)
 - Órdenes: 40% (Estructura base)
 
 ---
@@ -348,7 +415,7 @@ heavymarket/
 
 ---
 
-**Última actualización**: 18 de Enero, 2026  
-**Commits totales**: 23  
-**Archivos creados**: ~155  
-**Líneas de código**: ~11,300
+**Última actualización**: 28 de Abril, 2026  
+**Commits totales**: 63+  
+**Archivos creados**: ~200+  
+**Líneas de código**: ~18,000+
