@@ -159,6 +159,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('terceros', TerceroController::class);
         Route::post('cotizaciones/finalizar-costeo', [CotizacionController::class, 'finalizarCosteo'])->name('cotizaciones.finalizar-costeo');
         Route::get('cotizaciones/{cotizacion}/download-pdf', [CotizacionController::class, 'downloadPDF'])->name('cotizaciones.download-pdf');
+        Route::post('cotizaciones/{cotizacion}/approve', [CotizacionController::class, 'approve'])->name('cotizaciones.approve');
+        Route::post('cotizaciones/{cotizacion}/reject', [CotizacionController::class, 'reject'])->name('cotizaciones.reject');
         Route::apiResource('cotizaciones', CotizacionController::class);
         Route::apiResource('ordenes-compra', OrdenCompraController::class);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);

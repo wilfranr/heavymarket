@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreCotizacionRequest;
+use App\Http\Requests\UpdateCotizacionRequest;
 use App\Http\Resources\CotizacionResource;
 use App\Models\Cotizacion;
 use App\Services\CotizacionService;
@@ -132,20 +133,28 @@ class CotizacionController extends Controller
     /**
      * Actualizar una cotización
      */
-    public function update(Request $request, Cotizacion $cotizacion): JsonResponse
+    public function update(UpdateCotizacionRequest $request, Cotizacion $cotizacion): JsonResponse
     {
-        $validated = $request->validate([
-            'estado' => [
-                'sometimes',
-                'string',
-                \Illuminate\Validation\Rule::in(['Pendiente', 'Enviada', 'Aprobada', 'Rechazada', 'Vencida', 'En_Proceso']),
-            ],
-            'fecha_vencimiento' => ['sometimes', 'date', 'after:today'],
-            'observaciones' => ['nullable', 'string', 'max:1000'],
-        ]);
+        $validated = $request->validated();
+        
+        // Si validated está vacío, usar los inputs directamente
+        if (empty($validated)) {
+            $validated = $request->only(['estado', 'observaciones', 'fecha_vencimiento']);
+            $validated = array_filter($validated, fn($v) => $v !== null);
+        }
 
         try {
-            $cotizacion->update($validated);
+            if (isset($validated['estado'])) {
+                $cotizacion->estado = $validated['estado'];
+            }
+            if (isset($validated['observaciones'])) {
+                $cotizacion->observaciones = $validated['observaciones'];
+            }
+            if (isset($validated['fecha_vencimiento'])) {
+                $cotizacion->fecha_vencimiento = $validated['fecha_vencimiento'];
+            }
+            
+            $cotizacion->save();
             $cotizacion->load(['pedido', 'tercero', 'user', 'referenciasProveedores']);
 
             return response()->json([
@@ -224,6 +233,57 @@ class CotizacionController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al finalizar el costeo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Aprobar una cotización
+     */
+    public function approve(Cotizacion $cotizacion): JsonResponse
+    {
+        try {
+            $cotizacion = $this->cotizacionService->aprobar($cotizacion);
+            $cotizacion->load(['pedido', 'tercero', 'user']);
+
+            return response()->json([
+                'data' => new CotizacionResource($cotizacion),
+                'message' => 'Cotización aprobada exitosamente',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al aprobar la cotización',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Rechazar una cotización
+     */
+    public function reject(Request $request, Cotizacion $cotizacion): JsonResponse
+    {
+        $validated = $request->validate([
+            'motivo' => ['nullable', 'string', 'max:1000'],
+        ]);
+
+        try {
+            $cotizacion = $this->cotizacionService->rechazar(
+                $cotizacion,
+                $validated['motivo'] ?? ''
+            );
+            $cotizacion->load(['pedido', 'tercero', 'user']);
+
+            return response()->json([
+                'data' => new CotizacionResource($cotizacion),
+                'message' => 'Cotización rechazada exitosamente',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al rechazar la cotización',
                 'error' => $e->getMessage(),
             ], 500);
         }

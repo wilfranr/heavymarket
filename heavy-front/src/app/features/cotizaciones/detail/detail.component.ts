@@ -7,9 +7,12 @@ import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
 import { DividerModule } from 'primeng/divider';
 import { TableModule } from 'primeng/table';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService, MessageService } from 'primeng/api';
 import { loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
 import { Cotizacion } from '../../../core/models/cotizacion.model';
+import { CotizacionService } from '../../../core/services/cotizacion.service';
 
 /**
  * Componente de detalle de cotización
@@ -17,12 +20,18 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
 @Component({
     selector: 'app-cotizacion-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, ConfirmDialogModule],
+    providers: [ConfirmationService, MessageService],
     template: `
         <div class="card">
             <div class="flex justify-content-between align-items-center mb-4">
                 <h2>Cotización #{{ cotizacionId() }}</h2>
                 <div class="flex gap-2">
+                    <p-button icon="pi pi-file-pdf" label="PDF" severity="danger" [outlined]="true" (onClick)="onDownloadPDF()"> </p-button>
+                    @if (cotizacion()?.estado === 'Enviada' || cotizacion()?.estado === 'En_Proceso') {
+                        <p-button icon="pi pi-check" label="Aprobar" severity="success" [outlined]="true" (onClick)="onApprove()"> </p-button>
+                        <p-button icon="pi pi-times" label="Rechazar" severity="warn" [outlined]="true" (onClick)="onReject()"> </p-button>
+                    }
                     <p-button label="Editar" icon="pi pi-pencil" severity="warn" [outlined]="true" (onClick)="onEdit()"> </p-button>
                     <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="onBack()"> </p-button>
                 </div>
@@ -154,6 +163,9 @@ export class DetailComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly cotizacionService = inject(CotizacionService);
+    private readonly messageService = inject(MessageService);
+    private readonly confirmationService = inject(ConfirmationService);
 
     cotizacion = signal<Cotizacion | null>(null);
     cotizacionId = signal<number>(0);
@@ -184,6 +196,70 @@ export class DetailComponent implements OnInit {
 
     onBack(): void {
         this.router.navigate(['/app/cotizaciones']);
+    }
+
+    onDownloadPDF(): void {
+        const id = this.cotizacionId();
+        if (!id) return;
+
+        this.cotizacionService.downloadPDF(id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `COT-${id}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'PDF descargado exitosamente' });
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el PDF' });
+            }
+        });
+    }
+
+    onApprove(): void {
+        const id = this.cotizacionId();
+        if (!id) return;
+
+        this.confirmationService.confirm({
+            message: '¿Está seguro de aprobar esta cotización?',
+            header: 'Aprobar Cotización',
+            icon: 'pi pi-check-circle',
+            accept: () => {
+                this.cotizacionService.approve(id).subscribe({
+                    next: (response) => {
+                        this.cotizacion.set(response.data);
+                        this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada exitosamente' });
+                    },
+                    error: () => {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotización' });
+                    }
+                });
+            }
+        });
+    }
+
+    onReject(): void {
+        const id = this.cotizacionId();
+        if (!id) return;
+
+        this.confirmationService.confirm({
+            message: '¿Está seguro de rechazar esta cotización?',
+            header: 'Rechazar Cotización',
+            icon: 'pi pi-times-circle',
+            accept: () => {
+                this.cotizacionService.reject(id).subscribe({
+                    next: (response) => {
+                        this.cotizacion.set(response.data);
+                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotización rechazada exitosamente' });
+                    },
+                    error: () => {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo rechazar la cotización' });
+                    }
+                });
+            }
+        });
     }
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {

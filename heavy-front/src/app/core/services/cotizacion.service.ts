@@ -64,4 +64,18 @@ export class CotizacionService extends ApiService {
             responseType: 'blob'
         });
     }
+
+    /**
+     * Aprobar una cotización
+     */
+    approve(id: number): Observable<{ data: Cotizacion; message: string }> {
+        return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/${id}/approve`, {});
+    }
+
+    /**
+     * Rechazar una cotización
+     */
+    reject(id: number, motivo?: string): Observable<{ data: Cotizacion; message: string }> {
+        return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/${id}/reject`, { motivo });
+    }
 }

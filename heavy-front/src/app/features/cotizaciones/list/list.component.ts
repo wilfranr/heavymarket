@@ -17,6 +17,7 @@ import * as CotizacionesActions from '../../../store/cotizaciones/actions/cotiza
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { PedidoService } from '../../../core/services/pedido.service';
+import { CotizacionService } from '../../../core/services/cotizacion.service';
 
 /**
  * Componente de Lista de Cotizaciones
@@ -82,9 +83,14 @@ import { PedidoService } from '../../../core/services/pedido.service';
                         <td>{{ cotizacion.fecha_vencimiento | date: 'short' }}</td>
                         <td>{{ cotizacion.total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
                         <td>
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewCotizacion(cotizacion.id)"> </p-button>
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditCotizacion(cotizacion.id)"> </p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteCotizacion(cotizacion)"> </p-button>
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewCotizacion(cotizacion.id)" pTooltip="Ver"> </p-button>
+                            <p-button icon="pi pi-file-pdf" [rounded]="true" [text]="true" severity="danger" (onClick)="onDownloadPDF(cotizacion)" pTooltip="PDF"> </p-button>
+                            @if (cotizacion.estado === 'Enviada' || cotizacion.estado === 'En_Proceso') {
+                                <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" (onClick)="onApproveCotizacion(cotizacion)" pTooltip="Aprobar"> </p-button>
+                                <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="warn" (onClick)="onRejectCotizacion(cotizacion)" pTooltip="Rechazar"> </p-button>
+                            }
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditCotizacion(cotizacion.id)" pTooltip="Editar"> </p-button>
+                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteCotizacion(cotizacion)" pTooltip="Eliminar"> </p-button>
                         </td>
                     </tr>
                 </ng-template>
@@ -99,8 +105,10 @@ export class ListComponent implements OnInit {
     private store = inject(Store);
     private router = inject(Router);
     private confirmationService = inject(ConfirmationService);
+    private messageService = inject(MessageService);
     private terceroService = inject(TerceroService);
     private pedidoService = inject(PedidoService);
+    private cotizacionService = inject(CotizacionService);
 
     // Signals para estado local
     cotizaciones = signal<Cotizacion[]>([]);
@@ -237,6 +245,61 @@ export class ListComponent implements OnInit {
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
                 this.store.dispatch(CotizacionesActions.deleteCotizacion({ id: cotizacion.id }));
+            }
+        });
+    }
+
+    onDownloadPDF(cotizacion: Cotizacion) {
+        this.cotizacionService.downloadPDF(cotizacion.id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `COT-${cotizacion.id}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'PDF descargado exitosamente' });
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el PDF' });
+            }
+        });
+    }
+
+    onApproveCotizacion(cotizacion: Cotizacion) {
+        this.confirmationService.confirm({
+            message: `¿Está seguro de aprobar la cotización #${cotizacion.id}?`,
+            header: 'Aprobar Cotización',
+            icon: 'pi pi-check-circle',
+            accept: () => {
+                this.cotizacionService.approve(cotizacion.id).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada exitosamente' });
+                        this.loadCotizaciones();
+                    },
+                    error: () => {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotización' });
+                    }
+                });
+            }
+        });
+    }
+
+    onRejectCotizacion(cotizacion: Cotizacion) {
+        this.confirmationService.confirm({
+            message: `¿Está seguro de rechazar la cotización #${cotizacion.id}?`,
+            header: 'Rechazar Cotización',
+            icon: 'pi pi-times-circle',
+            accept: () => {
+                this.cotizacionService.reject(cotizacion.id).subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotización rechazada exitosamente' });
+                        this.loadCotizaciones();
+                    },
+                    error: () => {
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo rechazar la cotización' });
+                    }
+                });
             }
         });
     }

@@ -47,7 +47,7 @@ class CotizacionService
                 ]);
             }
 
-            return $cotizacion->load('referencias');
+            return $cotizacion->load('referenciasProveedores');
         });
     }
 
@@ -58,8 +58,9 @@ class CotizacionService
      */
     public function calcularPrecioTotal(Cotizacion $cotizacion, string $moneda = 'COP'): float
     {
-        $total = $cotizacion->referencias->sum(function ($item) {
-            return $item->cantidad * $item->precio_unitario;
+        $total = $cotizacion->referenciasProveedores->sum(function ($item) {
+            $prp = $item->pedidoReferenciaProveedor;
+            return $prp ? $prp->cantidad * $prp->precio_unitario : 0;
         });
 
         // Si se requiere en USD, convertir
@@ -114,7 +115,6 @@ class CotizacionService
     {
         $cotizacion->update([
             'estado' => 'Aprobada',
-            'fecha_aprobacion' => now(),
         ]);
 
         // Actualizar estado del pedido asociado
@@ -128,11 +128,11 @@ class CotizacionService
     /**
      * Rechazar cotización
      */
-    public function rechazar(Cotizacion $cotizacion, string $motivo): Cotizacion
+    public function rechazar(Cotizacion $cotizacion, string $motivo = ''): Cotizacion
     {
         $cotizacion->update([
             'estado' => 'Rechazada',
-            'motivo_rechazo' => $motivo,
+            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '') . "\nRechazo: " . $motivo) : $cotizacion->observaciones,
         ]);
 
         return $cotizacion;
