@@ -797,7 +797,7 @@ class PedidoController extends Controller
 
         $validated = $request->validate([
             'referencias' => ['required', 'array'],
-            'referencias.*.id' => ['required', 'exists:pedido_referencias,id'],
+            'referencias.*.id' => ['required', 'exists:pedido_referencia,id'],
             'referencias.*.proveedores' => ['required', 'array'],
             'referencias.*.proveedores.*.id' => ['nullable', 'exists:pedido_referencia_proveedores,id'],
             'referencias.*.proveedores.*.tercero_id' => ['required', 'exists:terceros,id'],
