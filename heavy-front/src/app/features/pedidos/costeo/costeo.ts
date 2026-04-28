@@ -272,19 +272,14 @@ export class CosteoComponent implements OnInit {
                     articulo_definicion: [ref.referencia?.articulo?.definicion || null],
                     referencias_cruzadas: [ref.referencia?.articulo?.referencias_cruzadas || ref.referencia?.articulo?.referencias || []],
                     articulo_imagen: [ref.referencia?.articulo?.fotoDescriptiva || null],
-                    proveedores: this.fb.array(ref.proveedores ? ref.proveedores.map(prov => this.crearProveedorFormGroup(prov)) : [this.crearProveedorFormGroup()])
+                    proveedores: this.fb.array(ref.proveedores && ref.proveedores.length > 0 
+                        ? ref.proveedores.map(prov => this.crearProveedorFormGroup(prov)) 
+                        : [this.crearProveedorFormGroup()])
                 });
                 
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
-                
-                // 1. Cargar proveedores que ya tienen datos guardados
-                if (ref.proveedores && ref.proveedores.length > 0) {
-                    ref.proveedores.forEach(p => {
-                        this.agregarProveedorFila(proveedoresArray, p);
-                    });
-                }
 
-                // 2. Cargar proveedores que coincidan con Fabricante y Categoría Comercial (si no están ya)
+                // Cargar proveedores que coincidan con Fabricante y Categoría Comercial (si no están ya)
                 if (this.proveedoresCompletos.length > 0 && ref.referencia?.marca_id && ref.lista_id) {
                     const coincidentes = this.proveedoresCompletos.filter(p => {
                         const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(ref.referencia?.marca_id));
@@ -477,6 +472,7 @@ export class CosteoComponent implements OnInit {
 
     private crearProveedorFormGroup(data?: any): FormGroup {
         return this.fb.group({
+            id: [data?.id || null],
             seleccionado: [data?.seleccionado || false],
             proveedor_id: [data?.tercero_id || data?.proveedor_id || null],
             marca_id: [data?.marca_id || null],
@@ -715,10 +711,15 @@ export class CosteoComponent implements OnInit {
     finalizarCosteo(): void {
         // 1. Verificar que haya al menos un item seleccionado
         const selectedItems: number[] = [];
-        this.referenciasFormArray.value.forEach((ref: any) => {
-            ref.proveedores.forEach((prov: any) => {
-                if (prov.seleccionado && prov.id) {
-                    selectedItems.push(prov.id);
+        
+        this.referenciasFormArray.controls.forEach((refControl) => {
+            const proveedores = (refControl.get('proveedores') as FormArray).controls;
+            proveedores.forEach((provControl) => {
+                if (provControl.get('seleccionado')?.value === true) {
+                    const provId = provControl.get('id')?.value;
+                    if (provId) {
+                        selectedItems.push(provId);
+                    }
                 }
             });
         });
