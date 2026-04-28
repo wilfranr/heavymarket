@@ -800,7 +800,7 @@ class PedidoController extends Controller
             'referencias.*.id' => ['required', 'exists:pedido_referencia,id'],
             'referencias.*.proveedores' => ['sometimes', 'array'],
             'referencias.*.proveedores.*.id' => ['nullable', 'exists:pedido_referencia_proveedor,id'],
-            'referencias.*.proveedores.*.tercero_id' => ['required_with:referencias.*.proveedores.*', 'exists:terceros,id'],
+            'referencias.*.proveedores.*.proveedor_id' => ['required_with:referencias.*.proveedores.*', 'exists:terceros,id'],
             'referencias.*.proveedores.*.marca_id' => ['nullable', 'exists:listas,id'],
             'referencias.*.proveedores.*.dias_entrega' => ['required', 'integer', 'min:0'],
             'referencias.*.proveedores.*.costo_unidad' => ['required', 'numeric', 'min:0'],
@@ -829,7 +829,7 @@ class PedidoController extends Controller
 
                     foreach ($proveedores as $provData) {
                         $ubicacion = 'Nacional';
-                        $tercero = \App\Models\Tercero::with('country')->find($provData['tercero_id']);
+                        $tercero = \App\Models\Tercero::with('country')->find($provData['proveedor_id']);
                         if ($tercero && ($tercero->country_id != 48 && ($tercero->country->iso2 ?? '') != 'CO')) {
                             $ubicacion = 'Internacional';
                         }
@@ -841,7 +841,7 @@ class PedidoController extends Controller
                         $valores = $this->pedidoService->calcularValores($calcData, $pedidoReferencia);
                         
                         $updateData = [
-                            'tercero_id' => $provData['tercero_id'],
+                            'proveedor_id' => $provData['proveedor_id'],
                             'marca_id' => $provData['marca_id'],
                             'dias_entrega' => $provData['dias_entrega'],
                             'costo_unidad' => $provData['costo_unidad'],

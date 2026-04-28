@@ -14,7 +14,7 @@ class PedidoReferenciaProveedor extends Model
     protected $fillable = [
         'pedido_referencia_id',
         'referencia_id',
-        'tercero_id',
+        'proveedor_id',
         'marca_id',
         'dias_entrega',
         'costo_unidad',
@@ -38,7 +38,7 @@ class PedidoReferenciaProveedor extends Model
 
     public function tercero()
     {
-        return $this->belongsTo(Tercero::class);
+        return $this->belongsTo(Tercero::class, 'proveedor_id');
     }
 
     protected static function boot()

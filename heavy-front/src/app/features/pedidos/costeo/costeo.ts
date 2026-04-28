@@ -686,7 +686,7 @@ export class CosteoComponent implements OnInit {
                     .filter((prov: any) => prov.proveedor_id)
                     .map((prov: any) => ({
                         id: prov.id,
-                        tercero_id: prov.proveedor_id,
+                        proveedor_id: prov.proveedor_id,
                         marca_id: prov.marca_id,
                         dias_entrega: parseInt(prov.entrega, 10) || 0,
                         costo_unidad: prov.costo_usd || prov.costo_cop || 0,
