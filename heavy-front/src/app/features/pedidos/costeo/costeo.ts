@@ -702,6 +702,8 @@ export class CosteoComponent implements OnInit {
             next: () => {
                 this.submitting = false;
                 this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Costeo guardado exitosamente.' });
+                // Recargar el pedido desde la API para actualizar la vista
+                this.store.dispatch(loadPedido({ id: this.pedidoId() }));
             },
             error: (err: any) => {
                 this.submitting = false;
