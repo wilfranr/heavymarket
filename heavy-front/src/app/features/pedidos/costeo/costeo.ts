@@ -682,16 +682,18 @@ export class CosteoComponent implements OnInit {
         const payload = {
             referencias: this.referenciasFormArray.value.map((ref: any) => ({
                 id: ref.id,
-                proveedores: ref.proveedores.map((prov: any) => ({
-                    id: prov.id,
-                    tercero_id: prov.proveedor_id,
-                    marca_id: prov.marca_id,
-                    dias_entrega: parseInt(prov.entrega, 10) || 0,
-                    costo_unidad: prov.costo_usd || prov.costo_cop || 0,
-                    utilidad: prov.utilidad || 0,
-                    cantidad: prov.cantidad || 1,
-                    seleccionado: prov.seleccionado || false
-                }))
+                proveedores: ref.proveedores
+                    .filter((prov: any) => prov.proveedor_id)
+                    .map((prov: any) => ({
+                        id: prov.id,
+                        tercero_id: prov.proveedor_id,
+                        marca_id: prov.marca_id,
+                        dias_entrega: parseInt(prov.entrega, 10) || 0,
+                        costo_unidad: prov.costo_usd || prov.costo_cop || 0,
+                        utilidad: prov.utilidad || 0,
+                        cantidad: prov.cantidad || 1,
+                        seleccionado: prov.seleccionado || false
+                    }))
             }))
         };
 

@@ -27,7 +27,9 @@ return new class extends Migration
             Schema::create('cotizacion_referencia_proveedores', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('cotizacion_id')->constrained()->onDelete('cascade');
-                $table->foreignId('pedido_referencia_proveedor_id')->constrained()->onDelete('cascade');
+                $table->foreignId('pedido_referencia_proveedor_id')
+                    ->constrained('pedido_referencia_proveedor')
+                    ->onDelete('cascade');
                 $table->timestamps();
             });
         }

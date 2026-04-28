@@ -798,9 +798,9 @@ class PedidoController extends Controller
         $validated = $request->validate([
             'referencias' => ['required', 'array'],
             'referencias.*.id' => ['required', 'exists:pedido_referencia,id'],
-            'referencias.*.proveedores' => ['required', 'array'],
-            'referencias.*.proveedores.*.id' => ['nullable', 'exists:pedido_referencia_proveedores,id'],
-            'referencias.*.proveedores.*.tercero_id' => ['required', 'exists:terceros,id'],
+            'referencias.*.proveedores' => ['sometimes', 'array'],
+            'referencias.*.proveedores.*.id' => ['nullable', 'exists:pedido_referencia_proveedor,id'],
+            'referencias.*.proveedores.*.tercero_id' => ['required_with:referencias.*.proveedores.*', 'exists:terceros,id'],
             'referencias.*.proveedores.*.marca_id' => ['nullable', 'exists:listas,id'],
             'referencias.*.proveedores.*.dias_entrega' => ['required', 'integer', 'min:0'],
             'referencias.*.proveedores.*.costo_unidad' => ['required', 'numeric', 'min:0'],
@@ -814,15 +814,20 @@ class PedidoController extends Controller
                 foreach ($validated['referencias'] as $refData) {
                     $pedidoReferencia = $pedido->referencias()->findOrFail($refData['id']);
 
+                    $proveedores = $refData['proveedores'] ?? [];
+                    if (empty($proveedores)) {
+                        continue;
+                    }
+
                     // Obtener IDs de proveedores enviados para borrar los que ya no están
-                    $incomingProvIds = collect($refData['proveedores'])
+                    $incomingProvIds = collect($proveedores)
                         ->filter(fn($p) => isset($p['id']) && $p['id'])
                         ->pluck('id')
                         ->toArray();
 
                     $pedidoReferencia->proveedores()->whereNotIn('id', $incomingProvIds)->delete();
 
-                    foreach ($refData['proveedores'] as $provData) {
+                    foreach ($proveedores as $provData) {
                         $ubicacion = 'Nacional';
                         $tercero = \App\Models\Tercero::with('country')->find($provData['tercero_id']);
                         if ($tercero && ($tercero->country_id != 48 && ($tercero->country->iso2 ?? '') != 'CO')) {
@@ -862,6 +867,12 @@ class PedidoController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            \Log::error('Error al guardar costeo', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'pedido_id' => $pedido->id,
+            ]);
+            
             return response()->json([
                 'message' => 'Error al guardar el costeo',
                 'error' => $e->getMessage(),
