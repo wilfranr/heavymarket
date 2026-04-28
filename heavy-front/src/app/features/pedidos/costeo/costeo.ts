@@ -279,8 +279,8 @@ export class CosteoComponent implements OnInit {
                 
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
 
-                // Cargar proveedores que coincidan con Fabricante y Categoría Comercial (si no están ya)
-                if (this.proveedoresCompletos.length > 0 && ref.referencia?.marca_id && ref.lista_id) {
+                // Cargar proveedores que coincidan con Fabricante y Categoría Comercial SOLO si no hay proveedores guardados
+                if (proveedoresArray.length <= 1 && this.proveedoresCompletos.length > 0 && ref.referencia?.marca_id && ref.lista_id) {
                     const coincidentes = this.proveedoresCompletos.filter(p => {
                         const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(ref.referencia?.marca_id));
                         const tieneCategoria = p.categoria_comercial_ids?.some(id => Number(id) === Number(ref.lista_id));
@@ -288,9 +288,9 @@ export class CosteoComponent implements OnInit {
                     });
 
                     coincidentes.forEach(p => {
-                        const yaExiste = ref.proveedores?.some(rp => rp.tercero_id === p.id);
+                        const yaExiste = ref.proveedores?.some(rp => rp.proveedor_id === p.id || rp.tercero_id === p.id);
                         if (!yaExiste) {
-                            this.agregarProveedorFila(proveedoresArray, { tercero_id: p.id });
+                            this.agregarProveedorFila(proveedoresArray, { proveedor_id: p.id });
                         }
                     });
                 }
