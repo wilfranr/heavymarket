@@ -116,7 +116,7 @@ export interface PedidoReferenciaProveedor {
     id: number;
     pedido_referencia_id: number;
     referencia_id: number;
-    tercero_id: number;
+    proveedor_id: number;
     marca_id: number | null;
     dias_entrega: number;
     costo_unidad: number;

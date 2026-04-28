@@ -288,7 +288,7 @@ export class CosteoComponent implements OnInit {
                     });
 
                     coincidentes.forEach(p => {
-                        const yaExiste = ref.proveedores?.some(rp => rp.proveedor_id === p.id || rp.tercero_id === p.id);
+                        const yaExiste = ref.proveedores?.some(rp => rp.proveedor_id === p.id);
                         if (!yaExiste) {
                             this.agregarProveedorFila(proveedoresArray, { proveedor_id: p.id });
                         }
