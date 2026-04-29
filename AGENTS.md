@@ -4,14 +4,16 @@ Bienvenido al sistema de gestión de HeavyMarket. Este archivo sirve como el pun
 
 ## Información del Proyecto
 - **Propósito**: Gestión comercial moderna (pedidos, cotizaciones, inventario).
-- **Backend**: Laravel 12 API (en `heavy-api/`).
-- **Frontend**: Angular 20 SPA (en `heavy-front/`).
+- **Backend**: Laravel 13 API (en `heavy-api/`).
+- **Frontend**: Angular 21 SPA (en `heavy-front/`) con arquitectura Zoneless.
 - **Infraestructura**: Docker y Scripts de despliegue automatizados.
 
 ## Reglas de Oro
 1. **Idioma**: SIEMPRE en **ESPAÑOL** (interacciones y documentación).
 2. **Modo Oscuro**: Todo desarrollo de UI debe ser compatible con Dark Mode.
-3. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
+3. **Reactividad**: Usar **Signals** para todo el estado del frontend; evitar observables para bindings de template.
+4. **Arquitectura**: La aplicación es **Zoneless**; no depender de detección de cambios automática de Zone.js.
+5. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
 
 ## Memoria persistente (Engram MCP)
 

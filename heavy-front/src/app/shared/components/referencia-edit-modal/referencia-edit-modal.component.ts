@@ -8,7 +8,7 @@ import {
     OnChanges,
     SimpleChanges,
     ChangeDetectionStrategy,
-    ChangeDetectorRef
+    signal
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
@@ -52,7 +52,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
     private readonly messageService = inject(MessageService);
-    private readonly cdr = inject(ChangeDetectorRef);
 
     @Input() visible = false;
     @Input() referenciaId: number | null = null;
@@ -64,8 +63,8 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     referenciaForm!: FormGroup;
     loading = false;
     loadingData = false;
-    marcas: Lista[] = [];
-    articulos: Articulo[] = [];
+    marcas = signal<Lista[]>([]);
+    articulos = signal<Articulo[]>([]);
 
     ngOnInit(): void {
         this.initForm();
@@ -91,8 +90,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     private cargarMarcas(): void {
         this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
             next: (items) => {
-                this.marcas = items;
-                this.cdr.markForCheck();
+                this.marcas.set(items);
             }
         });
     }
@@ -100,8 +98,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     private cargarArticulos(): void {
         this.articuloService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
-                this.articulos = response.data;
-                this.cdr.markForCheck();
+                this.articulos.set(response.data);
             }
         });
     }
@@ -113,7 +110,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
 
         this.loadingData = true;
         this.referenciaForm.reset();
-        this.cdr.markForCheck();
 
         this.referenciaService.getById(this.referenciaId).subscribe({
             next: (res) => {
@@ -124,11 +120,10 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                     articulo_id: r.articulo_id,
                     comentario: r.comentario ?? ''
                 });
-                if (r.marca && !this.marcas.some((m) => m.id === r.marca!.id)) {
-                    this.marcas = [r.marca as Lista, ...this.marcas];
+                if (r.marca && !this.marcas().some((m) => m.id === r.marca!.id)) {
+                    this.marcas.update(prev => [r.marca as Lista, ...prev]);
                 }
                 this.loadingData = false;
-                this.cdr.markForCheck();
             },
             error: () => {
                 this.loadingData = false;
@@ -138,7 +133,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                     detail: 'No se pudo cargar la referencia.'
                 });
                 this.closeDialog();
-                this.cdr.markForCheck();
             }
         });
     }
@@ -163,7 +157,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
         };
 
         this.loading = true;
-        this.cdr.markForCheck();
 
         this.referenciaService.update(this.referenciaId, data).subscribe({
             next: (response) => {
@@ -175,7 +168,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                 });
                 this.onReferenciaUpdated.emit(response.data);
                 this.closeDialog();
-                this.cdr.markForCheck();
             },
             error: (error) => {
                 this.loading = false;
@@ -184,7 +176,6 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                     (typeof error.error?.error === 'string' ? error.error.error : null) ||
                     'No se pudo actualizar la referencia.';
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-                this.cdr.markForCheck();
             }
         });
     }

@@ -62,6 +62,7 @@ class UpdatePedidoRequest extends FormRequest
             'referencias.*.referencia_id' => ['nullable', 'integer', 'exists:referencias,id'],
             'referencias.*.sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
             'referencias.*.lista_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'referencias.*.categoria_comercial_id' => ['nullable', 'integer', 'exists:listas,id'],
             'referencias.*.marca_id' => ['nullable', 'integer', 'exists:listas,id'],
             // Borrador de análisis: referencia y definición opcionales al guardar.
             // La exigencia de referencia por línea solo aplica al pasar a En_Costeo (withValidator).

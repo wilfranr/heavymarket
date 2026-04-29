@@ -41,7 +41,7 @@
                 <p-select
                     id="edit-marca_id"
                     formControlName="marca_id"
-                    [options]="marcas"
+                    [options]="marcas()"
                     optionLabel="nombre"
                     optionValue="id"
                     placeholder="Marca o fabricante"
@@ -58,7 +58,7 @@
                 <p-select
                     id="edit-articulo_id"
                     formControlName="articulo_id"
-                    [options]="articulos"
+                    [options]="articulos()"
                     optionLabel="descripcionEspecifica"
                     optionValue="id"
                     placeholder="Vincule un artículo"

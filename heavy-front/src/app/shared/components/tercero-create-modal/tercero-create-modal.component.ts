@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -161,14 +161,14 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     activeIndex: number = 0;
 
     // Location Data
-    paises: Country[] = [];
-    departamentos: State[] = [];
-    ciudades: City[] = [];
+    paises = signal<Country[]>([]);
+    departamentos = signal<State[]>([]);
+    ciudades = signal<City[]>([]);
 
     // Listas auxiliares
-    maquinas: any[] = [];
-    fabricantes: any[] = [];
-    sistemas: any[] = [];
+    maquinas = signal<any[]>([]);
+    fabricantes = signal<any[]>([]);
+    sistemas = signal<any[]>([]);
 
     tiposDocumento = [
         { label: 'NIT', value: 'NIT' },
@@ -270,12 +270,12 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
         if (data.country_id) {
             this.ubicacionService.getStates(data.country_id).subscribe(r => {
-                this.departamentos = r.data;
+                this.departamentos.set(r.data);
             });
         }
         if (data.state_id) {
             this.ubicacionService.getCities(data.state_id).subscribe(r => {
-                this.ciudades = r.data;
+                this.ciudades.set(r.data);
             });
         }
     }
@@ -374,8 +374,8 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 contactos: []
             });
             this.contactos.clear();
-            this.departamentos = [];
-            this.ciudades = [];
+            this.departamentos.set([]);
+            this.ciudades.set([]);
         }
     }
 
@@ -435,24 +435,24 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
     onPaisChange(): void {
         const countryId = this.createTerceroForm.get('country_id')?.value;
-        this.departamentos = []; this.ciudades = []; this.createTerceroForm.patchValue({ state_id: null, city_id: null });
-        if (countryId) { this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos = r.data }); }
+        this.departamentos.set([]); this.ciudades.set([]); this.createTerceroForm.patchValue({ state_id: null, city_id: null });
+        if (countryId) { this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) }); }
     }
 
     onDepartamentoChange(): void {
         const stateId = this.createTerceroForm.get('state_id')?.value;
-        this.ciudades = []; this.createTerceroForm.patchValue({ city_id: null });
-        if (stateId) { this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades = r.data }); }
+        this.ciudades.set([]); this.createTerceroForm.patchValue({ city_id: null });
+        if (stateId) { this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades.set(r.data) }); }
     }
 
     onFileSelect(event: any, fieldName: string): void { if (event.files && event.files.length > 0) { this.createTerceroForm.patchValue({ [fieldName]: event.files[0] }); } }
 
     closeDialog(): void { this.visible = false; this.visibleChange.emit(false); }
 
-    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
-    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
-    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
-    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas = r.data.map(s => ({ label: s.nombre, value: s.id })) }); }
+    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) }); }
+    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) }); }
+    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map(f => ({ label: f.nombre, value: f.id }))) }); }
+    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas.set(r.data.map(s => ({ label: s.nombre, value: s.id }))) }); }
 
     saveTercero(createAnother: boolean = false): void {
         if (this.isViewMode) {

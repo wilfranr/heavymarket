@@ -149,7 +149,7 @@ class PedidoController extends Controller
             'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'fabricante', 'contacto',
             'referencias' => function ($query): void {
                 $query->withCount('imagenes')
-                    ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+                    ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'sistema', 'lista', 'categoriaComercial', 'marca', 'imagenes', 'proveedores.tercero']);
             },
             'articulos.articulo', 'articulos.sistema',
         ]);
@@ -815,17 +815,23 @@ class PedidoController extends Controller
                     $pedidoReferencia = $pedido->referencias()->findOrFail($refData['id']);
 
                     $proveedores = $refData['proveedores'] ?? [];
-                    if (empty($proveedores)) {
-                        continue;
-                    }
 
-                    // Obtener IDs de proveedores enviados para borrar los que ya no están
-                    $incomingProvIds = collect($proveedores)
+                    // Obtener IDs actuales en la base de datos
+                    $currentIds = $pedidoReferencia->proveedores()->pluck('id')->toArray();
+                    
+                    // Obtener IDs enviados que deben conservarse
+                    $idsToKeep = collect($proveedores)
                         ->filter(fn($p) => isset($p['id']) && $p['id'])
                         ->pluck('id')
+                        ->map(fn($id) => (int)$id)
                         ->toArray();
 
-                    $pedidoReferencia->proveedores()->whereNotIn('id', $incomingProvIds)->delete();
+                    // Determinar qué IDs deben ser eliminados
+                    $idsToDelete = array_diff($currentIds, $idsToKeep);
+                    
+                    if (!empty($idsToDelete)) {
+                        $pedidoReferencia->proveedores()->whereIn('id', $idsToDelete)->delete();
+                    }
 
                     foreach ($proveedores as $provData) {
                         $ubicacion = 'Nacional';
@@ -862,8 +868,19 @@ class PedidoController extends Controller
                 }
             });
 
+            // Cargar relaciones necesarias para la respuesta
+            $pedido->load([
+                'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'fabricante', 'contacto',
+                'referencias' => function ($query): void {
+                    $query->withCount('imagenes')
+                        ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'sistema', 'lista', 'categoriaComercial', 'marca', 'imagenes', 'proveedores.tercero']);
+                },
+                'articulos.articulo', 'articulos.sistema',
+            ]);
+
             return response()->json([
                 'message' => 'Costeo guardado exitosamente',
+                'data' => new \App\Http\Resources\PedidoResource($pedido)
             ]);
 
         } catch (\Exception $e) {

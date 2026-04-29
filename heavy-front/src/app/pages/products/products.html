@@ -10,22 +10,22 @@
             <div class="products-hero-inner">
                 <div class="products-categories-tabs-wrapper">
                     <button class="products-category-arrow products-category-arrow-left"
-                        [style.display]="showLeftArrow ? 'flex' : 'none'" (click)="scrollTabs('left')">
+                        [style.display]="showLeftArrow() ? 'flex' : 'none'" (click)="scrollTabs('left')">
                         <svg width="41" height="41" viewBox="0 0 41 41" fill="none">
                             <path d="M25 10L15 20.5L25 31" stroke="#000000" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
                         </svg>
                     </button>
                     <div class="products-categories-tabs" #tabsContainer (scroll)="onTabsScroll()">
-                        <div class="products-category-tag" [class.active]="currentCategory === 'all'"
+                        <div class="products-category-tag" [class.active]="currentCategory() === 'all'"
                             (click)="setCategory('all')">Todas</div>
-                        @for (category of categories; track category.slug) {
-                        <div class="products-category-tag" [class.active]="currentCategory === category.slug"
+                        @for (category of categories(); track category.slug) {
+                        <div class="products-category-tag" [class.active]="currentCategory() === category.slug"
                             (click)="setCategory(category.slug)">{{ category.nombre }}</div>
                         }
                     </div>
                     <button class="products-category-arrow products-category-arrow-right"
-                        [style.display]="showRightArrow ? 'flex' : 'none'" (click)="scrollTabs('right')">
+                        [style.display]="showRightArrow() ? 'flex' : 'none'" (click)="scrollTabs('right')">
                         <svg width="41" height="41" viewBox="0 0 41 41" fill="none">
                             <path d="M15 10L25 20.5L15 31" stroke="#000000" stroke-width="2" stroke-linecap="round"
                                 stroke-linejoin="round" />
@@ -36,18 +36,18 @@
                     <div class="products-search-box">
                         <div class="products-search-filter">
                             <span class="products-search-filter-text">Categoría</span>
-                            <span class="products-search-category-name">{{ getCategoryName(currentCategory) }}</span>
+                            <span class="products-search-category-name">{{ getCategoryName(currentCategory()) }}</span>
                         </div>
                         <div class="products-search-input-wrapper">
                             <div class="products-search-input-inner">
                                 <input type="text" class="products-search-input" placeholder="Buscar productos..."
-                                    [(ngModel)]="currentSearchTerm" (input)="onSearchChange()"
+                                    [(ngModel)]="currentSearchTerm"
                                     aria-label="Buscar productos" />
                                 <span class="products-search-close"
-                                    [style.display]="currentSearchTerm ? 'flex' : 'none'"
+                                    [style.display]="currentSearchTerm() ? 'flex' : 'none'"
                                     (click)="clearSearch()">×</span>
                             </div>
-                            <button class="products-search-button" (click)="filterProducts()">
+                            <button class="products-search-button">
                                 <span>Buscar</span>
                                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                                     <path
@@ -72,12 +72,12 @@
 
         <!-- Descripción -->
         <div class="products-description">
-            <p id="categoria-descripcion">{{ getCategoryDescription(currentCategory) }}</p>
+            <p id="categoria-descripcion">{{ getCategoryDescription(currentCategory()) }}</p>
         </div>
 
         <!-- Grid de productos -->
         <div class="products-grid" id="products-grid">
-            @for (item of filteredProducts; track item.category + '-' + item.subCategory.id) {
+            @for (item of filteredProducts(); track item.category + '-' + item.subCategory.id) {
             <div class="product-card fade-in" [routerLink]="['/productos', item.category, item.subCategory.slug]"
                 #productCard>
                 <div class="product-card-inner">
@@ -106,7 +106,7 @@
                     </div>
                 </div>
             </div>
-            } @if (filteredProducts.length === 0) {
+            } @if (filteredProducts().length === 0) {
             <div class="no-results-message">
                 <p style="text-align: center; padding: 40px; font-size: 18px; color: #666">No se encontraron productos
                     que coincidan con tu búsqueda.</p>

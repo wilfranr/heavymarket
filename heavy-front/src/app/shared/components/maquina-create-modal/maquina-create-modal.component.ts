@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { take } from 'rxjs/operators';
 import { forkJoin } from 'rxjs';
 import { CommonModule } from '@angular/common';
@@ -68,10 +68,10 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     }
 
     // Listas
-    tiposMaquina: any[] = [];
-    fabricantes: any[] = [];
-    sistemas: any[] = [];
-    marcasYFabricantes: any[] = [];
+    tiposMaquina = signal<any[]>([]);
+    fabricantes = signal<any[]>([]);
+    sistemas = signal<any[]>([]);
+    marcasYFabricantes = signal<any[]>([]);
 
     // Modales secundarios
     showCreateTipoModal = false;
@@ -199,10 +199,10 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadTiposMaquina(): void {
         this.listaService.getAll({ tipo: 'Tipo de Máquina', per_page: 500 }).subscribe({
             next: (response) => {
-                this.tiposMaquina = response.data.map(t => ({
+                this.tiposMaquina.set(response.data.map(t => ({
                     label: t.nombre,
                     value: t.id
-                }));
+                })));
             }
         });
     }
@@ -210,7 +210,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.fabricantes = response.data;
+                this.fabricantes.set(response.data);
             }
         });
     }
@@ -218,7 +218,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadSistemas(): void {
         this.sistemaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.sistemas = response.data;
+                this.sistemas.set(response.data);
             }
         });
     }
@@ -226,7 +226,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadMarcasYFabricantes(): void {
         this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
             next: (marcas) => {
-                this.marcasYFabricantes = marcas;
+                this.marcasYFabricantes.set(marcas);
             }
         });
     }

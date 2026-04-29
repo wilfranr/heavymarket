@@ -1,17 +1,28 @@
 <?php
+require __DIR__.'/vendor/autoload.php';
+$app = require_once __DIR__.'/bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
 
-use App\Models\CategoriaLanding;
-use App\Models\SubcategoriaLanding;
+use App\Models\Pedido;
+use App\Models\PedidoReferenciaProveedor;
 
-echo "Checking CategoriaLanding...\n";
-$cats = CategoriaLanding::all();
-echo 'Total Categories: '.$cats->count()."\n";
+// Analizar Pedido #15
+$pedido = Pedido::find(15);
 
-foreach ($cats as $cat) {
-    echo "Category: {$cat->nombre} (ID: {$cat->id})\n";
-    $subs = SubcategoriaLanding::where('categoria_id', $cat->id)->get();
-    echo '  Total Subcategories: '.$subs->count()."\n";
+if (!$pedido) {
+    echo "No hay pedidos en la base de datos.\n";
+    exit;
+}
 
-    $shown = $subs->where('mostrar_en_navbar', true);
-    echo '  Shown in Navbar: '.$shown->count()."\n";
+echo "Analizando Pedido #{$pedido->id}\n";
+foreach ($pedido->referencias as $ref) {
+    echo "  Referencia [{$ref->id}]: {$ref->definicion}\n";
+    $proveedores = $ref->proveedores;
+    if ($proveedores->isEmpty()) {
+        echo "    (Sin proveedores)\n";
+    }
+    foreach ($proveedores as $prov) {
+        echo "    - ID: {$prov->id} | Tercero: {$prov->proveedor_id} | Costo: {$prov->costo_unidad} | Ubicacion: {$prov->ubicacion} | Estado: {$prov->estado}\n";
+    }
 }

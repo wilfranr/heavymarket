@@ -2,7 +2,7 @@
     <div class="navbar-content">
         <div class="navbar-inner-container">
             <!-- Mobile hamburger button -->
-            <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen">
+            <button class="mobile-menu-toggle" (click)="toggleMobileMenu()" [class.active]="isMobileMenuOpen()">
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
                 <span class="hamburger-line"></span>
@@ -16,12 +16,12 @@
             <div class="navbar-frame">
                 <div class="navbar-column">
                     <div class="navbar-link-frame products-menu-wrapper" (mouseenter)="onMouseEnter()"
-                        (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen">
+                        (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen()">
                         <a routerLink="/productos" class="navbar-link products-link">
                             <span class="link-text">Nuestros productos</span>
                         </a>
                         <!-- Menú desplegable -->
-                        <div class="dropdown-menu" [class.active]="isMenuOpen">
+                        <div class="dropdown-menu" [class.active]="isMenuOpen()">
                             <!-- Frame 6 - Contenido principal -->
                             <div class="dropdown-main-content">
                                 <!-- Menu - Sidebar izquierdo -->
@@ -29,9 +29,9 @@
                                     <div class="dropdown-menu-inner">
                                         <h3 class="dropdown-menu-title">Productos por categorías</h3>
                                         <ul class="dropdown-menu-list">
-                                            @for (category of categories; track category.slug) {
+                                            @for (category of categories(); track category.slug) {
                                             <li class="dropdown-menu-item"
-                                                [class.active]="activeCategory === category.slug"
+                                                [class.active]="activeCategory() === category.slug"
                                                 (mouseenter)="setActiveCategory(category.slug)">
                                                 <a href="#" class="dropdown-menu-link"
                                                     (click)="$event.preventDefault()">{{ category.nombre }}</a>
@@ -42,9 +42,9 @@
                                 </div>
                                 <!-- Frame 10 - Contenido de artículos -->
                                 <div class="dropdown-articles-wrapper">
-                                    @for (category of categories; track category.slug) {
+                                    @for (category of categories(); track category.slug) {
                                     <div class="dropdown-articles-content category-content"
-                                        [style.display]="activeCategory === category.slug ? 'flex' : 'none'">
+                                         [style.display]="activeCategory() === category.slug ? 'flex' : 'none'">
                                         <div class="dropdown-articles-inner">
                                             <div class="dropdown-articles-header">
                                                 <h4 class="dropdown-articles-title">{{ category.nombre }}</h4>
@@ -132,8 +132,8 @@
                 </div>
                 <div class="navbar-actions">
                     <!-- User Dropdown -->
-                    <div class="user-dropdown-wrapper" (click)="isUserDropdownOpen = !isUserDropdownOpen">
-                        <button class="navbar-user-btn" [class.active]="isUserDropdownOpen">
+                    <div class="user-dropdown-wrapper" (click)="isUserDropdownOpen.set(!isUserDropdownOpen())">
+                        <button class="navbar-user-btn" [class.active]="isUserDropdownOpen()">
                             <div class="user-info-brief" *ngIf="currentUser">
                                 <span class="user-name-text">{{ currentUser.name.split(' ')[0] }}</span>
                             </div>
@@ -145,7 +145,7 @@
                             </svg>
                         </button>
 
-                        <div class="user-dropdown-menu" *ngIf="isUserDropdownOpen">
+                        <div class="user-dropdown-menu" *ngIf="isUserDropdownOpen()">
                             <div class="dropdown-arrow"></div>
 
                             <!-- Header for Authenticated Users -->
@@ -157,7 +157,7 @@
                             <ul class="dropdown-links">
                                 <!-- Group: Auth -->
                                 <li *ngIf="!currentUser">
-                                    <a (click)="openAuthModal(); isUserDropdownOpen = false" class="dropdown-item">
+                                    <a (click)="openAuthModal(); isUserDropdownOpen.set(false)" class="dropdown-item">
                                         <i class="pi pi-sign-in"></i>
                                         <span>Iniciar sesión</span>
                                     </a>
@@ -181,7 +181,7 @@
                                 <!-- Group: Logout -->
                                 <li *ngIf="currentUser">
                                     <div class="dropdown-divider"></div>
-                                    <a (click)="logout(); isUserDropdownOpen = false" class="dropdown-item logout-btn">
+                                    <a (click)="logout(); isUserDropdownOpen.set(false)" class="dropdown-item logout-btn">
                                         <i class="pi pi-power-off"></i>
                                         <span>Cerrar sesión</span>
                                     </a>
@@ -206,8 +206,8 @@
     </div>
 </div>
 <!-- Mobile Menu -->
-<div class="mobile-menu-overlay" [class.active]="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
-<div class="mobile-menu" [class.active]="isMobileMenuOpen">
+<div class="mobile-menu-overlay" [class.active]="isMobileMenuOpen()" (click)="closeMobileMenu()"></div>
+<div class="mobile-menu" [class.active]="isMobileMenuOpen()">
     <div class="mobile-menu-header">
         <div class="mobile-menu-logo">
             <img src="/images/logo.svg" alt="HEAVYMarket.NET" />
@@ -234,7 +234,7 @@
 
             <div class="mobile-menu-dropdown" [class.expanded]="isCategoryExpanded('productos')">
                 <div class="mobile-menu-categories">
-                    @for (category of categories; track category.slug) {
+                    @for (category of categories(); track category.slug) {
                     <div class="mobile-category-item">
                         <button class="mobile-category-header" (click)="toggleCategory(category.slug, $event)"
                             [class.expanded]="isCategoryExpanded(category.slug)">

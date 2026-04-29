@@ -101,7 +101,7 @@
                     <div class="col-span-1 md:col-span-2">
                         <label for="maquina_id" class="block mb-2 font-semibold">Máquina</label>
                         <div class="flex gap-2">
-                            <p-select id="maquina_id" formControlName="maquina_id" [options]="maquinas" [filter]="true"
+                            <p-select id="maquina_id" formControlName="maquina_id" [options]="maquinas()" [filter]="true"
                                 filterBy="label" placeholder="Seleccione una opción" styleClass="w-full flex-1"
                                 appendTo="body"></p-select>
                             <p-button icon="pi pi-plus" (onClick)="openCreateMaquinaDialog()"
@@ -121,7 +121,7 @@
                             <label for="fabricante_id" class="block mb-2 font-semibold text-sm">Fabricantes</label>
                             <div class="flex gap-2">
                                 <p-multiselect id="fabricante_id" formControlName="fabricante_id"
-                                    [options]="fabricantes" optionLabel="label" optionValue="value"
+                                    [options]="fabricantes()" optionLabel="label" optionValue="value"
                                     placeholder="Seleccione una opción" styleClass="w-full flex-1" display="chip"
                                     [maxSelectedLabels]="100" [filter]="true" filterBy="label"
                                     appendTo="body"></p-multiselect>
@@ -132,7 +132,7 @@
                         <div>
                             <label for="sistema_id" class="block mb-2 font-semibold text-sm">Sistema</label>
                             <div class="flex gap-2">
-                                <p-multiselect id="sistema_id" formControlName="sistema_id" [options]="sistemas"
+                                <p-multiselect id="sistema_id" formControlName="sistema_id" [options]="sistemas()"
                                     optionLabel="label" optionValue="value" placeholder="Seleccione una opción"
                                     styleClass="w-full flex-1" display="chip" [maxSelectedLabels]="100"
                                     [filter]="true" filterBy="label" appendTo="body"></p-multiselect>
@@ -159,14 +159,14 @@
 
                     <div>
                         <label for="country_id" class="block mb-2 font-semibold">País</label>
-                        <p-select id="country_id" formControlName="country_id" [options]="paises" optionLabel="name"
+                        <p-select id="country_id" formControlName="country_id" [options]="paises()" optionLabel="name"
                             optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
                             styleClass="w-full" (onChange)="onPaisChange()" appendTo="body">
                         </p-select>
                     </div>
                     <div>
                         <label for="state_id" class="block mb-2 font-semibold">Departamento/Estado</label>
-                        <p-select id="state_id" formControlName="state_id" [options]="departamentos" optionLabel="name"
+                        <p-select id="state_id" formControlName="state_id" [options]="departamentos()" optionLabel="name"
                             optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
                             styleClass="w-full" (onChange)="onDepartamentoChange()"
                             [disabled]="!createTerceroForm.get('country_id')?.value" appendTo="body">
@@ -174,7 +174,7 @@
                     </div>
                     <div>
                         <label for="city_id" class="block mb-2 font-semibold">Ciudad</label>
-                        <p-select id="city_id" formControlName="city_id" [options]="ciudades" optionLabel="name"
+                        <p-select id="city_id" formControlName="city_id" [options]="ciudades()" optionLabel="name"
                             optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción"
                             styleClass="w-full"
                             [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value"

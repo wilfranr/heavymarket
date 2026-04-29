@@ -1,6 +1,6 @@
 <p-toast></p-toast>
 
-@if (loading$ | async) {
+@if (loading()) {
 <div class="p-6">
     <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
     <p-skeleton width="100%" height="300px"></p-skeleton>
@@ -24,7 +24,7 @@
                     <i class="pi pi-save"></i>
                     <span>Guardar</span>
                 </button>
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()" [disabled]="submitting">
+                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()" [disabled]="submitting()">
                     <i class="pi pi-check-circle"></i>
                     <span>Generar Cotización</span>
                 </button>
@@ -35,7 +35,7 @@
             </div>
         </div>
 
-        @if (pedido$ | async; as pedido) {
+        @if (pedido(); as pedido) {
         <!-- Top Info Cards Grid -->
         <div class="flex gap-6 mb-10 px-8">
 
@@ -56,8 +56,8 @@
                     <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>Asesor</span></div>
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-blue-500 font-semibold">Estado:</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual)">
-                            {{ pedidoEstadoEtiqueta(estadoActual) }}
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual())">
+                            {{ pedidoEstadoEtiqueta(estadoActual()) }}
                         </span>
                     </div>
                 </div>
@@ -130,7 +130,9 @@
                             <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-mono" (click)="showInfo($event, 'referencia', refIndex, op)">
                                 {{ refGroup.get('referencia_codigo')?.value }}
                             </span>
-                            <span class="text-slate-400 font-normal">{{ refGroup.get('categoria_nombre')?.value }}</span>
+                            <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold">
+                                {{ refGroup.get('categoria_comercial_nombre')?.value || 'Sin Cat. Comercial' }}
+                            </span>
                         </div>
                         <div class="flex gap-2 items-center">
                             <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
@@ -208,7 +210,7 @@
                                 <!-- Marca -->
                                 <div class="w-[200px]">
                                     <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="marca_id" [options]="marcas" placeholder="Marca" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                        <p-select formControlName="marca_id" [options]="marcas()" placeholder="Marca" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
                                         <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
                                         <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
                                             (click)="openCreateMarca(refIndex, provIndex)"
@@ -219,7 +221,7 @@
                                 </div>
                                 <div class="w-[180px]">
                                     <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="entrega" [options]="entregas" 
+                                        <p-select formControlName="entrega" [options]="entregas()" 
                                             [editable]="true"
                                             placeholder="Entrega" 
                                             optionLabel="label" optionValue="value"
@@ -325,9 +327,9 @@
     </div>
     <ng-template #footer>
         <div class="flex justify-end gap-3 pb-3 pr-3">
-            <p-button label="Cancelar" [text]="true" severity="secondary" (click)="displayDevolucionDialog = false"></p-button>
+            <p-button label="Cancelar" [text]="true" severity="secondary" (click)="displayDevolucionDialog.set(false)"></p-button>
             <p-button label="Confirmar Devolución" severity="warn" (click)="devolverAAnalista()" 
-                [disabled]="submitting || devolucionComentario.trim().length < 10" [loading]="submitting"></p-button>
+                [disabled]="submitting() || devolucionComentario().trim().length < 10" [loading]="submitting()"></p-button>
         </div>
     </ng-template>
 </p-dialog>
@@ -421,11 +423,23 @@
                 <h4 class="m-0 text-lg font-bold text-gray-900 dark:text-white leading-tight">
                     {{ popoverData.subtitle }}
                 </h4>
-                @if (popoverData.type === 'articulo' && popoverData.es_estandar) {
-                    <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800 shrink-0">
-                        ESTÁNDAR
-                    </span>
-                }
+                <div class="flex gap-2 items-center shrink-0">
+                    @if (popoverData.type === 'referencia' && popoverData.brand) {
+                        <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800">
+                            {{ popoverData.brand }}
+                        </span>
+                    }
+                    @if (popoverData.type === 'referencia' && popoverData.commercial_category) {
+                        <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800">
+                            {{ popoverData.commercial_category }}
+                        </span>
+                    }
+                    @if (popoverData.type === 'articulo' && popoverData.es_estandar) {
+                        <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800">
+                            ESTÁNDAR
+                        </span>
+                    }
+                </div>
             </div>
         </div>
 

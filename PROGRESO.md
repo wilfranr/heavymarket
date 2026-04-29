@@ -1,7 +1,7 @@
 # Progreso del Proyecto HeavyMarket
 
 **Fecha de inicio**: 18 de Enero, 2026  
-**Estado actual**: Fase 15 completada ✅
+**Estado actual**: Fase 17 completada ✅ (Migración Angular 21 Zoneless)
 
 ---
 
@@ -250,6 +250,15 @@
 - **Comando db:clear**: Para limpiar tablas de negocio
 - **Corrección de transacciones**: Eliminado error de commit implícito en MySQL
 
+### Fase 17: Modernización a Angular 21 (Zoneless) ✅
+- **Actualización de Core**: Migración de Angular 20 a Angular 21.0.0.
+- **Arquitectura Zoneless**: Eliminación de `zone.js` y habilitación de `provideZonelessChangeDetection()`.
+- **Refactorización a Signals**: Migración profunda de componentes críticos (`Navbar`, `Products`, `TerceroCreateModal`, `MaquinaCreateModal`, `ReferenciaEditModal`) para usar **Signals** y eliminar errores `NG0100`.
+- **Infraestructura de Testing**: Reemplazo de Karma por **Vitest** para pruebas más rápidas y modernas.
+- **Optimización de Bundle**: Reducción de overhead al eliminar la librería de detección de cambios tradicional.
+- **Corrección de Estilos**: Actualización de flags deprecados en `LayoutService` y limpieza de lints.
+- **Estabilización Final**: Refactorización de `CosteoComponent` a Signals para eliminar errores críticos `NG0100`.
+
 ---
 
 ## 📊 Estadísticas Finales
@@ -399,13 +408,14 @@ heavymarket/
 - Pusher 7.2
 
 ### Frontend
-- Angular 20.3.16
-- TypeScript 5.8.3
-- NgRx 18
+- Angular 21.0.0
+- TypeScript 5.9.2
+- NgRx 21.0.0
 - PrimeNG 20
 - RxJS 7.8
 - Tailwind CSS 4.1
 - Chart.js 4.4
+- Vitest (Testing)
 
 ### Tools
 - Docker Compose
@@ -415,7 +425,8 @@ heavymarket/
 
 ---
 
-**Última actualización**: 28 de Abril, 2026  
-**Commits totales**: 63+  
+**Última actualización**: 29 de Abril, 2026  
+**Versión Actual**: 2.1.0
+**Commits totales**: 65+  
 **Archivos creados**: ~200+  
-**Líneas de código**: ~18,000+
+**Líneas de código**: ~18,500+

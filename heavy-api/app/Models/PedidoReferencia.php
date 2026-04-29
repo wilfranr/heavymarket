@@ -18,6 +18,7 @@ class PedidoReferencia extends Model
         'referencia_id',
         'sistema_id',
         'lista_id',
+        'categoria_comercial_id',
         'marca_id',
         'definicion',
         'cantidad',
@@ -45,6 +46,16 @@ class PedidoReferencia extends Model
     public function lista(): BelongsTo
     {
         return $this->belongsTo(Lista::class, 'lista_id');
+    }
+
+    public function categoriaComercial(): BelongsTo
+    {
+        return $this->belongsTo(Lista::class, 'categoria_comercial_id');
+    }
+
+    public function marca(): BelongsTo
+    {
+        return $this->belongsTo(Lista::class, 'marca_id');
     }
 
     public function imagenes(): HasMany

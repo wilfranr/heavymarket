@@ -23,7 +23,7 @@
             <div class="field">
                 <label for="tipo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Tipo<span class="text-red-500">*</span></label>
                 <div class="flex gap-2">
-                    <p-select id="tipo" formControlName="tipo" [options]="tiposMaquina" optionLabel="label"
+                    <p-select id="tipo" formControlName="tipo" [options]="tiposMaquina()" optionLabel="label"
                         optionValue="value" placeholder="Tipo..." styleClass="w-full flex-1 rounded-xl"
                         [filter]="true" filterBy="label" appendTo="body"></p-select>
                     <p-button icon="pi pi-plus" severity="secondary" [rounded]="true" (onClick)="openCreateTipoDialog()"></p-button>
@@ -34,7 +34,7 @@
             <div class="field">
                 <label for="fabricante_id" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Fabricante<span
                         class="text-red-500">*</span></label>
-                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes"
+                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes()"
                     optionLabel="label" optionValue="value" optionImage="foto" [filter]="true" filterBy="label"
                     placeholder="Fabricante..." styleClass="w-full rounded-xl" appendTo="body">
                 </p-select>
@@ -81,14 +81,14 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                             <div>
                                 <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Sistema</label>
-                                <p-select formControlName="sistema_id" [options]="sistemas" optionLabel="nombre"
+                                <p-select formControlName="sistema_id" [options]="sistemas()" optionLabel="nombre"
                                     optionValue="id" placeholder="Sistema..." styleClass="w-full text-sm rounded-xl"
                                     [filter]="true" filterBy="nombre" appendTo="body"></p-select>
                             </div>
                             
                             <div>
                                 <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Marca / OEM</label>
-                                <p-select formControlName="marca_id" [options]="marcasYFabricantes" optionLabel="nombre"
+                                <p-select formControlName="marca_id" [options]="marcasYFabricantes()" optionLabel="nombre"
                                     optionValue="id" placeholder="Marca..." styleClass="w-full text-sm rounded-xl"
                                     [filter]="true" filterBy="nombre" appendTo="body"></p-select>
                             </div>

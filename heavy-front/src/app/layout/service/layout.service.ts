@@ -115,7 +115,7 @@ export class LayoutService {
                     this.applyPrimaryColor('heavy');
                 }
             });
-        }, { allowSignalWrites: true });
+        });
 
         effect(() => {
             const config = this.layoutConfig();

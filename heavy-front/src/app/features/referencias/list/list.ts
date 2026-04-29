@@ -202,7 +202,8 @@ export class ListComponent implements OnInit {
     /**
      * Guarda los cambios de la fila
      */
-    onRowEditSave(referencia: Referencia) {
+    onRowEditSave(event: any) {
+        const referencia = event.data;
         const data: UpdateReferenciaDto = {
             referencia: referencia.referencia,
             marca_id: referencia.marca_id,
@@ -225,7 +226,8 @@ export class ListComponent implements OnInit {
     /**
      * Cancela la edición de la fila
      */
-    onRowEditCancel(referencia: Referencia, index: number) {
+    onRowEditCancel(event: any) {
+        const referencia = event.data;
         const original = this.editingReferencias[referencia.id];
         if (original) {
             Object.assign(referencia, original);

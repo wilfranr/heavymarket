@@ -5,10 +5,10 @@
 > **Engram (MCP)**: En `mem_search`, `mem_save` y `mem_session_summary` usar siempre `project: "heavymarket"`. Ver sección *Memoria persistente (Engram MCP)* en el `AGENTS.md` de la raíz del repositorio.
 
 ## Stack Tecnológico
-- **Framework**: Angular 20 (Última versión).
+- **Framework**: Angular 21 (Zoneless Architecture).
 - **UI Kit**: PrimeNG 20 + TailwindCSS (vía tailwindcss-primeui).
-- **Estado**: NgRx (Store, Effects, Entity).
-- **Lenguaje**: TypeScript (Modo estricto).
+- **Estado**: Signals (Reactividad primaria) + NgRx (Global state).
+- **Lenguaje**: TypeScript 5.9+ (Modo estricto).
 
 ## Arquitectura del Proyecto (`src/app`)
 La aplicación sigue una arquitectura basada en características (features) y capas:
@@ -35,10 +35,12 @@ La aplicación sigue una arquitectura basada en características (features) y ca
 
 ## Mejores Prácticas y Reglas
 
-### 1. Componentes (Angular 20)
+### 1. Componentes (Angular 21)
 - **Standalone**: Todos los componentes deben ser `standalone: true`.
-- **Signals**: Prefiere el uso de Signals para reactividad local y `input()` / `output()` basados en signals si es posible en esta versión.
-- **Change Detection**: Usar explícitamente `ChangeDetectionStrategy.OnPush` en todos los componentes para rendimiento.
+- **Signals**: ES OBLIGATORIO el uso de Signals para toda reactividad que impacte la vista.
+- **Zoneless**: No usar `zone.js`. La detección de cambios se dispara mediante Signals o eventos de usuario.
+- **Change Detection**: Usar explícitamente `ChangeDetectionStrategy.OnPush` en todos los componentes para consistencia, aunque en Zoneless el comportamiento es nativamente eficiente.
+- **NG0100**: Si ocurre este error, es señal de que se está mutando estado fuera del flujo de Signals o en un hook de ciclo de vida inadecuado. Refactorizar a Signals.
 - **Estructura**:
   - `pages/`: Componentes "inteligentes" que inyectan fachadas o store y pasan datos a componentes hijos.
   - `features/`: Componentes que encapsulan lógica de negocio específica.

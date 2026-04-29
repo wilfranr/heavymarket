@@ -43,6 +43,7 @@ export interface PedidoReferencia {
     referencia_id: number;
     sistema_id: number | null;
     lista_id: number | null;
+    categoria_comercial_id: number | null;
     marca_id: number | null;
     definicion: string | null;
     cantidad: number;
@@ -74,6 +75,7 @@ export interface PedidoReferencia {
     };
     sistema?: any;
     lista?: { id: number; nombre: string };
+    categoria_comercial?: { id: number; nombre: string };
     marca?: any;
     imagenes?: PedidoReferenciaImagen[];
     proveedores?: PedidoReferenciaProveedor[];
@@ -181,6 +183,7 @@ export interface CreatePedidoReferenciaDto {
     referencia_id: number;
     sistema_id?: number;
     lista_id?: number;
+    categoria_comercial_id?: number;
     marca_id?: number;
     definicion?: string;
     cantidad: number;

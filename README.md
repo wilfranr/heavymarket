@@ -1,6 +1,6 @@
 # HeavyMarket
 
-Sistema de gestión comercial moderno construido con Laravel 12 y Angular 20.
+Sistema de gestión comercial moderno construido con Laravel 13 y Angular 21 (Zoneless).
 
 ## Descripción
 
@@ -10,16 +10,16 @@ HeavyMarket es la evolución del sistema CYH, migrado a una arquitectura moderna
 
 ```
 heavymarket/
-├── heavy-api/          Backend API REST con Laravel 12
-├── heavy-front/        Frontend SPA con Angular 20 + PrimeNG (Sakai)
+├── heavy-api/          Backend API REST con Laravel 13
+├── heavy-front/        Frontend SPA con Angular 21 + PrimeNG (Sakai)
 └── docker-compose.yml  Orquestación de servicios para desarrollo
 ```
 
 ## Tecnologías
 
 ### Backend (heavy-api)
-- Laravel 12 (o Laravel 11)
-- PHP 8.2+
+- Laravel 13
+- PHP 8.4+
 - MySQL 8.0+
 - Laravel Sanctum (autenticación API)
 - Spatie Laravel Permission (roles y permisos)
@@ -28,7 +28,7 @@ heavymarket/
 - Pusher (WebSockets para chat en tiempo real)
 
 ### Frontend (heavy-front)
-- Angular 20
+- Angular 21 (Zoneless Architecture)
 - PrimeNG 20 (UI components)
 - Tailwind CSS
 - NgRx (gestión de estado)
@@ -179,5 +179,5 @@ Proyecto HeavyMarket - Sistema de Gestión Comercial
 ---
 
 **Migrado desde**: Sistema CYH (Laravel 10 + Filament 3)  
-**Versión**: 1.0.0  
+**Versión**: 2.1.0  
 **Fecha de Inicio**: Enero 2026

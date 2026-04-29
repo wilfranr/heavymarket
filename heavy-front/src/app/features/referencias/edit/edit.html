@@ -41,8 +41,8 @@
                 <div class="field">
                     <label for="articulo_id" class="block text-sm font-medium mb-2"> Artículo Relacionado </label>
                     <p-select id="articulo_id" formControlName="articulo_id" [options]="articulos"
-                        optionLabel="descripcionEspecifica" optionValue="id" placeholder="Seleccione un artículo"
-                        [showClear]="true" [filter]="true" filterBy="descripcionEspecifica,definicion"
+                        optionLabel="definicion" optionValue="id" placeholder="Seleccione un artículo"
+                        [showClear]="true" [filter]="true" filterBy="definicion,descripcionEspecifica"
                         styleClass="w-full">
                         <ng-template let-articulo pTemplate="item">
                             <div class="flex flex-col">

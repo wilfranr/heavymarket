@@ -31,6 +31,7 @@
             [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['referencia', 'comentario']"
             (onLazyLoad)="onLazyLoad($event)" responsiveLayout="scroll"
             styleClass="p-datatable-sm" dataKey="id" editMode="row"
+            (onRowEditSave)="onRowEditSave($event)" (onRowEditCancel)="onRowEditCancel($event)"
             sortField="created_at" [sortOrder]="-1">
             <ng-template pTemplate="caption">
                 <div class="flex">
@@ -106,8 +107,8 @@
                         <p-cellEditor>
                             <ng-template pTemplate="input">
                                 <p-select [(ngModel)]="referencia.articulo_id" [options]="articulos"
-                                    optionLabel="descripcionEspecifica" optionValue="id" placeholder="Artículo"
-                                    [filter]="true" filterBy="descripcionEspecifica,definicion" styleClass="w-full"
+                                    optionLabel="definicion" optionValue="id" placeholder="Artículo"
+                                    [filter]="true" filterBy="definicion,descripcionEspecifica" styleClass="w-full"
                                     appendTo="body">
                                     <ng-template let-articulo pTemplate="item">
                                         <div class="flex flex-col">
@@ -137,20 +138,18 @@
                     <td>
                         <div class="flex gap-2">
                             @if (!editing) {
-                            <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil"
-                                (click)="onRowEditInit(referencia)"
-                                class="p-button-rounded p-button-text p-button-warning" pTooltip="Editar"
-                                tooltipPosition="top"></button>
-                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
-                                (onClick)="eliminarReferencia(referencia)" pTooltip="Eliminar" tooltipPosition="top">
-                            </p-button>
-                            } @else {
-                            <button pButton pRipple type="button" pSaveEditableRow icon="pi pi-check"
-                                (click)="onRowEditSave(referencia)"
-                                class="p-button-rounded p-button-text p-button-success" pTooltip="Guardar"></button>
-                            <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times"
-                                (click)="onRowEditCancel(referencia, ri)"
-                                class="p-button-rounded p-button-text p-button-danger" pTooltip="Cancelar"></button>
+                <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil"
+                    (click)="onRowEditInit(referencia)"
+                    class="p-button-rounded p-button-text p-button-warning" pTooltip="Editar"
+                    tooltipPosition="top"></button>
+                <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
+                    (onClick)="eliminarReferencia(referencia)" pTooltip="Eliminar" tooltipPosition="top">
+                </p-button>
+                } @else {
+                <button pButton pRipple type="button" pSaveEditableRow icon="pi pi-check"
+                    class="p-button-rounded p-button-text p-button-success" pTooltip="Guardar"></button>
+                <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times"
+                    class="p-button-rounded p-button-text p-button-danger" pTooltip="Cancelar"></button>
                             }
                         </div>
                     </td>

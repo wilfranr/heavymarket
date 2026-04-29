@@ -1,4 +1,4 @@
-import { Component, EventEmitter, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, OnInit, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { LandingService, Category } from '../../../core/services/landing';
@@ -179,16 +179,16 @@ import { AuthModalComponent } from '../auth-modal/auth-modal.component';
     `]
 })
 export class Navbar implements OnInit {
-    categories: Category[] = [];
-    activeCategory: string = '';
-    isMenuOpen: boolean = false;
+    categories = signal<Category[]>([]);
+    activeCategory = signal<string>('');
+    isMenuOpen = signal<boolean>(false);
     hoverTimeout: any;
     closeTimeout: any;
 
-    // Dropsdowns
-    isUserDropdownOpen: boolean = false;
-    isMobileMenuOpen: boolean = false;
-    expandedCategories: Set<string> = new Set();
+    // Dropdowns
+    isUserDropdownOpen = signal<boolean>(false);
+    isMobileMenuOpen = signal<boolean>(false);
+    expandedCategories = signal<Set<string>>(new Set());
 
     // Auth Modal
     isAuthModalVisible: boolean = false;
@@ -205,9 +205,9 @@ export class Navbar implements OnInit {
 
     ngOnInit() {
         this.landingService.getNavbarCategories().subscribe((data) => {
-            this.categories = data;
-            if (this.categories.length > 0) {
-                this.activeCategory = this.categories[0].slug;
+            this.categories.set(data);
+            if (data.length > 0) {
+                this.activeCategory.set(data[0].slug);
             }
         });
 
@@ -274,7 +274,7 @@ export class Navbar implements OnInit {
         }
 
         this.hoverTimeout = setTimeout(() => {
-            this.isMenuOpen = true;
+            this.isMenuOpen.set(true);
         }, 150);
     }
 
@@ -284,30 +284,30 @@ export class Navbar implements OnInit {
         }
 
         this.closeTimeout = setTimeout(() => {
-            this.isMenuOpen = false;
+            this.isMenuOpen.set(false);
         }, 300);
     }
 
     setActiveCategory(slug: string) {
-        this.activeCategory = slug;
+        this.activeCategory.set(slug);
     }
 
     // Mobile menu methods
     toggleMobileMenu() {
-        this.isMobileMenuOpen = !this.isMobileMenuOpen;
+        this.isMobileMenuOpen.update(v => !v);
         // Prevent body scroll when menu is open
-        if (this.isMobileMenuOpen) {
+        if (this.isMobileMenuOpen()) {
             document.body.style.overflow = 'hidden';
         } else {
             document.body.style.overflow = '';
-            this.expandedCategories.clear();
+            this.expandedCategories.set(new Set());
         }
     }
 
     closeMobileMenu() {
-        this.isMobileMenuOpen = false;
+        this.isMobileMenuOpen.set(false);
         document.body.style.overflow = '';
-        this.expandedCategories.clear();
+        this.expandedCategories.set(new Set());
     }
 
     toggleCategory(slug: string, event?: Event) {
@@ -316,14 +316,18 @@ export class Navbar implements OnInit {
             event.stopPropagation();
         }
 
-        if (this.expandedCategories.has(slug)) {
-            this.expandedCategories.delete(slug);
-        } else {
-            this.expandedCategories.add(slug);
-        }
+        this.expandedCategories.update(set => {
+            const newSet = new Set(set);
+            if (newSet.has(slug)) {
+                newSet.delete(slug);
+            } else {
+                newSet.add(slug);
+            }
+            return newSet;
+        });
     }
 
     isCategoryExpanded(slug: string): boolean {
-        return this.expandedCategories.has(slug);
+        return this.expandedCategories().has(slug);
     }
 }

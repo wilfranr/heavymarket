@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../landing/components/navbar/navbar';
@@ -14,35 +14,57 @@ import { Router, RouterModule } from '@angular/router';
     styleUrls: ['../../../assets/css/products.css']
 })
 export class Products implements OnInit, AfterViewInit {
-    categories: Category[] = [];
-    filteredProducts: { category: string; subCategory: SubCategory }[] = [];
-    allProducts: { category: string; subCategory: SubCategory }[] = [];
+    categories = signal<Category[]>([]);
+    currentCategory = signal<string>('all');
+    currentSearchTerm = signal<string>('');
 
-    currentCategory: string = 'all';
-    currentSearchTerm: string = '';
+    allProducts = computed(() => {
+        const cats = this.categories();
+        const products: { category: string; subCategory: SubCategory }[] = [];
+        cats.forEach((cat) => {
+            cat.subcategorias.forEach((sub) => {
+                products.push({
+                    category: cat.slug,
+                    subCategory: sub
+                });
+            });
+        });
+        return products;
+    });
 
-    showLeftArrow: boolean = false;
-    showRightArrow: boolean = false;
+    filteredProducts = computed(() => {
+        const all = this.allProducts();
+        const category = this.currentCategory();
+        const search = this.normalizeText(this.currentSearchTerm());
+
+        return all.filter((item: { category: string; subCategory: SubCategory }) => {
+            const matchesCategory = category === 'all' || item.category === category;
+
+            const productName = this.normalizeText(item.subCategory.nombre);
+            const productDesc = this.normalizeText(item.subCategory.descripcion);
+            const categoryName = this.normalizeText(this.getCategoryName(item.category));
+
+            const matchesSearch = !search || productName.includes(search) || productDesc.includes(search) || categoryName.includes(search);
+
+            return matchesCategory && matchesSearch;
+        });
+    });
+
+    showLeftArrow = signal(false);
+    showRightArrow = signal(false);
 
     @ViewChild('tabsContainer') tabsContainer!: ElementRef;
     @ViewChildren('productCard') productCards!: QueryList<ElementRef>;
 
     constructor(
         private landingService: LandingService,
-        private router: Router,
-        private cdr: ChangeDetectorRef
+        private router: Router
     ) { }
 
     ngOnInit() {
         this.landingService.getAllCategories().subscribe((categories) => {
-            this.categories = categories;
-            this.processAllProducts();
-            this.filterProducts();
-            // Esperar a que el DOM se actualice
-            setTimeout(() => {
-                this.checkArrows();
-                this.cdr.detectChanges();
-            }, 100);
+            this.categories.set(categories);
+            this.checkArrows();
         });
     }
 
@@ -56,65 +78,27 @@ export class Products implements OnInit, AfterViewInit {
         this.checkArrows();
     }
 
-    processAllProducts() {
-        this.allProducts = [];
-        this.categories.forEach((cat) => {
-            cat.subcategorias.forEach((sub) => {
-                this.allProducts.push({
-                    category: cat.slug,
-                    subCategory: sub
-                });
-            });
-        });
-    }
-
     getCategoryName(slug: string): string {
         if (slug === 'all') return 'Todas';
-        const cat = this.categories.find((c) => c.slug === slug);
+        const cat = this.categories().find((c) => c.slug === slug);
         return cat ? cat.nombre : '';
     }
 
     getCategoryDescription(slug: string): string {
         if (slug === 'all') return 'Explore nuestro catálogo completo de productos para maquinaria pesada.';
-        const cat = this.categories.find((c) => c.slug === slug);
-
+        const cat = this.categories().find((c) => c.slug === slug);
         if (cat && cat.descripcion_general) {
             return cat.descripcion_general;
         }
-
         return cat ? `Explore los productos de la categoría ${cat.nombre}` : '';
     }
 
     setCategory(categorySlug: string) {
-        this.currentCategory = categorySlug;
-        this.filterProducts();
-    }
-
-    filterProducts() {
-        const normalizedSearch = this.normalizeText(this.currentSearchTerm);
-
-        this.filteredProducts = this.allProducts.filter((item) => {
-            const matchesCategory = this.currentCategory === 'all' || item.category === this.currentCategory;
-
-            const productName = this.normalizeText(item.subCategory.nombre);
-            const productDesc = this.normalizeText(item.subCategory.descripcion);
-            const categoryName = this.normalizeText(this.getCategoryName(item.category));
-
-            const matchesSearch = !normalizedSearch || productName.includes(normalizedSearch) || productDesc.includes(normalizedSearch) || categoryName.includes(normalizedSearch);
-
-            return matchesCategory && matchesSearch;
-        });
-
-        // Re-trigger animations logic if needed (Angular handles DOM updates, CSS fade-in can be handled with simple class binding)
-    }
-
-    onSearchChange() {
-        this.filterProducts();
+        this.currentCategory.set(categorySlug);
     }
 
     clearSearch() {
-        this.currentSearchTerm = '';
-        this.filterProducts();
+        this.currentSearchTerm.set('');
     }
 
     normalizeText(text: string): string {
@@ -149,8 +133,7 @@ export class Products implements OnInit, AfterViewInit {
         if (!this.tabsContainer) return;
         const container = this.tabsContainer.nativeElement;
 
-        this.showLeftArrow = container.scrollLeft > 10;
-        this.showRightArrow = container.scrollLeft < container.scrollWidth - container.clientWidth - 10;
-        this.cdr.detectChanges();
+        this.showLeftArrow.set(container.scrollLeft > 10);
+        this.showRightArrow.set(container.scrollLeft < container.scrollWidth - container.clientWidth - 10);
     }
 }

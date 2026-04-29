@@ -773,7 +773,7 @@ export class AnalysisComponent implements OnInit {
         if (refObj) {
             parte.patchValue({
                 descripcion: this.descripcionAnalisisDesdeOpcion(refObj),
-                categoria: refObj.articulo_id
+                categoria: refObj.lista_id || refObj.articulo_id
             });
         }
 
@@ -1074,6 +1074,7 @@ export class AnalysisComponent implements OnInit {
         articulo_imagen?: string;
         articulo_peso?: number;
         referencias_cruzadas?: any[];
+        lista_id: number | null;
     } {
         const art = r.articulo;
         const esPieza = !!(art?.es_pieza_estandar ?? r.articulo_es_pieza_estandar);
@@ -1091,7 +1092,8 @@ export class AnalysisComponent implements OnInit {
             descripcion_especifica_articulo: esp.trim() || undefined,
             articulo_imagen: art?.fotoDescriptiva || r.articulo_imagen,
             articulo_peso: art?.peso || r.articulo_peso,
-            referencias_cruzadas: art?.referencias || r.articulo_referencias || []
+            referencias_cruzadas: art?.referencias || r.articulo_referencias || [],
+            lista_id: r.lista_id ?? null
         };
     }
 
@@ -1290,7 +1292,7 @@ export class AnalysisComponent implements OnInit {
                           })
                       )
                     : this.textoDescripcionArticuloDesdePedidoLinea(r) || r.definicion || '',
-                categoria: r.lista_id
+                categoria: r.categoria_comercial_id || r.lista_id
             });
         });
 
@@ -1389,7 +1391,8 @@ export class AnalysisComponent implements OnInit {
                     id: parteValue.id || null, 
                     referencia_id: parteValue.referencia_id || null,
                     sistema_id: itemValue.sistema_id,
-                    lista_id: itemValue.lista_id, // Usar SIEMPRE el del requerimiento/tarjeta
+                    lista_id: itemValue.lista_id, // Usar SIEMPRE el del requerimiento/tarjeta (Tipo Técnico)
+                    categoria_comercial_id: parteValue.categoria, // Categoría Comercial para filtrado de proveedores
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
                     comentario: itemValue.comentario,

@@ -140,6 +140,7 @@ class PedidoService
                         'cantidad' => $refData['cantidad'] ?? 1,
                         'comentario' => $refData['comentario'] ?? null,
                         'imagen' => $refData['imagen'] ?? null,
+                        'categoria_comercial_id' => $refData['categoria_comercial_id'] ?? null,
                         'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
                         'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
                     ]);
@@ -154,6 +155,7 @@ class PedidoService
                     'cantidad' => $refData['cantidad'] ?? 1,
                     'comentario' => $refData['comentario'] ?? null,
                     'imagen' => $refData['imagen'] ?? null,
+                    'categoria_comercial_id' => $refData['categoria_comercial_id'] ?? null,
                     'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
                     'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 ]);
