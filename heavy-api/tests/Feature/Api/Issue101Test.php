@@ -1,111 +1,82 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * Tests para Issue #101 - Items con mismo metadata pero diferente cantidad
+ */
 
-namespace Tests\Feature\Api;
+beforeEach(function () {
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
+    $this->analista = createUserWithRole('Analista');
+});
 
-use App\Models\Pedido;
-use App\Models\PedidoReferencia;
-use App\Models\Sistema;
-use App\Models\Lista;
-use App\Models\Referencia;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
-use Tests\TestCase;
+it('API retorna items con mismo metadata pero diferente cantidad', function () {
+    $sistema = \App\Models\Sistema::create(['nombre' => 'SISTEMA TEST']);
+    $lista = \App\Models\Lista::factory()->create(['tipo' => 'Categoría Comercial']);
+    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
 
-class Issue101Test extends TestCase
-{
-    use RefreshDatabase;
+    \App\Models\PedidoReferencia::create([
+        'pedido_id' => $pedido->id,
+        'sistema_id' => $sistema->id,
+        'lista_id' => $lista->id,
+        'definicion' => 'Filtro de Aceite',
+        'cantidad' => 1,
+        'estado' => 1,
+    ]);
 
-    private User $analista;
+    \App\Models\PedidoReferencia::create([
+        'pedido_id' => $pedido->id,
+        'sistema_id' => $sistema->id,
+        'lista_id' => $lista->id,
+        'definicion' => 'Filtro de Aceite',
+        'cantidad' => 2,
+        'estado' => 1,
+    ]);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-        Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
-        $this->analista = User::factory()->create();
-        $this->analista->assignRole('Analista');
-    }
+    $response = $this->actingAs($this->analista, 'sanctum')
+        ->getJson("/v1/pedidos/{$pedido->id}");
 
-    /**
-     * Test: El API debe permitir y retornar múltiples ítems con el mismo sistema/tipo pero diferentes cantidades.
-     */
-    public function test_api_retorna_items_con_mismo_metadata_pero_diferente_cantidad(): void
-    {
-        $sistema = Sistema::create(['nombre' => 'SISTEMA TEST']);
-        $lista = Lista::factory()->create(['tipo' => 'Categoría Comercial']);
-        $pedido = Pedido::factory()->create(['estado' => 'En_Analisis']);
+    $response->assertStatus(200);
+    $referencias = $response->json('data.referencias');
 
-        // Crear dos ítems con mismo sistema, lista y definición, pero diferente cantidad
-        PedidoReferencia::create([
-            'pedido_id' => $pedido->id,
-            'sistema_id' => $sistema->id,
-            'lista_id' => $lista->id,
-            'definicion' => 'Filtro de Aceite',
-            'cantidad' => 1,
-            'estado' => 1
-        ]);
+    expect($referencias)->toHaveCount(2);
+});
 
-        PedidoReferencia::create([
-            'pedido_id' => $pedido->id,
-            'sistema_id' => $sistema->id,
-            'lista_id' => $lista->id,
-            'definicion' => 'Filtro de Aceite',
-            'cantidad' => 2,
-            'estado' => 1
-        ]);
+it('permite guardar análisis con items similares separados', function () {
+    $sistema = \App\Models\Sistema::create(['nombre' => 'SISTEMA TEST']);
+    $lista = \App\Models\Lista::factory()->create(['tipo' => 'Categoría Comercial']);
+    $ref1 = \App\Models\Referencia::factory()->create();
+    $ref2 = \App\Models\Referencia::factory()->create();
+    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
 
-        $response = $this->actingAs($this->analista, 'sanctum')
-            ->getJson("/v1/pedidos/{$pedido->id}");
+    $payload = [
+        'referencias' => [
+            [
+                'id' => null,
+                'referencia_id' => $ref1->id,
+                'sistema_id' => $sistema->id,
+                'lista_id' => $lista->id,
+                'cantidad' => 1,
+                'definicion' => 'Item Similar',
+                'estado' => 1,
+            ],
+            [
+                'id' => null,
+                'referencia_id' => $ref2->id,
+                'sistema_id' => $sistema->id,
+                'lista_id' => $lista->id,
+                'cantidad' => 2,
+                'definicion' => 'Item Similar',
+                'estado' => 1,
+            ],
+        ],
+    ];
 
-        $response->assertStatus(200);
-        $referencias = $response->json('data.referencias');
+    $response = $this->actingAs($this->analista, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", $payload);
 
-        $this->assertCount(2, $referencias);
-    }
+    $response->assertStatus(200);
 
-    /**
-     * Test: Al guardar el análisis, se deben persistir ítems separados si vienen en el payload.
-     */
-    public function test_puede_guardar_analisis_con_items_similares_separados(): void
-    {
-        $sistema = Sistema::create(['nombre' => 'SISTEMA TEST']);
-        $lista = Lista::factory()->create(['tipo' => 'Categoría Comercial']);
-        $ref1 = Referencia::factory()->create();
-        $ref2 = Referencia::factory()->create();
-        $pedido = Pedido::factory()->create(['estado' => 'En_Analisis']);
-
-        $payload = [
-            'referencias' => [
-                [
-                    'id' => null,
-                    'referencia_id' => $ref1->id,
-                    'sistema_id' => $sistema->id,
-                    'lista_id' => $lista->id,
-                    'cantidad' => 1,
-                    'definicion' => 'Item Similar',
-                    'estado' => 1
-                ],
-                [
-                    'id' => null,
-                    'referencia_id' => $ref2->id,
-                    'sistema_id' => $sistema->id,
-                    'lista_id' => $lista->id,
-                    'cantidad' => 2,
-                    'definicion' => 'Item Similar',
-                    'estado' => 1
-                ]
-            ]
-        ];
-
-        $response = $this->actingAs($this->analista, 'sanctum')
-            ->putJson("/v1/pedidos/{$pedido->id}", $payload);
-
-        $response->assertStatus(200);
-        
-        $this->assertDatabaseCount('pedido_referencia', 2);
-        $this->assertDatabaseHas('pedido_referencia', ['cantidad' => 1, 'definicion' => 'Item Similar']);
-        $this->assertDatabaseHas('pedido_referencia', ['cantidad' => 2, 'definicion' => 'Item Similar']);
-    }
-}
+    expectDatabaseCount('pedido_referencia', 2);
+    andDatabaseHas('pedido_referencia', ['cantidad' => 1, 'definicion' => 'Item Similar']);
+    andDatabaseHas('pedido_referencia', ['cantidad' => 2, 'definicion' => 'Item Similar']);
+});

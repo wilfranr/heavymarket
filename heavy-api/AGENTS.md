@@ -5,12 +5,13 @@
 > **Engram (MCP)**: En `mem_search`, `mem_save` y `mem_session_summary` usar siempre `project: "heavymarket"`. Ver sección *Memoria persistente (Engram MCP)* en el `AGENTS.md` de la raíz del repositorio.
 
 ## Stack Tecnológico
-- **Framework**: Laravel 12.
+- **Framework**: Laravel 13.
 - **Lenguaje**: PHP 8.4+ (Tipado estricto).
 - **Base de Datos**: MySQL 8.
 - **API**: RESTful.
 - **Autenticación**: Laravel Sanctum.
 - **Roles/Permisos**: Spatie Laravel Permission.
+- **Testing**: Pest v4 (framework por defecto en Laravel 13).
 
 ## Arquitectura del Proyecto (`app/`)
 El backend utiliza patrones de diseño para mantener los controladores limpios y la lógica desacoplada.
@@ -46,8 +47,12 @@ El backend utiliza patrones de diseño para mantener los controladores limpios y
 - Validación: Nunca confiar en el input del usuario.
 
 ### 5. Testing
-- Escribir tests para nuevas funcionalidades (`php artisan test`).
+- Framework: **Pest v4** (sintaxis funcional, preferido sobre PHPUnit).
+- Escribir tests para nuevas funcionalidades (`composer test` o `./vendor/bin/pest`).
 - Preferir Feature tests para endpoints de API.
+- Tests Unitarios para traits, enums, policies y services.
+- Usar helpers definidos en `tests/Pest.php`: `seedRoles()`, `createUserWithRole()`, `expectDatabaseHas()`, etc.
+- Los tests Feature usan `RefreshDatabase` automáticamente vía configuración en `tests/Pest.php`.
 
 ## Comandos de Ayuda
 - `php artisan serve`: Servidor local.

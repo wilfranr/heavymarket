@@ -1,109 +1,81 @@
 <?php
 
-namespace Tests\Feature\Api;
+/**
+ * Tests de Feature para Usuarios
+ */
 
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
-use Tests\TestCase;
+beforeEach(function () {
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+});
 
-class UserTest extends TestCase
-{
-    use RefreshDatabase;
+it('super admin puede listar usuarios', function () {
+    $admin = createUserWithRole('super_admin');
+    \App\Models\User::factory()->count(3)->create();
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $response = $this->actingAs($admin, 'sanctum')
+        ->getJson('/v1/users');
 
-        // Aseguramos que existan los roles necesarios para las pruebas
-        Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-        Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
-    }
+    $response->assertStatus(200)
+        ->assertJsonStructure(['data', 'meta']);
+});
 
-    public function test_super_admin_puede_listar_usuarios(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('super_admin');
-        User::factory()->count(3)->create();
+it('vendedor no puede acceder a usuarios', function () {
+    $vendedor = createUserWithRole('Vendedor');
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->getJson('/v1/users');
+    $this->actingAs($vendedor, 'sanctum')
+        ->getJson('/v1/users')->assertStatus(403);
+});
 
-        $response->assertStatus(200)
-            ->assertJsonStructure(['data', 'meta']);
-    }
+it('super admin puede crear usuario', function () {
+    $admin = createUserWithRole('super_admin');
 
-    public function test_vendedor_no_puede_acceder_a_usuarios(): void
-    {
-        $vendedor = User::factory()->create();
-        $vendedor->assignRole('Vendedor');
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/v1/users', [
+            'name' => 'Nuevo Test',
+            'email' => 'nuevo@test.com',
+            'password' => 'Password123!',
+            'roles' => ['Vendedor'],
+        ]);
 
-        $response = $this->actingAs($vendedor, 'sanctum')
-            ->getJson('/v1/users');
+    $response->assertStatus(201)
+        ->assertJsonPath('data.email', 'nuevo@test.com');
 
-        $response->assertStatus(403);
-    }
+    expectDatabaseHas('users', ['email' => 'nuevo@test.com']);
+});
 
-    public function test_super_admin_puede_crear_usuario(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('super_admin');
+it('administrador no puede asignar rol super admin', function () {
+    $admin = createUserWithRole('Administrador');
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->postJson('/v1/users', [
-                'name' => 'Nuevo Test',
-                'email' => 'nuevo@test.com',
-                'password' => 'Password123!',
-                'roles' => ['Vendedor'],
-            ]);
+    $response = $this->actingAs($admin, 'sanctum')
+        ->postJson('/v1/users', [
+            'name' => 'Intento Admin',
+            'email' => 'intento@test.com',
+            'password' => 'Password123!',
+            'roles' => ['super_admin'],
+        ]);
 
-        $response->assertStatus(201)
-            ->assertJsonPath('data.email', 'nuevo@test.com');
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['roles']);
+});
 
-        $this->assertDatabaseHas('users', ['email' => 'nuevo@test.com']);
-    }
+it('usuario no puede eliminarse a sí mismo', function () {
+    $admin = createUserWithRole('super_admin');
 
-    public function test_administrador_no_puede_asignar_rol_super_admin(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('Administrador');
+    $response = $this->actingAs($admin, 'sanctum')
+        ->deleteJson("/v1/users/{$admin->id}");
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->postJson('/v1/users', [
-                'name' => 'Intento Admin',
-                'email' => 'intento@test.com',
-                'password' => 'Password123!',
-                'roles' => ['super_admin'],
-            ]);
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'No puedes eliminar tu propio usuario');
+});
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['roles']);
-    }
+it('super admin puede eliminar otro usuario', function () {
+    $admin = createUserWithRole('super_admin');
+    $otroUser = \App\Models\User::factory()->create();
 
-    public function test_usuario_no_puede_eliminarse_a_si_mismo(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('super_admin');
+    $this->actingAs($admin, 'sanctum')
+        ->deleteJson("/v1/users/{$otroUser->id}")->assertStatus(204);
 
-        $response = $this->actingAs($admin, 'sanctum')
-            ->deleteJson("/v1/users/{$admin->id}");
-
-        $response->assertStatus(422)
-            ->assertJsonPath('message', 'No puedes eliminar tu propio usuario');
-    }
-
-    public function test_super_admin_puede_eliminar_otro_usuario(): void
-    {
-        $admin = User::factory()->create();
-        $admin->assignRole('super_admin');
-
-        $otroUser = User::factory()->create();
-
-        $response = $this->actingAs($admin, 'sanctum')
-            ->deleteJson("/v1/users/{$otroUser->id}");
-
-        $response->assertStatus(204);
-        $this->assertDatabaseMissing('users', ['id' => $otroUser->id]);
-    }
-}
+    expectDatabaseMissing('users', ['id' => $otroUser->id]);
+});

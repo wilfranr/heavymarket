@@ -1,217 +1,156 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Tests\Feature\Api;
-
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Role;
-use Tests\TestCase;
-
 /**
- * Tests de Feature para Autenticación API
- *
- * Prueba todos los endpoints de autenticación con Sanctum
+ * Tests de autenticación API con Sanctum
  */
-class AuthTest extends TestCase
-{
-    use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+beforeEach(function () {
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'panel_user', 'guard_name' => 'web']);
+});
 
-        Role::firstOrCreate(['name' => 'panel_user', 'guard_name' => 'web']);
-    }
+it('permite registro de usuario exitoso', function () {
+    $response = $this->postJson('/v1/register', [
+        'name' => 'Juan Pérez',
+        'email' => 'juan@example.com',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
 
-    /**
-     * Test: Registro de usuario exitoso
-     */
-    public function test_usuario_puede_registrarse(): void
-    {
-        $response = $this->postJson('/v1/register', [
-            'name' => 'Juan Pérez',
-            'email' => 'juan@example.com',
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
+    $response->assertStatus(201)
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'user' => ['id', 'name', 'email', 'roles'],
+                'access_token',
+                'token_type',
+                'expires_in',
+            ],
         ]);
 
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'user' => ['id', 'name', 'email', 'roles'],
-                    'access_token',
-                    'token_type',
-                    'expires_in',
-                ],
-            ]);
+    expectDatabaseHas('users', ['email' => 'juan@example.com']);
+});
 
-        $this->assertDatabaseHas('users', [
-            'email' => 'juan@example.com',
+it('rechaza registro sin datos obligatorios', function () {
+    $response = $this->postJson('/v1/register', []);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['name', 'email', 'password']);
+});
+
+it('rechaza registro con email duplicado', function () {
+    \App\Models\User::factory()->create(['email' => 'existente@example.com']);
+
+    $response = $this->postJson('/v1/register', [
+        'name' => 'Usuario Nuevo',
+        'email' => 'existente@example.com',
+        'password' => 'Password123!',
+        'password_confirmation' => 'Password123!',
+    ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
+
+it('permite login con credenciales correctas', function () {
+    $user = \App\Models\User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response = $this->postJson('/v1/login', [
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'message',
+            'data' => [
+                'user' => ['id', 'name', 'email', 'roles', 'permissions'],
+                'access_token',
+                'token_type',
+            ],
         ]);
-    }
+});
 
-    /**
-     * Test: Registro falla sin datos obligatorios
-     */
-    public function test_registro_falla_sin_datos_obligatorios(): void
-    {
-        $response = $this->postJson('/v1/register', []);
+it('rechaza login con credenciales incorrectas', function () {
+    \App\Models\User::factory()->create([
+        'email' => 'test@example.com',
+        'password' => 'password123',
+    ]);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['name', 'email', 'password']);
-    }
+    $response = $this->postJson('/v1/login', [
+        'email' => 'test@example.com',
+        'password' => 'password_incorrecta',
+    ]);
 
-    /**
-     * Test: Registro falla con email duplicado
-     */
-    public function test_registro_falla_con_email_duplicado(): void
-    {
-        User::factory()->create(['email' => 'existente@example.com']);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['email']);
+});
 
-        $response = $this->postJson('/v1/register', [
-            'name' => 'Usuario Nuevo',
-            'email' => 'existente@example.com',
-            'password' => 'Password123!',
-            'password_confirmation' => 'Password123!',
+it('permite obtener información de usuario autenticado', function () {
+    $user = \App\Models\User::factory()->create();
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->getJson('/v1/me');
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => [
+                'id' => $user->id,
+                'email' => $user->email,
+            ],
         ]);
+});
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
+it('permite cerrar sesión', function () {
+    $user = \App\Models\User::factory()->create();
+    $token = $user->createToken('test-device')->plainTextToken;
 
-    /**
-     * Test: Login exitoso con credenciales correctas
-     */
-    public function test_usuario_puede_hacer_login(): void
-    {
-        $user = User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => 'password123',
+    $response = $this->withHeader('Authorization', 'Bearer '.$token)
+        ->postJson('/v1/logout');
+
+    $response->assertStatus(200)
+        ->assertJson(['message' => 'Sesión cerrada exitosamente']);
+
+    expectDatabaseMissing('personal_access_tokens', [
+        'tokenable_id' => $user->id,
+    ]);
+});
+
+it('requiere autenticación para rutas protegidas', function () {
+    $response = $this->getJson('/v1/me');
+
+    $response->assertStatus(401);
+});
+
+it('permite refrescar token', function () {
+    $user = \App\Models\User::factory()->create();
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->postJson('/v1/refresh');
+
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'message',
+            'data' => ['access_token', 'token_type', 'expires_in'],
         ]);
+});
 
-        $response = $this->postJson('/v1/login', [
-            'email' => 'test@example.com',
-            'password' => 'password123',
-        ]);
+it('permite listar tokens activos', function () {
+    $user = \App\Models\User::factory()->create();
+    $user->createToken('dispositivo-1');
+    $user->createToken('dispositivo-2');
 
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'data' => [
-                    'user' => ['id', 'name', 'email', 'roles', 'permissions'],
-                    'access_token',
-                    'token_type',
-                ],
-            ]);
-    }
+    $response = $this->actingAs($user, 'sanctum')
+        ->getJson('/v1/tokens');
 
-    /**
-     * Test: Login falla con credenciales incorrectas
-     */
-    public function test_login_falla_con_credenciales_incorrectas(): void
-    {
-        User::factory()->create([
-            'email' => 'test@example.com',
-            'password' => 'password123',
-        ]);
-
-        $response = $this->postJson('/v1/login', [
-            'email' => 'test@example.com',
-            'password' => 'password_incorrecta',
-        ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['email']);
-    }
-
-    /**
-     * Test: Usuario autenticado puede obtener su información
-     */
-    public function test_usuario_autenticado_puede_obtener_su_info(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/v1/me');
-
-        $response->assertStatus(200)
-            ->assertJson([
-                'data' => [
-                    'id' => $user->id,
-                    'email' => $user->email,
-                ],
-            ]);
-    }
-
-    /**
-     * Test: Usuario puede cerrar sesión
-     */
-    public function test_usuario_puede_hacer_logout(): void
-    {
-        $user = User::factory()->create();
-        $token = $user->createToken('test-device')->plainTextToken;
-
-        $response = $this->withHeader('Authorization', 'Bearer '.$token)
-            ->postJson('/v1/logout');
-
-        $response->assertStatus(200)
-            ->assertJson(['message' => 'Sesión cerrada exitosamente']);
-
-        // Verificar que el token fue revocado
-        $this->assertDatabaseMissing('personal_access_tokens', [
-            'tokenable_id' => $user->id,
-        ]);
-    }
-
-    /**
-     * Test: Usuario sin autenticar no puede acceder a rutas protegidas
-     */
-    public function test_rutas_protegidas_requieren_autenticacion(): void
-    {
-        $response = $this->getJson('/v1/me');
-
-        $response->assertStatus(401);
-    }
-
-    /**
-     * Test: Usuario puede refrescar su token
-     */
-    public function test_usuario_puede_refrescar_token(): void
-    {
-        $user = User::factory()->create();
-
-        $response = $this->actingAs($user, 'sanctum')
-            ->postJson('/v1/refresh');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'message',
-                'data' => ['access_token', 'token_type', 'expires_in'],
-            ]);
-    }
-
-    /**
-     * Test: Usuario puede listar sus tokens activos
-     */
-    public function test_usuario_puede_listar_tokens_activos(): void
-    {
-        $user = User::factory()->create();
-        $user->createToken('dispositivo-1');
-        $user->createToken('dispositivo-2');
-
-        $response = $this->actingAs($user, 'sanctum')
-            ->getJson('/v1/tokens');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    ['id', 'name', 'created_at'],
-                ],
-                'total',
-            ])
-            ->assertJsonCount(2, 'data');
-    }
-}
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                ['id', 'name', 'created_at'],
+            ],
+            'total',
+        ])
+        ->assertJsonCount(2, 'data');
+});

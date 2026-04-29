@@ -1,84 +1,58 @@
 <?php
 
-declare(strict_types=1);
+/**
+ * Tests de Feature para Listas
+ */
 
-namespace Tests\Feature\Api;
+beforeEach(function () {
+    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    $this->user = createUserWithRole('Administrador');
+});
 
-use App\Models\Lista;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
-use Spatie\Permission\Models\Role;
-use Tests\TestCase;
+it('permite crear pieza estándar con foto medida', function () {
+    \Illuminate\Support\Facades\Storage::fake('public');
+    $fotoMedida = \Illuminate\Http\UploadedFile::fake()->image('plano.jpg');
 
-class ListaControllerTest extends TestCase
-{
-    use RefreshDatabase;
+    $data = [
+        'tipo' => 'Piezas Estandar',
+        'nombre' => 'Abrazadera Test',
+        'definicion' => 'Definición de prueba',
+        'fotoMedida' => $fotoMedida,
+    ];
 
-    private User $user;
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/listas', $data);
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+    $response->assertStatus(201);
+    expectDatabaseHas('listas', [
+        'nombre' => 'Abrazadera Test',
+        'tipo' => 'Piezas Estandar',
+    ]);
 
-        Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-        $this->user = User::factory()->create();
-        $this->user->assignRole('Administrador');
-    }
+    $lista = \App\Models\Lista::where('nombre', 'Abrazadera Test')->first();
+    expect($lista->fotoMedida)->not->toBeNull();
 
-    /**
-     * Test: Puede crear una pieza estandar con fotoMedida
-     */
-    public function test_puede_crear_pieza_estandar_con_foto_medida(): void
-    {
-        Storage::fake('public');
-        $fotoMedida = UploadedFile::fake()->image('plano.jpg');
+    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($lista->fotoMedida);
+});
 
-        $data = [
-            'tipo' => 'Piezas Estandar',
-            'nombre' => 'Abrazadera Test',
-            'definicion' => 'Definición de prueba',
-            'fotoMedida' => $fotoMedida
-        ];
+it('permite actualizar lista', function () {
+    $lista = \App\Models\Lista::create([
+        'tipo' => 'Marca',
+        'nombre' => 'Marca Original',
+        'definicion' => 'Original',
+    ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/v1/listas', $data);
+    $data = [
+        'nombre' => 'Marca Actualizada',
+        'definicion' => 'Actualizada',
+    ];
 
-        $response->assertStatus(201);
-        $this->assertDatabaseHas('listas', [
-            'nombre' => 'Abrazadera Test',
-            'tipo' => 'Piezas Estandar'
-        ]);
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/listas/{$lista->id}", $data);
 
-        $lista = Lista::where('nombre', 'Abrazadera Test')->first();
-        $this->assertNotNull($lista->fotoMedida);
-        Storage::disk('public')->assertExists($lista->fotoMedida);
-    }
-
-    /**
-     * Test: Puede actualizar una lista y el binding funciona
-     */
-    public function test_puede_actualizar_lista(): void
-    {
-        $lista = Lista::create([
-            'tipo' => 'Marca',
-            'nombre' => 'Marca Original',
-            'definicion' => 'Original'
-        ]);
-
-        $data = [
-            'nombre' => 'Marca Actualizada',
-            'definicion' => 'Actualizada'
-        ];
-
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/v1/listas/{$lista->id}", $data);
-
-        $response->assertStatus(200);
-        $this->assertDatabaseHas('listas', [
-            'id' => $lista->id,
-            'nombre' => 'Marca Actualizada'
-        ]);
-    }
-}
+    $response->assertStatus(200);
+    expectDatabaseHas('listas', [
+        'id' => $lista->id,
+        'nombre' => 'Marca Actualizada',
+    ]);
+});

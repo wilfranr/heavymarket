@@ -1,16 +1,17 @@
-# Heavy API - Backend Laravel 12
+# Heavy API - Backend Laravel 13
 
-Backend API REST para el sistema HeavyMarket construido con Laravel 12.47.0.
+Backend API REST para el sistema HeavyMarket construido con Laravel 13.
 
 ## Tecnologías Instaladas
 
-- **Laravel 12.47.0** - Framework PHP
-- **PHP 8.4.11** - Lenguaje de programación
-- **Laravel Sanctum 4.2** - Autenticación API con tokens
-- **Spatie Laravel Permission 6.24** - Sistema de roles y permisos
+- **Laravel 13.7.0** - Framework PHP
+- **PHP 8.4.20** - Lenguaje de programación
+- **Laravel Sanctum 4.3** - Autenticación API con tokens
+- **Spatie Laravel Permission 6.25** - Sistema de roles y permisos
 - **Laravel Excel 3.1** - Importación y exportación de Excel
 - **DomPDF 3.1** - Generación de PDFs
 - **Pusher 7.2** - WebSockets para chat en tiempo real
+- **Pest 4.6** - Framework de testing (por defecto en Laravel 13)
 
 ## Estructura del Proyecto
 
@@ -100,13 +101,45 @@ Las respuestas **201** (`POST /api/v1/pedidos`) y **200** (`PUT /api/v1/pedidos/
 
 ## Testing
 
+El proyecto usa **Pest v4** como framework de testing (por defecto en Laravel 13).
+
 ```bash
-# Ejecutar tests
-php artisan test
+# Ejecutar todos los tests
+composer test
+
+# Ejecutar tests con Pest directamente
+./vendor/bin/pest
+
+# Ejecutar tests específicos
+./vendor/bin/pest --filter="PedidoTest"
 
 # Ejecutar tests con coverage
-php artisan test --coverage
+./vendor/bin/pest --coverage
 ```
+
+### Estructura de Tests
+
+```
+tests/
+├── Pest.php                    # Configuración global y helpers
+├── Feature/
+│   └── Api/                    # Tests de endpoints API
+├── Unit/
+│   ├── Enums/                  # Tests de enums (PedidoEstado)
+│   ├── Traits/                 # Tests de traits (TransicionesEstado)
+│   ├── Policies/               # Tests de policies (PedidoPolicy)
+│   ├── Services/               # Tests de services
+│   └── Http/Resources/         # Tests de API Resources
+```
+
+### Helpers Disponibles (tests/Pest.php)
+
+- `seedRoles()` - Crea roles necesarios para tests
+- `seedPermissions()` - Crea permisos básicos
+- `createUserWithRole($role)` - Crea usuario con rol asignado
+- `expectDatabaseHas($table, $data)` - Assert de existencia en BD
+- `expectDatabaseMissing($table, $data)` - Assert de ausencia en BD
+- `expectDatabaseCount($table, $count)` - Assert de cantidad de registros
 
 ## Linting y Formato
 
@@ -144,11 +177,12 @@ php artisan make:request StorePedidoRequest
 
 ## Documentación
 
-- [Laravel 12 Documentation](https://laravel.com/docs/12.x)
-- [Laravel Sanctum](https://laravel.com/docs/12.x/sanctum)
+- [Laravel 13 Documentation](https://laravel.com/docs/13.x)
+- [Laravel Sanctum](https://laravel.com/docs/13.x/sanctum)
 - [Spatie Permission](https://spatie.be/docs/laravel-permission)
 - [Laravel Excel](https://docs.laravel-excel.com)
 - [DomPDF](https://github.com/barryvdh/laravel-dompdf)
+- [Pest Documentation](https://pestphp.com/docs)
 
 ## Licencia
 

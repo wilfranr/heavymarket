@@ -1,457 +1,315 @@
 <?php
 
-declare(strict_types=1);
-
-namespace Tests\Feature\Api;
-
-use App\Models\Maquina;
-use App\Models\Pedido;
-use App\Models\Tercero;
-use App\Models\User;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Spatie\Permission\Models\Permission;
-use Spatie\Permission\Models\Role;
-use Tests\TestCase;
-
 /**
- * Tests de Feature para el endpoint de Pedidos
+ * Tests de Feature para Pedidos
  */
-class PedidoTest extends TestCase
-{
-    use RefreshDatabase;
 
-    private User $user;
+beforeEach(function () {
+    seedRoles();
+    seedPermissions();
 
-    private Tercero $tercero;
+    $this->user = createUserWithRole('Vendedor');
+    $this->tercero = \App\Models\Tercero::factory()->create();
+});
 
-    protected function setUp(): void
-    {
-        parent::setUp();
+it('requiere autenticación para listar pedidos', function () {
+    $this->getJson('/v1/pedidos')->assertStatus(401);
+});
 
-        // _seedRolesYPermisos para tests
-        $this->seedRolesYPermisos();
+it('permite listar pedidos a usuario autenticado', function () {
+    \App\Models\Pedido::factory()->count(5)->create();
 
-        // Crear usuario con rol permitido
-        $this->user = User::factory()->create();
-        $this->user->assignRole('Vendedor');
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/pedidos');
 
-        // Crear tercero para los tests
-        $this->tercero = Tercero::factory()->create();
-    }
+    $response->assertStatus(200)
+        ->assertJsonStructure([
+            'data' => [
+                '*' => ['id', 'user_id', 'tercero_id', 'estado', 'created_at'],
+            ],
+            'meta' => ['current_page', 'total'],
+        ]);
+});
 
-    private function seedRolesYPermisos(): void
-    {
-        // Crear roles necessários para tests
-        $roles = ['super_admin', 'panel_user', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'Cliente'];
-        foreach ($roles as $roleName) {
-            Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
-        }
-        // Crear permisos básicos
-        Permission::firstOrCreate(['name' => 'view orders', 'guard_name' => 'web']);
-        Permission::firstOrCreate(['name' => 'create orders', 'guard_name' => 'web']);
-    }
-
-    /**
-     * Test: Listar pedidos requiere autenticación
-     */
-    public function test_listar_pedidos_requiere_autenticacion(): void
-    {
-        $response = $this->getJson('/v1/pedidos');
-
-        $response->assertStatus(401);
-    }
-
-    /**
-     * Test: Usuario autenticado puede listar pedidos
-     */
-    public function test_usuario_puede_listar_pedidos(): void
-    {
-        Pedido::factory()->count(5)->create();
-
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/v1/pedidos');
-
-        $response->assertStatus(200)
-            ->assertJsonStructure([
-                'data' => [
-                    '*' => ['id', 'user_id', 'tercero_id', 'estado', 'created_at'],
-                ],
-                'meta' => ['current_page', 'total'],
-            ]);
-    }
-
-    /**
-     * Test: Crear pedido con datos válidos
-     */
-    public function test_puede_crear_pedido_con_datos_validos(): void
-    {
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/v1/pedidos', [
-                'tercero_id' => $this->tercero->id,
-                'estado' => 'Nuevo',
-                'direccion' => 'Calle 123 #45-67',
-                'comentario' => 'Pedido de prueba',
-            ]);
-
-        $response->assertStatus(201)
-            ->assertJsonStructure([
-                'data' => ['id', 'tercero_id', 'estado'],
-                'message',
-            ]);
-
-        $this->assertDatabaseHas('pedidos', [
+it('permite crear pedido con datos válidos', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/pedidos', [
             'tercero_id' => $this->tercero->id,
             'estado' => 'Nuevo',
+            'direccion' => 'Calle 123 #45-67',
+            'comentario' => 'Pedido de prueba',
         ]);
-    }
 
-    /**
-     * Test: Crear pedido en estado borrador.
-     */
-    public function test_puede_crear_pedido_en_estado_borrador(): void
-    {
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/v1/pedidos', [
-                'tercero_id' => $this->tercero->id,
-                'estado' => 'Borrador',
-                'direccion' => 'Calle 45 #12-34',
-            ]);
+    $response->assertStatus(201)
+        ->assertJsonStructure([
+            'data' => ['id', 'tercero_id', 'estado'],
+            'message',
+        ]);
 
-        $response->assertStatus(201)
-            ->assertJsonPath('data.estado', 'Borrador');
+    expectDatabaseHas('pedidos', [
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'Nuevo',
+    ]);
+});
 
-        $this->assertDatabaseHas('pedidos', [
+it('permite crear pedido en estado borrador', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/pedidos', [
             'tercero_id' => $this->tercero->id,
             'estado' => 'Borrador',
-        ]);
-    }
-
-    /**
-     * Test: Crear pedido falla sin tercero_id
-     */
-    public function test_crear_pedido_falla_sin_tercero_id(): void
-    {
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson('/v1/pedidos', [
-                'estado' => 'Nuevo',
-            ]);
-
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['tercero_id']);
-    }
-
-    /**
-     * Test: Ver detalle de un pedido específico
-     */
-    public function test_puede_ver_detalle_de_pedido(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 45 #12-34',
         ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson("/v1/pedidos/{$pedido->id}");
+    $response->assertStatus(201)
+        ->assertJsonPath('data.estado', 'Borrador');
 
-        $response->assertStatus(200)
-            ->assertJson([
-                'data' => [
-                    'id' => $pedido->id,
-                    'tercero_id' => $this->tercero->id,
-                ],
-            ]);
-    }
+    expectDatabaseHas('pedidos', [
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'Borrador',
+    ]);
+});
 
-    /**
-     * Test: Actualizar pedido existente
-     */
-    public function test_puede_actualizar_pedido(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
+it('rechaza crear pedido sin tercero_id', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/pedidos', [
             'estado' => 'Nuevo',
         ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/v1/pedidos/{$pedido->id}", [
-                'estado' => 'En_Analisis', // Transición válida: Nuevo -> En_Analisis
-                'comentario' => 'Actualizado',
-            ]);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['tercero_id']);
+});
 
-        $response->assertStatus(200)
-            ->assertJson([
-                'data' => ['estado' => 'En_Analisis'],
-                'message' => 'Pedido actualizado exitosamente',
-            ]);
+it('permite ver detalle de pedido', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
 
-        $this->assertDatabaseHas('pedidos', [
-            'id' => $pedido->id,
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson("/v1/pedidos/{$pedido->id}");
+
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => [
+                'id' => $pedido->id,
+                'tercero_id' => $this->tercero->id,
+            ],
+        ]);
+});
+
+it('permite actualizar pedido', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'Nuevo',
+    ]);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
             'estado' => 'En_Analisis',
-        ]);
-    }
-
-    /**
-     * Test: Vendedor no puede actualizar un pedido propio en análisis (solo lectura)
-     */
-    public function test_vendedor_no_puede_actualizar_pedido_en_analisis(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-            'estado' => 'En_Analisis',
+            'comentario' => 'Actualizado',
         ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/v1/pedidos/{$pedido->id}", [
-                'comentario' => 'Intento de edición',
-            ]);
-
-        $response->assertForbidden();
-    }
-
-    /**
-     * Test: Vendedor no puede eliminar un pedido en análisis
-     */
-    public function test_vendedor_no_puede_eliminar_pedido_en_analisis(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-            'estado' => 'En_Analisis',
+    $response->assertStatus(200)
+        ->assertJson([
+            'data' => ['estado' => 'En_Analisis'],
+            'message' => 'Pedido actualizado exitosamente',
         ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->deleteJson("/v1/pedidos/{$pedido->id}");
+    expectDatabaseHas('pedidos', [
+        'id' => $pedido->id,
+        'estado' => 'En_Analisis',
+    ]);
+});
 
-        $response->assertForbidden();
-    }
+it('vendedor no puede actualizar pedido en análisis', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'En_Analisis',
+    ]);
 
-    /**
-     * Test: Vendedor no puede pasar pedido a costeo vía actualización de estado
-     */
-    public function test_vendedor_no_puede_pasar_pedido_a_costeo(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-            'estado' => 'Nuevo',
+    $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
+            'comentario' => 'Intento de edición',
+        ])->assertForbidden();
+});
+
+it('vendedor no puede eliminar pedido en análisis', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'En_Analisis',
+    ]);
+
+    $this->actingAs($this->user, 'sanctum')
+        ->deleteJson("/v1/pedidos/{$pedido->id}")->assertForbidden();
+});
+
+it('vendedor no puede pasar pedido a costeo', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'Nuevo',
+    ]);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
+            'estado' => 'En_Costeo',
         ]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/v1/pedidos/{$pedido->id}", [
-                'estado' => 'En_Costeo',
-            ]);
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['estado']);
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['estado']);
+    expectDatabaseHas('pedidos', [
+        'id' => $pedido->id,
+        'estado' => 'Nuevo',
+    ]);
+});
 
-        $this->assertDatabaseHas('pedidos', [
-            'id' => $pedido->id,
-            'estado' => 'Nuevo',
-        ]);
-    }
+it('permite eliminar pedido', function () {
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
 
-    /**
-     * Test: Eliminar pedido
-     */
-    public function test_puede_eliminar_pedido(): void
-    {
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-        ]);
+    $this->actingAs($this->user, 'sanctum')
+        ->deleteJson("/v1/pedidos/{$pedido->id}")->assertStatus(204);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->deleteJson("/v1/pedidos/{$pedido->id}");
+    expectDatabaseMissing('pedidos', ['id' => $pedido->id]);
+});
 
-        $response->assertStatus(204);
+it('permite filtrar pedidos por estado', function () {
+    \App\Models\Pedido::factory()->create([
+        'estado' => 'Nuevo',
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
+    \App\Models\Pedido::factory()->create([
+        'estado' => 'Enviado',
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
+    \App\Models\Pedido::factory()->create([
+        'estado' => 'Nuevo',
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
 
-        $this->assertDatabaseMissing('pedidos', [
-            'id' => $pedido->id,
-        ]);
-    }
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/pedidos?estado=Nuevo');
 
-    /**
-     * Test: Filtrar pedidos por estado
-     */
-    public function test_puede_filtrar_pedidos_por_estado(): void
-    {
-        Pedido::factory()->create([
-            'estado' => 'Nuevo',
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-        ]);
-        Pedido::factory()->create([
-            'estado' => 'Enviado',
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-        ]);
-        Pedido::factory()->create([
-            'estado' => 'Nuevo',
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-        ]);
+    $response->assertStatus(200)
+        ->assertJsonCount(2, 'data');
+});
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/v1/pedidos?estado=Nuevo');
+it('paginación funciona correctamente', function () {
+    \App\Models\Pedido::factory()->count(20)->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+    ]);
 
-        $response->assertStatus(200)
-            ->assertJsonCount(2, 'data');
-    }
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/pedidos?per_page=10');
 
-    /**
-     * Test: Paginación funciona correctamente
-     */
-    public function test_paginacion_funciona_correctamente(): void
-    {
-        Pedido::factory()->count(20)->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-        ]);
+    $response->assertStatus(200)
+        ->assertJsonCount(10, 'data')
+        ->assertJsonPath('meta.per_page', 10);
+});
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/v1/pedidos?per_page=10');
+it('enviar a análisis persiste estado con máquina revisada', function () {
+    $maquina = \App\Models\Maquina::factory()->revisada()->create();
+    $pedido = \App\Models\Pedido::factory()->create([
+        'user_id' => $this->user->id,
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'Nuevo',
+        'maquina_id' => $maquina->id,
+    ]);
 
-        $response->assertStatus(200)
-            ->assertJsonCount(10, 'data')
-            ->assertJsonPath('meta.per_page', 10);
-    }
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/enviar-a-analisis");
 
-    /**
-     * Test: POST enviar-a-analisis persiste En_Analisis cuando la máquina está revisada
-     */
-    public function test_enviar_a_analisis_persiste_estado_con_maquina_revisada(): void
-    {
-        $maquina = Maquina::factory()->revisada()->create();
-        $pedido = Pedido::factory()->create([
-            'user_id' => $this->user->id,
-            'tercero_id' => $this->tercero->id,
-            'estado' => 'Nuevo',
-            'maquina_id' => $maquina->id,
-        ]);
+    $response->assertStatus(200)
+        ->assertJsonPath('data.estado', 'En_Analisis');
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->postJson("/v1/pedidos/{$pedido->id}/enviar-a-analisis");
+    expectDatabaseHas('pedidos', [
+        'id' => $pedido->id,
+        'estado' => 'En_Analisis',
+    ]);
+});
 
-        $response->assertStatus(200)
-            ->assertJsonPath('data.estado', 'En_Analisis');
+it('estado En_Analisis es válido en request', function () {
+    $rules = (new \App\Http\Requests\StorePedidoRequest)->rules();
 
-        $this->assertDatabaseHas('pedidos', [
-            'id' => $pedido->id,
-            'estado' => 'En_Analisis',
-        ]);
-    }
+    expect($rules)->toHaveKey('estado');
+});
 
-    /**
-     * Test: Estado En_Analisis es válido en request (Issue #70)
-     */
-    public function test_estado_en_analisis_es_valido_en_request(): void
-    {
-        $rules = (new \App\Http\Requests\StorePedidoRequest)->rules();
+it('analista solo ve pedidos en análisis', function () {
+    $analista = createUserWithRole('Analista');
 
-        $this->assertArrayHasKey('estado', $rules);
-    }
+    \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
+    \App\Models\Pedido::factory()->create(['estado' => 'Nuevo']);
+    \App\Models\Pedido::factory()->create(['estado' => 'Enviado']);
 
-    /**
-     * Rol Analista (Spatie): solo lista pedidos en En_Analisis.
-     */
-    public function test_analista_solo_ve_pedidos_en_analisis(): void
-    {
-        $analista = User::factory()->create();
-        $analista->assignRole('Analista');
+    $response = $this->actingAs($analista, 'sanctum')
+        ->getJson('/v1/pedidos');
 
-        Pedido::factory()->create(['estado' => 'En_Analisis']);
-        Pedido::factory()->create(['estado' => 'Nuevo']);
-        Pedido::factory()->create(['estado' => 'Enviado']);
+    $response->assertStatus(200);
+    $data = $response->json('data');
+    expect($data)->toHaveCount(1)
+        ->and($data[0]['estado'])->toBe('En_Analisis');
+});
 
-        $response = $this->actingAs($analista, 'sanctum')
-            ->getJson('/v1/pedidos');
+it('analista no puede ver pedido fuera de análisis', function () {
+    $analista = createUserWithRole('Analista');
+    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'Nuevo']);
 
-        $response->assertStatus(200);
-        $data = $response->json('data');
-        $this->assertCount(1, $data);
-        $this->assertSame('En_Analisis', $data[0]['estado']);
-    }
+    $this->actingAs($analista, 'sanctum')
+        ->getJson("/v1/pedidos/{$pedido->id}")->assertStatus(403);
+});
 
-    /**
-     * Analista no puede ver detalle de pedido que no está en En_Analisis.
-     */
-    public function test_analista_no_puede_ver_pedido_fuera_de_en_analisis(): void
-    {
-        $analista = User::factory()->create();
-        $analista->assignRole('Analista');
+it('vendedor ve pedidos de clientes', function () {
+    $cliente = createUserWithRole('Cliente');
 
-        $pedido = Pedido::factory()->create(['estado' => 'Nuevo']);
+    $pedidoDelCliente = \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
+    $pedidoDelVendedor = \App\Models\Pedido::factory()->create(['user_id' => $this->user->id]);
 
-        $response = $this->actingAs($analista, 'sanctum')
-            ->getJson("/v1/pedidos/{$pedido->id}");
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/pedidos');
 
-        $response->assertStatus(403);
-    }
+    $response->assertStatus(200);
+    $data = $response->json('data');
 
-    /**
-     * Vendedor ve pedidos de clientes (usuarios con rol Cliente).
-     */
-    public function test_vendedor_ve_pedidos_de_clientes(): void
-    {
-        $cliente = User::factory()->create();
-        $cliente->assignRole('Cliente');
+    expect($data)->toHaveCount(2);
+    $ids = array_column($data, 'id');
+    expect($ids)->toContain($pedidoDelCliente->id, $pedidoDelVendedor->id);
+});
 
-        $pedidoDelCliente = Pedido::factory()->create(['user_id' => $cliente->id]);
-        $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
+it('vendedor no ve pedidos de otros vendedores', function () {
+    $otroVendedor = createUserWithRole('Vendedor');
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/v1/pedidos');
+    \App\Models\Pedido::factory()->create(['user_id' => $otroVendedor->id]);
+    $pedidoDelVendedor = \App\Models\Pedido::factory()->create(['user_id' => $this->user->id]);
 
-        $response->assertStatus(200);
-        $data = $response->json('data');
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/pedidos');
 
-        $this->assertCount(2, $data);
-        $ids = array_column($data, 'id');
-        $this->assertContains($pedidoDelCliente->id, $ids);
-        $this->assertContains($pedidoDelVendedor->id, $ids);
-    }
+    $response->assertStatus(200);
+    $data = $response->json('data');
 
-    /**
-     * Vendedor no ve pedidos de otros vendedores.
-     */
-    public function test_vendedor_no_ve_pedidos_de_otros_vendedores(): void
-    {
-        $otroVendedor = User::factory()->create();
-        $otroVendedor->assignRole('Vendedor');
+    expect($data)->toHaveCount(1)
+        ->and($data[0]['id'])->toBe($pedidoDelVendedor->id);
+});
 
-        $pedidoDelOtro = Pedido::factory()->create(['user_id' => $otroVendedor->id]);
-        $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
+it('auto-asigna pedido de cliente al editar', function () {
+    $cliente = createUserWithRole('Cliente');
+    $pedido = \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
 
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->getJson('/v1/pedidos');
+    $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
+            'comentario' => 'Comentario actualizado por vendedor',
+        ])->assertStatus(200);
 
-        $response->assertStatus(200);
-        $data = $response->json('data');
-
-        $this->assertCount(1, $data);
-        $this->assertSame($pedidoDelVendedor->id, $data[0]['id']);
-    }
-
-    /**
-     * Auto-asignar pedido de cliente al editar.
-     */
-    public function test_auto_asignar_al_editar_pedido_de_cliente(): void
-    {
-        $cliente = User::factory()->create();
-        $cliente->assignRole('Cliente');
-
-        $pedido = Pedido::factory()->create(['user_id' => $cliente->id]);
-
-        $response = $this->actingAs($this->user, 'sanctum')
-            ->putJson("/v1/pedidos/{$pedido->id}", [
-                'comentario' => 'Comentario actualizado por vendedor',
-            ]);
-
-        $response->assertStatus(200);
-
-        $pedido->refresh();
-        $this->assertSame($this->user->id, $pedido->user_id);
-    }
-}
+    $pedido->refresh();
+    expect($pedido->user_id)->toBe($this->user->id);
+});

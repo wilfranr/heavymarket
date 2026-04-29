@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
 
 class PedidoReferenciaProveedor extends Model
 {
@@ -47,7 +48,7 @@ class PedidoReferenciaProveedor extends Model
 
         static::creating(function ($model) {
             // Si no tenemos los IDs necesarios, intentar obtenerlos de la relación
-            if (empty($model->referencia_id) && $model->pedidoReferencia) {
+            if (empty($model->referencia_id) && $model->pedidoReference) {
                 $model->referencia_id = $model->pedidoReferencia->referencia_id;
             }
 
@@ -70,10 +71,14 @@ class PedidoReferenciaProveedor extends Model
             }
 
             // Si referencia_id es null, intentar recuperarlo del padre si existe
+            // Laravel 13: Usar query builder directo en lugar de instanciar modelo dentro de boot
             if (empty($model->referencia_id) && $model->pedido_referencia_id) {
-                $padre = $model->pedidoReferencia ?? PedidoReferencia::find($model->pedido_referencia_id);
-                if ($padre && $padre->referencia_id) {
-                    $model->referencia_id = $padre->referencia_id;
+                $padreRefId = DB::table('pedido_referencia')
+                    ->where('id', $model->pedido_referencia_id)
+                    ->value('referencia_id');
+
+                if ($padreRefId) {
+                    $model->referencia_id = $padreRefId;
                 }
             }
         });
