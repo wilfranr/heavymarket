@@ -137,9 +137,6 @@ class CotizacionController extends Controller
     {
         $validated = $request->validated();
 
-        // Debug: log validated data
-        \Log::info('Cotizacion update validated', ['validated' => $validated, 'cotizacion_id' => $cotizacion->id]);
-
         try {
             $cotizacion->update($validated);
             $cotizacion->refresh();
