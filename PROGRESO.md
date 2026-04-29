@@ -258,6 +258,7 @@
 - **Optimización de Bundle**: Reducción de overhead al eliminar la librería de detección de cambios tradicional.
 - **Corrección de Estilos**: Actualización de flags deprecados en `LayoutService` y limpieza de lints.
 - **Estabilización Final**: Refactorización de `CosteoComponent` a Signals para eliminar errores críticos `NG0100`.
+- **Resolución Colisión Costeo**: Separación física del Tipo Técnico y Categoría Comercial en la BD. Implementada persistencia en el backend y visualización simplificada (limpieza de labels "Técnico") en la UI de Costeo.
 
 ---
 
