@@ -136,25 +136,13 @@ class CotizacionController extends Controller
     public function update(UpdateCotizacionRequest $request, Cotizacion $cotizacion): JsonResponse
     {
         $validated = $request->validated();
-        
-        // Si validated está vacío, usar los inputs directamente
-        if (empty($validated)) {
-            $validated = $request->only(['estado', 'observaciones', 'fecha_vencimiento']);
-            $validated = array_filter($validated, fn($v) => $v !== null);
-        }
+
+        // Debug: log validated data
+        \Log::info('Cotizacion update validated', ['validated' => $validated, 'cotizacion_id' => $cotizacion->id]);
 
         try {
-            if (isset($validated['estado'])) {
-                $cotizacion->estado = $validated['estado'];
-            }
-            if (isset($validated['observaciones'])) {
-                $cotizacion->observaciones = $validated['observaciones'];
-            }
-            if (isset($validated['fecha_vencimiento'])) {
-                $cotizacion->fecha_vencimiento = $validated['fecha_vencimiento'];
-            }
-            
-            $cotizacion->save();
+            $cotizacion->update($validated);
+            $cotizacion->refresh();
             $cotizacion->load(['pedido', 'tercero', 'user', 'referenciasProveedores']);
 
             return response()->json([

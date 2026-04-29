@@ -12,20 +12,20 @@ beforeEach(function () {
     $this->admin->assignRole('Administrador');
 });
 
-it('debug update cotizacion', function () {
+it('debug update cotizacion direct', function () {
     $cotizacion = Cotizacion::factory()->pendiente()->create();
 
-    $response = $this->actingAs($this->admin, 'sanctum')
-        ->patchJson("/v1/cotizaciones/{$cotizacion->id}", [
-            'estado' => 'Enviada',
-            'observaciones' => 'Cotización enviada al cliente',
-        ]);
+    // Direct update test without controller
+    $result = $cotizacion->update([
+        'estado' => 'Enviada',
+        'observaciones' => 'Cotización enviada al cliente',
+    ]);
 
-    // Dump raw response content
-    echo "\n=== RESPONSE ===\n";
-    echo "Status: " . $response->status() . "\n";
-    echo "Content: " . $response->content() . "\n";
+    echo "\n=== DIRECT UPDATE ===\n";
+    echo "Result: " . ($result ? 'true' : 'false') . "\n";
+    echo "Model estado: " . $cotizacion->estado . "\n";
     echo "================\n";
 
-    $response->assertStatus(200);
+    $cotizacion->refresh();
+    expect($cotizacion->estado)->toBe('Enviada');
 });
