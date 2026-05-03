@@ -240,9 +240,7 @@
                 <td class="label-cell">MODELO:</td>
                 <td class="value-cell">{{ strtoupper($cotizacion->pedido->maquina->modelo ?? 'N/A') }}</td>
                 <td class="label-cell">CONTACTO:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->pedido->contacto->nombre ?? 'N/A') }}</td>
-                <td class="label-cell">REFERENCIA:</td>
-                <td class="value-cell">{{ $cotizacion->pedido->referencia_externa ?? 'N/A' }}</td>
+                <td class="value-cell" colspan="3">{{ strtoupper($cotizacion->pedido->contacto->nombre ?? 'N/A') }}</td>
             </tr>
             <tr>
                 <td class="label-cell">SERIE:</td>
