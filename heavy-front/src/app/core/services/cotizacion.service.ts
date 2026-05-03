@@ -52,7 +52,7 @@ export class CotizacionService extends ApiService {
     /**
      * Finalizar costeo y generar cotización
      */
-    finalizarCosteo(data: { pedido_id: number; items: number[] }): Observable<{ data: Cotizacion; message: string }> {
+    finalizarCosteo(data: { pedido_id: number; items: { id: number; mostrar_referencia: boolean }[] }): Observable<{ data: Cotizacion; message: string }> {
         return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/finalizar-costeo`, data);
     }
 

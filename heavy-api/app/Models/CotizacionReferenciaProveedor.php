@@ -14,6 +14,7 @@ class CotizacionReferenciaProveedor extends Model
     protected $fillable = [
         'cotizacion_id',
         'pedido_referencia_proveedor_id',
+        'mostrar_referencia',
     ];
 
     public function cotizacion()

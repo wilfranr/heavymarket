@@ -22,6 +22,7 @@ import { GalleriaModule } from 'primeng/galleria';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PopoverModule, Popover } from 'primeng/popover';
+import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { PedidoService } from '../../../core/services/pedido.service';
 
 import { loadPedido, loadPedidoSuccess } from '../../../store/pedidos/actions/pedidos.actions';
@@ -62,6 +63,7 @@ import { ListaCreateModalComponent } from '../../../shared/components/lista-crea
         TextareaModule,
         ConfirmDialogModule,
         PopoverModule,
+        ToggleSwitchModule,
         TerceroCreateModalComponent,
         ListaCreateModalComponent
     ],
@@ -273,6 +275,7 @@ export class CosteoComponent implements OnInit {
                     articulo_definicion: [ref.referencia?.articulo?.definicion || null],
                     referencias_cruzadas: [ref.referencia?.articulo?.referencias_cruzadas || ref.referencia?.articulo?.referencias || []],
                     articulo_imagen: [ref.referencia?.articulo?.fotoDescriptiva || null],
+                    mostrar_referencia: [true],
                     proveedores: this.fb.array(ref.proveedores && ref.proveedores.length > 0 
                         ? ref.proveedores.map(prov => this.crearProveedorFormGroup(prov)) 
                         : [this.crearProveedorFormGroup()])
@@ -710,8 +713,8 @@ export class CosteoComponent implements OnInit {
         return total;
     }
 
-    guardarCosteo(): void {
-        const payload = {
+    private getCosteoPayload(): any {
+        return {
             referencias: this.referenciasFormArray.getRawValue().map((ref: any) => ({
                 id: ref.id,
                 proveedores: (ref.proveedores || [])
@@ -721,14 +724,17 @@ export class CosteoComponent implements OnInit {
                         proveedor_id: prov.proveedor_id,
                         marca_id: prov.marca_id,
                         dias_entrega: parseInt(prov.entrega, 10) || 0,
-                        // PRIORIDAD: Si es nacional usa COP, si no usa USD. Evita el bug del 5.6
                         costo_unidad: prov.ubicacion === 'Nacional' ? (prov.costo_cop || 0) : (prov.costo_usd || 0),
                         utilidad: prov.utilidad || 0,
                         cantidad: prov.cantidad || 1,
-                        seleccionado: prov.seleccionado || false
+                        seleccionado: !!prov.seleccionado
                     }))
             }))
         };
+    }
+
+    guardarCosteo(): void {
+        const payload = this.getCosteoPayload();
 
         this.submitting.set(true);
         this.pedidoService.guardarCosteo(this.pedidoId(), payload).subscribe({
@@ -736,7 +742,6 @@ export class CosteoComponent implements OnInit {
                 this.submitting.set(false);
                 this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Costeo guardado exitosamente.' });
                 
-                // Actualizar el store directamente con la respuesta del servidor para evitar problemas de caché
                 if (resp.data) {
                     this.store.dispatch(loadPedidoSuccess({ pedido: resp.data }));
                 }
@@ -749,38 +754,74 @@ export class CosteoComponent implements OnInit {
     }
     
     finalizarCosteo(): void {
-        // 1. Verificar que haya al menos un item seleccionado
-        const selectedItems: number[] = [];
-        
-        this.referenciasFormArray.controls.forEach((refControl) => {
-            const proveedores = (refControl.get('proveedores') as FormArray).controls;
-            proveedores.forEach((provControl) => {
-                if (provControl.get('seleccionado')?.value === true) {
-                    const provId = provControl.get('id')?.value;
-                    if (provId) {
-                        selectedItems.push(provId);
-                    }
-                }
-            });
+        // 1. Verificar que haya al menos un item seleccionado (con o sin ID)
+        const hasSelection = this.referenciasFormArray.controls.some(ref => {
+            const proveedores = (ref.get('proveedores') as FormArray).controls;
+            return proveedores.some(prov => prov.get('seleccionado')?.value);
         });
 
-        if (selectedItems.length === 0) {
-            this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Debe seleccionar al menos un proveedor (check) para generar la cotización.' });
+        if (!hasSelection) {
+            this.messageService.add({ 
+                severity: 'warn', 
+                summary: 'Atención', 
+                detail: 'Debe seleccionar al menos un proveedor (check) para generar la cotización.' 
+            });
             return;
         }
 
         // 2. Confirmación
         this.confirmationService.confirm({
-            message: `¿Está seguro de finalizar el costeo y generar la cotización? El estado del pedido cambiará a "Cotizado".`,
+            message: `¿Está seguro de finalizar el costeo y generar la cotización? Se guardarán los cambios actuales automáticamente.`,
             header: 'Confirmar Finalización',
             icon: 'pi pi-exclamation-triangle',
             accept: () => {
-                this.ejecutarFinalizacion(selectedItems);
+                this.guardarYGenerarCotizacion();
             }
         });
     }
 
-    private ejecutarFinalizacion(selectedItems: number[]): void {
+    private guardarYGenerarCotizacion(): void {
+        this.submitting.set(true);
+        const payload = this.getCosteoPayload();
+        
+        // Paso 1: Guardado automático para asegurar que todo tenga ID en la DB
+        this.pedidoService.guardarCosteo(this.pedidoId(), payload).subscribe({
+            next: (resp: any) => {
+                const pedidoActualizado = resp.data;
+                const selectedItems: { id: number; mostrar_referencia: boolean }[] = [];
+                
+                // Paso 2: Extraer los IDs reales y sus flags desde el formulario
+                pedidoActualizado.referencias?.forEach((ref: any, idx: number) => {
+                    const refGroup = this.referenciasFormArray.at(idx);
+                    const mostrarRef = refGroup.get('mostrar_referencia')?.value ?? true;
+
+                    ref.proveedores?.forEach((prov: any) => {
+                        if (prov.estado === 1 || prov.estado === true) {
+                            selectedItems.push({
+                                id: Number(prov.id),
+                                mostrar_referencia: mostrarRef
+                            });
+                        }
+                    });
+                });
+
+                if (selectedItems.length === 0) {
+                    this.submitting.set(false);
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se detectaron ítems seleccionados tras el guardado.' });
+                    return;
+                }
+
+                // Paso 3: Proceder con la generación de la cotización
+                this.ejecutarFinalizacion(selectedItems);
+            },
+            error: (err: any) => {
+                this.submitting.set(false);
+                this.messageService.add({ severity: 'error', summary: 'Error de Auto-guardado', detail: 'No se pudo guardar el costeo antes de cotizar.' });
+            }
+        });
+    }
+
+    private ejecutarFinalizacion(selectedItems: { id: number; mostrar_referencia: boolean }[]): void {
         this.submitting.set(true);
         this.cotizacionService.finalizarCosteo({
             pedido_id: this.pedidoId(),
@@ -851,7 +892,7 @@ export class CosteoComponent implements OnInit {
                 });
                 setTimeout(() => this.router.navigate(['/app/pedidos']), 1500);
             },
-            error: (err) => {
+            error: (err: any) => {
                 this.submitting.set(false);
                 this.messageService.add({
                     severity: 'error',

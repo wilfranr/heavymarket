@@ -144,15 +144,17 @@ class CotizacionService
     public function generarPDF(Cotizacion $cotizacion)
     {
         $cotizacion->load([
-            'pedido.tercero.ciudad',
+            'pedido.tercero.city',
             'pedido.contacto',
             'pedido.maquina',
             'user',
             'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo',
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia', // Añadido para mostrar el código
             'referenciasProveedores.pedidoReferenciaProveedor.marca',
         ]);
 
-        $empresa = Empresa::where('estado', true)->first();
+        // Priorizar Heavymarket (siglas HM o ID 2)
+        $empresa = Empresa::where('siglas', 'HM')->first() ?? Empresa::where('id', 2)->first() ?? Empresa::first();
 
         $pdf = Pdf::loadView('pdf.cotizacion', [
             'cotizacion' => $cotizacion,
@@ -182,14 +184,15 @@ class CotizacionService
 
             // 2. Asociar los items seleccionados
             $total = 0;
-            foreach ($items as $itemId) {
+            foreach ($items as $itemData) {
                 CotizacionReferenciaProveedor::create([
                     'cotizacion_id' => $cotizacion->id,
-                    'pedido_referencia_proveedor_id' => $itemId,
+                    'pedido_referencia_proveedor_id' => $itemData['id'],
+                    'mostrar_referencia' => $itemData['mostrar_referencia'],
                 ]);
 
                 // Sumar al total (asumiendo que el precio ya está en el proveedor)
-                $prov = \App\Models\PedidoReferenciaProveedor::find($itemId);
+                $prov = \App\Models\PedidoReferenciaProveedor::find($itemData['id']);
                 if ($prov) {
                     $total += $prov->valor_total;
                 }

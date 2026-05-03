@@ -42,13 +42,18 @@ class PedidoReferenciaProveedor extends Model
         return $this->belongsTo(Tercero::class, 'proveedor_id');
     }
 
+    public function marca()
+    {
+        return $this->belongsTo(Lista::class, 'marca_id');
+    }
+
     protected static function boot()
     {
         parent::boot();
 
         static::creating(function ($model) {
             // Si no tenemos los IDs necesarios, intentar obtenerlos de la relación
-            if (empty($model->referencia_id) && $model->pedidoReference) {
+            if (empty($model->referencia_id) && $model->pedidoReferencia) {
                 $model->referencia_id = $model->pedidoReferencia->referencia_id;
             }
 

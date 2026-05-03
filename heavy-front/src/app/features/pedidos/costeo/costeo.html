@@ -135,6 +135,10 @@
                             </span>
                         </div>
                         <div class="flex gap-2 items-center">
+                            <p-toggleSwitch formControlName="mostrar_referencia"
+                                [pTooltip]="'Mostrar/Ocultar Nombre de Referencia en Cotización'" 
+                                tooltipPosition="top"
+                                styleClass="mr-2"></p-toggleSwitch>
                             <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
                                 (click)="openGallery(refIndex)"
                                 [pTooltip]="getImagenesCount(refIndex) > 0 ? 'Ver imágenes' : 'Sin imágenes'"

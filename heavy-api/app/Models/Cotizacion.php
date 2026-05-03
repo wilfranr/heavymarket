@@ -44,12 +44,14 @@ class Cotizacion extends Model
         'fecha_vencimiento',
         'observaciones',
         'total',
+        'mostrar_referencia',
     ];
 
     protected $casts = [
         'fecha_emision' => 'datetime',
         'fecha_vencimiento' => 'datetime',
         'total' => 'float',
+        'mostrar_referencia' => 'boolean',
     ];
 
     /**

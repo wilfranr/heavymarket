@@ -199,7 +199,8 @@ class CotizacionController extends Controller
         $validated = $request->validate([
             'pedido_id' => ['required', 'exists:pedidos,id'],
             'items' => ['required', 'array'],
-            'items.*' => ['exists:pedido_referencia_proveedores,id'],
+            'items.*.id' => ['required', 'exists:pedido_referencia_proveedor,id'],
+            'items.*.mostrar_referencia' => ['required', 'boolean'],
         ]);
 
         try {
