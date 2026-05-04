@@ -80,5 +80,18 @@ export const tercerosReducer = createReducer(
         ...state,
         loading: false,
         error
+    })),
+
+    // Load Tercero By ID
+    on(TercerosActions.loadTerceroById, (state) => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+    on(TercerosActions.loadTerceroByIdSuccess, (state, { tercero }) => tercerosAdapter.upsertOne(tercero, { ...state, loading: false })),
+    on(TercerosActions.loadTerceroByIdFailure, (state, { error }) => ({
+        ...state,
+        loading: false,
+        error
     }))
 );

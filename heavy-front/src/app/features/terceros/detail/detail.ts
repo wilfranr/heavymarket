@@ -1,6 +1,8 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, ActivatedRoute } from '@angular/router';
+import { Router, ActivatedRoute, RouterModule } from '@angular/router';
+import { Store } from '@ngrx/store';
+import { Observable } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -8,17 +10,19 @@ import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { TerceroService } from '../../../core/services/tercero.service';
-import { Tercero } from '../../../core/models/tercero.model';
-
 import { DialogModule } from 'primeng/dialog';
 import { ImageModule } from 'primeng/image';
+import { TooltipModule } from 'primeng/tooltip';
+import { Tercero } from '../../../core/models/tercero.model';
+import { loadTerceroById } from '../../../store/terceros/actions/terceros.actions';
+import { selectTerceroById, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
 
 @Component({
     selector: 'app-tercero-detail',
     standalone: true,
     imports: [
         CommonModule,
+        RouterModule,
         CardModule,
         ButtonModule,
         TagModule,
@@ -26,9 +30,9 @@ import { ImageModule } from 'primeng/image';
         SkeletonModule,
         ToastModule,
         DialogModule,
-        ImageModule
+        ImageModule,
+        TooltipModule
     ],
-    // ... rest of metadata
     providers: [MessageService],
     templateUrl: './detail.html',
     styles: [`
@@ -40,21 +44,21 @@ import { ImageModule } from 'primeng/image';
         
         .info-item {
             padding: 1rem;
-            background: var(--surface-50);
+            background: var(--p-surface-card);
             border-radius: 0.5rem;
-            border: 1px solid var(--surface-border);
+            border: 1px solid var(--p-surface-border);
         }
         
         .info-label {
             font-size: 0.875rem;
-            color: var(--text-color-secondary);
+            color: var(--p-text-muted-color);
             margin-bottom: 0.5rem;
             font-weight: 600;
         }
         
         .info-value {
             font-size: 1rem;
-            color: var(--text-color);
+            color: var(--p-text-color);
         }
         
         .section-title {
@@ -66,8 +70,8 @@ import { ImageModule } from 'primeng/image';
         }
         
         .contact-card {
-            background: var(--surface-50);
-            border: 1px solid var(--surface-border);
+            background: var(--p-surface-card);
+            border: 1px solid var(--p-surface-border);
             border-radius: 0.5rem;
             padding: 1rem;
         }
@@ -81,19 +85,11 @@ import { ImageModule } from 'primeng/image';
             font-weight: bold;
         }
 
-        /* Machine Modal Styles */
-        /* Eliminamos overrides agresivos al header/content para respetar el tema claro/oscuro de PrimeNG */
-        /* El contenido interno mantendrá su estilo oscuro a través de clases de utilidad */
-        
         .machine-table-header {
-            background-color: #f59e0b; /* Yellow/Orange */
+            background-color: #f59e0b;
             color: #000;
             font-weight: bold;
             padding: 0.5rem;
-        }
-        
-        .machine-table-row {
-            /* Styles handled by utility classes in HTML for theme support */
         }
         
         .machine-table-cell {
@@ -102,47 +98,30 @@ import { ImageModule } from 'primeng/image';
     `]
 })
 export class DetailComponent implements OnInit {
+    private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
-    private readonly terceroService = inject(TerceroService);
     private readonly messageService = inject(MessageService);
 
-    tercero: Tercero | null = null;
-    loading = true;
+    tercero$!: Observable<Tercero | undefined>;
+    loading$!: Observable<boolean>;
+    terceroId!: number;
 
-    // Lógica del modal de máquina
     displayMaquinaDialog = false;
     selectedMaquina: any = null;
+
+    ngOnInit(): void {
+        this.route.params.subscribe((params) => {
+            this.terceroId = +params['id'];
+            this.store.dispatch(loadTerceroById({ id: this.terceroId }));
+            this.tercero$ = this.store.select(selectTerceroById(this.terceroId));
+            this.loading$ = this.store.select(selectTercerosLoading);
+        });
+    }
 
     viewMaquina(maquina: any): void {
         this.selectedMaquina = maquina;
         this.displayMaquinaDialog = true;
-    }
-
-    ngOnInit(): void {
-        const id = this.route.snapshot.paramMap.get('id');
-        if (id) {
-            this.loadTercero(parseInt(id, 10));
-        }
-    }
-
-    private loadTercero(id: number): void {
-        this.loading = true;
-        this.terceroService.getById(id).subscribe({
-            next: (response) => {
-                this.tercero = response.data;
-                this.loading = false;
-            },
-            error: (err) => {
-                this.loading = false;
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: 'No se pudo cargar la información del tercero'
-                });
-                this.goBack();
-            }
-        });
     }
 
     goBack(): void {
@@ -150,9 +129,7 @@ export class DetailComponent implements OnInit {
     }
 
     editTercero(): void {
-        if (this.tercero) {
-            this.router.navigate(['/app/terceros', this.tercero.id, 'edit']);
-        }
+        this.router.navigate(['/app/terceros', this.terceroId, 'edit']);
     }
 
     getTipoSeverity(tipo: string): 'success' | 'info' | 'warn' {

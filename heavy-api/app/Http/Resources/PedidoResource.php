@@ -62,6 +62,7 @@ class PedidoResource extends JsonResource
                     'marca' => $this->maquina->fabricante?->nombre ?? 'N/A',
                     'estado_revision' => $this->maquina->estado_revision,
                     'id_interno' => $this->maquina->id_interno ?? '----',
+                    'arreglo' => $this->maquina->arreglo,
                     'imagen_url' => $this->maquina->imagen_url,
                     'imagen_placa_url' => $this->maquina->imagen_placa_url,
                     'marca_motor' => $this->maquina->marca_motor,
@@ -74,6 +75,9 @@ class PedidoResource extends JsonResource
                     'serie_transmision' => $this->maquina->serie_transmision,
                     'comentario_transmision' => $this->maquina->comentario_transmision,
                     'imagen_transmision_url' => $this->maquina->imagen_transmision_url,
+                    'componentes' => $this->maquina->relationLoaded('componentes') 
+                        ? ComponenteMaquinaResource::collection($this->maquina->componentes) 
+                        : [],
                 ];
             }),
 

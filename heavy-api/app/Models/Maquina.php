@@ -103,4 +103,75 @@ class Maquina extends Model
             'id'                                 // Local key en Pedido
         );
     }
+
+    /**
+     * Accessors para las imágenes principales de la máquina
+     */
+    public function getImagenUrlAttribute()
+    {
+        return $this->foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->foto) : null;
+    }
+
+    public function getImagenPlacaUrlAttribute()
+    {
+        return $this->fotoId ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->fotoId) : null;
+    }
+
+    /**
+     * Accessors para obtener datos del motor de forma aplanada
+     */
+    public function getMarcaMotorAttribute()
+    {
+        return $this->componentes->where('sistema_id', 42)->first()?->marca?->nombre;
+    }
+
+    public function getModeloMotorAttribute()
+    {
+        return $this->componentes->where('sistema_id', 42)->first()?->modelo;
+    }
+
+    public function getSerieMotorAttribute()
+    {
+        return $this->componentes->where('sistema_id', 42)->first()?->serie;
+    }
+
+    public function getComentarioMotorAttribute()
+    {
+        return $this->componentes->where('sistema_id', 42)->first()?->comentario;
+    }
+
+    public function getImagenMotorUrlAttribute()
+    {
+        $foto = $this->componentes->where('sistema_id', 42)->first()?->foto_placa;
+        return $foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($foto) : null;
+    }
+
+    /**
+     * Accessors para obtener datos de la transmisión de forma aplanada
+     */
+    public function getMarcaTransmisionAttribute()
+    {
+        return $this->componentes->where('sistema_id', 49)->first()?->marca?->nombre;
+    }
+
+    public function getModeloTransmisionAttribute()
+    {
+        return $this->componentes->where('sistema_id', 49)->first()?->modelo;
+    }
+
+    public function getSerieTransmisionAttribute()
+    {
+        return $this->componentes->where('sistema_id', 49)->first()?->serie;
+    }
+
+    public function getComentarioTransmisionAttribute()
+    {
+        return $this->componentes->where('sistema_id', 49)->first()?->comentario;
+    }
+
+    public function getImagenTransmisionUrlAttribute()
+    {
+        $foto = $this->componentes->where('sistema_id', 49)->first()?->foto_placa;
+        return $foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($foto) : null;
+    }
 }

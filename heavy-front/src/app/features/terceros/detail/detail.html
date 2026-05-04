@@ -10,19 +10,19 @@
                         pTooltip="Volver a la lista"></p-button>
                     <div>
                         <h2 class="text-2xl font-bold">Detalle del Tercero</h2>
-                        @if (tercero) {
+                        @if (tercero$ | async; as tercero) {
                         <p class="text-sm text-gray-400 mt-1">{{ tercero.nombre }}</p>
                         }
                     </div>
                 </div>
-                @if (tercero) {
+                @if (tercero$ | async) {
                 <p-button label="Editar" icon="pi pi-pencil" (onClick)="editTercero()"></p-button>
                 }
             </div>
         </ng-template>
 
         <!-- Loading State -->
-        @if (loading) {
+        @if (loading$ | async) {
         <div class="space-y-4 p-4">
             <p-skeleton height="2rem" styleClass="mb-4"></p-skeleton>
             <div class="info-grid">
@@ -35,7 +35,7 @@
         }
 
         <!-- Content -->
-        @if (!loading && tercero) {
+        @if (!(loading$ | async) && (tercero$ | async); as tercero) {
         <div class="p-4 space-y-6">
 
             <!-- Información General -->
@@ -242,7 +242,6 @@
                                 <div class="col-span-1">Comentario</div>
                                 <div class="col-span-1">Foto</div>
                             </div>
-                            <!-- TODO: Estos datos vendrían de una relación de componentes, por ahora simulados o desde la maquina si tiene -->
                             <div
                                 class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[#262626] text-gray-800 dark:text-[#e5e5e5]">
                                 <div class="col-span-1 machine-table-cell">{{ selectedMaquina.marca_motor || 'N/A' }}
@@ -346,7 +345,7 @@
             <p-divider></p-divider>
             <div>
                 <h3 class="section-title">
-                    <i class="pi pi-sitemap mr-2"></i>Categorías Comerciales
+                    <i class="pi pi-sitemap mr-2"></i>Sistemas
                 </h3>
                 <div class="flex flex-wrap gap-2">
                     @for (sistema of tercero.sistemas; track sistema.id) {
@@ -463,7 +462,7 @@
         }
 
         <!-- Empty State -->
-        @if (!loading && !tercero) {
+        @if (!(loading$ | async) && !(tercero$ | async)) {
         <div class="text-center py-12">
             <i class="pi pi-inbox text-6xl text-gray-400 mb-4"></i>
             <p class="text-gray-600 text-lg">No se encontró el tercero</p>

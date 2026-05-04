@@ -50,6 +50,8 @@ import { ArticuloService } from '../../../core/services/articulo.service';
 import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoArticulo, CreatePedidoArticuloDto } from '../../../core/models/pedido.model';
 import { AuthService } from '../../../core/auth/services/auth.service';
 
+import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+
 /**
  * Componente de edición de pedido
  * Formulario para editar un pedido existente con gestión de referencias
@@ -84,7 +86,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         TimelineModule,
         ContactoCreateModalComponent,
         MaquinaCreateModalComponent,
-        ReferenciaEditModalComponent
+        ReferenciaEditModalComponent,
+        MaquinaDetailComponent
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './edit.html',
@@ -135,6 +138,7 @@ export class EditComponent implements OnInit {
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
     loading$!: Observable<boolean>;
+    pedidoResponse = signal<Pedido | null>(null);
 
     pedidoId = signal<number>(0);
     terceros: any[] = [];
@@ -814,6 +818,7 @@ export class EditComponent implements OnInit {
                     )
                     .subscribe((pedido) => {
                         if (pedido) {
+                            this.pedidoResponse.set(pedido);
                             this.estadoActual = this.normalizePedidoEstado(pedido.estado);
 
                         this.pedidoForm.patchValue({
@@ -2427,8 +2432,20 @@ export class EditComponent implements OnInit {
      * Muestra el modal con el detalle de la máquina
      */
     viewMaquina(maquina: any): void {
-        this.selectedMaquina = maquina;
-        this.displayMaquinaDialog = true;
+        if (!maquina) return;
+        
+        // Cargamos la máquina completa para asegurar que tenga los componentes
+        this.maquinaService.getById(maquina.id).subscribe({
+            next: (response: any) => {
+                this.selectedMaquina = response.data || response;
+                this.displayMaquinaDialog = true;
+            },
+            error: () => {
+                // Fallback a los datos que ya tenemos si falla la carga
+                this.selectedMaquina = maquina;
+                this.displayMaquinaDialog = true;
+            }
+        });
     }
 
     /**
@@ -2564,6 +2581,23 @@ export class EditComponent implements OnInit {
         if (!visible) {
             this.editReferenciaId = null;
             this.editReferenciaIndex = -1;
+        }
+    }
+
+    get currentTerceroInfo(): any {
+        return this.pedidoResponse()?.tercero || null;
+    }
+
+    sendEmail(email: string | undefined): void {
+        if (email) {
+            window.open(`mailto:${email}`, '_blank');
+        }
+    }
+
+    sendWhatsApp(phone: string | undefined): void {
+        if (phone) {
+            const cleanPhone = phone.replace(/\D/g, '');
+            window.open(`https://wa.me/${cleanPhone}`, '_blank');
         }
     }
 

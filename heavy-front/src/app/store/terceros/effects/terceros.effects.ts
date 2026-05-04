@@ -73,4 +73,19 @@ export class TercerosEffects {
             )
         )
     );
+
+    /**
+     * Effect para cargar un tercero por ID
+     */
+    loadTerceroById$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(TercerosActions.loadTerceroById),
+            switchMap(({ id }) =>
+                this.terceroService.getById(id).pipe(
+                    map((response) => TercerosActions.loadTerceroByIdSuccess({ tercero: response.data })),
+                    catchError((error) => of(TercerosActions.loadTerceroByIdFailure({ error })))
+                )
+            )
+        )
+    );
 }

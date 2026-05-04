@@ -36,3 +36,12 @@ export const deleteTercero = createAction('[Terceros] Delete Tercero', props<{ i
 export const deleteTerceroSuccess = createAction('[Terceros] Delete Tercero Success', props<{ id: number }>());
 
 export const deleteTerceroFailure = createAction('[Terceros] Delete Tercero Failure', props<{ error: any }>());
+
+/**
+ * Acciones para cargar un tercero por ID
+ */
+export const loadTerceroById = createAction('[Terceros] Load Tercero By ID', props<{ id: number }>());
+
+export const loadTerceroByIdSuccess = createAction('[Terceros] Load Tercero By ID Success', props<{ tercero: Tercero }>());
+
+export const loadTerceroByIdFailure = createAction('[Terceros] Load Tercero By ID Failure', props<{ error: any }>());

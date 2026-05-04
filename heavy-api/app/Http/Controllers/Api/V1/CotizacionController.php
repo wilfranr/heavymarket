@@ -108,12 +108,22 @@ class CotizacionController extends Controller
     {
         $cotizacion->load([
             'pedido',
+            'pedido.contacto',
+            'pedido.maquina',
+            'pedido.maquina.listas',
+            'pedido.maquina.fabricante',
+            'pedido.maquina.componentes.marca',
+            'pedido.maquina.componentes.sistema',
+            'pedido.fabricante',
             'pedido.referencias',
             'pedido.referencias.proveedores',
             'tercero',
             'user',
             'referenciasProveedores',
             'referenciasProveedores.pedidoReferenciaProveedor',
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia',
+            'referenciasProveedores.pedidoReferenciaProveedor.marca',
+            'referenciasProveedores.pedidoReferenciaProveedor.tercero',
         ]);
 
         // Calcular totales si no están calculados

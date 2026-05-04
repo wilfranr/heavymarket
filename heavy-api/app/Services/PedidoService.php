@@ -74,7 +74,7 @@ class PedidoService
             $this->notifyNewOrder($pedido, $user);
 
             return $pedido->load([
-                'user', 'tercero',
+                'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
                         ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista']);
@@ -98,7 +98,7 @@ class PedidoService
             }
 
             return $pedido->load([
-                'user', 'tercero', 'maquina', 'fabricante', 'contacto',
+                'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema', 'fabricante', 'contacto',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
                         ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);

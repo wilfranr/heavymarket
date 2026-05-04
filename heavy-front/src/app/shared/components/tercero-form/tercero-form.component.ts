@@ -143,6 +143,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
     @Input() terceroId: number | null = null;
     @Input() isViewMode: boolean = false;
+    @Input() showLandingAccess: boolean = true;
     @Output() onSave = new EventEmitter<Tercero>();
     @Output() onCancel = new EventEmitter<void>();
 

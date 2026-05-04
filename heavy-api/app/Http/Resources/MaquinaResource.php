@@ -37,6 +37,8 @@ class MaquinaResource extends JsonResource
             'arreglo' => $this->arreglo,
             'foto' => $this->foto && ! filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : $this->foto,
             'fotoId' => $this->fotoId && ! filter_var($this->fotoId, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoId) : $this->fotoId,
+            'imagen_url' => $this->imagen_url,
+            'imagen_placa_url' => $this->imagen_placa_url,
             'estado_revision' => $this->estado_revision,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

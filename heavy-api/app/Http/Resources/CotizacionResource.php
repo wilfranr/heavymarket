@@ -38,8 +38,12 @@ class CotizacionResource extends JsonResource
 
             // Relaciones opcionales
             'user' => $this->whenLoaded('user'),
-            'tercero' => $this->whenLoaded('tercero'),
-            'pedido' => $this->whenLoaded('pedido'),
+            'tercero' => $this->whenLoaded('tercero', function () {
+                return new TerceroResource($this->tercero);
+            }),
+            'pedido' => $this->whenLoaded('pedido', function () {
+                return new PedidoResource($this->pedido);
+            }),
             'referencias_proveedores' => $this->whenLoaded('referenciasProveedores', function () {
                 return CotizacionReferenciaProveedorResource::collection($this->referenciasProveedores);
             }),
