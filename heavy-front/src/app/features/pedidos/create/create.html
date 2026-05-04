@@ -89,7 +89,7 @@
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block"> Cliente <span class="text-red-400">*</span> </label>
                                     <div class="flex gap-2">
-                                        <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" placeholder="Buscar cliente..." styleClass="flex-1 h-[42px]" [filterMatchMode]="filterMode"> </p-select>
+                                        <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" placeholder="Buscar cliente..." styleClass="flex-1 h-[42px]" [filterMatchMode]="filterMode" appendTo="body"> </p-select>
                                         <button
                                             type="button"
                                             (click)="openCreateTerceroDialog()"
@@ -104,7 +104,7 @@
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block">Contacto</label>
                                     <div class="flex gap-2">
-                                        <p-select formControlName="contacto_id" [options]="contactos" [filter]="true" placeholder="Seleccionar contacto..." [disabled]="!pedidoForm.get('tercero_id')?.value" styleClass="flex-1 h-[42px]"> </p-select>
+                                        <p-select formControlName="contacto_id" [options]="contactos" [filter]="true" placeholder="Seleccionar contacto..." [disabled]="!pedidoForm.get('tercero_id')?.value" styleClass="flex-1 h-[42px]" appendTo="body"> </p-select>
                                         <button
                                             type="button"
                                             (click)="openCreateContactoDialog()"
@@ -168,6 +168,7 @@
                                             placeholder="Seleccionar máquina..."
                                             [disabled]="!pedidoForm.get('tercero_id')?.value"
                                             styleClass="flex-1 h-[42px]"
+                                            appendTo="body"
                                         >
                                         </p-select>
                                         <button
