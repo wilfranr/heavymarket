@@ -145,9 +145,9 @@ if [[ "$DEPLOY_FRONT" == "true" ]]; then
     cd "$REPO_ROOT/heavy-front"
 
     if [[ -f "package-lock.json" ]]; then
-        run npm ci
+        run npm install --legacy-peer-deps
     else
-        run npm install --omit=dev
+        run npm install --omit=dev --legacy-peer-deps
     fi
 
     run npm run build

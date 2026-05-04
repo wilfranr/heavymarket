@@ -6,7 +6,7 @@
 
 ## Stack Tecnológico
 - **Framework**: Angular 21 (Zoneless Architecture).
-- **UI Kit**: PrimeNG 20 + TailwindCSS (vía tailwindcss-primeui).
+- **UI Kit**: PrimeNG 21 + TailwindCSS (vía tailwindcss-primeui).
 - **Estado**: Signals (Reactividad primaria) + NgRx (Global state).
 - **Lenguaje**: TypeScript 5.9+ (Modo estricto).
 
