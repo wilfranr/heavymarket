@@ -47,6 +47,7 @@ class MaquinaResource extends JsonResource
             'fabricante' => $this->whenLoaded('fabricante'),
             'tipoLista' => $this->whenLoaded('listas'),
             'componentes' => ComponenteMaquinaResource::collection($this->whenLoaded('componentes')),
+            'terceros' => TerceroResource::collection($this->whenLoaded('terceros')),
         ];
     }
 }

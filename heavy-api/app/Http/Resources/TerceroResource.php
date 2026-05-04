@@ -79,7 +79,7 @@ class TerceroResource extends JsonResource
             'fabricantes' => $this->whenLoaded('fabricantes'),
             'sistemas' => $this->whenLoaded('sistemas'),
             'categorias_comerciales' => $this->whenLoaded('categoriasComerciales'),
-            'maquinas' => $this->whenLoaded('maquinas'),
+            'maquinas' => MaquinaResource::collection($this->whenLoaded('maquinas')),
         ];
     }
 }

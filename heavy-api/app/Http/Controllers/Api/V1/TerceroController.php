@@ -150,7 +150,7 @@ class TerceroController extends Controller
      */
     public function show(Tercero $tercero): JsonResponse
     {
-        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas', 'maquinas', 'categoriasComerciales', 'city', 'state', 'country']);
+        $tercero->load(['contactos', 'direcciones', 'fabricantes', 'sistemas', 'maquinas.fabricante', 'maquinas.componentes.sistema', 'maquinas.componentes.marca', 'categoriasComerciales', 'city', 'state', 'country']);
 
         return response()->json([
             'data' => new TerceroResource($tercero),

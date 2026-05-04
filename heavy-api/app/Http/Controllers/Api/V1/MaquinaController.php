@@ -35,7 +35,7 @@ class MaquinaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Maquina::query()->with(['fabricante', 'listas']);
+        $query = Maquina::query()->with(['fabricante', 'listas', 'terceros']);
 
         // Búsqueda en modelo, serie o arreglo
         if ($request->filled('search')) {
@@ -127,7 +127,7 @@ class MaquinaController extends Controller
      */
     public function show(Maquina $maquina): JsonResponse
     {
-        $maquina->load(['fabricante', 'listas', 'componentes.sistema', 'componentes.marca']);
+        $maquina->load(['fabricante', 'listas', 'componentes.sistema', 'componentes.marca', 'terceros']);
 
         return response()->json([
             'data' => new MaquinaResource($maquina),

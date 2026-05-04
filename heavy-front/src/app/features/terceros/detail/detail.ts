@@ -11,8 +11,8 @@ import { SkeletonModule } from 'primeng/skeleton';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DialogModule } from 'primeng/dialog';
-import { ImageModule } from 'primeng/image';
 import { TooltipModule } from 'primeng/tooltip';
+import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
 import { Tercero } from '../../../core/models/tercero.model';
 import { loadTerceroById } from '../../../store/terceros/actions/terceros.actions';
 import { selectTerceroById, selectTercerosLoading } from '../../../store/terceros/selectors/terceros.selectors';
@@ -30,8 +30,8 @@ import { selectTerceroById, selectTercerosLoading } from '../../../store/tercero
         SkeletonModule,
         ToastModule,
         DialogModule,
-        ImageModule,
-        TooltipModule
+        TooltipModule,
+        MaquinaDetailComponent
     ],
     providers: [MessageService],
     templateUrl: './detail.html',
@@ -83,17 +83,6 @@ import { selectTerceroById, selectTercerosLoading } from '../../../store/tercero
             border-radius: 1rem;
             font-size: 0.75rem;
             font-weight: bold;
-        }
-
-        .machine-table-header {
-            background-color: #f59e0b;
-            color: #000;
-            font-weight: bold;
-            padding: 0.5rem;
-        }
-        
-        .machine-table-cell {
-            padding: 1rem;
         }
     `]
 })

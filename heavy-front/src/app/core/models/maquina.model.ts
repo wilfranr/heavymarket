@@ -75,6 +75,7 @@ export interface Maquina {
         tipo: string;
     };
     componentes?: ComponenteMaquina[];
+    terceros?: Tercero[];
 }
 
 /**
