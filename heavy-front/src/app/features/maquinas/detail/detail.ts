@@ -14,6 +14,8 @@ import { DialogModule } from 'primeng/dialog';
 import { loadMaquinaById } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.selectors';
 import { ESTADO_REVISION_LABELS, Maquina, ComponenteMaquina, normalizeEstadoRevision } from '../../../core/models/maquina.model';
+import { Tercero } from '../../../core/models/tercero.model';
+import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 
 /**
  * Componente de detalle de máquina
@@ -21,7 +23,7 @@ import { ESTADO_REVISION_LABELS, Maquina, ComponenteMaquina, normalizeEstadoRevi
 @Component({
     selector: 'app-maquina-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TagModule, ImageModule, DialogModule],
+    imports: [CommonModule, RouterModule, CardModule, ButtonModule, DividerModule, TagModule, ImageModule, DialogModule, TerceroCreateModalComponent],
     templateUrl: './detail.html'
 })
 export class DetailComponent implements OnInit {
@@ -35,6 +37,10 @@ export class DetailComponent implements OnInit {
     // Estado del diálogo de componentes
     componenteDialog: boolean = false;
     selectedComponente: ComponenteMaquina | null = null;
+
+    // Estado del diálogo de terceros
+    terceroModalVisible: boolean = false;
+    selectedTercero: Tercero | null = null;
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {
@@ -80,5 +86,10 @@ export class DetailComponent implements OnInit {
         setTimeout(() => {
             this.selectedComponente = null;
         }, 300); // limpiar después de la animación
+    }
+
+    verTercero(tercero: Tercero): void {
+        this.selectedTercero = tercero;
+        this.terceroModalVisible = true;
     }
 }

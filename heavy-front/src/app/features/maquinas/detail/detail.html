@@ -114,6 +114,19 @@
                     <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Registro</h3>
                     
                     <div class="space-y-4">
+                        @if (maquina.terceros && maquina.terceros.length > 0) {
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                                <i class="pi pi-user text-sm"></i>
+                            </div>
+                            <div class="flex-1 overflow-hidden">
+                                <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Propietario</p>
+                                <a (click)="verTercero(maquina.terceros[0])" class="text-sm font-bold text-[#fdb831] hover:underline cursor-pointer block truncate">
+                                    {{ maquina.terceros[0].nombre }}
+                                </a>
+                            </div>
+                        </div>
+                        }
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
                                 <i class="pi pi-calendar-plus text-sm"></i>
@@ -183,6 +196,12 @@
     </div>
     }
 </div>
+
+<app-tercero-create-modal 
+    [(visible)]="terceroModalVisible" 
+    [terceroToEdit]="selectedTercero" 
+    [isViewMode]="true">
+</app-tercero-create-modal>
 
 <!-- Modal de Detalle de Componente -->
 <p-dialog [(visible)]="componenteDialog" [modal]="true" [dismissableMask]="true" [draggable]="false" [resizable]="false" (onHide)="cerrarComponenteDialog()" styleClass="w-full md:w-[500px]" [contentStyle]="{'padding-top': '0'}">

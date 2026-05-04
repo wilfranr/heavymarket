@@ -1,3 +1,5 @@
+import { Tercero } from './tercero.model';
+
 /**
  * Valores permitidos por la API (enum MySQL + validación `in:por_revisar,revisado`).
  * @see heavy-api/database/migrations/*_add_estado_revision_to_maquinas_table.php
