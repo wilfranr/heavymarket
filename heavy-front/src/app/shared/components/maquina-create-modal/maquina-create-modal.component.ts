@@ -24,22 +24,7 @@ import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-mo
 @Component({
     selector: 'app-maquina-create-modal',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        DialogModule,
-        ButtonModule,
-        ProgressSpinnerModule,
-        InputTextModule,
-        SelectModule,
-        ToastModule,
-        FileUploadModule,
-        DividerModule,
-        TextareaModule,
-        PopoverModule,
-        TooltipModule,
-        ListaCreateModalComponent
-    ],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, ProgressSpinnerModule, InputTextModule, SelectModule, ToastModule, FileUploadModule, DividerModule, TextareaModule, PopoverModule, TooltipModule, ListaCreateModalComponent],
     templateUrl: './maquina-create-modal.component.html',
     styles: []
 })
@@ -109,8 +94,8 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
                 next: (res: any) => {
                     const m = res.data;
                     this.createMaquinaForm.patchValue({
-                        tipo: m.tipo_id ? Number(m.tipo_id) : (m.tipo?.id ? Number(m.tipo.id) : (m.tipo ? Number(m.tipo) : null)),
-                        fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : (m.fabricante?.id ? Number(m.fabricante.id) : null),
+                        tipo: m.tipo_id ? Number(m.tipo_id) : m.tipo?.id ? Number(m.tipo.id) : m.tipo ? Number(m.tipo) : null,
+                        fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : m.fabricante?.id ? Number(m.fabricante.id) : null,
                         modelo: m.modelo,
                         serie: m.serie ?? '',
                         arreglo: m.arreglo ?? '',
@@ -199,18 +184,26 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
     private loadTiposMaquina(): void {
         this.listaService.getAll({ tipo: 'Tipo de Máquina', per_page: 500 }).subscribe({
             next: (response) => {
-                this.tiposMaquina.set(response.data.map(t => ({
-                    label: t.nombre,
-                    value: t.id
-                })));
+                this.tiposMaquina.set(
+                    response.data.map((t) => ({
+                        label: t.nombre,
+                        value: t.id
+                    }))
+                );
             }
         });
     }
 
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.fabricantes.set(response.data);
+            next: (response: any) => {
+                this.fabricantes.set(
+                    response.data.map((f: any) => ({
+                        label: f.nombre,
+                        value: f.id,
+                        foto: f.foto ?? null
+                    }))
+                );
             }
         });
     }
@@ -278,7 +271,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
             if (comp.modelo) formData.append(`componentes[${index}][modelo]`, comp.modelo);
             if (comp.serie) formData.append(`componentes[${index}][serie]`, comp.serie);
             if (comp.comentario) formData.append(`componentes[${index}][comentario]`, comp.comentario);
-            
+
             if (comp.fotoPlacaFile) {
                 formData.append(`componentes[${index}][foto_placa]`, comp.fotoPlacaFile);
             }
