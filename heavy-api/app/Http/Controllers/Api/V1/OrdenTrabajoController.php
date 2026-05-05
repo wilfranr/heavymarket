@@ -143,14 +143,14 @@ class OrdenTrabajoController extends Controller
      */
     public function update(Request $request, OrdenTrabajo $ordenTrabajo): JsonResponse
     {
-        $validated = $request->validate([
+        $rules = [
             'estado' => [
                 'sometimes',
                 'string',
                 Rule::in(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']),
             ],
             'fecha_ingreso' => ['sometimes', 'date'],
-            'fecha_entrega' => ['sometimes', 'date', 'after_or_equal:fecha_ingreso'],
+            'fecha_entrega' => ['nullable', 'date'],
             'direccion_id' => ['nullable', 'integer', 'exists:direcciones,id'],
             'telefono' => ['sometimes', 'string', 'max:255'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
@@ -158,10 +158,20 @@ class OrdenTrabajoController extends Controller
             'transportadora_id' => ['nullable', 'integer', 'exists:transportadoras,id'],
             'archivo' => ['nullable', 'string', 'max:255'],
             'motivo_cancelacion' => ['nullable', 'string', 'max:500'],
-        ]);
+        ];
+
+        // Si viene fecha_entrega pero no fecha_ingreso, no validar after_or_equal
+        if ($request->filled('fecha_entrega') && !$request->filled('fecha_ingreso')) {
+            unset($rules['fecha_entrega'][2]); // Remove 'after_or_equal' rule
+        }
+
+        $validated = $request->validate($rules);
 
         try {
-            $ordenTrabajo->update($validated);
+            if (!empty($validated)) {
+                $ordenTrabajo->update($validated);
+            }
+            
             $ordenTrabajo->load([
                 'tercero',
                 'pedido',
@@ -191,6 +201,9 @@ class OrdenTrabajoController extends Controller
     public function destroy(OrdenTrabajo $ordenTrabajo): JsonResponse
     {
         try {
+            // Eliminar referencias primero
+            $ordenTrabajo->referencias()->delete();
+            
             $ordenTrabajo->delete();
 
             return response()->json([

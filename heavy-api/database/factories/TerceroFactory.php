@@ -8,7 +8,7 @@ use App\Models\Tercero;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Tercero>
+ * @extends Factory<Tercero>
  */
 class TerceroFactory extends Factory
 {
@@ -24,7 +24,7 @@ class TerceroFactory extends Factory
             'numero_documento' => fake()->unique()->numerify('9#########'),
             'nombre' => fake()->company(),
             'tipo' => $tipo,
-            'email' => fake()->optional()->safeEmail(),
+            'email' => fake()->safeEmail(),
             'telefono' => fake()->optional()->numerify('60# ### ####'),
             'direccion' => fake()->optional()->address(),
             'estado' => fake()->randomElement(['Activo', 'Inactivo']),
