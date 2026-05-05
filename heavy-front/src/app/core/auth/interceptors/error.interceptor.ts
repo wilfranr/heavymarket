@@ -22,6 +22,14 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             if (error.status === 401) {
                 // Evitar bucle infinito si la propia petición de logout falla
                 if (req.url.includes('/logout')) {
+                    // Limpiar datos locales y redirigir silenciosamente
+                    localStorage.removeItem('access_token');
+                    localStorage.removeItem('current_user');
+                    if (!router.url.includes('/auth/login')) {
+                        router.navigate(['/auth/login'], {
+                            queryParams: { returnUrl: router.url }
+                        });
+                    }
                     return throwError(() => error);
                 }
 
@@ -62,8 +70,13 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 console.error('Error del servidor:', error.error?.message);
             }
 
-            // No loggear errores 422 (validación) ya que se manejan en los componentes
-            if (error.status !== 422) {
+            // No loggear errores manejados localmente por los componentes:
+            // - 422: validación
+            // - 404 en /trms/latest: caso esperado cuando no hay TRM registrada
+            const silent404Routes = ['/trms/latest'];
+            const isSilent404 = error.status === 404 && silent404Routes.some(route => req.url.includes(route));
+
+            if (error.status !== 422 && !isSilent404) {
                 console.error('Error HTTP:', error.status, error.message);
             }
 

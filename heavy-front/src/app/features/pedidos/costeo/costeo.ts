@@ -90,16 +90,16 @@ export class CosteoComponent implements OnInit {
     pedidoId = signal<number>(0);
     pedido = signal<Pedido | null>(null);
     loading = signal<boolean>(false);
-    
+
     estadoActual = signal<PedidoEstado>('En_Costeo');
-    trmCargada = signal<number>(0);
+    trmCargada = signal<number>(4000);
     fleteCargado = signal<number>(0);
-    
+
     // Devolución
     displayDevolucionDialog = signal<boolean>(false);
     devolucionComentario = signal<string>('');
     submitting = signal<boolean>(false);
-    
+
     // Formulario principal
     costeoForm!: FormGroup;
 
@@ -109,7 +109,7 @@ export class CosteoComponent implements OnInit {
     activeRefIndex = signal<number>(-1);
     activeProvIndex = signal<number>(-1);
     expandedRefIndices = signal<Set<number>>(new Set([0])); // Por defecto el primero expandido
-    
+
     // Popover info
     popoverData: any = {
         title: '',
@@ -121,7 +121,7 @@ export class CosteoComponent implements OnInit {
         peso: 0,
         referencias_cruzadas: []
     };
-    
+
     // Imágenes y Comentarios
     displayGallery = false;
     displayComentarioDialog = false;
@@ -134,7 +134,7 @@ export class CosteoComponent implements OnInit {
         { breakpoint: '768px', numVisible: 3 },
         { breakpoint: '560px', numVisible: 1 }
     ];
-    
+
     // Datos maestros
     proveedores = signal<any[]>([]);
     proveedoresCompletos = signal<Tercero[]>([]);
@@ -158,10 +158,12 @@ export class CosteoComponent implements OnInit {
     private loadMarcas(): void {
         this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
             next: (marcas: Lista[]) => {
-                this.marcas.set(marcas.map((m: Lista) => ({
-                    label: m.nombre,
-                    value: m.id
-                })));
+                this.marcas.set(
+                    marcas.map((m: Lista) => ({
+                        label: m.nombre,
+                        value: m.id
+                    }))
+                );
             }
         });
     }
@@ -170,10 +172,12 @@ export class CosteoComponent implements OnInit {
         this.terceroService.getProveedores({ per_page: 1000 }).subscribe({
             next: (resp) => {
                 this.proveedoresCompletos.set(resp.data);
-                this.proveedores.set(resp.data.map(p => ({
-                    label: p.nombre,
-                    value: p.id
-                })));
+                this.proveedores.set(
+                    resp.data.map((p) => ({
+                        label: p.nombre,
+                        value: p.id
+                    }))
+                );
             }
         });
     }
@@ -181,11 +185,15 @@ export class CosteoComponent implements OnInit {
     private loadTRM(): void {
         this.trmService.getLatest().subscribe({
             next: (resp) => {
-                this.trmCargada.set(resp.data.trm);
-                this.messageService.add({ severity: 'info', summary: 'TRM Actualizada', detail: `Se está usando una TRM de $${this.trmCargada().toLocaleString()}` });
+                if (resp.data) {
+                    this.trmCargada.set(resp.data.trm);
+                    this.messageService.add({ severity: 'info', summary: 'TRM Actualizada', detail: `Se está usando una TRM de $${this.trmCargada().toLocaleString()}` });
+                } else {
+                    this.messageService.add({ severity: 'warn', summary: 'TRM no registrada', detail: 'No se ha configurado la TRM. Se usará el valor por defecto de $4,000.' });
+                }
             },
             error: () => {
-                this.messageService.add({ severity: 'error', summary: 'Error TRM', detail: 'No se pudo cargar la TRM actual. Los cálculos podrían ser incorrectos.' });
+                this.messageService.add({ severity: 'warn', summary: 'TRM no disponible', detail: 'No se pudo cargar la TRM del servidor. Se usará el valor por defecto de $4,000.' });
             }
         });
     }
@@ -209,7 +217,7 @@ export class CosteoComponent implements OnInit {
     get referenciasFormArray() {
         return this.costeoForm.get('referencias') as FormArray;
     }
-    
+
     getProveedoresParaReferencia(refIndex: number) {
         return (this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray).controls;
     }
@@ -220,34 +228,35 @@ export class CosteoComponent implements OnInit {
             const parsedId = parseInt(id, 10);
             this.pedidoId.set(parsedId);
             this.store.dispatch(loadPedido({ id: parsedId }));
-            
-            this.store.select(selectPedidosLoading).subscribe(l => this.loading.set(l));
+
+            this.store.select(selectPedidosLoading).subscribe((l) => this.loading.set(l));
 
             // Sincronizar carga de pedido y proveedores para evitar condiciones de carrera
             import('rxjs').then(({ combineLatest }) => {
-                combineLatest([
-                    this.store.select(selectPedidoById(parsedId)).pipe(filter((pedido) => !!pedido && pedido.referencias !== undefined)),
-                    this.terceroService.getProveedores({ per_page: 1000 })
-                ]).pipe(take(1)).subscribe(([pedido, providersResp]) => {
-                    this.proveedoresCompletos.set(providersResp.data);
-                    this.proveedores.set(providersResp.data.map(p => ({
-                        label: p.nombre,
-                        value: p.id
-                    })));
-                    
-                    if (pedido) {
-                        this.pedido.set(pedido);
-                        this.estadoActual.set(pedido.estado);
-                        this.poblarFormulario(pedido);
-                    }
-                });
+                combineLatest([this.store.select(selectPedidoById(parsedId)).pipe(filter((pedido) => !!pedido && pedido.referencias !== undefined)), this.terceroService.getProveedores({ per_page: 1000 })])
+                    .pipe(take(1))
+                    .subscribe(([pedido, providersResp]) => {
+                        this.proveedoresCompletos.set(providersResp.data);
+                        this.proveedores.set(
+                            providersResp.data.map((p) => ({
+                                label: p.nombre,
+                                value: p.id
+                            }))
+                        );
+
+                        if (pedido) {
+                            this.pedido.set(pedido);
+                            this.estadoActual.set(pedido.estado);
+                            this.poblarFormulario(pedido);
+                        }
+                    });
             });
         }
     }
 
     private poblarFormulario(pedido: Pedido): void {
         this.referenciasFormArray.clear();
-        
+
         if (pedido.referencias && pedido.referencias.length > 0) {
             pedido.referencias.forEach((ref, refIdx) => {
                 const refFormGroup = this.fb.group({
@@ -264,7 +273,7 @@ export class CosteoComponent implements OnInit {
                     categoria_comercial_id: [ref.categoria_comercial_id],
                     marca_nombre: [ref.marca?.nombre || (ref.referencia as any)?.marca?.nombre || 'Sin Marca'],
                     peso: [ref.referencia?.articulo?.peso || 0],
-                    estado_str: ['Preparado'], 
+                    estado_str: ['Preparado'],
                     imagen: [ref.imagen || null],
                     imagenes: [ref.imagenes || []],
                     descripcion_especifica: [ref.referencia?.articulo?.descripcionEspecifica || 'Sin descripción adicional'],
@@ -276,24 +285,22 @@ export class CosteoComponent implements OnInit {
                     referencias_cruzadas: [ref.referencia?.articulo?.referencias_cruzadas || ref.referencia?.articulo?.referencias || []],
                     articulo_imagen: [ref.referencia?.articulo?.fotoDescriptiva || null],
                     mostrar_referencia: [true],
-                    proveedores: this.fb.array(ref.proveedores && ref.proveedores.length > 0 
-                        ? ref.proveedores.map(prov => this.crearProveedorFormGroup(prov)) 
-                        : [this.crearProveedorFormGroup()])
+                    proveedores: this.fb.array(ref.proveedores && ref.proveedores.length > 0 ? ref.proveedores.map((prov) => this.crearProveedorFormGroup(prov)) : [this.crearProveedorFormGroup()])
                 });
-                
+
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
 
                 // SUGERENCIA: Solo cargar proveedores sugeridos si la referencia NO tiene proveedores en la base de datos
                 const tieneProveedoresEnDB = ref.proveedores && ref.proveedores.length > 0;
-                
+
                 if (!tieneProveedoresEnDB && this.proveedoresCompletos().length > 0 && ref.referencia?.marca_id && ref.lista_id) {
-                    const coincidentes = this.proveedoresCompletos().filter(p => {
-                        const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(ref.referencia?.marca_id));
-                        const tieneCategoria = p.categoria_comercial_ids?.some(id => Number(id) === Number(ref.lista_id));
+                    const coincidentes = this.proveedoresCompletos().filter((p) => {
+                        const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(ref.referencia?.marca_id));
+                        const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(ref.lista_id));
                         return tieneFabricante && tieneCategoria;
                     });
 
-                    coincidentes.forEach(p => {
+                    coincidentes.forEach((p) => {
                         this.agregarProveedorFila(proveedoresArray, { proveedor_id: p.id });
                     });
                 }
@@ -302,7 +309,7 @@ export class CosteoComponent implements OnInit {
                 if (proveedoresArray.length === 0) {
                     this.agregarProveedorVacio(proveedoresArray);
                 }
-                
+
                 this.referenciasFormArray.push(refFormGroup);
             });
         }
@@ -311,19 +318,19 @@ export class CosteoComponent implements OnInit {
     getProveedoresFiltrados(refIndex: number): any[] {
         const refGroup = this.referenciasFormArray.at(refIndex);
         if (!refGroup) return this.proveedores();
-        
+
         const marcaId = refGroup.get('marca_id')?.value || this.pedido()?.referencias?.[refIndex]?.referencia?.marca_id;
         const categoriaComercialId = refGroup.get('categoria_comercial_id')?.value;
-        
+
         if (!marcaId || !categoriaComercialId) return this.proveedores();
 
         return this.proveedoresCompletos()
-            .filter(p => {
-                const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some(id => Number(id) === Number(marcaId));
-                const tieneCategoria = p.categoria_comercial_ids?.some(id => Number(id) === Number(categoriaComercialId));
+            .filter((p) => {
+                const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(marcaId));
+                const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(categoriaComercialId));
                 return tieneFabricante && tieneCategoria;
             })
-            .map(p => ({
+            .map((p) => ({
                 label: p.nombre,
                 value: p.id
             }));
@@ -333,7 +340,7 @@ export class CosteoComponent implements OnInit {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         this.agregarProveedorVacio(proveedoresArray);
     }
-    
+
     eliminarProveedor(refIndex: number, provIndex: number): void {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         proveedoresArray.removeAt(provIndex);
@@ -348,7 +355,7 @@ export class CosteoComponent implements OnInit {
         const row = this.referenciasFormArray.at(index);
         const imagen = row.get('imagen')?.value;
         const imagenes = row.get('imagenes')?.value || [];
-        
+
         if (!imagen && imagenes.length === 0) return;
 
         this.selectedItemIndex = index;
@@ -363,7 +370,7 @@ export class CosteoComponent implements OnInit {
         const imagenes = row.get('imagenes')?.value || [];
 
         const mapped: any[] = [];
-        
+
         // Imagen principal (legacy)
         if (imagen) {
             const src = this.formatImageUrl(imagen);
@@ -406,7 +413,7 @@ export class CosteoComponent implements OnInit {
     }
 
     // --- Popover y Expansión ---
-    
+
     isExpanded(index: number): boolean {
         return this.expandedRefIndices().has(index);
     }
@@ -423,8 +430,8 @@ export class CosteoComponent implements OnInit {
 
     showInfo(event: any, type: 'sistema' | 'articulo' | 'referencia', refIndex: number, op: Popover): void {
         const refGroup = this.referenciasFormArray.at(refIndex);
-        
-        switch(type) {
+
+        switch (type) {
             case 'sistema':
                 this.popoverData = {
                     title: 'Sistema',
@@ -461,7 +468,7 @@ export class CosteoComponent implements OnInit {
                 };
                 break;
         }
-        
+
         op.toggle(event);
     }
 
@@ -473,18 +480,15 @@ export class CosteoComponent implements OnInit {
 
     private crearProveedorFormGroup(data?: any): FormGroup {
         const proveedorId = data?.tercero_id || data?.proveedor_id || null;
-        
+
         // Determinar si es nacional para ubicar el costo en el campo correcto
         // Prioridad 1: Usar el campo 'ubicacion' que ya viene en los datos (más confiable)
         // Prioridad 2: Buscar en la lista de proveedores cargada
         let esNacional = data?.ubicacion === 'Nacional';
-        
+
         if (!data?.ubicacion && proveedorId && this.proveedoresCompletos().length > 0) {
-            const proveedor = this.proveedoresCompletos().find(p => p.id === proveedorId);
-            esNacional = proveedor?.country?.iso2 === 'CO' || 
-                         proveedor?.country?.name?.toLowerCase().includes('colombia') || 
-                         proveedor?.country_id === 48 || 
-                         proveedor?.country?.id === 48;
+            const proveedor = this.proveedoresCompletos().find((p) => p.id === proveedorId);
+            esNacional = proveedor?.country?.iso2 === 'CO' || proveedor?.country?.name?.toLowerCase().includes('colombia') || proveedor?.country_id === 48 || proveedor?.country?.id === 48;
         }
 
         return this.fb.group({
@@ -495,8 +499,8 @@ export class CosteoComponent implements OnInit {
             marca_id: [data?.marca_id || null],
             // PrimeNG Select requiere string si los valores en las opciones son strings
             entrega: [data?.dias_entrega !== undefined ? String(data.dias_entrega) : '0'],
-            costo_usd: [{ value: !esNacional ? (data?.costo_unidad || 0) : 0, disabled: esNacional }],
-            costo_cop: [{ value: esNacional ? (data?.costo_unidad || 0) : 0, disabled: !esNacional }],
+            costo_usd: [{ value: !esNacional ? data?.costo_unidad || 0 : 0, disabled: esNacional }],
+            costo_cop: [{ value: esNacional ? data?.costo_unidad || 0 : 0, disabled: !esNacional }],
             ubicacion: [esNacional ? 'Nacional' : 'Internacional'],
             utilidad: [data?.utilidad || 0],
             venta: [data?.valor_unidad || 0],
@@ -523,7 +527,7 @@ export class CosteoComponent implements OnInit {
         } catch (e) {
             // Si falla, tratar como texto plano
         }
-        
+
         // Si no es JSON, dividir por separadores comunes o tratar como uno solo
         return [{ comentario: raw, origen: 'Vendedor', fecha: new Date() }];
     }
@@ -546,14 +550,16 @@ export class CosteoComponent implements OnInit {
             this.terceroService.getProveedores({ per_page: 1000 }).subscribe({
                 next: (resp) => {
                     this.proveedoresCompletos.set(resp.data);
-                    this.proveedores.set(resp.data.map(p => ({
-                        label: p.nombre,
-                        value: p.id
-                    })));
-                    
+                    this.proveedores.set(
+                        resp.data.map((p) => ({
+                            label: p.nombre,
+                            value: p.id
+                        }))
+                    );
+
                     const proveedoresArray = this.referenciasFormArray.at(this.activeRefIndex()).get('proveedores') as FormArray;
                     const provGroup = proveedoresArray.at(this.activeProvIndex()) as FormGroup;
-                    
+
                     provGroup.patchValue({ proveedor_id: tercero.id });
                     this.onProveedorChange(this.activeRefIndex(), this.activeProvIndex());
                 }
@@ -571,11 +577,13 @@ export class CosteoComponent implements OnInit {
         if (this.activeRefIndex() !== -1 && this.activeProvIndex() !== -1) {
             this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
                 next: (marcas: Lista[]) => {
-                    this.marcas.set(marcas.map((m: Lista) => ({
-                        label: m.nombre,
-                        value: m.id
-                    })));
-                    
+                    this.marcas.set(
+                        marcas.map((m: Lista) => ({
+                            label: m.nombre,
+                            value: m.id
+                        }))
+                    );
+
                     const proveedoresArray = this.referenciasFormArray.at(this.activeRefIndex()).get('proveedores') as FormArray;
                     const provGroup = proveedoresArray.at(this.activeProvIndex()) as FormGroup;
                     provGroup.patchValue({ marca_id: marca.id });
@@ -595,14 +603,11 @@ export class CosteoComponent implements OnInit {
             return;
         }
 
-        const proveedor = this.proveedoresCompletos().find(p => p.id === proveedorId);
+        const proveedor = this.proveedoresCompletos().find((p) => p.id === proveedorId);
         if (!proveedor) return;
 
         // Validar país (Colombia = ID 48, ISO 'CO' o Nombre 'Colombia')
-        const esNacional = proveedor.country?.iso2 === 'CO' || 
-                          proveedor.country?.name?.toLowerCase().includes('colombia') || 
-                          proveedor.country_id === 48 || 
-                          proveedor.country?.id === 48;
+        const esNacional = proveedor.country?.iso2 === 'CO' || proveedor.country?.name?.toLowerCase().includes('colombia') || proveedor.country_id === 48 || proveedor.country?.id === 48;
 
         if (esNacional) {
             // Proveedor Nacional: Deshabilitar USD, habilitar COP
@@ -613,7 +618,7 @@ export class CosteoComponent implements OnInit {
             provGroup.get('costo_usd')?.disable();
             provGroup.get('costo_usd')?.setValue(0, { emitEvent: false });
             provGroup.get('costo_cop')?.enable();
-            
+
             // Si hay un valor en USD y COP está en 0, lo movemos (posible carga inicial o cambio manual)
             if (valorActualUSD > 0 && (valorActualCOP === 0 || valorActualCOP === null)) {
                 provGroup.get('costo_cop')?.setValue(valorActualUSD, { emitEvent: false });
@@ -640,7 +645,7 @@ export class CosteoComponent implements OnInit {
     calcularFila(refIndex: number, provIndex: number): void {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         const provGroup = proveedoresArray.at(provIndex) as FormGroup;
-        
+
         const costoUSD = Math.max(0, provGroup.get('costo_usd')?.value || 0);
         const costoCOP = Math.max(0, provGroup.get('costo_cop')?.value || 0);
         const utilidad = Math.max(0, provGroup.get('utilidad')?.value || 0);
@@ -653,18 +658,15 @@ export class CosteoComponent implements OnInit {
 
         if (proveedorId) {
             const proveedor = this.proveedoresCompletos().find((p: any) => p.id === proveedorId);
-            const esNacional = proveedor?.country?.iso2 === 'CO' || 
-                              proveedor?.country?.name?.toLowerCase().includes('colombia') || 
-                              proveedor?.country_id === 48 || 
-                              proveedor?.country?.id === 48;
+            const esNacional = proveedor?.country?.iso2 === 'CO' || proveedor?.country?.name?.toLowerCase().includes('colombia') || proveedor?.country_id === 48 || proveedor?.country?.id === 48;
 
             if (esNacional) {
                 // FÓRMULA NACIONAL:
                 // 1. valor_unidad = costo_unidad + (costo_unidad * utilidad / 100)
                 // 2. Redondear al entero más cercano
-                const vUnidad = costoCOP + (costoCOP * utilidad / 100);
+                const vUnidad = costoCOP + (costoCOP * utilidad) / 100;
                 finalValorUnidadCOP = Math.round(vUnidad);
-                
+
                 // Actualizar USD informativo
                 const calculatedUSD = costoCOP / this.trmCargada();
                 provGroup.get('costo_usd')?.patchValue(parseFloat(calculatedUSD.toFixed(2)), { emitEvent: false });
@@ -674,15 +676,15 @@ export class CosteoComponent implements OnInit {
                 // 2. costo_base_usd = (peso_en_libras * flete) + costo_unidad
                 // 3. costo_base_cop = costo_base_usd * trm
                 // 4. valor_unidad = round(costo_base_cop + (utilidad * costo_base_cop / 100) / 100) * 100 (centenas)
-                
+
                 const pesoLibras = pesoGramos / 453.59;
-                const costoBaseUSD = (pesoLibras * this.fleteCargado()) + costoUSD;
+                const costoBaseUSD = pesoLibras * this.fleteCargado() + costoUSD;
                 const costoBaseCOP = costoBaseUSD * this.trmCargada();
-                const vUnidad = costoBaseCOP + (utilidad * costoBaseCOP / 100);
-                
+                const vUnidad = costoBaseCOP + (utilidad * costoBaseCOP) / 100;
+
                 // Redondear a centenas
                 finalValorUnidadCOP = Math.round(vUnidad / 100) * 100;
-                
+
                 // Actualizar COP informativo (basado en costo base o solo costo unidad?)
                 // El usuario dice "costo_base_cop", lo usaremos para valor_unidad.
                 // Mantendremos el costo_cop del input solo como referencia del costo_unidad_usd * trm
@@ -690,8 +692,8 @@ export class CosteoComponent implements OnInit {
             }
         } else {
             // Sin proveedor, cálculo simple de markup
-            const baseCOP = costoCOP || (costoUSD * this.trmCargada());
-            finalValorUnidadCOP = Math.round(baseCOP + (baseCOP * utilidad / 100));
+            const baseCOP = costoCOP || costoUSD * this.trmCargada();
+            finalValorUnidadCOP = Math.round(baseCOP + (baseCOP * utilidad) / 100);
         }
 
         // El valor_unidad ya incluye la utilidad según las fórmulas de arriba
@@ -706,7 +708,7 @@ export class CosteoComponent implements OnInit {
                 if (prov.get('seleccionado')?.value) {
                     const venta = prov.get('venta')?.value || 0;
                     const cantidad = prov.get('cantidad')?.value || 0;
-                    total += (venta * cantidad);
+                    total += venta * cantidad;
                 }
             });
         });
@@ -724,7 +726,7 @@ export class CosteoComponent implements OnInit {
                         proveedor_id: prov.proveedor_id,
                         marca_id: prov.marca_id,
                         dias_entrega: parseInt(prov.entrega, 10) || 0,
-                        costo_unidad: prov.ubicacion === 'Nacional' ? (prov.costo_cop || 0) : (prov.costo_usd || 0),
+                        costo_unidad: prov.ubicacion === 'Nacional' ? prov.costo_cop || 0 : prov.costo_usd || 0,
                         utilidad: prov.utilidad || 0,
                         cantidad: prov.cantidad || 1,
                         seleccionado: !!prov.seleccionado
@@ -741,7 +743,7 @@ export class CosteoComponent implements OnInit {
             next: (resp: any) => {
                 this.submitting.set(false);
                 this.messageService.add({ severity: 'success', summary: 'Guardado', detail: 'Costeo guardado exitosamente.' });
-                
+
                 if (resp.data) {
                     this.store.dispatch(loadPedidoSuccess({ pedido: resp.data }));
                 }
@@ -752,19 +754,19 @@ export class CosteoComponent implements OnInit {
             }
         });
     }
-    
+
     finalizarCosteo(): void {
         // 1. Verificar que haya al menos un item seleccionado (con o sin ID)
-        const hasSelection = this.referenciasFormArray.controls.some(ref => {
+        const hasSelection = this.referenciasFormArray.controls.some((ref) => {
             const proveedores = (ref.get('proveedores') as FormArray).controls;
-            return proveedores.some(prov => prov.get('seleccionado')?.value);
+            return proveedores.some((prov) => prov.get('seleccionado')?.value);
         });
 
         if (!hasSelection) {
-            this.messageService.add({ 
-                severity: 'warn', 
-                summary: 'Atención', 
-                detail: 'Debe seleccionar al menos un proveedor (check) para generar la cotización.' 
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Atención',
+                detail: 'Debe seleccionar al menos un proveedor (check) para generar la cotización.'
             });
             return;
         }
@@ -783,13 +785,13 @@ export class CosteoComponent implements OnInit {
     private guardarYGenerarCotizacion(): void {
         this.submitting.set(true);
         const payload = this.getCosteoPayload();
-        
+
         // Paso 1: Guardado automático para asegurar que todo tenga ID en la DB
         this.pedidoService.guardarCosteo(this.pedidoId(), payload).subscribe({
             next: (resp: any) => {
                 const pedidoActualizado = resp.data;
                 const selectedItems: { id: number; mostrar_referencia: boolean }[] = [];
-                
+
                 // Paso 2: Extraer los IDs reales y sus flags desde el formulario
                 pedidoActualizado.referencias?.forEach((ref: any, idx: number) => {
                     const refGroup = this.referenciasFormArray.at(idx);
@@ -823,25 +825,27 @@ export class CosteoComponent implements OnInit {
 
     private ejecutarFinalizacion(selectedItems: { id: number; mostrar_referencia: boolean }[]): void {
         this.submitting.set(true);
-        this.cotizacionService.finalizarCosteo({
-            pedido_id: this.pedidoId(),
-            items: selectedItems
-        }).subscribe({
-            next: (resp: any) => {
-                this.submitting.set(false);
-                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización generada correctamente.' });
-                
-                // Opción: Descargar PDF automáticamente o redirigir
-                if (resp.data && resp.data.id) {
-                    this.descargarPDF(resp.data.id);
-                    setTimeout(() => this.router.navigate(['/app/cotizaciones']), 2000);
+        this.cotizacionService
+            .finalizarCosteo({
+                pedido_id: this.pedidoId(),
+                items: selectedItems
+            })
+            .subscribe({
+                next: (resp: any) => {
+                    this.submitting.set(false);
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización generada correctamente.' });
+
+                    // Opción: Descargar PDF automáticamente o redirigir
+                    if (resp.data && resp.data.id) {
+                        this.descargarPDF(resp.data.id);
+                        setTimeout(() => this.router.navigate(['/app/cotizaciones']), 2000);
+                    }
+                },
+                error: (err: any) => {
+                    this.submitting.set(false);
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo finalizar el costeo' });
                 }
-            },
-            error: (err: any) => {
-                this.submitting.set(false);
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error?.message || 'No se pudo finalizar el costeo' });
-            }
-        });
+            });
     }
 
     private descargarPDF(cotizacionId: number): void {

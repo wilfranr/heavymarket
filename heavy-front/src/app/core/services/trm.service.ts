@@ -24,8 +24,8 @@ export class TRMService extends ApiService {
     /**
      * Obtener la TRM más reciente
      */
-    getLatest(): Observable<{ data: TRM }> {
-        return this.get<{ data: TRM }>(`${this.getBaseUrl()}/latest`);
+    getLatest(): Observable<{ data: TRM | null; message?: string }> {
+        return this.get<{ data: TRM | null; message?: string }>(`${this.getBaseUrl()}/latest`);
     }
 
     /**

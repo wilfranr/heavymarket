@@ -56,9 +56,12 @@ export class TRMsEffects {
             switchMap(() =>
                 this.trmService.getLatest().pipe(
                     map((response) => {
-                        return TRMsActions.loadLatestTRMSuccess({
-                            trm: response.data
-                        });
+                        if (response.data) {
+                            return TRMsActions.loadLatestTRMSuccess({
+                                trm: response.data
+                            });
+                        }
+                        return TRMsActions.loadLatestTRMFailure({ error: 'No se ha registrado ninguna TRM aún' });
                     }),
                     catchError((error) => {
                         const message = error.error?.message || 'Error al cargar la TRM más reciente';

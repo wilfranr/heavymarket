@@ -53,8 +53,9 @@ class TRMController extends Controller
 
         if (! $trm) {
             return response()->json([
-                'message' => 'No se encontró ninguna TRM',
-            ], 404);
+                'data' => null,
+                'message' => 'No se ha registrado ninguna TRM aún',
+            ]);
         }
 
         return response()->json([

@@ -75,6 +75,13 @@ export class AuthService {
      * Cerrar sesión
      */
     logout(): Observable<any> {
+        const token = this.getToken();
+        if (!token) {
+            this.clearAuthData();
+            this.router.navigate(['/auth/login']);
+            return new Observable((observer) => { observer.next(null); observer.complete(); });
+        }
+
         return this.http.post(`${this.API_URL}/logout`, {}).pipe(
             tap(() => {
                 this.clearAuthData();
