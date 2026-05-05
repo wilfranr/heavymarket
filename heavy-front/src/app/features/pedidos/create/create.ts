@@ -128,7 +128,7 @@ export class CreateComponent implements OnInit {
     terceros: any[] = [];
     sistemas: any[] = [];
     marcas: any[] = [];
-    maquinas: any[] = [];
+    maquinas = signal<any[]>([]);
     fabricantes: any[] = [];
     referencias: any[] = [];
     contactos: any[] = [];
@@ -153,12 +153,12 @@ export class CreateComponent implements OnInit {
 
     selectedTercero = computed(() => {
         const id = this.terceroId();
-        return id ? this.tercerosFull.find(t => t.id === id) : null;
+        return id ? this.tercerosFull.find((t) => t.id === id) : null;
     });
 
     selectedMaquina = computed(() => {
         const id = this.maquinaId();
-        return id ? this.maquinasFull.find(m => m.id === id) : null;
+        return id ? this.maquinasFull.find((m) => m.id === id) : null;
     });
 
     // Modal de detalle de máquina
@@ -200,23 +200,11 @@ export class CreateComponent implements OnInit {
     // Respaldos para filtrado flexible
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
 
-    ngOnInit(): void {
-        this.registerFlexibleFilter();
+     ngOnInit(): void {
         this.initForm();
         this.loadInitialData();
     }
-
-    private registerFlexibleFilter(): void {
-        this.filterService.register('flexible', (value: any, filter: any): boolean => {
-            if (filter === undefined || filter === null || filter.trim() === '') {
-                return true;
-            }
-            if (value === undefined || value === null) {
-                return false;
-            }
-            return this.flexibleMatch(String(value), String(filter));
-        });
-    }
+    
 
     /**
      * Inicializa el formulario con validaciones
@@ -247,41 +235,49 @@ export class CreateComponent implements OnInit {
         });
 
         // Suscribirse a cambios globales si es necesario
-        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe(id => {
+        this.pedidoForm.get('tercero_id')?.valueChanges.subscribe((id) => {
             this.terceroId.set(id);
             if (id) {
                 this.loadContactos(id);
                 this.loadMaquinasPorCliente(id);
 
                 // Cargar datos adicionales del tercero si están en tercerosFull
-                const t = this.tercerosFull.find(x => x.id === id);
+                const t = this.tercerosFull.find((x) => x.id === id);
                 if (t) {
-                    this.pedidoForm.patchValue({
-                        direccion: t.direccion || ''
-                    }, { emitEvent: false });
+                    this.pedidoForm.patchValue(
+                        {
+                            direccion: t.direccion || ''
+                        },
+                        { emitEvent: false }
+                    );
                 }
             } else {
                 this.contactos = [];
-                this.maquinas = [];
-                this.pedidoForm.patchValue({
-                    direccion: '',
-                    contacto_id: null,
-                    maquina_id: null
-                }, { emitEvent: false });
+                this.maquinas.set([]);
+                this.pedidoForm.patchValue(
+                    {
+                        direccion: '',
+                        contacto_id: null,
+                        maquina_id: null
+                    },
+                    { emitEvent: false }
+                );
             }
         });
-        this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(id => this.maquinaId.set(id));
+        this.pedidoForm.get('maquina_id')?.valueChanges.subscribe((id) => this.maquinaId.set(id));
     }
 
     private removeAccents(str: string): string {
-        return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        return str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
     }
 
     public flexibleMatch(text: string, search: string): boolean {
         if (!search) return true;
         const normalizedText = this.removeAccents(text.toLowerCase());
-        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
-        return searchTerms.every(term => normalizedText.includes(term));
+        const searchTerms = this.removeAccents(search.toLowerCase())
+            .split(/\s+/)
+            .filter((t) => t.length > 0);
+        return searchTerms.every((term) => normalizedText.includes(term));
     }
 
     onFilterSistemas(event: any) {
@@ -290,7 +286,7 @@ export class CreateComponent implements OnInit {
             this.sistemas = [...this.sistemasOriginal];
             return;
         }
-        this.sistemas = this.sistemasOriginal.filter(s => this.flexibleMatch(s._search, query));
+        this.sistemas = this.sistemasOriginal.filter((s) => this.flexibleMatch(s._search, query));
     }
 
     onFilterTerceros(event: any) {
@@ -299,7 +295,7 @@ export class CreateComponent implements OnInit {
             this.terceros = [...this.tercerosOriginal];
             return;
         }
-        this.terceros = this.tercerosOriginal.filter(t => this.flexibleMatch(t.label, query));
+        this.terceros = this.tercerosOriginal.filter((t) => this.flexibleMatch(t.label, query));
     }
 
     onFilterTipos(event: any, index: number) {
@@ -314,20 +310,20 @@ export class CreateComponent implements OnInit {
 
         // Búsqueda global en todos los sistemas (como en el cotizador)
         const allMatches: any[] = [];
-        this.sistemasOriginal.forEach(sys => {
+        this.sistemasOriginal.forEach((sys) => {
             const params: any = { tipo: 'Tipo de Artículo', per_page: 200, sistema_id: sys.value };
             // Nota: Aquí dependemos de que los sistemas originales ya tengan sus listas si queremos búsqueda instantánea
             // Pero como se cargan bajo demanda en onSistemaChange, vamos a usar los datos que ya tenemos si es posible
             // O mejor, buscamos en un catálogo global si existe.
-            
+
             // Para simplificar y ser coherentes con p-select, vamos a buscar en todos los tipos ya cargados en tiposPorFilaOriginal
             // Pero eso solo cubriría el sistema actual.
         });
 
         // REFINAMIENTO: Usar un catálogo global de tipos si está disponible
         // En loadInitialData cargamos this.tiposArticulos, pero son strings.
-        
-        // Vamos a facilitar la búsqueda multi-término en el sistema actual por ahora, 
+
+        // Vamos a facilitar la búsqueda multi-término en el sistema actual por ahora,
         // ya que la estructura de cascada de la administración es más estricta que el landing.
         this.tiposPorFila[index] = (this.tiposPorFilaOriginal[index] || []).filter((t: any) => this.flexibleMatch(t._search, query));
     }
@@ -361,10 +357,12 @@ export class CreateComponent implements OnInit {
         this.terceroService.list({ per_page: 200, tipo: 'Cliente' }).subscribe({
             next: (response) => {
                 this.tercerosFull = response.data;
-                this.terceros = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                })).sort((a, b) => a.label.localeCompare(b.label));
+                this.terceros = response.data
+                    .map((t) => ({
+                        label: t.nombre || `Tercero ${t.id}`,
+                        value: t.id
+                    }))
+                    .sort((a, b) => a.label.localeCompare(b.label));
                 this.tercerosOriginal = [...this.terceros];
 
                 if (preselectId) {
@@ -478,25 +476,27 @@ export class CreateComponent implements OnInit {
         // Cargar sistemas y enriquecer para búsqueda flexible
         this.sistemaService.getAll({ per_page: 100, include: 'listas' }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map((s: any) => {
-                    // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
-                    const tiposRelacionados = (s.listas || [])
-                        .filter((l: any) => l.tipo === 'Tipo de Artículo')
-                        .map((l: any) => l.nombre)
-                        .join(' ');
-                    
-                    return {
-                        label: s.nombre,
-                        value: s.id,
-                        _search: `${s.nombre} ${tiposRelacionados}`
-                    };
-                }).sort((a, b) => {
-                    const labelA = a.label.toLowerCase();
-                    const labelB = b.label.toLowerCase();
-                    if (labelA === 'por defecto') return -1;
-                    if (labelB === 'por defecto') return 1;
-                    return labelA.localeCompare(labelB);
-                });
+                this.sistemas = response.data
+                    .map((s: any) => {
+                        // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
+                        const tiposRelacionados = (s.listas || [])
+                            .filter((l: any) => l.tipo === 'Tipo de Artículo')
+                            .map((l: any) => l.nombre)
+                            .join(' ');
+
+                        return {
+                            label: s.nombre,
+                            value: s.id,
+                            _search: `${s.nombre} ${tiposRelacionados}`
+                        };
+                    })
+                    .sort((a, b) => {
+                        const labelA = a.label.toLowerCase();
+                        const labelB = b.label.toLowerCase();
+                        if (labelA === 'por defecto') return -1;
+                        if (labelB === 'por defecto') return 1;
+                        return labelA.localeCompare(labelB);
+                    });
                 this.sistemasOriginal = [...this.sistemas];
             }
         });
@@ -515,10 +515,10 @@ export class CreateComponent implements OnInit {
         this.maquinaService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
                 this.maquinasFull = response.data;
-                this.maquinas = response.data.map((m: any) => ({
+                this.maquinas.set(response.data.map((m: any) => ({
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
                     value: m.id
-                }));
+                })));
             }
         });
 
@@ -554,7 +554,7 @@ export class CreateComponent implements OnInit {
         if (!sistemaId) return;
 
         // Si el sistema es "Por defecto", no filtramos por sistema_id para obtener todos los tipos
-        const system = this.sistemas.find(s => s.value === sistemaId);
+        const system = this.sistemas.find((s) => s.value === sistemaId);
         const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
         if (system && system.label.toLowerCase() !== 'por defecto') {
             params.sistema_id = sistemaId;
@@ -565,7 +565,7 @@ export class CreateComponent implements OnInit {
             next: (response) => {
                 const listasAsociadas = response.data;
 
-                this.tiposPorFila[index] = listasAsociadas.map(lista => ({
+                this.tiposPorFila[index] = listasAsociadas.map((lista) => ({
                     label: lista.nombre,
                     value: lista.id,
                     descripcion: lista.definicion,
@@ -593,10 +593,7 @@ export class CreateComponent implements OnInit {
 
         this.articuloService.getAll({ per_page: 500 }).subscribe({
             next: (resArt) => {
-                const articulo = resArt.data.find((a: any) =>
-                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
-                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
-                );
+                const articulo = resArt.data.find((a: any) => (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) || (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase()));
                 if (articulo) {
                     row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
                     this.onArticuloChange(articulo.id, index, false);
@@ -621,7 +618,7 @@ export class CreateComponent implements OnInit {
         // Cargar referencias asociadas a este artículo
         this.referenciaService.getAll({ articulo_id: articuloId, per_page: 100 }).subscribe({
             next: (response) => {
-                this.referenciasPorFila[index] = response.data.map(r => ({
+                this.referenciasPorFila[index] = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id
                 }));
@@ -650,11 +647,9 @@ export class CreateComponent implements OnInit {
         this.articuloService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
                 // Obtener definiciones únicas
-                const definicionesUnicas = response.data
-                    .map(a => a.definicion)
-                    .filter((v, i, a) => v && a.indexOf(v) === i);
+                const definicionesUnicas = response.data.map((a) => a.definicion).filter((v, i, a) => v && a.indexOf(v) === i);
 
-                this.tiposArticulos = definicionesUnicas.map(d => ({
+                this.tiposArticulos = definicionesUnicas.map((d) => ({
                     label: d,
                     value: d
                 }));
@@ -733,11 +728,12 @@ export class CreateComponent implements OnInit {
         const option =
             rawValue && typeof rawValue === 'object'
                 ? rawValue
-                : suggestions.find(
-                    (o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()
-                ) ||
+                : suggestions.find((o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()) ||
                   (suggestions.length === 1 &&
-                  (suggestions[0]?.label || '').toString().toLowerCase().startsWith((rawValue || '').toString().toLowerCase())
+                  (suggestions[0]?.label || '')
+                      .toString()
+                      .toLowerCase()
+                      .startsWith((rawValue || '').toString().toLowerCase())
                       ? suggestions[0]
                       : null);
         const referenciaId = option && typeof option === 'object' ? (option.value ?? null) : null;
@@ -776,11 +772,7 @@ export class CreateComponent implements OnInit {
         // contra las sugerencias cargadas antes de crear temporal.
         if (!referenciaId && codigo) {
             const suggestions = this.referenciasPorFila[index] || [];
-            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) ||
-                (suggestions.length === 1 &&
-                (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo)
-                    ? suggestions[0]
-                    : null);
+            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) || (suggestions.length === 1 && (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo) ? suggestions[0] : null);
             if (option?.value) {
                 referenciaId = option.value;
                 row.patchValue(
@@ -807,30 +799,21 @@ export class CreateComponent implements OnInit {
             }
         }
 
-        return this.referenciaService
-            .bulkSearchOrCreate(
-                [{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }],
-                true,
-                marcaId,
-                'Referencia temporal desde pedido interno - Requiere revisión',
-                articuloId,
-                listaId
-            )
-            .pipe(
-                map((res) => {
-                    const created = res?.data?.[0];
-                    if (created?.referencia_id) {
-                        row.patchValue(
-                            {
-                                referencia_id: created.referencia_id,
-                                definicion: created.codigo || codigo
-                            },
-                            { emitEvent: false }
-                        );
-                    }
-                }),
-                catchError(() => of(void 0))
-            );
+        return this.referenciaService.bulkSearchOrCreate([{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }], true, marcaId, 'Referencia temporal desde pedido interno - Requiere revisión', articuloId, listaId).pipe(
+            map((res) => {
+                const created = res?.data?.[0];
+                if (created?.referencia_id) {
+                    row.patchValue(
+                        {
+                            referencia_id: created.referencia_id,
+                            definicion: created.codigo || codigo
+                        },
+                        { emitEvent: false }
+                    );
+                }
+            }),
+            catchError(() => of(void 0))
+        );
     }
 
     private resolverReferenciasAntesDeGuardar(): Observable<void> {
@@ -850,7 +833,7 @@ export class CreateComponent implements OnInit {
         this.tiposPorFila[index] = data.tipos || [];
         this.referenciasPorFila[index] = data.referencias || [];
 
-        const defaultSistema = this.sistemas.find(s => s.label.toLowerCase() === 'por defecto');
+        const defaultSistema = this.sistemas.find((s) => s.label.toLowerCase() === 'por defecto');
         const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
 
         const referenciaForm = this.fb.group({
@@ -872,17 +855,17 @@ export class CreateComponent implements OnInit {
         this.referenciasFormArray.push(referenciaForm);
 
         // Suscribirse a cambios de sistema para cargar tipos
-        referenciaForm.get('sistema_id')?.valueChanges.subscribe(sistemaId => {
+        referenciaForm.get('sistema_id')?.valueChanges.subscribe((sistemaId) => {
             this.onSistemaChange(sistemaId as number | null, index); // por default clear = true
         });
 
         // Suscribirse a cambios de lista para cargar artículos
-        referenciaForm.get('lista_id')?.valueChanges.subscribe(listaId => {
+        referenciaForm.get('lista_id')?.valueChanges.subscribe((listaId) => {
             this.onListaChange(listaId as number | null, index);
         });
 
         // Suscribirse a cambios de artículo para cargar referencias
-        referenciaForm.get('articulo_id')?.valueChanges.subscribe(articuloId => {
+        referenciaForm.get('articulo_id')?.valueChanges.subscribe((articuloId) => {
             this.onArticuloChange(articuloId as number | null, index); // por default clear = true
         });
 
@@ -968,11 +951,13 @@ export class CreateComponent implements OnInit {
 
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
-            return raw.filter((c) => c && typeof c.comentario === 'string').map((c) => ({
-                origen: (c.origen as string) || 'Interno',
-                comentario: c.comentario as string,
-                fecha: typeof c.fecha === 'string' ? c.fecha : undefined
-            }));
+            return raw
+                .filter((c) => c && typeof c.comentario === 'string')
+                .map((c) => ({
+                    origen: (c.origen as string) || 'Interno',
+                    comentario: c.comentario as string,
+                    fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                }));
         }
 
         if (typeof raw === 'string') {
@@ -996,9 +981,7 @@ export class CreateComponent implements OnInit {
                 // No es JSON, continuar con formato legacy
             }
 
-            const sinPrefijo = trimmed.startsWith('Comentario del cliente:')
-                ? trimmed.replace('Comentario del cliente:', '').trim()
-                : trimmed;
+            const sinPrefijo = trimmed.startsWith('Comentario del cliente:') ? trimmed.replace('Comentario del cliente:', '').trim() : trimmed;
 
             if (!sinPrefijo) {
                 return [];
@@ -1076,7 +1059,7 @@ export class CreateComponent implements OnInit {
         if (files.length > 0) {
             const control = this.referenciasFormArray.at(index).get('files');
             const currentFiles = control?.value || [];
-            
+
             // Límite de 10 imágenes por ítem
             const remaining = 10 - currentFiles.length;
             if (remaining <= 0) {
@@ -1090,7 +1073,7 @@ export class CreateComponent implements OnInit {
             if (files.length > remaining) {
                 this.messageService.add({ severity: 'info', summary: 'Límite parcial', detail: 'Solo se agregaron las primeras 10 imágenes' });
             }
-            
+
             // Si la galería está abierta, actualizarla
             if (this.displayGallery && this.selectedItemIndex === index) {
                 this.updateGalleriaImages(index);
@@ -1106,11 +1089,11 @@ export class CreateComponent implements OnInit {
     removeFile(itemIndex: number, fileIndex: number): void {
         const control = this.referenciasFormArray.at(itemIndex).get('files');
         const currentFiles = [...(control?.value || [])];
-        
+
         if (currentFiles[fileIndex]) {
             currentFiles.splice(fileIndex, 1);
             control?.setValue(currentFiles);
-            
+
             // Actualizar galería si es necesario
             if (this.displayGallery && this.selectedItemIndex === itemIndex) {
                 this.updateGalleriaImages(itemIndex);
@@ -1140,7 +1123,7 @@ export class CreateComponent implements OnInit {
     private updateGalleriaImages(index: number): void {
         const files = this.referenciasFormArray.at(index).get('files')?.value || [];
         // Liberar URLs anteriores
-        this.galleriaImages.forEach(img => {
+        this.galleriaImages.forEach((img) => {
             if (img.itemImageSrc.startsWith('blob:')) {
                 URL.revokeObjectURL(img.itemImageSrc);
             }
@@ -1167,7 +1150,7 @@ export class CreateComponent implements OnInit {
 
         if (!sistemaId) return;
 
-        const system = this.sistemas.find(s => s.value === sistemaId);
+        const system = this.sistemas.find((s) => s.value === sistemaId);
         const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
         if (system && system.label.toLowerCase() !== 'por defecto') {
             params.sistema_id = sistemaId;
@@ -1176,16 +1159,16 @@ export class CreateComponent implements OnInit {
         this.listaService.getAll(params).subscribe({
             next: (response) => {
                 const listasAsociadas = response.data;
-                        this.tiposLote = listasAsociadas.map((lista: any) => ({
-                            label: lista.nombre,
-                            value: lista.id,
-                            descripcion: lista.definicion,
-                            _search: `${lista.nombre} ${lista.definicion || ''}`
-                        }));
-                        this.tiposLoteOriginal = [...this.tiposLote];
-                        if (this.tiposLote.length > 0) {
-                            this.loteForm.get('articulo_id')?.enable();
-                        }
+                this.tiposLote = listasAsociadas.map((lista: any) => ({
+                    label: lista.nombre,
+                    value: lista.id,
+                    descripcion: lista.definicion,
+                    _search: `${lista.nombre} ${lista.definicion || ''}`
+                }));
+                this.tiposLoteOriginal = [...this.tiposLote];
+                if (this.tiposLote.length > 0) {
+                    this.loteForm.get('articulo_id')?.enable();
+                }
             }
         });
     }
@@ -1199,7 +1182,7 @@ export class CreateComponent implements OnInit {
 
         this.referenciaService.getAll({ articulo_id: articuloId, per_page: 200 }).subscribe({
             next: (response) => {
-                this.referenciasLote = response.data.map(r => ({
+                this.referenciasLote = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id,
                     definicion: r.referencia
@@ -1225,7 +1208,7 @@ export class CreateComponent implements OnInit {
         refs.forEach((refId: number) => {
             const index = this.referenciasFormArray.length;
 
-            const refModel = this.referenciasLote.find(r => r.value === refId);
+            const refModel = this.referenciasLote.find((r) => r.value === refId);
 
             this.agregarReferencia({
                 sistema_id: data.sistema_id,
@@ -1297,7 +1280,7 @@ export class CreateComponent implements OnInit {
                 if (resultados && resultados.length > 0) {
                     resultados.forEach((item: any) => {
                         // 1. Asegurar que la referencia esté en el pool global de opciones para los selects
-                        const existeEnGlobal = this.referencias.find(r => r.value === item.referencia_id);
+                        const existeEnGlobal = this.referencias.find((r) => r.value === item.referencia_id);
                         if (!existeEnGlobal) {
                             this.referencias.push({
                                 label: item.codigo,
@@ -1314,7 +1297,7 @@ export class CreateComponent implements OnInit {
                         summary: 'Éxito',
                         detail: `${resultados.length} referencia(s) procesada(s) exitosamente`
                     });
-                    
+
                     // Limpiar el campo de texto y cerrar el área de importación
                     this.pedidoForm.get('referencias_copiadas')?.setValue('');
                     this.showBulkImport = false;
@@ -1346,7 +1329,7 @@ export class CreateComponent implements OnInit {
             data.marca_id = referenciaData.marca_id;
             data.lista_id = referenciaData.lista_id;
             data.articulo_id = referenciaData.articulo_id;
-            
+
             // Si tiene artículo y sistema, los usamos
             if (referenciaData.articulo) {
                 data.definicion = referenciaData.articulo.definicion;
@@ -1357,10 +1340,12 @@ export class CreateComponent implements OnInit {
             }
 
             // Para que el select de la fila tenga la opción disponible de inmediato
-            data.referencias = [{
-                label: codigo,
-                value: referenciaId
-            }];
+            data.referencias = [
+                {
+                    label: codigo,
+                    value: referenciaId
+                }
+            ];
         }
 
         this.agregarReferencia(data);
@@ -1397,7 +1382,7 @@ export class CreateComponent implements OnInit {
         }
     }
 
-/**
+    /**
      * Envía el formulario para crear el pedido
      */
     onSubmit(): void {
@@ -1417,7 +1402,7 @@ export class CreateComponent implements OnInit {
         // Validar que haya al menos una referencia solo si NO es estado nuevo
         const estado = this.pedidoForm.get('estado')?.value;
         const tieneReferencias = this.referenciasFormArray.length > 0;
-        
+
         if (estado !== 'Nuevo' && !tieneReferencias) {
             this.messageService.add({
                 severity: 'warn',
@@ -1430,7 +1415,7 @@ export class CreateComponent implements OnInit {
         // Verificar si la máquina está seleccionada y revisada
         const maquinaId = this.pedidoForm.get('maquina_id')?.value;
         let puedeEnviarAAnalisis = false;
-        
+
         if (maquinaId) {
             const maquinaBuscada = this.maquinasFull.find((m: any) => m.id === maquinaId);
             puedeEnviarAAnalisis = maquinaBuscada && maquinaBuscada.estado_revision === 'revisado';
@@ -1497,7 +1482,7 @@ export class CreateComponent implements OnInit {
      */
     private crearPedidoPendiente(esEnvioAnalisis: boolean = false): void {
         this.loading = true;
-        
+
         // Solo mostrar mensaje si el usuario eligió NO enviar a análisis expresamente
         if (esEnvioAnalisis) {
             this.messageService.add({
@@ -1506,7 +1491,7 @@ export class CreateComponent implements OnInit {
                 detail: `El pedido queda pendiente. Cuando esté listo, envíelo a ${PEDIDO_ESTADO_ETIQUETA.En_Analisis} desde el detalle.`
             });
         }
-        
+
         this.procesarYCrearPedido();
     }
 
@@ -1532,9 +1517,7 @@ export class CreateComponent implements OnInit {
                 this.referenciasFormArray.controls.forEach((control, index) => {
                     const refId = control.get('referencia_id')?.value;
                     const rawDef = control.get('definicion')?.value;
-                    const definicionRaw = rawDef && typeof rawDef === 'object'
-                        ? ((rawDef.label || '') as string).trim()
-                        : (rawDef || '').toString().trim();
+                    const definicionRaw = rawDef && typeof rawDef === 'object' ? ((rawDef.label || '') as string).trim() : (rawDef || '').toString().trim();
                     const definicion = refId ? '' : definicionRaw;
 
                     formData.append(`referencias[${index}][referencia_id]`, refId ? refId.toString() : '');
@@ -1545,7 +1528,7 @@ export class CreateComponent implements OnInit {
                     formData.append(`referencias[${index}][comentario]`, control.get('comentario')?.value || '');
                     formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
                     formData.append(`referencias[${index}][definicion]`, definicion);
-                    
+
                     // Adjuntar múltiples archivos por referencia
                     const files = control.get('files')?.value || [];
                     files.forEach((file: File, fileIndex: number) => {
@@ -1577,7 +1560,7 @@ export class CreateComponent implements OnInit {
                                 }, 1500);
                             } else {
                                 this.loading = false;
-                                // El error ya debería ser manejado por un efecto o interceptor global, 
+                                // El error ya debería ser manejado por un efecto o interceptor global,
                                 // pero nos aseguramos de detener el loading local.
                             }
                         }
@@ -1609,7 +1592,6 @@ export class CreateComponent implements OnInit {
         return !!(control && control.invalid && control.touched);
     }
 
-
     /**
      * Carga los contactos de un cliente específico
      */
@@ -1630,11 +1612,11 @@ export class CreateComponent implements OnInit {
     private loadMaquinasPorCliente(terceroId: number): void {
         this.maquinaService.getAll({ tercero_id: terceroId }).subscribe({
             next: (response) => {
-                this.maquinasFull = response.data; // Guardar datos completos para validar estado_revision
-                this.maquinas = response.data.map((m: any) => ({
+                this.maquinasFull = response.data;
+                this.maquinas.set(response.data.map((m: any) => ({
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
                     value: m.id
-                }));
+                })));
             }
         });
     }
@@ -1684,11 +1666,11 @@ export class CreateComponent implements OnInit {
     }
 
     getTerceroLabel(id: number): string {
-        return this.terceros.find(t => t.value === id)?.label || 'Proveedor';
+        return this.terceros.find((t) => t.value === id)?.label || 'Proveedor';
     }
 
     getMarcaLabel(id: number): string {
-        return this.marcas.find(m => m.value === id)?.label || 'GEN';
+        return this.marcas.find((m) => m.value === id)?.label || 'GEN';
     }
 
     contarLineas(): number {
@@ -1707,7 +1689,7 @@ export class CreateComponent implements OnInit {
         const id = this.pedidoForm.get('maquina_id')?.value;
         if (!id) return null;
 
-        const maquina = this.maquinasFull.find(m => m.id === id);
+        const maquina = this.maquinasFull.find((m) => m.id === id);
         return maquina || null;
     }
 
@@ -1740,14 +1722,21 @@ export class CreateComponent implements OnInit {
         if (this.editReferenciaIndex >= 0) {
             const row = this.referenciasFormArray.at(this.editReferenciaIndex);
             if (row) {
-                row.patchValue({
-                    definicion: ref.referencia || row.get('definicion')?.value
-                }, { emitEvent: false });
+                row.patchValue(
+                    {
+                        definicion: ref?.referencia || row.get('definicion')?.value
+                    },
+                    { emitEvent: false }
+                );
             }
         }
         this.showReferenciaEditModal = false;
         this.editReferenciaId = null;
         this.editReferenciaIndex = -1;
-        this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: `La referencia ${ref.referencia} ha sido actualizada en el catálogo.` });
+        if (ref?.referencia) {
+            this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: `La referencia ${ref.referencia} ha sido actualizada en el catálogo.` });
+        } else {
+            this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: 'La referencia ha sido actualizada en el catálogo.' });
+        }
     }
 }
