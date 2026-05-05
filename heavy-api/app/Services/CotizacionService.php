@@ -6,6 +6,9 @@ namespace App\Services;
 
 use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
+use App\Models\OrdenCompra;
+use App\Models\OrdenCompraReferencia;
+use App\Models\OrdenTrabajo;
 use App\Models\Pedido;
 use App\Models\TRM;
 use App\Models\Empresa;
@@ -110,19 +113,119 @@ class CotizacionService
 
     /**
      * Aprobar cotización
+     *
+     * Al aprobar se crean automáticamente:
+     * - Orden de Trabajo
+     * - Orden de Compra (con referencias de proveedores)
      */
     public function aprobar(Cotizacion $cotizacion): Cotizacion
     {
-        $cotizacion->update([
-            'estado' => 'Aprobada',
-        ]);
+        return DB::transaction(function () use ($cotizacion) {
+            // 1. Actualizar estado de cotización
+            $cotizacion->update(['estado' => 'Aprobada']);
 
-        // Actualizar estado del pedido asociado
-        if ($cotizacion->pedido) {
-            $cotizacion->pedido->update(['estado' => 'Cotizado']);
+            // 2. Actualizar estado del pedido asociado
+            if ($cotizacion->pedido) {
+                $cotizacion->pedido->update(['estado' => 'Cotizado']);
+            }
+
+            // 3. Crear Orden de Trabajo
+            $this->crearOrdenTrabajo($cotizacion);
+
+            // 4. Crear Orden de Compra
+            $this->crearOrdenCompra($cotizacion);
+
+            return $cotizacion->fresh(['pedido', 'tercero', 'user']);
+        });
+    }
+
+    /**
+     * Crear Orden de Trabajo a partir de cotización aprobada
+     */
+    private function crearOrdenTrabajo(Cotizacion $cotizacion): void
+    {
+        $pedido = $cotizacion->pedido;
+
+        OrdenTrabajo::create([
+            'user_id' => auth()->id(),
+            'tercero_id' => $cotizacion->tercero_id,
+            'pedido_id' => $pedido?->id,
+            'cotizacion_id' => $cotizacion->id,
+            'estado' => 'Pendiente',
+            'fecha_ingreso' => now(),
+            'fecha_entrega' => null,
+            'telefono' => null,
+            'observaciones' => "Generada automáticamente desde cotización #{$cotizacion->id}",
+            'guia' => null,
+            'transportadora_id' => null,
+            'archivo' => null,
+            'motivo_cancelacion' => null,
+        ]);
+    }
+
+    /**
+     * Crear Orden de Compra a partir de cotización aprobada
+     */
+    private function crearOrdenCompra(Cotizacion $cotizacion): void
+    {
+        $pedido = $cotizacion->pedido;
+
+        // Agrupar referencias por proveedor
+        $proveedores = [];
+        foreach ($cotizacion->referenciasProveedores as $item) {
+            $prp = $item->pedidoReferenciaProveedor;
+            if (! $prp) {
+                continue;
+            }
+
+            $proveedorId = $prp->tercero_id ?? null;
+            if (! $proveedorId) {
+                continue;
+            }
+
+            if (! isset($proveedores[$proveedorId])) {
+                $proveedores[$proveedorId] = [];
+            }
+
+            $proveedores[$proveedorId][] = [
+                'referencia_id' => $prp->referencia_id,
+                'cantidad' => $prp->cantidad,
+                'valor_unitario' => $prp->precio_unitario,
+                'valor_total' => $prp->valor_total ?? ($prp->cantidad * $prp->precio_unitario),
+            ];
         }
 
-        return $cotizacion;
+        // Crear una orden de compra por cada proveedor
+        foreach ($proveedores as $proveedorId => $referencias) {
+            $ordenCompra = OrdenCompra::create([
+                'tercero_id' => $cotizacion->tercero_id,
+                'pedido_id' => $pedido?->id,
+                'cotizacion_id' => $cotizacion->id,
+                'proveedor_id' => $proveedorId,
+                'estado' => 'Pendiente',
+                'fecha_expedicion' => now(),
+                'fecha_entrega' => null,
+                'observaciones' => "Generada automáticamente desde cotización #{$cotizacion->id}",
+                'direccion' => null,
+                'telefono' => null,
+                'guia' => null,
+                'color' => '#FFFF00',
+            ]);
+
+            foreach ($referencias as $ref) {
+                OrdenCompraReferencia::create([
+                    'orden_compra_id' => $ordenCompra->id,
+                    'referencia_id' => $ref['referencia_id'],
+                    'cantidad' => $ref['cantidad'],
+                    'valor_unitario' => $ref['valor_unitario'],
+                    'valor_total' => $ref['valor_total'],
+                ]);
+            }
+
+            // Recalcular total
+            $valorTotal = $ordenCompra->getTotalReferencias();
+            $ordenCompra->update(['valor_total' => $valorTotal]);
+        }
     }
 
     /**

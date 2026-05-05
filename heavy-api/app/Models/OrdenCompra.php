@@ -2,10 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo OrdenCompra
@@ -14,15 +18,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * Una orden de compra puede tener múltiples referencias asociadas.
  *
  * @property int $id
- * @property int|null $user_id
  * @property int|null $tercero_id
  * @property int|null $pedido_id
  * @property int|null $cotizacion_id
  * @property int $proveedor_id
+ * @property int|null $referencia_id
  * @property string|null $estado
- * @property int|null $pedido_referencia_id
- * @property \Illuminate\Support\Carbon|null $fecha_expedicion
- * @property \Illuminate\Support\Carbon|null $fecha_entrega
+ * @property Carbon|null $fecha_expedicion
+ * @property Carbon|null $fecha_entrega
  * @property string|null $observaciones
  * @property int|null $cantidad
  * @property string|null $direccion
@@ -33,30 +36,29 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property float|null $valor_descuento
  * @property string|null $guia
  * @property string|null $color
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $user
- * @property-read \App\Models\Tercero|null $tercero
- * @property-read \App\Models\Tercero $proveedor
- * @property-read \App\Models\Pedido|null $pedido
- * @property-read \App\Models\Cotizacion|null $cotizacion
- * @property-read \App\Models\PedidoReferencia|null $pedidoReferencia
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Referencia[] $referencias
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Tercero|null $tercero
+ * @property-read Tercero $proveedor
+ * @property-read Pedido|null $pedido
+ * @property-read Cotizacion|null $cotizacion
+ * @property-read Referencia|null $referencia
+ * @property-read Collection|OrdenCompraReferencia[] $detalles
+ * @property-read Collection|Referencia[] $referencias
  */
 class OrdenCompra extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     protected $table = 'orden_compras';
 
     protected $fillable = [
-        'user_id',
         'tercero_id',
         'pedido_id',
         'cotizacion_id',
         'proveedor_id',
+        'referencia_id',
         'estado',
-        'pedido_referencia_id',
         'fecha_expedicion',
         'fecha_entrega',
         'observaciones',
@@ -87,14 +89,6 @@ class OrdenCompra extends Model
         'valor_iva' => 'decimal:2',
         'valor_descuento' => 'decimal:2',
     ];
-
-    /**
-     * Relación con el usuario que creó la orden
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
     /**
      * Relación con el tercero (cliente)
@@ -129,11 +123,11 @@ class OrdenCompra extends Model
     }
 
     /**
-     * Relación con la referencia del pedido
+     * Relación con los detalles (pivot) de la orden
      */
-    public function pedidoReferencia(): BelongsTo
+    public function detalles(): HasMany
     {
-        return $this->belongsTo(PedidoReferencia::class);
+        return $this->hasMany(OrdenCompraReferencia::class, 'orden_compra_id');
     }
 
     /**
@@ -142,7 +136,6 @@ class OrdenCompra extends Model
     public function referencias(): BelongsToMany
     {
         return $this->belongsToMany(Referencia::class, 'orden_compra_referencia')
-            ->using(OrdenCompraReferencia::class)
             ->withPivot('cantidad', 'valor_unitario', 'valor_total')
             ->withTimestamps();
     }

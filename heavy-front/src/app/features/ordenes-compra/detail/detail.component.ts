@@ -1,7 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Subject, takeUntil } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { TagModule } from 'primeng/tag';
@@ -21,181 +23,169 @@ import { OrdenCompra } from '../../../core/models/orden-compra.model';
     imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, TooltipModule],
     template: `
         <div class="card">
-            <div class="flex justify-content-between align-items-center mb-4">
-                <h2>Orden de Compra OC-{{ ordenCompraId() }}</h2>
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+                <div>
+                    <h2 class="m-0">Orden de Compra OC-{{ ordenCompraId() }}</h2>
+                    <p class="text-gray-500 m-0">Detalle completo y referencias vinculadas</p>
+                </div>
                 <div class="flex gap-2">
-                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" [outlined]="true" (onClick)="onEdit()"> </p-button>
-                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="onBack()"> </p-button>
+                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="onBack()"></p-button>
+                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="onEdit()"></p-button>
                 </div>
             </div>
 
             @if (loading()) {
                 <div class="text-center py-8">
-                    <i class="pi pi-spin pi-spinner text-4xl"></i>
-                    <p class="mt-4">Cargando orden de compra...</p>
+                    <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+                    <p class="mt-4">Cargando información...</p>
                 </div>
             } @else if (ordenCompra()) {
-                <div class="grid">
-                    <!-- Información General -->
-                    <div class="col-12">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Columna Izquierda: Info Principal -->
+                    <div class="lg:col-span-2 flex flex-col gap-6">
                         <p-card header="Información General">
-                            <div class="grid">
-                                <div class="col-12 md:col-6">
-                                    <p><strong>ID:</strong> OC-{{ ordenCompra()?.id }}</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-500 uppercase">Proveedor</span>
+                                    <span class="text-lg">{{ ordenCompra()?.proveedor?.nombre || 'N/A' }}</span>
                                 </div>
-                                <div class="col-12 md:col-6">
-                                    <p>
-                                        <strong>Estado:</strong>
-                                        @if (ordenCompra()?.estado) {
-                                            <p-tag [value]="ordenCompra()!.estado || 'N/A'" [severity]="getEstadoSeverity(ordenCompra()!.estado || 'Pendiente')"> </p-tag>
-                                        } @else {
-                                            N/A
-                                        }
-                                    </p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p>
-                                        <strong>Color:</strong>
-                                        @if (ordenCompra()?.color) {
-                                            <div
-                                                [style.background-color]="ordenCompra()!.color"
-                                                [style.width]="'20px'"
-                                                [style.height]="'20px'"
-                                                [style.border-radius]="'50%'"
-                                                [style.display]="'inline-block'"
-                                                [style.margin-left]="'8px'"
-                                                [title]="getColorTooltip(ordenCompra()!.color!)"
-                                            ></div>
-                                        }
-                                    </p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p><strong>Proveedor:</strong> {{ ordenCompra()?.proveedor?.razon_social || ordenCompra()?.proveedor?.nombre_comercial || 'N/A' }}</p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p><strong>Cliente:</strong> {{ ordenCompra()?.tercero?.razon_social || ordenCompra()?.tercero?.nombre_comercial || 'N/A' }}</p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p><strong>Pedido:</strong> #{{ ordenCompra()?.pedido_id || 'N/A' }}</p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p>
-                                        <strong>Fecha de Expedición:</strong>
-                                        @if (ordenCompra()?.fecha_expedicion) {
-                                            {{ ordenCompra()!.fecha_expedicion | date: 'short' }}
-                                        } @else {
-                                            N/A
-                                        }
-                                    </p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p>
-                                        <strong>Fecha de Entrega:</strong>
-                                        @if (ordenCompra()?.fecha_entrega) {
-                                            {{ ordenCompra()!.fecha_entrega | date: 'short' }}
-                                        } @else {
-                                            N/A
-                                        }
-                                    </p>
-                                </div>
-                                <div class="col-12 md:col-6">
-                                    <p>
-                                        <strong>Valor Total:</strong>
-                                        @if (ordenCompra()?.valor_total) {
-                                            {{ ordenCompra()!.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}
-                                        } @else {
-                                            N/A
-                                        }
-                                    </p>
-                                </div>
-                                @if (ordenCompra()?.direccion) {
-                                    <div class="col-12 md:col-6">
-                                        <p><strong>Dirección:</strong> {{ ordenCompra()!.direccion }}</p>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-500 uppercase">Estado</span>
+                                    <div class="mt-1">
+                                        <p-tag [value]="ordenCompra()?.estado || 'N/A'" [severity]="getEstadoSeverity(ordenCompra()?.estado || '')"></p-tag>
                                     </div>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-500 uppercase">Fecha Expedición</span>
+                                    <span>{{ ordenCompra()?.fecha_expedicion | date: 'longDate' }}</span>
+                                </div>
+                                <div class="flex flex-col">
+                                    <span class="text-sm font-bold text-gray-500 uppercase">Fecha Entrega</span>
+                                    <span>{{ ordenCompra()?.fecha_entrega | date: 'longDate' }}</span>
+                                </div>
+                                <div class="flex flex-col md:col-span-2">
+                                    <span class="text-sm font-bold text-gray-500 uppercase">Observaciones</span>
+                                    <p class="mt-1 m-0 text-gray-300 italic">{{ ordenCompra()?.observaciones || 'Sin observaciones' }}</p>
+                                </div>
+                            </div>
+                        </p-card>
+
+                        <p-card header="Referencias vinculadas">
+                            <p-table [value]="ordenCompra()?.referencias || []" styleClass="p-datatable-sm">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th>Referencia</th>
+                                        <th class="text-center">Cant.</th>
+                                        <th class="text-right">V. Unitario</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr>
+                                        <td>
+                                            <div class="flex flex-col">
+                                                <span class="font-bold">{{ item.referencia?.codigo_heavymarket }}</span>
+                                                <span class="text-xs text-gray-400">{{ item.referencia?.descripcion }}</span>
+                                            </div>
+                                        </td>
+                                        <td class="text-center">{{ item.cantidad }}</td>
+                                        <td class="text-right">{{ item.valor_unitario | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                        <td class="text-right font-bold">{{ item.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="footer">
+                                    <tr>
+                                        <td colspan="3" class="text-right font-bold text-lg">Total Orden:</td>
+                                        <td class="text-right text-lg font-bold text-primary">{{ ordenCompra()?.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </p-card>
+                    </div>
+
+                    <!-- Columna Derecha: Info Entrega / Vínculos -->
+                    <div class="flex flex-col gap-6">
+                        <p-card header="Logística y Entrega">
+                            <div class="flex flex-col gap-4">
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-map-marker text-primary text-xl"></i>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-gray-500">DIRECCIÓN</span>
+                                        <span>{{ ordenCompra()?.direccion || 'No especificada' }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-phone text-primary text-xl"></i>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-gray-500">TELÉFONO</span>
+                                        <span>{{ ordenCompra()?.telefono || 'N/A' }}</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-3">
+                                    <i class="pi pi-truck text-primary text-xl"></i>
+                                    <div class="flex flex-col">
+                                        <span class="text-xs font-bold text-gray-500">GUÍA DE TRANSPORTE</span>
+                                        <span class="font-mono">{{ ordenCompra()?.guia || 'Pendiente' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </p-card>
+
+                        <p-card header="Documentos Relacionados">
+                            <div class="flex flex-col gap-3">
+                                @if (ordenCompra()?.pedido_id) {
+                                    <p-button [label]="'Pedido #' + ordenCompra()?.pedido_id" icon="pi pi-external-link" [text]="true" size="small" styleClass="p-0"></p-button>
                                 }
-                                @if (ordenCompra()?.telefono) {
-                                    <div class="col-12 md:col-6">
-                                        <p><strong>Teléfono:</strong> {{ ordenCompra()!.telefono }}</p>
-                                    </div>
+                                @if (ordenCompra()?.cotizacion_id) {
+                                    <p-button [label]="'Cotización #' + ordenCompra()?.cotizacion_id" icon="pi pi-external-link" [text]="true" size="small" styleClass="p-0"></p-button>
                                 }
-                                @if (ordenCompra()?.guia) {
-                                    <div class="col-12 md:col-6">
-                                        <p><strong>Guía:</strong> {{ ordenCompra()!.guia }}</p>
-                                    </div>
-                                }
-                                @if (ordenCompra()?.observaciones) {
-                                    <div class="col-12">
-                                        <p><strong>Observaciones:</strong></p>
-                                        <p class="mt-2">{{ ordenCompra()!.observaciones }}</p>
-                                    </div>
+                                @if (!ordenCompra()?.pedido_id && !ordenCompra()?.cotizacion_id) {
+                                    <p class="text-gray-500 text-sm italic">Sin documentos vinculados</p>
                                 }
                             </div>
                         </p-card>
                     </div>
-
-                    <!-- Referencias -->
-                    @if (ordenCompra()?.referencias && ordenCompra()!.referencias!.length > 0) {
-                        <div class="col-12">
-                            <p-card header="Referencias">
-                                <p-table [value]="ordenCompra()!.referencias!" styleClass="p-datatable-sm">
-                                    <ng-template pTemplate="header">
-                                        <tr>
-                                            <th>ID</th>
-                                            <th>Referencia</th>
-                                            <th>Cantidad</th>
-                                            <th>Valor Unitario</th>
-                                            <th>Valor Total</th>
-                                        </tr>
-                                    </ng-template>
-                                    <ng-template pTemplate="body" let-item>
-                                        <tr>
-                                            <td>{{ item.id }}</td>
-                                            <td>{{ item.referencia?.referencia || 'N/A' }}</td>
-                                            <td>{{ item.cantidad }}</td>
-                                            <td>{{ item.valor_unitario | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                            <td>{{ item.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                        </tr>
-                                    </ng-template>
-                                </p-table>
-                            </p-card>
-                        </div>
-                    }
                 </div>
             } @else {
-                <div class="text-center py-8">
-                    <p class="text-xl text-gray-500">Orden de compra no encontrada</p>
+                <div class="text-center py-12">
+                    <i class="pi pi-exclamation-circle text-6xl text-gray-700 mb-4"></i>
+                    <p class="text-xl text-gray-500">No se encontró la orden de compra solicitada</p>
+                    <p-button label="Volver a la lista" icon="pi pi-arrow-left" (onClick)="onBack()" styleClass="mt-4"></p-button>
                 </div>
             }
         </div>
     `,
     styles: []
 })
-export class DetailComponent implements OnInit {
+export class DetailComponent implements OnInit, OnDestroy {
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly destroy$ = new Subject<void>();
 
-    ordenCompra = signal<OrdenCompra | null>(null);
     ordenCompraId = signal<number>(0);
-    loading = signal(true);
+    loading = toSignal(this.store.select(OrdenesCompraSelectors.selectOrdenesCompraLoading), { initialValue: true });
+
+    // Select from store using a computed or derived signal
+    ordenCompra = signal<OrdenCompra | null>(null);
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
             this.ordenCompraId.set(+id);
-            this.loadOrdenCompra(+id);
+            this.store.dispatch(loadOrdenCompraById({ id: +id }));
+
+            this.store.select(OrdenesCompraSelectors.selectOrdenCompraById(+id))
+                .pipe(takeUntil(this.destroy$))
+                .subscribe((val) => {
+                    if (val) this.ordenCompra.set(val);
+                });
         }
     }
 
-    private loadOrdenCompra(id: number): void {
-        this.store.dispatch(loadOrdenCompraById({ id }));
-
-        this.store.select(OrdenesCompraSelectors.selectOrdenCompraById(id)).subscribe((ordenCompra) => {
-            if (ordenCompra) {
-                this.ordenCompra.set(ordenCompra);
-                this.loading.set(false);
-            }
-        });
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
     onEdit(): void {
@@ -218,19 +208,6 @@ export class DetailComponent implements OnInit {
                 return 'danger';
             default:
                 return 'secondary';
-        }
-    }
-
-    getColorTooltip(color: string): string {
-        switch (color) {
-            case '#FFFF00':
-                return 'En proceso';
-            case '#00ff00':
-                return 'Entregado';
-            case '#ff0000':
-                return 'Cancelado';
-            default:
-                return 'Desconocido';
         }
     }
 }

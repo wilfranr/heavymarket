@@ -6,8 +6,13 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrdenCompraRequest;
+use App\Http\Requests\UpdateOrdenCompraRequest;
 use App\Http\Resources\OrdenCompraResource;
+use App\Models\Empresa;
 use App\Models\OrdenCompra;
+use App\Models\OrdenCompraReferencia;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,13 +22,17 @@ use Illuminate\Support\Facades\DB;
  */
 class OrdenCompraController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Listar todas las órdenes de compra
      */
     public function index(Request $request): JsonResponse
     {
+        $this->authorize('viewAny', OrdenCompra::class);
+
         $query = OrdenCompra::query()
-            ->with(['proveedor', 'user', 'referencias']);
+            ->with(['proveedor', 'detalles.referencia']);
 
         // Filtros
         if ($request->filled('estado')) {
@@ -32,6 +41,18 @@ class OrdenCompraController extends Controller
 
         if ($request->filled('proveedor_id')) {
             $query->where('proveedor_id', $request->input('proveedor_id'));
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function ($q) use ($search) {
+                $q->where('observaciones', 'like', "%{$search}%")
+                    ->orWhere('guia', 'like', "%{$search}%")
+                    ->orWhere('direccion', 'like', "%{$search}%")
+                    ->orWhereHas('proveedor', function ($q2) use ($search) {
+                        $q2->where('nombre', 'like', "%{$search}%");
+                    });
+            });
         }
 
         // Ordenamiento
@@ -44,7 +65,7 @@ class OrdenCompraController extends Controller
         $ordenes = $query->paginate($perPage);
 
         return response()->json([
-            'data' => $ordenes->items(),
+            'data' => OrdenCompraResource::collection($ordenes),
             'meta' => [
                 'current_page' => $ordenes->currentPage(),
                 'last_page' => $ordenes->lastPage(),
@@ -59,13 +80,14 @@ class OrdenCompraController extends Controller
      */
     public function store(StoreOrdenCompraRequest $request): JsonResponse
     {
+        $this->authorize('create', OrdenCompra::class);
+
         try {
             DB::beginTransaction();
 
             $validated = $request->validated();
 
             $ordenCompra = OrdenCompra::create([
-                'user_id' => $request->user()->id,
                 'proveedor_id' => $validated['proveedor_id'],
                 'tercero_id' => $validated['tercero_id'] ?? null,
                 'pedido_id' => $validated['pedido_id'] ?? null,
@@ -83,12 +105,13 @@ class OrdenCompraController extends Controller
             // Agregar referencias si existen
             if (isset($validated['referencias']) && is_array($validated['referencias'])) {
                 foreach ($validated['referencias'] as $referencia) {
-                    $ordenCompra->addReferencia(
-                        $referencia['referencia_id'],
-                        $referencia['cantidad'],
-                        $referencia['valor_unitario'],
-                        $referencia['valor_total']
-                    );
+                    OrdenCompraReferencia::create([
+                        'orden_compra_id' => $ordenCompra->id,
+                        'referencia_id' => $referencia['referencia_id'],
+                        'cantidad' => $referencia['cantidad'],
+                        'valor_unitario' => $referencia['valor_unitario'],
+                        'valor_total' => $referencia['valor_total'],
+                    ]);
                 }
             }
 
@@ -98,7 +121,7 @@ class OrdenCompraController extends Controller
 
             DB::commit();
 
-            $ordenCompra->load(['proveedor', 'tercero', 'pedido', 'user', 'referencias.referencia']);
+            $ordenCompra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia']);
 
             return response()->json([
                 'data' => new OrdenCompraResource($ordenCompra),
@@ -118,57 +141,68 @@ class OrdenCompraController extends Controller
     /**
      * Mostrar una orden de compra específica
      */
-    public function show(OrdenCompra $ordenCompra): JsonResponse
+    public function show(OrdenCompra $ordenes_compra): JsonResponse
     {
-        $ordenCompra->load([
+        $this->authorize('view', $ordenes_compra);
+
+        $ordenes_compra->load([
             'proveedor',
             'tercero',
             'pedido',
             'cotizacion',
-            'user',
-            'referencias.referencia',
-            'pedidoReferencia',
+            'detalles.referencia',
         ]);
 
         return response()->json([
-            'data' => new OrdenCompraResource($ordenCompra),
+            'data' => new OrdenCompraResource($ordenes_compra),
         ]);
     }
 
     /**
      * Actualizar una orden de compra
      */
-    public function update(Request $request, OrdenCompra $ordenCompra): JsonResponse
+    public function update(UpdateOrdenCompraRequest $request, OrdenCompra $ordenes_compra): JsonResponse
     {
-        $validated = $request->validate([
-            'estado' => [
-                'sometimes',
-                'string',
-                \Illuminate\Validation\Rule::in(['Pendiente', 'En proceso', 'Entregado', 'Cancelado']),
-            ],
-            'color' => [
-                'sometimes',
-                'string',
-                \Illuminate\Validation\Rule::in(['#FFFF00', '#00ff00', '#ff0000']),
-            ],
-            'fecha_expedicion' => ['sometimes', 'date'],
-            'fecha_entrega' => ['sometimes', 'date', 'after_or_equal:fecha_expedicion'],
-            'observaciones' => ['nullable', 'string', 'max:1000'],
-            'direccion' => ['nullable', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:20'],
-            'guia' => ['nullable', 'string', 'max:100'],
-        ]);
+        $this->authorize('update', $ordenes_compra);
 
         try {
-            $ordenCompra->update($validated);
-            $ordenCompra->load(['proveedor', 'tercero', 'pedido', 'user', 'referencias.referencia']);
+            DB::beginTransaction();
+
+            $validated = $request->validated();
+            $ordenes_compra->update($validated);
+
+            // Actualizar referencias SOLO si se proporcionan explícitamente
+            if (array_key_exists('referencias', $validated) && is_array($validated['referencias'])) {
+                // Eliminar existentes
+                OrdenCompraReferencia::where('orden_compra_id', $ordenes_compra->id)->delete();
+
+                foreach ($validated['referencias'] as $ref) {
+                    OrdenCompraReferencia::create([
+                        'orden_compra_id' => $ordenes_compra->id,
+                        'referencia_id' => $ref['referencia_id'],
+                        'cantidad' => $ref['cantidad'],
+                        'valor_unitario' => $ref['valor_unitario'],
+                        'valor_total' => $ref['valor_total'],
+                    ]);
+                }
+
+                // Recalcular total
+                $valorTotal = $ordenes_compra->getTotalReferencias();
+                $ordenes_compra->update(['valor_total' => $valorTotal]);
+            }
+
+            DB::commit();
+
+            $ordenes_compra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia']);
 
             return response()->json([
-                'data' => new OrdenCompraResource($ordenCompra),
+                'data' => new OrdenCompraResource($ordenes_compra),
                 'message' => 'Orden de compra actualizada exitosamente',
             ]);
 
         } catch (\Exception $e) {
+            DB::rollBack();
+
             return response()->json([
                 'message' => 'Error al actualizar la orden de compra',
                 'error' => $e->getMessage(),
@@ -179,10 +213,16 @@ class OrdenCompraController extends Controller
     /**
      * Eliminar una orden de compra
      */
-    public function destroy(OrdenCompra $ordenCompra): JsonResponse
+    public function destroy(OrdenCompra $ordenes_compra): JsonResponse
     {
+        $this->authorize('delete', $ordenes_compra);
+
         try {
-            $ordenCompra->delete();
+            // Eliminar detalles primero
+            OrdenCompraReferencia::where('orden_compra_id', $ordenes_compra->id)->delete();
+
+            // Eliminar la orden
+            $ordenes_compra->delete();
 
             return response()->json([
                 'message' => 'Orden de compra eliminada exitosamente',
@@ -194,5 +234,30 @@ class OrdenCompraController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Generar y descargar PDF de la orden de compra
+     */
+    public function downloadPDF(OrdenCompra $ordenes_compra)
+    {
+        $this->authorize('view', $ordenes_compra);
+
+        $ordenes_compra->load([
+            'proveedor.city',
+            'tercero',
+            'pedido',
+            'cotizacion',
+            'detalles.referencia.articulo',
+        ]);
+
+        $empresa = Empresa::where('siglas', 'HM')->first() ?? Empresa::where('id', 2)->first() ?? Empresa::first();
+
+        $pdf = Pdf::loadView('pdf.orden_compra', [
+            'ordenCompra' => $ordenes_compra,
+            'empresa' => $empresa,
+        ]);
+
+        return $pdf->download("OC-{$ordenes_compra->id}.pdf");
     }
 }

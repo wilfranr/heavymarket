@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\OrdenCompra;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Transforma los datos de órdenes de compra en una respuesta JSON estructurada.
  *
- * @property \App\Models\OrdenCompra $resource
+ * @property OrdenCompra $resource
  */
 class OrdenCompraResource extends JsonResource
 {
@@ -25,13 +26,11 @@ class OrdenCompraResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'user_id' => $this->user_id,
             'tercero_id' => $this->tercero_id,
             'pedido_id' => $this->pedido_id,
             'cotizacion_id' => $this->cotizacion_id,
             'proveedor_id' => $this->proveedor_id,
             'estado' => $this->estado,
-            'pedido_referencia_id' => $this->pedido_referencia_id,
             'fecha_expedicion' => $this->fecha_expedicion?->toISOString(),
             'fecha_entrega' => $this->fecha_entrega?->toISOString(),
             'observaciones' => $this->observaciones,
@@ -48,14 +47,12 @@ class OrdenCompraResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
-            'user' => $this->whenLoaded('user'),
             'tercero' => $this->whenLoaded('tercero'),
             'proveedor' => $this->whenLoaded('proveedor'),
             'pedido' => $this->whenLoaded('pedido'),
             'cotizacion' => $this->whenLoaded('cotizacion'),
-            'pedido_referencia' => $this->whenLoaded('pedidoReferencia'),
-            'referencias' => $this->whenLoaded('referencias', function () {
-                return OrdenCompraReferenciaResource::collection($this->referencias);
+            'detalles' => $this->whenLoaded('detalles', function () {
+                return OrdenCompraReferenciaResource::collection($this->detalles);
             }),
         ];
     }

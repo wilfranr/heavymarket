@@ -163,6 +163,7 @@ Route::prefix('v1')->group(function () {
         Route::post('cotizaciones/{cotizacion}/reject', [CotizacionController::class, 'reject'])->name('cotizaciones.reject');
         Route::apiResource('cotizaciones', CotizacionController::class);
         Route::apiResource('ordenes-compra', OrdenCompraController::class);
+        Route::get('ordenes-compra/{ordenes_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);
 
         /**

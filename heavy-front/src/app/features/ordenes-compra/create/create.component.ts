@@ -1,8 +1,9 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { Subject, takeUntil } from 'rxjs';
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -11,11 +12,16 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TableModule } from 'primeng/table';
 import { createOrdenCompra } from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
+import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
 import { CreateOrdenCompraDto, OrdenCompraEstado, OrdenCompraColor } from '../../../core/models/orden-compra.model';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { PedidoService } from '../../../core/services/pedido.service';
-import { CotizacionService } from '../../../core/services/cotizacion.service';
+import { ReferenciaService } from '../../../core/services/referencia.service';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { PaginatedResponse } from '../../../core/services/api.service';
+import { Referencia } from '../../../core/models/referencia.model';
 
 /**
  * Componente de creación de orden de compra
@@ -23,219 +29,270 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
 @Component({
     selector: 'app-orden-compra-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputNumberModule],
+    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputNumberModule, TableModule],
     providers: [MessageService],
     template: `
         <div class="card">
-            <h2>Crear Orden de Compra</h2>
-
-            <form [formGroup]="ordenCompraForm" (ngSubmit)="onSubmit()">
-                <div class="grid">
-                    <div class="col-12 md:col-6">
-                        <label for="proveedor_id" class="block mb-2"> Proveedor <span class="text-red-500">*</span> </label>
-                        <p-select formControlName="proveedor_id" [options]="proveedores" placeholder="Seleccione un proveedor" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
-                        @if (ordenCompraForm.get('proveedor_id')?.invalid && ordenCompraForm.get('proveedor_id')?.touched) {
-                            <small class="text-red-500">El proveedor es requerido</small>
-                        }
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="pedido_id" class="block mb-2">Pedido</label>
-                        <p-select formControlName="pedido_id" [options]="pedidos" placeholder="Seleccione un pedido (opcional)" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="fecha_expedicion" class="block mb-2"> Fecha de Expedición <span class="text-red-500">*</span> </label>
-                        <input type="date" formControlName="fecha_expedicion" [min]="minDate.toISOString().split('T')[0]" class="w-full p-inputtext p-component" style="width: 100%" />
-                        @if (ordenCompraForm.get('fecha_expedicion')?.invalid && ordenCompraForm.get('fecha_expedicion')?.touched) {
-                            <small class="text-red-500">La fecha de expedición es requerida</small>
-                        }
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="fecha_entrega" class="block mb-2"> Fecha de Entrega <span class="text-red-500">*</span> </label>
-                        <input type="date" formControlName="fecha_entrega" [min]="minDate.toISOString().split('T')[0]" class="w-full p-inputtext p-component" style="width: 100%" />
-                        @if (ordenCompraForm.get('fecha_entrega')?.invalid && ordenCompraForm.get('fecha_entrega')?.touched) {
-                            <small class="text-red-500">La fecha de entrega es requerida</small>
-                        }
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="estado" class="block mb-2">Estado</label>
-                        <p-select formControlName="estado" [options]="estadosOptions" placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="color" class="block mb-2">Color</label>
-                        <p-select formControlName="color" [options]="coloresOptions" placeholder="Seleccione un color" styleClass="w-full"> </p-select>
-                    </div>
-
-                    <div class="col-12">
-                        <label for="observaciones" class="block mb-2">Observaciones</label>
-                        <textarea formControlName="observaciones" pInputTextarea rows="4" placeholder="Observaciones adicionales..." styleClass="w-full"> </textarea>
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="direccion" class="block mb-2">Dirección</label>
-                        <input type="text" formControlName="direccion" pInputText placeholder="Dirección de entrega" styleClass="w-full" />
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="telefono" class="block mb-2">Teléfono</label>
-                        <input type="text" formControlName="telefono" pInputText placeholder="Teléfono de contacto" styleClass="w-full" />
-                    </div>
-
-                    <div class="col-12 md:col-6">
-                        <label for="guia" class="block mb-2">Guía</label>
-                        <input type="text" formControlName="guia" pInputText placeholder="Número de guía" styleClass="w-full" />
-                    </div>
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="m-0">Nueva Orden de Compra</h2>
+                <div class="flex gap-2">
+                    <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="onCancel()"></p-button>
+                    <p-button label="Guardar Orden" icon="pi pi-check" [loading]="loading()" [disabled]="ordenCompraForm.invalid" (onClick)="onSubmit()"></p-button>
                 </div>
+            </div>
 
-                <div class="flex justify-content-end gap-2 mt-4">
-                    <p-button label="Cancelar" severity="secondary" icon="pi pi-times" type="button" [outlined]="true" (onClick)="onCancel()"> </p-button>
-                    <p-button label="Crear Orden de Compra" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="ordenCompraForm.invalid"> </p-button>
-                </div>
+            <form [formGroup]="ordenCompraForm">
+                <p-card header="Información General" styleClass="mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block mb-2 font-bold">Proveedor <span class="text-red-500">*</span></label>
+                            <p-select formControlName="proveedor_id" [options]="proveedores()" placeholder="Seleccione proveedor" [filter]="true" styleClass="w-full"></p-select>
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-bold">Pedido (Opcional)</label>
+                            <p-select formControlName="pedido_id" [options]="pedidos()" placeholder="Vincular pedido" [filter]="true" [showClear]="true" styleClass="w-full"></p-select>
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-bold">Estado</label>
+                            <p-select formControlName="estado" [options]="estadosOptions" styleClass="w-full"></p-select>
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-bold">Fecha Expedición <span class="text-red-500">*</span></label>
+                            <input type="date" formControlName="fecha_expedicion" class="w-full p-inputtext" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-bold">Fecha Entrega <span class="text-red-500">*</span></label>
+                            <input type="date" formControlName="fecha_entrega" class="w-full p-inputtext" />
+                        </div>
+                        <div>
+                            <label class="block mb-2 font-bold">Color</label>
+                            <p-select formControlName="color" [options]="coloresOptions" styleClass="w-full">
+                                <ng-template let-option pTemplate="item">
+                                    <div class="flex items-center gap-2">
+                                        <div [style.background-color]="option.value" class="w-4 h-4 rounded-full border border-gray-400"></div>
+                                        <span>{{ option.label }}</span>
+                                    </div>
+                                </ng-template>
+                            </p-select>
+                        </div>
+                    </div>
+                    <div class="mt-4">
+                        <label class="block mb-2 font-bold">Observaciones</label>
+                        <textarea formControlName="observaciones" pInputTextarea rows="2" class="w-full"></textarea>
+                    </div>
+                </p-card>
+
+                <p-card header="Referencias / Productos">
+                    <div class="mb-4">
+                        <div class="flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="block mb-2 font-bold text-sm">Buscar Referencia</label>
+                                <p-select [options]="referenciasDisponibles()" [(ngModel)]="selectedRef" [ngModelOptions]="{ standalone: true }" [filter]="true" placeholder="Escriba para buscar..." styleClass="w-full"></p-select>
+                            </div>
+                            <p-button icon="pi pi-plus" label="Agregar" (onClick)="addReferencia()"></p-button>
+                        </div>
+                    </div>
+
+                    <p-table [value]="referenciasArray.controls" styleClass="p-datatable-sm">
+                        <ng-template pTemplate="header">
+                            <tr>
+                                <th>Referencia</th>
+                                <th style="width: 150px">Cantidad</th>
+                                <th style="width: 200px">V. Unitario</th>
+                                <th style="width: 200px">Total</th>
+                                <th style="width: 50px"></th>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-control let-i="rowIndex">
+                            <tr [formGroup]="control">
+                                <td>{{ getReferenciaLabel(control.get('referencia_id')?.value) }}</td>
+                                <td>
+                                    <p-inputnumber formControlName="cantidad" [min]="1" (onInput)="calculateTotal(i)" styleClass="w-full"></p-inputnumber>
+                                </td>
+                                <td>
+                                    <p-inputnumber formControlName="valor_unitario" mode="currency" currency="COP" [min]="0" (onInput)="calculateTotal(i)" styleClass="w-full"></p-inputnumber>
+                                </td>
+                                <td class="font-bold">
+                                    {{ control.get('valor_total')?.value | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                </td>
+                                <td>
+                                    <p-button icon="pi pi-trash" severity="danger" [text]="true" (onClick)="removeReferencia(i)"></p-button>
+                                </td>
+                            </tr>
+                        </ng-template>
+                        <ng-template pTemplate="footer">
+                            <tr>
+                                <td colspan="3" class="text-right font-bold text-lg">Total Orden:</td>
+                                <td class="text-lg font-bold text-primary">{{ totalOrden() | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                <td></td>
+                            </tr>
+                        </ng-template>
+                    </p-table>
+                </p-card>
             </form>
         </div>
-        <p-toast></p-toast>
     `,
     styles: []
 })
-export class CreateComponent implements OnInit {
+export class CreateComponent implements OnInit, OnDestroy {
     private readonly fb = inject(FormBuilder);
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly terceroService = inject(TerceroService);
     private readonly pedidoService = inject(PedidoService);
+    private readonly referenciaService = inject(ReferenciaService);
+    private readonly destroy$ = new Subject<void>();
 
     ordenCompraForm!: FormGroup;
-    loading = false;
-    proveedores: any[] = [];
-    pedidos: any[] = [];
-    minDate = new Date();
+    loading = toSignal(this.store.select(OrdenesCompraSelectors.selectOrdenesCompraLoading), { initialValue: false });
 
-    estadosOptions: Array<{ label: string; value: OrdenCompraEstado }> = [
+    proveedores = signal<any[]>([]);
+    pedidos = signal<any[]>([]);
+    referenciasDisponibles = signal<any[]>([]);
+    selectedRef: number | null = null;
+
+    estadosOptions = [
         { label: 'Pendiente', value: 'Pendiente' },
         { label: 'En proceso', value: 'En proceso' },
-        { label: 'Entregado', value: 'Entregado' },
-        { label: 'Cancelado', value: 'Cancelado' }
+        { label: 'Entregado', value: 'Entregado' }
     ];
 
-    coloresOptions: Array<{ label: string; value: OrdenCompraColor }> = [
-        { label: 'En proceso', value: '#FFFF00' },
-        { label: 'Entregado', value: '#00ff00' },
-        { label: 'Cancelado', value: '#ff0000' }
+    coloresOptions = [
+        { label: 'Amarillo', value: '#FFFF00' },
+        { label: 'Verde', value: '#00ff00' },
+        { label: 'Rojo', value: '#ff0000' }
     ];
+
+    totalOrden = signal(0);
 
     ngOnInit(): void {
         this.initForm();
         this.loadOptions();
     }
 
+    get referenciasArray() {
+        return this.ordenCompraForm.get('referencias') as FormArray;
+    }
+
     private initForm(): void {
         this.ordenCompraForm = this.fb.group({
             proveedor_id: [null, [Validators.required]],
             pedido_id: [null],
-            cotizacion_id: [null],
-            tercero_id: [null],
-            fecha_expedicion: [null, [Validators.required]],
-            fecha_entrega: [null, [Validators.required]],
+            fecha_expedicion: [new Date().toISOString().split('T')[0], [Validators.required]],
+            fecha_entrega: [new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], [Validators.required]],
             estado: ['Pendiente'],
             color: ['#FFFF00'],
             observaciones: [''],
             direccion: [''],
             telefono: [''],
-            guia: ['']
+            guia: [''],
+            referencias: this.fb.array([], Validators.required)
         });
     }
 
     private loadOptions(): void {
-        // Cargar proveedores
-        this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe({
-            next: (response) => {
-                this.proveedores = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                }));
-            }
+        this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe((res: PaginatedResponse<any>) => {
+            this.proveedores.set(res.data.map((t: any) => ({ label: t.nombre, value: t.id })));
         });
 
-        // Cargar pedidos
-        this.pedidoService.list({ per_page: 200 }).subscribe({
-            next: (response) => {
-                this.pedidos = response.data.map((p: any) => ({
-                    label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
-                    value: p.id
-                }));
-            }
+        this.pedidoService.list({ per_page: 200 }).subscribe((res: PaginatedResponse<any>) => {
+            this.pedidos.set(res.data.map((p: any) => ({ label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`, value: p.id })));
         });
+
+        this.referenciaService.getAll({ per_page: 500 }).subscribe((res: PaginatedResponse<Referencia>) => {
+            this.referenciasDisponibles.set(
+                res.data.map((r: Referencia) => ({
+                    label: `${r.referencia} ${r.articulo?.definicion ? '- ' + r.articulo.definicion : ''}`,
+                    value: r.id,
+                    data: r
+                }))
+            );
+        });
+    }
+
+    addReferencia() {
+        if (!this.selectedRef) return;
+
+        const refData = this.referenciasDisponibles().find((r) => r.value === this.selectedRef);
+        if (!refData) return;
+
+        // Evitar duplicados
+        const exists = this.referenciasArray.controls.some((c) => c.get('referencia_id')?.value === this.selectedRef);
+        if (exists) {
+            this.messageService.add({ severity: 'warn', summary: 'Duplicado', detail: 'Esta referencia ya está en la lista' });
+            return;
+        }
+
+        const group = this.fb.group({
+            referencia_id: [this.selectedRef, Validators.required],
+            label: [refData.label],
+            cantidad: [1, [Validators.required, Validators.min(1)]],
+            valor_unitario: [0, [Validators.required, Validators.min(0)]],
+            valor_total: [0]
+        });
+
+        this.referenciasArray.push(group);
+        this.selectedRef = null;
+        this.updateGrandTotal();
+    }
+
+    removeReferencia(index: number) {
+        this.referenciasArray.removeAt(index);
+        this.updateGrandTotal();
+    }
+
+    calculateTotal(index: number) {
+        const group = this.referenciasArray.at(index);
+        const qty = group.get('cantidad')?.value || 0;
+        const price = group.get('valor_unitario')?.value || 0;
+        group.patchValue({ valor_total: qty * price }, { emitEvent: false });
+        this.updateGrandTotal();
+    }
+
+    updateGrandTotal() {
+        const total = this.referenciasArray.controls.reduce((acc, curr) => acc + (curr.get('valor_total')?.value || 0), 0);
+        this.totalOrden.set(total);
+    }
+
+    getReferenciaLabel(id: number) {
+        return this.referenciasDisponibles().find((r) => r.value === id)?.label || 'N/A';
     }
 
     onSubmit(): void {
         if (this.ordenCompraForm.invalid) {
-            this.markFormGroupTouched(this.ordenCompraForm);
-            this.messageService.add({
-                severity: 'warn',
-                summary: 'Validación',
-                detail: 'Por favor completa todos los campos requeridos'
-            });
+            this.ordenCompraForm.markAllAsTouched();
             return;
         }
 
-        this.loading = true;
-
         const formValue = this.ordenCompraForm.value;
         const data: CreateOrdenCompraDto = {
-            proveedor_id: formValue.proveedor_id,
-            pedido_id: formValue.pedido_id || undefined,
-            cotizacion_id: formValue.cotizacion_id || undefined,
-            tercero_id: formValue.tercero_id || undefined,
-            fecha_expedicion: new Date(formValue.fecha_expedicion).toISOString().split('T')[0],
-            fecha_entrega: new Date(formValue.fecha_entrega).toISOString().split('T')[0],
-            estado: formValue.estado,
-            color: formValue.color,
-            observaciones: formValue.observaciones || undefined,
-            direccion: formValue.direccion || undefined,
-            telefono: formValue.telefono || undefined,
-            guia: formValue.guia || undefined
+            ...formValue,
+            referencias: formValue.referencias.map((r: any) => ({
+                referencia_id: r.referencia_id,
+                cantidad: r.cantidad,
+                valor_unitario: r.valor_unitario,
+                valor_total: r.valor_total
+            }))
         };
 
         this.store.dispatch(createOrdenCompra({ data }));
 
-        // Escuchar el resultado
-        const subscription = this.store
-            .select((state: any) => state.ordenesCompra)
-            .subscribe((ordenesCompraState: any) => {
-                if (!ordenesCompraState.loading && this.loading) {
-                    this.loading = false;
-                    subscription.unsubscribe();
-
-                    if (ordenesCompraState.error) {
-                        this.messageService.add({
-                            severity: 'error',
-                            summary: 'Error',
-                            detail: ordenesCompraState.error
-                        });
-                    } else {
-                        this.router.navigate(['/app/ordenes-compra']);
-                    }
+        this.store.select(OrdenesCompraSelectors.selectOrdenesCompraError)
+            .pipe(takeUntil(this.destroy$))
+            .subscribe((error) => {
+                if (!error && !this.loading()) {
+                    this.router.navigate(['/app/ordenes-compra']);
                 }
             });
     }
 
-    onCancel(): void {
-        this.router.navigate(['/app/ordenes-compra']);
+    ngOnDestroy(): void {
+        this.destroy$.next();
+        this.destroy$.complete();
     }
 
-    private markFormGroupTouched(formGroup: FormGroup): void {
-        Object.keys(formGroup.controls).forEach((key) => {
-            const control = formGroup.get(key);
-            control?.markAsTouched();
-
-            if (control instanceof FormGroup) {
-                this.markFormGroupTouched(control);
-            }
-        });
+    onCancel(): void {
+        this.router.navigate(['/app/ordenes-compra']);
     }
 }

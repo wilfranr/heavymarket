@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Model;
 
-class OrdenCompraReferencia extends Pivot
+class OrdenCompraReferencia extends Model
 {
     protected $table = 'orden_compra_referencia';
+
+    protected $primaryKey = 'id';
 
     protected $fillable = [
         'id',
