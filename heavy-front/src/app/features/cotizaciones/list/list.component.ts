@@ -44,9 +44,9 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
 
                         <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="terceros" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="terceros()" [(ngModel)]="selectedTercero" (ngModelChange)="onTerceroChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="pedidos" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="pedidos()" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
                     </div>
 
                     <div class="flex gap-2">
@@ -119,8 +119,8 @@ export class ListComponent implements OnInit {
     selectedPedido: number | null = null;
 
     // Opciones para filtros
-    terceros: any[] = [];
-    pedidos: any[] = [];
+    terceros = signal<any[]>([]);
+    pedidos = signal<any[]>([]);
 
     estadosOptions: Array<{ label: string; value: CotizacionEstado }> = [
         { label: 'Pendiente', value: 'Pendiente' },
@@ -159,20 +159,20 @@ export class ListComponent implements OnInit {
         // Cargar terceros (clientes)
         this.terceroService.list({ per_page: 200, es_cliente: true }).subscribe({
             next: (response) => {
-                this.terceros = response.data.map((t) => ({
+                this.terceros.set(response.data.map((t) => ({
                     label: t.nombre || `Tercero ${t.id}`,
                     value: t.id
-                }));
+                })));
             }
         });
 
         // Cargar pedidos
         this.pedidoService.list({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.pedidos = response.data.map((p: any) => ({
+                this.pedidos.set(response.data.map((p: any) => ({
                     label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
                     value: p.id
-                }));
+                })));
             }
         });
     }
