@@ -26,19 +26,7 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
 @Component({
     selector: 'app-terceros-list',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        TableModule,
-        ButtonModule,
-        CardModule,
-        InputTextModule,
-        TagModule,
-        ToastModule,
-        ConfirmDialogModule,
-        IconFieldModule,
-        InputIconModule
-    ],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
     styleUrl: './list.scss'
@@ -61,7 +49,7 @@ export class ListComponent implements OnInit {
     }
 
     loadTerceros(): void {
-        this.store.dispatch(loadTerceros({}));
+        this.store.dispatch(loadTerceros({ params: { per_page: 200 } }));
     }
 
     /**
@@ -106,18 +94,17 @@ export class ListComponent implements OnInit {
         });
     }
 
-
     /**
      * Obtiene el color del tag según el tipo
      */
     getTipoSeverity(tipo: string): 'success' | 'info' | 'warn' {
         const severityMap: Record<string, 'success' | 'info' | 'warn'> = {
-            'Cliente': 'success',
-            'Proveedor': 'info',
-            'Ambos': 'warn',
-            'cliente': 'success',
-            'proveedor': 'info',
-            'ambos': 'warn'
+            Cliente: 'success',
+            Proveedor: 'info',
+            Ambos: 'warn',
+            cliente: 'success',
+            proveedor: 'info',
+            ambos: 'warn'
         };
         return severityMap[tipo] || 'info';
     }
@@ -126,6 +113,6 @@ export class ListComponent implements OnInit {
      * Obtiene el color del tag según el estado
      */
     getEstadoSeverity(estado: string): 'success' | 'danger' {
-        return (estado === 'activo' || estado === 'Activo') ? 'success' : 'danger';
+        return estado === 'activo' || estado === 'Activo' ? 'success' : 'danger';
     }
 }
