@@ -1,6 +1,8 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { startWith } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -47,89 +49,105 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
         TooltipModule,
         MaquinaCreateModalComponent,
         ToggleSwitchModule,
-        PasswordModule,
+        PasswordModule
     ],
     templateUrl: './tercero-form.component.html',
-    styles: [`
-        /* --- WIZARD STEPS OVERRIDES --- */
+    styles: [
+        `
+            /* --- WIZARD STEPS OVERRIDES --- */
 
-        /* CLIENTE (Amarillo) */
-        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #eab308 !important;
-            color: #000 !important;
-        }
-        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #eab308 !important;
-            font-weight: bold;
-        }
-        
-        /* PROVEEDOR (Azul) */
-        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #3b82f6 !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #3b82f6 !important;
-            font-weight: bold;
-        }
-
-        /* AMBOS (Verde) */
-        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #22c55e !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #22c55e !important;
-            font-weight: bold;
-        }
-
-
-        /* --- BUTTON OVERRIDES --- */
-        /* Only target primary buttons (not secondary, text, etc) */
-
-        /* CLIENTE */
-        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
-            background: #eab308 !important;
-            border-color: #eab308 !important;
-            color: #000 !important;
-        }
-        /* Focus ring for accessibility/aesthetics match */
-        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #eab308 !important; 
-        }
-
-        /* PROVEEDOR */
-        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
-            background: #3b82f6 !important;
-            border-color: #3b82f6 !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #3b82f6 !important; 
-        }
-
-        /* AMBOS */
-        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
-            background: #22c55e !important;
-            border-color: #22c55e !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #22c55e !important; 
-        }
-
-        /* SelectButton Text Colors - Helper classes */
-        .text-cliente { color: #eab308; font-weight: bold; }
-        .text-proveedor { color: #3b82f6; font-weight: bold; }
-        .text-ambos { color: #22c55e; font-weight: bold; }
-
-        /* Responsive adjustments for save button */
-        @media (max-width: 768px) {
-            :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link .p-steps-title {
-                display: none;
+            /* CLIENTE (Amarillo) */
+            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #eab308 !important;
+                color: #000 !important;
             }
-        }
-    `]
+            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #eab308 !important;
+                font-weight: bold;
+            }
+
+            /* PROVEEDOR (Azul) */
+            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #3b82f6 !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #3b82f6 !important;
+                font-weight: bold;
+            }
+
+            /* AMBOS (Verde) */
+            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #22c55e !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #22c55e !important;
+                font-weight: bold;
+            }
+
+            /* --- BUTTON OVERRIDES --- */
+            /* Only target primary buttons (not secondary, text, etc) */
+
+            /* CLIENTE */
+            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
+                background: #eab308 !important;
+                border-color: #eab308 !important;
+                color: #000 !important;
+            }
+            /* Focus ring for accessibility/aesthetics match */
+            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #eab308 !important;
+            }
+
+            /* PROVEEDOR */
+            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
+                background: #3b82f6 !important;
+                border-color: #3b82f6 !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #3b82f6 !important;
+            }
+
+            /* AMBOS */
+            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success) {
+                background: #22c55e !important;
+                border-color: #22c55e !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):not(.p-button-success):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #22c55e !important;
+            }
+
+            /* SelectButton Text Colors - Helper classes */
+            .text-cliente {
+                color: #eab308;
+                font-weight: bold;
+            }
+            .text-proveedor {
+                color: #3b82f6;
+                font-weight: bold;
+            }
+            .text-ambos {
+                color: #22c55e;
+                font-weight: bold;
+            }
+
+            /* Responsive adjustments for save button */
+            @media (max-width: 768px) {
+                :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link .p-steps-title {
+                    display: none;
+                }
+            }
+        `
+    ]
 })
 export class TerceroFormComponent implements OnInit, OnChanges {
     private readonly fb = inject(FormBuilder);
@@ -148,7 +166,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     @Output() onCancel = new EventEmitter<void>();
 
     createTerceroForm!: FormGroup;
-    loadingTercero = false;
+    loadingTercero = signal(false);
 
     // Sub-modals visibility
     displayCreateMaquinaDialog = false;
@@ -158,9 +176,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     activeIndex: number = 0;
 
     // Location Data
-    paises: Country[] = [];
-    departamentos: State[] = [];
-    ciudades: City[] = [];
+    paises = signal<Country[]>([]);
+    departamentos = signal<State[]>([]);
+    ciudades = signal<City[]>([]);
 
     // Listas auxiliares
     maquinas: any[] = [];
@@ -202,10 +220,10 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
 
     private loadTerceroData(id: number): void {
-        this.loadingTercero = true;
+        this.loadingTercero.set(true);
         this.terceroService.getById(id).subscribe({
             next: (response) => {
-                this.loadingTercero = false;
+                this.loadingTercero.set(false);
                 this.patchForm(response.data);
                 if (this.isViewMode) {
                     this.createTerceroForm.disable();
@@ -214,7 +232,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 }
             },
             error: (err) => {
-                this.loadingTercero = false;
+                this.loadingTercero.set(false);
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cargar la información del tercero' });
                 this.onCancel.emit();
             }
@@ -242,7 +260,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             categoria_comercial_id: data.categorias_comerciales ? data.categorias_comerciales.map((c: any) => c.id) : [],
             contactos: [],
             landing_access: data.landing_access ?? false,
-            landing_password: '',
+            landing_password: ''
         });
 
         // Set contacts
@@ -252,24 +270,19 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         }
 
         if (data.country_id) {
-            this.ubicacionService.getStates(data.country_id).subscribe(r => {
-                this.departamentos = r.data;
+            this.ubicacionService.getStates(data.country_id).subscribe((r) => {
+                this.departamentos.set(r.data);
             });
         }
         if (data.state_id) {
-            this.ubicacionService.getCities(data.state_id).subscribe(r => {
-                this.ciudades = r.data;
+            this.ubicacionService.getCities(data.state_id).subscribe((r) => {
+                this.ciudades.set(r.data);
             });
         }
     }
 
     private initSteps(): void {
-        this.steps = [
-            { label: 'Información general' },
-            { label: 'Ubicación' },
-            { label: 'Contactos' },
-            { label: 'Documentos' }
-        ];
+        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Documentos' }];
     }
 
     get contactos(): FormArray {
@@ -329,8 +342,22 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
             // Acceso Landing
             landing_access: [false],
-            landing_password: [''],
+            landing_password: ['']
         });
+
+        // Sync Signals with Form
+        this.createTerceroForm
+            .get('tipo')!
+            .valueChanges.pipe(startWith(this.createTerceroForm.get('tipo')?.value || 'Cliente'))
+            .subscribe((val) => this.tipoTercero.set(val));
+        this.createTerceroForm
+            .get('tipo_documento')!
+            .valueChanges.pipe(startWith(this.createTerceroForm.get('tipo_documento')?.value || 'NIT'))
+            .subscribe((val) => this.tipoDocumento.set(val));
+        this.createTerceroForm
+            .get('landing_access')!
+            .valueChanges.pipe(startWith(this.createTerceroForm.get('landing_access')?.value || false))
+            .subscribe((val) => this.landingAccessEnabled.set(val));
 
         // Controlar obligatoriedad de la contraseña al activar el toggle
         this.createTerceroForm.get('landing_access')!.valueChanges.subscribe((enabled: boolean) => {
@@ -345,20 +372,24 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         });
     }
 
-    get isNit(): boolean {
-        const val = this.createTerceroForm.get('tipo_documento')?.value;
-        return val === 'nit' || val === 'NIT';
-    }
-    get isCliente(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Cliente' || t === 'Ambos'; }
-    get isProveedor(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Proveedor' || t === 'Ambos'; }
-    get landingAccessEnabled(): boolean { return !!this.createTerceroForm.get('landing_access')?.value; }
-    get activeTheme(): string {
-        const tipo = this.createTerceroForm?.get('tipo')?.value;
+    // Reactive signals based on form state
+    tipoTercero = signal<string>('Cliente');
+    tipoDocumento = signal<string>('NIT');
+    activeTheme = computed(() => {
+        const tipo = this.tipoTercero();
         if (tipo === 'Cliente') return 'theme-cliente';
         if (tipo === 'Proveedor') return 'theme-proveedor';
         if (tipo === 'Ambos') return 'theme-ambos';
         return 'theme-cliente';
-    }
+    });
+
+    isCliente = computed(() => this.tipoTercero() === 'Cliente' || this.tipoTercero() === 'Ambos');
+    isProveedor = computed(() => this.tipoTercero() === 'Proveedor' || this.tipoTercero() === 'Ambos');
+    isNit = computed(() => {
+        const val = this.tipoDocumento();
+        return val === 'nit' || val === 'NIT';
+    });
+    landingAccessEnabled = signal(false);
 
     resetForm(): void {
         this.activeIndex = 0;
@@ -373,11 +404,11 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 categoria_comercial_id: [],
                 contactos: [],
                 landing_access: false,
-                landing_password: '',
+                landing_password: ''
             });
             this.contactos.clear();
-            this.departamentos = [];
-            this.ciudades = [];
+            this.departamentos.set([]);
+            this.ciudades.set([]);
         }
     }
 
@@ -401,11 +432,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
         const controls = this.createTerceroForm.controls;
         if (step === 0) {
-            return !controls['nombre'].invalid &&
-                !controls['tipo'].invalid &&
-                !controls['tipo_documento'].invalid &&
-                !controls['numero_documento'].invalid &&
-                !controls['telefono'].invalid;
+            return !controls['nombre'].invalid && !controls['tipo'].invalid && !controls['tipo_documento'].invalid && !controls['numero_documento'].invalid && !controls['telefono'].invalid;
         }
         if (step === 1) {
             return !controls['direccion'].invalid;
@@ -430,38 +457,63 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         }
     }
 
-    openCreateMaquinaDialog(): void { this.displayCreateMaquinaDialog = true; }
+    openCreateMaquinaDialog(): void {
+        this.displayCreateMaquinaDialog = true;
+    }
     onMaquinaCreated(maquina: any): void {
         this.loadMaquinas();
         this.displayCreateMaquinaDialog = false;
         const currentMaquinas = this.createTerceroForm.get('maquina_id')?.value || [];
         this.createTerceroForm.patchValue({ maquina_id: [...currentMaquinas, maquina.id] });
     }
-    openCreateFabricanteDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear fabricante próximamente' }); }
-    openCreateSistemaDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' }); }
+    openCreateFabricanteDialog(): void {
+        this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear fabricante próximamente' });
+    }
+    openCreateSistemaDialog(): void {
+        this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' });
+    }
 
     onPaisChange(): void {
         const countryId = this.createTerceroForm.get('country_id')?.value;
-        this.departamentos = []; this.ciudades = []; this.createTerceroForm.patchValue({ state_id: null, city_id: null });
-        if (countryId) { this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos = r.data }); }
+        this.departamentos.set([]);
+        this.ciudades.set([]);
+        this.createTerceroForm.patchValue({ state_id: null, city_id: null });
+        if (countryId) {
+            this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) });
+        }
     }
 
     onDepartamentoChange(): void {
         const stateId = this.createTerceroForm.get('state_id')?.value;
-        this.ciudades = []; this.createTerceroForm.patchValue({ city_id: null });
-        if (stateId) { this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades = r.data }); }
+        this.ciudades.set([]);
+        this.createTerceroForm.patchValue({ city_id: null });
+        if (stateId) {
+            this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades.set(r.data) });
+        }
     }
 
-    onFileSelect(event: any, fieldName: string): void { if (event.files && event.files.length > 0) { this.createTerceroForm.patchValue({ [fieldName]: event.files[0] }); } }
+    onFileSelect(event: any, fieldName: string): void {
+        if (event.files && event.files.length > 0) {
+            this.createTerceroForm.patchValue({ [fieldName]: event.files[0] });
+        }
+    }
 
-    cancel(): void { this.onCancel.emit(); }
+    cancel(): void {
+        this.onCancel.emit();
+    }
 
-    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises = r.data }); }
-    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas = r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id })) }); }
-    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes = r.data.map(f => ({ label: f.nombre, value: f.id })) }); }
-    private loadCategoriasComerciales(): void { 
+    private loadPaises(): void {
+        this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) });
+    }
+    private loadMaquinas(): void {
+        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => (this.maquinas = r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
+    }
+    private loadFabricantes(): void {
+        this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => (this.fabricantes = r.data.map((f) => ({ label: f.nombre, value: f.id }))) });
+    }
+    private loadCategoriasComerciales(): void {
         this.listaService.getByTipo('Categoría Comercial').subscribe({
-            next: (listas) => this.categoriasComerciales = listas.map(l => ({ label: l.nombre, value: l.id }))
+            next: (listas) => (this.categoriasComerciales = listas.map((l) => ({ label: l.nombre, value: l.id })))
         });
     }
 
@@ -477,7 +529,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             return;
         }
 
-        this.loadingTercero = true;
+        this.loadingTercero.set(true);
         const formValue = this.createTerceroForm.value;
         const formData = new FormData();
 
@@ -527,7 +579,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         }
 
         const fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
-        fileFields.forEach(field => {
+        fileFields.forEach((field) => {
             if (formValue[field] instanceof File) {
                 formData.append(field, formValue[field]);
             }
@@ -549,13 +601,13 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
         request$.subscribe({
             next: (response: any) => {
-                this.loadingTercero = false;
+                this.loadingTercero.set(false);
                 const action = this.terceroId ? 'actualizado' : 'creado';
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Tercero ${action} correctamente` });
                 this.onSave.emit(response.data);
             },
             error: (error: any) => {
-                this.loadingTercero = false;
+                this.loadingTercero.set(false);
                 console.error('Error al guardar tercero', error);
                 const msg = error.error?.message || 'Fallo al guardar tercero';
                 if (error.error?.errors) {
