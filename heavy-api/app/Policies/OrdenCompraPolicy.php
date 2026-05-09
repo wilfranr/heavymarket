@@ -20,7 +20,12 @@ class OrdenCompraPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+    }
+
+    public function view(User $user, OrdenCompra $ordenCompra): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
     }
 
     /**

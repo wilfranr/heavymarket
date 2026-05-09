@@ -18,7 +18,6 @@ use Illuminate\Auth\Access\HandlesAuthorization;
  * - Administrador: CRUD completo
  * - Logistica: puede crear, actualizar estados y referencias
  * - Vendedor: solo lectura
- * - Analista: solo lectura
  */
 class OrdenTrabajoPolicy
 {
@@ -29,7 +28,7 @@ class OrdenTrabajoPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
     }
 
     /**
@@ -37,7 +36,7 @@ class OrdenTrabajoPolicy
      */
     public function view(User $user, OrdenTrabajo $ordenTrabajo): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica', 'Analista']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
     }
 
     /**

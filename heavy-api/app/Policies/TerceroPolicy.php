@@ -12,12 +12,12 @@ class TerceroPolicy
 
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'panel_user']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica', 'panel_user']);
     }
 
     public function view(User $user, Tercero $tercero): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'panel_user']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica', 'panel_user']);
     }
 
     public function create(User $user): bool
