@@ -35,7 +35,27 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
 @Component({
     selector: 'app-articulo-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, InputGroupModule, InputGroupAddonModule, TabsModule, TagModule, ListaCreateModalComponent, ReferenciaCreateModalComponent],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        FormsModule,
+        RouterModule,
+        CardModule,
+        ButtonModule,
+        InputTextModule,
+        TextareaModule,
+        SelectModule,
+        ToastModule,
+        DividerModule,
+        DialogModule,
+        InputNumberModule,
+        InputGroupModule,
+        InputGroupAddonModule,
+        TabsModule,
+        TagModule,
+        ListaCreateModalComponent,
+        ReferenciaCreateModalComponent
+    ],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -88,8 +108,6 @@ export class CreateComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
-
-
     // Archivos seleccionados
     fotoFile: File | null = null;
     planoFile: File | null = null;
@@ -108,9 +126,9 @@ export class CreateComponent implements OnInit {
      * Carga las listas de configuración para medidas
      */
     cargarListasMedidas(): void {
-        this.listaService.getByTipo('Unidad de Medida').subscribe(res => this.unidadesMedida = res);
-        this.listaService.getByTipo('Tipo de Medida').subscribe(res => this.tiposMedida = res);
-        this.listaService.getByTipo('Nombre de Medida').subscribe(res => this.nombresMedida = res);
+        this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
+        this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
+        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
     }
 
     /**
@@ -152,8 +170,7 @@ export class CreateComponent implements OnInit {
         if (!ref) return false;
 
         const term = this.searchTermReferences.toLowerCase();
-        return ref.referencia.toLowerCase().includes(term) ||
-            (ref.marca?.nombre?.toLowerCase().includes(term) || false);
+        return ref.referencia.toLowerCase().includes(term) || ref.marca?.nombre?.toLowerCase().includes(term) || false;
     }
 
     /**
@@ -166,7 +183,7 @@ export class CreateComponent implements OnInit {
                 this.tipos = tipos;
             },
             error: (error) => {
-                 console.error('Error al cargar piezas estándar:', error);
+                console.error('Error al cargar piezas estándar:', error);
             }
         });
     }
@@ -180,16 +197,14 @@ export class CreateComponent implements OnInit {
             next: (res) => {
                 const nuevas = res.data;
                 // Preservar las que ya están seleccionadas en el formulario
-                const seleccionadasIds = this.referenciasCruzadas.value
-                    .map((r: any) => r.referencia_id)
-                    .filter((id: any) => id !== null);
-                
-                const yaCargadas = this.referenciasDisponibles.filter(r => seleccionadasIds.includes(r.id));
-                
+                const seleccionadasIds = this.referenciasCruzadas.value.map((r: any) => r.referencia_id).filter((id: any) => id !== null);
+
+                const yaCargadas = this.referenciasDisponibles.filter((r) => seleccionadasIds.includes(r.id));
+
                 const map = new Map();
-                yaCargadas.forEach(r => map.set(r.id, r));
+                yaCargadas.forEach((r) => map.set(r.id, r));
                 nuevas.forEach((r: any) => map.set(r.id, r));
-                
+
                 this.referenciasDisponibles = Array.from(map.values());
             }
         });
@@ -215,14 +230,14 @@ export class CreateComponent implements OnInit {
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
-        
+
         const updates: any = { definicion: nuevoTipo.nombre };
-        // Pre-diligenciar descripción específica si está vacía
+        // Pre-diligenciar descripcion especifica si esta vacia
         const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-        if (!currentDesc && nuevoTipo.definicion) {
-            updates.descripcionEspecifica = nuevoTipo.definicion;
+        if (!currentDesc && nuevoTipo.nombre) {
+            updates.descripcionEspecifica = nuevoTipo.nombre;
         }
-        
+
         this.articuloForm.patchValue(updates); // Seleccionarlo
         this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
@@ -233,7 +248,7 @@ export class CreateComponent implements OnInit {
      */
     onListaGeneralCreated(nueva: any): void {
         this.cargarListasMedidas(); // Recargar todas por seguridad
-        
+
         // Seleccionar automáticamente en el objeto de medida que se está editando
         if (this.currentListaTipo === 'Unidad de Medida') {
             this.medidaData.unidad = nueva.nombre;
@@ -242,7 +257,7 @@ export class CreateComponent implements OnInit {
         } else if (this.currentListaTipo === 'Nombre de Medida') {
             this.medidaData.nombre = nueva.nombre;
         }
-        
+
         this.showListaModal = false;
     }
 
@@ -260,7 +275,7 @@ export class CreateComponent implements OnInit {
      */
     onReferenciaCreada(nuevaRef: any): void {
         // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
-        if (nuevaRef && !this.referenciasDisponibles.find(r => r.id === nuevaRef.id)) {
+        if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
             this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
         }
 
@@ -287,7 +302,7 @@ export class CreateComponent implements OnInit {
     }
 
     getReferenciaDetail(id: number): Referencia | undefined {
-        return this.referenciasDisponibles.find(r => r.id === id);
+        return this.referenciasDisponibles.find((r) => r.id === id);
     }
 
     /**
@@ -308,14 +323,14 @@ export class CreateComponent implements OnInit {
     onTipoChange(event: any): void {
         const nombre = event.value;
         if (nombre) {
-            const found = this.tipos.find(t => t.nombre === nombre);
+            const found = this.tipos.find((t) => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
-                
+
                 // Pre-diligenciar descripción específica si está vacía
                 const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-                if (!currentDesc && found.definicion) {
-                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                if (!currentDesc && found.nombre) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.nombre });
                 }
             }
         } else {
@@ -415,7 +430,7 @@ export class CreateComponent implements OnInit {
      */
     onSubmit(): void {
         const referenciasIds = this.articuloForm.get('referenciasCruzadas')?.value?.map((ref: any) => ref.referencia_id) || [];
-        
+
         if (referenciasIds.length === 0) {
             this.messageService.add({
                 severity: 'error',

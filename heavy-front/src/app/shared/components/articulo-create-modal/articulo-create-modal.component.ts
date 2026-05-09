@@ -124,14 +124,14 @@ export class ArticuloCreateModalComponent implements OnInit {
         const nombre = event.value;
         if (nombre) {
             // Buscamos el objeto completo en la lista actual para la previsualización
-            const found = this.tipos.find(t => t.nombre === nombre);
+            const found = this.tipos.find((t) => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
-                
+
                 // Pre-diligenciar descripción específica si está vacía
                 const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-                if (!currentDesc && found.definicion) {
-                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                if (!currentDesc && found.nombre) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.nombre });
                 }
             }
         } else {
@@ -145,14 +145,14 @@ export class ArticuloCreateModalComponent implements OnInit {
 
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos();
-        
+
         const updates: any = { definicion: nuevoTipo.nombre };
-        // Pre-diligenciar descripción específica si está vacía
+        // Pre-diligenciar descripcion especifica si esta vacia
         const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-        if (!currentDesc && nuevoTipo.definicion) {
-            updates.descripcionEspecifica = nuevoTipo.definicion;
+        if (!currentDesc && nuevoTipo.nombre) {
+            updates.descripcionEspecifica = nuevoTipo.nombre;
         }
-        
+
         this.articuloForm.patchValue(updates);
         this.selectedTipoData = nuevoTipo;
         this.showTipoModal = false;
@@ -163,16 +163,14 @@ export class ArticuloCreateModalComponent implements OnInit {
             next: (res) => {
                 const nuevas = res.data;
                 // Preservar las que ya están seleccionadas en el formulario
-                const seleccionadasIds = this.referenciasCruzadas.value
-                    .map((r: any) => r.referencia_id)
-                    .filter((id: any) => id !== null);
-                
-                const yaCargadas = this.referenciasDisponibles.filter(r => seleccionadasIds.includes(r.id));
-                
+                const seleccionadasIds = this.referenciasCruzadas.value.map((r: any) => r.referencia_id).filter((id: any) => id !== null);
+
+                const yaCargadas = this.referenciasDisponibles.filter((r) => seleccionadasIds.includes(r.id));
+
                 const map = new Map();
-                yaCargadas.forEach(r => map.set(r.id, r));
+                yaCargadas.forEach((r) => map.set(r.id, r));
                 nuevas.forEach((r: any) => map.set(r.id, r));
-                
+
                 this.referenciasDisponibles = Array.from(map.values());
             }
         });
@@ -188,7 +186,7 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     getReferenciaDetail(id: number): Referencia | undefined {
-        return this.referenciasDisponibles.find(r => r.id === id);
+        return this.referenciasDisponibles.find((r) => r.id === id);
     }
 
     agregarReferencia(): void {
@@ -209,7 +207,7 @@ export class ArticuloCreateModalComponent implements OnInit {
 
     onReferenciaCreada(nuevaRef: any): void {
         // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
-        if (nuevaRef && !this.referenciasDisponibles.find(r => r.id === nuevaRef.id)) {
+        if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
             this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
         }
 

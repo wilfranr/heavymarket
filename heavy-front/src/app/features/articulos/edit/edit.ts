@@ -41,7 +41,31 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 @Component({
     selector: 'app-articulo-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, FormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, DialogModule, InputNumberModule, TooltipModule, TableModule, TabsModule, TagModule, FallbackImageDirective, InputGroupModule, InputGroupAddonModule, ListaCreateModalComponent, ReferenciaCreateModalComponent, ImageUploadComponent],
+    imports: [
+        CommonModule,
+        ReactiveFormsModule,
+        FormsModule,
+        RouterModule,
+        CardModule,
+        ButtonModule,
+        InputTextModule,
+        TextareaModule,
+        SelectModule,
+        ToastModule,
+        DividerModule,
+        DialogModule,
+        InputNumberModule,
+        TooltipModule,
+        TableModule,
+        TabsModule,
+        TagModule,
+        FallbackImageDirective,
+        InputGroupModule,
+        InputGroupAddonModule,
+        ListaCreateModalComponent,
+        ReferenciaCreateModalComponent,
+        ImageUploadComponent
+    ],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -97,8 +121,6 @@ export class EditComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
-
-
     // Variables para el CRUD de medidas
     unidadesMedida: Lista[] = [];
     tiposMedida: Lista[] = [];
@@ -124,15 +146,15 @@ export class EditComponent implements OnInit {
             this.articulo$.subscribe((articulo) => {
                 if (articulo) {
                     this.articuloActual = articulo;
-                    
+
                     // Asegurar que tenemos el tipo en la lista para que el selector lo muestre
                     if (articulo.definicion) {
-                        const exists = this.tipos.find(t => t.nombre === articulo.definicion);
+                        const exists = this.tipos.find((t) => t.nombre === articulo.definicion);
                         if (!exists) {
                             // Buscar el tipo específico en el backend para tener sus fotos
                             this.listaService.getByTipo('Piezas Estandar', articulo.definicion).subscribe({
                                 next: (tiposEncontrados) => {
-                                    const found = tiposEncontrados.find(t => t.nombre === articulo.definicion);
+                                    const found = tiposEncontrados.find((t) => t.nombre === articulo.definicion);
                                     if (found) {
                                         this.tipos = [...this.tipos, found];
                                         this.checkInitialInheritance(found);
@@ -155,9 +177,9 @@ export class EditComponent implements OnInit {
      * Carga las listas de configuración para medidas
      */
     cargarListasMedidas(): void {
-        this.listaService.getByTipo('Unidad de Medida').subscribe(res => this.unidadesMedida = res);
-        this.listaService.getByTipo('Tipo de Medida').subscribe(res => this.tiposMedida = res);
-        this.listaService.getByTipo('Nombre de Medida').subscribe(res => this.nombresMedida = res);
+        this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
+        this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
+        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
     }
 
     /**
@@ -170,7 +192,7 @@ export class EditComponent implements OnInit {
                 this.tipos = tipos;
             },
             error: (error) => {
-                 console.error('Error al cargar piezas estándar:', error);
+                console.error('Error al cargar piezas estándar:', error);
             }
         });
     }
@@ -207,7 +229,7 @@ export class EditComponent implements OnInit {
      */
     onListaGeneralCreated(nueva: any): void {
         this.cargarListasMedidas(); // Recargar todas por seguridad
-        
+
         // Seleccionar automáticamente en el objeto de medida que se está editando
         if (this.currentListaTipo === 'Unidad de Medida') {
             this.medidaData.unidad = nueva.nombre;
@@ -216,7 +238,7 @@ export class EditComponent implements OnInit {
         } else if (this.currentListaTipo === 'Nombre de Medida') {
             this.medidaData.nombre = nueva.nombre;
         }
-        
+
         this.showListaModal = false;
     }
 
@@ -226,12 +248,12 @@ export class EditComponent implements OnInit {
     onTipoChange(event: any): void {
         const nombre = event.value;
         if (nombre && this.articuloActual) {
-            const found = this.tipos.find(t => t.nombre === nombre);
+            const found = this.tipos.find((t) => t.nombre === nombre);
             if (found) {
                 // Pre-diligenciar descripción específica si está vacía
                 const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-                if (!currentDesc && found.definicion) {
-                    this.articuloForm.patchValue({ descripcionEspecifica: found.definicion });
+                if (!currentDesc && found.nombre) {
+                    this.articuloForm.patchValue({ descripcionEspecifica: found.nombre });
                 }
 
                 if (found.fotoMedida) {
@@ -252,17 +274,17 @@ export class EditComponent implements OnInit {
      */
     onTipoCreado(nuevoTipo: any): void {
         this.cargarTipos(); // Recargar la lista
-        
+
         const updates: any = { definicion: nuevoTipo.nombre };
-        
+
         // Pre-diligenciar descripción específica si está vacía
         const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-        if (!currentDesc && nuevoTipo.definicion) {
-            updates.descripcionEspecifica = nuevoTipo.definicion;
+        if (!currentDesc && nuevoTipo.nombre) {
+            updates.descripcionEspecifica = nuevoTipo.nombre;
         }
 
         this.articuloForm.patchValue(updates); // Seleccionarlo
-        
+
         if (nuevoTipo.fotoMedida && this.articuloActual) {
             this.articuloActual = {
                 ...this.articuloActual,
@@ -270,7 +292,7 @@ export class EditComponent implements OnInit {
             };
             this.planoFile = null;
         }
-        
+
         this.showTipoModal = false;
     }
 
@@ -288,7 +310,7 @@ export class EditComponent implements OnInit {
      */
     onReferenciaCreada(nuevaRef: any): void {
         // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
-        if (nuevaRef && !this.referenciasDisponibles.find(r => r.id === nuevaRef.id)) {
+        if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
             this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
         }
 
@@ -320,14 +342,16 @@ export class EditComponent implements OnInit {
         if (articulo.referencias && articulo.referencias.length > 0) {
             // Asegurar que las referencias actuales estén en la lista de disponibles
             articulo.referencias.forEach((ref: any) => {
-                const exists = this.referenciasDisponibles.find(d => d.id === ref.id);
+                const exists = this.referenciasDisponibles.find((d) => d.id === ref.id);
                 if (!exists) {
                     this.referenciasDisponibles = [...this.referenciasDisponibles, ref];
                 }
 
-                this.referenciasCruzadas.push(this.fb.group({
-                    referencia_id: [ref.id, Validators.required]
-                }));
+                this.referenciasCruzadas.push(
+                    this.fb.group({
+                        referencia_id: [ref.id, Validators.required]
+                    })
+                );
             });
         }
     }
@@ -355,8 +379,7 @@ export class EditComponent implements OnInit {
      * Obtiene el detalle de una referencia seleccionada para mostrar en la tabla
      */
     getReferenciaDetail(id: number): Referencia | undefined {
-        return this.referenciasDisponibles.find(r => r.id === id) ||
-            this.articuloActual?.referencias?.find(r => r.id === id);
+        return this.referenciasDisponibles.find((r) => r.id === id) || this.articuloActual?.referencias?.find((r) => r.id === id);
     }
 
     /**
@@ -369,8 +392,7 @@ export class EditComponent implements OnInit {
         if (!ref) return false;
 
         const term = this.searchTermReferences.toLowerCase();
-        return ref.referencia.toLowerCase().includes(term) ||
-            (ref.marca?.nombre?.toLowerCase().includes(term) || false);
+        return ref.referencia.toLowerCase().includes(term) || ref.marca?.nombre?.toLowerCase().includes(term) || false;
     }
 
     /**
@@ -411,12 +433,12 @@ export class EditComponent implements OnInit {
                 const nuevas = res.data;
                 // Combinar con las que ya tiene el artículo para no perderlas de la vista
                 const actuales = this.articuloActual?.referencias || [];
-                
+
                 // Usar un Map para evitar duplicados por ID
                 const map = new Map();
-                actuales.forEach(r => map.set(r.id, r));
+                actuales.forEach((r) => map.set(r.id, r));
                 nuevas.forEach((r: any) => map.set(r.id, r));
-                
+
                 this.referenciasDisponibles = Array.from(map.values());
             }
         });
@@ -485,7 +507,6 @@ export class EditComponent implements OnInit {
         this.showJuegoDialog = true;
     }
 
-
     asociarJuego(): void {
         if (!this.juegoData.referencia_id) return;
         this.articuloService.addJuego(this.articuloId, this.juegoData).subscribe(() => {
@@ -541,7 +562,7 @@ export class EditComponent implements OnInit {
      */
     onSubmit(): void {
         const referenciasIds = this.articuloForm.get('referenciasCruzadas')?.value?.map((ref: any) => ref.referencia_id) || [];
-        
+
         if (referenciasIds.length === 0) {
             this.messageService.add({
                 severity: 'error',
