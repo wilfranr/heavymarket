@@ -240,9 +240,8 @@ export class CreateComponent implements OnInit {
         this.cargarTipos(); // Recargar la lista
 
         const updates: any = { definicion: nuevoTipo.nombre };
-        // Pre-diligenciar descripcion especifica si esta vacia
-        const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-        if (!currentDesc && nuevoTipo.nombre) {
+        // Sobreescribir descripcion especifica con el nombre de la pieza estandar
+        if (nuevoTipo.nombre) {
             updates.descripcionEspecifica = nuevoTipo.nombre;
         }
 
@@ -337,9 +336,8 @@ export class CreateComponent implements OnInit {
                 this.selectedTipoData = found;
                 this.fotoMedidaHeredada = found.fotoMedida || null;
 
-                // Pre-diligenciar descripción específica si está vacía
-                const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
-                if (!currentDesc && found.nombre) {
+                // Sobreescribir descripcion especifica con el nombre de la pieza estandar
+                if (found.nombre) {
                     this.articuloForm.patchValue({ descripcionEspecifica: found.nombre });
                 }
             }
