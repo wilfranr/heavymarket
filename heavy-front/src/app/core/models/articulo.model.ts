@@ -60,8 +60,8 @@ export interface CreateArticuloDto {
     descripcionEspecifica: string;
     peso?: number;
     comentarios?: string;
-    fotoDescriptiva?: string;
-    foto_medida?: string;
+    fotoDescriptiva?: File | string;
+    foto_medida?: File | string;
     referencias_ids?: number[];
 }
 
@@ -73,8 +73,7 @@ export interface UpdateArticuloDto {
     descripcionEspecifica?: string;
     peso?: number;
     comentarios?: string;
-    fotoDescriptiva?: string;
-    foto_medida?: string;
+    fotoDescriptiva?: File | string;
+    foto_medida?: File | string;
     referencias_ids?: number[];
 }
-

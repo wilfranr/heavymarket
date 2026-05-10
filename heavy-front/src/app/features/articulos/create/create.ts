@@ -28,6 +28,9 @@ import { ReferenciaService } from '../../../core/services/referencia.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
+import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+
+import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 
 /**
  * Componente de creación de artículo
@@ -53,8 +56,10 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
         InputGroupAddonModule,
         TabsModule,
         TagModule,
+        FallbackImageDirective,
         ListaCreateModalComponent,
-        ReferenciaCreateModalComponent
+        ReferenciaCreateModalComponent,
+        ImageUploadComponent
     ],
     providers: [MessageService],
     templateUrl: './create.html'

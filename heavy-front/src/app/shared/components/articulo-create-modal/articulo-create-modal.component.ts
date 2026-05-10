@@ -19,6 +19,8 @@ import { Lista } from '../../../core/models/lista.model';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../referencia-create-modal/referencia-create-modal.component';
+import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
+import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
 @Component({
     selector: 'app-articulo-create-modal',
@@ -36,8 +38,10 @@ import { ReferenciaCreateModalComponent } from '../referencia-create-modal/refer
         ToastModule,
         TextareaModule,
         InputNumberModule,
+        FallbackImageDirective,
         ListaCreateModalComponent,
-        ReferenciaCreateModalComponent
+        ReferenciaCreateModalComponent,
+        ImageUploadComponent
     ],
     providers: [MessageService],
     templateUrl: './articulo-create-modal.component.html'
@@ -68,6 +72,10 @@ export class ArticuloCreateModalComponent implements OnInit {
 
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
+
+    // Archivos de imagen para la creacion
+    fotoFile: File | null = null;
+    planoFile: File | null = null;
 
     // Conversor de peso
     showWeightConverter = false;
@@ -137,6 +145,14 @@ export class ArticuloCreateModalComponent implements OnInit {
         } else {
             this.selectedTipoData = null;
         }
+    }
+
+    onFotoSelected(file: File): void {
+        this.fotoFile = file;
+    }
+
+    onPlanoSelected(file: File): void {
+        this.planoFile = file;
     }
 
     abrirCrearTipo(): void {
@@ -268,35 +284,59 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.loading = true;
         const formValue = this.articuloForm.value;
 
-        const payload = {
-            definicion: formValue.definicion,
-            descripcionEspecifica: formValue.descripcionEspecifica,
-            peso: formValue.peso || null,
-            comentarios: formValue.comentarios || '',
-            referencias_ids: formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || []
-        };
+        const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
 
-        this.articuloService.create(payload).subscribe({
-            next: (articulo) => {
-                this.messageService.add({
-                    severity: 'success',
-                    summary: 'Éxito',
-                    detail: 'Artículo creado correctamente'
-                });
-                this.onArticuloCreated.emit(articulo);
-                this.closeDialog();
-                this.loading = false;
-            },
-            error: (error) => {
-                console.error('Error al crear artículo:', error);
-                this.messageService.add({
-                    severity: 'error',
-                    summary: 'Error',
-                    detail: error.error?.message || 'No se pudo crear el artículo'
-                });
-                this.loading = false;
+        if (this.fotoFile || this.planoFile) {
+            const formData = new FormData();
+            formData.append('definicion', formValue.definicion);
+            formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
+            if (formValue.peso !== null && formValue.peso !== undefined) {
+                formData.append('peso', String(formValue.peso));
             }
+            formData.append('comentarios', formValue.comentarios || '');
+            referenciasIds.forEach((id: number) => formData.append('referencias_ids[]', String(id)));
+            if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
+            if (this.planoFile) formData.append('foto_medida', this.planoFile);
+
+            this.articuloService.create(formData).subscribe({
+                next: (articulo) => this.handleCreateSuccess(articulo),
+                error: (error) => this.handleCreateError(error)
+            });
+        } else {
+            const payload = {
+                definicion: formValue.definicion,
+                descripcionEspecifica: formValue.descripcionEspecifica,
+                peso: formValue.peso || null,
+                comentarios: formValue.comentarios || '',
+                referencias_ids: referenciasIds
+            };
+
+            this.articuloService.create(payload).subscribe({
+                next: (articulo) => this.handleCreateSuccess(articulo),
+                error: (error) => this.handleCreateError(error)
+            });
+        }
+    }
+
+    private handleCreateSuccess(articulo: any): void {
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Exito',
+            detail: 'Articulo creado correctamente'
         });
+        this.onArticuloCreated.emit(articulo);
+        this.closeDialog();
+        this.loading = false;
+    }
+
+    private handleCreateError(error: any): void {
+        console.error('Error al crear articulo:', error);
+        this.messageService.add({
+            severity: 'error',
+            summary: 'Error',
+            detail: error.error?.message || 'No se pudo crear el articulo'
+        });
+        this.loading = false;
     }
 
     closeDialog(): void {
@@ -304,6 +344,8 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.visibleChange.emit(false);
         this.articuloForm.reset();
         this.referenciasCruzadas.clear();
+        this.fotoFile = null;
+        this.planoFile = null;
     }
 
     private markFormGroupTouched(formGroup: FormGroup): void {
