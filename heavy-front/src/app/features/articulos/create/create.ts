@@ -102,6 +102,9 @@ export class CreateComponent implements OnInit {
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
 
+    // Plano heredado de la Pieza Estandar seleccionada
+    fotoMedidaHeredada: string | null = null;
+
     // Variables para el conversor de peso
     showWeightConverter = false;
     pesoOrigen: number | null = null;
@@ -245,6 +248,7 @@ export class CreateComponent implements OnInit {
 
         this.articuloForm.patchValue(updates); // Seleccionarlo
         this.selectedTipoData = nuevoTipo;
+        this.fotoMedidaHeredada = nuevoTipo.fotoMedida || null;
         this.showTipoModal = false;
     }
 
@@ -331,6 +335,7 @@ export class CreateComponent implements OnInit {
             const found = this.tipos.find((t) => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
+                this.fotoMedidaHeredada = found.fotoMedida || null;
 
                 // Pre-diligenciar descripción específica si está vacía
                 const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
@@ -340,6 +345,7 @@ export class CreateComponent implements OnInit {
             }
         } else {
             this.selectedTipoData = null;
+            this.fotoMedidaHeredada = null;
         }
     }
 

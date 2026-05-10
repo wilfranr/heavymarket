@@ -275,7 +275,7 @@
                     <!-- Plano -->
                     <p-card styleClass="border-none shadow-2xl surface-card backdrop-blur-xl overflow-hidden rounded-[2.5rem] border border-surface-border">
                         <div class="p-2">
-                            <app-image-upload label="Plano Esquemático" icon="pi pi-map" (fileSelected)="onPlanoSelected($event)"></app-image-upload>
+                            <app-image-upload label="Plano Esquemático" icon="pi pi-map" [currentImage]="fotoMedidaHeredada" (fileSelected)="onPlanoSelected($event)"></app-image-upload>
                         </div>
                     </p-card>
                 </div>
