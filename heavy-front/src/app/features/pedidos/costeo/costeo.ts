@@ -114,11 +114,8 @@ export class CosteoComponent implements OnInit {
     popoverData: any = {
         title: '',
         subtitle: '',
-        description: '',
-        image: null,
-        type: '',
-        es_estandar: false,
-        peso: 0,
+        marca_nombre: null,
+        es_juego: false,
         referencias_cruzadas: []
     };
 
@@ -436,35 +433,33 @@ export class CosteoComponent implements OnInit {
                 this.popoverData = {
                     title: 'Sistema',
                     subtitle: refGroup.get('sistema_nombre')?.value,
-                    description: refGroup.get('sistema_descripcion')?.value,
-                    image: this.formatImageUrl(refGroup.get('sistema_imagen')?.value)
+                    marca_nombre: null,
+                    es_juego: false,
+                    referencias_cruzadas: []
                 };
                 break;
             case 'articulo':
                 const defOriginal = refGroup.get('articulo_definicion')?.value;
                 const descEsp = refGroup.get('descripcion_especifica')?.value;
+                const refsCruzadas = refGroup.get('referencias_cruzadas')?.value || [];
+                // Detectar si es juego: si tiene referencias cruzadas con cantidad > 1 o si el flag está presente
+                const esJuego = refsCruzadas.length > 0 && refsCruzadas.some((rc: any) => (rc.pivot?.cantidad || rc.cantidad || 0) > 0);
+
                 this.popoverData = {
                     title: 'Artículo',
                     subtitle: descEsp || defOriginal,
-                    standard_name: defOriginal !== descEsp ? defOriginal : null,
-                    description: null, // Ya no necesitamos descripción duplicada
-                    image: this.formatImageUrl(refGroup.get('articulo_imagen')?.value),
-                    type: 'articulo',
-                    es_estandar: refGroup.get('es_estandar')?.value,
-                    peso: refGroup.get('articulo_peso')?.value,
-                    referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || []
+                    marca_nombre: refGroup.get('marca_nombre')?.value,
+                    es_juego: esJuego,
+                    referencias_cruzadas: refsCruzadas
                 };
                 break;
             case 'referencia':
                 this.popoverData = {
                     title: 'Referencia',
                     subtitle: refGroup.get('referencia_codigo')?.value,
-                    brand: refGroup.get('marca_nombre')?.value,
-                    category: refGroup.get('categoria_nombre')?.value,
-                    commercial_category: refGroup.get('categoria_comercial_nombre')?.value,
-                    description: 'Código de parte específico para esta pieza.',
-                    image: this.formatImageUrl(refGroup.get('imagen')?.value),
-                    type: 'referencia'
+                    marca_nombre: refGroup.get('marca_nombre')?.value,
+                    es_juego: false,
+                    referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || []
                 };
                 break;
         }

@@ -11,12 +11,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 px-8">
             <div>
-                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">
-                    Costeo > Editar
-                </div>
-                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500" style="font-family: 'Figtree'">
-                    Costeo asesor
-                </h1>
+                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Costeo > Editar</div>
+                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500" style="font-family: 'Figtree'">Costeo asesor</h1>
             </div>
             <!-- Top Buttons -->
             <div class="flex gap-4 items-center">
@@ -38,7 +34,6 @@
         @if (pedido(); as pedido) {
         <!-- Top Info Cards Grid -->
         <div class="flex gap-6 mb-10 px-8">
-
             <!-- Order Info -->
             <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
                 <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
@@ -56,9 +51,7 @@
                     <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>Asesor</span></div>
                     <div class="flex items-center gap-2 mt-2">
                         <span class="text-blue-500 font-semibold">Estado:</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual())">
-                            {{ pedidoEstadoEtiqueta(estadoActual()) }}
-                        </span>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual())"> {{ pedidoEstadoEtiqueta(estadoActual()) }} </span>
                     </div>
                 </div>
             </div>
@@ -73,13 +66,13 @@
                 </div>
                 <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
                     @if (pedido.maquina) {
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Máquina:</span> <span>{{ pedido.maquina.tipo || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Fabricante:</span> <span>{{ pedido.maquina.marca || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Modelo:</span> <span>{{ pedido.maquina.modelo || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Serie:</span> <span>{{ pedido.maquina.serie || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">ID adicional:</span> <span>{{ pedido.maquina.id_interno || '----' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Máquina:</span> <span>{{ pedido.maquina.tipo || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Fabricante:</span> <span>{{ pedido.maquina.marca || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Modelo:</span> <span>{{ pedido.maquina.modelo || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Serie:</span> <span>{{ pedido.maquina.serie || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">ID adicional:</span> <span>{{ pedido.maquina.id_interno || '----' }}</span></div>
                     } @else {
-                        <p class="text-gray-500">Sin máquina asociada</p>
+                    <p class="text-gray-500">Sin máquina asociada</p>
                     }
                 </div>
             </div>
@@ -95,14 +88,14 @@
                 </div>
                 <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[#343743]">
                     @if (pedido.tercero) {
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo:</span> <span>{{ pedido.tercero.tipo || 'Cliente' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Razón social:</span> <span class="truncate">{{ pedido.tercero.nombre }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo de documento:</span> <span>{{ pedido.tercero.tipo_documento || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Número de documento:</span> <span>{{ pedido.tercero.numero_documento || '---' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Ciudad:</span> <span>{{ pedido.tercero.ciudad?.name || '--' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Contacto:</span> <span>{{ pedido.contacto?.nombre || '--' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>{{ pedido.contacto?.cargo || '--' }}</span></div>
-                        <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Teléfono:</span> <span>{{ pedido.tercero.telefono || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo:</span> <span>{{ pedido.tercero.tipo || 'Cliente' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Razón social:</span> <span class="truncate">{{ pedido.tercero.nombre }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo de documento:</span> <span>{{ pedido.tercero.tipo_documento || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Número de documento:</span> <span>{{ pedido.tercero.numero_documento || '---' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Ciudad:</span> <span>{{ pedido.tercero.ciudad?.name || '--' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Contacto:</span> <span>{{ pedido.contacto?.nombre || '--' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>{{ pedido.contacto?.cargo || '--' }}</span></div>
+                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Teléfono:</span> <span>{{ pedido.tercero.telefono || '---' }}</span></div>
                     }
                 </div>
             </div>
@@ -111,173 +104,209 @@
         <!-- Costeo Grid (Items) -->
         <div class="px-8" [formGroup]="costeoForm">
             @for (refGroup of referenciasFormArray.controls; track $index; let refIndex = $index) {
-                
-                <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 mb-6 shadow-sm border border-gray-200 dark:border-none" [formGroup]="$any(refGroup)">
-                    
-                    <!-- Item Header -->
-                    <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
-                        <div class="flex items-center gap-6 text-blue-500 font-semibold">
-                            <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider">
-                                {{ refGroup.get('estado_str')?.value }}
-                            </span>
-                            <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors" (click)="showInfo($event, 'sistema', refIndex, op)">
-                                {{ refGroup.get('sistema_nombre')?.value }}
-                            </span>
-                            <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors" (click)="showInfo($event, 'articulo', refIndex, op)">
-                                {{ refGroup.get('definicion')?.value }}
-                            </span>
-                            <span class="text-slate-400 font-normal">Cant. {{ refGroup.get('cantidad')?.value }}</span>
-                            <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-mono" (click)="showInfo($event, 'referencia', refIndex, op)">
-                                {{ refGroup.get('referencia_codigo')?.value }}
-                            </span>
-                            <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold">
-                                {{ refGroup.get('categoria_comercial_nombre')?.value || 'Sin Cat. Comercial' }}
-                            </span>
-                        </div>
-                        <div class="flex gap-2 items-center">
-                            <p-toggleSwitch formControlName="mostrar_referencia"
-                                [pTooltip]="'Mostrar/Ocultar Nombre de Referencia en Cotización'" 
-                                tooltipPosition="top"
-                                styleClass="mr-2"></p-toggleSwitch>
-                            <button type="button" class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
-                                (click)="openGallery(refIndex)"
-                                [pTooltip]="getImagenesCount(refIndex) > 0 ? 'Ver imágenes' : 'Sin imágenes'"
-                                [disabled]="getImagenesCount(refIndex) === 0">
-                                <i class="pi pi-image"></i>
-                                @if (getImagenesCount(refIndex) > 0) {
-                                    <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center border border-white">
-                                        {{ getImagenesCount(refIndex) }}
-                                    </span>
-                                }
-                            </button>
-                            <button type="button" class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white hover:bg-amber-700 relative ml-1"
-                                (click)="abrirDialogoComentario(refIndex)"
-                                [pTooltip]="getComentariosCount(refIndex) > 0 ? 'Ver comentarios' : 'Sin comentarios'"
-                                [disabled]="getComentariosCount(refIndex) === 0">
-                                <i class="pi pi-comments"></i>
-                                @if (getComentariosCount(refIndex) > 0) {
-                                    <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center border border-white">
-                                        {{ getComentariosCount(refIndex) }}
-                                    </span>
-                                }
-                            </button>
-                            <button type="button" class="w-8 h-8 rounded bg-transparent flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 ml-2"
-                                (click)="toggleExpand(refIndex)">
-                                <i class="pi" [ngClass]="isExpanded(refIndex) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
-                            </button>
-                        </div>
-                    </div>
 
-                    @if (isExpanded(refIndex)) {
-                        <!-- Providers Table Header -->
-                        <div class="flex gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
-                        <div class="w-[40px] text-center">Ítem</div>
-                        <div class="w-[70px] text-center">Cantidad</div>
-                        <div class="w-[286px]">Proveedor</div>
-                        <div class="w-[200px]">Marca</div>
-                        <div class="w-[180px]">Entrega</div>
-                        <div class="w-[160px]">Costo USD</div>
-                        <div class="w-[160px]">Costo COP</div>
-                        <div class="w-[70px] text-center">Utilidad</div>
-                        <div class="w-[175px]">Venta</div>
-                    </div>
-
-                    <!-- Providers Rows -->
-                    <div formArrayName="proveedores">
-                        @for (prov of getProveedoresParaReferencia(refIndex); track provIndex; let provIndex = $index) {
-                            <div class="flex items-center gap-2 mb-3" [formGroup]="$any(prov)">
-                                <!-- Check -->
-                                <div class="w-[40px] text-center flex justify-center">
-                                    <p-checkbox formControlName="seleccionado" [binary]="true"></p-checkbox>
-                                </div>
-                                <!-- Cantidad -->
-                                <div class="w-[70px]">
-                                    <input pInputText type="number" formControlName="cantidad" 
-                                        (input)="calcularFila(refIndex, provIndex)"
-                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded" />
-                                </div>
-                                <!-- Proveedor -->
-                                <div class="w-[286px]">
-                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="proveedor_id" [options]="getProveedoresFiltrados(refIndex)" placeholder="Seleccionar" 
-                                            (onChange)="onProveedorChange(refIndex, provIndex)"
-                                            optionLabel="label" optionValue="value"
-                                            styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
-                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
-                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
-                                            (click)="openCreateProveedor(refIndex, provIndex)"
-                                            pTooltip="Crear nuevo proveedor" tooltipPosition="top">
-                                            <i class="pi pi-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <!-- Marca -->
-                                <div class="w-[200px]">
-                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="marca_id" [options]="marcas()" placeholder="Marca" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
-                                        <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
-                                        <button type="button" class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
-                                            (click)="openCreateMarca(refIndex, provIndex)"
-                                            pTooltip="Crear nueva marca" tooltipPosition="top">
-                                            <i class="pi pi-plus"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                                <div class="w-[180px]">
-                                    <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                        <p-select formControlName="entrega" [options]="entregas()" 
-                                            [editable]="true"
-                                            placeholder="Entrega" 
-                                            optionLabel="label" optionValue="value"
-                                            styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
-                                    </div>
-                                </div>
-                                <!-- Costo USD -->
-                                <div class="w-[160px]">
-                                    <input pInputText type="number" formControlName="costo_usd" placeholder="0.00 USD" 
-                                        (input)="calcularFila(refIndex, provIndex)"
-                                        min="0"
-                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
-                                </div>
-                                <!-- Costo COP -->
-                                <div class="w-[160px]">
-                                    <input pInputText type="number" formControlName="costo_cop" placeholder="0 COP" 
-                                        (input)="calcularFila(refIndex, provIndex)"
-                                        min="0"
-                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
-                                </div>
-                                <!-- Utilidad -->
-                                <div class="w-[70px]">
-                                    <input pInputText type="number" formControlName="utilidad" placeholder="%" 
-                                        (input)="calcularFila(refIndex, provIndex)"
-                                        min="0"
-                                        class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded px-2" />
-                                </div>
-                                <!-- Venta -->
-                                <div class="w-[175px] flex gap-2">
-                                    <input pInputText type="text" [value]="prov.get('venta')?.value | number:'1.0-0'" placeholder="0 COP" class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 font-bold" readonly />
-                                    <!-- Si hay mas de un proveedor, mostrar boton de borrar -->
-                                    @if (getProveedoresParaReferencia(refIndex).length > 1) {
-                                        <button class="w-[40px] h-[40px] text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded shrink-0 bg-transparent flex items-center justify-center transition-colors" (click)="eliminarProveedor(refIndex, provIndex)"><i class="pi pi-trash"></i></button>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-
-<!-- Bottom Buttons per Item -->
-                    <div class="flex justify-end gap-3 mt-4">
-                        <button type="button" class="btn-pill bg-blue-600 text-white flex items-center gap-2 border-none hover:bg-blue-700" (click)="agregarProveedorListado(refIndex)">
-                            <span>Agregar</span>
-                            <i class="pi pi-plus"></i>
+            <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 mb-6 shadow-sm border border-gray-200 dark:border-none" [formGroup]="$any(refGroup)">
+                <!-- Item Header -->
+                <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
+                   <div class="flex items-center gap-6 text-blue-500 font-semibold">
+                       <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider"> {{ refGroup.get('estado_str')?.value }} </span>
+                       <!-- 1. Categoria Comercial -->
+                       <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold"> {{ refGroup.get('categoria_comercial_nombre')?.value || 'Sin Cat. Comercial' }} </span>
+                       <!-- 2. Cantidad -->
+                       <span class="text-slate-400 font-normal">Cant. {{ refGroup.get('cantidad')?.value }}</span>
+                       <!-- 3. Referencia -->
+                       <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-mono" (click)="showInfo($event, 'referencia', refIndex, op)"> {{ refGroup.get('referencia_codigo')?.value }} </span>
+                       <!-- 4. Descripción -->
+                       <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors" (click)="showInfo($event, 'articulo', refIndex, op)"> {{ refGroup.get('definicion')?.value }} </span>
+                       </div>                    <div class="flex gap-2 items-center">
+                       <p-toggleSwitch formControlName="mostrar_referencia" [pTooltip]="'Mostrar/Ocultar Nombre de Referencia en Cotización'"></p-toggleSwitch>
+                       <!-- Botón de imagen oculto por solicitud del usuario (Issue #123) -->
+                       <!-- <button
+                           type="button"
+                           class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
+                           (click)="openGallery(refIndex)"
+                           [pTooltip]="getImagenesCount(refIndex) > 0 ? 'Ver imágenes' : 'Sin imágenes'"
+                           [disabled]="getImagenesCount(refIndex) === 0"
+                       >
+                           <i class="pi pi-image"></i>
+                           @if (getImagenesCount(refIndex) > 0) {
+                           <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center border border-white"> {{ getImagenesCount(refIndex) }} </span>
+                           }
+                       </button> -->
+                       <button
+                           type="button"
+                           class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white hover:bg-amber-700 relative ml-1"                            (click)="abrirDialogoComentario(refIndex)"
+                            [pTooltip]="getComentariosCount(refIndex) > 0 ? 'Ver comentarios' : 'Sin comentarios'"
+                            [disabled]="getComentariosCount(refIndex) === 0"
+                        >
+                            <i class="pi pi-comments"></i>
+                            @if (getComentariosCount(refIndex) > 0) {
+                            <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] flex items-center justify-center border border-white"> {{ getComentariosCount(refIndex) }} </span>
+                            }
+                        </button>
+                        <button type="button" class="w-8 h-8 rounded bg-transparent flex items-center justify-center text-gray-500 hover:bg-gray-100 dark:hover:bg-slate-700 ml-2" (click)="toggleExpand(refIndex)">
+                            <i class="pi" [ngClass]="isExpanded(refIndex) ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                         </button>
                     </div>
-                    }
-
                 </div>
+
+                @if (isExpanded(refIndex)) {
+                <!-- Providers Table Header -->
+                <div class="flex gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
+                    <div class="w-[40px] text-center">Ítem</div>
+                    <div class="w-[70px] text-center">Cantidad</div>
+                    <div class="w-[286px]">Proveedor</div>
+                    <div class="w-[200px]">Marca</div>
+                    <div class="w-[180px]">Entrega</div>
+                    <div class="w-[160px]">Costo USD</div>
+                    <div class="w-[160px]">Costo COP</div>
+                    <div class="w-[70px] text-center">Utilidad</div>
+                    <div class="w-[175px]">Venta</div>
+                </div>
+
+                <!-- Providers Rows -->
+                <div formArrayName="proveedores">
+                    @for (prov of getProveedoresParaReferencia(refIndex); track provIndex; let provIndex = $index) {
+                    <div class="flex items-center gap-2 mb-3" [formGroup]="$any(prov)">
+                        <!-- Check -->
+                        <div class="w-[40px] text-center flex justify-center">
+                            <p-checkbox formControlName="seleccionado" [binary]="true"></p-checkbox>
+                        </div>
+                        <!-- Cantidad -->
+                        <div class="w-[70px]">
+                            <input
+                                pInputText
+                                type="number"
+                                formControlName="cantidad"
+                                (input)="calcularFila(refIndex, provIndex)"
+                                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded"
+                            />
+                        </div>
+                        <!-- Proveedor -->
+                        <div class="w-[286px]">
+                            <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                <p-select
+                                    formControlName="proveedor_id"
+                                    [options]="getProveedoresFiltrados(refIndex)"
+                                    placeholder="Seleccionar"
+                                    (onChange)="onProveedorChange(refIndex, provIndex)"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"
+                                ></p-select>
+                                <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                <button
+                                    type="button"
+                                    class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
+                                    (click)="openCreateProveedor(refIndex, provIndex)"
+                                    pTooltip="Crear nuevo proveedor"
+                                    tooltipPosition="top"
+                                >
+                                    <i class="pi pi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <!-- Marca -->
+                        <div class="w-[200px]">
+                            <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                <p-select formControlName="marca_id" [options]="marcas()" placeholder="Marca" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
+                                <button
+                                    type="button"
+                                    class="w-[40px] h-full shrink-0 bg-transparent text-blue-500 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-slate-700 rounded-r transition-colors"
+                                    (click)="openCreateMarca(refIndex, provIndex)"
+                                    pTooltip="Crear nueva marca"
+                                    tooltipPosition="top"
+                                >
+                                    <i class="pi pi-plus"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="w-[180px]">
+                            <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
+                                <p-select
+                                    formControlName="entrega"
+                                    [options]="entregas()"
+                                    [editable]="true"
+                                    placeholder="Entrega"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"
+                                ></p-select>
+                            </div>
+                        </div>
+                        <!-- Costo USD -->
+                        <div class="w-[160px]">
+                            <input
+                                pInputText
+                                type="number"
+                                formControlName="costo_usd"
+                                placeholder="0.00 USD"
+                                (input)="calcularFila(refIndex, provIndex)"
+                                min="0"
+                                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
+                            />
+                        </div>
+                        <!-- Costo COP -->
+                        <div class="w-[160px]">
+                            <input
+                                pInputText
+                                type="number"
+                                formControlName="costo_cop"
+                                placeholder="0 COP"
+                                (input)="calcularFila(refIndex, provIndex)"
+                                min="0"
+                                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
+                            />
+                        </div>
+                        <!-- Utilidad -->
+                        <div class="w-[70px]">
+                            <input
+                                pInputText
+                                type="number"
+                                formControlName="utilidad"
+                                placeholder="%"
+                                (input)="calcularFila(refIndex, provIndex)"
+                                min="0"
+                                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded px-2"
+                            />
+                        </div>
+                        <!-- Venta -->
+                        <div class="w-[175px] flex gap-2">
+                            <input
+                                pInputText
+                                type="text"
+                                [value]="prov.get('venta')?.value | number:'1.0-0'"
+                                placeholder="0 COP"
+                                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 font-bold"
+                                readonly
+                            />
+                            <!-- Si hay mas de un proveedor, mostrar boton de borrar -->
+                            @if (getProveedoresParaReferencia(refIndex).length > 1) {
+                            <button
+                                class="w-[40px] h-[40px] text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded shrink-0 bg-transparent flex items-center justify-center transition-colors"
+                                (click)="eliminarProveedor(refIndex, provIndex)"
+                            >
+                                <i class="pi pi-trash"></i>
+                            </button>
+                            }
+                        </div>
+                    </div>
+                    }
+                </div>
+
+                <!-- Bottom Buttons per Item -->
+                <div class="flex justify-end gap-3 mt-4">
+                    <button type="button" class="btn-pill bg-blue-600 text-white flex items-center gap-2 border-none hover:bg-blue-700" (click)="agregarProveedorListado(refIndex)">
+                        <span>Agregar</span>
+                        <i class="pi pi-plus"></i>
+                    </button>
+                </div>
+                }
+            </div>
             }
         </div>
-        
+
         <!-- Resumen de Totales -->
         <div class="px-8 mt-10 mb-20 flex justify-end">
             <div class="bg-white dark:bg-[#2A2D36] p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-800 w-full max-w-md animate-fade-in">
@@ -300,12 +329,8 @@
                     </div>
                 </div>
                 <div class="mt-6 flex gap-3">
-                    <button type="button" class="flex-1 btn-pill bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-white border-none py-3" (click)="volver()">
-                        Cerrar
-                    </button>
-                    <button type="button" class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold" (click)="finalizarCosteo()">
-                        Generar Cotización
-                    </button>
+                    <button type="button" class="flex-1 btn-pill bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-white border-none py-3" (click)="volver()">Cerrar</button>
+                    <button type="button" class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold" (click)="finalizarCosteo()">Generar Cotización</button>
                 </div>
             </div>
         </div>
@@ -319,48 +344,47 @@
 <!-- Diálogo de Devolución -->
 <p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '500px'}" header="Devolver al analista">
     <div class="flex flex-col gap-4 py-2">
-        <p class="text-sm text-gray-500 dark:text-gray-400">
-            Explique el motivo por el cual devuelve este pedido al analista. Este comentario será visible para él.
-        </p>
+        <p class="text-sm text-gray-500 dark:text-gray-400">Explique el motivo por el cual devuelve este pedido al analista. Este comentario será visible para él.</p>
         <div class="flex flex-col gap-2">
             <label for="comentario" class="font-semibold text-sm">Comentario de devolución (mínimo 10 caracteres)</label>
-            <textarea id="comentario" pTextarea [(ngModel)]="devolucionComentario" rows="5"
+            <textarea
+                id="comentario"
+                pTextarea
+                [(ngModel)]="devolucionComentario"
+                rows="5"
                 placeholder="Ej: Faltan referencias para el sistema de motor, o la cantidad es incorrecta..."
-                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white p-3 rounded"></textarea>
+                class="w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white p-3 rounded"
+            ></textarea>
         </div>
     </div>
     <ng-template #footer>
         <div class="flex justify-end gap-3 pb-3 pr-3">
             <p-button label="Cancelar" [text]="true" severity="secondary" (click)="displayDevolucionDialog.set(false)"></p-button>
-            <p-button label="Confirmar Devolución" severity="warn" (click)="devolverAAnalista()" 
-                [disabled]="submitting() || devolucionComentario().trim().length < 10" [loading]="submitting()"></p-button>
+            <p-button label="Confirmar Devolución" severity="warn" (click)="devolverAAnalista()" [disabled]="submitting() || devolucionComentario().trim().length < 10" [loading]="submitting()"></p-button>
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- Modal Galería (Solo ver) -->
-<p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '640px', 'max-width': '95vw'}"
-    header="Imágenes del ítem" appendTo="body" styleClass="galleria-imagenes-modal">
+<p-dialog [(visible)]="displayGallery" [modal]="true" [style]="{width: '640px', 'max-width': '95vw'}" header="Imágenes del ítem" appendTo="body" styleClass="galleria-imagenes-modal">
     @if (galleriaImagesArray.length > 0) {
-        <p-galleria [value]="galleriaImagesArray" [responsiveOptions]="galleriaResponsiveOptions"
-            [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
-            [showThumbnails]="true" styleClass="galleria-thumbnails-small">
-            <ng-template #item let-item>
-                <div class="flex flex-col items-center gap-2">
-                    <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[70vh] object-contain rounded" style="width: 100%;" />
-                    @if (item.origen) {
-                        <span class="text-xs text-gray-500 dark:text-gray-400">Origen: {{ item.origen }}</span>
-                    }
-                </div>
-            </ng-template>
-            <ng-template #thumbnail let-item>
-                <div class="galleria-thumbnail-cell">
-                    <img [src]="item.thumbnailImageSrc" alt="Miniatura" class="w-16 h-12 object-cover rounded" />
-                </div>
-            </ng-template>
-        </p-galleria>
+    <p-galleria [value]="galleriaImagesArray" [responsiveOptions]="galleriaResponsiveOptions" [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true" [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+        <ng-template #item let-item>
+            <div class="flex flex-col items-center gap-2">
+                <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[70vh] object-contain rounded" style="width: 100%" />
+                @if (item.origen) {
+                <span class="text-xs text-gray-500 dark:text-gray-400">Origen: {{ item.origen }}</span>
+                }
+            </div>
+        </ng-template>
+        <ng-template #thumbnail let-item>
+            <div class="galleria-thumbnail-cell">
+                <img [src]="item.thumbnailImageSrc" alt="Miniatura" class="w-16 h-12 object-cover rounded" />
+            </div>
+        </ng-template>
+    </p-galleria>
     } @else {
-        <p class="text-gray-500 dark:text-gray-400 py-4">No hay imágenes asociadas a este ítem.</p>
+    <p class="text-gray-500 dark:text-gray-400 py-4">No hay imágenes asociadas a este ítem.</p>
     }
     <ng-template pTemplate="footer">
         <p-button label="Cerrar" icon="pi pi-times" (onClick)="displayGallery = false"></p-button>
@@ -368,162 +392,89 @@
 </p-dialog>
 
 <!-- Modal Comentarios (Solo ver) -->
-<p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '520px'}"
-    header="Comentarios del ítem" appendTo="body">
+<p-dialog [(visible)]="displayComentarioDialog" [modal]="true" [style]="{width: '520px'}" header="Comentarios del ítem" appendTo="body">
     <div class="flex flex-col gap-4 mt-2">
         <div>
             @if (comentariosItemActual.length > 0) {
-                <div class="space-y-2 max-h-64 overflow-auto">
-                    @for (c of comentariosItemActual; track $index) {
-                        <div class="bg-gray-100 dark:bg-[#1f2933] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-[11px] font-semibold text-yellow-600 uppercase tracking-wide">
-                                    {{ c.origen || 'Nota' }}
-                                </span>
-                                @if (c.fecha) {
-                                    <span class="text-[10px] text-gray-500">
-                                        {{ c.fecha | date:'dd/MM/yyyy HH:mm' }}
-                                    </span>
-                                }
-                            </div>
-                            <p class="m-0 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">
-                                {{ c.comentario }}
-                            </p>
-                        </div>
-                    }
+            <div class="space-y-2 max-h-64 overflow-auto">
+                @for (c of comentariosItemActual; track $index) {
+                <div class="bg-gray-100 dark:bg-[#1f2933] border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[11px] font-semibold text-yellow-600 uppercase tracking-wide"> {{ c.origen || 'Nota' }} </span>
+                        @if (c.fecha) {
+                        <span class="text-[10px] text-gray-500"> {{ c.fecha | date:'dd/MM/yyyy HH:mm' }} </span>
+                        }
+                    </div>
+                    <p class="m-0 text-gray-800 dark:text-gray-200 whitespace-pre-wrap break-words">{{ c.comentario }}</p>
                 </div>
+                }
+            </div>
             } @else {
-                <p class="text-xs text-gray-500 italic">Este ítem no tiene comentarios.</p>
+            <p class="text-xs text-gray-500 italic">Este ítem no tiene comentarios.</p>
             }
         </div>
     </div>
     <ng-template pTemplate="footer">
-        <p-button label="Cerrar" icon="pi pi-times" [text]="true" severity="secondary"
-            (onClick)="displayComentarioDialog = false"></p-button>
+        <p-button label="Cerrar" icon="pi pi-times" [text]="true" severity="secondary" (onClick)="displayComentarioDialog = false"></p-button>
     </ng-template>
 </p-dialog>
 
 <!-- Modales de creación -->
-<app-tercero-create-modal
-    [(visible)]="showTerceroModal"
-    tipoTercero="Proveedor"
-    (onTerceroCreated)="onProveedorCreated($event)">
-</app-tercero-create-modal>
+<app-tercero-create-modal [(visible)]="showTerceroModal" tipoTercero="Proveedor" (onTerceroCreated)="onProveedorCreated($event)"> </app-tercero-create-modal>
 
-<app-lista-create-modal
-    [(visible)]="showMarcaModal"
-    tipoDefault="Marca"
-    title="Crear Nueva Marca"
-    (onListaCreated)="onMarcaCreated($event)">
-</app-lista-create-modal>
+<app-lista-create-modal [(visible)]="showMarcaModal" tipoDefault="Marca" title="Crear Nueva Marca" (onListaCreated)="onMarcaCreated($event)"> </app-lista-create-modal>
 
 <!-- Popover Info -->
-<p-popover #op>
-    <div class="flex flex-col gap-4 min-w-[320px] max-w-[600px] p-2">
+<p-popover #op appendTo="body" styleClass="popover-technical-info shadow-2xl border-none">
+    @if (popoverData) {
+    <div class="w-[400px] overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-gray-800">
         <!-- Cabecera -->
-        <div class="flex flex-col gap-1 border-b border-gray-100 dark:border-gray-700 pb-3">
-            <span class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">{{ popoverData.title }}</span>
-            <div class="flex items-center justify-between gap-2">
-                <h4 class="m-0 text-lg font-bold text-gray-900 dark:text-white leading-tight">
-                    {{ popoverData.subtitle }}
-                </h4>
-                <div class="flex gap-2 items-center shrink-0">
-                    @if (popoverData.type === 'referencia' && popoverData.brand) {
-                        <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800">
-                            {{ popoverData.brand }}
-                        </span>
-                    }
-                    @if (popoverData.type === 'referencia' && popoverData.commercial_category) {
-                        <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800">
-                            {{ popoverData.commercial_category }}
-                        </span>
-                    }
-                    @if (popoverData.type === 'articulo' && popoverData.es_estandar) {
-                        <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800">
-                            ESTÁNDAR
-                        </span>
-                    }
-                </div>
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50">
+            <div class="flex flex-col gap-1">
+                <span class="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">{{ popoverData.title }}</span>
+                <h3 class="m-0 text-base font-bold text-gray-900 dark:text-white leading-tight">{{ popoverData.subtitle }}</h3>
+            </div>
+            <div class="flex flex-col gap-1 items-end">
+                @if (popoverData.marca_nombre) {
+                <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800 shrink-0"> {{ popoverData.marca_nombre }} </span>
+                }
+                @if (popoverData.es_juego) {
+                <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
+                }
             </div>
         </div>
 
-        <!-- Contenido Principal (Dos Columnas para Artículos) -->
-        <div class="flex flex-col md:flex-row gap-4">
-            
-            <!-- Columna Izquierda: Imagen -->
-            @if (popoverData.image) {
-                <div class="flex-1 min-w-[200px]">
-                    <div class="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-gray-50 dark:bg-gray-800">
-                        <img [src]="popoverData.image" alt="Imagen info" class="w-full h-auto object-cover max-h-48" />
-                    </div>
-                </div>
-            }
-
-            <!-- Columna Derecha: Tabla (Solo para Artículos) -->
-            @if (popoverData.type === 'articulo' && popoverData.referencias_cruzadas.length > 0) {
-                <div class="flex-1 min-w-[240px]">
-                    <div class="flex flex-col gap-2">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider flex items-center gap-1">
-                            <i class="pi pi-list text-[10px]"></i> Referencias Cruzadas
-                        </span>
-                        <div class="overflow-hidden rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
-                            <table class="w-full text-xs text-left border-collapse bg-white dark:bg-[#1f2933]">
-                                <thead>
-                                    <tr class="bg-gray-50 dark:bg-gray-800/80 text-gray-500 dark:text-gray-400 border-b border-gray-100 dark:border-gray-700">
-                                        <th class="px-3 py-2 font-semibold">Código</th>
-                                        <th class="px-3 py-2 font-semibold">Marca</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (ref of popoverData.referencias_cruzadas; track ref.id) {
-                                        <tr class="border-b last:border-0 border-gray-50 dark:border-gray-700/50 hover:bg-blue-50/50 dark:hover:bg-blue-900/10 transition-colors">
-                                            <td class="px-2 py-1.5 font-mono text-blue-600 dark:text-blue-400 font-bold">{{ ref.referencia }}</td>
-                                            <td class="px-2 py-1.5 text-gray-700 dark:text-gray-300">{{ ref.marca?.nombre || 'N/A' }}</td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            }
-        </div>
-
-        <!-- Descripción y Peso -->
-        @if (popoverData.standard_name || popoverData.description || (popoverData.type === 'articulo' && popoverData.peso > 0)) {
-            <div class="flex flex-col gap-3">
-                <div class="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg border border-gray-100 dark:border-gray-700">
-                    
-                    @if (popoverData.standard_name) {
-                        <div class="mb-2">
-                            <span class="text-[10px] font-bold text-gray-400 uppercase">Pieza Estándar</span>
-                            <p class="m-0 text-sm text-gray-700 dark:text-gray-300 font-medium">
-                                {{ popoverData.standard_name }}
-                            </p>
-                        </div>
-                    }
-
-                    @if (popoverData.description) {
-                        <p class="m-0 text-sm text-gray-600 dark:text-gray-300 leading-relaxed italic">
-                            {{ popoverData.description }}
-                        </p>
-                    }
-
-                    @if (popoverData.type === 'articulo' && popoverData.peso > 0) {
-                        <div class="flex items-center gap-2 text-xs font-semibold text-gray-500 dark:text-gray-400" [class.mt-3]="popoverData.standard_name || popoverData.description" [class.pt-2]="popoverData.standard_name || popoverData.description" [class.border-t]="popoverData.standard_name || popoverData.description" [class.border-gray-200]="popoverData.standard_name || popoverData.description" [class.dark:border-gray-700]="popoverData.standard_name || popoverData.description">
-                            <i class="pi pi-info-circle"></i>
-                            <span>Peso: <span class="text-gray-900 dark:text-white">{{ popoverData.peso }} Kg</span></span>
-                        </div>
-                    }
-                </div>
+        <!-- Contenido: Referencias Cruzadas -->
+        @if (popoverData.referencias_cruzadas?.length > 0) {
+        <div class="p-4">
+            <div class="flex items-center gap-2 mb-2">
+                <i class="pi pi-list text-gray-400 text-xs"></i>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Referencias Cruzadas</span>
             </div>
+            <div class="max-h-[200px] overflow-y-auto rounded-lg border border-gray-100 dark:border-gray-800">
+                <table class="w-full text-[11px] border-collapse bg-white dark:bg-slate-900">
+                    <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase">
+                        <tr>
+                            <th class="p-2 text-left">Código</th>
+                            <th class="p-2 text-left">Marca</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (ref of popoverData.referencias_cruzadas; track $index) {
+                        <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+                            <td class="p-2 font-bold text-blue-600 dark:text-blue-400">{{ ref.label || ref.referencia }}</td>
+                            <td class="p-2 text-gray-500 dark:text-gray-400">{{ ref.marca?.nombre || (ref.marca_nombre || 'N/A') }}</td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        } @else {
+        <div class="p-4 text-center text-xs text-gray-400 dark:text-gray-500">
+            No hay referencias cruzadas asociadas
+        </div>
         }
-
-        <!-- Pie -->
-        <div class="flex justify-end pt-2 mt-1">
-            <span class="text-[9px] font-bold italic text-gray-300 dark:text-gray-600 uppercase tracking-tighter">
-                HeavyMarket Intelligence
-            </span>
-        </div>
     </div>
+    }
 </p-popover>
