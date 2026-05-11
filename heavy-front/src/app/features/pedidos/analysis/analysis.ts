@@ -32,19 +32,8 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { PopoverModule } from 'primeng/popover';
 import { Popover } from 'primeng/popover';
 
-import {
-    updatePedido,
-    loadPedido,
-    updatePedidoSuccess,
-    updatePedidoFailure
-} from '../../../store/pedidos/actions/pedidos.actions';
-import {
-    Pedido,
-    UpdatePedidoDto,
-    PedidoEstado,
-    PedidoReferencia,
-    PedidoReferenciaImagen
-} from '../../../core/models/pedido.model';
+import { updatePedido, loadPedido, updatePedidoSuccess, updatePedidoFailure } from '../../../store/pedidos/actions/pedidos.actions';
+import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia, PedidoReferenciaImagen } from '../../../core/models/pedido.model';
 import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -60,6 +49,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { PedidoService } from '../../../core/services/pedido.service';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
+import { ArticuloCreateModalComponent } from '../../../shared/components/articulo-create-modal/articulo-create-modal.component';
+import { ArticuloEditModalComponent } from '../../../shared/components/articulo-edit-modal/articulo-edit-modal.component';
 import { Referencia } from '../../../core/models/referencia.model';
 
 @Component({
@@ -93,6 +84,8 @@ import { Referencia } from '../../../core/models/referencia.model';
         InputGroupAddonModule,
         ReferenciaCreateModalComponent,
         ReferenciaEditModalComponent,
+        ArticuloCreateModalComponent,
+        ArticuloEditModalComponent,
         PopoverModule
     ],
     providers: [MessageService, ConfirmationService],
@@ -179,12 +172,22 @@ export class AnalysisComponent implements OnInit {
 
     // Estados para modales de creación rápida (se mantienen los necesarios)
     showReferenciaModal = false;
+    createReferenciaArticuloId: number | null = null;
+    createReferenciaMarcaId: number | null = null;
     showReferenciaEditModal = false;
     editReferenciaId: number | null = null;
     private editReferenciaItemIndex = -1;
     private editReferenciaParteIndex = -1;
     activeItemIndex = -1;
     activeParteIndex = -1;
+
+    // Estados para modales de artículo
+    showArticuloCreateModal = false;
+    showArticuloEditModal = false;
+    editArticuloId: number | null = null;
+    private articuloContextItemIndex = -1;
+    private articuloContextParteIndex = -1;
+    private articuloContextReferenciaId: number | null = null;
 
     // Lógica de agregado en lote (similar a edit)
     displayLoteDialog = false;
@@ -299,7 +302,7 @@ export class AnalysisComponent implements OnInit {
         const ref = row.referencia;
         const opt = this.opcionReferenciaDesdeApi(ref);
         const partes = this.getPartesFormArray(itemIndex);
-        
+
         const parte = this.fb.group({
             id: [null],
             referencia_id: [row.referencia_id],
@@ -330,7 +333,7 @@ export class AnalysisComponent implements OnInit {
         }
 
         this.processingBulk = true;
-        
+
         // Obtenemos la marca de la máquina actual para asignarla a las referencias nuevas/temporales
         const marcaId = this.selectedMaquina?.fabricante_id || null;
 
@@ -345,7 +348,7 @@ export class AnalysisComponent implements OnInit {
                     } else {
                         resultados.forEach((row: any) => this.agregarTarjetaDesdeResultadoBulk(row));
                     }
-                    
+
                     this.loadReferencias();
                     this.cerrarCargaMasiva();
                     this.messageService.add({
@@ -366,11 +369,7 @@ export class AnalysisComponent implements OnInit {
                 this.messageService.add({
                     severity: 'error',
                     summary: 'Error',
-                    detail:
-                        err.error?.message ??
-                        err.error?.error ??
-                        err.message ??
-                        'No se pudieron procesar las referencias.'
+                    detail: err.error?.message ?? err.error?.error ?? err.message ?? 'No se pudieron procesar las referencias.'
                 });
             }
         });
@@ -386,7 +385,7 @@ export class AnalysisComponent implements OnInit {
             if (!item) return [];
 
             const listaId = item.get('lista_id')?.value;
-            
+
             // Verificación ultra-segura de catálogo por tipo
             let porTipo: any[] = [];
             if (listaId && this.referenciasPorTipo) {
@@ -395,16 +394,26 @@ export class AnalysisComponent implements OnInit {
                     porTipo = data;
                 }
             }
-            
+
             // Clonamos el array base de forma segura sin usar spread operator (...)
             const out: any[] = [].concat(porTipo as any);
             const seen = new Set<number>();
-            
-            // Registrar IDs ya vistos en el catálogo
+
+            // Registrar IDs ya vistos en el catálogo por tipo
             for (let k = 0; k < out.length; k++) {
                 if (out[k] && out[k].value) seen.add(out[k].value);
             }
-            
+
+            // Añadir el resto del catálogo global (No restrictivo - Issue #119)
+            const globalCatalog = this.referencias || [];
+            for (let k = 0; k < globalCatalog.length; k++) {
+                const r = globalCatalog[k];
+                if (r && r.value && !seen.has(r.value)) {
+                    out.push(r);
+                    seen.add(r.value);
+                }
+            }
+
             const partes = this.getPartesFormArray(itemIndex);
             if (partes && partes.controls) {
                 const controls = partes.controls;
@@ -454,31 +463,37 @@ export class AnalysisComponent implements OnInit {
         if (!sistemaId) return;
 
         // Cargar tipos vinculados al sistema desde el SistemaController
-        this.sistemaService.getById(sistemaId).pipe(take(1)).subscribe({
-            next: (resp) => {
-                const sistema = resp.data;
-                if (sistema && sistema.articulos) {
-                    this.tiposLote = sistema.articulos.map((l: any) => ({ label: l.nombre, value: l.id }));
-                    this.loteForm.get('articulo_id')?.enable();
+        this.sistemaService
+            .getById(sistemaId)
+            .pipe(take(1))
+            .subscribe({
+                next: (resp) => {
+                    const sistema = resp.data;
+                    if (sistema && sistema.articulos) {
+                        this.tiposLote = sistema.articulos.map((l: any) => ({ label: l.nombre, value: l.id }));
+                        this.loteForm.get('articulo_id')?.enable();
+                    }
                 }
-            }
-        });
+            });
     }
 
     onSistemaEditChange(sistemaId: number | null): void {
         this.tiposEdit = [];
         this.itemEditForm.get('lista_id')?.setValue(null);
-        
+
         if (!sistemaId) return;
 
-        this.sistemaService.getById(sistemaId).pipe(take(1)).subscribe({
-            next: (resp) => {
-                const sistema = resp.data;
-                if (sistema && sistema.articulos) {
-                    this.tiposEdit = sistema.articulos.map((l: any) => ({ label: l.nombre, value: l.id }));
+        this.sistemaService
+            .getById(sistemaId)
+            .pipe(take(1))
+            .subscribe({
+                next: (resp) => {
+                    const sistema = resp.data;
+                    if (sistema && sistema.articulos) {
+                        this.tiposEdit = sistema.articulos.map((l: any) => ({ label: l.nombre, value: l.id }));
+                    }
                 }
-            }
-        });
+            });
     }
 
     onTipoLoteChange(tipoId: number | null): void {
@@ -509,22 +524,20 @@ export class AnalysisComponent implements OnInit {
             // Agregar sub-referencias al ítem actual
             const partes = this.getPartesFormArray(this.activeItemIndex);
             referencias_seleccionadas.forEach((refId: number) => {
-                const refModel = this.referenciasLote.find(r => r.value === refId);
-                partes.push(this.fb.group({
-                    cantidad: [cantidad_lote],
-                    referencia_id: [refId],
-                    descripcion: [
-                        this.descripcionAnalisisDesdeOpcion(
-                            refModel ?? { descripcion: '', articulo_nombre: '' }
-                        )
-                    ],
-                    categoria: [articulo_id]
-                }));
+                const refModel = this.referenciasLote.find((r) => r.value === refId);
+                partes.push(
+                    this.fb.group({
+                        cantidad: [cantidad_lote],
+                        referencia_id: [refId],
+                        descripcion: [this.descripcionAnalisisDesdeOpcion(refModel ?? { descripcion: '', articulo_nombre: '' })],
+                        categoria: [articulo_id]
+                    })
+                );
             });
         } else {
             // Agregar nuevos Requerimientos (Items) al Pedido
             referencias_seleccionadas.forEach((refId: number) => {
-                const refModel = this.referenciasLote.find(r => r.value === refId);
+                const refModel = this.referenciasLote.find((r) => r.value === refId);
                 const itemForm = this.fb.group({
                     id: [null],
                     estado_item: ['Preparado'],
@@ -541,11 +554,7 @@ export class AnalysisComponent implements OnInit {
                         this.fb.group({
                             cantidad: [cantidad_lote, [Validators.required, Validators.min(1)]],
                             referencia_id: [refId],
-                            descripcion: [
-                                this.descripcionAnalisisDesdeOpcion(
-                                    refModel ?? { descripcion: '', articulo_nombre: '' }
-                                )
-                            ],
+                            descripcion: [this.descripcionAnalisisDesdeOpcion(refModel ?? { descripcion: '', articulo_nombre: '' })],
                             categoria: [articulo_id]
                         })
                     ])
@@ -593,11 +602,11 @@ export class AnalysisComponent implements OnInit {
             ])
         });
         this.referenciasFormArray.push(itemForm);
-        
+
         // Abrir modal automáticamente para definir el nuevo ítem
         const newIndex = this.referenciasFormArray.length - 1;
         this.editItem(newIndex);
-        
+
         this.messageService.add({ severity: 'info', summary: 'Defina el ítem', detail: 'Indique sistema y tipo para el nuevo requerimiento.' });
 
         // Scroll suave al final de la lista para visibilidad
@@ -618,7 +627,7 @@ export class AnalysisComponent implements OnInit {
             rejectLabel: 'No',
             accept: () => {
                 this.referenciasFormArray.removeAt(index);
-                
+
                 // Si el ítem eliminado era el que se estaba editando, cerrar el diálogo
                 if (this.activeItemIndex === index) {
                     this.activeItemIndex = -1;
@@ -655,7 +664,7 @@ export class AnalysisComponent implements OnInit {
 
     private cargarReferenciasParaTipo(tipoId: number): void {
         if (!tipoId || this.referenciasPorTipo[tipoId]) return;
-        
+
         this.referenciaService.getAll({ articulo_id: tipoId, per_page: 500 }).subscribe({
             next: (resp) => {
                 this.referenciasPorTipo[tipoId] = resp.data.map((r: any) => this.opcionReferenciaDesdeApi(r));
@@ -666,9 +675,9 @@ export class AnalysisComponent implements OnInit {
     editItem(index: number): void {
         this.activeItemIndex = index;
         const item = this.referenciasFormArray.at(index);
-        
+
         if (!this.itemEditForm) this.initItemEditForm();
-        
+
         const sistemaId = item.get('sistema_id')?.value;
         this.onSistemaEditChange(sistemaId);
 
@@ -677,24 +686,22 @@ export class AnalysisComponent implements OnInit {
             lista_id: item.get('lista_id')?.value,
             cantidad: item.get('cantidad')?.value
         });
-        
+
         this.displayItemEditDialog = true;
     }
 
     confirmarEdicionItem(): void {
         if (this.activeItemIndex === -1) return;
-        
+
         const values = this.itemEditForm.value;
         const itemControl = this.referenciasFormArray.at(this.activeItemIndex);
         const currentSistema = itemControl.get('sistema_id')?.value;
         const currentLista = itemControl.get('lista_id')?.value;
-        
-        // Solo alertar si estamos CAMBIANDO un tipo ya definido y hay partes seleccionadas reales
-        const hasPartesSeleccionadas = this.getPartesFormArray(this.activeItemIndex).controls
-            .some(p => !!p.get('referencia_id')?.value);
 
-        const isChanging = (currentSistema !== null && currentSistema !== values.sistema_id) || 
-                           (currentLista !== null && currentLista !== values.lista_id);
+        // Solo alertar si estamos CAMBIANDO un tipo ya definido y hay partes seleccionadas reales
+        const hasPartesSeleccionadas = this.getPartesFormArray(this.activeItemIndex).controls.some((p) => !!p.get('referencia_id')?.value);
+
+        const isChanging = (currentSistema !== null && currentSistema !== values.sistema_id) || (currentLista !== null && currentLista !== values.lista_id);
 
         if (isChanging && hasPartesSeleccionadas) {
             this.confirmationService.confirm({
@@ -716,8 +723,7 @@ export class AnalysisComponent implements OnInit {
 
     private aplicarCambiosRequerimiento(values: any, itemControl: AbstractControl): void {
         const isNew = !itemControl.get('id')?.value;
-        const selectedTipo = this.tiposEdit.find(t => t.value === values.lista_id) || 
-                            this.tiposArticulo.find(t => t.value === values.lista_id);
+        const selectedTipo = this.tiposEdit.find((t) => t.value === values.lista_id) || this.tiposArticulo.find((t) => t.value === values.lista_id);
 
         itemControl.patchValue({
             sistema_id: values.sistema_id,
@@ -730,7 +736,7 @@ export class AnalysisComponent implements OnInit {
         // IMPORTANTE: Sincronizar el sistema y tipo con todas las partes técnicas de este requerimiento
         // Esto evita que al guardar se usen los valores antiguos que estaban en las filas
         const partes = itemControl.get('partes') as FormArray;
-        partes.controls.forEach(parte => {
+        partes.controls.forEach((parte) => {
             parte.patchValue({
                 categoria: values.lista_id
             });
@@ -739,7 +745,7 @@ export class AnalysisComponent implements OnInit {
         if (values.lista_id != null && selectedTipo?.label) {
             this.nombresTipoListaPorId[values.lista_id] = selectedTipo.label;
         }
-        
+
         if (values.lista_id) {
             this.cargarReferenciasParaTipo(values.lista_id);
         }
@@ -748,10 +754,10 @@ export class AnalysisComponent implements OnInit {
         itemControl.get('estado_item')?.setValue(hasRef ? 'Analizado' : 'En proceso');
 
         this.displayItemEditDialog = false;
-        
+
         const summary = isNew ? 'Ítem agregado' : 'Actualizado';
         const detail = isNew ? 'El nuevo requerimiento se ha añadido exitosamente.' : 'Los datos del requerimiento han sido actualizados.';
-        
+
         this.messageService.add({ severity: 'success', summary, detail });
     }
 
@@ -762,19 +768,23 @@ export class AnalysisComponent implements OnInit {
         const item = this.referenciasFormArray.at(itemIndex);
         const listaId = item.get('lista_id')?.value;
 
-        const refObj =
-            (listaId ? this.referenciasPorTipo[listaId]?.find((r) => r.value === refId) : undefined) ??
-            this.referencias.find((r) => r.value === refId) ??
-            this.getOpcionesReferenciaParaFila(itemIndex).find((r) => r.value === refId);
-        
+        const refObj = (listaId ? this.referenciasPorTipo[listaId]?.find((r) => r.value === refId) : undefined) ?? this.referencias.find((r) => r.value === refId) ?? this.getOpcionesReferenciaParaFila(itemIndex).find((r) => r.value === refId);
+
         const partes = this.getPartesFormArray(itemIndex);
         const parte = partes.at(parteIndex);
-        
+
         if (refObj) {
-            parte.patchValue({
-                descripcion: this.descripcionAnalisisDesdeOpcion(refObj),
+            const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
+            const payload: any = {
                 categoria: refObj.lista_id || refObj.articulo_id
-            });
+            };
+
+            // Prellenar descripción solo si está vacía
+            if (!currentDesc) {
+                payload.descripcion = this.descripcionAnalisisDesdeOpcion(refObj);
+            }
+
+            parte.patchValue(payload);
         }
 
         // Actualizar estado del ítem: verificar referencia principal + partes
@@ -784,20 +794,20 @@ export class AnalysisComponent implements OnInit {
     private actualizarEstadoItem(itemIndex: number): void {
         const item = this.referenciasFormArray.at(itemIndex);
         const itemRef = item.get('referencia_id')?.value;
-        
+
         // Verificar estado basado en referencia del ítem Y partes
         const partes = this.getPartesFormArray(itemIndex);
         let partesConRef = 0;
         let partesConCat = 0;
-        
+
         for (const parte of partes.controls) {
             if (parte.get('referencia_id')?.value) partesConRef++;
             if (parte.get('categoria')?.value) partesConCat++;
         }
-        
+
         // Completo si tiene referencia principal O todas las partes tienen referencia + categoría
         const itemCompleto = !!itemRef || (partesConRef === partes.length && partesConCat === partes.length);
-        
+
         item.get('estado_item')?.setValue(itemCompleto ? 'Analizado' : 'En proceso');
     }
 
@@ -840,14 +850,16 @@ export class AnalysisComponent implements OnInit {
 
     private parseComentariosRaw(raw: unknown): { origen: string; comentario: string; fecha?: string }[] {
         if (!raw) return [];
-        
+
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
-            return raw.filter(c => c && typeof c.comentario === 'string').map(c => ({
-                origen: (c.origen as string) || 'Interno',
-                comentario: c.comentario as string,
-                fecha: typeof c.fecha === 'string' ? c.fecha : undefined
-            }));
+            return raw
+                .filter((c) => c && typeof c.comentario === 'string')
+                .map((c) => ({
+                    origen: (c.origen as string) || 'Interno',
+                    comentario: c.comentario as string,
+                    fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                }));
         }
 
         if (typeof raw === 'string') {
@@ -856,13 +868,17 @@ export class AnalysisComponent implements OnInit {
             try {
                 const parsed = JSON.parse(trimmed);
                 if (Array.isArray(parsed)) {
-                    return parsed.filter(c => c && typeof c.comentario === 'string').map(c => ({
-                        origen: (c.origen as string) || 'Interno',
-                        comentario: c.comentario as string,
-                        fecha: typeof c.fecha === 'string' ? c.fecha : undefined
-                    }));
+                    return parsed
+                        .filter((c) => c && typeof c.comentario === 'string')
+                        .map((c) => ({
+                            origen: (c.origen as string) || 'Interno',
+                            comentario: c.comentario as string,
+                            fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                        }));
                 }
-            } catch { /* Formato legacy */ }
+            } catch {
+                /* Formato legacy */
+            }
             return [{ origen: 'Legacy', comentario: trimmed }];
         }
         return [];
@@ -887,10 +903,7 @@ export class AnalysisComponent implements OnInit {
         return this.buildImagenesListaDesdeItemRow(row).length;
     }
 
-    private mergeImagenesPedidoReferencia(
-        base: PedidoReferenciaImagen[],
-        extra?: PedidoReferenciaImagen[] | null
-    ): PedidoReferenciaImagen[] {
+    private mergeImagenesPedidoReferencia(base: PedidoReferenciaImagen[], extra?: PedidoReferenciaImagen[] | null): PedidoReferenciaImagen[] {
         const seen = new Set<string>();
         const out: PedidoReferenciaImagen[] = [];
         const pushUnique = (img: PedidoReferenciaImagen) => {
@@ -942,10 +955,7 @@ export class AnalysisComponent implements OnInit {
             }
         });
         if (imagen) {
-            const url =
-                typeof imagen === 'string'
-                    ? imagen
-                    : ((imagen as { url?: string }).url ?? (imagen as unknown as string));
+            const url = typeof imagen === 'string' ? imagen : ((imagen as { url?: string }).url ?? (imagen as unknown as string));
             if (url && typeof url === 'string' && !seen.has(url)) {
                 seen.add(url);
                 out.unshift({ itemImageSrc: url, thumbnailImageSrc: url, origen: 'Original' });
@@ -974,27 +984,58 @@ export class AnalysisComponent implements OnInit {
     abrirCrearReferencia(itemIndex: number, parteIndex: number): void {
         this.activeItemIndex = itemIndex;
         this.activeParteIndex = parteIndex;
+
+        const item = this.referenciasFormArray.at(itemIndex);
+        const listaId = item.get('lista_id')?.value;
+        const listaNombre = this.nombresTipoListaPorId[listaId];
+
+        // 1. Resolver Articulo ID por nombre de categoría
+        this.createReferenciaArticuloId = null;
+        if (listaNombre) {
+            this.articuloService.getAll({ per_page: 500 }).subscribe({
+                next: (res) => {
+                    const art = res.data.find((a: any) =>
+                        (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
+                        (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
+                    );
+                    if (art) this.createReferenciaArticuloId = art.id;
+                }
+            });
+        }
+
+        // 2. Resolver Marca ID (Fabricante del Pedido)
+        this.createReferenciaMarcaId = null;
+        this.pedido$.pipe(take(1)).subscribe(pedido => {
+            if (pedido?.fabricante_id) {
+                this.createReferenciaMarcaId = pedido.fabricante_id;
+            }
+        });
+
         this.showReferenciaModal = true;
     }
 
     onReferenciaCreada(nuevaRef: any): void {
         // Recargar la lista de referencias
         this.loadReferencias();
-        
+
         // Asignar al formulario si hay un índice activo
         if (this.activeItemIndex !== -1 && this.activeParteIndex !== -1) {
             const partes = this.getPartesFormArray(this.activeItemIndex);
             const parte = partes.at(this.activeParteIndex);
             parte.get('referencia_id')?.setValue(nuevaRef.id);
-            parte.patchValue({
-                descripcion: this.descripcionAnalisisDesdeOpcion(this.opcionReferenciaDesdeApi(nuevaRef))
-            });
+
+            const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
+            if (!currentDesc) {
+                parte.patchValue({
+                    descripcion: this.descripcionAnalisisDesdeOpcion(this.opcionReferenciaDesdeApi(nuevaRef))
+                });
+            }
         }
-        
+
         this.showReferenciaModal = false;
         this.activeItemIndex = -1;
         this.activeParteIndex = -1;
-        
+
         this.messageService.add({ severity: 'success', summary: 'Referencia Creada', detail: `La referencia ${nuevaRef.referencia} ha sido creada y asignada.` });
     }
 
@@ -1005,14 +1046,43 @@ export class AnalysisComponent implements OnInit {
             this.messageService.add({
                 severity: 'warn',
                 summary: 'Sin referencia',
-                detail: 'Seleccione o cree una referencia antes de editarla en el catálogo.'
+                detail: 'Seleccione o cree una referencia antes de continuar.'
             });
             return;
         }
-        this.editReferenciaItemIndex = itemIndex;
-        this.editReferenciaParteIndex = parteIndex;
-        this.editReferenciaId = typeof refId === 'number' ? refId : parseInt(String(refId), 10);
-        this.showReferenciaEditModal = true;
+
+        // Obtener datos de la referencia desde las opciones cargadas
+        const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
+        const opt = listaId
+            ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId)
+            : this.referencias.find((x) => x.value === refId);
+
+        if (!opt) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'No se encontraron datos de la referencia.'
+            });
+            return;
+        }
+
+        // Guardar contexto para actualizar después
+        this.articuloContextItemIndex = itemIndex;
+        this.articuloContextParteIndex = parteIndex;
+        this.articuloContextReferenciaId = refId;
+
+        // Evaluar estado de la referencia
+        const tieneArticulo = !!opt.articulo_id && !opt.es_temporal;
+
+        if (tieneArticulo) {
+            // Caso 1: Referencia asociada a artículo existente → Editar artículo
+            this.editArticuloId = opt.articulo_id;
+            this.showArticuloEditModal = true;
+        } else {
+            // Caso 2: Sin artículo o temporal → Crear artículo asociando esta referencia
+            this.createReferenciaArticuloId = null; // Se asociará vía referencia_id en el modal
+            this.showArticuloCreateModal = true;
+        }
     }
 
     onReferenciaEditVisibleChange(visible: boolean): void {
@@ -1034,7 +1104,10 @@ export class AnalysisComponent implements OnInit {
             const parte = this.getPartesFormArray(i).at(j);
             const opt = this.opcionReferenciaDesdeApi(ref);
 
-            parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
+            const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
+            if (!currentDesc) {
+                parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
+            }
 
             const listaId = this.referenciasFormArray.at(i).get('lista_id')?.value;
             if (listaId && this.referenciasPorTipo[listaId]) {
@@ -1047,7 +1120,43 @@ export class AnalysisComponent implements OnInit {
                 }
             }
         }
+    }
 
+    // Handlers para modales de artículo
+    onArticuloCreated(articulo: any): void {
+        const i = this.articuloContextItemIndex;
+        const j = this.articuloContextParteIndex;
+        const refId = this.articuloContextReferenciaId;
+
+        // Recargar referencias para obtener el artículo recién creado
+        this.loadReferencias();
+
+        if (i >= 0 && j >= 0 && refId) {
+            const parte = this.getPartesFormArray(i).at(j);
+            // Actualizar descripción si es pieza estándar
+            const opt = this.referencias.find((x) => x.value === refId) ||
+                Object.values(this.referenciasPorTipo).flat().find((x) => x.value === refId);
+            if (opt) {
+                const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
+                if (!currentDesc) {
+                    parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
+                }
+            }
+        }
+
+        // Reset context
+        this.articuloContextItemIndex = -1;
+        this.articuloContextParteIndex = -1;
+        this.articuloContextReferenciaId = null;
+    }
+
+    onArticuloEditClosed(): void {
+        this.editArticuloId = null;
+        this.articuloContextItemIndex = -1;
+        this.articuloContextParteIndex = -1;
+        this.articuloContextReferenciaId = null;
+        // Recargar referencias por si hubo cambios
+        this.loadReferencias();
     }
 
     private loadReferencias(): void {
@@ -1075,11 +1184,15 @@ export class AnalysisComponent implements OnInit {
         articulo_peso?: number;
         referencias_cruzadas?: any[];
         lista_id: number | null;
+        marca_nombre?: string;
+        es_juego: boolean;
     } {
         const art = r.articulo;
         const esPieza = !!(art?.es_pieza_estandar ?? r.articulo_es_pieza_estandar);
         const def = (art?.definicion ?? r.articulo_definicion ?? '') as string;
         const esp = (art?.descripcionEspecifica ?? r.articulo_descripcion_especifica ?? '') as string;
+        const esJuego = !!(art?.articuloJuegos && art.articuloJuegos.length > 0) || !!(r.articulo_juegos && r.articulo_juegos.length > 0);
+
         return {
             label: r.referencia,
             value: r.id,
@@ -1093,30 +1206,19 @@ export class AnalysisComponent implements OnInit {
             articulo_imagen: art?.fotoDescriptiva || r.articulo_imagen,
             articulo_peso: art?.peso || r.articulo_peso,
             referencias_cruzadas: art?.referencias || r.articulo_referencias || [],
-            lista_id: r.lista_id ?? null
+            lista_id: r.lista_id ?? null,
+            marca_nombre: r.marca?.nombre || r.marca_nombre || 'N/A',
+            es_juego: esJuego
         };
     }
 
     /**
      * Si el artículo es pieza estándar, prellenar con definición + descripción específica (#69).
      */
-    private descripcionAnalisisDesdeOpcion(opt: {
-        es_pieza_estandar?: boolean;
-        definicion_articulo?: string;
-        descripcion_especifica_articulo?: string;
-        articulo_nombre?: string;
-        descripcion?: string;
-    }): string {
+    private descripcionAnalisisDesdeOpcion(opt: { es_pieza_estandar?: boolean; definicion_articulo?: string; descripcion_especifica_articulo?: string; articulo_nombre?: string; descripcion?: string }): string {
         if (opt.es_pieza_estandar) {
-            const texto = [opt.definicion_articulo, opt.descripcion_especifica_articulo]
-                .filter((x) => x && String(x).trim())
-                .join(' — ');
-            return (
-                texto ||
-                String(opt.articulo_nombre || '').trim() ||
-                String(opt.descripcion || '').trim() ||
-                'Sin descripción'
-            );
+            const texto = [opt.definicion_articulo, opt.descripcion_especifica_articulo].filter((x) => x && String(x).trim()).join(' — ');
+            return texto || String(opt.articulo_nombre || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
         }
         return opt.descripcion || opt.articulo_nombre || 'Sin descripción';
     }
@@ -1144,9 +1246,7 @@ export class AnalysisComponent implements OnInit {
             return '—';
         }
         const listaId = item?.get('lista_id')?.value;
-        const opt =
-            (listaId ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId) : undefined) ??
-            this.referencias.find((x) => x.value === refId);
+        const opt = (listaId ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId) : undefined) ?? this.referencias.find((x) => x.value === refId);
         return opt?.label ?? String(refId);
     }
 
@@ -1158,12 +1258,14 @@ export class AnalysisComponent implements OnInit {
 
     addParte(index: number): void {
         const partes = this.getPartesFormArray(index);
-        partes.push(this.fb.group({
-            cantidad: [1, [Validators.required, Validators.min(1)]],
-            referencia_id: [null],
-            descripcion: [''],
-            categoria: [null]
-        }));
+        partes.push(
+            this.fb.group({
+                cantidad: [1, [Validators.required, Validators.min(1)]],
+                referencia_id: [null],
+                descripcion: [''],
+                categoria: [null]
+            })
+        );
     }
 
     removeParte(itemIndex: number, parteIndex: number): void {
@@ -1192,7 +1294,7 @@ export class AnalysisComponent implements OnInit {
 
     getSistemaNombre(id: number | null): string {
         if (!id) return 'Sin sistema';
-        return this.sistemas.find(s => s.value === id)?.label || 'Sistema desconocido';
+        return this.sistemas.find((s) => s.value === id)?.label || 'Sistema desconocido';
     }
 
     getTipoNombre(id: number | null): string {
@@ -1202,8 +1304,7 @@ export class AnalysisComponent implements OnInit {
             return cached;
         }
         // tiposEdit: tipos del sistema (mismo origen que el modal de edición). tiposArticulo: otro catálogo.
-        const tipo = (this.tiposEdit || []).find(t => t.value === id) ||
-                     (this.tiposArticulo || []).find(t => t.value === id);
+        const tipo = (this.tiposEdit || []).find((t) => t.value === id) || (this.tiposArticulo || []).find((t) => t.value === id);
         return tipo?.label || 'Tipo desconocido';
     }
 
@@ -1216,21 +1317,23 @@ export class AnalysisComponent implements OnInit {
             this.pedido$ = this.store.select(selectPedidoById(pedidoId));
             this.loading$ = this.store.select(selectPedidosLoading);
 
-            this.pedido$.pipe(
-                filter(p => !!p && p.referencias !== undefined),
-                take(1)
-            ).subscribe(pedido => {
-                if (pedido) {
-                    if (pedido.referencias) {
-                        this.cargarReferenciasAlFormArray(pedido.referencias);
-                        // Pre-cargar catálogos por cada tipo de artículo único
-                        pedido.referencias.forEach(r => {
-                            if (r.lista_id) this.cargarReferenciasParaTipo(r.lista_id);
-                        });
+            this.pedido$
+                .pipe(
+                    filter((p) => !!p && p.referencias !== undefined),
+                    take(1)
+                )
+                .subscribe((pedido) => {
+                    if (pedido) {
+                        if (pedido.referencias) {
+                            this.cargarReferenciasAlFormArray(pedido.referencias);
+                            // Pre-cargar catálogos por cada tipo de artículo único
+                            pedido.referencias.forEach((r) => {
+                                if (r.lista_id) this.cargarReferenciasParaTipo(r.lista_id);
+                            });
+                        }
+                        this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
                     }
-                    this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
-                }
-            });
+                });
         }
     }
 
@@ -1242,7 +1345,7 @@ export class AnalysisComponent implements OnInit {
         // Esto permite que el backend (lista plana) se vea como tarjetas agrupadas en el frontend
         const grupos: { [key: string]: any } = {};
 
-        referencias.forEach(r => {
+        referencias.forEach((r) => {
             if (r.lista_id && r.lista?.nombre) {
                 this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
             }
@@ -1250,7 +1353,7 @@ export class AnalysisComponent implements OnInit {
             // Se incluye el r.id para asegurar que cada línea del pedido sea un card independiente si ya existe en DB.
             // Si el id es nulo (items nuevos), se agrupan por metadata para permitir añadir alternativas.
             const key = `${r.sistema_id}_${r.lista_id}_${r.definicion}_${r.cantidad}_${r.id || 'new'}`;
-            
+
             if (!grupos[key]) {
                 grupos[key] = {
                     referencia_id: r.referencia_id, // Guardar referencia_id del primer item
@@ -1266,11 +1369,7 @@ export class AnalysisComponent implements OnInit {
             } else {
                 const g = grupos[key];
                 const comActual = g.comentario;
-                if (
-                    (!comActual || !String(comActual).trim()) &&
-                    r.comentario != null &&
-                    String(r.comentario).trim() !== ''
-                ) {
+                if ((!comActual || !String(comActual).trim()) && r.comentario != null && String(r.comentario).trim() !== '') {
                     g.comentario = r.comentario;
                 }
                 g.imagenes = this.mergeImagenesPedidoReferencia(g.imagenes, r.imagenes);
@@ -1297,12 +1396,12 @@ export class AnalysisComponent implements OnInit {
         });
 
         // Poblar el formulario con los grupos procesados
-        Object.values(grupos).forEach(g => {
+        Object.values(grupos).forEach((g) => {
             // Verificar si el grupo tiene referencia_id (viene de la primera referencia del grupo)
             const tieneRefId = g.referencia_id && typeof g.referencia_id === 'number' && g.referencia_id > 0;
-            
+
             const itemGroup = this.fb.group({
-                id: [null], 
+                id: [null],
                 referencia_id: [g.referencia_id ?? null], // Campo de referencia del ítem principal
                 estado_item: [tieneRefId ? 'Analizado' : 'Pendiente'],
                 sistema_id: [g.sistema_id],
@@ -1313,13 +1412,17 @@ export class AnalysisComponent implements OnInit {
                 imagen: [g.imagen ?? null],
                 imagenes: [g.imagenes ?? []],
                 expandido: [true],
-                partes: this.fb.array(g.partes.map((p: any) => this.fb.group({
-                    id: [p.id],
-                    referencia_id: [p.referencia_id || null],
-                    cantidad: [p.cantidad || 1, [Validators.required, Validators.min(1)]],
-                    descripcion: [p.descripcion || ''],
-                    categoria: [p.categoria || null]
-                })))
+                partes: this.fb.array(
+                    g.partes.map((p: any) =>
+                        this.fb.group({
+                            id: [p.id],
+                            referencia_id: [p.referencia_id || null],
+                            cantidad: [p.cantidad || 1, [Validators.required, Validators.min(1)]],
+                            descripcion: [p.descripcion || ''],
+                            categoria: [p.categoria || null]
+                        })
+                    )
+                )
             });
             this.referenciasFormArray.push(itemGroup);
         });
@@ -1341,29 +1444,29 @@ export class AnalysisComponent implements OnInit {
         const itemControl = this.referenciasFormArray.at(index);
         if (!itemControl) return false;
         const itemRef = itemControl.get('referencia_id')?.value;
-        
+
         // Verificar que el ítem principal tenga referencia asignada
-        const itemRefOk = !!itemRef && (typeof itemRef === 'number' ? itemRef > 0 : (typeof itemRef === 'string' && itemRef.trim().length > 0));
+        const itemRefOk = !!itemRef && (typeof itemRef === 'number' ? itemRef > 0 : typeof itemRef === 'string' && itemRef.trim().length > 0);
         if (itemRefOk) return true; // Si tiene referencia principal, está completo
-        
+
         const partes = this.getPartesFormArray(index);
         if (!partes || partes.length === 0) return true; // Si no hay partes, el item principal basta
-        
-        // Un ítem está completo solo si TODAS sus filas tienen referencia y 
+
+        // Un ítem está completo solo si TODAS sus filas tienen referencia y
         // una categoría que coincida con nuestro catálogo de Tipos de Artículo.
         for (const control of partes.controls) {
             const ref = control.get('referencia_id')?.value;
             const cat = control.get('categoria')?.value;
-            
+
             // Verificación de existencia real en el catálogo cargado
-            const catValida = this.tiposArticulo.some(t => t.value === cat);
+            const catValida = this.tiposArticulo.some((t) => t.value === cat);
             const refOk = !!ref && (typeof ref === 'number' ? ref > 0 : ref.trim().length > 0);
 
             if (!refOk || !catValida) {
                 return false;
             }
         }
-        
+
         return true;
     }
 
@@ -1375,20 +1478,20 @@ export class AnalysisComponent implements OnInit {
 
     private buildPayload(): any {
         const referenciasPayload: any[] = [];
-        
+
         // Iteramos cada tarjeta (Requerimiento)
         this.referenciasFormArray.controls.forEach((itemControl) => {
             const itemValue = itemControl.value;
             const partes = (itemControl.get('partes') as FormArray).controls;
-            
+
             // Cada fila de la tabla técnica es una PedidoReferencia en el backend
-            // Es vital enviar todas las filas, tengan o no referencia_id, para que el sync del backend 
+            // Es vital enviar todas las filas, tengan o no referencia_id, para que el sync del backend
             // sepa qué existe y qué debe borrarse.
             partes.forEach((parteControl) => {
                 const parteValue = parteControl.value;
-                
+
                 referenciasPayload.push({
-                    id: parteValue.id || null, 
+                    id: parteValue.id || null,
                     referencia_id: parteValue.referencia_id || null,
                     sistema_id: itemValue.sistema_id,
                     lista_id: itemValue.lista_id, // Usar SIEMPRE el del requerimiento/tarjeta (Tipo Técnico)
@@ -1396,7 +1499,7 @@ export class AnalysisComponent implements OnInit {
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
                     comentario: itemValue.comentario,
-                    estado: 1 
+                    estado: 1
                 });
             });
         });
@@ -1463,8 +1566,7 @@ export class AnalysisComponent implements OnInit {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Incompleto o inválido',
-                detail:
-                    'Para pasar a costeo, cada fila debe tener referencia del catálogo, categoría comercial válida y cantidad mayor a cero. Puede guardar el borrador sin completar todo con el botón Guardar.'
+                detail: 'Para pasar a costeo, cada fila debe tener referencia del catálogo, categoría comercial válida y cantidad mayor a cero. Puede guardar el borrador sin completar todo con el botón Guardar.'
             });
             return;
         }
@@ -1506,10 +1608,12 @@ export class AnalysisComponent implements OnInit {
                     });
 
                 const payload = this.buildPayload();
-                this.store.dispatch(updatePedido({ 
-                    id: id, 
-                    changes: { ...payload, estado: 'En_Costeo' } 
-                }));
+                this.store.dispatch(
+                    updatePedido({
+                        id: id,
+                        changes: { ...payload, estado: 'En_Costeo' }
+                    })
+                );
             }
         });
     }
@@ -1587,9 +1691,9 @@ export class AnalysisComponent implements OnInit {
         const refId = parte?.get('referencia_id')?.value;
         if (!refId) return false;
         const listaId = this.referenciasFormArray.at(itemIndex)?.get('lista_id')?.value;
-        const opciones = listaId ? (this.referenciasPorTipo[listaId] || []) : this.referencias;
+        const opciones = listaId ? this.referenciasPorTipo[listaId] || [] : this.referencias;
         const ref = opciones.find((r: any) => r.value === refId);
-        return !!(ref?.es_temporal);
+        return !!ref?.es_temporal;
     }
 
     // --- Lógica de Popovers Técnicos ---
@@ -1599,7 +1703,7 @@ export class AnalysisComponent implements OnInit {
 
         switch (type) {
             case 'sistema':
-                const sistema = this.sistemasFull.find(s => s.id === id);
+                const sistema = this.sistemasFull.find((s) => s.id === id);
                 if (sistema) {
                     this.popoverData = {
                         title: 'Sistema',
@@ -1615,7 +1719,7 @@ export class AnalysisComponent implements OnInit {
                 // El tipoId es el tipo de artículo. Buscar refs del pedido con este tipo para obtener articulo_id
                 const tipoId = id;
                 let articuloId: number | null = null;
-                
+
                 // Buscar en las referencias del formulario
                 for (let i = 0; i < this.referenciasFormArray.length; i++) {
                     const item = this.referenciasFormArray.at(i);
@@ -1625,7 +1729,7 @@ export class AnalysisComponent implements OnInit {
                         for (let j = 0; j < partes.length; j++) {
                             const refId = partes.at(j).get('referencia_id')?.value;
                             if (refId) {
-                                const refData = this.referencias.find(r => r.value === refId);
+                                const refData = this.referencias.find((r) => r.value === refId);
                                 if (refData?.articulo_id) {
                                     articuloId = refData.articulo_id;
                                     break;
@@ -1636,7 +1740,7 @@ export class AnalysisComponent implements OnInit {
                             // También revisar la referencia principal del item
                             const refId = item.get('referencia_id')?.value;
                             if (refId) {
-                                const refData = this.referencias.find(r => r.value === refId);
+                                const refData = this.referencias.find((r) => r.value === refId);
                                 if (refData?.articulo_id) {
                                     articuloId = refData.articulo_id;
                                 }
@@ -1645,7 +1749,7 @@ export class AnalysisComponent implements OnInit {
                     }
                     if (articuloId) break;
                 }
-                
+
                 // Si tenemos articulo_id, buscar refs cruzadas e imagen del artículo
                 let refsCruzadas: any[] = [];
                 let fotoArticulo: string | null = null;
@@ -1667,7 +1771,7 @@ export class AnalysisComponent implements OnInit {
                         }
                     }
                 }
-                
+
                 this.popoverData = {
                     title: 'Tipo de Artículo',
                     subtitle: this.getTipoNombre(tipoId),
@@ -1686,7 +1790,7 @@ export class AnalysisComponent implements OnInit {
                 if (idx === undefined) return;
 
                 const item = this.referenciasFormArray.at(idx);
-                
+
                 // Fallback: si no hay id de referencia en el ítem (común en manuales), usar la de la primera parte
                 if (!refId) {
                     const partes = this.getPartesFormArray(idx);
@@ -1696,10 +1800,10 @@ export class AnalysisComponent implements OnInit {
                 if (!refId) return;
 
                 const listaId = item?.get('lista_id')?.value;
-                
+
                 // Búsqueda exhaustiva en catálogos
-                let ref = (listaId ? (this.referenciasPorTipo[listaId] || []) : []).find((r: any) => r.value === refId);
-                
+                let ref = (listaId ? this.referenciasPorTipo[listaId] || [] : []).find((r: any) => r.value === refId);
+
                 if (!ref) {
                     ref = this.referencias.find((r: any) => r.value === refId);
                 }
@@ -1714,7 +1818,7 @@ export class AnalysisComponent implements OnInit {
                         }
                     }
                 }
-                
+
                 if (ref) {
                     this.popoverData = {
                         title: 'Artículo Analizado',

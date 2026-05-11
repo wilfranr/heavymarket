@@ -151,14 +151,14 @@
             </div>
         </div>
 
-        <!-- Multimedia: Foto y Plano -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Foto de Referencia (Artículo Físico) -->
-            <app-image-upload label="Foto del Artículo" icon="pi pi-camera" (fileSelected)="onFotoSelected($event)"></app-image-upload>
+            <!-- Multimedia: Foto y Plano -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Foto de Referencia (Artículo Físico) -->
+                <app-image-upload label="Foto del Artículo" icon="pi pi-camera" (fileSelected)="onFotoSelected($event)"></app-image-upload>
 
-            <!-- Plano Esquemático -->
-            <app-image-upload label="Plano Esquemático" icon="pi pi-map" (fileSelected)="onPlanoSelected($event)"></app-image-upload>
-        </div>
+                <!-- Plano Esquemático -->
+                <app-image-upload label="Plano Esquemático" icon="pi pi-map" [currentImage]="fotoMedidaHeredada" (fileSelected)="onPlanoSelected($event)"></app-image-upload>
+            </div>
     </form>
 
     <ng-template pTemplate="footer">

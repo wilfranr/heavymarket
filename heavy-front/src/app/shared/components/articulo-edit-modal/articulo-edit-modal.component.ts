@@ -11,6 +11,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TextareaModule } from 'primeng/textarea';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaService } from '../../../core/services/lista.service';
@@ -23,7 +24,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
 @Component({
-    selector: 'app-articulo-create-modal',
+    selector: 'app-articulo-edit-modal',
     standalone: true,
     imports: [
         CommonModule,
@@ -38,19 +39,21 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
         ToastModule,
         TextareaModule,
         InputNumberModule,
+        ProgressSpinnerModule,
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
         ImageUploadComponent
     ],
     providers: [MessageService],
-    templateUrl: './articulo-create-modal.component.html'
+    templateUrl: './articulo-edit-modal.component.html'
 })
-export class ArticuloCreateModalComponent implements OnInit {
+export class ArticuloEditModalComponent implements OnInit {
     @Input() visible = false;
-    @Input() title = 'Crear Artículo';
+    @Input() title = 'Editar Artículo';
+    @Input() articuloId: number | null = null;
     @Output() visibleChange = new EventEmitter<boolean>();
-    @Output() onArticuloCreated = new EventEmitter<any>();
+    @Output() onArticuloUpdated = new EventEmitter<any>();
 
     private readonly fb = inject(FormBuilder);
     private readonly articuloService = inject(ArticuloService);
@@ -73,26 +76,18 @@ export class ArticuloCreateModalComponent implements OnInit {
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
 
-    // Archivos de imagen para la creacion
+    // Archivos de imagen
     fotoFile: File | null = null;
     planoFile: File | null = null;
     fotoMedidaHeredada: string | null = null;
-
-    // Conversor de peso
-    showWeightConverter = false;
-    pesoOrigen: number | null = null;
-    unidadOrigen = 'g';
-    unidadesPeso = [
-        { label: 'Gramos (gr)', value: 'g' },
-        { label: 'Libras (lb)', value: 'lb' },
-        { label: 'Onzas (oz)', value: 'oz' },
-        { label: 'Toneladas (t)', value: 't' }
-    ];
 
     ngOnInit(): void {
         this.initForm();
         this.cargarTipos();
         this.cargarReferencias();
+        if (this.articuloId) {
+            this.cargarArticulo();
+        }
     }
 
     private initForm(): void {
@@ -109,10 +104,64 @@ export class ArticuloCreateModalComponent implements OnInit {
         return this.articuloForm.get('referenciasCruzadas') as FormArray;
     }
 
+    cargarArticulo(): void {
+        if (!this.articuloId) return;
+        this.loading = true;
+        this.articuloService.getById(this.articuloId).subscribe({
+            next: (response) => {
+                const articulo = response.data;
+                this.articuloForm.patchValue({
+                    definicion: articulo.definicion,
+                    descripcionEspecifica: articulo.descripcionEspecifica,
+                    peso: articulo.peso,
+                    comentarios: articulo.comentarios
+                });
+
+                // Cargar referencias cruzadas existentes
+                this.referenciasCruzadas.clear();
+                if (articulo.referencias && articulo.referencias.length > 0) {
+                    articulo.referencias.forEach((ref: any) => {
+                        this.referenciasCruzadas.push(this.fb.group({
+                            referencia_id: [ref.id || ref.referencia_id]
+                        }));
+                    });
+                }
+
+                // Cargar tipos y seleccionar el actual
+                this.cargarTipos(articulo.definicion);
+
+                // Heredar foto de medida si existe en el artículo o en el tipo
+                this.fotoMedidaHeredada = articulo.foto_medida || null;
+                if (!this.fotoMedidaHeredada && articulo.definicion) {
+                    const tipoActual = this.tipos.find((t) => t.nombre === articulo.definicion);
+                    if (tipoActual?.fotoMedida) {
+                        this.fotoMedidaHeredada = tipoActual.fotoMedida;
+                    }
+                }
+
+                this.loading = false;
+            },
+            error: (error) => {
+                console.error('Error al cargar artículo:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudo cargar el artículo'
+                });
+                this.loading = false;
+            }
+        });
+    }
+
     cargarTipos(search?: string): void {
         this.listaService.getByTipo('Piezas Estandar', search).subscribe({
             next: (tipos) => {
                 this.tipos = tipos;
+                // Seleccionar el tipo actual si coincide
+                const currentDef = this.articuloForm.get('definicion')?.value;
+                if (currentDef) {
+                    this.selectedTipoData = tipos.find((t) => t.nombre === currentDef) || null;
+                }
             },
             error: (error) => {
                 console.error('Error al cargar tipos:', error);
@@ -132,13 +181,12 @@ export class ArticuloCreateModalComponent implements OnInit {
     onTipoChange(event: any): void {
         const nombre = event.value;
         if (nombre) {
-            // Buscamos el objeto completo en la lista actual para la previsualización
             const found = this.tipos.find((t) => t.nombre === nombre);
             if (found) {
                 this.selectedTipoData = found;
                 this.fotoMedidaHeredada = found.fotoMedida || null;
 
-                // Pre-diligenciar descripción específica si está vacía
+                // Pre-diligenciar descripción específica si está vacía (mismo comportamiento que create)
                 const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
                 if (!currentDesc && found.nombre) {
                     this.articuloForm.patchValue({ descripcionEspecifica: found.nombre });
@@ -166,7 +214,7 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.cargarTipos();
 
         const updates: any = { definicion: nuevoTipo.nombre };
-        // Pre-diligenciar descripcion especifica si esta vacia
+        // Pre-diligenciar descripción específica si está vacía
         const currentDesc = this.articuloForm.get('descripcionEspecifica')?.value;
         if (!currentDesc && nuevoTipo.nombre) {
             updates.descripcionEspecifica = nuevoTipo.nombre;
@@ -182,9 +230,7 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
             next: (res) => {
                 const nuevas = res.data;
-                // Preservar las que ya están seleccionadas en el formulario
                 const seleccionadasIds = this.referenciasCruzadas.value.map((r: any) => r.referencia_id).filter((id: any) => id !== null);
-
                 const yaCargadas = this.referenciasDisponibles.filter((r) => seleccionadasIds.includes(r.id));
 
                 const map = new Map();
@@ -226,7 +272,6 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     onReferenciaCreada(nuevaRef: any): void {
-        // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
         if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
             this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
         }
@@ -236,46 +281,13 @@ export class ArticuloCreateModalComponent implements OnInit {
             control.patchValue({ referencia_id: nuevaRef.id });
         }
 
-        this.cargarReferencias(); // Sincronizar con el servidor en segundo plano
+        this.cargarReferencias();
         this.showReferenciaModal = false;
         this.currentReferenciaArrayIndex = null;
     }
 
-    abrirConversor(): void {
-        this.showWeightConverter = true;
-    }
-
-    convertirPeso(): void {
-        if (this.pesoOrigen === null) return;
-
-        let pesoKg = 0;
-        const valor = this.pesoOrigen;
-
-        switch (this.unidadOrigen) {
-            case 'g':
-                pesoKg = valor / 1000;
-                break;
-            case 'lb':
-                pesoKg = valor * 0.453592;
-                break;
-            case 'oz':
-                pesoKg = valor * 0.0283495;
-                break;
-            case 't':
-                pesoKg = valor * 1000;
-                break;
-            default:
-                pesoKg = valor;
-        }
-
-        const resultado = Math.round(pesoKg * 1000) / 1000;
-        this.articuloForm.patchValue({ peso: resultado });
-        this.showWeightConverter = false;
-        this.pesoOrigen = null;
-    }
-
     saveArticulo(): void {
-        if (this.articuloForm.invalid) {
+        if (this.articuloForm.invalid || !this.articuloId) {
             this.markFormGroupTouched(this.articuloForm);
             this.messageService.add({
                 severity: 'warn',
@@ -287,7 +299,6 @@ export class ArticuloCreateModalComponent implements OnInit {
 
         this.loading = true;
         const formValue = this.articuloForm.value;
-
         const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
 
         if (this.fotoFile || this.planoFile) {
@@ -302,9 +313,9 @@ export class ArticuloCreateModalComponent implements OnInit {
             if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
             if (this.planoFile) formData.append('foto_medida', this.planoFile);
 
-            this.articuloService.create(formData).subscribe({
-                next: (articulo) => this.handleCreateSuccess(articulo),
-                error: (error) => this.handleCreateError(error)
+            this.articuloService.update(this.articuloId, formData).subscribe({
+                next: (response) => this.handleUpdateSuccess(response.data),
+                error: (error) => this.handleUpdateError(error)
             });
         } else {
             const payload = {
@@ -315,30 +326,30 @@ export class ArticuloCreateModalComponent implements OnInit {
                 referencias_ids: referenciasIds
             };
 
-            this.articuloService.create(payload).subscribe({
-                next: (articulo) => this.handleCreateSuccess(articulo),
-                error: (error) => this.handleCreateError(error)
+            this.articuloService.update(this.articuloId, payload).subscribe({
+                next: (response) => this.handleUpdateSuccess(response.data),
+                error: (error) => this.handleUpdateError(error)
             });
         }
     }
 
-    private handleCreateSuccess(articulo: any): void {
+    private handleUpdateSuccess(articulo: any): void {
         this.messageService.add({
             severity: 'success',
-            summary: 'Exito',
-            detail: 'Articulo creado correctamente'
+            summary: 'Éxito',
+            detail: 'Artículo actualizado correctamente'
         });
-        this.onArticuloCreated.emit(articulo);
+        this.onArticuloUpdated.emit(articulo);
         this.closeDialog();
         this.loading = false;
     }
 
-    private handleCreateError(error: any): void {
-        console.error('Error al crear articulo:', error);
+    private handleUpdateError(error: any): void {
+        console.error('Error al actualizar artículo:', error);
         this.messageService.add({
             severity: 'error',
             summary: 'Error',
-            detail: error.error?.message || 'No se pudo crear el articulo'
+            detail: error.error?.message || 'No se pudo actualizar el artículo'
         });
         this.loading = false;
     }
@@ -346,11 +357,6 @@ export class ArticuloCreateModalComponent implements OnInit {
     closeDialog(): void {
         this.visible = false;
         this.visibleChange.emit(false);
-        this.articuloForm.reset();
-        this.referenciasCruzadas.clear();
-        this.fotoFile = null;
-        this.planoFile = null;
-        this.fotoMedidaHeredada = null;
     }
 
     private markFormGroupTouched(formGroup: FormGroup): void {
