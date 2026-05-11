@@ -13,7 +13,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pedido>
+ * @extends Factory<Pedido>
  */
 class PedidoFactory extends Factory
 {

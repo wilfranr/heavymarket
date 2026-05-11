@@ -46,6 +46,15 @@ return new class extends Migration
                 $table->boolean('es_cliente')->default(true);
                 $table->boolean('es_proveedor')->default(false);
                 $table->string('estado', 20)->default('Activo');
+                $table->string('forma_pago', 50)->nullable();
+                $table->string('email_factura_electronica', 255)->nullable();
+                $table->string('dv', 1)->nullable();
+                $table->string('rut', 255)->nullable();
+                $table->string('certificacion_bancaria', 255)->nullable();
+                $table->string('camara_comercio', 255)->nullable();
+                $table->string('cedula_representante_legal', 255)->nullable();
+                $table->string('sitio_web', 255)->nullable();
+                $table->integer('puntos')->default(0);
                 $table->timestamps();
             });
         }
@@ -76,11 +85,16 @@ return new class extends Migration
                 $table->unsignedBigInteger('pedido_referencia_id')->nullable();
                 $table->unsignedBigInteger('referencia_id')->nullable();
                 $table->unsignedBigInteger('proveedor_id')->nullable();
+                $table->unsignedBigInteger('marca_id')->nullable();
                 $table->string('referencia_proveedor', 255)->nullable();
                 $table->string('descripcion', 255)->nullable();
                 $table->integer('cantidad')->default(1);
+                $table->integer('dias_entrega')->nullable();
+                $table->decimal('costo_unidad', 15, 2)->nullable();
+                $table->decimal('utilidad', 15, 2)->nullable();
                 $table->decimal('valor_unitario', 15, 2)->nullable();
                 $table->decimal('valor_total', 15, 2)->nullable();
+                $table->string('ubicacion', 255)->nullable();
                 $table->date('fecha_entrega')->nullable();
                 $table->text('comentario')->nullable();
                 $table->string('estado', 50)->nullable();
@@ -200,6 +214,68 @@ return new class extends Migration
             });
         }
 
+        // 11c. cotizaciones
+        if (! Schema::hasTable('cotizaciones')) {
+            Schema::create('cotizaciones', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id')->nullable();
+                $table->unsignedBigInteger('tercero_id')->nullable();
+                $table->unsignedBigInteger('pedido_id')->nullable();
+                $table->string('estado', 50)->default('Borrador');
+                $table->decimal('valor_total', 15, 2)->default(0);
+                $table->text('observaciones')->nullable();
+                $table->timestamps();
+            });
+        }
+
+        // 11d. cotizacion_referencias
+        if (! Schema::hasTable('cotizacion_referencias')) {
+            Schema::create('cotizacion_referencias', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('cotizacion_id');
+                $table->unsignedBigInteger('referencia_id');
+                $table->integer('cantidad')->default(1);
+                $table->decimal('valor_unitario', 15, 2)->default(0);
+                $table->decimal('valor_total', 15, 2)->default(0);
+                $table->timestamps();
+            });
+        }
+
+        // 11e. orden_compras
+        if (! Schema::hasTable('orden_compras')) {
+            Schema::create('orden_compras', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('user_id')->nullable();
+                $table->unsignedBigInteger('tercero_id')->nullable();
+                $table->unsignedBigInteger('pedido_id')->nullable();
+                $table->unsignedBigInteger('cotizacion_id')->nullable();
+                $table->unsignedBigInteger('proveedor_id');
+                $table->string('estado', 50)->default('Pendiente');
+                $table->date('fecha_expedicion')->nullable();
+                $table->date('fecha_entrega')->nullable();
+                $table->text('observaciones')->nullable();
+                $table->decimal('valor_total', 15, 2)->default(0);
+                $table->string('direccion', 255)->nullable();
+                $table->string('telefono', 50)->nullable();
+                $table->string('guia', 100)->nullable();
+                $table->string('color', 20)->default('#FFFF00');
+                $table->timestamps();
+            });
+        }
+
+        // 11f. orden_compra_referencia (pivot)
+        if (! Schema::hasTable('orden_compra_referencia')) {
+            Schema::create('orden_compra_referencia', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('orden_compra_id');
+                $table->unsignedBigInteger('referencia_id');
+                $table->integer('cantidad')->default(1);
+                $table->decimal('valor_unitario', 15, 2)->default(0);
+                $table->decimal('valor_total', 15, 2)->default(0);
+                $table->timestamps();
+            });
+        }
+
         // 12. fabricantes (tabla legacy)
         if (! Schema::hasTable('fabricantes')) {
             Schema::create('fabricantes', function (Blueprint $table) {
@@ -299,6 +375,20 @@ return new class extends Migration
                 $table->string('unidad')->nullable();
                 $table->string('tipo')->nullable();
                 $table->string('imagen', 255)->nullable();
+                $table->timestamps();
+            });
+        }
+
+        // 18. transportadoras
+        if (! Schema::hasTable('transportadoras')) {
+            Schema::create('transportadoras', function (Blueprint $table) {
+                $table->id();
+                $table->string('nombre', 255);
+                $table->string('nit', 50)->nullable();
+                $table->string('telefono', 50)->nullable();
+                $table->string('email', 100)->nullable();
+                $table->string('direccion', 255)->nullable();
+                $table->string('estado', 20)->default('Activo');
                 $table->timestamps();
             });
         }
