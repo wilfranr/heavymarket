@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MenuItem } from 'primeng/api';
 import { AppMenuitem } from './app.menuitem';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { ProviderAuthService } from '../../core/auth/services/provider-auth.service';
 
 @Component({
     selector: 'app-menu',
@@ -19,20 +20,58 @@ import { AuthService } from '../../core/auth/services/auth.service';
 export class AppMenu implements OnInit {
     model: MenuItem[] = [];
     private authService = inject(AuthService);
+    private providerAuthService = inject(ProviderAuthService);
 
     ngOnInit() {
+        // Caso 1: Sesión de Proveedor
+        if (this.providerAuthService.isProvider()) {
+            this.model = [
+                {
+                    label: 'Portal de Proveedores',
+                    items: [
+                        { label: 'Oportunidades de Costeo', icon: 'pi pi-fw pi-bolt', routerLink: ['/provider/opportunities'] },
+                        { label: 'Mis Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/provider/ordenes-compra'] }
+                    ]
+                },
+                {
+                    label: 'Perfil',
+                    items: [
+                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.providerAuthService.logout() }
+                    ]
+                }
+            ];
+            return;
+        }
+
+        // Caso 2: Sesión Interna (Asesores, Analistas, Admin)
         const hasAdminRole = this.authService.hasAnyRole(['super_admin', 'Administrador']);
         const hasAnalistaRole = this.authService.hasAnyRole(['Analista', 'analista']);
         const hasVendedorRole = this.authService.hasAnyRole(['Vendedor', 'vendedor']);
+        const hasLogisticaRole = this.authService.hasAnyRole(['Logistica', 'logistica']);
+
+        // Caso especial: Logistica solo ve Órdenes de Trabajo
+        if (hasLogisticaRole && !hasAdminRole) {
+            this.model = [
+                {
+                    label: 'Operaciones',
+                    items: [{ label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }]
+                },
+                {
+                    label: 'Perfil',
+                    items: [
+                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }
+                    ]
+                }
+            ];
+            return;
+        }
 
         // Caso especial: Analista (y no Admin) solo ve lo solicitado
         if (hasAnalistaRole && !hasAdminRole) {
             this.model = [
                 {
                     label: 'Comercial',
-                    items: [
-                        { label: 'Análisis', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }
-                    ]
+                    items: [{ label: 'Análisis', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }]
                 },
                 {
                     label: 'Catálogo de Productos',
@@ -58,9 +97,7 @@ export class AppMenu implements OnInit {
         if (hasAdminRole) {
             this.model.push({
                 label: 'Administración',
-                items: [
-                    { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] }
-                ]
+                items: [{ label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] }]
             });
         }
 
@@ -75,9 +112,7 @@ export class AppMenu implements OnInit {
             },
             {
                 label: 'Compras',
-                items: [
-                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }
-                ]
+                items: [{ label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }]
             },
             {
                 label: 'Catálogo de Productos',
@@ -92,16 +127,11 @@ export class AppMenu implements OnInit {
         );
 
         // CRM & Terceros (Condicional para Empresas)
-        const crmItems = [
-            { label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] }
-        ];
+        const crmItems = [{ label: 'Terceros', icon: 'pi pi-fw pi-users', routerLink: ['/app/terceros'] }];
         if (!hasVendedorRole || hasAdminRole) {
             crmItems.push({ label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] });
         }
-        crmItems.push(
-            { label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] },
-            { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] }
-        );
+        crmItems.push({ label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] }, { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] });
 
         this.model.push({
             label: 'CRM & Terceros',

@@ -15,7 +15,7 @@ class PedidoPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**
@@ -28,8 +28,8 @@ class PedidoPolicy
             return $pedido->estado === 'En_Analisis';
         }
 
-        // Admin/Logística ven todo
-        if ($user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
+        // Admin ven todo
+        if ($user->hasAnyRole(['super_admin', 'Administrador'])) {
             return true;
         }
 
@@ -65,9 +65,9 @@ class PedidoPolicy
             return false;
         }
 
-        // Admin/Logística pueden editar todo
+        // Admin pueden editar todo
         // Vendedor puede editar sus pedidos O pedidos de clientes (les toma el pedido)
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
+        return $user->hasAnyRole(['super_admin', 'Administrador'])
             || $user->id === $pedido->user_id
             || ($pedido->user && $pedido->user->hasRole('Cliente'));
     }

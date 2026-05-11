@@ -1,52 +1,43 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-10T01:21:00Z",
-  "issue": "#129",
-  "description": "Crear articulo: permitir subir foto del articulo directamente en la creacion",
+  "last_updated": "2026-05-10T07:30:00Z",
+  "issue": "#99",
+  "description": "Cambiar botón editar referencia del análisis para crear artículo",
   "nodes": [
     {
-      "id": "129-dto-types",
-      "description": "Actualizar CreateArticuloDto y UpdateArticuloDto para aceptar File | string en fotoDescriptiva y foto_medida",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [],
-      "files": [{ "path": "heavy-front/src/app/core/models/articulo.model.ts", "status": "validated" }]
-    },
-    {
-      "id": "129-create-page-ui",
-      "description": "Habilitar seccion de foto en create.html: reemplazar placeholder deshabilitado (opacity-75/cursor-not-allowed) con <app-image-upload> funcional para fotoDescriptiva y plano esquematico",
+      "id": "99-frontend-analysis",
+      "description": "Frontend: Modificar comportamiento del botón en análisis. Si referencia tiene artículo → modal editar artículo. Si no tiene o es temporal → modal crear artículo.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["129-dto-types"],
+      "depends_on": [],
       "files": [
-        { "path": "heavy-front/src/app/features/articulos/create/create.html", "status": "validated" },
-        { "path": "heavy-front/src/app/features/articulos/create/create.ts", "status": "validated" }
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "status": "validated"
+        }
       ]
     },
     {
-      "id": "129-modal-file-handling",
-      "description": "Agregar manejo de archivos al modal: propiedades fotoFile/planoFile, handlers onFotoSelected/onPlanoSelected, conversion a FormData en saveArticulo()",
+      "id": "99-validate",
+      "description": "Validacion: Verificar que el botón abre el modal correcto según estado de referencia.",
       "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["129-dto-types"],
-      "files": [{ "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts", "status": "validated" }]
-    },
-    {
-      "id": "129-modal-ui",
-      "description": "Reemplazar placeholder deshabilitado en modal HTML con <app-image-upload> funcional para foto y plano",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["129-modal-file-handling"],
-      "files": [{ "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html", "status": "validated" }]
-    },
-    {
-      "id": "129-verify-build",
-      "description": "Ejecutar ng build y ng lint para verificar compilacion sin errores",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": ["129-create-page-ui", "129-modal-ui"],
-      "files": []
+      "required_skill": null,
+      "depends_on": ["99-frontend-analysis"],
+      "files": [],
+      "review_notes": "Implementacion completada. Build exitoso. Boton ahora evalua articulo_id y es_temporal para decidir modal."
     }
   ]
 }

@@ -20,12 +20,7 @@ class OrdenCompraPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
-    }
-
-    public function view(User $user, OrdenCompra $ordenCompra): bool
-    {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**
@@ -33,7 +28,7 @@ class OrdenCompraPolicy
      */
     public function view(User $user, OrdenCompra $ordenCompra): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
     /**
@@ -41,7 +36,7 @@ class OrdenCompraPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
     }
 
     /**
@@ -49,7 +44,7 @@ class OrdenCompraPolicy
      */
     public function update(User $user, OrdenCompra $ordenCompra): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
     }
 
     /**
@@ -57,6 +52,6 @@ class OrdenCompraPolicy
      */
     public function delete(User $user, OrdenCompra $ordenCompra): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador']);
     }
 }
