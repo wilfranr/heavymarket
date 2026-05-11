@@ -4,7 +4,7 @@ import { environment } from '../../../environments/environment';
 /**
  * Directiva para manejar imágenes faltantes o rotas.
  * Si la imagen falla al cargar o el src está vacío, se muestra una imagen genérica.
- * 
+ *
  * Uso: <img src="url" appFallbackImage />
  */
 @Directive({

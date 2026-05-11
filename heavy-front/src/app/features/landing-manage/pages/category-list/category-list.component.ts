@@ -20,22 +20,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
     selector: 'app-category-list',
     standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        TableModule,
-        ButtonModule,
-        ToggleSwitchModule,
-        InputNumberModule,
-        ToastModule,
-        TooltipModule,
-        DialogModule,
-        InputTextModule,
-        ConfirmDialogModule,
-        CheckboxModule,
-        DividerModule,
-        ImageUploadComponent
-    ],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, ToggleSwitchModule, InputNumberModule, ToastModule, TooltipModule, DialogModule, InputTextModule, ConfirmDialogModule, CheckboxModule, DividerModule, ImageUploadComponent],
     providers: [MessageService, ConfirmationService],
     templateUrl: './category-list.component.html'
 })
@@ -61,7 +46,7 @@ export class CategoryListComponent implements OnInit {
         private landingService: LandingManageService,
         private messageService: MessageService,
         private confirmationService: ConfirmationService
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.loadCategories();
@@ -80,7 +65,8 @@ export class CategoryListComponent implements OnInit {
 
     loadCategories() {
         this.loading.set(true);
-        this.landingService.getAdminCategories()
+        this.landingService
+            .getAdminCategories()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (data) => {
@@ -131,9 +117,7 @@ export class CategoryListComponent implements OnInit {
             return;
         }
 
-        const request = this.isEditingCategory
-            ? this.landingService.updateCategory(this.currentCategory.id!, this.currentCategory)
-            : this.landingService.createCategory(this.currentCategory);
+        const request = this.isEditingCategory ? this.landingService.updateCategory(this.currentCategory.id!, this.currentCategory) : this.landingService.createCategory(this.currentCategory);
 
         request.subscribe({
             next: () => {
@@ -191,16 +175,11 @@ export class CategoryListComponent implements OnInit {
 
         const request = this.isEditingSubcategory
             ? hasImageChanges
-                ? this.landingService.updateSubcategoryWithImage(
-                    this.currentSubcategory.id!,
-                    this.currentSubcategory,
-                    this.subcategoryImageFile,
-                    this.subcategoryRemoveImage
-                )
+                ? this.landingService.updateSubcategoryWithImage(this.currentSubcategory.id!, this.currentSubcategory, this.subcategoryImageFile, this.subcategoryRemoveImage)
                 : this.landingService.updateSubcategory(this.currentSubcategory.id!, this.currentSubcategory)
             : hasImageChanges
-                ? this.landingService.createSubcategoryWithImage(this.currentSubcategory, this.subcategoryImageFile)
-                : this.landingService.createSubcategory(this.currentSubcategory);
+              ? this.landingService.createSubcategoryWithImage(this.currentSubcategory, this.subcategoryImageFile)
+              : this.landingService.createSubcategory(this.currentSubcategory);
 
         request.subscribe({
             next: () => {
@@ -224,65 +203,71 @@ export class CategoryListComponent implements OnInit {
     }
 
     onCategoryToggle(category: CategoriaLanding) {
-        this.landingService.updateCategory(category.id, {
-            mostrar_en_navbar: category.mostrar_en_navbar
-        }).subscribe({
-            next: (updated) => {
-                this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Categoría "${updated.nombre}" actualizada.` });
-            },
-            error: (err) => {
-                category.mostrar_en_navbar = !category.mostrar_en_navbar;
-                const msg = err.error?.message || 'Error al actualizar categoría.';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-            }
-        });
+        this.landingService
+            .updateCategory(category.id, {
+                mostrar_en_navbar: category.mostrar_en_navbar
+            })
+            .subscribe({
+                next: (updated) => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Categoría "${updated.nombre}" actualizada.` });
+                },
+                error: (err) => {
+                    category.mostrar_en_navbar = !category.mostrar_en_navbar;
+                    const msg = err.error?.message || 'Error al actualizar categoría.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
     }
 
     onCategoryStatusChange(category: CategoriaLanding) {
-        this.landingService.updateCategory(category.id, {
-            estado: category.estado
-        }).subscribe({
-            next: (updated) => {
-                this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Estado de la categoría "${updated.nombre}" actualizado.` });
-            },
-            error: (err) => {
-                category.estado = !category.estado;
-                const msg = err.error?.message || 'Error al actualizar categoría.';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-            }
-        });
+        this.landingService
+            .updateCategory(category.id, {
+                estado: category.estado
+            })
+            .subscribe({
+                next: (updated) => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Estado de la categoría "${updated.nombre}" actualizado.` });
+                },
+                error: (err) => {
+                    category.estado = !category.estado;
+                    const msg = err.error?.message || 'Error al actualizar categoría.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
     }
 
-
-
     onSubcategoryToggle(subcategory: SubcategoriaLanding) {
-        this.landingService.updateSubcategory(subcategory.id, {
-            mostrar_en_navbar: subcategory.mostrar_en_navbar
-        }).subscribe({
-            next: (updated) => {
-                this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Subcategoría "${updated.nombre}" actualizada.` });
-            },
-            error: (err) => {
-                subcategory.mostrar_en_navbar = !subcategory.mostrar_en_navbar;
-                const msg = err.error?.message || 'Error al actualizar subcategoría.';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-            }
-        });
+        this.landingService
+            .updateSubcategory(subcategory.id, {
+                mostrar_en_navbar: subcategory.mostrar_en_navbar
+            })
+            .subscribe({
+                next: (updated) => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Subcategoría "${updated.nombre}" actualizada.` });
+                },
+                error: (err) => {
+                    subcategory.mostrar_en_navbar = !subcategory.mostrar_en_navbar;
+                    const msg = err.error?.message || 'Error al actualizar subcategoría.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
     }
 
     onSubcategoryStatusChange(subcategory: SubcategoriaLanding) {
-        this.landingService.updateSubcategory(subcategory.id, {
-            estado: subcategory.estado
-        }).subscribe({
-            next: (updated) => {
-                this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Estado de la subcategoría "${updated.nombre}" actualizado.` });
-            },
-            error: (err) => {
-                subcategory.estado = !subcategory.estado;
-                const msg = err.error?.message || 'Error al actualizar subcategoría.';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
-            }
-        });
+        this.landingService
+            .updateSubcategory(subcategory.id, {
+                estado: subcategory.estado
+            })
+            .subscribe({
+                next: (updated) => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Estado de la subcategoría "${updated.nombre}" actualizado.` });
+                },
+                error: (err) => {
+                    subcategory.estado = !subcategory.estado;
+                    const msg = err.error?.message || 'Error al actualizar subcategoría.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
+                }
+            });
     }
 
     /**
@@ -311,5 +296,4 @@ export class CategoryListComponent implements OnInit {
         textarea.style.overflowY = 'hidden';
         textarea.style.height = `${textarea.scrollHeight}px`;
     }
-
 }

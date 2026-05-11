@@ -42,12 +42,15 @@ class OrdenCompraResource extends JsonResource
             'valor_iva' => $this->valor_iva,
             'valor_descuento' => $this->valor_descuento,
             'guia' => $this->guia,
+            'transportadora_id' => $this->transportadora_id,
             'color' => $this->color,
+            'fecha_despacho' => $this->fecha_despacho?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
             'tercero' => $this->whenLoaded('tercero'),
+            'transportadora' => $this->whenLoaded('transportadora'),
             'proveedor' => $this->whenLoaded('proveedor'),
             'pedido' => $this->whenLoaded('pedido'),
             'cotizacion' => $this->whenLoaded('cotizacion'),

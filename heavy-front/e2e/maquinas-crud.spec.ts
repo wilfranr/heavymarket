@@ -1,7 +1,6 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Gestión de Maquinaria y Componentes', () => {
-
     test.beforeEach(async ({ page }) => {
         // Simular autenticación
         await page.addInitScript(() => {
@@ -17,7 +16,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
         });
 
         // Mock de la API
-        await page.route('**/v1/**', async route => {
+        await page.route('**/v1/**', async (route) => {
             const url = route.request().url();
             const method = route.request().method();
 
@@ -25,9 +24,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
             if (url.includes('/v1/maquinas') && method === 'GET' && !url.match(/\/maquinas\/\d+/)) {
                 return route.fulfill({
                     json: {
-                        data: [
-                            { id: 1, modelo: 'Excavadora CAT 320', serie: 'CAT123', estado_revision: 'revisado' }
-                        ],
+                        data: [{ id: 1, modelo: 'Excavadora CAT 320', serie: 'CAT123', estado_revision: 'revisado' }],
                         meta: { current_page: 1, total: 1 }
                     }
                 });
@@ -44,9 +41,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
                             modelo: 'Excavadora CAT 320',
                             serie: 'CAT123',
                             estado_revision: 'revisado',
-                            componentes: [
-                                { id: 101, sistema_id: 1, modelo: 'Motor C7.1', serie: 'MOT999', comentario: 'Motor original' }
-                            ]
+                            componentes: [{ id: 101, sistema_id: 1, modelo: 'Motor C7.1', serie: 'MOT999', comentario: 'Motor original' }]
                         }
                     }
                 });
@@ -88,7 +83,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
 
         // Llenar info básica
         await page.locator('#tipo').waitFor({ state: 'visible' });
-        
+
         // Tipo (Select)
         await page.locator('#tipo').click();
         // Usar exact: true para evitar problemas con labels que contienen el mismo texto
@@ -100,7 +95,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
 
         // Modelo
         await page.locator('#modelo').fill('CAT 336');
-        
+
         // Serie
         await page.locator('#serie').fill('SERIE555');
 
@@ -114,7 +109,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
         // Llenar info de componente
         await row.locator('p-select[formControlName="sistema_id"]').click();
         await page.getByRole('option', { name: 'Motor', exact: true }).click();
-        
+
         await row.locator('input[formControlName="modelo"]').fill('Motor C9');
 
         // Probar duplicar
@@ -129,7 +124,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
         const popover = page.locator('p-popover');
         await expect(popover).toBeVisible();
         await popover.locator('textarea').fill('Este es un comentario de prueba');
-        
+
         // Cerrar popover haciendo click en el título del card
         await page.getByText('Gestión Técnica').first().click();
 
@@ -143,7 +138,7 @@ test.describe('Gestión de Maquinaria y Componentes', () => {
 
     test('Debe mostrar el detalle de una máquina y sus componentes', async ({ page }) => {
         await page.goto('/app/maquinas/1');
-        
+
         await expect(page.getByText('Excavadora CAT 320').first()).toBeVisible({ timeout: 10000 });
         await expect(page.getByText('Motor C7.1')).toBeVisible();
         await expect(page.getByText('Motor original')).toBeVisible();

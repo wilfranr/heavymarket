@@ -260,6 +260,19 @@
 - **Estabilización Final**: Refactorización de `CosteoComponent` a Signals para eliminar errores críticos `NG0100`.
 - **Resolución Colisión Costeo**: Separación física del Tipo Técnico y Categoría Comercial en la BD. Implementada persistencia en el backend y visualización simplificada (limpieza de labels "Técnico") en la UI de Costeo.
 
+### Fase 18: Corrección de Carga de Documentos (Issue #117) ✅
+- **Backend Fix**: Resolución del Error 500 en la carga de documentos para terceros (RUT, Certificación, etc.).
+- **Infraestructura**: Creación de directorios de storage faltantes y corrección de la migración base de testing (SQLite).
+- **Frontend Reactive**: Refactorización del `TerceroFormComponent` para usar **Signals** y **computed properties**, eliminando getters tradicionales y asegurando compatibilidad total con **Zoneless**.
+- **Validación**: Implementación de test de feature `TerceroDocumentUploadTest.php` y verificación de build exitosa.
+
+### Fase 19: Implementación de Órdenes de Compra (Issue #115) ✅
+- **Backend CRUD**: Implementación completa de controladores, requests de validación y recursos API para el manejo de órdenes de compra.
+- **Relaciones**: Implementación de lógica de sincronización de referencias (productos) vinculadas a la orden.
+- **Frontend Store**: Integración con NgRx para el manejo de estado global.
+- **UI Reactiva**: Desarrollo de componentes de Listado, Detalle, Creación y Edición utilizando **Signals** y arquitectura **Zoneless**.
+- **Calidad**: Validación con 4 nuevos tests de feature (`OrdenCompraTest.php`) y verificación de compilación exitosa.
+
 ---
 
 ## 📊 Estadísticas Finales
@@ -426,8 +439,8 @@ heavymarket/
 
 ---
 
-**Última actualización**: 29 de Abril, 2026  
+**Última actualización**: 9 de Mayo, 2026  
 **Versión Actual**: 2.1.0
-**Commits totales**: 65+  
-**Archivos creados**: ~200+  
-**Líneas de código**: ~18,500+
+**Commits totales**: 70+  
+**Archivos creados**: ~210+  
+**Líneas de código**: ~19,000+

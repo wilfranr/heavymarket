@@ -6,8 +6,7 @@
                 <h2 class="text-2xl font-bold">Detalle de Lista</h2>
                 <div class="flex gap-2">
                     <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarLista()"> </p-button>
-                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true"
-                        (onClick)="volver()"> </p-button>
+                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="volver()"> </p-button>
                 </div>
             </div>
         </ng-template>
@@ -37,15 +36,11 @@
                     <label class="block text-sm font-medium text-gray-600 mb-1">Definición</label>
                     <p class="text-base whitespace-pre-wrap">{{ lista.definicion }}</p>
                 </div>
-                }
-
-                @if (lista.tipo === 'Fabricantes' && lista.fabricante_id) {
+                } @if (lista.tipo === 'Fabricantes' && lista.fabricante_id) {
                 <div class="field mb-4">
                     <label class="block text-sm font-medium text-gray-600 mb-1">ID en catálogo maestro (fabricantes)</label>
                     <p class="text-base font-mono">{{ lista.fabricante_id }}</p>
-                    <p class="text-sm mt-2" style="color: var(--p-text-muted-color, var(--p-surface-500))">
-                        Este ítem se crea y actualiza automáticamente con el registro en la tabla fabricantes.
-                    </p>
+                    <p class="text-sm mt-2" style="color: var(--p-text-muted-color, var(--p-surface-500))">Este ítem se crea y actualiza automáticamente con el registro en la tabla fabricantes.</p>
                 </div>
                 }
             </div>
@@ -62,8 +57,7 @@
                 } @if (lista.fotoMedida) {
                 <div class="field mb-4">
                     <label class="block text-sm font-medium text-gray-600 mb-1">Foto Medida</label>
-                    <img [src]="lista.fotoMedida" [alt]="lista.nombre + ' - Medida'"
-                        class="w-full max-w-md h-auto rounded" />
+                    <img [src]="lista.fotoMedida" [alt]="lista.nombre + ' - Medida'" class="w-full max-w-md h-auto rounded" />
                 </div>
                 } @if (!lista.foto && !lista.fotoMedida) {
                 <p class="text-gray-400">No hay imágenes disponibles</p>
@@ -96,9 +90,17 @@
         <div class="mt-8">
             <h3 class="text-lg font-semibold mb-4 border-b pb-2">Sistemas Asociados</h3>
 
-            <p-table [value]="lista.sistemas" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
-                [tableStyle]="{ 'min-width': '50rem' }" responsiveLayout="scroll"
-                styleClass="p-datatable-sm p-datatable-striped" [rowHover]="true" selectionMode="single">
+            <p-table
+                [value]="lista.sistemas"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-sm p-datatable-striped"
+                [rowHover]="true"
+                selectionMode="single"
+            >
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 80px">ID</th>
@@ -112,31 +114,24 @@
                         <td>{{ sys.id }}</td>
                         <td>
                             @if (sys.imagen) {
-                            <div
-                                class="inline-block w-10 h-10 rounded-md shadow-sm overflow-hidden box-border"
-                                style="border: 1px solid var(--p-surface-border)">
-                                <img [src]="sys.imagen" [alt]="sys.nombre"
-                                    class="block h-full w-full min-h-0 min-w-0 object-contain" />
+                            <div class="inline-block w-10 h-10 rounded-md shadow-sm overflow-hidden box-border" style="border: 1px solid var(--p-surface-border)">
+                                <img [src]="sys.imagen" [alt]="sys.nombre" class="block h-full w-full min-h-0 min-w-0 object-contain" />
                             </div>
                             } @else {
-                            <div
-                                class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                            <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
                                 <i class="pi pi-image text-gray-400"></i>
                             </div>
                             }
                         </td>
                         <td class="font-medium">{{ sys.nombre }}</td>
                         <td>
-                            <div class="line-clamp-2" [title]="sys.descripcion">
-                                {{ sys.descripcion || '-' }}
-                            </div>
+                            <div class="line-clamp-2" [title]="sys.descripcion">{{ sys.descripcion || '-' }}</div>
                         </td>
                     </tr>
                 </ng-template>
                 <ng-template pTemplate="emptymessage">
                     <tr>
-                        <td colspan="4" class="text-center p-4">No se encontraron sistemas para este tipo de artículo.
-                        </td>
+                        <td colspan="4" class="text-center p-4">No se encontraron sistemas para este tipo de artículo.</td>
                     </tr>
                 </ng-template>
             </p-table>

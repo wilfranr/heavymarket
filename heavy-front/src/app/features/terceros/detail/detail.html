@@ -6,8 +6,7 @@
         <ng-template pTemplate="header">
             <div class="flex justify-between items-center p-4">
                 <div class="flex items-center gap-4">
-                    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()"
-                        pTooltip="Volver a la lista"></p-button>
+                    <p-button icon="pi pi-arrow-left" [text]="true" [rounded]="true" (onClick)="goBack()" pTooltip="Volver a la lista"></p-button>
                     <div>
                         <h2 class="text-2xl font-bold">Detalle del Tercero</h2>
                         @if (tercero$ | async; as tercero) {
@@ -37,12 +36,9 @@
         <!-- Content -->
         @if (!(loading$ | async) && (tercero$ | async); as tercero) {
         <div class="p-4 space-y-6">
-
             <!-- Información General -->
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-info-circle mr-2"></i>Información General
-                </h3>
+                <h3 class="section-title"><i class="pi pi-info-circle mr-2"></i>Información General</h3>
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Tipo de Tercero</div>
@@ -81,45 +77,31 @@
 
             <!-- Información de Contacto -->
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-phone mr-2"></i>Información de Contacto
-                </h3>
+                <h3 class="section-title"><i class="pi pi-phone mr-2"></i>Información de Contacto</h3>
                 <div class="info-grid">
                     <div class="info-item">
                         <div class="info-label">Teléfono</div>
-                        <div class="info-value">
-                            <i class="pi pi-phone mr-2"></i>{{ tercero.telefono || 'No especificado' }}
-                        </div>
+                        <div class="info-value"><i class="pi pi-phone mr-2"></i>{{ tercero.telefono || 'No especificado' }}</div>
                     </div>
                     @if (tercero.email) {
                     <div class="info-item">
                         <div class="info-label">Correo Electrónico</div>
-                        <div class="info-value">
-                            <i class="pi pi-envelope mr-2"></i>{{ tercero.email }}
-                        </div>
+                        <div class="info-value"><i class="pi pi-envelope mr-2"></i>{{ tercero.email }}</div>
                     </div>
-                    }
-                    @if (tercero.email_factura_electronica) {
+                    } @if (tercero.email_factura_electronica) {
                     <div class="info-item">
                         <div class="info-label">Correo Factura Electrónica</div>
-                        <div class="info-value">
-                            <i class="pi pi-envelope mr-2"></i>{{ tercero.email_factura_electronica }}
-                        </div>
+                        <div class="info-value"><i class="pi pi-envelope mr-2"></i>{{ tercero.email_factura_electronica }}</div>
                     </div>
-                    }
-                    @if (tercero.sitio_web) {
+                    } @if (tercero.sitio_web) {
                     <div class="info-item">
                         <div class="info-label">Sitio Web</div>
                         <div class="info-value">
                             <i class="pi pi-globe mr-2"></i>
-                            <a [href]="'https://' + tercero.sitio_web" target="_blank"
-                                class="text-blue-400 hover:underline">
-                                {{ tercero.sitio_web }}
-                            </a>
+                            <a [href]="'https://' + tercero.sitio_web" target="_blank" class="text-blue-400 hover:underline"> {{ tercero.sitio_web }} </a>
                         </div>
                     </div>
-                    }
-                    @if (tercero.forma_pago) {
+                    } @if (tercero.forma_pago) {
                     <div class="info-item">
                         <div class="info-label">Forma de Pago</div>
                         <div class="info-value">{{ tercero.forma_pago }}</div>
@@ -132,9 +114,7 @@
 
             <!-- Ubicación -->
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-map-marker mr-2"></i>Ubicación
-                </h3>
+                <h3 class="section-title"><i class="pi pi-map-marker mr-2"></i>Ubicación</h3>
                 <div class="info-grid">
                     <div class="info-item col-span-full">
                         <div class="info-label">Dirección</div>
@@ -145,14 +125,12 @@
                         <div class="info-label">Ciudad</div>
                         <div class="info-value">{{ tercero.city.name }}</div>
                     </div>
-                    }
-                    @if (tercero.state) {
+                    } @if (tercero.state) {
                     <div class="info-item">
                         <div class="info-label">Departamento/Estado</div>
                         <div class="info-value">{{ tercero.state.name }}</div>
                     </div>
-                    }
-                    @if (tercero.country) {
+                    } @if (tercero.country) {
                     <div class="info-item">
                         <div class="info-label">País</div>
                         <div class="info-value">{{ tercero.country.name }}</div>
@@ -162,20 +140,16 @@
             </div>
 
             <!-- Máquinas (Solo para Clientes) -->
-            @if ((tercero.tipo === 'Cliente' || tercero.tipo === 'Ambos') && tercero.maquinas && tercero.maquinas.length
-            > 0) {
+            @if ((tercero.tipo === 'Cliente' || tercero.tipo === 'Ambos') && tercero.maquinas && tercero.maquinas.length > 0) {
             <p-divider></p-divider>
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-cog mr-2"></i>Máquinas
-                </h3>
+                <h3 class="section-title"><i class="pi pi-cog mr-2"></i>Máquinas</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     @for (maquina of tercero.maquinas; track maquina.id) {
                     <div class="info-item relative group">
                         <!-- Eye Button -->
                         <div class="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info"
-                                (onClick)="viewMaquina(maquina)" pTooltip="Ver detalle de máquina"></p-button>
+                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="viewMaquina(maquina)" pTooltip="Ver detalle de máquina"></p-button>
                         </div>
 
                         <div class="font-semibold text-yellow-500 pr-8">{{ maquina.modelo }}</div>
@@ -189,15 +163,20 @@
             }
 
             <!-- Machine Detail Modal -->
-            <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{width: '900px', 'max-width': '95vw'}"
-                [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body"
-                styleClass="machine-detail-modal" (onHide)="selectedMaquina = null">
-
+            <p-dialog
+                [(visible)]="displayMaquinaDialog"
+                [modal]="true"
+                [style]="{width: '900px', 'max-width': '95vw'}"
+                [showHeader]="true"
+                [closable]="true"
+                [dismissableMask]="true"
+                appendTo="body"
+                styleClass="machine-detail-modal"
+                (onHide)="selectedMaquina = null"
+            >
                 <ng-template pTemplate="header">
                     <div class="w-full text-center">
-                        <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquina">
-                            {{ selectedMaquina.modelo }}
-                        </h2>
+                        <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider" *ngIf="selectedMaquina">{{ selectedMaquina.modelo }}</h2>
                     </div>
                 </ng-template>
 
@@ -210,9 +189,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <!-- Fabricantes -->
                 <div>
-                    <h3 class="section-title">
-                        <i class="pi pi-building mr-2"></i>Fabricantes
-                    </h3>
+                    <h3 class="section-title"><i class="pi pi-building mr-2"></i>Fabricantes</h3>
                     @if (tercero.fabricantes && tercero.fabricantes.length > 0) {
                     <div class="flex flex-wrap gap-2">
                         @for (fabricante of tercero.fabricantes; track fabricante.id) {
@@ -226,9 +203,7 @@
 
                 <!-- Categorías Comerciales -->
                 <div>
-                    <h3 class="section-title">
-                        <i class="pi pi-tags mr-2"></i>Categorías Comerciales
-                    </h3>
+                    <h3 class="section-title"><i class="pi pi-tags mr-2"></i>Categorías Comerciales</h3>
                     @if (tercero.categorias_comerciales && tercero.categorias_comerciales.length > 0) {
                     <div class="flex flex-wrap gap-2">
                         @for (categoria of tercero.categorias_comerciales; track categoria.id) {
@@ -244,34 +219,27 @@
             @if (tercero.sistemas && tercero.sistemas.length > 0) {
             <p-divider></p-divider>
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-sitemap mr-2"></i>Sistemas
-                </h3>
+                <h3 class="section-title"><i class="pi pi-sitemap mr-2"></i>Sistemas</h3>
                 <div class="flex flex-wrap gap-2">
                     @for (sistema of tercero.sistemas; track sistema.id) {
                     <p-tag [value]="sistema.nombre" severity="warn"></p-tag>
                     }
                 </div>
             </div>
-            }
-            }
+            } }
 
             <!-- Contactos -->
             @if (tercero.contactos && tercero.contactos.length > 0) {
             <p-divider></p-divider>
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-users mr-2"></i>Contactos
-                </h3>
+                <h3 class="section-title"><i class="pi pi-users mr-2"></i>Contactos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     @for (contacto of tercero.contactos; track contacto.id) {
                     <div class="contact-card">
                         <div class="flex justify-between items-start mb-2">
                             <div class="font-semibold text-lg">{{ contacto.nombre }}</div>
                             @if (contacto.principal) {
-                            <span class="principal-badge">
-                                <i class="pi pi-star-fill mr-1"></i>Principal
-                            </span>
+                            <span class="principal-badge"> <i class="pi pi-star-fill mr-1"></i>Principal </span>
                             }
                         </div>
                         @if (contacto.cargo) {
@@ -279,14 +247,9 @@
                         }
                         <div class="space-y-1 text-sm">
                             @if (contacto.email) {
-                            <div>
-                                <i class="pi pi-envelope mr-2"></i>{{ contacto.email }}
-                            </div>
-                            }
-                            @if (contacto.telefono) {
-                            <div>
-                                <i class="pi pi-phone mr-2"></i>{{ contacto.telefono }}
-                            </div>
+                            <div><i class="pi pi-envelope mr-2"></i>{{ contacto.email }}</div>
+                            } @if (contacto.telefono) {
+                            <div><i class="pi pi-phone mr-2"></i>{{ contacto.telefono }}</div>
                             }
                         </div>
                     </div>
@@ -298,58 +261,47 @@
             <!-- Documentos -->
             <p-divider></p-divider>
             <div>
-                <h3 class="section-title">
-                    <i class="pi pi-file mr-2"></i>Documentos
-                </h3>
+                <h3 class="section-title"><i class="pi pi-file mr-2"></i>Documentos</h3>
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <div class="info-item text-center">
-                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.rut"
-                            [class.text-gray-500]="!tercero.rut"></i>
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.rut" [class.text-gray-500]="!tercero.rut"></i>
                         <div class="info-label">RUT</div>
                         <div class="info-value text-sm">
                             @if (tercero.rut) {
-                            <a [href]="tercero.rut" target="_blank" class="text-blue-400 hover:underline">Ver
-                                documento</a>
+                            <a [href]="tercero.rut" target="_blank" class="text-blue-400 hover:underline">Ver documento</a>
                             } @else {
                             <span class="text-gray-500">No adjuntado</span>
                             }
                         </div>
                     </div>
                     <div class="info-item text-center">
-                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.certificacion_bancaria"
-                            [class.text-gray-500]="!tercero.certificacion_bancaria"></i>
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.certificacion_bancaria" [class.text-gray-500]="!tercero.certificacion_bancaria"></i>
                         <div class="info-label">Certificación Bancaria</div>
                         <div class="info-value text-sm">
                             @if (tercero.certificacion_bancaria) {
-                            <a [href]="tercero.certificacion_bancaria" target="_blank"
-                                class="text-blue-400 hover:underline">Ver documento</a>
+                            <a [href]="tercero.certificacion_bancaria" target="_blank" class="text-blue-400 hover:underline">Ver documento</a>
                             } @else {
                             <span class="text-gray-500">No adjuntado</span>
                             }
                         </div>
                     </div>
                     <div class="info-item text-center">
-                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.camara_comercio"
-                            [class.text-gray-500]="!tercero.camara_comercio"></i>
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.camara_comercio" [class.text-gray-500]="!tercero.camara_comercio"></i>
                         <div class="info-label">Cámara de Comercio</div>
                         <div class="info-value text-sm">
                             @if (tercero.camara_comercio) {
-                            <a [href]="tercero.camara_comercio" target="_blank"
-                                class="text-blue-400 hover:underline">Ver documento</a>
+                            <a [href]="tercero.camara_comercio" target="_blank" class="text-blue-400 hover:underline">Ver documento</a>
                             } @else {
                             <span class="text-gray-500">No adjuntado</span>
                             }
                         </div>
                     </div>
                     <div class="info-item text-center">
-                        <i class="pi pi-file-pdf text-3xl mb-2"
-                            [class.text-green-500]="tercero.cedula_representante_legal"
-                            [class.text-gray-500]="!tercero.cedula_representante_legal"></i>
+                        <i class="pi pi-file-pdf text-3xl mb-2" [class.text-green-500]="tercero.cedula_representante_legal" [class.text-gray-500]="!tercero.cedula_representante_legal"></i>
                         <div class="info-label">Cédula Rep. Legal</div>
                         <div class="info-value text-sm">
                             @if (tercero.cedula_representante_legal) {
-                            <a [href]="tercero.cedula_representante_legal" target="_blank"
-                                class="text-blue-400 hover:underline">Ver documento</a>
+                            <a [href]="tercero.cedula_representante_legal" target="_blank" class="text-blue-400 hover:underline">Ver documento</a>
                             } @else {
                             <span class="text-gray-500">No adjuntado</span>
                             }
@@ -357,7 +309,6 @@
                     </div>
                 </div>
             </div>
-
         </div>
         }
 
@@ -368,6 +319,5 @@
             <p class="text-gray-600 text-lg">No se encontró el tercero</p>
         </div>
         }
-
     </p-card>
 </div>

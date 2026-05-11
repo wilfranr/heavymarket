@@ -55,10 +55,7 @@ export class ListComponent implements OnInit {
         this.loading$ = this.store.select(selectArticulosLoading);
         this.pagination$ = this.store.select(selectArticulosPagination);
 
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(term => {
+        this.searchSubject.pipe(debounceTime(500), distinctUntilChanged()).subscribe((term) => {
             this.searchTerm = term;
             this.currentPage = 1;
             this.first = 0;

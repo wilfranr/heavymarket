@@ -33,7 +33,6 @@ export interface CategoriaLanding {
     providedIn: 'root'
 })
 export class LandingManageService extends ApiService {
-
     getAdminCategories(): Observable<CategoriaLanding[]> {
         return this.get<CategoriaLanding[]>('landing/categorias');
     }
@@ -89,12 +88,7 @@ export class LandingManageService extends ApiService {
      * Actualizar subcategoría incluyendo gestión de imagen (multipart/form-data)
      * Usa method spoofing para compatibilidad con Laravel.
      */
-    updateSubcategoryWithImage(
-        id: number,
-        data: Partial<SubcategoriaLanding>,
-        imagenFile?: File | null,
-        removeImagen?: boolean
-    ): Observable<SubcategoriaLanding> {
+    updateSubcategoryWithImage(id: number, data: Partial<SubcategoriaLanding>, imagenFile?: File | null, removeImagen?: boolean): Observable<SubcategoriaLanding> {
         const formData = new FormData();
         formData.append('_method', 'PUT');
 

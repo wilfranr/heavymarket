@@ -49,7 +49,7 @@ export class ListComponent implements OnInit, OnDestroy {
     searchTerm = '';
     sortField = 'nombre';
     sortOrder: 'asc' | 'desc' = 'asc';
-    
+
     // Búsqueda reactiva
     private searchSubject = new Subject<string>();
     private destroy$ = new Subject<void>();
@@ -60,11 +60,7 @@ export class ListComponent implements OnInit, OnDestroy {
         this.pagination$ = this.store.select(selectSistemasPagination);
 
         // Configurar búsqueda con debounce
-        this.searchSubject.pipe(
-            debounceTime(400),
-            distinctUntilChanged(),
-            takeUntil(this.destroy$)
-        ).subscribe(term => {
+        this.searchSubject.pipe(debounceTime(400), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe((term) => {
             this.searchTerm = term;
             this.currentPage = 1; // Resetear a la primera página al buscar
             this.first = 0;

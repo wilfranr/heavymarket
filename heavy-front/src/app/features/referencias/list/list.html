@@ -11,34 +11,52 @@
         </ng-template>
 
         <div class="mb-4 flex gap-6 items-center">
-            <p-select [(ngModel)]="selectedMarcaId" [options]="marcas" optionLabel="nombre" optionValue="id"
-                placeholder="Filtrar por marca o fabricante" [showClear]="true" (ngModelChange)="onMarcaChange()"
-                styleClass="w-full md:w-14rem" [filter]="true" filterBy="nombre,definicion"> </p-select>
+            <p-select
+                [(ngModel)]="selectedMarcaId"
+                [options]="marcas"
+                optionLabel="nombre"
+                optionValue="id"
+                placeholder="Filtrar por marca o fabricante"
+                [showClear]="true"
+                (ngModelChange)="onMarcaChange()"
+                styleClass="w-full md:w-14rem"
+                [filter]="true"
+                filterBy="nombre,definicion"
+            >
+            </p-select>
 
             <div class="flex items-center gap-2">
-                <p-checkbox [(ngModel)]="filterTemporales" [binary]="true" inputId="temporal"
-                    (onChange)="onTemporalChange()"></p-checkbox>
-                <label for="temporal" class="text-sm font-medium cursor-pointer flex items-center gap-1">
-                    Solo temporales <p-tag value="Landing" severity="warn" [rounded]="true" styleClass="text-[10px]"></p-tag>
-                </label>
+                <p-checkbox [(ngModel)]="filterTemporales" [binary]="true" inputId="temporal" (onChange)="onTemporalChange()"></p-checkbox>
+                <label for="temporal" class="text-sm font-medium cursor-pointer flex items-center gap-1"> Solo temporales <p-tag value="Landing" severity="warn" [rounded]="true" styleClass="text-[10px]"></p-tag> </label>
             </div>
         </div>
 
-        <p-table #dt [value]="(referencias$ | async) || []" [loading]="loading$ | async" [paginator]="true"
-            [rows]="rowsPerPage" [totalRecords]="(pagination$ | async)?.total || 0" [first]="first" [lazy]="true"
+        <p-table
+            #dt
+            [value]="(referencias$ | async) || []"
+            [loading]="loading$ | async"
+            [paginator]="true"
+            [rows]="rowsPerPage"
+            [totalRecords]="(pagination$ | async)?.total || 0"
+            [first]="first"
+            [lazy]="true"
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} referencias"
-            [rowsPerPageOptions]="[10, 25, 50]" [globalFilterFields]="['referencia', 'comentario']"
-            (onLazyLoad)="onLazyLoad($event)" responsiveLayout="scroll"
-            styleClass="p-datatable-sm" dataKey="id" editMode="row"
-            (onRowEditSave)="onRowEditSave($event)" (onRowEditCancel)="onRowEditCancel($event)"
-            sortField="created_at" [sortOrder]="-1">
+            [rowsPerPageOptions]="[10, 25, 50]"
+            [globalFilterFields]="['referencia', 'comentario']"
+            (onLazyLoad)="onLazyLoad($event)"
+            responsiveLayout="scroll"
+            styleClass="p-datatable-sm"
+            dataKey="id"
+            editMode="row"
+            sortField="created_at"
+            [sortOrder]="-1"
+        >
             <ng-template pTemplate="caption">
                 <div class="flex">
                     <p-iconfield iconPosition="left" class="w-full">
                         <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')"
-                            placeholder="Buscar referencias..." class="w-full" />
+                        <input pInputText type="text" (input)="dt.filterGlobal($any($event.target).value, 'contains')" placeholder="Buscar referencias..." class="w-full" />
                     </p-iconfield>
                 </div>
             </ng-template>
@@ -61,7 +79,7 @@
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">
-                                <input pInputText type="text" [(ngModel)]="referencia.referencia" class="w-full" />
+                                <input pInputText type="text" [(ngModel)]="editingReferencias[referencia.id].referencia" class="w-full" />
                             </ng-template>
                             <ng-template pTemplate="output">
                                 <div class="flex items-center gap-2">
@@ -75,9 +93,7 @@
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">
-                                <p-select [(ngModel)]="referencia.marca_id" [options]="marcas" optionLabel="nombre"
-                                    optionValue="id" placeholder="Marca o fabricante" styleClass="w-full" appendTo="body"
-                                    [filter]="true" filterBy="nombre,definicion">
+                                <p-select [(ngModel)]="editingReferencias[referencia.id].marca_id" [options]="marcas" optionLabel="nombre" optionValue="id" placeholder="Marca o fabricante" styleClass="w-full" appendTo="body" [filter]="true" filterBy="nombre,definicion">
                                 </p-select>
                             </ng-template>
                             <ng-template pTemplate="output">
@@ -92,13 +108,11 @@
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">
-                                <textarea pTextarea [(ngModel)]="referencia.comentario" rows="2" class="w-full"
-                                    style="resize: none;"></textarea>
+                                <textarea pTextarea [(ngModel)]="editingReferencias[referencia.id].comentario" rows="2" class="w-full" style="resize: none"></textarea>
                             </ng-template>
                             <ng-template pTemplate="output">
                                 <span class="text-sm text-gray-600" [title]="referencia.comentario || ''">
-                                    {{ referencia.comentario ? (referencia.comentario.length > 50 ?
-                                    referencia.comentario.substring(0, 50) + '...' : referencia.comentario) : '-' }}
+                                    {{ referencia.comentario ? (referencia.comentario.length > 50 ? referencia.comentario.substring(0, 50) + '...' : referencia.comentario) : '-' }}
                                 </span>
                             </ng-template>
                         </p-cellEditor>
@@ -106,15 +120,21 @@
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">
-                                <p-select [(ngModel)]="referencia.articulo_id" [options]="articulos"
-                                    optionLabel="definicion" optionValue="id" placeholder="Artículo"
-                                    [filter]="true" filterBy="definicion,descripcionEspecifica" styleClass="w-full"
-                                    appendTo="body">
+                                <p-select
+                                    [(ngModel)]="editingReferencias[referencia.id].articulo_id"
+                                    [options]="articulos"
+                                    optionLabel="definicion"
+                                    optionValue="id"
+                                    placeholder="Artículo"
+                                    [filter]="true"
+                                    filterBy="definicion,descripcionEspecifica"
+                                    styleClass="w-full"
+                                    appendTo="body"
+                                >
                                     <ng-template let-articulo pTemplate="item">
                                         <div class="flex flex-col">
                                             <span class="font-medium text-xs">{{ articulo.definicion }}</span>
-                                            <small class="text-gray-500" style="font-size: 10px;">{{
-                                                articulo.descripcionEspecifica }}</small>
+                                            <small class="text-gray-500" style="font-size: 10px">{{ articulo.descripcionEspecifica }}</small>
                                         </div>
                                     </ng-template>
                                 </p-select>
@@ -122,12 +142,8 @@
                             <ng-template pTemplate="output">
                                 @if (referencia.articulo) {
                                 <div class="flex flex-col gap-1">
-                                    <a [routerLink]="['/app/articulos', referencia.articulo.id]"
-                                        class="text-sm text-blue-600 hover:underline font-medium">
-                                        {{ referencia.articulo.definicion }}
-                                    </a>
-                                    <span class="text-xs text-gray-500">{{ referencia.articulo.descripcionEspecifica |
-                                        slice:0:50 }}</span>
+                                    <a [routerLink]="['/app/articulos', referencia.articulo.id]" class="text-sm text-blue-600 hover:underline font-medium"> {{ referencia.articulo.definicion }} </a>
+                                    <span class="text-xs text-gray-500">{{ referencia.articulo.descripcionEspecifica | slice:0:50 }}</span>
                                 </div>
                                 } @else {
                                 <span class="text-gray-400 text-xs">Sin asociar</span>
@@ -138,18 +154,11 @@
                     <td>
                         <div class="flex gap-2">
                             @if (!editing) {
-                <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil"
-                    (click)="onRowEditInit(referencia)"
-                    class="p-button-rounded p-button-text p-button-warning" pTooltip="Editar"
-                    tooltipPosition="top"></button>
-                <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
-                    (onClick)="eliminarReferencia(referencia)" pTooltip="Eliminar" tooltipPosition="top">
-                </p-button>
-                } @else {
-                <button pButton pRipple type="button" pSaveEditableRow icon="pi pi-check"
-                    class="p-button-rounded p-button-text p-button-success" pTooltip="Guardar"></button>
-                <button pButton pRipple type="button" pCancelEditableRow icon="pi pi-times"
-                    class="p-button-rounded p-button-text p-button-danger" pTooltip="Cancelar"></button>
+                            <button pButton pRipple type="button" pInitEditableRow icon="pi pi-pencil" (click)="onRowEditInit(referencia)" class="p-button-rounded p-button-text p-button-warning" pTooltip="Editar" tooltipPosition="top"></button>
+                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarReferencia(referencia)" pTooltip="Eliminar" tooltipPosition="top"> </p-button>
+                            } @else {
+                            <button pButton pRipple type="button" icon="pi pi-check" (click)="guardarEdicion(referencia)" class="p-button-rounded p-button-text p-button-success" pTooltip="Guardar"></button>
+                            <button pButton pRipple type="button" icon="pi pi-times" (click)="cancelarEdicion(referencia)" class="p-button-rounded p-button-text p-button-danger" pTooltip="Cancelar"></button>
                             }
                         </div>
                     </td>
@@ -168,5 +177,4 @@
     </p-card>
 </div>
 
-<app-referencia-create-modal [(visible)]="showCreateModal" (onReferenciaCreated)="onReferenciaCreada()">
-</app-referencia-create-modal>
+<app-referencia-create-modal [(visible)]="showCreateModal" (onReferenciaCreated)="onReferenciaCreada()"> </app-referencia-create-modal>

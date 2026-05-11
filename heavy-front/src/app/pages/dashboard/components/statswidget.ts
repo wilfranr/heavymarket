@@ -75,7 +75,7 @@ export class StatsWidget implements OnInit {
     });
 
     ngOnInit(): void {
-        this.dashboardService.getStats().subscribe(stats => {
+        this.dashboardService.getStats().subscribe((stats) => {
             this.stats.set(stats);
         });
     }

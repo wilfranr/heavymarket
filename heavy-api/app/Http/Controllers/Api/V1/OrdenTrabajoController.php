@@ -8,18 +8,23 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrdenTrabajoRequest;
 use App\Http\Resources\OrdenTrabajoResource;
 use App\Models\OrdenTrabajo;
+use App\Services\CotizacionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
- * Controlador API para gestión de Órdenes de Trabajo
+ * Controlador API para gestion de Ordenes de Trabajo
  */
 class OrdenTrabajoController extends Controller
 {
+    public function __construct(
+        private readonly CotizacionService $cotizacionService,
+    ) {}
+
     /**
-     * Listar todas las órdenes de trabajo
+     * Listar todas las ordenes de trabajo
      */
     public function index(Request $request): JsonResponse
     {
@@ -161,17 +166,17 @@ class OrdenTrabajoController extends Controller
         ];
 
         // Si viene fecha_entrega pero no fecha_ingreso, no validar after_or_equal
-        if ($request->filled('fecha_entrega') && !$request->filled('fecha_ingreso')) {
+        if ($request->filled('fecha_entrega') && ! $request->filled('fecha_ingreso')) {
             unset($rules['fecha_entrega'][2]); // Remove 'after_or_equal' rule
         }
 
         $validated = $request->validate($rules);
 
         try {
-            if (!empty($validated)) {
+            if (! empty($validated)) {
                 $ordenTrabajo->update($validated);
             }
-            
+
             $ordenTrabajo->load([
                 'tercero',
                 'pedido',
@@ -203,7 +208,7 @@ class OrdenTrabajoController extends Controller
         try {
             // Eliminar referencias primero
             $ordenTrabajo->referencias()->delete();
-            
+
             $ordenTrabajo->delete();
 
             return response()->json([
@@ -213,6 +218,23 @@ class OrdenTrabajoController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al eliminar la orden de trabajo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Generar y descargar el PDF de la orden de trabajo
+     */
+    public function downloadPDF(OrdenTrabajo $ordenTrabajo)
+    {
+        try {
+            $pdf = $this->cotizacionService->generarPDFOrdenTrabajo($ordenTrabajo);
+
+            return $pdf->download("OT-{$ordenTrabajo->id}.pdf");
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al generar el PDF',
                 'error' => $e->getMessage(),
             ], 500);
         }

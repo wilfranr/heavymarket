@@ -19,7 +19,7 @@ interface Brand {
 export class BrandsSection implements OnInit {
     brands: Brand[] = [];
 
-    constructor(private landingService: LandingService) { }
+    constructor(private landingService: LandingService) {}
 
     ngOnInit() {
         this.landingService.getBrands().subscribe((data) => {

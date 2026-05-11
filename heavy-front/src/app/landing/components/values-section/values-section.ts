@@ -7,4 +7,4 @@ import { Component } from '@angular/core';
     templateUrl: './values-section.html',
     styleUrl: './values-section.scss'
 })
-export class ValuesSection { }
+export class ValuesSection {}

@@ -45,92 +45,108 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
         MaquinaCreateModalComponent
     ],
     templateUrl: './tercero-create-modal.component.html',
-    styles: [`
-        :host ::ng-deep .p-panel .p-panel-header {
-            padding: 0.75rem 1rem;
-            background: rgba(255, 255, 255, 0.05);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        :host ::ng-deep .p-panel .p-panel-content {
-            padding: 1rem;
-            background: transparent;
-        }
-        :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link {
-            background: transparent;
-        }
-        
-        /* --- WIZARD STEPS OVERRIDES --- */
+    styles: [
+        `
+            :host ::ng-deep .p-panel .p-panel-header {
+                padding: 0.75rem 1rem;
+                background: rgba(255, 255, 255, 0.05);
+                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            }
+            :host ::ng-deep .p-panel .p-panel-content {
+                padding: 1rem;
+                background: transparent;
+            }
+            :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link {
+                background: transparent;
+            }
 
-        /* CLIENTE (Amarillo) */
-        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #eab308 !important;
-            color: #000 !important;
-        }
-        :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #eab308 !important;
-            font-weight: bold;
-        }
-        
-        /* PROVEEDOR (Azul) */
-        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #3b82f6 !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #3b82f6 !important;
-            font-weight: bold;
-        }
+            /* --- WIZARD STEPS OVERRIDES --- */
 
-        /* AMBOS (Verde) */
-        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
-            background: #22c55e !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
-            color: #22c55e !important;
-            font-weight: bold;
-        }
+            /* CLIENTE (Amarillo) */
+            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #eab308 !important;
+                color: #000 !important;
+            }
+            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #eab308 !important;
+                font-weight: bold;
+            }
 
+            /* PROVEEDOR (Azul) */
+            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #3b82f6 !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #3b82f6 !important;
+                font-weight: bold;
+            }
 
-        /* --- BUTTON OVERRIDES --- */
-        /* Only target primary buttons (not secondary, text, etc) */
+            /* AMBOS (Verde) */
+            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
+                background: #22c55e !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
+                color: #22c55e !important;
+                font-weight: bold;
+            }
 
-        /* CLIENTE */
-        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-            background: #eab308 !important;
-            border-color: #eab308 !important;
-            color: #000 !important;
-        }
-        /* Focus ring for accessibility/aesthetics match */
-        :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #eab308 !important; 
-        }
+            /* --- BUTTON OVERRIDES --- */
+            /* Only target primary buttons (not secondary, text, etc) */
 
-        /* PROVEEDOR */
-        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-            background: #3b82f6 !important;
-            border-color: #3b82f6 !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #3b82f6 !important; 
-        }
+            /* CLIENTE */
+            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+                background: #eab308 !important;
+                border-color: #eab308 !important;
+                color: #000 !important;
+            }
+            /* Focus ring for accessibility/aesthetics match */
+            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #eab308 !important;
+            }
 
-        /* AMBOS */
-        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-            background: #22c55e !important;
-            border-color: #22c55e !important;
-            color: #fff !important;
-        }
-        :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus { 
-            box-shadow: 0 0 0 2px #18181b, 0 0 0 4px #22c55e !important; 
-        }
+            /* PROVEEDOR */
+            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+                background: #3b82f6 !important;
+                border-color: #3b82f6 !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #3b82f6 !important;
+            }
 
-        /* SelectButton Text Colors - Helper classes */
-        .text-cliente { color: #eab308; font-weight: bold; }
-        .text-proveedor { color: #3b82f6; font-weight: bold; }
-        .text-ambos { color: #22c55e; font-weight: bold; }
-    `]
+            /* AMBOS */
+            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+                background: #22c55e !important;
+                border-color: #22c55e !important;
+                color: #fff !important;
+            }
+            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
+                box-shadow:
+                    0 0 0 2px #18181b,
+                    0 0 0 4px #22c55e !important;
+            }
+
+            /* SelectButton Text Colors - Helper classes */
+            .text-cliente {
+                color: #eab308;
+                font-weight: bold;
+            }
+            .text-proveedor {
+                color: #3b82f6;
+                font-weight: bold;
+            }
+            .text-ambos {
+                color: #22c55e;
+                font-weight: bold;
+            }
+        `
+    ]
 })
 export class TerceroCreateModalComponent implements OnInit, OnChanges {
     private readonly fb = inject(FormBuilder);
@@ -269,25 +285,19 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
 
         if (data.country_id) {
-            this.ubicacionService.getStates(data.country_id).subscribe(r => {
+            this.ubicacionService.getStates(data.country_id).subscribe((r) => {
                 this.departamentos.set(r.data);
             });
         }
         if (data.state_id) {
-            this.ubicacionService.getCities(data.state_id).subscribe(r => {
+            this.ubicacionService.getCities(data.state_id).subscribe((r) => {
                 this.ciudades.set(r.data);
             });
         }
     }
 
-
     private initSteps(): void {
-        this.steps = [
-            { label: 'Información general' },
-            { label: 'Ubicación' },
-            { label: 'Contactos' },
-            { label: 'Documentos' }
-        ];
+        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Documentos' }];
     }
 
     get contactos(): FormArray {
@@ -351,8 +361,14 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         const val = this.createTerceroForm.get('tipo_documento')?.value;
         return val === 'nit' || val === 'NIT';
     }
-    get isCliente(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Cliente' || t === 'Ambos'; }
-    get isProveedor(): boolean { const t = this.createTerceroForm.get('tipo')?.value; return t === 'Proveedor' || t === 'Ambos'; }
+    get isCliente(): boolean {
+        const t = this.createTerceroForm.get('tipo')?.value;
+        return t === 'Cliente' || t === 'Ambos';
+    }
+    get isProveedor(): boolean {
+        const t = this.createTerceroForm.get('tipo')?.value;
+        return t === 'Proveedor' || t === 'Ambos';
+    }
     get activeTheme(): string {
         const tipo = this.createTerceroForm?.get('tipo')?.value;
         if (tipo === 'Cliente') return 'theme-cliente';
@@ -399,11 +415,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
         const controls = this.createTerceroForm.controls;
         if (step === 0) {
-            return !controls['nombre'].invalid &&
-                !controls['tipo'].invalid &&
-                !controls['tipo_documento'].invalid &&
-                !controls['numero_documento'].invalid &&
-                !controls['telefono'].invalid;
+            return !controls['nombre'].invalid && !controls['tipo'].invalid && !controls['tipo_documento'].invalid && !controls['numero_documento'].invalid && !controls['telefono'].invalid;
         }
         if (step === 1) {
             return !controls['direccion'].invalid;
@@ -428,31 +440,63 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
     }
 
-    openCreateMaquinaDialog(): void { this.displayCreateMaquinaDialog = true; }
-    onMaquinaCreated(maquina: any): void { this.loadMaquinas(); this.displayCreateMaquinaDialog = false; this.createTerceroForm.patchValue({ maquina_id: maquina.id }); }
-    openCreateFabricanteDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear fabricante próximamente' }); }
-    openCreateSistemaDialog(): void { this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' }); }
+    openCreateMaquinaDialog(): void {
+        this.displayCreateMaquinaDialog = true;
+    }
+    onMaquinaCreated(maquina: any): void {
+        this.loadMaquinas();
+        this.displayCreateMaquinaDialog = false;
+        this.createTerceroForm.patchValue({ maquina_id: maquina.id });
+    }
+    openCreateFabricanteDialog(): void {
+        this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear fabricante próximamente' });
+    }
+    openCreateSistemaDialog(): void {
+        this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' });
+    }
 
     onPaisChange(): void {
         const countryId = this.createTerceroForm.get('country_id')?.value;
-        this.departamentos.set([]); this.ciudades.set([]); this.createTerceroForm.patchValue({ state_id: null, city_id: null });
-        if (countryId) { this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) }); }
+        this.departamentos.set([]);
+        this.ciudades.set([]);
+        this.createTerceroForm.patchValue({ state_id: null, city_id: null });
+        if (countryId) {
+            this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) });
+        }
     }
 
     onDepartamentoChange(): void {
         const stateId = this.createTerceroForm.get('state_id')?.value;
-        this.ciudades.set([]); this.createTerceroForm.patchValue({ city_id: null });
-        if (stateId) { this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades.set(r.data) }); }
+        this.ciudades.set([]);
+        this.createTerceroForm.patchValue({ city_id: null });
+        if (stateId) {
+            this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades.set(r.data) });
+        }
     }
 
-    onFileSelect(event: any, fieldName: string): void { if (event.files && event.files.length > 0) { this.createTerceroForm.patchValue({ [fieldName]: event.files[0] }); } }
+    onFileSelect(event: any, fieldName: string): void {
+        if (event.files && event.files.length > 0) {
+            this.createTerceroForm.patchValue({ [fieldName]: event.files[0] });
+        }
+    }
 
-    closeDialog(): void { this.visible = false; this.visibleChange.emit(false); }
+    closeDialog(): void {
+        this.visible = false;
+        this.visibleChange.emit(false);
+    }
 
-    private loadPaises(): void { this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) }); }
-    private loadMaquinas(): void { this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map(m => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) }); }
-    private loadFabricantes(): void { this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map(f => ({ label: f.nombre, value: f.id }))) }); }
-    private loadSistemas(): void { this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas.set(r.data.map(s => ({ label: s.nombre, value: s.id }))) }); }
+    private loadPaises(): void {
+        this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) });
+    }
+    private loadMaquinas(): void {
+        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
+    }
+    private loadFabricantes(): void {
+        this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map((f) => ({ label: f.nombre, value: f.id }))) });
+    }
+    private loadSistemas(): void {
+        this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas.set(r.data.map((s) => ({ label: s.nombre, value: s.id }))) });
+    }
 
     saveTercero(createAnother: boolean = false): void {
         if (this.isViewMode) {
@@ -514,7 +558,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
 
         const fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
-        fileFields.forEach(field => {
+        fileFields.forEach((field) => {
             if (formValue[field] instanceof File) {
                 formData.append(field, formValue[field]);
             }
@@ -534,7 +578,11 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 const action = this.terceroToEdit ? 'actualizado' : 'creado';
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: `Tercero ${action} correctamente` });
                 this.onTerceroCreated.emit(response.data);
-                if (createAnother && !this.terceroToEdit) { this.resetForm(); } else { this.closeDialog(); }
+                if (createAnother && !this.terceroToEdit) {
+                    this.resetForm();
+                } else {
+                    this.closeDialog();
+                }
             },
             error: (error: any) => {
                 this.loadingTercero = false;

@@ -23,6 +23,7 @@ import { OrdenTrabajo } from '../../../core/models/orden-trabajo.model';
             <div class="flex justify-content-between align-items-center mb-4">
                 <h2>Orden de Trabajo OT-{{ ordenTrabajoId() }}</h2>
                 <div class="flex gap-2">
+                    <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="danger" [outlined]="true" (onClick)="downloadPDF()"> </p-button>
                     <p-button label="Editar" icon="pi pi-pencil" severity="warn" [outlined]="true" (onClick)="onEdit()"> </p-button>
                     <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="onBack()"> </p-button>
                 </div>
@@ -192,6 +193,10 @@ export class DetailComponent implements OnInit {
 
     onBack(): void {
         this.router.navigate(['/app/ordenes-trabajo']);
+    }
+
+    downloadPDF(): void {
+        window.open(`/api/v1/ordenes-trabajo/${this.ordenTrabajoId()}/download-pdf`, '_blank');
     }
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {

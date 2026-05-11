@@ -28,7 +28,7 @@ export class NotificationService {
 
     constructor() {
         this.loadNotifications();
-        
+
         // Inicializar Echo solo si está habilitado en entorno
         if (environment.pusherEnabled) {
             this.initEchoIfEnabled();
@@ -73,10 +73,9 @@ export class NotificationService {
                 }
             });
 
-            this.echo.private(`App.Models.User.${userId}`)
-                .notification((notification: any) => {
-                    this.handleIncomingNotification(notification);
-                });
+            this.echo.private(`App.Models.User.${userId}`).notification((notification: any) => {
+                this.handleIncomingNotification(notification);
+            });
 
             console.log(`[NotificationService] Echo initialized for user ${userId}`);
         } catch (error) {
@@ -103,7 +102,7 @@ export class NotificationService {
         // Actualizar signal
         const current = this.notificationsSignal();
         this.notificationsSignal.set([newNotification, ...current]);
-        
+
         // Mostrar aviso visual (Toast)
         this.toastService.info(newNotification.message, newNotification.title, newNotification);
     }

@@ -1,158 +1,159 @@
 <!doctype html>
 <html lang="es">
+    <head>
+        <meta charset="utf-8" />
+        <title>HeavyMarket - Sistema de Gestión Empresarial</title>
+        <base href="/" />
 
-<head>
-    <meta charset="utf-8" />
-    <title>HeavyMarket - Sistema de Gestión Empresarial</title>
-    <base href="/" />
+        <!-- Viewport y SEO básico -->
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+        <meta name="description" content="HeavyMarket - Sistema completo de gestión de pedidos, cotizaciones, órdenes de compra y terceros. Optimiza tu negocio con nuestra plataforma empresarial." />
+        <meta name="keywords" content="gestión empresarial, pedidos, cotizaciones, órdenes de compra, ERP, sistema de ventas, CRM" />
+        <meta name="author" content="HeavyMarket Team" />
+        <meta name="robots" content="index, follow" />
+        <meta name="theme-color" content="#eab308" />
 
-    <!-- Viewport y SEO básico -->
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="description"
-        content="HeavyMarket - Sistema completo de gestión de pedidos, cotizaciones, órdenes de compra y terceros. Optimiza tu negocio con nuestra plataforma empresarial." />
-    <meta name="keywords"
-        content="gestión empresarial, pedidos, cotizaciones, órdenes de compra, ERP, sistema de ventas, CRM" />
-    <meta name="author" content="HeavyMarket Team" />
-    <meta name="robots" content="index, follow" />
-    <meta name="theme-color" content="#eab308" />
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content="HeavyMarket - Sistema de Gestión Empresarial" />
+        <meta property="og:description" content="Sistema completo de gestión de pedidos, cotizaciones y órdenes de compra." />
+        <meta property="og:site_name" content="HeavyMarket" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website" />
-    <meta property="og:title" content="HeavyMarket - Sistema de Gestión Empresarial" />
-    <meta property="og:description"
-        content="Sistema completo de gestión de pedidos, cotizaciones y órdenes de compra." />
-    <meta property="og:site_name" content="HeavyMarket" />
+        <!-- Twitter -->
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content="HeavyMarket - Sistema de Gestión Empresarial" />
+        <meta name="twitter:description" content="Sistema completo de gestión de pedidos, cotizaciones y órdenes de compra." />
 
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="HeavyMarket - Sistema de Gestión Empresarial" />
-    <meta name="twitter:description"
-        content="Sistema completo de gestión de pedidos, cotizaciones y órdenes de compra." />
+        <!-- FontAwesome -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+        <!-- Performance -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- Performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <!-- Favicon y iconos -->
+        <link rel="icon" type="image/x-icon" href="favicon.ico" />
 
-    <!-- Favicon y iconos -->
-    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap" rel="stylesheet" />
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-        href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800;900&family=Roboto:wght@300;400;500;700;900&display=swap"
-        rel="stylesheet" />
+        <!-- Manifest PWA (futuro) -->
+        <link rel="manifest" href="manifest.json" />
+    </head>
 
-    <!-- Manifest PWA (futuro) -->
-    <link rel="manifest" href="manifest.json" />
-</head>
-
-<body>
-    <!-- Loading spinner inicial -->
-    <app-root>
-        <div class="loader-container">
-            <div style="display: flex; flex-direction: column; align-items: center;">
-                <span class="loader"></span>
-                <p class="loader-text">Cargando HeavyMarket</p>
+    <body>
+        <!-- Loading spinner inicial -->
+        <app-root>
+            <div class="loader-container">
+                <div style="display: flex; flex-direction: column; align-items: center">
+                    <span class="loader"></span>
+                    <p class="loader-text">Cargando HeavyMarket</p>
+                </div>
             </div>
-        </div>
-        <style>
-            html,
-            body {
-                margin: 0;
-                padding: 0;
-                height: 100%;
-                background-color: #0c0e0f;
-                /* Dark background to match landing theme */
-                font-family: 'Roboto', sans-serif;
-            }
-
-            .loader-container {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                height: 100vh;
-                width: 100%;
-            }
-
-            .loader-text {
-                color: #fdb831;
-                font-size: 1.25rem;
-                /* 20px */
-                font-weight: 500;
-                margin-top: 2rem;
-                letter-spacing: 0.5px;
-                animation: pulse 2s infinite;
-            }
-
-            /* Loader CSS */
-            .loader {
-                width: 60px;
-                height: 40px;
-                position: relative;
-                display: inline-block;
-                --base-color: #0c0e0f;
-                /* Start with background color to make 'holes' transparent */
-                transform: scale(1.2);
-                /* 20% bigger */
-            }
-
-            .loader::before {
-                content: '';
-                left: 0;
-                top: 0;
-                position: absolute;
-                width: 36px;
-                height: 36px;
-                border-radius: 50%;
-                background-color: #FFF;
-                background-image: radial-gradient(circle 8px at 18px 18px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 18px 0px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 0px 18px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 36px 18px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 18px 36px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 30px 5px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 30px 5px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 30px 30px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 5px 30px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 5px 5px, var(--base-color) 100%, transparent 0);
-                background-repeat: no-repeat;
-                box-sizing: border-box;
-                animation: rotationBack 3s linear infinite;
-            }
-
-            .loader::after {
-                content: '';
-                left: 35px;
-                top: 15px;
-                position: absolute;
-                width: 24px;
-                height: 24px;
-                border-radius: 50%;
-                background-color: #FFF;
-                background-image: radial-gradient(circle 5px at 12px 12px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 12px 0px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 0px 12px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 24px 12px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 12px 24px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 20px 3px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 20px 3px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 20px 20px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 3px 20px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 3px 3px, var(--base-color) 100%, transparent 0);
-                background-repeat: no-repeat;
-                box-sizing: border-box;
-                animation: rotationBack 4s linear infinite reverse;
-            }
-
-            @keyframes rotationBack {
-                0% {
-                    transform: rotate(0deg);
+            <style>
+                html,
+                body {
+                    margin: 0;
+                    padding: 0;
+                    height: 100%;
+                    background-color: #0c0e0f;
+                    /* Dark background to match landing theme */
+                    font-family: 'Roboto', sans-serif;
                 }
 
-                100% {
-                    transform: rotate(-360deg);
-                }
-            }
-
-            @keyframes pulse {
-
-                0%,
-                100% {
-                    opacity: 1;
+                .loader-container {
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    height: 100vh;
+                    width: 100%;
                 }
 
-                50% {
-                    opacity: 0.7;
+                .loader-text {
+                    color: #fdb831;
+                    font-size: 1.25rem;
+                    /* 20px */
+                    font-weight: 500;
+                    margin-top: 2rem;
+                    letter-spacing: 0.5px;
+                    animation: pulse 2s infinite;
                 }
-            }
-        </style>
-    </app-root>
-</body>
 
+                /* Loader CSS */
+                .loader {
+                    width: 60px;
+                    height: 40px;
+                    position: relative;
+                    display: inline-block;
+                    --base-color: #0c0e0f;
+                    /* Start with background color to make 'holes' transparent */
+                    transform: scale(1.2);
+                    /* 20% bigger */
+                }
+
+                .loader::before {
+                    content: '';
+                    left: 0;
+                    top: 0;
+                    position: absolute;
+                    width: 36px;
+                    height: 36px;
+                    border-radius: 50%;
+                    background-color: #fff;
+                    background-image:
+                        radial-gradient(circle 8px at 18px 18px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 18px 0px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 4px at 0px 18px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 36px 18px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 4px at 18px 36px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 30px 5px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 4px at 30px 5px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 30px 30px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 4px at 5px 30px, var(--base-color) 100%, transparent 0), radial-gradient(circle 4px at 5px 5px, var(--base-color) 100%, transparent 0);
+                    background-repeat: no-repeat;
+                    box-sizing: border-box;
+                    animation: rotationBack 3s linear infinite;
+                }
+
+                .loader::after {
+                    content: '';
+                    left: 35px;
+                    top: 15px;
+                    position: absolute;
+                    width: 24px;
+                    height: 24px;
+                    border-radius: 50%;
+                    background-color: #fff;
+                    background-image:
+                        radial-gradient(circle 5px at 12px 12px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 12px 0px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 2.5px at 0px 12px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 24px 12px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 2.5px at 12px 24px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 20px 3px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 2.5px at 20px 3px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 20px 20px, var(--base-color) 100%, transparent 0),
+                        radial-gradient(circle 2.5px at 3px 20px, var(--base-color) 100%, transparent 0), radial-gradient(circle 2.5px at 3px 3px, var(--base-color) 100%, transparent 0);
+                    background-repeat: no-repeat;
+                    box-sizing: border-box;
+                    animation: rotationBack 4s linear infinite reverse;
+                }
+
+                @keyframes rotationBack {
+                    0% {
+                        transform: rotate(0deg);
+                    }
+
+                    100% {
+                        transform: rotate(-360deg);
+                    }
+                }
+
+                @keyframes pulse {
+                    0%,
+                    100% {
+                        opacity: 1;
+                    }
+
+                    50% {
+                        opacity: 0.7;
+                    }
+                }
+            </style>
+        </app-root>
+    </body>
 </html>

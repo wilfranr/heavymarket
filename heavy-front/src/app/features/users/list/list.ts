@@ -28,10 +28,22 @@ import { selectUsers, selectLoading, selectTotal, selectCurrentPage } from '../.
     selector: 'app-users-list',
     standalone: true,
     imports: [
-        CommonModule, TableModule, ButtonModule, CardModule, InputTextModule, 
-        ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, 
-        IconFieldModule, InputIconModule, TagModule, DialogModule, 
-        PasswordModule, MultiSelectModule, ToolbarModule
+        CommonModule,
+        TableModule,
+        ButtonModule,
+        CardModule,
+        InputTextModule,
+        ToastModule,
+        ConfirmDialogModule,
+        FormsModule,
+        TooltipModule,
+        IconFieldModule,
+        InputIconModule,
+        TagModule,
+        DialogModule,
+        PasswordModule,
+        MultiSelectModule,
+        ToolbarModule
     ],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html'
@@ -46,7 +58,7 @@ export class ListComponent implements OnInit {
     users$!: Observable<User[]>;
     loading$!: Observable<boolean>;
     total$!: Observable<number>;
-    
+
     // Paginación
     currentPage = 1;
     rowsPerPage = 15;
@@ -55,9 +67,9 @@ export class ListComponent implements OnInit {
 
     // Dialog state
     userDialog: boolean = false;
-    user: Partial<User> & { password?: string, currentRoles?: string[] } = {};
+    user: Partial<User> & { password?: string; currentRoles?: string[] } = {};
     dialogTitle: string = '';
-    
+
     availableRoles = [
         { label: 'Super Admin', value: 'super_admin' },
         { label: 'Administrador', value: 'Administrador' },
@@ -103,7 +115,7 @@ export class ListComponent implements OnInit {
     }
 
     editUser(userEdit: User): void {
-        this.user = { ...userEdit, currentRoles: userEdit.roles?.map((r: any) => typeof r === 'string' ? r : r.name) || [], password: '' };
+        this.user = { ...userEdit, currentRoles: userEdit.roles?.map((r: any) => (typeof r === 'string' ? r : r.name)) || [], password: '' };
         this.dialogTitle = 'Editar Usuario';
         this.userDialog = true;
     }
@@ -119,7 +131,7 @@ export class ListComponent implements OnInit {
                 email: this.user.email,
                 roles: this.user.currentRoles
             };
-            
+
             if (this.user.password) {
                 payload.password = this.user.password;
             }
@@ -154,11 +166,16 @@ export class ListComponent implements OnInit {
 
     getSeverity(role: string) {
         switch (role) {
-            case 'super_admin': return 'danger';
-            case 'Administrador': return 'info';
-            case 'Vendedor': return 'warn';
-            case 'Logistica': return 'success';
-            default: return 'secondary';
+            case 'super_admin':
+                return 'danger';
+            case 'Administrador':
+                return 'info';
+            case 'Vendedor':
+                return 'warn';
+            case 'Logistica':
+                return 'success';
+            default:
+                return 'secondary';
         }
     }
 }

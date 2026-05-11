@@ -22,12 +22,12 @@ export default defineConfig({
         baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:4200',
         trace: 'on-first-retry',
         screenshot: 'only-on-failure',
-        video: 'on-first-retry',
+        video: 'on-first-retry'
     },
     projects: [
         { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
         { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-        { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+        { name: 'webkit', use: { ...devices['Desktop Safari'] } }
     ],
     webServer: process.env.CI
         ? undefined
@@ -35,6 +35,6 @@ export default defineConfig({
               command: 'npm run start',
               url: 'http://localhost:4200',
               reuseExistingServer: !process.env.CI,
-              timeout: 120_000,
-          },
+              timeout: 120_000
+          }
 });

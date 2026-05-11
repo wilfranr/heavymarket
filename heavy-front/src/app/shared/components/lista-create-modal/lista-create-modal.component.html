@@ -1,13 +1,10 @@
 <p-toast />
-<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '500px' }" [draggable]="false"
-    [resizable]="false" (onHide)="closeDialog()">
+<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '500px' }" [draggable]="false" [resizable]="false" (onHide)="closeDialog()">
     <form [formGroup]="listaForm" class="flex flex-col gap-4 mt-2">
         <!-- Tipo (Disabled if defaulted, but shown for context) -->
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium text-gray-400">Categoría</label>
-            <p-select [options]="tiposOptions" formControlName="tipo" optionLabel="label" optionValue="value"
-                placeholder="Seleccione categoría" class="w-full" [readonly]="true" [filter]="true" filterBy="label">
-            </p-select>
+            <p-select [options]="tiposOptions" formControlName="tipo" optionLabel="label" optionValue="value" placeholder="Seleccione categoría" class="w-full" [readonly]="true" [filter]="true" filterBy="label"> </p-select>
         </div>
 
         <!-- Nombre -->
@@ -15,15 +12,14 @@
             <label class="text-sm font-medium text-gray-400">Nombre<span class="text-red-500">*</span></label>
             <input pInputText formControlName="nombre" placeholder="Ej: Piston, Filtro Aire, etc." class="w-full" />
             @if (listaForm.get('nombre')?.touched && listaForm.get('nombre')?.invalid) {
-            <small class="text-red-500 font-medium">El nombre es requerido</small>
+                <small class="text-red-500 font-medium">El nombre es requerido</small>
             }
         </div>
 
         <!-- Definición -->
         <div class="flex flex-col gap-2">
             <label class="text-sm font-medium text-gray-400">Descripción / Definición</label>
-            <textarea pTextarea formControlName="definicion" rows="3" placeholder="Opcional: Detalles adicionales"
-                class="w-full resize-none"></textarea>
+            <textarea pTextarea formControlName="definicion" rows="3" placeholder="Opcional: Detalles adicionales" class="w-full resize-none"></textarea>
         </div>
 
         <!-- Foto / Plano Esquemático -->
@@ -31,21 +27,24 @@
             <label class="text-sm font-medium text-gray-400">
                 {{ listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'Plano Esquemático (Medidas)' : 'Imagen Referencial' }}
             </label>
-            <p-fileUpload mode="basic" chooseLabel="Seleccionar Imagen" chooseIcon="pi pi-image" 
+            <p-fileUpload
+                mode="basic"
+                chooseLabel="Seleccionar Imagen"
+                chooseIcon="pi pi-image"
                 [name]="listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'fotoMedida' : 'foto'"
-                accept="image/*" maxFileSize="2000000" 
+                accept="image/*"
+                maxFileSize="2000000"
                 (onSelect)="onFileSelect($event, listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'fotoMedida' : 'foto')"
-                styleClass="p-button-secondary w-full">
+                styleClass="p-button-secondary w-full"
+            >
             </p-fileUpload>
         </div>
     </form>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
-                (onClick)="closeDialog()"></p-button>
-            <p-button label="Guardar" icon="pi pi-check" [loading]="loading" (onClick)="saveLista()"
-                styleClass="bg-[#fdb831] border-none text-black font-bold"></p-button>
+            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="closeDialog()"></p-button>
+            <p-button label="Guardar" icon="pi pi-check" [loading]="loading" (onClick)="saveLista()" styleClass="bg-[#fdb831] border-none text-black font-bold"></p-button>
         </div>
     </ng-template>
 </p-dialog>

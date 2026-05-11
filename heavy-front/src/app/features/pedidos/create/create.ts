@@ -511,17 +511,6 @@ export class CreateComponent implements OnInit {
             }
         });
 
-        // Cargar máquinas
-        this.maquinaService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.maquinasFull = response.data;
-                this.maquinas.set(response.data.map((m: any) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
-                    value: m.id
-                })));
-            }
-        });
-
         // Cargar fabricantes
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
@@ -799,7 +788,10 @@ export class CreateComponent implements OnInit {
             }
         }
 
-        return this.referenciaService.bulkSearchOrCreate([{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }], true, marcaId, 'Referencia temporal desde pedido interno - Requiere revisión', articuloId, listaId).pipe(
+        const esTemporal = !articuloId;
+        const comentarioTemporal = esTemporal ? 'Referencia temporal desde pedido interno - Requiere revision' : undefined;
+
+        return this.referenciaService.bulkSearchOrCreate([{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }], esTemporal, marcaId, comentarioTemporal, articuloId, listaId).pipe(
             map((res) => {
                 const created = res?.data?.[0];
                 if (created?.referencia_id) {

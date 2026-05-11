@@ -5,10 +5,8 @@
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">{{ sistema.nombre }}</h2>
                 <div class="flex gap-2">
-                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarSistema()">
-                    </p-button>
-                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true"
-                        (onClick)="volver()"> </p-button>
+                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="editarSistema()"> </p-button>
+                    <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="volver()"> </p-button>
                 </div>
             </div>
         </ng-template>
@@ -37,8 +35,7 @@
             <div>
                 <h3 class="text-lg font-semibold mb-4">Imagen</h3>
                 @if (sistema.imagen) {
-                <img [src]="sistema.imagen" [alt]="sistema.nombre"
-                    class="w-full max-w-xs h-auto rounded-lg shadow-md" />
+                <img [src]="sistema.imagen" [alt]="sistema.nombre" class="w-full max-w-xs h-auto rounded-lg shadow-md" />
                 } @else {
                 <p class="text-gray-400">No hay imagen disponible</p>
                 }
@@ -77,9 +74,17 @@
                 </div>
             </ng-template>
 
-            <p-table [value]="sistema.articulos" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
-                [tableStyle]="{ 'min-width': '50rem' }" responsiveLayout="scroll"
-                styleClass="p-datatable-sm p-datatable-striped" [rowHover]="true" selectionMode="single">
+            <p-table
+                [value]="sistema.articulos"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-sm p-datatable-striped"
+                [rowHover]="true"
+                selectionMode="single"
+            >
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 80px">ID</th>
@@ -93,20 +98,16 @@
                         <td>{{ articulo.id }}</td>
                         <td>
                             @if (articulo.foto) {
-                            <img [src]="articulo.foto" [alt]="articulo.nombre"
-                                class="w-12 h-12 object-cover rounded-md shadow-sm" />
+                            <img [src]="articulo.foto" [alt]="articulo.nombre" class="w-12 h-12 object-cover rounded-md shadow-sm" />
                             } @else {
-                            <div
-                                class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                            <div class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
                                 <i class="pi pi-image text-gray-400"></i>
                             </div>
                             }
                         </td>
                         <td class="font-medium">{{ articulo.nombre }}</td>
                         <td>
-                            <div class="line-clamp-2" [title]="articulo.definicion">
-                                {{ articulo.definicion || 'Sin definición' }}
-                            </div>
+                            <div class="line-clamp-2" [title]="articulo.definicion">{{ articulo.definicion || 'Sin definición' }}</div>
                         </td>
                     </tr>
                 </ng-template>
@@ -118,8 +119,7 @@
             </p-table>
         </p-card>
     </div>
-    }
-    } @else {
+    } } @else {
     <p-card>
         <div class="text-center py-8">
             <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>

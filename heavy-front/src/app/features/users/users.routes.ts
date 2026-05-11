@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 
 export const usersRoutes: Routes = [
-    { 
-        path: '', 
-        loadComponent: () => import('./list/list').then((m) => m.ListComponent) 
+    {
+        path: '',
+        loadComponent: () => import('./list/list').then((m) => m.ListComponent)
     }
 ];

@@ -5,16 +5,24 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\PedidoEstado;
+use App\Events\NewReferencesAvailable;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StorePedidoRequest;
 use App\Http\Requests\UpdatePedidoRequest;
+use App\Http\Resources\PedidoReferenciaProveedorResource;
+use App\Http\Resources\PedidoReferenciaResource;
 use App\Http\Resources\PedidoResource;
 use App\Jobs\SyncPedidoImages;
 use App\Models\Maquina;
 use App\Models\Pedido;
+use App\Models\Tercero;
 use App\Models\User;
+use App\Notifications\ProviderNewReferencesNotification;
+use App\Notifications\SystemNotification;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Controlador API para gestión de Pedidos
@@ -24,7 +32,7 @@ use Illuminate\Http\Request;
  */
 class PedidoController extends Controller
 {
-    use \Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+    use AuthorizesRequests;
 
     /**
      * @var PedidoService
@@ -59,14 +67,14 @@ class PedidoController extends Controller
             $query->where('estado', 'En_Analisis');
         }
         // Vendedores ven: sus pedidos O pedidos de clientes (user con rol Cliente)
-        elseif (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])) {
+        elseif (! $user->hasAnyRole(['super_admin', 'Administrador'])) {
             $query->where(function ($q) use ($user) {
                 $q->where('user_id', $user->id)
-                  ->orWhereHas('user', function ($q2) {
-                      $q2->whereHas('roles', function ($q3) {
-                          $q3->where('name', 'Cliente');
-                      });
-                  });
+                    ->orWhereHas('user', function ($q2) {
+                        $q2->whereHas('roles', function ($q3) {
+                            $q3->where('name', 'Cliente');
+                        });
+                    });
             });
         }
 
@@ -219,7 +227,7 @@ class PedidoController extends Controller
     {
         if ($pedido->estado === PedidoEstado::Cancelado->value) {
             return response()->json([
-                'message' => 'No se puede editar un pedido que ya ha sido cancelado.'
+                'message' => 'No se puede editar un pedido que ya ha sido cancelado.',
             ], 422);
         }
 
@@ -286,6 +294,7 @@ class PedidoController extends Controller
             if ($estadoAnterior !== PedidoEstado::En_Costeo && $nuevoEstado === 'En_Costeo') {
                 try {
                     $this->notificarVendedorCosteo($pedido, $request->user());
+                    $this->notificarProveedoresCosteo($pedido);
                 } catch (\Exception $e) {
                     // No fallar la request si la notificación falla
                 }
@@ -311,12 +320,12 @@ class PedidoController extends Controller
     {
         try {
             // Buscar usuarios con rol Analista (mismo rol definido en BD / Spatie)
-            $analistas = \App\Models\User::whereHas('roles', function ($q) {
+            $analistas = User::whereHas('roles', function ($q) {
                 $q->where('name', 'Analista');
             })->get();
 
             foreach ($analistas as $analista) {
-                $analista->notify(new \App\Notifications\SystemNotification(
+                $analista->notify(new SystemNotification(
                     'pedido_en_analisis',
                     'Pedido #'.$pedido->id.' enviado a Análisis',
                     'El vendedor '.$vendedor->name.' ha enviado el pedido #'.$pedido->id.' para análisis.',
@@ -338,11 +347,11 @@ class PedidoController extends Controller
         try {
             // Obtener el vendedor asignado al pedido
             $vendedor = $pedido->user;
-            if (!$vendedor) {
+            if (! $vendedor) {
                 return;
             }
 
-            $vendedor->notify(new \App\Notifications\SystemNotification(
+            $vendedor->notify(new SystemNotification(
                 'pedido_en_costeo',
                 'Pedido #'.$pedido->id.' en Costeo',
                 'El analista '.$analista->name.' ha finalizado el análisis. El pedido #'.$pedido->id.' está listo para costeo. ¡Revísalo y cotiza las mejores opciones!',
@@ -388,7 +397,7 @@ class PedidoController extends Controller
         $referencia->load(['referencia.articulo', 'sistema', 'marca', 'lista']);
 
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaResource($referencia),
+            'data' => new PedidoReferenciaResource($referencia),
             'message' => 'Referencia agregada exitosamente',
         ], 201);
     }
@@ -417,7 +426,7 @@ class PedidoController extends Controller
         $proveedor = $pedidoReferencia->proveedores()->create(array_merge($validated, $valores));
 
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
+            'data' => new PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
             'message' => 'Proveedor agregado exitosamente',
         ], 201);
     }
@@ -444,7 +453,7 @@ class PedidoController extends Controller
         $proveedor->update(array_merge($validated, $valores));
 
         return response()->json([
-            'data' => new \App\Http\Resources\PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
+            'data' => new PedidoReferenciaProveedorResource($proveedor->load(['tercero', 'marca'])),
             'message' => 'Proveedor actualizado exitosamente',
         ]);
     }
@@ -469,11 +478,18 @@ class PedidoController extends Controller
         $pedido->save();
 
         if ($vendedor = $pedido->user) {
-            $vendedor->notify(new \App\Notifications\SystemNotification(
+            $vendedor->notify(new SystemNotification(
                 'pedido_actualizado', 'Pedido listo para costeo #'.$pedido->id,
                 'El analista '.$request->user()->name.' ha finalizado la revisión. Ya puedes iniciar el costeo.',
                 'pi-dollar', 'green', ['id' => $pedido->id]
             ));
+        }
+
+        // Notificar a proveedores calificados
+        try {
+            $this->notificarProveedoresCosteo($pedido);
+        } catch (\Exception $e) {
+            // Silenciar errores de notificación
         }
 
         return response()->json(['data' => new PedidoResource($pedido), 'message' => 'Pedido enviado a costeo exitosamente']);
@@ -525,9 +541,9 @@ class PedidoController extends Controller
 
             // Notificar al vendedor
             if ($vendedor = $pedido->user) {
-                $vendedor->notify(new \App\Notifications\SystemNotification(
+                $vendedor->notify(new SystemNotification(
                     'pedido_cotizado',
-                    'Pedido #' . $pedido->id . ' cotizado',
+                    'Pedido #'.$pedido->id.' cotizado',
                     'El analista ha creado la cotización. Revísala y envíala al cliente.',
                     'pi-file-edit',
                     'green',
@@ -574,15 +590,15 @@ class PedidoController extends Controller
 
             // Notificar a los analistas
             try {
-                $analistas = \App\Models\User::whereHas('roles', function ($q) {
+                $analistas = User::whereHas('roles', function ($q) {
                     $q->where('name', 'Analista');
                 })->get();
 
                 foreach ($analistas as $analista) {
-                    $analista->notify(new \App\Notifications\SystemNotification(
+                    $analista->notify(new SystemNotification(
                         'pedido_devuelto_analista',
-                        'Pedido #' . $pedido->id . ' devuelto a Análisis',
-                        'El asesor ' . $request->user()->name . ' ha devuelto el pedido #' . $pedido->id . ' para corrección de referencias: ' . $validated['comentario'],
+                        'Pedido #'.$pedido->id.' devuelto a Análisis',
+                        'El asesor '.$request->user()->name.' ha devuelto el pedido #'.$pedido->id.' para corrección de referencias: '.$validated['comentario'],
                         'pi-arrow-right',
                         'orange',
                         ['id' => $pedido->id]
@@ -601,7 +617,7 @@ class PedidoController extends Controller
         }
     }
 
-/**
+    /**
      * Devolver pedido al vendedor (desde En_Analisis a Nuevo)
      * El analista devuelve el pedido porque necesita información adicional del cliente
      */
@@ -631,7 +647,7 @@ class PedidoController extends Controller
             ];
 
             $pedido->comentario = $comentariosExistentes;
-            
+
             // Sincronizar referencias si se proporcionan (guardado automático del análisis #101)
             if ($request->has('referencias')) {
                 $pedidoService = app(\App\Services\PedidoService::class);
@@ -643,10 +659,10 @@ class PedidoController extends Controller
 
             // Notificar al vendedor
             if ($vendedor = $pedido->user) {
-                $vendedor->notify(new \App\Notifications\SystemNotification(
+                $vendedor->notify(new SystemNotification(
                     'pedido_devuelto',
-                    'Pedido #' . $pedido->id . ' devuelto por analista',
-                    'El analista ha devuelto el pedido para que completes la información: ' . $validated['comentario'],
+                    'Pedido #'.$pedido->id.' devuelto por analista',
+                    'El analista ha devuelto el pedido para que completes la información: '.$validated['comentario'],
                     'pi-arrow-left',
                     'orange',
                     ['id' => $pedido->id]
@@ -677,12 +693,12 @@ class PedidoController extends Controller
         try {
             if ($validated['respuesta'] === 'aprobar') {
                 $pedido->transitarA(PedidoEstado::Aprobado);
-                
+
                 // Notificar al vendedor
                 if ($vendedor = $pedido->user) {
-                    $vendedor->notify(new \App\Notifications\SystemNotification(
+                    $vendedor->notify(new SystemNotification(
                         'pedido_aprobado',
-                        'Pedido #' . $pedido->id . ' aprobado',
+                        'Pedido #'.$pedido->id.' aprobado',
                         'El cliente ha aprobado la cotización. Puedes generar la orden de trabajo.',
                         'pi-check-circle',
                         'green',
@@ -703,10 +719,10 @@ class PedidoController extends Controller
 
                 // Notificar al vendedor
                 if ($vendedor = $pedido->user) {
-                    $vendedor->notify(new \App\Notifications\SystemNotification(
+                    $vendedor->notify(new SystemNotification(
                         'pedido_rechazado',
-                        'Pedido #' . $pedido->id . ' rechazado',
-                        'El cliente ha rechazado la cotización: ' . ($validated['comentario'] ?? 'Sin comentario'),
+                        'Pedido #'.$pedido->id.' rechazado',
+                        'El cliente ha rechazado la cotización: '.($validated['comentario'] ?? 'Sin comentario'),
                         'pi-times-circle',
                         'red',
                         ['id' => $pedido->id]
@@ -810,7 +826,7 @@ class PedidoController extends Controller
         ]);
 
         try {
-            \Illuminate\Support\Facades\DB::transaction(function () use ($pedido, $validated) {
+            DB::transaction(function () use ($pedido, $validated) {
                 foreach ($validated['referencias'] as $refData) {
                     $pedidoReferencia = $pedido->referencias()->findOrFail($refData['id']);
 
@@ -818,34 +834,34 @@ class PedidoController extends Controller
 
                     // Obtener IDs actuales en la base de datos
                     $currentIds = $pedidoReferencia->proveedores()->pluck('id')->toArray();
-                    
+
                     // Obtener IDs enviados que deben conservarse
                     $idsToKeep = collect($proveedores)
-                        ->filter(fn($p) => isset($p['id']) && $p['id'])
+                        ->filter(fn ($p) => isset($p['id']) && $p['id'])
                         ->pluck('id')
-                        ->map(fn($id) => (int)$id)
+                        ->map(fn ($id) => (int) $id)
                         ->toArray();
 
                     // Determinar qué IDs deben ser eliminados
                     $idsToDelete = array_diff($currentIds, $idsToKeep);
-                    
-                    if (!empty($idsToDelete)) {
+
+                    if (! empty($idsToDelete)) {
                         $pedidoReferencia->proveedores()->whereIn('id', $idsToDelete)->delete();
                     }
 
                     foreach ($proveedores as $provData) {
                         $ubicacion = 'Nacional';
-                        $tercero = \App\Models\Tercero::with('country')->find($provData['proveedor_id']);
+                        $tercero = Tercero::with('country')->find($provData['proveedor_id']);
                         if ($tercero && ($tercero->country_id != 48 && ($tercero->country->iso2 ?? '') != 'CO')) {
                             $ubicacion = 'Internacional';
                         }
 
                         $calcData = array_merge($provData, [
-                            'ubicacion' => $ubicacion, 
-                            'costo_unidad' => $provData['costo_unidad']
+                            'ubicacion' => $ubicacion,
+                            'costo_unidad' => $provData['costo_unidad'],
                         ]);
                         $valores = $this->pedidoService->calcularValores($calcData, $pedidoReferencia);
-                        
+
                         $updateData = [
                             'proveedor_id' => $provData['proveedor_id'],
                             'marca_id' => $provData['marca_id'],
@@ -856,7 +872,7 @@ class PedidoController extends Controller
                             'ubicacion' => $ubicacion,
                             'valor_unidad' => $valores['valor_unidad'],
                             'valor_total' => $valores['valor_total'],
-                            'estado' => $provData['seleccionado'] ? 1 : 0
+                            'estado' => $provData['seleccionado'] ? 1 : 0,
                         ];
 
                         if (isset($provData['id']) && $provData['id']) {
@@ -880,7 +896,7 @@ class PedidoController extends Controller
 
             return response()->json([
                 'message' => 'Costeo guardado exitosamente',
-                'data' => new \App\Http\Resources\PedidoResource($pedido)
+                'data' => new PedidoResource($pedido),
             ]);
 
         } catch (\Exception $e) {
@@ -889,11 +905,56 @@ class PedidoController extends Controller
                 'trace' => $e->getTraceAsString(),
                 'pedido_id' => $pedido->id,
             ]);
-            
+
             return response()->json([
                 'message' => 'Error al guardar el costeo',
                 'error' => $e->getMessage(),
             ], 500);
+        }
+    }
+
+    /**
+     * Notifica a los proveedores cuyas marcas/categorías coinciden con las referencias del pedido
+     */
+    private function notificarProveedoresCosteo(Pedido $pedido): void
+    {
+        $referencias = $pedido->referencias;
+        $proveedoresANotificar = [];
+
+        foreach ($referencias as $ref) {
+            // Buscar proveedores que manejen esta marca Y esta categoría
+            $proveedores = Tercero::where('provider_access', true)
+                ->whereHas('fabricantes', function ($q) use ($ref) {
+                    $q->where('lista_id', $ref->marca_id);
+                })
+                ->whereHas('categoriasComerciales', function ($q) use ($ref) {
+                    $q->where('lista_id', $ref->categoria_comercial_id);
+                })
+                ->with('user')
+                ->get();
+
+            foreach ($proveedores as $prov) {
+                if (! isset($proveedoresANotificar[$prov->id])) {
+                    $proveedoresANotificar[$prov->id] = [
+                        'tercero' => $prov,
+                        'count' => 0,
+                    ];
+                }
+                $proveedoresANotificar[$prov->id]['count']++;
+            }
+        }
+
+        foreach ($proveedoresANotificar as $data) {
+            $prov = $data['tercero'];
+            $count = $data['count'];
+
+            // 1. Notificación formal (Database + Broadcast) si tiene usuario vinculado
+            if ($prov->user) {
+                $prov->user->notify(new ProviderNewReferencesNotification($count, $pedido->id));
+            }
+
+            // 2. Broadcast directo al canal del tercero para widgets en tiempo real
+            broadcast(new NewReferencesAvailable($prov->id, $count))->toOthers();
         }
     }
 }

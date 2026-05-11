@@ -42,7 +42,6 @@ export interface DashboardNotification {
     providedIn: 'root'
 })
 export class DashboardService extends ApiService {
-
     /**
      * Obtiene las estadísticas generales del sistema
      */

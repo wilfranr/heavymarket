@@ -86,17 +86,11 @@ export class PedidosEffects {
                     mergeMap((response) => {
                         const id = response.data.id;
                         const hasImages = pedidoPayloadHasReferenciaImagenes(pedido);
-                        const afterSuccess = from([
-                            PedidosActions.createPedidoSuccess({ pedido: response.data }),
-                            PedidosActions.loadPedido({ id })
-                        ]);
+                        const afterSuccess = from([PedidosActions.createPedidoSuccess({ pedido: response.data }), PedidosActions.loadPedido({ id })]);
                         if (!hasImages) {
                             return afterSuccess;
                         }
-                        return concat(
-                            afterSuccess,
-                            timer(2000).pipe(map(() => PedidosActions.loadPedido({ id })))
-                        );
+                        return concat(afterSuccess, timer(2000).pipe(map(() => PedidosActions.loadPedido({ id }))));
                     }),
                     catchError((error) =>
                         of(
@@ -121,17 +115,11 @@ export class PedidosEffects {
                     mergeMap((response) => {
                         const idPedido = response.data.id;
                         const hasImages = pedidoPayloadHasReferenciaImagenes(changes);
-                        const afterSuccess = from([
-                            PedidosActions.updatePedidoSuccess({ pedido: response.data }),
-                            PedidosActions.loadPedido({ id: idPedido })
-                        ]);
+                        const afterSuccess = from([PedidosActions.updatePedidoSuccess({ pedido: response.data }), PedidosActions.loadPedido({ id: idPedido })]);
                         if (!hasImages) {
                             return afterSuccess;
                         }
-                        return concat(
-                            afterSuccess,
-                            timer(2000).pipe(map(() => PedidosActions.loadPedido({ id: idPedido })))
-                        );
+                        return concat(afterSuccess, timer(2000).pipe(map(() => PedidosActions.loadPedido({ id: idPedido }))));
                     }),
                     catchError((error) =>
                         of(

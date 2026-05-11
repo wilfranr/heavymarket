@@ -1,10 +1,9 @@
 import { test, expect } from '@playwright/test';
 
 test.describe('Flujo Automatizado de Cotización - Módulo de Costeo', () => {
-
     test('Debe permitir seleccionar proveedores y generar la cotización exitosamente', async ({ page }) => {
         // 1. Mockear la carga del pedido y sus referencias de costeo
-        await page.route('**/v1/pedidos/123/costeo', async route => {
+        await page.route('**/v1/pedidos/123/costeo', async (route) => {
             await route.fulfill({
                 json: {
                     id: 123,
@@ -13,9 +12,7 @@ test.describe('Flujo Automatizado de Cotización - Módulo de Costeo', () => {
                         {
                             id: 1,
                             definicion: 'FILTRO DE ACEITE',
-                            proveedores: [
-                                { id: 501, nombre: 'Proveedor A', costo_unidad: 50, valor_unidad: 70, marca: { nombre: 'CAT' } }
-                            ]
+                            proveedores: [{ id: 501, nombre: 'Proveedor A', costo_unidad: 50, valor_unidad: 70, marca: { nombre: 'CAT' } }]
                         }
                     ]
                 }
@@ -24,7 +21,7 @@ test.describe('Flujo Automatizado de Cotización - Módulo de Costeo', () => {
 
         // 2. Mockear el endpoint de finalizar costeo
         let capturedPayload: any;
-        await page.route('**/v1/cotizaciones/finalizar-costeo', async route => {
+        await page.route('**/v1/cotizaciones/finalizar-costeo', async (route) => {
             capturedPayload = route.request().postDataJSON();
             await route.fulfill({
                 status: 200,

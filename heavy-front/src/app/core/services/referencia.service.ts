@@ -18,7 +18,7 @@ export class ReferenciaService extends ApiService {
     /**
      * Obtener todas las referencias con filtros
      */
-    getAll(params?: { search?: string; marca_id?: number; articulo_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number; es_temporal?: boolean }): Observable<PaginatedResponse<Referencia>> {
+    getAll(params?: { search?: string; marca_id?: number; articulo_id?: number; disponibles?: boolean; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number; es_temporal?: boolean }): Observable<PaginatedResponse<Referencia>> {
         return this.get<PaginatedResponse<Referencia>>(this.endpoint, params);
     }
 
@@ -44,10 +44,7 @@ export class ReferenciaService extends ApiService {
         no_encontrados?: string[];
         message?: string;
     }> {
-        return this.post<{ data: any[]; no_encontrados?: string[]; message?: string }>(
-            `${this.endpoint}/bulk-search`,
-            { items }
-        );
+        return this.post<{ data: any[]; no_encontrados?: string[]; message?: string }>(`${this.endpoint}/bulk-search`, { items });
     }
 
     /**

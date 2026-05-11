@@ -26,7 +26,7 @@ export interface Category {
 export class LandingService {
     private trmUrl = 'https://www.datos.gov.co/resource/32sa-8pi3.json';
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
     getTrm(): Observable<number> {
         return this.http.get<any[]>(this.trmUrl).pipe(
@@ -90,7 +90,7 @@ export class LandingService {
         formData.append('selectedArrangement', data.selectedArrangement || '');
 
         // Appending nested userData
-        Object.keys(data.userData).forEach(key => {
+        Object.keys(data.userData).forEach((key) => {
             let value = data.userData[key];
             if (value && typeof value === 'object' && value.id) {
                 formData.append(`userData[${key}]`, value.id);

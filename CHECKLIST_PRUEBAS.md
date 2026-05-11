@@ -263,14 +263,14 @@
 ### Módulos Implementados:
 - ✅ **Pedidos**: Lista, Crear, Editar, Detalle (completamente funcional)
 - ✅ **Terceros**: Lista, Crear, Editar, Detalle (completamente funcional)
-- ⏳ **Cotizaciones**: Solo placeholder (pendiente implementación)
-- ⏳ **Órdenes de Compra**: Solo placeholder (pendiente implementación)
+- ✅ **Cotizaciones**: Lista, Crear, Detalle, Generación de PDF (funcional)
+- ✅ **Órdenes de Compra**: Lista, Crear, Editar, Detalle (funcional)
 
 ### Módulos Pendientes de Prueba:
 - **Fase 4**: Módulo de Pedidos (Checks 7-11) - Listo para probar
 - **Fase 5**: Módulo de Terceros (Checks 12-15) - Listo para probar
-- **Fase 6**: Cotizaciones (Check 16) - Solo placeholder
-- **Fase 7**: Órdenes de Compra (Check 17) - Solo placeholder
+- **Fase 6**: Cotizaciones (Check 16) - Listo para probar
+- **Fase 7**: Órdenes de Compra (Check 17) - Listo para probar
 - **Fase 8**: Notificaciones (Check 18) - Implementado, pendiente probar
 - **Fase 9**: Búsqueda Global (Check 19) - Pendiente probar
 

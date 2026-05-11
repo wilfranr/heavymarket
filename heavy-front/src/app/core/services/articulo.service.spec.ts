@@ -42,23 +42,23 @@ describe('ArticuloService', () => {
             meta: { total: 1, current_page: 1 }
         };
 
-        service.getAll().subscribe(res => {
+        service.getAll().subscribe((res) => {
             expect(res.data.length).toBe(1);
             expect(res.data[0].definicion).toBe('Acople Dentado');
         });
 
-        const req = httpMock.expectOne(req => req.url.includes('/v1/articulos'));
+        const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos'));
         expect(req.request.method).toBe('GET');
         req.flush(mockResponse);
     });
 
     it('should get article by id', () => {
-        service.getById(1).subscribe(articulo => {
+        service.getById(1).subscribe((articulo) => {
             expect(articulo.id).toBe(1);
             expect(articulo.definicion).toBe('Acople Dentado');
         });
 
-        const req = httpMock.expectOne(req => req.url.includes('/v1/articulos/1'));
+        const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos/1'));
         expect(req.request.method).toBe('GET');
         req.flush({ data: mockArticulo });
     });
@@ -67,11 +67,11 @@ describe('ArticuloService', () => {
         const formData = new FormData();
         formData.append('definicion', 'Nuevo Articulo');
 
-        service.create(formData).subscribe(res => {
+        service.create(formData).subscribe((res) => {
             expect(res.message).toBe('Creado');
         });
 
-        const req = httpMock.expectOne(req => req.url.includes('/v1/articulos'));
+        const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos'));
         expect(req.request.method).toBe('POST');
         req.flush({ message: 'Creado', data: mockArticulo });
     });
@@ -80,21 +80,21 @@ describe('ArticuloService', () => {
         const formData = new FormData();
         formData.append('definicion', 'Articulo Actualizado');
 
-        service.update(1, formData).subscribe(res => {
+        service.update(1, formData).subscribe((res) => {
             expect(res.message).toBe('Actualizado');
         });
 
-        const req = httpMock.expectOne(req => req.url.includes('/v1/articulos/1'));
+        const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos/1'));
         expect(req.request.method).toBe('POST'); // Laravel workaround for multipart PUT
         req.flush({ message: 'Actualizado', data: mockArticulo });
     });
 
     it('should delete article', () => {
-        service.delete(1).subscribe(res => {
+        service.delete(1).subscribe((res) => {
             expect(res.message).toBe('Eliminado');
         });
 
-        const req = httpMock.expectOne(req => req.url.includes('/v1/articulos/1'));
+        const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos/1'));
         expect(req.request.method).toBe('DELETE');
         req.flush({ message: 'Eliminado' });
     });

@@ -151,6 +151,15 @@ class ReferenciaController extends Controller
                         $updates['lista_id'] = $listaId;
                     }
 
+                    // Si se asocia un artículo a una referencia temporal, se convierte en oficial
+                    if ($articuloId && $referencia->es_temporal) {
+                        $updates['es_temporal'] = false;
+                        $isAutoComment = str_starts_with($referencia->comentario ?? '', 'Referencia temporal');
+                        if ($isAutoComment) {
+                            $updates['comentario'] = null;
+                        }
+                    }
+
                     if (! empty($updates)) {
                         $referencia->update($updates);
                     }
@@ -239,6 +248,12 @@ class ReferenciaController extends Controller
             $query->where('es_temporal', $request->boolean('es_temporal'));
         }
 
+        // Filtro por referencias disponibles (no asociadas a ningun articulo)
+        if ($request->has('disponibles')) {
+            $query->whereNull('articulo_id')
+                ->whereDoesntHave('articulos');
+        }
+
         // Ordenamiento
         $sortBy = $request->input('sort_by', 'referencia');
         $sortOrder = $request->input('sort_order', 'asc');
@@ -264,7 +279,7 @@ class ReferenciaController extends Controller
      */
     public function store(StoreReferenciaRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Referencia::class);
+        $this->authorize('create', Referencia::class);
         $referencia = Referencia::create($request->validated());
 
         return response()->json([
@@ -297,7 +312,7 @@ class ReferenciaController extends Controller
         if ($referencia->es_temporal) {
             $data['es_temporal'] = false;
             // Limpiar el comentario auto-generado de revisión si no se proporcionó uno nuevo
-            if (!isset($data['comentario']) || $data['comentario'] === $referencia->comentario) {
+            if (! isset($data['comentario']) || $data['comentario'] === $referencia->comentario) {
                 $isAutoComment = str_starts_with($referencia->comentario ?? '', 'Referencia temporal');
                 if ($isAutoComment) {
                     $data['comentario'] = null;

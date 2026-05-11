@@ -17,24 +17,18 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-3xl font-bold text-color m-0">Pedido #{{ pedido.id }}</h1>
-                <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)"
-                    [styleClass]="'text-sm px-3 py-1 rounded-full ' + pedidoEstadoTagClass(pedido.estado)"></p-tag>
+                <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="'text-sm px-3 py-1 rounded-full ' + pedidoEstadoTagClass(pedido.estado)"></p-tag>
             </div>
-            <p class="text-muted-color mt-2 mb-0">Creado el {{ pedido.created_at | date: 'dd/MM/yyyy HH:mm' }}
-                @if(pedido.user){ por {{ pedido.user.name }} }</p>
+            <p class="text-muted-color mt-2 mb-0">Creado el {{ pedido.created_at | date: 'dd/MM/yyyy HH:mm' }} @if(pedido.user){ por {{ pedido.user.name }} }</p>
         </div>
         <div class="flex gap-2">
-            <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true"
-                (onClick)="volver()"></p-button>
-            <p-button label="Imprimir" icon="pi pi-print" severity="secondary" [outlined]="true"
-                (onClick)="imprimirPedido()"></p-button>
+            <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volver()"></p-button>
+            <p-button label="Imprimir" icon="pi pi-print" severity="secondary" [outlined]="true" (onClick)="imprimirPedido()"></p-button>
             @if (puedeAnalizarPedido(pedido)) {
             <p-button label="Analizar Pedido" icon="pi pi-search" severity="warn" (onClick)="analizarPedido()"></p-button>
-            }
-            @if (puedeCostearPedido(pedido)) {
+            } @if (puedeCostearPedido(pedido)) {
             <p-button label="Costear Pedido" icon="pi pi-dollar" (onClick)="costearPedido()"></p-button>
-            }
-            @if (puedeEditarPedido(pedido)) {
+            } @if (puedeEditarPedido(pedido)) {
             <p-button label="Editar Pedido" icon="pi pi-pencil" (onClick)="editarPedido()"></p-button>
             }
         </div>
@@ -49,13 +43,11 @@
                     <p-tablist>
                         <p-tab value="0">
                             <i class="pi pi-list mr-2"></i> Ítems Requeridos
-                            <span class="bg-primary text-primary-contrast rounded-full px-2 py-0.5 text-xs ml-2">{{
-                                pedido.referencias?.length || 0 }}</span>
+                            <span class="bg-primary text-primary-contrast rounded-full px-2 py-0.5 text-xs ml-2">{{ pedido.referencias?.length || 0 }}</span>
                         </p-tab>
                         <p-tab value="1">
                             <i class="pi pi-box mr-2"></i> Artículos Cotizados
-                            <span class="bg-primary text-primary-contrast rounded-full px-2 py-0.5 text-xs ml-2">{{
-                                pedido.articulos?.length || 0 }}</span>
+                            <span class="bg-primary text-primary-contrast rounded-full px-2 py-0.5 text-xs ml-2">{{ pedido.articulos?.length || 0 }}</span>
                         </p-tab>
                     </p-tablist>
 
@@ -65,41 +57,25 @@
                             @if (pedido.referencias && pedido.referencias.length > 0) {
                             <div class="flex flex-col gap-4">
                                 @for (item of pedido.referencias; track item.id) {
-                                <div
-                                    class="surface-card border border-surface-200 dark:border-surface-700 rounded-lg p-4 transition-colors hover:border-primary">
-                                    <div
-                                        class="flex justify-between items-start mb-3 border-b border-surface-200 dark:border-surface-700 pb-3">
+                                <div class="surface-card border border-surface-200 dark:border-surface-700 rounded-lg p-4 transition-colors hover:border-primary">
+                                    <div class="flex justify-between items-start mb-3 border-b border-surface-200 dark:border-surface-700 pb-3">
                                         <div>
-                                            <h3 class="text-xl font-bold m-0 text-color">
-                                                @if (item.referencia?.referencia) {
-                                                {{ item.referencia?.referencia }}
-                                                } @else {
-                                                Ítem Requerido #{{ item.id }}
-                                                }
-                                            </h3>
-                                            <span class="text-sm text-muted-color">Cant: <strong class="text-color">{{
-                                                    item.cantidad || 1 }}</strong></span>
+                                            <h3 class="text-xl font-bold m-0 text-color">@if (item.referencia?.referencia) { {{ item.referencia?.referencia }} } @else { Ítem Requerido #{{ item.id }} }</h3>
+                                            <span class="text-sm text-muted-color">Cant: <strong class="text-color">{{ item.cantidad || 1 }}</strong></span>
                                         </div>
-                                        <p-tag [value]="item.estado ? 'Activo' : 'Inactivo'"
-                                            [severity]="item.estado ? 'success' : 'danger'"></p-tag>
+                                        <p-tag [value]="item.estado ? 'Activo' : 'Inactivo'" [severity]="item.estado ? 'success' : 'danger'"></p-tag>
                                     </div>
 
                                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div class="space-y-3">
                                             @if (item.sistema) {
                                             <div>
-                                                <span
-                                                    class="text-muted-color block text-xs uppercase tracking-wider mb-1">Sistema</span>
-                                                <span class="font-medium text-color"><i
-                                                        class="pi pi-wrench mr-1 text-sm text-primary"></i>{{
-                                                    item.sistema.nombre }}</span>
+                                                <span class="text-muted-color block text-xs uppercase tracking-wider mb-1">Sistema</span>
+                                                <span class="font-medium text-color"><i class="pi pi-wrench mr-1 text-sm text-primary"></i>{{ item.sistema.nombre }}</span>
                                             </div>
-                                            }
-                                            @if (item.definicion) {
+                                            } @if (item.definicion) {
                                             <div>
-                                                <span
-                                                    class="text-muted-color block text-xs uppercase tracking-wider mb-1">Descripción
-                                                    del requerimiento</span>
+                                                <span class="text-muted-color block text-xs uppercase tracking-wider mb-1">Descripción del requerimiento</span>
                                                 <span class="text-color line-height-3">{{ item.definicion }}</span>
                                             </div>
                                             }
@@ -107,15 +83,11 @@
                                         <div class="space-y-3">
                                             @if (comentariosDeItem(item).length > 0) {
                                             <div>
-                                                <span
-                                                    class="text-muted-color block text-xs uppercase tracking-wider mb-1">Observaciones
-                                                    / Comentarios</span>
+                                                <span class="text-muted-color block text-xs uppercase tracking-wider mb-1">Observaciones / Comentarios</span>
                                                 <div class="flex flex-col gap-2">
                                                     @for (c of comentariosDeItem(item); track $index) {
-                                                    <div
-                                                        class="bg-surface-100 dark:bg-surface-800 p-3 rounded-md border border-surface-200 dark:border-surface-700 text-sm text-color">
-                                                        <div
-                                                            class="flex flex-wrap justify-between gap-2 text-xs text-muted-color mb-2">
+                                                    <div class="bg-surface-100 dark:bg-surface-800 p-3 rounded-md border border-surface-200 dark:border-surface-700 text-sm text-color">
+                                                        <div class="flex flex-wrap justify-between gap-2 text-xs text-muted-color mb-2">
                                                             <span class="font-semibold text-primary">{{ c.origen }}</span>
                                                             @if (c.fecha) {
                                                             <span>{{ c.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
@@ -132,23 +104,18 @@
 
                                     @if (item.imagen) {
                                     <div class="mt-4 pt-4 border-t border-surface-200 dark:border-surface-700">
-                                        <span
-                                            class="text-muted-color block text-xs uppercase tracking-wider mb-2">Archivo
-                                            Adjunto / Foto del Ítem</span>
-                                        <img [src]="item.imagen" alt="Referencia visual"
-                                            class="max-w-[200px] h-auto rounded-lg border border-surface-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer" />
+                                        <span class="text-muted-color block text-xs uppercase tracking-wider mb-2">Archivo Adjunto / Foto del Ítem</span>
+                                        <img [src]="item.imagen" alt="Referencia visual" class="max-w-[200px] h-auto rounded-lg border border-surface-200 shadow-sm hover:shadow-md transition-shadow cursor-pointer" />
                                     </div>
                                     }
                                 </div>
                                 }
                             </div>
                             } @else {
-                            <div
-                                class="text-center py-10 bg-surface-0 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 border-dashed">
+                            <div class="text-center py-10 bg-surface-0 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 border-dashed">
                                 <i class="pi pi-list text-6xl text-surface-400 mb-4 opacity-50"></i>
                                 <h3 class="text-xl font-medium text-color mb-2">Sin ítems requeridos</h3>
-                                <p class="text-muted-color">Este pedido no tiene requerimientos específicos cargados.
-                                </p>
+                                <p class="text-muted-color">Este pedido no tiene requerimientos específicos cargados.</p>
                             </div>
                             }
                         </p-tabpanel>
@@ -158,32 +125,23 @@
                             @if (pedido.articulos && pedido.articulos.length > 0) {
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 @for (articulo of pedido.articulos; track articulo.id) {
-                                <div
-                                    class="surface-card border border-surface-200 dark:border-surface-700 border-l-4 border-l-primary rounded-lg p-4 flex flex-col">
+                                <div class="surface-card border border-surface-200 dark:border-surface-700 border-l-4 border-l-primary rounded-lg p-4 flex flex-col">
                                     <div class="flex-1">
-                                        <span
-                                            class="text-xs font-semibold text-primary uppercase tracking-wider mb-2 block">Cód:
-                                            {{ articulo.articulo?.codigo_articulo || 'N/A' }}</span>
-                                        <h3 class="text-lg font-bold text-color m-0 mb-3">{{
-                                            articulo.articulo?.descripcionEspecifica || articulo.articulo?.definicion ||
-                                            'Artículo #' + articulo.id }}</h3>
+                                        <span class="text-xs font-semibold text-primary uppercase tracking-wider mb-2 block">Cód: {{ articulo.articulo?.codigo_articulo || 'N/A' }}</span>
+                                        <h3 class="text-lg font-bold text-color m-0 mb-3">{{ articulo.articulo?.descripcionEspecifica || articulo.articulo?.definicion || 'Artículo #' + articulo.id }}</h3>
                                     </div>
-                                    <div
-                                        class="flex justify-between items-center mt-auto pt-3 border-t border-surface-100 dark:border-surface-700">
+                                    <div class="flex justify-between items-center mt-auto pt-3 border-t border-surface-100 dark:border-surface-700">
                                         <span class="text-muted-color text-sm">Cantidad despachada</span>
-                                        <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full">{{
-                                            articulo.cantidad || 0 }}</span>
+                                        <span class="bg-primary/10 text-primary font-bold px-3 py-1 rounded-full">{{ articulo.cantidad || 0 }}</span>
                                     </div>
                                 </div>
                                 }
                             </div>
                             } @else {
-                            <div
-                                class="text-center py-10 bg-surface-0 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 border-dashed">
+                            <div class="text-center py-10 bg-surface-0 dark:bg-surface-800 rounded-lg border border-surface-200 dark:border-surface-700 border-dashed">
                                 <i class="pi pi-box text-6xl text-surface-400 mb-4 opacity-50"></i>
                                 <h3 class="text-xl font-medium text-color mb-2">Cotización Pendiente</h3>
-                                <p class="text-muted-color">Aún no se han asignado artículos ni despachos a este pedido.
-                                </p>
+                                <p class="text-muted-color">Aún no se han asignado artículos ni despachos a este pedido.</p>
                             </div>
                             }
                         </p-tabpanel>
@@ -194,10 +152,8 @@
             <!-- Log o Comentarios del Pedido -->
             @if (comentariosDelPedido(pedido).length > 0) {
             <div class="card shadow-sm border-round">
-                <h3 class="text-xl font-bold mb-4 text-color"><i class="pi pi-comments mr-2 text-primary"></i>Notas del
-                    Asesor</h3>
-                <div class="flex flex-col gap-3">
-                    @for (c of comentariosDelPedido(pedido); track $index) {
+               <h3 class="text-xl font-bold mb-4 text-color"><i class="pi pi-comments mr-2 text-primary"></i>Comentarios del pedido</h3>
+               <div class="flex flex-col gap-3">                    @for (c of comentariosDelPedido(pedido); track $index) {
                     <div class="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-500 p-4 rounded-r-lg">
                         <div class="flex flex-wrap justify-between gap-2 text-xs text-muted-color mb-2">
                             <span class="font-semibold text-primary">{{ c.origen }}</span>
@@ -217,40 +173,27 @@
         <div class="flex flex-col gap-6">
             <!-- Tarjeta Cliente -->
             <div class="card shadow-sm border-round border-t-4 border-t-blue-500">
-                <h3 class="text-lg font-bold mb-4 flex items-center text-color"><i
-                        class="pi pi-user mr-2 text-blue-500"></i> Cliente</h3>
+                <h3 class="text-lg font-bold mb-4 flex items-center text-color"><i class="pi pi-user mr-2 text-blue-500"></i> Cliente</h3>
                 @if (pedido.tercero) {
                 <div class="flex flex-col gap-3">
                     <div class="flex items-center gap-3">
-                        <div
-                            class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xl uppercase">
-                            {{ pedido.tercero.nombre.charAt(0) }}
-                        </div>
+                        <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xl uppercase">{{ pedido.tercero.nombre.charAt(0) }}</div>
                         <div>
                             <span class="font-bold text-lg text-color block">{{ pedido.tercero.nombre }}</span>
-                            <span class="text-sm text-muted-color">{{ pedido.tercero.tipo_documento }} {{
-                                pedido.tercero.documento }}</span>
+                            <span class="text-sm text-muted-color">{{ pedido.tercero.tipo_documento }} {{ pedido.tercero.documento }}</span>
                         </div>
                     </div>
 
                     <div class="mt-2 space-y-2">
                         @if (pedido.tercero.telefono) {
-                        <div class="flex items-center text-sm text-color-secondary">
-                            <i class="pi pi-phone mr-3 text-muted-color w-4"></i> {{ pedido.tercero.telefono }}
-                        </div>
-                        }
-                        @if (pedido.tercero.email) {
-                        <div class="flex items-center text-sm text-color-secondary">
-                            <i class="pi pi-envelope mr-3 text-muted-color w-4"></i> {{ pedido.tercero.email }}
-                        </div>
-                        }
-                        @if (pedido.direccion) {
-                        <div
-                            class="flex items-start text-sm text-color-secondary mt-2 pt-2 border-t border-surface-200 dark:border-surface-700">
+                        <div class="flex items-center text-sm text-color-secondary"><i class="pi pi-phone mr-3 text-muted-color w-4"></i> {{ pedido.tercero.telefono }}</div>
+                        } @if (pedido.tercero.email) {
+                        <div class="flex items-center text-sm text-color-secondary"><i class="pi pi-envelope mr-3 text-muted-color w-4"></i> {{ pedido.tercero.email }}</div>
+                        } @if (pedido.direccion) {
+                        <div class="flex items-start text-sm text-color-secondary mt-2 pt-2 border-t border-surface-200 dark:border-surface-700">
                             <i class="pi pi-map-marker mt-1 mr-3 text-red-500 w-4"></i>
                             <div class="flex-1">
-                                <span class="block font-semibold mb-1 text-xs uppercase text-muted-color">Dirección de
-                                    Entrega</span>
+                                <span class="block font-semibold mb-1 text-xs uppercase text-muted-color">Dirección de Entrega</span>
                                 {{ pedido.direccion }}
                             </div>
                         </div>
@@ -265,32 +208,24 @@
             <!-- Tarjeta Maquinaria -->
             @if (pedido.maquina || pedido.fabricante) {
             <div class="card shadow-sm border-round border-t-4 border-t-orange-500">
-                <h3 class="text-lg font-bold mb-4 flex items-center text-color"><i
-                        class="pi pi-cog mr-2 text-orange-500"></i> Maquinaria Destino</h3>
+                <h3 class="text-lg font-bold mb-4 flex items-center text-color"><i class="pi pi-cog mr-2 text-orange-500"></i> Maquinaria Destino</h3>
                 <div class="flex flex-col gap-3">
                     @if (pedido.maquina) {
                     <div>
-                        <span
-                            class="text-xs uppercase text-muted-color font-semibold tracking-wider block mb-1">Equipo</span>
+                        <span class="text-xs uppercase text-muted-color font-semibold tracking-wider block mb-1">Equipo</span>
                         <span class="font-medium text-color block">{{ pedido.maquina.nombre }}</span>
                         @if (pedido.maquina.estado_revision === 'por_revisar') {
-                        <div
-                            class="mt-3 flex items-center gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 dark:bg-orange-400/10 px-2.5 py-2">
+                        <div class="mt-3 flex items-center gap-2 rounded-md border border-orange-500/40 bg-orange-500/10 dark:bg-orange-400/10 px-2.5 py-2">
                             <i class="pi pi-exclamation-triangle text-orange-600 dark:text-orange-400 text-sm shrink-0"></i>
-                            <span class="text-xs font-medium text-orange-800 dark:text-orange-200">Máquina pendiente por
-                                revisar</span>
+                            <span class="text-xs font-medium text-orange-800 dark:text-orange-200">Máquina pendiente por revisar</span>
                         </div>
                         }
                     </div>
-                    }
-                    @if (pedido.fabricante) {
+                    } @if (pedido.fabricante) {
                     <div>
-                        <span class="text-xs uppercase text-muted-color font-semibold tracking-wider block mb-1">Marca /
-                            OEM</span>
+                        <span class="text-xs uppercase text-muted-color font-semibold tracking-wider block mb-1">Marca / OEM</span>
                         <div class="flex items-center gap-2">
-                            <span
-                                class="font-medium text-color bg-surface-100 dark:bg-surface-800 px-2 py-1 rounded inline-block">{{
-                                pedido.fabricante.nombre }}</span>
+                            <span class="font-medium text-color bg-surface-100 dark:bg-surface-800 px-2 py-1 rounded inline-block">{{ pedido.fabricante.nombre }}</span>
                         </div>
                     </div>
                     }
@@ -299,8 +234,7 @@
             }
 
             <!-- Tarjeta Resumen/Acciones rápidas -->
-            <div
-                class="card shadow-sm border-round bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-800">
+            <div class="card shadow-sm border-round bg-primary-50 dark:bg-primary-900/10 border border-primary-100 dark:border-primary-800">
                 <h3 class="text-lg font-bold mb-4 text-primary">Resumen del Pedido</h3>
 
                 <ul class="list-none p-0 m-0 space-y-3">
@@ -315,26 +249,20 @@
                 </ul>
 
                 <div class="mt-6 pt-4 border-t border-primary-200/50">
-                    <p-button label="Generar Cotización" icon="pi pi-file-export" styleClass="w-full" severity="primary"
-                        [outlined]="true"></p-button>
+                    <p-button label="Generar Cotización" icon="pi pi-file-export" styleClass="w-full" severity="primary" [outlined]="true"></p-button>
                 </div>
             </div>
-
         </div>
     </div>
 
     } @else {
-    <div
-        class="flex flex-col items-center justify-center min-h-[50vh] bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm p-8 text-center">
-        <div
-            class="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-500 rounded-full flex items-center justify-center mb-6">
+    <div class="flex flex-col items-center justify-center min-h-[50vh] bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm p-8 text-center">
+        <div class="w-20 h-20 bg-orange-100 dark:bg-orange-900/30 text-orange-500 rounded-full flex items-center justify-center mb-6">
             <i class="pi pi-exclamation-triangle text-4xl"></i>
         </div>
         <h2 class="text-3xl font-bold mb-3 text-color">Pedido no encontrado</h2>
-        <p class="text-muted-color text-lg mb-8 max-w-md">El pedido que buscas no existe en nuestra base de datos, no
-            tienes permisos para verlo, o ha sido eliminado.</p>
-        <p-button label="Volver al Listado de Pedidos" icon="pi pi-arrow-left" size="large"
-            (onClick)="volver()"></p-button>
+        <p class="text-muted-color text-lg mb-8 max-w-md">El pedido que buscas no existe en nuestra base de datos, no tienes permisos para verlo, o ha sido eliminado.</p>
+        <p-button label="Volver al Listado de Pedidos" icon="pi pi-arrow-left" size="large" (onClick)="volver()"></p-button>
     </div>
     }
 </div>

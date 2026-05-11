@@ -30,30 +30,17 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
 @Component({
     selector: 'app-listas-list',
     standalone: true,
-    imports: [
-        CommonModule,
-        RouterModule,
-        TableModule,
-        ButtonModule,
-        InputTextModule,
-        TagModule,
-        ToastModule,
-        ConfirmDialogModule,
-        FormsModule,
-        TooltipModule,
-        FallbackImageDirective,
-        IconFieldModule,
-        InputIconModule,
-        TabsModule
-    ],
+    imports: [CommonModule, RouterModule, TableModule, ButtonModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, FallbackImageDirective, IconFieldModule, InputIconModule, TabsModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
     encapsulation: ViewEncapsulation.None,
-    styles: [`
-        app-listas-list .p-tablist-tab-list {
-            justify-content: center;
-        }
-    `]
+    styles: [
+        `
+            app-listas-list .p-tablist-tab-list {
+                justify-content: center;
+            }
+        `
+    ]
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
@@ -102,10 +89,7 @@ export class ListComponent implements OnInit {
         this.pagination$ = this.store.select(selectListasPagination);
 
         // Setup search debounce
-        this.searchSubject.pipe(
-            debounceTime(500),
-            distinctUntilChanged()
-        ).subscribe(term => {
+        this.searchSubject.pipe(debounceTime(500), distinctUntilChanged()).subscribe((term) => {
             this.searchTerm = term;
             this.currentPage = 1;
             this.first = 0;
@@ -125,7 +109,7 @@ export class ListComponent implements OnInit {
      */
     onTabChange(value: any): void {
         this.selectedTabValue = value as string;
-        const tipo = this.tipos.find(t => t.value === value);
+        const tipo = this.tipos.find((t) => t.value === value);
         this.selectedTipo = tipo?.tipoValue ?? null;
         this.currentPage = 1;
         this.first = 0;

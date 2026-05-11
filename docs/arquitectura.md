@@ -16,15 +16,15 @@ Construido con **Laravel 11+**, enfocado en proporcionar una API REST robusta y 
 *   **Seguridad**: Middleware `auth:sanctum` y autorización por roles (Administrador, super_admin, Vendedor, Analista, Logística).
 
 ## 2. Frontend (heavy-front)
-Construido con **Angular 18+**, diseñado como una Single Page Application (SPA) modular y escalable.
+Construido con **Angular 21**, diseñado como una Single Page Application (SPA) modular y escalable bajo una arquitectura **Zoneless**.
 
+*   **Arquitectura Reactiva**: Uso nativo de **Signals** para la gestión de estado reactivo y detección de cambios eficiente sin `zone.js`.
 *   **Estructura de Directorios**:
     *   `core/`: Servicios globales, guardias de autenticación e interceptores.
     *   `shared/`: Componentes, directivas y pipes reutilizables en toda la aplicación.
     *   `features/`: Módulos de negocio (Pedidos, Terceros, Cotizaciones) cargados mediante **Lazy Loading**.
-    *   `landing/`: Lógica específica para la página pública de cara al cliente.
-*   **UI Framework**: Utiliza **PrimeNG** y **PrimeBlocks** para una interfaz moderna, responsive y con soporte para temas (oscuro/claro).
-*   **Gestión de Estado**: Estructura preparada para NgRx o servicios basados en Signals para la reactividad.
+*   **UI Framework**: Utiliza **PrimeNG 20+** y **Tailwind CSS 4+** para una interfaz moderna, responsive y con soporte completo para temas (oscuro/claro).
+*   **Gestión de Estado**: Integración de **NgRx** para el estado global y Signals para el estado local de los componentes.
 *   **Comunicación API**: Implementada a través de `ApiService` que centraliza las peticiones HTTP hacia el backend de Laravel.
 
 ## 3. Flujo de Referencias (Diseño Actual)

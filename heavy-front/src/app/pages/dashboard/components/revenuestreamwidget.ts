@@ -34,7 +34,7 @@ export class RevenueStreamWidget implements OnInit {
 
     initChart() {
         // Fetch real data
-        this.dashboardService.getRevenueStream().subscribe(data => {
+        this.dashboardService.getRevenueStream().subscribe((data) => {
             const documentStyle = getComputedStyle(document.documentElement);
             const textColor = documentStyle.getPropertyValue('--text-color');
             const borderColor = documentStyle.getPropertyValue('--surface-border');

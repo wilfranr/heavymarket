@@ -663,17 +663,6 @@ export class EditComponent implements OnInit {
             }
         });
 
-        // Cargar máquinas
-        this.maquinaService.getAll({ per_page: 100 }).subscribe({
-            next: (response) => {
-                this.maquinasList = response.data;
-                this.maquinas = response.data.map((m) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
-                    value: m.id
-                }));
-            }
-        });
-
         // Cargar fabricantes
         this.fabricanteService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
@@ -761,15 +750,8 @@ export class EditComponent implements OnInit {
         if (terceroId) {
             this.loadMaquinasPorCliente(terceroId);
         } else {
-            this.maquinaService.getAll({ per_page: 100 }).subscribe({
-                next: (response) => {
-                    this.maquinasList = response.data;
-                    this.maquinas = response.data.map((m) => ({
-                        label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
-                        value: m.id
-                    }));
-                }
-            });
+            this.maquinas = [];
+            this.maquinasList = [];
         }
     }
 
@@ -1311,12 +1293,15 @@ export class EditComponent implements OnInit {
             marcaId = Number(this.selectedMaquina.fabricante_id);
         }
 
+        const esTemporal = !articuloId;
+        const comentarioTemporal = esTemporal ? 'Referencia temporal desde pedido interno - Requiere revision' : undefined;
+
         return this.referenciaService
             .bulkSearchOrCreate(
                 [{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }],
-                true,
+                esTemporal,
                 marcaId,
-                'Referencia temporal desde pedido interno - Requiere revisión',
+                comentarioTemporal,
                 articuloId,
                 listaId
             )

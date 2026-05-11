@@ -1,18 +1,20 @@
 <?php
 
+use App\Models\Referencia;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para búsqueda masiva de referencias
  */
-
 beforeEach(function () {
     foreach (['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'panel_user', 'Cliente'] as $roleName) {
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
 });
 
 it('bulk search encuentra referencias existentes para analista', function () {
-    $refA = \App\Models\Referencia::factory()->withReferencia('REF-BULK-A')->create();
-    \App\Models\Referencia::factory()->withReferencia('REF-BULK-B')->create();
+    $refA = Referencia::factory()->withReferencia('REF-BULK-A')->create();
+    Referencia::factory()->withReferencia('REF-BULK-B')->create();
 
     $user = createUserWithRole('Analista');
 
@@ -33,7 +35,7 @@ it('bulk search encuentra referencias existentes para analista', function () {
 });
 
 it('bulk search reporta no encontrados sin crear', function () {
-    \App\Models\Referencia::factory()->withReferencia('SOLO-ESTA')->create();
+    Referencia::factory()->withReferencia('SOLO-ESTA')->create();
 
     $user = createUserWithRole('Vendedor');
 
@@ -61,7 +63,7 @@ it('bulk search requiere autenticación', function () {
 });
 
 it('bulk search rechaza usuario sin rol autorizado', function () {
-    \App\Models\Referencia::factory()->withReferencia('R1')->create();
+    Referencia::factory()->withReferencia('R1')->create();
 
     $user = createUserWithRole('Cliente');
 

@@ -10,17 +10,13 @@
                     <div class="col-span-12 md:col-span-6">
                         <label for="name" class="block font-bold mb-2">Nombre Completo</label>
                         <input pInputText id="name" formControlName="name" class="w-full" placeholder="Ingresa tu nombre" />
-                        <small *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-red-500 block mt-1">
-                            El nombre es obligatorio (mínimo 3 caracteres).
-                        </small>
+                        <small *ngIf="profileForm.get('name')?.invalid && profileForm.get('name')?.touched" class="text-red-500 block mt-1"> El nombre es obligatorio (mínimo 3 caracteres). </small>
                     </div>
 
                     <div class="col-span-12 md:col-span-6">
                         <label for="email" class="block font-bold mb-2">Correo Electrónico</label>
                         <input pInputText id="email" formControlName="email" class="w-full" placeholder="ejemplo@correo.com" />
-                        <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="text-red-500 block mt-1">
-                            Ingresa un correo electrónico válido.
-                        </small>
+                        <small *ngIf="profileForm.get('email')?.invalid && profileForm.get('email')?.touched" class="text-red-500 block mt-1"> Ingresa un correo electrónico válido. </small>
                     </div>
                 </div>
 
@@ -31,18 +27,25 @@
                 <div class="grid grid-cols-12 gap-4">
                     <div class="col-span-12 md:col-span-6">
                         <label for="password" class="block font-bold mb-2">Nueva Contraseña</label>
-                        <p-password id="password" formControlName="password" [toggleMask]="true" [feedback]="true" styleClass="w-full" inputStyleClass="w-full" promptLabel="Ingresa contraseña" weakLabel="Débil" mediumLabel="Media" strongLabel="Fuerte"></p-password>
-                        <small *ngIf="profileForm.get('password')?.invalid && profileForm.get('password')?.touched" class="text-red-500 block mt-1">
-                            La contraseña debe tener al menos 8 caracteres.
-                        </small>
+                        <p-password
+                            id="password"
+                            formControlName="password"
+                            [toggleMask]="true"
+                            [feedback]="true"
+                            styleClass="w-full"
+                            inputStyleClass="w-full"
+                            promptLabel="Ingresa contraseña"
+                            weakLabel="Débil"
+                            mediumLabel="Media"
+                            strongLabel="Fuerte"
+                        ></p-password>
+                        <small *ngIf="profileForm.get('password')?.invalid && profileForm.get('password')?.touched" class="text-red-500 block mt-1"> La contraseña debe tener al menos 8 caracteres. </small>
                     </div>
 
                     <div class="col-span-12 md:col-span-6">
                         <label for="password_confirmation" class="block font-bold mb-2">Confirmar Contraseña</label>
                         <p-password id="password_confirmation" formControlName="password_confirmation" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full"></p-password>
-                        <small *ngIf="profileForm.errors?.['mismatch'] && profileForm.get('password_confirmation')?.touched" class="text-red-500 block mt-1">
-                            Las contraseñas no coinciden.
-                        </small>
+                        <small *ngIf="profileForm.errors?.['mismatch'] && profileForm.get('password_confirmation')?.touched" class="text-red-500 block mt-1"> Las contraseñas no coinciden. </small>
                     </div>
                 </div>
 

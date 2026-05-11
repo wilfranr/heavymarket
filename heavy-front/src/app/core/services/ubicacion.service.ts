@@ -8,7 +8,6 @@ import { Country, State, City } from '../models/ubicacion.model';
     providedIn: 'root'
 })
 export class UbicacionService extends ApiService {
-
     getCountries(): Observable<{ data: Country[] }> {
         return this.get<{ data: Country[] }>('ubicaciones/paises');
     }

@@ -32,17 +32,17 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
         </div>
 
         <div class="flex-1 flex items-center justify-center px-4 hidden lg:flex">
-            <p-autoComplete 
-                [(ngModel)]="selectedSearchResult" 
-                [suggestions]="searchResults" 
-                (completeMethod)="onSearch($event)" 
-                field="title" 
-                placeholder="Buscar pedidos, terceros, artículos, listas..." 
-                [style]="{'width':'100%', 'max-width':'600px'}" 
-                [inputStyle]="{'width':'100%', 'border-radius': '20px', 'padding-left': '2.5rem'}" 
+            <p-autoComplete
+                [(ngModel)]="selectedSearchResult"
+                [suggestions]="searchResults"
+                (completeMethod)="onSearch($event)"
+                field="title"
+                placeholder="Buscar pedidos, terceros, artículos, listas..."
+                [style]="{ width: '100%', 'max-width': '600px' }"
+                [inputStyle]="{ width: '100%', 'border-radius': '20px', 'padding-left': '2.5rem' }"
                 styleClass="w-full max-w-[600px] relative"
-                (onSelect)="onSearchSelect($event)">
-                
+                (onSelect)="onSearchSelect($event)"
+            >
                 <ng-template pTemplate="content">
                     <i class="pi pi-search absolute left-4 text-gray-500" style="top: 50%; transform: translateY(-50%); z-index: 1;"></i>
                 </ng-template>
@@ -223,16 +223,26 @@ export class AppTopbar {
 
     getSearchIcon(type: string): string {
         switch (type) {
-            case 'pedido': return 'pi pi-shopping-cart';
-            case 'cotizacion': return 'pi pi-file';
-            case 'tercero': return 'pi pi-users';
-            case 'articulo': return 'pi pi-box';
-            case 'referencia': return 'pi pi-hashtag';
-            case 'maquina': return 'pi pi-cog';
-            case 'sistema': return 'pi pi-wrench';
-            case 'lista': return 'pi pi-list-check';
-            case 'fabricante': return 'pi pi-globe';
-            default: return 'pi pi-search';
+            case 'pedido':
+                return 'pi pi-shopping-cart';
+            case 'cotizacion':
+                return 'pi pi-file';
+            case 'tercero':
+                return 'pi pi-users';
+            case 'articulo':
+                return 'pi pi-box';
+            case 'referencia':
+                return 'pi pi-hashtag';
+            case 'maquina':
+                return 'pi pi-cog';
+            case 'sistema':
+                return 'pi pi-wrench';
+            case 'lista':
+                return 'pi pi-list-check';
+            case 'fabricante':
+                return 'pi pi-globe';
+            default:
+                return 'pi pi-search';
         }
     }
 
@@ -244,7 +254,7 @@ export class AppTopbar {
 
     handleNotificationClick(notification: any): void {
         this.notificationService.markAsRead(notification.id);
-        
+
         if (notification.data?.id) {
             if (notification.type.startsWith('pedido_')) {
                 this.router.navigate(['/app/pedidos', notification.data.id]);
@@ -252,7 +262,7 @@ export class AppTopbar {
                 this.router.navigate(['/app/cotizaciones', notification.data.id]);
             }
         }
-        
+
         if (this.notificationsPanel) {
             this.notificationsPanel.hide();
         }

@@ -15,11 +15,7 @@ import { Tercero } from '../../../core/models/tercero.model';
     template: `
         <div class="card">
             <h2 class="text-2xl font-bold mb-6">Editar Tercero</h2>
-            <app-tercero-form
-                [terceroId]="terceroId"
-                (onSave)="onTerceroUpdated($event)"
-                (onCancel)="onCancel()">
-            </app-tercero-form>
+            <app-tercero-form [terceroId]="terceroId" (onSave)="onTerceroUpdated($event)" (onCancel)="onCancel()"> </app-tercero-form>
         </div>
         <p-toast></p-toast>
     `

@@ -59,5 +59,4 @@ export class RecentSalesWidget implements OnInit {
     verDetalle(id: number): void {
         this.router.navigate(['/app/pedidos', id]);
     }
-
 }

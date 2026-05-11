@@ -25,18 +25,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 @Component({
     selector: 'app-referencia-create',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        RouterModule,
-        CardModule,
-        ButtonModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        ToastModule,
-        DividerModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule],
     providers: [MessageService],
     templateUrl: './create.html'
 })

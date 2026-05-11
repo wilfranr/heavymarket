@@ -59,7 +59,7 @@ export class Products implements OnInit, AfterViewInit {
     constructor(
         private landingService: LandingService,
         private router: Router
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.landingService.getAllCategories().subscribe((categories) => {

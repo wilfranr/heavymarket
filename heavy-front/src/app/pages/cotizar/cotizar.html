@@ -7,24 +7,19 @@
             <div class="cotizador-under-construction">
                 <div class="construction-content">
                     <div class="construction-video-wrapper">
-                        <video class="construction-video" autoplay loop muted playsinline [autoplay]="true"
-                            [loop]="true" [muted]="true" oncanplay="this.play()" onloadedmetadata="this.muted = true">
-                            <source src="assets/images/animacion_piston.mp4" type="video/mp4">
+                        <video class="construction-video" autoplay loop muted playsinline [autoplay]="true" [loop]="true" [muted]="true" oncanplay="this.play()" onloadedmetadata="this.muted = true">
+                            <source src="assets/images/animacion_piston.mp4" type="video/mp4" />
                             Tu navegador no soporta el formato de video.
                         </video>
                     </div>
                     <h2 class="construction-title">Tu tiempo es el repuesto más valioso.</h2>
-                    <p class="construction-description">
-                        Por eso, estamos creando un sistema de cotización auto-asistida para que obtengas lo que
-                        necesitas justo cuando lo necesitas.
-                    </p>
+                    <p class="construction-description">Por eso, estamos creando un sistema de cotización auto-asistida para que obtengas lo que necesitas justo cuando lo necesitas.</p>
                     <div class="construction-highlight">
                         <i class="pi pi-info-circle"></i>
                         <span>Volveremos a encender motores muy pronto.</span>
                     </div>
                     <div class="construction-actions">
-                        <a href="#contacto" class="quote-btn-primary"
-                            style="text-decoration:none; display:inline-flex; align-items:center;">Contáctanos</a>
+                        <a href="#contacto" class="quote-btn-primary" style="text-decoration: none; display: inline-flex; align-items: center">Contáctanos</a>
                         <button class="quote-btn-secondary" routerLink="/">Regresar a la página principal</button>
                     </div>
                 </div>
@@ -36,9 +31,7 @@
             <div class="cotizador-container">
                 <div class="cotizador-sidebar">
                     <div class="cotizador-sidebar-header">
-                        <p class="cotizador-sidebar-text">Selecciona el tipo de máquina, luego elige marca, modelo y
-                            serie
-                            para continuar.</p>
+                        <p class="cotizador-sidebar-text">Selecciona el tipo de máquina, luego elige marca, modelo y serie para continuar.</p>
                     </div>
 
                     <div class="cotizador-filters">
@@ -52,40 +45,33 @@
                             </button>
                             <div class="cotizador-dropdown" *ngIf="openType">
                                 <div class="cotizador-dropdown-search">
-                                    <input type="text" [(ngModel)]="typeSearch" placeholder="Buscar tipo..."
-                                        (click)="$event.stopPropagation()" class="cotizador-dropdown-input">
+                                    <input type="text" [(ngModel)]="typeSearch" placeholder="Buscar tipo..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" />
                                     <i class="pi pi-search"></i>
                                 </div>
-                                <div class="cotizador-dropdown-item" *ngFor="let type of allTypes"
-                                    (click)="selectType(type)">
-                                    {{ type.nombre }}</div>
+                                <div class="cotizador-dropdown-item" *ngFor="let type of allTypes" (click)="selectType(type)">{{ type.nombre }}</div>
                             </div>
                         </div>
 
                         <!-- 2. Marca (Opcional) -->
-                        <div class="cotizador-filter-group" style="position: relative;">
+                        <div class="cotizador-filter-group" style="position: relative">
                             <button class="cotizador-select" (click)="toggleBrand()">
-                                <div style="display: flex; align-items: center; gap: 10px;">
-                                    <img *ngIf="selectedBrandObj?.logo" [src]="selectedBrandObj?.logo" 
-                                        style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; padding: 2px;" alt="">
+                                <div style="display: flex; align-items: center; gap: 10px">
+                                    <img *ngIf="selectedBrandObj?.logo" [src]="selectedBrandObj?.logo" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; padding: 2px" alt="" />
                                     <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }} <span class="text-red-500">*</span></span>
                                 </div>
                                 <div class="cotizador-select-icon">
                                     <i class="pi pi-chevron-right"></i>
                                 </div>
                             </button>
-                            <div class="cotizador-dropdown" *ngIf="openBrand" style="width: 100%; top: 50px; z-index: 100;">
+                            <div class="cotizador-dropdown" *ngIf="openBrand" style="width: 100%; top: 50px; z-index: 100">
                                 <div class="cotizador-dropdown-search">
-                                    <input type="text" [(ngModel)]="brandSearch" placeholder="Buscar marca..."
-                                        (click)="$event.stopPropagation()" class="cotizador-dropdown-input">
+                                    <input type="text" [(ngModel)]="brandSearch" placeholder="Buscar marca..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" />
                                     <i class="pi pi-search"></i>
                                 </div>
-                                <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands"
-                                    (click)="selectBrand(brand)" style="display: flex; align-items: center; gap: 12px; padding: 10px 15px;">
-                                    <img *ngIf="brand.logo" [src]="brand.logo" 
-                                        style="width: 28px; height: 28px; object-fit: contain; border-radius: 4px; background: white; padding: 2px;" alt="">
-                                    <div *ngIf="!brand.logo" style="width: 28px; height: 28px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center;">
-                                        <i class="pi pi-image" style="font-size: 12px; color: #94a3b8;"></i>
+                                <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands" (click)="selectBrand(brand)" style="display: flex; align-items: center; gap: 12px; padding: 10px 15px">
+                                    <img *ngIf="brand.logo" [src]="brand.logo" style="width: 28px; height: 28px; object-fit: contain; border-radius: 4px; background: white; padding: 2px" alt="" />
+                                    <div *ngIf="!brand.logo" style="width: 28px; height: 28px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center">
+                                        <i class="pi pi-image" style="font-size: 12px; color: #94a3b8"></i>
                                     </div>
                                     <span>{{ brand.nombre }}</span>
                                 </div>
@@ -94,43 +80,36 @@
 
                         <!-- 3. Modelo (Opcional) - Input de texto -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel" placeholder="Modelo *">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedModel" placeholder="Modelo *" />
                         </div>
 
                         <!-- 4. Serie -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries" placeholder="Serie">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedSeries" placeholder="Serie" />
                         </div>
 
                         <!-- 5. Arreglo -->
                         <div class="cotizador-filter-group">
-                            <input type="text" class="cotizador-input" [(ngModel)]="selectedArrangement"
-                                placeholder="Arreglo">
+                            <input type="text" class="cotizador-input" [(ngModel)]="selectedArrangement" placeholder="Arreglo" />
                         </div>
                     </div>
 
-                    <div class="cotizador-actions-wrapper" style="margin-top: 24px; position: relative;">
-                        <p *ngIf="errorMessage"
-                            style="color: #ff4d4d; font-size: 12px; margin-bottom: 8px; font-family: 'Figtree', sans-serif;">
-                            {{ errorMessage }}</p>
-                        <div class="cotizador-actions" style="display: flex; gap: 16px;">
-                            <button type="button" class="cotizador-btn-secondary"
-                                style="cursor: pointer; pointer-events: auto;" (click)="clearFilters()">Limpiar</button>
-                            <button type="button" class="cotizador-btn-primary"
-                                style="cursor: pointer; pointer-events: auto;" (click)="goToForm()">Continuar</button>
+                    <div class="cotizador-actions-wrapper" style="margin-top: 24px; position: relative">
+                        <p *ngIf="errorMessage" style="color: #ff4d4d; font-size: 12px; margin-bottom: 8px; font-family: 'Figtree', sans-serif">{{ errorMessage }}</p>
+                        <div class="cotizador-actions" style="display: flex; gap: 16px">
+                            <button type="button" class="cotizador-btn-secondary" style="cursor: pointer; pointer-events: auto" (click)="clearFilters()">Limpiar</button>
+                            <button type="button" class="cotizador-btn-primary" style="cursor: pointer; pointer-events: auto" (click)="goToForm()">Continuar</button>
                         </div>
                     </div>
                 </div>
 
                 <!-- Main Content -->
                 <div class="cotizador-main">
-
                     <!-- VIEW 1: GRID -->
                     <ng-container *ngIf="currentView === 'grid'">
                         <!-- Tabs -->
                         <div class="cotizador-tabs">
-                            <div class="cotizador-tab" *ngFor="let cat of categories"
-                                [class.active]="activeTab === cat.slug" (click)="setActiveTab(cat.slug)">
+                            <div class="cotizador-tab" *ngFor="let cat of categories" [class.active]="activeTab === cat.slug" (click)="setActiveTab(cat.slug)">
                                 <span class="cotizador-tab-text">{{ cat.nombre }}</span>
                             </div>
                         </div>
@@ -139,16 +118,11 @@
                         <div class="cotizador-grid-container">
                             <div class="cotizador-grid">
                                 <ng-container *ngIf="activeCategory">
-                                    <div class="cotizador-card" *ngFor="let sub of activeCategory.subcategorias"
-                                        [class.selected]="selectedCard?.id === sub.id" (click)="selectCard(sub)">
-                                        <div class="cotizador-card-image"
-                                            [style.background-image]="'url(' + sub.imagen_url + ')'"
-                                            style="background-size: cover; background-position: center">
-                                        </div>
+                                    <div class="cotizador-card" *ngFor="let sub of activeCategory.subcategorias" [class.selected]="selectedCard?.id === sub.id" (click)="selectCard(sub)">
+                                        <div class="cotizador-card-image" [style.background-image]="'url(' + sub.imagen_url + ')'" style="background-size: cover; background-position: center"></div>
                                         <div class="cotizador-card-content">
                                             <h3 class="cotizador-card-title">{{ sub.nombre }}</h3>
-                                            <div class="cotizador-card-tag"><span>{{ activeCategory.nombre }}</span>
-                                            </div>
+                                            <div class="cotizador-card-tag"><span>{{ activeCategory.nombre }}</span></div>
                                             <p class="cotizador-card-description">{{ sub.descripcion }}</p>
                                             <button class="cotizador-card-btn">Seleccionar máquina</button>
                                         </div>
@@ -176,40 +150,48 @@
                         <!-- Breadcrumb -->
                         <div class="cotizador-breadcrumb">
                             Cotización /
-                            <span class="cotizador-highlight">{{ activeCategory?.nombre || 'Categoría' }}</span> /
-                            <span class="cotizador-highlight">{{ selectedType || 'Tipo' }}</span> /
-                            <span class="cotizador-highlight">{{ selectedBrand || 'Marca' }}</span> /
-                            <span class="cotizador-highlight">{{ selectedModel || 'Modelo' }}</span> /
-                            Formulario
+                            <span class="cotizador-highlight">{{ activeCategory?.nombre || 'Categoría' }}</span> / <span class="cotizador-highlight">{{ selectedType || 'Tipo' }}</span> /
+                            <span class="cotizador-highlight">{{ selectedBrand || 'Marca' }}</span> / <span class="cotizador-highlight">{{ selectedModel || 'Modelo' }}</span> / Formulario
                         </div>
 
                         <!-- Step 1: Items Form -->
                         <div class="form-step-content" *ngIf="formStep === 1">
                             <div class="form-section-header">
                                 <h3 class="section-title">Tus ítems</h3>
-                                <div class="header-actions" style="display: flex; gap: 12px; align-items: center;">
-                                    <button class="btn-bulk-import" (click)="showBulkImport = !showBulkImport">
-                                        Carga masiva <i class="pi pi-upload"></i>
-                                    </button>
+                                <div class="header-actions" style="display: flex; gap: 12px; align-items: center">
+                                    <button class="btn-bulk-import" (click)="showBulkImport = !showBulkImport">Carga masiva <i class="pi pi-upload"></i></button>
                                 </div>
                             </div>
 
                             <!-- Bulk Import Area -->
                             <div class="bulk-import-container" *ngIf="showBulkImport">
-                                <p class="bulk-helper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%;">
+                                <p class="bulk-helper" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%">
                                     <span>Pega tu listado (Cantidad [Espacio] Referencia). Una por línea.</span>
-                                    <button class="btn-help-guide" (click)="displayHelpDialog = true"
-                                        style="background: rgba(255, 185, 0, 0.1); border: 1px solid var(--brand-yellow); color: var(--brand-yellow); padding: 4px 10px; border-radius: 6px; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; transition: all 0.2s;">
+                                    <button
+                                        class="btn-help-guide"
+                                        (click)="displayHelpDialog = true"
+                                        style="
+                                            background: rgba(255, 185, 0, 0.1);
+                                            border: 1px solid var(--brand-yellow);
+                                            color: var(--brand-yellow);
+                                            padding: 4px 10px;
+                                            border-radius: 6px;
+                                            font-size: 12px;
+                                            cursor: pointer;
+                                            display: flex;
+                                            align-items: center;
+                                            gap: 6px;
+                                            white-space: nowrap;
+                                            transition: all 0.2s;
+                                        "
+                                    >
                                         <i class="pi pi-question-circle"></i> Ver guía visual
                                     </button>
                                 </p>
-                                <textarea [(ngModel)]="bulkText" rows="5" class="custom-input bulk-textarea"
-                                    placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"></textarea>
+                                <textarea [(ngModel)]="bulkText" rows="5" class="custom-input bulk-textarea" placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"></textarea>
                                 <div class="bulk-actions">
-                                    <button class="cotizador-btn-secondary"
-                                        (click)="showBulkImport = false">Cerrar</button>
-                                    <button class="cotizador-btn-primary" (click)="procesarMasivo()">Procesar
-                                        listado</button>
+                                    <button class="cotizador-btn-secondary" (click)="showBulkImport = false">Cerrar</button>
+                                    <button class="cotizador-btn-primary" (click)="procesarMasivo()">Procesar listado</button>
                                 </div>
                             </div>
 
@@ -219,26 +201,19 @@
                                         <!-- Sistema -->
                                         <div class="form-field item-field-sistema">
                                             <label class="input-label">Sistema</label>
-                                            <div class="cotizador-filter-group" style="position: relative;">
-                                                <button class="custom-input select-with-avatar"
-                                                    (click)="toggleItemSystem(i)">
+                                            <div class="cotizador-filter-group" style="position: relative">
+                                                <button class="custom-input select-with-avatar" (click)="toggleItemSystem(i)">
                                                     <div class="select-avatar-trigger">
                                                         <span>{{ item.system || 'Sistema' }}</span>
                                                     </div>
-                                                    <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
+                                                    <i class="pi pi-chevron-down" style="font-size: 10px"></i>
                                                 </button>
-                                                <div class="cotizador-dropdown" *ngIf="item.openSystem"
-                                                    style="width: 100%; top: 45px; left: 0; z-index: 100;">
+                                                <div class="cotizador-dropdown" *ngIf="item.openSystem" style="width: 100%; top: 45px; left: 0; z-index: 100">
                                                     <div class="cotizador-dropdown-search">
-                                                        <input type="text" [(ngModel)]="item.systemSearch"
-                                                            placeholder="Buscar sistema..."
-                                                            (click)="$event.stopPropagation()"
-                                                            class="cotizador-dropdown-input" autofocus>
+                                                        <input type="text" [(ngModel)]="item.systemSearch" placeholder="Buscar sistema..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" autofocus />
                                                         <i class="pi pi-search"></i>
                                                     </div>
-                                                    <div class="cotizador-dropdown-item dropdown-item-with-avatar"
-                                                        *ngFor="let sys of getFilteredSystems(item)"
-                                                        (click)="selectItemSystem(i, sys)">
+                                                    <div class="cotizador-dropdown-item dropdown-item-with-avatar" *ngFor="let sys of getFilteredSystems(item)" (click)="selectItemSystem(i, sys)">
                                                         <span>{{ sys.nombre }}</span>
                                                     </div>
                                                 </div>
@@ -248,28 +223,20 @@
                                         <!-- Descripción -->
                                         <div class="form-field item-field-descripcion">
                                             <label class="input-label">Tipo de artículo</label>
-                                            <div class="cotizador-filter-group" style="position: relative;">
-                                                <button class="custom-input select-with-avatar"
-                                                    (click)="toggleItemDescription(i)" [disabled]="!item.system">
+                                            <div class="cotizador-filter-group" style="position: relative">
+                                                <button class="custom-input select-with-avatar" (click)="toggleItemDescription(i)" [disabled]="!item.system">
                                                     <div class="select-avatar-trigger">
-                                                        <span>{{ item.description || (item.system ? 'Tipo de artículo' :
-                                                            'Selecciona sistema') }}</span>
+                                                        <span>{{ item.description || (item.system ? 'Tipo de artículo' : 'Selecciona sistema') }}</span>
                                                     </div>
-                                                    <i class="pi pi-chevron-down" style="font-size: 10px;"></i>
+                                                    <i class="pi pi-chevron-down" style="font-size: 10px"></i>
                                                 </button>
 
-                                                <div class="cotizador-dropdown" *ngIf="item.openDescription"
-                                                    style="width: 100%; top: 45px; left: 0; z-index: 100;">
+                                                <div class="cotizador-dropdown" *ngIf="item.openDescription" style="width: 100%; top: 45px; left: 0; z-index: 100">
                                                     <div class="cotizador-dropdown-search">
-                                                        <input type="text" [(ngModel)]="item.descriptionSearch"
-                                                            placeholder="Buscar tipo..."
-                                                            (click)="$event.stopPropagation()"
-                                                            class="cotizador-dropdown-input" autofocus>
+                                                        <input type="text" [(ngModel)]="item.descriptionSearch" placeholder="Buscar tipo..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" autofocus />
                                                         <i class="pi pi-search"></i>
                                                     </div>
-                                                    <div class="cotizador-dropdown-item dropdown-item-with-avatar"
-                                                        *ngFor="let desc of getFilteredDescriptions(item)"
-                                                        (click)="selectItemDescription(i, desc)">
+                                                    <div class="cotizador-dropdown-item dropdown-item-with-avatar" *ngFor="let desc of getFilteredDescriptions(item)" (click)="selectItemDescription(i, desc)">
                                                         <span>{{ desc.nombre || desc }}</span>
                                                     </div>
                                                 </div>
@@ -279,17 +246,14 @@
                                         <!-- Cantidad -->
                                         <div class="form-field item-field-cantidad">
                                             <label class="input-label">Cantidad</label>
-                                            <input type="number" class="custom-input" [(ngModel)]="item.quantity"
-                                                min="1" placeholder="Cant.">
+                                            <input type="number" class="custom-input" [(ngModel)]="item.quantity" min="1" placeholder="Cant." />
                                         </div>
 
                                         <!-- Referencia -->
                                         <div class="form-field item-field-referencia">
                                             <label class="input-label">Referencia</label>
-                                            <input type="text" class="custom-input" [(ngModel)]="item.reference"
-                                                placeholder="Referencia">
+                                            <input type="text" class="custom-input" [(ngModel)]="item.reference" placeholder="Referencia" />
                                         </div>
-
 
                                         <!-- Acciones -->
                                         <div class="form-field item-field-actions">
@@ -297,31 +261,25 @@
                                             <div class="item-actions">
                                                 <!-- Cámara/Galería de imágenes -->
                                                 <div class="photo-action-wrapper">
-                                                    <input type="file" #fileInput [style.display]="'none'"
-                                                        (change)="onFileSelected($event, i)"
-                                                        accept="image/*" multiple>
-                                                    <button class="action-btn btn-camera" 
+                                                    <input type="file" #fileInput [style.display]="'none'" (change)="onFileSelected($event, i)" accept="image/*" multiple />
+                                                    <button
+                                                        class="action-btn btn-camera"
                                                         (click)="item.files?.length > 0 ? openImagesModal(i) : fileInput.click()"
                                                         [class.has-files]="item.files?.length > 0"
-                                                        [attr.title]="item.files?.length > 0 ? 'Ver imágenes' : 'Subir imágenes'">
+                                                        [attr.title]="item.files?.length > 0 ? 'Ver imágenes' : 'Subir imágenes'"
+                                                    >
                                                         <i class="pi pi-camera"></i>
                                                         <span class="file-count-badge" *ngIf="item.files?.length > 0">{{ item.files.length }}</span>
                                                     </button>
                                                     <!-- Botón extra para añadir más cuando ya hay -->
-                                                    <button class="action-btn btn-add-more-small" *ngIf="item.files?.length > 0"
-                                                        (click)="fileInput.click()" title="Añadir más imágenes">
+                                                    <button class="action-btn btn-add-more-small" *ngIf="item.files?.length > 0" (click)="fileInput.click()" title="Añadir más imágenes">
                                                         <i class="pi pi-plus"></i>
                                                     </button>
                                                 </div>
 
-                                                <button class="action-btn btn-comment" title="Comentar"
-                                                    (click)="openCommentModal(i)"
-                                                    [class.has-comment]="item.comment && item.comment.length > 0"><i
-                                                        class="pi pi-comment"></i></button>
-                                                <button class="action-btn btn-duplicate" (click)="duplicateItem(i)"
-                                                    title="Duplicar"><i class="pi pi-copy"></i></button>
-                                                <button class="action-btn btn-delete" (click)="removeItem(i)"
-                                                    title="Eliminar"><i class="pi pi-trash"></i></button>
+                                                <button class="action-btn btn-comment" title="Comentar" (click)="openCommentModal(i)" [class.has-comment]="item.comment && item.comment.length > 0"><i class="pi pi-comment"></i></button>
+                                                <button class="action-btn btn-duplicate" (click)="duplicateItem(i)" title="Duplicar"><i class="pi pi-copy"></i></button>
+                                                <button class="action-btn btn-delete" (click)="removeItem(i)" title="Eliminar"><i class="pi pi-trash"></i></button>
                                             </div>
                                         </div>
                                     </div>
@@ -336,59 +294,55 @@
                             </div>
                         </div>
 
-
                         <!-- Step 2: Confirmation & Summary (Fused) -->
                         <div class="form-step-content" *ngIf="formStep === 2">
                             <div class="form-section-header">
                                 <h3 class="section-title">Confirme su solicitud</h3>
                             </div>
 
-                            <div class="confirmation-container"
-                                style="display: grid; grid-template-columns: 1fr; gap: 24px;">
-                                
+                            <div class="confirmation-container" style="display: grid; grid-template-columns: 1fr; gap: 24px">
                                 <!-- Applicant Info Section -->
                                 <div class="confirmation-info-section">
                                     <!-- Case 1: Logged In Card -->
-                                    <div class="applicant-summary-card" *ngIf="currentUser"
-                                        style="background: rgba(253, 184, 49, 0.05); border-radius: 20px; border: 1px solid rgba(253, 184, 49, 0.2); padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 6px solid #fdb831;">
-                                        <div class="user-avatar-placeholder"
-                                            style="width: 60px; height: 60px; border-radius: 50%; background: #fdb831; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; font-weight: 700;">
+                                    <div
+                                        class="applicant-summary-card"
+                                        *ngIf="currentUser"
+                                        style="background: rgba(253, 184, 49, 0.05); border-radius: 20px; border: 1px solid rgba(253, 184, 49, 0.2); padding: 24px; display: flex; align-items: center; gap: 20px; border-left: 6px solid #fdb831"
+                                    >
+                                        <div
+                                            class="user-avatar-placeholder"
+                                            style="width: 60px; height: 60px; border-radius: 50%; background: #fdb831; display: flex; align-items: center; justify-content: center; color: #000; font-size: 24px; font-weight: 700"
+                                        >
                                             {{ (currentUser.name && currentUser.name.length > 0) ? (currentUser.name.substring(0, 1).toUpperCase()) : 'U' }}
                                         </div>
                                         <div class="user-info-brief">
-                                            <h4 style="margin: 0; color: #fdb831; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">Información del solicitante</h4>
-                                            <p style="margin: 4px 0 0 0; color: #fff; font-size: 1.2rem; font-weight: 600;">{{
-                                                currentUser.name }}</p>
-                                            <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.95rem;">{{
-                                                currentUser.email }} | {{ currentUser.phone }}</p>
+                                            <h4 style="margin: 0; color: #fdb831; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px">Información del solicitante</h4>
+                                            <p style="margin: 4px 0 0 0; color: #fff; font-size: 1.2rem; font-weight: 600">{{ currentUser.name }}</p>
+                                            <p style="margin: 4px 0 0 0; color: #94a3b8; font-size: 0.95rem">{{ currentUser.email }} | {{ currentUser.phone }}</p>
                                         </div>
-                                        <div style="margin-left: auto;">
-                                            <i class="pi pi-check-circle" style="color: #4ade80; font-size: 28px;"></i>
+                                        <div style="margin-left: auto">
+                                            <i class="pi pi-check-circle" style="color: #4ade80; font-size: 28px"></i>
                                         </div>
                                     </div>
 
                                     <!-- Case 2: Minimal Form if not logged in -->
-                                    <div class="applicant-summary-card" *ngIf="!currentUser"
-                                        style="background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; border-left: 6px solid #fdb831;">
-                                        <h4 style="color: #fdb831; margin: 0 0 20px 0; font-size: 15px; font-weight: 600; text-transform: uppercase;">Completa tus datos de contacto</h4>
+                                    <div class="applicant-summary-card" *ngIf="!currentUser" style="background: rgba(255, 255, 255, 0.05); border-radius: 16px; padding: 24px; border-left: 6px solid #fdb831">
+                                        <h4 style="color: #fdb831; margin: 0 0 20px 0; font-size: 15px; font-weight: 600; text-transform: uppercase">Completa tus datos de contacto</h4>
                                         <div class="user-data-form">
                                             <div class="form-field-row">
                                                 <div class="form-field full-width">
                                                     <label class="input-label">Nombre completo *</label>
-                                                    <input type="text" class="custom-input" [(ngModel)]="userData.name"
-                                                        placeholder="Ej: Juan Pérez">
+                                                    <input type="text" class="custom-input" [(ngModel)]="userData.name" placeholder="Ej: Juan Pérez" />
                                                 </div>
                                             </div>
                                             <div class="form-field-row two-col">
                                                 <div class="form-field">
                                                     <label class="input-label">Correo electrónico *</label>
-                                                    <input type="email" class="custom-input" [(ngModel)]="userData.email"
-                                                        placeholder="Ej: juan@empresa.com">
+                                                    <input type="email" class="custom-input" [(ngModel)]="userData.email" placeholder="Ej: juan@empresa.com" />
                                                 </div>
                                                 <div class="form-field">
                                                     <label class="input-label">Teléfono / Celular *</label>
-                                                    <input type="text" class="custom-input" [(ngModel)]="userData.phone"
-                                                        placeholder="Ej: +57 300 123 4567">
+                                                    <input type="text" class="custom-input" [(ngModel)]="userData.phone" placeholder="Ej: +57 300 123 4567" />
                                                 </div>
                                             </div>
                                         </div>
@@ -396,25 +350,15 @@
                                 </div>
 
                                 <!-- Solicitud Summary -->
-                                <div class="success-summary" style="margin: 0; animation: none;">
-                                    <h4
-                                        style="color: #fdb831; margin: 0 0 16px 0; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        Detalle de la máquina e ítems</h4>
+                                <div class="success-summary" style="margin: 0; animation: none">
+                                    <h4 style="color: #fdb831; margin: 0 0 16px 0; font-size: 15px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px">Detalle de la máquina e ítems</h4>
 
                                     <!-- Machine Details -->
                                     <div class="summary-machine" *ngIf="selectedBrand || selectedType || selectedModel">
-                                        <div class="machine-tag" *ngIf="selectedBrand">
-                                            <span>Marca:</span> <strong>{{ selectedBrand }}</strong>
-                                        </div>
-                                        <div class="machine-tag" *ngIf="selectedType">
-                                            <span>Tipo:</span> <strong>{{ selectedType }}</strong>
-                                        </div>
-                                        <div class="machine-tag" *ngIf="selectedModel">
-                                            <span>Modelo:</span> <strong>{{ selectedModel }}</strong>
-                                        </div>
-                                        <div class="machine-tag" *ngIf="selectedSeries">
-                                            <span>Serie:</span> <strong>{{ selectedSeries }}</strong>
-                                        </div>
+                                        <div class="machine-tag" *ngIf="selectedBrand"><span>Marca:</span> <strong>{{ selectedBrand }}</strong></div>
+                                        <div class="machine-tag" *ngIf="selectedType"><span>Tipo:</span> <strong>{{ selectedType }}</strong></div>
+                                        <div class="machine-tag" *ngIf="selectedModel"><span>Modelo:</span> <strong>{{ selectedModel }}</strong></div>
+                                        <div class="machine-tag" *ngIf="selectedSeries"><span>Serie:</span> <strong>{{ selectedSeries }}</strong></div>
                                     </div>
 
                                     <!-- Items List -->
@@ -425,7 +369,7 @@
                                                 <div class="item-sub">
                                                     <span *ngIf="item.system">Sistema: {{ item.system }}</span>
                                                     <span *ngIf="item.reference"> | Ref: {{ item.reference }}</span>
-                                                    <span *ngIf="item.files?.length > 0" style="color: #4ade80;"> | <i class="pi pi-image"></i> {{ item.files.length }}</span>
+                                                    <span *ngIf="item.files?.length > 0" style="color: #4ade80"> | <i class="pi pi-image"></i> {{ item.files.length }}</span>
                                                 </div>
                                             </div>
                                             <div class="item-qty">x{{ item.quantity }}</div>
@@ -434,13 +378,11 @@
                                 </div>
                             </div>
 
-                            <div class="form-footer" style="margin-top: 40px;">
+                            <div class="form-footer" style="margin-top: 40px">
                                 <button class="btn-cancel" [disabled]="submitting" (click)="prevFormStep()">Atrás</button>
                                 <button class="btn-continue" [disabled]="submitting" (click)="nextFormStep()">
-                                    <ng-container *ngIf="!submitting">Finalizar y enviar <i class="pi pi-send"
-                                            style="margin-left: 8px;"></i></ng-container>
-                                    <ng-container *ngIf="submitting">Enviando... <i class="pi pi-spin pi-spinner"
-                                            style="margin-left: 8px;"></i></ng-container>
+                                    <ng-container *ngIf="!submitting">Finalizar y enviar <i class="pi pi-send" style="margin-left: 8px"></i></ng-container>
+                                    <ng-container *ngIf="submitting">Enviando... <i class="pi pi-spin pi-spinner" style="margin-left: 8px"></i></ng-container>
                                 </button>
                             </div>
                         </div>
@@ -453,175 +395,194 @@
                                 </div>
                                 <h2 class="success-title">¡Solicitud Enviada con Éxito!</h2>
                                 <p class="success-message">
-                                    Hemos recibido tu solicitud de cotización. Un correo de confirmación ha sido enviado
-                                    a
+                                    Hemos recibido tu solicitud de cotización. Un correo de confirmación ha sido enviado a
                                     <span class="highlight">{{ currentUser?.email || userData.email }}</span>.
                                 </p>
-                                <p class="success-info">
-                                    Nuestro equipo comercial revisará tus requerimientos y se pondrá en contacto contigo
-                                    en
-                                    la mayor brevedad posible.
-                                </p>
+                                <p class="success-info">Nuestro equipo comercial revisará tus requerimientos y se pondrá en contacto contigo en la mayor brevedad posible.</p>
 
-                                <div class="success-actions" style="margin-top: 32px;">
+                                <div class="success-actions" style="margin-top: 32px">
                                     <button class="btn-primary" (click)="goBackToGrid()">Volver al inicio</button>
                                     <a routerLink="/" class="btn-secondary">Regresar a la landing</a>
                                 </div>
                             </div>
                         </div>
                     </ng-container>
-
                 </div>
             </div>
         </ng-container>
 
         <!-- Comment Modal -->
-        <p-dialog header="Nota del Ítem" [(visible)]="showCommentModal" [modal]="true"
-            [style]="{width: '500px', 'max-width': '90vw'}" [draggable]="false" [resizable]="false"
-            (onHide)="closeCommentModal()" styleClass="cotizador-dark-dialog">
-            <div class="p-fluid" style="margin-top: 1rem; padding-bottom: 1rem;">
-                <p
-                    style="margin-bottom: 0.8rem; font-weight: 500; font-family: 'Figtree', sans-serif; color: #FFF; font-size: 14px;">
-                    Escribe una nota adicional para este ítem (opcional)</p>
-                <textarea class="custom-input" [(ngModel)]="tempComment" rows="5" style="width: 100%; resize: vertical;"
-                    placeholder="Ej: Necesito que este repuesto sea en marca genérica..."></textarea>
+        <p-dialog header="Nota del Ítem" [(visible)]="showCommentModal" [modal]="true" [style]="{width: '500px', 'max-width': '90vw'}" [draggable]="false" [resizable]="false" (onHide)="closeCommentModal()" styleClass="cotizador-dark-dialog">
+            <div class="p-fluid" style="margin-top: 1rem; padding-bottom: 1rem">
+                <p style="margin-bottom: 0.8rem; font-weight: 500; font-family: 'Figtree', sans-serif; color: #fff; font-size: 14px">Escribe una nota adicional para este ítem (opcional)</p>
+                <textarea class="custom-input" [(ngModel)]="tempComment" rows="5" style="width: 100%; resize: vertical" placeholder="Ej: Necesito que este repuesto sea en marca genérica..."></textarea>
             </div>
             <ng-template pTemplate="footer">
-                <div style="display: flex; justify-content: flex-end; gap: 12px;">
-                    <button type="button" class="cotizador-btn-secondary"
-                        style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px;"
-                        (click)="closeCommentModal()">Cancelar</button>
-                    <button type="button" class="cotizador-btn-primary"
-                        style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px;"
-                        (click)="saveComment()">Guardar</button>
+                <div style="display: flex; justify-content: flex-end; gap: 12px">
+                    <button type="button" class="cotizador-btn-secondary" style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px" (click)="closeCommentModal()">Cancelar</button>
+                    <button type="button" class="cotizador-btn-primary" style="width: 120px; height: 36px; padding: 4px 16px; font-size: 14px" (click)="saveComment()">Guardar</button>
                 </div>
             </ng-template>
         </p-dialog>
 
-        <p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" 
+        <p-dialog
+            header="Guía de Importación Masiva"
+            [(visible)]="displayHelpDialog"
+            [modal]="true"
             [style]="{width: '70vw', background: '#0f172a', color: '#f8fafc', border: '1px solid #334155'}"
             [contentStyle]="{background: '#0f172a', color: '#f8fafc'}"
-            [draggable]="false" [resizable]="false" [breakpoints]="{'960px': '85vw', '640px': '95vw'}">
+            [draggable]="false"
+            [resizable]="false"
+            [breakpoints]="{'960px': '85vw', '640px': '95vw'}"
+        >
             <div class="p-4">
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem">
                     <!-- Pasos -->
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem;">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem">
                         <div>
-                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc;">
-                                <span style="background: rgba(255, 185, 0, 0.2); color: #ffb900; width: 2rem; height: 2rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.8rem; font-size: 0.875rem;">1</span>
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc">
+                                <span
+                                    style="
+                                        background: rgba(255, 185, 0, 0.2);
+                                        color: #ffb900;
+                                        width: 2rem;
+                                        height: 2rem;
+                                        border-radius: 9999px;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-right: 0.8rem;
+                                        font-size: 0.875rem;
+                                    "
+                                    >1</span
+                                >
                                 Preparar datos
                             </h4>
-                            <p style="color: #94a3b8; font-size: 0.875rem; margin-left: 2.8rem;">Tiene dos opciones para preparar sus datos:</p>
-                            <ul style="list-style-type: disc; margin-left: 3.8rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; color: #94a3b8; font-size: 0.875rem;">
-                                <li><strong style="color: #f8fafc;">Desde Excel:</strong> Seleccione dos columnas (Cantidad y Referencia) y cópielas (Ctrl+C).</li>
-                                <li><strong style="color: #f8fafc;">Desde Bloc de Notas:</strong> Escriba cada ítem en una nueva línea separando cantidad y referencia con un espacio o tabulador.</li>
+                            <p style="color: #94a3b8; font-size: 0.875rem; margin-left: 2.8rem">Tiene dos opciones para preparar sus datos:</p>
+                            <ul style="list-style-type: disc; margin-left: 3.8rem; margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem; color: #94a3b8; font-size: 0.875rem">
+                                <li><strong style="color: #f8fafc">Desde Excel:</strong> Seleccione dos columnas (Cantidad y Referencia) y cópielas (Ctrl+C).</li>
+                                <li><strong style="color: #f8fafc">Desde Bloc de Notas:</strong> Escriba cada ítem en una nueva línea separando cantidad y referencia con un espacio o tabulador.</li>
                             </ul>
                         </div>
 
                         <div>
-                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc;">
-                                <span style="background: rgba(255, 185, 0, 0.2); color: #ffb900; width: 2rem; height: 2rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.8rem; font-size: 0.875rem;">2</span>
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc">
+                                <span
+                                    style="
+                                        background: rgba(255, 185, 0, 0.2);
+                                        color: #ffb900;
+                                        width: 2rem;
+                                        height: 2rem;
+                                        border-radius: 9999px;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-right: 0.8rem;
+                                        font-size: 0.875rem;
+                                    "
+                                    >2</span
+                                >
                                 Formato aceptado
                             </h4>
-                            <div style="margin-left: 2.8rem; background: #1e293b; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #334155; font-family: monospace; font-size: 0.875rem;">
-                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.25rem;">
+                            <div style="margin-left: 2.8rem; background: #1e293b; padding: 0.75rem; border-radius: 0.5rem; border: 1px solid #334155; font-family: monospace; font-size: 0.875rem">
+                                <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: #94a3b8; margin-bottom: 0.5rem; border-bottom: 1px solid #334155; padding-bottom: 0.25rem">
                                     <span>Columna 1 (Cant.)</span>
                                     <span>Columna 2 (Ref.)</span>
                                 </div>
-                                <div style="color: #34d399; font-weight: 500;">10 &emsp; REF-12345</div>
-                                <div style="color: #34d399; font-weight: 500;">5 &emsp; FILTRO-ABC</div>
+                                <div style="color: #34d399; font-weight: 500">10 &emsp; REF-12345</div>
+                                <div style="color: #34d399; font-weight: 500">5 &emsp; FILTRO-ABC</div>
                             </div>
                         </div>
 
                         <div>
-                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc;">
-                                <span style="background: rgba(255, 185, 0, 0.2); color: #ffb900; width: 2rem; height: 2rem; border-radius: 9999px; display: inline-flex; align-items: center; justify-content: center; margin-right: 0.8rem; font-size: 0.875rem;">3</span>
+                            <h4 style="font-size: 1.125rem; font-weight: 600; margin-bottom: 0.5rem; display: flex; align-items: center; color: #f8fafc">
+                                <span
+                                    style="
+                                        background: rgba(255, 185, 0, 0.2);
+                                        color: #ffb900;
+                                        width: 2rem;
+                                        height: 2rem;
+                                        border-radius: 9999px;
+                                        display: inline-flex;
+                                        align-items: center;
+                                        justify-content: center;
+                                        margin-right: 0.8rem;
+                                        font-size: 0.875rem;
+                                    "
+                                    >3</span
+                                >
                                 Pegar y Procesar
                             </h4>
-                            <p style="color: #94a3b8; font-size: 0.875rem; margin-left: 2.8rem;">
+                            <p style="color: #94a3b8; font-size: 0.875rem; margin-left: 2.8rem">
                                 Pegue los datos en el área de texto (Ctrl+V) y haga clic en
-                                <span style="color: #ffb900; font-weight: 500;">"Procesar listado"</span>.
-                                El sistema validará las referencias y las agregará a su solicitud.
+                                <span style="color: #ffb900; font-weight: 500">"Procesar listado"</span>. El sistema validará las referencias y las agregará a su solicitud.
                             </p>
                         </div>
                     </div>
 
                     <!-- Visual Example -->
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1e293b; border-radius: 0.75rem; border: 1px solid #334155; padding: 1rem;">
-                        <p style="font-weight: 500; margin-bottom: 1rem; color: #f8fafc;">Ejemplo Visual</p>
-                        <div style="width: 100%; aspect-ratio: 16/9; background: #0f172a; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; border: 1px solid #334155; position: relative; overflow: hidden;">
-                            <img src="assets/images/guia-importacion.png" alt="Guía de importación" style="width: 100%; height: 100%; object-fit: contain; opacity: 0.8;" />
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: #1e293b; border-radius: 0.75rem; border: 1px solid #334155; padding: 1rem">
+                        <p style="font-weight: 500; margin-bottom: 1rem; color: #f8fafc">Ejemplo Visual</p>
+                        <div style="width: 100%; aspect-ratio: 16/9; background: #0f172a; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; border: 1px solid #334155; position: relative; overflow: hidden">
+                            <img src="assets/images/guia-importacion.png" alt="Guía de importación" style="width: 100%; height: 100%; object-fit: contain; opacity: 0.8" />
                         </div>
-                        <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem; text-align: center;">
-                            Puede copiar directamente desde Excel, Google Sheets o cualquier editor de texto.
-                        </p>
+                        <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem; text-align: center">Puede copiar directamente desde Excel, Google Sheets o cualquier editor de texto.</p>
                     </div>
                 </div>
             </div>
             <ng-template pTemplate="footer">
-                <div style="background: #0f172a; border-top: 1px solid #334155; padding: 1rem; margin: -1px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px;">
-                    <button type="button" class="cotizador-btn-secondary" (click)="displayHelpDialog = false" 
-                        style="padding: 0.5rem 1.5rem; background: #334155; color: #f8fafc; border: none; border-radius: 6px; cursor: pointer;">Entendido</button>
+                <div style="background: #0f172a; border-top: 1px solid #334155; padding: 1rem; margin: -1px; border-bottom-left-radius: 6px; border-bottom-right-radius: 6px">
+                    <button type="button" class="cotizador-btn-secondary" (click)="displayHelpDialog = false" style="padding: 0.5rem 1.5rem; background: #334155; color: #f8fafc; border: none; border-radius: 6px; cursor: pointer">Entendido</button>
                 </div>
             </ng-template>
         </p-dialog>
+    </div>
+    <!-- Modal Galería de Imágenes con Carrusel -->
+    <p-dialog
+        [(visible)]="displayImagesModal"
+        [header]="'Galería de Imágenes - Solicitud de Cotización'"
+        [modal]="true"
+        [style]="{width: '640px', 'max-width': '95vw'}"
+        [draggable]="false"
+        [resizable]="false"
+        styleClass="cotizador-dark-dialog gallery-dialog"
+        (onHide)="closeImagesModal()"
+    >
+        <div class="gallery-modal-content" *ngIf="selectedItemIndex !== -1 && items[selectedItemIndex].files?.length > 0">
+            <p-galleria [value]="galleriaImages" [responsiveOptions]="galleriaResponsiveOptions" [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true" [showThumbnails]="true" styleClass="galleria-thumbnails-small">
+                <ng-template #item let-item>
+                    <div class="gallery-slide" style="width: 100%; position: relative">
+                        <div class="gallery-image-container" style="background: transparent; border: none; height: auto">
+                            <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[50vh] object-contain rounded" style="width: 100%; display: block" />
+                            <button class="btn-delete-float" (click)="removeFile(selectedItemIndex, galleriaImages.indexOf(item))" title="Eliminar imagen">
+                                <i class="pi pi-trash"></i>
+                            </button>
+                        </div>
+                        <div class="gallery-file-info">
+                            <span class="file-name-text">{{ item.file.name }}</span>
+                        </div>
+                    </div>
+                </ng-template>
+                <ng-template #thumbnail let-item>
+                    <div class="galleria-thumbnail-cell" style="padding: 4px">
+                        <img [src]="item.thumbnailImageSrc" alt="Miniatura" style="height: 60px; object-fit: cover; border-radius: 4px" />
+                    </div>
+                </ng-template>
+            </p-galleria>
 
-    </div>
-<!-- Modal Galería de Imágenes con Carrusel -->
-<p-dialog [(visible)]="displayImagesModal" 
-    [header]="'Galería de Imágenes - Solicitud de Cotización'" 
-    [modal]="true" 
-    [style]="{width: '640px', 'max-width': '95vw'}" 
-    [draggable]="false" 
-    [resizable]="false"
-    styleClass="cotizador-dark-dialog gallery-dialog"
-    (onHide)="closeImagesModal()">
-    
-    <div class="gallery-modal-content" *ngIf="selectedItemIndex !== -1 && items[selectedItemIndex].files?.length > 0">
-        <p-galleria [value]="galleriaImages" [responsiveOptions]="galleriaResponsiveOptions"
-            [containerStyle]="{ 'max-width': '100%' }" [numVisible]="5" [showItemNavigators]="true"
-            [showThumbnails]="true" styleClass="galleria-thumbnails-small">
-            <ng-template #item let-item>
-                <div class="gallery-slide" style="width: 100%; position: relative;">
-                    <div class="gallery-image-container" style="background: transparent; border: none; height: auto;">
-                        <img [src]="item.itemImageSrc" alt="Imagen del ítem" class="max-w-full max-h-[50vh] object-contain rounded" style="width: 100%; display: block;" />
-                        <button class="btn-delete-float" (click)="removeFile(selectedItemIndex, galleriaImages.indexOf(item))" title="Eliminar imagen">
-                            <i class="pi pi-trash"></i>
-                        </button>
-                    </div>
-                    <div class="gallery-file-info">
-                        <span class="file-name-text">{{ item.file.name }}</span>
-                    </div>
-                </div>
-            </ng-template>
-            <ng-template #thumbnail let-item>
-                <div class="galleria-thumbnail-cell" style="padding: 4px;">
-                    <img [src]="item.thumbnailImageSrc" alt="Miniatura" style="height: 60px; object-fit: cover; border-radius: 4px;" />
-                </div>
-            </ng-template>
-        </p-galleria>
-        
-        <div class="gallery-modal-footer">
-            <button class="btn-add-gallery" (click)="fileInputGallery.click()">
-                <i class="pi pi-plus"></i> Agregar más imágenes
-            </button>
-            <input type="file" #fileInputGallery [style.display]="'none'"
-                (change)="onFileSelected($event, selectedItemIndex)"
-                accept="image/*" multiple>
+            <div class="gallery-modal-footer">
+                <button class="btn-add-gallery" (click)="fileInputGallery.click()"><i class="pi pi-plus"></i> Agregar más imágenes</button>
+                <input type="file" #fileInputGallery [style.display]="'none'" (change)="onFileSelected($event, selectedItemIndex)" accept="image/*" multiple />
+            </div>
         </div>
-    </div>
-    
-    <div class="empty-gallery" *ngIf="selectedItemIndex !== -1 && (!items[selectedItemIndex].files || items[selectedItemIndex].files.length === 0)">
-        <i class="pi pi-images" style="font-size: 3rem; color: #4B5563;"></i>
-        <p>No hay imágenes adjuntas</p>
-        <button class="btn-add-gallery" (click)="fileInputGalleryEmpty.click()">
-            <i class="pi pi-plus"></i> Subir imágenes
-        </button>
-        <input type="file" #fileInputGalleryEmpty [style.display]="'none'"
-                (change)="onFileSelected($event, selectedItemIndex)"
-                accept="image/*" multiple>
-    </div>
-</p-dialog>
+
+        <div class="empty-gallery" *ngIf="selectedItemIndex !== -1 && (!items[selectedItemIndex].files || items[selectedItemIndex].files.length === 0)">
+            <i class="pi pi-images" style="font-size: 3rem; color: #4b5563"></i>
+            <p>No hay imágenes adjuntas</p>
+            <button class="btn-add-gallery" (click)="fileInputGalleryEmpty.click()"><i class="pi pi-plus"></i> Subir imágenes</button>
+            <input type="file" #fileInputGalleryEmpty [style.display]="'none'" (change)="onFileSelected($event, selectedItemIndex)" accept="image/*" multiple />
+        </div>
+    </p-dialog>
 
     <app-footer-section></app-footer-section>
 </div>

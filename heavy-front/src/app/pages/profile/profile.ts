@@ -13,16 +13,7 @@ import { FluidModule } from 'primeng/fluid';
 @Component({
     selector: 'app-profile',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        InputTextModule,
-        PasswordModule,
-        ButtonModule,
-        CardModule,
-        ToastModule,
-        FluidModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, InputTextModule, PasswordModule, ButtonModule, CardModule, ToastModule, FluidModule],
     templateUrl: './profile.html',
     providers: [MessageService]
 })
@@ -35,12 +26,15 @@ export class Profile implements OnInit {
     loading = false;
 
     constructor() {
-        this.profileForm = this.fb.group({
-            name: ['', [Validators.required, Validators.minLength(3)]],
-            email: ['', [Validators.required, Validators.email]],
-            password: ['', [Validators.minLength(8)]],
-            password_confirmation: ['']
-        }, { validators: this.passwordMatchValidator });
+        this.profileForm = this.fb.group(
+            {
+                name: ['', [Validators.required, Validators.minLength(3)]],
+                email: ['', [Validators.required, Validators.email]],
+                password: ['', [Validators.minLength(8)]],
+                password_confirmation: ['']
+            },
+            { validators: this.passwordMatchValidator }
+        );
     }
 
     ngOnInit(): void {
@@ -54,8 +48,7 @@ export class Profile implements OnInit {
     }
 
     passwordMatchValidator(g: FormGroup) {
-        return g.get('password')?.value === g.get('password_confirmation')?.value
-            ? null : { 'mismatch': true };
+        return g.get('password')?.value === g.get('password_confirmation')?.value ? null : { mismatch: true };
     }
 
     onSubmit(): void {
@@ -65,7 +58,7 @@ export class Profile implements OnInit {
 
         this.loading = true;
         const formValue = { ...this.profileForm.value };
-        
+
         // Si no se proporcionó contraseña, eliminarla del objeto para no enviarla
         if (!formValue.password) {
             delete formValue.password;

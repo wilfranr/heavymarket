@@ -18,22 +18,23 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
     const authService = inject(AuthService);
 
-    // Obtener tokens simulando la lógica de negocio adecuada
+    // Obtener tokens de las diferentes sesiones
     const adminToken = authService.getToken();
+    const providerToken = localStorage.getItem('provider_access_token');
     const landingToken = localStorage.getItem('clientToken');
 
     let token = null;
 
-    // Prioridad: 
-    // 1. Admin Token (si existe, el usuario es administrador y debería tener acceso a todo)
-    // 2. Landing Token (si no es admin, pero tiene token de cliente y va a rutas de landing)
+    // Lógica de selección de token (Prioridad por contexto)
     if (adminToken) {
         token = adminToken;
-    } else if (req.url.includes('/landing/')) {
+    } else if (providerToken && req.url.includes('/provider/')) {
+        token = providerToken;
+    } else if (landingToken && req.url.includes('/landing/')) {
         token = landingToken;
     }
 
-    // Solo agregar token si existe y la petición va al API
+    // Solo agregar token si existe y la petición va al API v1
     if (token && req.url.includes('/v1/')) {
         req = req.clone({
             setHeaders: {

@@ -1,69 +1,61 @@
-<div class="landing-dark-theme surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden"
-    style="background: #0c0e0f !important;">
-    <div class="flex flex-column align-items-center justify-content-center w-full px-3" style="max-width: 500px;">
+<div class="landing-dark-theme surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden" style="background: #0c0e0f !important">
+    <div class="flex flex-column align-items-center justify-content-center w-full px-3" style="max-width: 500px">
         <!-- Card Structure with Yellow/Dark Gradient -->
-        <div
-            style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, #fdb831 10%, rgba(12, 14, 15, 0) 30%); width: 100%; box-sizing: border-box;">
-            <div class="w-full auth-card"
-                style="border-radius: 53px; padding: 3rem 2.5rem; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background: #0c0e0f;">
-
-                <div class="text-center mb-5" style="display: flex; flex-direction: column; align-items: center;">
+        <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, #fdb831 10%, rgba(12, 14, 15, 0) 30%); width: 100%; box-sizing: border-box">
+            <div class="w-full auth-card" style="border-radius: 53px; padding: 3rem 2.5rem; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background: #0c0e0f">
+                <div class="text-center mb-5" style="display: flex; flex-direction: column; align-items: center">
                     <div class="text-white text-4xl font-bold mb-3 tracking-tight">HeavyMarket</div>
                     <span class="text-gray-400 font-medium text-lg">Inicia sesión para continuar</span>
                 </div>
 
-                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()"
-                    style="display: flex; flex-direction: column; width: 100%;">
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
-
+                <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" style="display: flex; flex-direction: column; width: 100%">
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%">
                         <!-- Email -->
-                        <div style="display: flex; flex-direction: column;">
+                        <div style="display: flex; flex-direction: column">
                             <label for="email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
-                            <input id="email" type="email" formControlName="email" placeholder="Email" pInputText
+                            <input
+                                id="email"
+                                type="email"
+                                formControlName="email"
+                                placeholder="Email"
+                                pInputText
                                 class="w-full custom-input"
                                 (keyup.enter)="onSubmit()"
-                                [ngClass]="{ 'ng-invalid ng-dirty': hasError('email', 'required') || hasError('email', 'email') }" />
+                                [ngClass]="{ 'ng-invalid ng-dirty': hasError('email', 'required') || hasError('email', 'email') }"
+                            />
 
                             @if (hasError('email', 'required')) {
-                            <small class="text-red-400 mt-1">El email es obligatorio</small>
+                                <small class="text-red-400 mt-1">El email es obligatorio</small>
                             }
                             @if (hasError('email', 'email')) {
-                            <small class="text-red-400 mt-1">Email inválido</small>
+                                <small class="text-red-400 mt-1">Email inválido</small>
                             }
                         </div>
 
                         <!-- Password -->
-                        <div style="display: flex; flex-direction: column;">
-                            <label for="password"
-                                class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
-                            <p-password id="password" formControlName="password" placeholder="Contraseña"
-                                [toggleMask]="true" styleClass="w-full custom-password" inputStyleClass="w-full"
-                                [feedback]="false" (keyup.enter)="onSubmit()">
-                            </p-password>
+                        <div style="display: flex; flex-direction: column">
+                            <label for="password" class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
+                            <p-password id="password" formControlName="password" placeholder="Contraseña" [toggleMask]="true" styleClass="w-full custom-password" inputStyleClass="w-full" [feedback]="false" (keyup.enter)="onSubmit()"> </p-password>
 
                             @if (hasError('password', 'required')) {
-                            <small class="text-red-400 mt-1">La contraseña es obligatoria</small>
+                                <small class="text-red-400 mt-1">La contraseña es obligatoria</small>
                             }
                         </div>
 
                         <!-- Remember Me & Forgot Password -->
-                        <div class="flex align-items-center justify-content-between mb-2 gap-2"
-                            style="display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
-                            <div class="flex align-items-center"
-                                style="display: flex; flex-direction: row; align-items: center;">
-                                <p-checkbox id="rememberme" formControlName="rememberMe" [binary]="true"
-                                    styleClass="dark-checkbox mr-2"> </p-checkbox>
+                        <div class="flex align-items-center justify-content-between mb-2 gap-2" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
+                            <div class="flex align-items-center" style="display: flex; flex-direction: row; align-items: center">
+                                <p-checkbox id="rememberme" formControlName="rememberMe" [binary]="true" styleClass="dark-checkbox mr-2"> </p-checkbox>
                                 <label for="rememberme" class="text-gray-300 cursor-pointer">Recordarme</label>
                             </div>
-                            <a class="font-medium no-underline text-right cursor-pointer" style="color: #fdb831">
-                                ¿Olvidaste tu contraseña? </a>
+                            <a class="font-medium no-underline text-right cursor-pointer" style="color: #fdb831"> ¿Olvidaste tu contraseña? </a>
                         </div>
 
                         <!-- Submit Button -->
-                        <button type="submit" [disabled]="isLoading()"
-                            class="w-full p-3 text-xl font-bold border-none cursor-pointer"
-                            style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s;">
-                            @if (isLoading()) { <i class="pi pi-spin pi-spinner mr-2"></i> }
+                        <button type="submit" [disabled]="isLoading()" class="w-full p-3 text-xl font-bold border-none cursor-pointer" style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s">
+                            @if (isLoading()) {
+                                <i class="pi pi-spin pi-spinner mr-2"></i>
+                            }
                             Iniciar Sesión
                         </button>
 

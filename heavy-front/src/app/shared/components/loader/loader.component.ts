@@ -6,10 +6,12 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `<div class="loader"></div>`,
-    styles: [`
-    :host {
-      display: inline-block;
-    }
-  `]
+    styles: [
+        `
+            :host {
+                display: inline-block;
+            }
+        `
+    ]
 })
-export class LoaderComponent { }
+export class LoaderComponent {}

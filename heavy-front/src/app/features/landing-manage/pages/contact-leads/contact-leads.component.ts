@@ -29,7 +29,7 @@ export class ContactLeadsComponent implements OnInit {
     constructor(
         private landingManageService: LandingManageService,
         private messageService: MessageService
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.loadLeads();
@@ -39,7 +39,7 @@ export class ContactLeadsComponent implements OnInit {
         this.loading = true;
         this.landingManageService.getContactLeads().subscribe({
             next: (data) => {
-                this.leads = data.map(lead => ({
+                this.leads = data.map((lead) => ({
                     ...lead,
                     isContacted: lead.estado === 'contactado'
                 }));

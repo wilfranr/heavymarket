@@ -154,3 +154,11 @@ Ejecutar desde la **raíz del repositorio**:
 ```
 
 El script de frontend ejecuta: `npm ci` → `npm run build` → salida en `heavy-front/dist/sakai-ng/`.
+
+## Gates de Verificación Obligatorios
+
+Antes de marcar una tarea como completada ("done"), el agente Reviewer (Auditor de Calidad) debe asegurar que se cumplan los siguientes gates de verificación obligatorios:
+
+- **Linting**: `npm run lint` — Verificación de sintaxis de Signals y arquitectura Zoneless.
+- **Build**: `npm run build` — Verificación de compilación.
+- **Testing (E2E/Integration)**: `npx playwright test` — Pruebas de integración usando Playwright.

@@ -3,20 +3,15 @@
 <div class="card">
     <div class="flex justify-content-between align-items-center mb-4">
         <h5 class="m-0">Clientes Interesados (Contacto Landing)</h5>
-        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadLeads()"
-            [disabled]="loading" pTooltip="Recargar" tooltipPosition="bottom"></button>
+        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadLeads()" [disabled]="loading" pTooltip="Recargar" tooltipPosition="bottom"></button>
     </div>
 
-    <p-table #dt [value]="leads" [loading]="loading" [rows]="10" [paginator]="true"
-        [globalFilterFields]="['nombre_completo', 'empresa', 'correo_electronico', 'telefono']"
-        responsiveLayout="scroll">
-
+    <p-table #dt [value]="leads" [loading]="loading" [rows]="10" [paginator]="true" [globalFilterFields]="['nombre_completo', 'empresa', 'correo_electronico', 'telefono']" responsiveLayout="scroll">
         <ng-template pTemplate="caption">
             <div class="flex justify-content-between flex-column sm:flex-row">
                 <span class="p-input-icon-left mb-2">
                     <i class="pi pi-search"></i>
-                    <input pInputText type="text" #filter (input)="dt.filterGlobal(filter.value, 'contains')"
-                        placeholder="Buscar cliente..." class="w-full" />
+                    <input pInputText type="text" #filter (input)="dt.filterGlobal(filter.value, 'contains')" placeholder="Buscar cliente..." class="w-full" />
                 </span>
             </div>
         </ng-template>
@@ -24,8 +19,7 @@
         <ng-template pTemplate="header">
             <tr>
                 <th pSortableColumn="created_at">Fecha <p-sortIcon field="created_at"></p-sortIcon></th>
-                <th pSortableColumn="nombre_completo">Nombre <p-sortIcon field="nombre_completo"></p-sortIcon>
-                </th>
+                <th pSortableColumn="nombre_completo">Nombre <p-sortIcon field="nombre_completo"></p-sortIcon></th>
                 <th>Contacto</th>
                 <th>Motivo de Consulta</th>
                 <th>Acciones rápidas</th>
@@ -35,37 +29,30 @@
 
         <ng-template pTemplate="body" let-lead>
             <tr>
-                <td>{{ lead.created_at | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ lead.created_at | date: 'dd/MM/yyyy HH:mm' }}</td>
                 <td>
                     <div class="font-bold">{{ lead.nombre_completo }}</div>
-                    <div class="text-sm text-500" *ngIf="lead.empresa"><i class="pi pi-building text-xs"></i> {{
-                        lead.empresa }}</div>
+                    <div class="text-sm text-500" *ngIf="lead.empresa"><i class="pi pi-building text-xs"></i> {{ lead.empresa }}</div>
                 </td>
                 <td>
-                    <div><a [href]="'mailto:' + lead.correo_electronico" class="text-primary no-underline"><i
-                                class="pi pi-envelope mr-1"></i> {{ lead.correo_electronico }}</a></div>
+                    <div>
+                        <a [href]="'mailto:' + lead.correo_electronico" class="text-primary no-underline"><i class="pi pi-envelope mr-1"></i> {{ lead.correo_electronico }}</a>
+                    </div>
                     <div *ngIf="lead.telefono" class="mt-1">
-                        <a [href]="getWhatsappUrl(lead.telefono)" target="_blank" class="text-green-500 no-underline"><i
-                                class="pi pi-whatsapp mr-1"></i> {{
-                            lead.telefono }}</a>
+                        <a [href]="getWhatsappUrl(lead.telefono)" target="_blank" class="text-green-500 no-underline"><i class="pi pi-whatsapp mr-1"></i> {{ lead.telefono }}</a>
                     </div>
                 </td>
-                <td style="max-width: 300px;">
+                <td style="max-width: 300px">
                     <p class="m-0 text-sm overflow-hidden text-overflow-ellipsis" [title]="lead.motivo_consulta">
                         {{ lead.motivo_consulta }}
                     </p>
                 </td>
                 <td>
-                    <button pButton pRipple icon="pi pi-user-plus"
-                        class="p-button-rounded p-button-text p-button-warning" (click)="openCreateTercero(lead)"
-                        pTooltip="Convertir en Tercero" tooltipPosition="left">
-                    </button>
+                    <button pButton pRipple icon="pi pi-user-plus" class="p-button-rounded p-button-text p-button-warning" (click)="openCreateTercero(lead)" pTooltip="Convertir en Tercero" tooltipPosition="left"></button>
                 </td>
                 <td>
-                    <p-checkbox [(ngModel)]="lead.isContacted" [binary]="true"
-                        (onChange)="onContactedChange(lead, $event)"></p-checkbox>
-                    <span class="ml-2 text-sm"
-                        [ngClass]="{'text-green-500': lead.isContacted, 'text-orange-500': !lead.isContacted}">
+                    <p-checkbox [(ngModel)]="lead.isContacted" [binary]="true" (onChange)="onContactedChange(lead, $event)"></p-checkbox>
+                    <span class="ml-2 text-sm" [ngClass]="{ 'text-green-500': lead.isContacted, 'text-orange-500': !lead.isContacted }">
                         {{ lead.isContacted ? 'Sí' : 'No' }}
                     </span>
                 </td>
@@ -77,14 +64,22 @@
                 <td colspan="6">No se encontraron clientes interesados.</td>
             </tr>
         </ng-template>
-
     </p-table>
 </div>
 
 <!-- Modal: Crear Tercero desde Lead -->
-<app-tercero-create-modal [(visible)]="showTerceroModal" tipoTercero="Cliente" [initialData]="selectedLead ? {
-        nombre: selectedLead.empresa || selectedLead.nombre_completo,
-        telefono: selectedLead.telefono,
-        email: selectedLead.correo_electronico
-    } : null" (onTerceroCreated)="onTerceroCreated($event)">
+<app-tercero-create-modal
+    [(visible)]="showTerceroModal"
+    tipoTercero="Cliente"
+    [initialData]="
+        selectedLead
+            ? {
+                  nombre: selectedLead.empresa || selectedLead.nombre_completo,
+                  telefono: selectedLead.telefono,
+                  email: selectedLead.correo_electronico
+              }
+            : null
+    "
+    (onTerceroCreated)="onTerceroCreated($event)"
+>
 </app-tercero-create-modal>

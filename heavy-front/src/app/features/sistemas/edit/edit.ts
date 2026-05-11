@@ -97,7 +97,7 @@ export class EditComponent implements OnInit {
 
         formData.append('nombre', formValue.nombre);
         if (formValue.descripcion) formData.append('descripcion', formValue.descripcion);
-        
+
         if (this.imagenFile) {
             formData.append('imagen', this.imagenFile);
         }

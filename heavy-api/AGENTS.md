@@ -64,3 +64,10 @@ El backend utiliza patrones de diseño para mantener los controladores limpios y
 Para problemas con carga de imágenes o errores 404 en assets de storage, consultar la guía:
 `docs/SOLUCION_IMAGENES_STORAGE.md`
 
+## Gates de Verificación Obligatorios
+
+Antes de marcar una tarea como completada ("done"), el agente Reviewer (Auditor de Calidad) debe asegurar que se cumplan los siguientes gates de verificación obligatorios:
+
+- **Testing (PHPUnit/Pest)**: `php artisan test` — Ejecución de PHPUnit / Pest.
+- **Estilo de Código**: `./vendor/bin/pint` — Estilo de código Laravel.
+

@@ -3,6 +3,7 @@ import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
+import { ProviderAuthService } from '../services/provider-auth.service';
 
 /**
  * Interceptor de Errores HTTP
@@ -15,18 +16,28 @@ import { AuthService } from '../services/auth.service';
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
     const router = inject(Router);
     const authService = inject(AuthService);
+    const providerAuthService = inject(ProviderAuthService);
 
     return next(req).pipe(
         catchError((error: HttpErrorResponse) => {
             // Manejar errores de autenticación
             if (error.status === 401) {
+                // Identificar si la petición era del portal de proveedores
+                const isProviderRequest = req.url.includes('/provider/');
+                const loginRoute = isProviderRequest ? '/auth/provider/login' : '/auth/login';
+
                 // Evitar bucle infinito si la propia petición de logout falla
                 if (req.url.includes('/logout')) {
-                    // Limpiar datos locales y redirigir silenciosamente
-                    localStorage.removeItem('access_token');
-                    localStorage.removeItem('current_user');
-                    if (!router.url.includes('/auth/login')) {
-                        router.navigate(['/auth/login'], {
+                    if (isProviderRequest) {
+                        localStorage.removeItem('provider_access_token');
+                        localStorage.removeItem('provider_current_user');
+                    } else {
+                        localStorage.removeItem('access_token');
+                        localStorage.removeItem('current_user');
+                    }
+
+                    if (!router.url.includes(loginRoute)) {
+                        router.navigate([loginRoute], {
                             queryParams: { returnUrl: router.url }
                         });
                     }
@@ -44,17 +55,19 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
                 }
 
                 // Token inválido o expirado - redirigir al login
-                // Evitamos llamar a logout().subscribe() aquí directamente si ya estamos en una ruta de auth
-                if (!router.url.includes('/auth/login')) {
-                    authService.logout().subscribe({
-                        error: () => {
-                            // Si falla el logout del server, al menos limpiamos localmente
-                            localStorage.removeItem('access_token');
-                            localStorage.removeItem('current_user');
-                        }
-                    });
+                if (!router.url.includes(loginRoute)) {
+                    if (isProviderRequest) {
+                        providerAuthService.logout();
+                    } else {
+                        authService.logout().subscribe({
+                            error: () => {
+                                localStorage.removeItem('access_token');
+                                localStorage.removeItem('current_user');
+                            }
+                        });
+                    }
 
-                    router.navigate(['/auth/login'], {
+                    router.navigate([loginRoute], {
                         queryParams: { returnUrl: router.url }
                     });
                 }

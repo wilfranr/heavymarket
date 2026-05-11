@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Pedido;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Transforma los datos del modelo Pedido en una respuesta JSON
  * estructurada para el API REST.
  *
- * @property \App\Models\Pedido $resource
+ * @property Pedido $resource
  */
 class PedidoResource extends JsonResource
 {
@@ -75,8 +76,8 @@ class PedidoResource extends JsonResource
                     'serie_transmision' => $this->maquina->serie_transmision,
                     'comentario_transmision' => $this->maquina->comentario_transmision,
                     'imagen_transmision_url' => $this->maquina->imagen_transmision_url,
-                    'componentes' => $this->maquina->relationLoaded('componentes') 
-                        ? ComponenteMaquinaResource::collection($this->maquina->componentes) 
+                    'componentes' => $this->maquina->relationLoaded('componentes')
+                        ? ComponenteMaquinaResource::collection($this->maquina->componentes)
                         : [],
                 ];
             }),

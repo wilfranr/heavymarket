@@ -25,16 +25,8 @@ describe('ArticulosListComponent', () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
         await TestBed.configureTestingModule({
-            imports: [
-                ListComponent,
-                StoreModule.forRoot({})
-            ],
-            providers: [
-                provideMockStore({ initialState }),
-                { provide: Router, useValue: routerSpy },
-                MessageService,
-                ConfirmationService
-            ]
+            imports: [ListComponent, StoreModule.forRoot({})],
+            providers: [provideMockStore({ initialState }), { provide: Router, useValue: routerSpy }, MessageService, ConfirmationService]
         }).compileComponents();
 
         fixture = TestBed.createComponent(ListComponent);
@@ -75,18 +67,18 @@ describe('ArticulosListComponent', () => {
         const confirmationService = TestBed.inject(ConfirmationService);
         const spy = spyOn(confirmationService, 'confirm');
         const mockArticulo = { id: 1, descripcionEspecifica: 'Test' } as any;
-        
+
         component.eliminarArticulo(mockArticulo);
-        
+
         expect(spy).toHaveBeenCalled();
     });
 
     it('should update search term and trigger load', fakeAsync(() => {
         const spy = spyOn(store, 'dispatch');
         component.onSearch('motor');
-        
+
         tick(500); // Wait for debounceTime
-        
+
         expect(component.searchTerm).toBe('motor');
         expect(spy).toHaveBeenCalled();
     }));

@@ -22,10 +22,8 @@
 
     <!-- Main Content Grid -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        
         <!-- Left Column: Tech Info & Components -->
         <div class="lg:col-span-8 flex flex-col gap-6">
-            
             <!-- Tech Info Card -->
             <p-card styleClass="border-none shadow-xl surface-card rounded-[2rem]">
                 <div class="p-2 md:p-4">
@@ -70,25 +68,33 @@
                             <i class="pi pi-cog text-lg"></i>
                         </div>
                         <h2 class="text-lg font-bold">Componentes de Maquinaria</h2>
-                        <span class="ml-auto bg-surface-ground text-gray-500 text-xs font-bold px-3 py-1 rounded-full border border-surface-border">
-                            {{ maquina.componentes?.length || 0 }}
-                        </span>
+                        <span class="ml-auto bg-surface-ground text-gray-500 text-xs font-bold px-3 py-1 rounded-full border border-surface-border"> {{ maquina.componentes?.length || 0 }} </span>
                     </div>
 
                     @if (maquina.componentes && maquina.componentes.length > 0) {
                     <div class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-5 gap-4">
                         @for (comp of maquina.componentes; track comp.id) {
-                        <div (click)="verComponente(comp)" class="group cursor-pointer p-4 rounded-[1.5rem] bg-surface-ground/20 border border-surface-border hover:border-[#fdb831]/50 hover:bg-surface-ground/50 transition-all flex flex-col items-center text-center h-full shadow-sm hover:shadow-md">
-                            
+                        <div
+                            (click)="verComponente(comp)"
+                            class="group cursor-pointer p-4 rounded-[1.5rem] bg-surface-ground/20 border border-surface-border hover:border-[#fdb831]/50 hover:bg-surface-ground/50 transition-all flex flex-col items-center text-center h-full shadow-sm hover:shadow-md"
+                        >
                             <!-- Imagen representativa del Sistema -->
                             <div class="w-full aspect-square mb-3 rounded-[1rem] overflow-hidden bg-white dark:bg-surface-card border border-surface-border relative flex items-center justify-center">
-                                <img [src]="comp.sistema?.imagen || 'assets/layout/images/logo.svg'" [alt]="comp.sistema?.nombre" class="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-110" onerror="this.onerror=null; this.src='assets/layout/images/logo.svg'" />
-                                
+                                <img
+                                    [src]="comp.sistema?.imagen || 'assets/layout/images/logo.svg'"
+                                    [alt]="comp.sistema?.nombre"
+                                    class="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-110"
+                                    onerror="
+                                        this.onerror = null;
+                                        this.src = 'assets/layout/images/logo.svg';
+                                    "
+                                />
+
                                 <div class="absolute inset-0 bg-black/40 backdrop-blur-[2px] opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                                     <i class="pi pi-search-plus text-white text-2xl drop-shadow-md"></i>
                                 </div>
                             </div>
-                            
+
                             <span class="block text-[11px] font-black text-gray-600 dark:text-gray-400 uppercase tracking-widest line-clamp-2 leading-tight" [title]="comp.sistema?.nombre">{{ comp.sistema?.nombre }}</span>
                             <span class="text-xs font-bold text-[#fdb831] truncate max-w-full mt-1" [title]="comp.marca?.nombre">{{ comp.marca?.nombre || 'Sin marca' }}</span>
                         </div>
@@ -102,17 +108,15 @@
                     }
                 </div>
             </p-card>
-
         </div>
 
         <!-- Right Column: Photos & Meta -->
         <div class="lg:col-span-4 flex flex-col gap-6">
-            
             <!-- Metadata Card -->
             <p-card styleClass="border-none shadow-xl surface-card rounded-[2rem]">
                 <div class="p-2 md:p-3">
                     <h3 class="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">Registro</h3>
-                    
+
                     <div class="space-y-4">
                         @if (maquina.terceros && maquina.terceros.length > 0) {
                         <div class="flex items-center gap-3">
@@ -121,9 +125,7 @@
                             </div>
                             <div class="flex-1 overflow-hidden">
                                 <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Propietario</p>
-                                <a (click)="verTercero(maquina.terceros[0])" class="text-sm font-bold text-[#fdb831] hover:underline cursor-pointer block truncate">
-                                    {{ maquina.terceros[0].nombre }}
-                                </a>
+                                <a (click)="verTercero(maquina.terceros[0])" class="text-sm font-bold text-[#fdb831] hover:underline cursor-pointer block truncate"> {{ maquina.terceros[0].nombre }} </a>
                             </div>
                         </div>
                         }
@@ -136,7 +138,7 @@
                                 <p class="text-sm font-medium">{{ maquina.created_at | date:'dd MMM yyyy, HH:mm' }}</p>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center gap-3">
                             <div class="w-8 h-8 rounded-full bg-green-500/10 flex items-center justify-center text-green-500">
                                 <i class="pi pi-clock text-sm"></i>
@@ -161,23 +163,27 @@
                     <div class="flex flex-col gap-4">
                         @if (maquina.foto) {
                         <div class="relative group">
-                            <p-image [src]="maquina.foto" [alt]="maquina.modelo" [preview]="true" styleClass="w-full h-full block" imageClass="w-full h-48 object-cover rounded-2xl shadow-sm border border-surface-border transition-transform duration-300 group-hover:scale-[1.02]"></p-image>
-                            <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest pointer-events-none">
-                                Máquina
-                            </div>
+                            <p-image
+                                [src]="maquina.foto"
+                                [alt]="maquina.modelo"
+                                [preview]="true"
+                                styleClass="w-full h-full block"
+                                imageClass="w-full h-48 object-cover rounded-2xl shadow-sm border border-surface-border transition-transform duration-300 group-hover:scale-[1.02]"
+                            ></p-image>
+                            <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest pointer-events-none">Máquina</div>
                         </div>
-                        }
-                        
-                        @if (maquina.fotoId) {
+                        } @if (maquina.fotoId) {
                         <div class="relative group">
-                            <p-image [src]="maquina.fotoId" [alt]="maquina.modelo + ' - ID'" [preview]="true" styleClass="w-full h-full block" imageClass="w-full h-48 object-cover rounded-2xl shadow-sm border border-surface-border transition-transform duration-300 group-hover:scale-[1.02]"></p-image>
-                            <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest pointer-events-none">
-                                Placa ID
-                            </div>
+                            <p-image
+                                [src]="maquina.fotoId"
+                                [alt]="maquina.modelo + ' - ID'"
+                                [preview]="true"
+                                styleClass="w-full h-full block"
+                                imageClass="w-full h-48 object-cover rounded-2xl shadow-sm border border-surface-border transition-transform duration-300 group-hover:scale-[1.02]"
+                            ></p-image>
+                            <div class="absolute bottom-3 left-3 bg-black/60 backdrop-blur-md text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-widest pointer-events-none">Placa ID</div>
                         </div>
-                        }
-
-                        @if (!maquina.foto && !maquina.fotoId) {
+                        } @if (!maquina.foto && !maquina.fotoId) {
                         <div class="flex flex-col items-center justify-center py-12 border-2 border-dashed border-surface-border rounded-2xl bg-surface-ground/10">
                             <i class="pi pi-image text-3xl text-gray-300 mb-2"></i>
                             <p class="text-gray-400 text-xs font-medium uppercase tracking-widest">Sin fotos</p>
@@ -186,7 +192,6 @@
                     </div>
                 </div>
             </p-card>
-
         </div>
     </div>
     } @else {
@@ -197,11 +202,7 @@
     }
 </div>
 
-<app-tercero-create-modal 
-    [(visible)]="terceroModalVisible" 
-    [terceroToEdit]="selectedTercero" 
-    [isViewMode]="true">
-</app-tercero-create-modal>
+<app-tercero-create-modal [(visible)]="terceroModalVisible" [terceroToEdit]="selectedTercero" [isViewMode]="true"> </app-tercero-create-modal>
 
 <!-- Modal de Detalle de Componente -->
 <p-dialog [(visible)]="componenteDialog" [modal]="true" [dismissableMask]="true" [draggable]="false" [resizable]="false" (onHide)="cerrarComponenteDialog()" styleClass="w-full md:w-[500px]" [contentStyle]="{'padding-top': '0'}">
@@ -222,7 +223,12 @@
         <!-- Identificación -->
         <div class="flex items-start gap-4 p-4 rounded-2xl bg-surface-ground/30 border border-surface-border">
             @if (selectedComponente.foto_placa) {
-            <p-image [src]="selectedComponente.foto_placa" [preview]="true" imageClass="w-24 h-24 rounded-xl object-cover shadow-sm border border-surface-border flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity" appendTo="body"></p-image>
+            <p-image
+                [src]="selectedComponente.foto_placa"
+                [preview]="true"
+                imageClass="w-24 h-24 rounded-xl object-cover shadow-sm border border-surface-border flex-shrink-0 cursor-pointer hover:opacity-80 transition-opacity"
+                appendTo="body"
+            ></p-image>
             } @else {
             <div class="w-24 h-24 rounded-xl bg-surface-ground flex flex-col items-center justify-center border-2 border-dashed border-surface-border flex-shrink-0">
                 <i class="pi pi-camera text-gray-400 text-2xl mb-1"></i>
@@ -245,9 +251,7 @@
         @if (selectedComponente.comentario) {
         <div>
             <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest mb-2"><i class="pi pi-align-left mr-1"></i> Observaciones</p>
-            <div class="p-3 bg-surface-card rounded-xl border border-surface-border shadow-sm text-sm text-color leading-relaxed italic">
-                "{{ selectedComponente.comentario }}"
-            </div>
+            <div class="p-3 bg-surface-card rounded-xl border border-surface-border shadow-sm text-sm text-color leading-relaxed italic">"{{ selectedComponente.comentario }}"</div>
         </div>
         }
     </div>

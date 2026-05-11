@@ -1,8 +1,9 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
@@ -20,8 +21,6 @@ import { PedidoService } from '../../../core/services/pedido.service';
 
 /**
  * Componente de Lista de Órdenes de Compra
- *
- * Muestra tabla de órdenes de compra con filtros, búsqueda y acciones CRUD
  */
 @Component({
     selector: 'app-ordenes-compra-list',
@@ -32,67 +31,63 @@ import { PedidoService } from '../../../core/services/pedido.service';
         <div class="card">
             <h2>Gestión de Órdenes de Compra</h2>
 
-            <!-- Filtros y Acciones -->
             <div class="mb-4">
-                <div class="flex justify-content-between mb-3">
+                <div class="flex flex-col md:flex-row justify-between gap-4">
                     <div class="flex gap-2 flex-wrap">
                         <p-iconfield iconPosition="left">
                             <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
                         </p-iconfield>
 
-                        <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="estadosOptions" [(ngModel)]="filters().estado" (ngModelChange)="applyFilters()" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="coloresOptions" [(ngModel)]="selectedColor" (ngModelChange)="onColorChange($event)" placeholder="Color" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="coloresOptions" [(ngModel)]="filters().color" (ngModelChange)="applyFilters()" placeholder="Color" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="proveedores" [(ngModel)]="selectedProveedor" (ngModelChange)="onProveedorChange($event)" placeholder="Proveedor" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
-
-                        <p-select [options]="pedidos" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="proveedores()" [(ngModel)]="filters().proveedor_id" (ngModelChange)="applyFilters()" placeholder="Proveedor" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
                     </div>
 
                     <div class="flex gap-2">
-                        <p-button label="Limpiar Filtros" icon="pi pi-filter-slash" severity="secondary" [text]="true" (onClick)="limpiarFiltros()"> </p-button>
+                        <p-button label="Limpiar" icon="pi pi-filter-slash" severity="secondary" [text]="true" (onClick)="limpiarFiltros()"> </p-button>
                         <p-button label="Nueva Orden" icon="pi pi-plus" (onClick)="onCreateOrdenCompra()"> </p-button>
                     </div>
                 </div>
             </div>
 
-            <!-- Tabla de Órdenes de Compra -->
-            <p-table [value]="ordenesCompra()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines">
+            <p-table [value]="ordenesCompra()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" [lazy]="true" (onLazyLoad)="onLazyLoad($event)" styleClass="p-datatable-gridlines">
                 <ng-template pTemplate="header">
                     <tr>
                         <th>ID</th>
                         <th>Proveedor</th>
-                        <th>Cliente</th>
-                        <th>Pedido</th>
                         <th>Estado</th>
                         <th>Color</th>
-                        <th>Fecha Expedición</th>
-                        <th>Fecha Entrega</th>
-                        <th>Valor Total</th>
-                        <th>Acciones</th>
+                        <th>Expedición</th>
+                        <th>Entrega</th>
+                        <th>Total</th>
+                        <th class="text-center">Acciones</th>
                     </tr>
                 </ng-template>
 
                 <ng-template pTemplate="body" let-orden>
                     <tr>
-                        <td>OC-{{ orden.id }}</td>
+                        <td>
+                            <span class="font-bold">OC-{{ orden.id }}</span>
+                        </td>
                         <td>{{ orden.proveedor?.nombre || 'N/A' }}</td>
-                        <td>{{ orden.tercero?.nombre || 'N/A' }}</td>
-                        <td>#{{ orden.pedido_id || 'N/A' }}</td>
                         <td>
-                            <p-tag [value]="orden.estado || 'N/A'" [severity]="getEstadoSeverity(orden.estado || 'Pendiente')"> </p-tag>
+                            <p-tag [value]="orden.estado || 'N/A'" [severity]="getEstadoSeverity(orden.estado)"> </p-tag>
                         </td>
-                        <td>
-                            <div [style.background-color]="orden.color || '#FFFF00'" [style.width]="'20px'" [style.height]="'20px'" [style.border-radius]="'50%'" [title]="getColorTooltip(orden.color || '#FFFF00')"></div>
+                        <td class="text-center">
+                            <div class="mx-auto" [style.background-color]="orden.color || '#FFFF00'" [style.width]="'16px'" [style.height]="'16px'" [style.border-radius]="'50%'" [title]="getColorTooltip(orden.color)"></div>
                         </td>
-                        <td>{{ orden.fecha_expedicion | date: 'short' }}</td>
-                        <td>{{ orden.fecha_entrega | date: 'short' }}</td>
-                        <td>{{ orden.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                        <td>
-                            <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewOrdenCompra(orden.id)"> </p-button>
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditOrdenCompra(orden.id)"> </p-button>
-                            <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteOrdenCompra(orden)"> </p-button>
+                        <td>{{ orden.fecha_expedicion | date: 'dd/MM/yyyy' }}</td>
+                        <td>{{ orden.fecha_entrega | date: 'dd/MM/yyyy' }}</td>
+                        <td class="font-bold text-primary">{{ orden.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                        <td class="text-center">
+                            <div class="flex justify-center gap-1">
+                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewOrdenCompra(orden.id)"></p-button>
+                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditOrdenCompra(orden.id)"></p-button>
+                                <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteOrdenCompra(orden)"></p-button>
+                            </div>
                         </td>
                     </tr>
                 </ng-template>
@@ -104,140 +99,79 @@ import { PedidoService } from '../../../core/services/pedido.service';
     styles: []
 })
 export class ListComponent implements OnInit {
-    private store = inject(Store);
-    private router = inject(Router);
-    private confirmationService = inject(ConfirmationService);
-    private terceroService = inject(TerceroService);
-    private pedidoService = inject(PedidoService);
+    private readonly store = inject(Store);
+    private readonly router = inject(Router);
+    private readonly confirmationService = inject(ConfirmationService);
+    private readonly terceroService = inject(TerceroService);
 
-    // Signals para estado local
-    ordenesCompra = signal<OrdenCompra[]>([]);
-    loading = signal(false);
-    total = signal(0);
-    selectedEstado: string | null = null;
-    selectedColor: string | null = null;
-    selectedProveedor: number | null = null;
-    selectedPedido: number | null = null;
+    // Signals from Store
+    ordenesCompra = toSignal(this.store.select(OrdenesCompraSelectors.selectAllOrdenesCompra), { initialValue: [] });
+    loading = toSignal(this.store.select(OrdenesCompraSelectors.selectOrdenesCompraLoading), { initialValue: false });
+    total = toSignal(this.store.select(OrdenesCompraSelectors.selectOrdenesCompraTotal), { initialValue: 0 });
 
-    // Opciones para filtros
-    proveedores: any[] = [];
-    pedidos: any[] = [];
+    // Local State Signals
+    filters = signal<{
+        estado?: string;
+        color?: string;
+        proveedor_id?: number;
+        search?: string;
+        page?: number;
+    }>({});
 
-    estadosOptions: Array<{ label: string; value: OrdenCompraEstado }> = [
+    proveedores = signal<any[]>([]);
+
+    estadosOptions = [
         { label: 'Pendiente', value: 'Pendiente' },
         { label: 'En proceso', value: 'En proceso' },
         { label: 'Entregado', value: 'Entregado' },
         { label: 'Cancelado', value: 'Cancelado' }
     ];
 
-    coloresOptions: Array<{ label: string; value: OrdenCompraColor }> = [
-        { label: 'En proceso', value: '#FFFF00' },
-        { label: 'Entregado', value: '#00ff00' },
-        { label: 'Cancelado', value: '#ff0000' }
+    coloresOptions = [
+        { label: 'Amarillo (Proceso)', value: '#FFFF00' },
+        { label: 'Verde (Entregado)', value: '#00ff00' },
+        { label: 'Rojo (Cancelado)', value: '#ff0000' }
     ];
 
     ngOnInit() {
-        // Cargar datos para filtros
         this.loadFilterOptions();
-
-        // Cargar órdenes de compra inicial
-        this.loadOrdenesCompra();
-
-        // Suscribirse al store
-        this.store.select(OrdenesCompraSelectors.selectAllOrdenesCompra).subscribe((ordenesCompra) => {
-            this.ordenesCompra.set(ordenesCompra);
-        });
-
-        this.store.select(OrdenesCompraSelectors.selectOrdenesCompraLoading).subscribe((loading) => {
-            this.loading.set(loading);
-        });
-
-        this.store.select(OrdenesCompraSelectors.selectOrdenesCompraTotal).subscribe((total) => {
-            this.total.set(total);
-        });
+        this.applyFilters();
     }
 
-    /**
-     * Carga las opciones para los filtros
-     */
     private loadFilterOptions(): void {
-        // Cargar proveedores (terceros tipo Proveedor)
         this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe({
             next: (response) => {
-                this.proveedores = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                }));
-            }
-        });
-
-        // Cargar pedidos
-        this.pedidoService.list({ per_page: 200 }).subscribe({
-            next: (response) => {
-                this.pedidos = response.data.map((p: any) => ({
-                    label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
-                    value: p.id
-                }));
+                this.proveedores.set(
+                    response.data.map((t) => ({
+                        label: t.nombre,
+                        value: t.id
+                    }))
+                );
             }
         });
     }
 
-    loadOrdenesCompra(params: any = {}) {
-        // Construir parámetros de filtro
-        const filterParams: any = {};
+    applyFilters() {
+        this.store.dispatch(OrdenesCompraActions.loadOrdenesCompra({ ...this.filters() }));
+    }
 
-        if (this.selectedEstado) {
-            filterParams.estado = this.selectedEstado;
-        }
-        if (this.selectedColor) {
-            filterParams.color = this.selectedColor;
-        }
-        if (this.selectedProveedor) {
-            filterParams.proveedor_id = this.selectedProveedor;
-        }
-        if (this.selectedPedido) {
-            filterParams.pedido_id = this.selectedPedido;
-        }
-
-        // Combinar con otros parámetros (búsqueda, paginación, etc.)
-        const finalParams = { ...filterParams, ...params };
-
-        this.store.dispatch(OrdenesCompraActions.loadOrdenesCompra(finalParams));
+    onLazyLoad(event: any) {
+        const page = event.first / event.rows + 1;
+        this.filters.update((f) => ({ ...f, page }));
+        this.applyFilters();
     }
 
     onSearch(event: any) {
         const search = event.target.value;
         if (search.length === 0 || search.length >= 3) {
-            this.loadOrdenesCompra({ search });
+            this.filters.update((f) => ({ ...f, search, page: 1 }));
+            this.applyFilters();
         }
     }
 
-    onEstadoChange(estado: string | null) {
-        this.selectedEstado = estado;
-        this.loadOrdenesCompra();
-    }
-
-    onColorChange(color: string | null) {
-        this.selectedColor = color;
-        this.loadOrdenesCompra();
-    }
-
-    onProveedorChange(proveedorId: number | null) {
-        this.selectedProveedor = proveedorId;
-        this.loadOrdenesCompra();
-    }
-
-    onPedidoChange(pedidoId: number | null) {
-        this.selectedPedido = pedidoId;
-        this.loadOrdenesCompra();
-    }
-
     limpiarFiltros() {
-        this.selectedEstado = null;
-        this.selectedColor = null;
-        this.selectedProveedor = null;
-        this.selectedPedido = null;
-        this.loadOrdenesCompra();
+        this.filters.set({});
+        this.applyFilters();
     }
 
     onCreateOrdenCompra() {
@@ -263,7 +197,7 @@ export class ListComponent implements OnInit {
         });
     }
 
-    getEstadoSeverity(estado: OrdenCompraEstado): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    getEstadoSeverity(estado: string | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {
             case 'Entregado':
                 return 'success';
@@ -278,7 +212,7 @@ export class ListComponent implements OnInit {
         }
     }
 
-    getColorTooltip(color: OrdenCompraColor): string {
+    getColorTooltip(color: string | null): string {
         switch (color) {
             case '#FFFF00':
                 return 'En proceso';

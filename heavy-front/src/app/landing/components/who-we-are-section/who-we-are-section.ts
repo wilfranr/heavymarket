@@ -7,4 +7,4 @@ import { RouterModule } from '@angular/router';
     templateUrl: './who-we-are-section.html',
     styleUrl: './who-we-are-section.scss'
 })
-export class WhoWeAreSection { }
+export class WhoWeAreSection {}

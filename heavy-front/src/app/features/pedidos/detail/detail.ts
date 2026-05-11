@@ -56,7 +56,7 @@ export class DetailComponent implements OnInit {
     pedidoId = signal<number>(0);
 
     ngOnInit(): void {
-        this.route.paramMap.subscribe(params => {
+        this.route.paramMap.subscribe((params) => {
             const id = params.get('id');
 
             if (id) {
@@ -210,9 +210,7 @@ export class DetailComponent implements OnInit {
                 // No es JSON: formato legacy
             }
 
-            const sinPrefijo = trimmed.startsWith('Comentario del cliente:')
-                ? trimmed.replace('Comentario del cliente:', '').trim()
-                : trimmed;
+            const sinPrefijo = trimmed.startsWith('Comentario del cliente:') ? trimmed.replace('Comentario del cliente:', '').trim() : trimmed;
 
             if (!sinPrefijo) {
                 return [];

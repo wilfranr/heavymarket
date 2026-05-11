@@ -46,18 +46,14 @@ export class Cotizar implements OnInit {
     cities: City[] = [];
 
     // Helper para autocompletar ubicación desde tercero
-    private pendingTerceroLocation:
-        | {
-              country_id?: number | null;
-              state_id?: number | null;
-              city_id?: number | null;
-          }
-        | null = null;
+    private pendingTerceroLocation: {
+        country_id?: number | null;
+        state_id?: number | null;
+        city_id?: number | null;
+    } | null = null;
 
     // Form Data Helpers
-    items: any[] = [
-        { system: '', description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }
-    ];
+    items: any[] = [{ system: '', description: '', quantity: 1, reference: '', files: [] as File[], openSystem: false, systemSearch: '', openDescription: false, descriptionSearch: '', comment: '' }];
 
     // Image Modal Control
     displayImagesModal: boolean = false;
@@ -156,7 +152,7 @@ export class Cotizar implements OnInit {
 
         // Load Quote Data
         this.landingService.getQuoteData().subscribe({
-            next: data => {
+            next: (data) => {
                 console.log('Quote data received:', data);
                 this.categories = data.categories || [];
                 this.brands = (data.brands || []).map((b: any) => ({
@@ -167,7 +163,7 @@ export class Cotizar implements OnInit {
                 this.models = data.models || [];
 
                 if (this.items.length > 0 && !this.items[0].system) {
-                    const defaultSys = this.systems.find(s => s.nombre.toLowerCase() === 'por defecto') || this.systems[0];
+                    const defaultSys = this.systems.find((s) => s.nombre.toLowerCase() === 'por defecto') || this.systems[0];
                     if (defaultSys) {
                         this.items[0].system = defaultSys.nombre;
                     }
@@ -178,13 +174,13 @@ export class Cotizar implements OnInit {
                 }
                 this.cd.detectChanges();
             },
-            error: err => {
+            error: (err) => {
                 console.error('Error in getQuoteData:', err);
             }
         });
 
         // Load Countries
-        this.ubicacionService.getCountries().subscribe(res => {
+        this.ubicacionService.getCountries().subscribe((res) => {
             if (res && res.data) {
                 this.countries = res.data;
 
@@ -200,17 +196,15 @@ export class Cotizar implements OnInit {
 
     // Get active category for iteration in template
     get activeCategory() {
-        return this.categories.find(c => c.slug === this.activeTab);
+        return this.categories.find((c) => c.slug === this.activeTab);
     }
 
     get allTypes() {
         if (!this.categories) return [];
-        let types = this.categories
-            .flatMap(c => c.subcategorias || [])
-            .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+        let types = this.categories.flatMap((c) => c.subcategorias || []).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
 
         if (this.typeSearch) {
-            types = types.filter(t => this.flexibleMatch(t.nombre, this.typeSearch));
+            types = types.filter((t) => this.flexibleMatch(t.nombre, this.typeSearch));
         }
         return types;
     }
@@ -218,12 +212,12 @@ export class Cotizar implements OnInit {
     get filteredBrands() {
         if (!this.brands) return [];
         if (!this.brandSearch) return this.brands;
-        return this.brands.filter(b => this.flexibleMatch(b.nombre, this.brandSearch));
+        return this.brands.filter((b) => this.flexibleMatch(b.nombre, this.brandSearch));
     }
 
     get selectedBrandObj() {
         if (!this.selectedBrand) return null;
-        return this.brands.find(b => b.nombre === this.selectedBrand);
+        return this.brands.find((b) => b.nombre === this.selectedBrand);
     }
 
     get filteredSystems() {
@@ -232,14 +226,16 @@ export class Cotizar implements OnInit {
     }
 
     private removeAccents(str: string): string {
-        return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
     private flexibleMatch(text: string, search: string): boolean {
         if (!search) return true;
         const normalizedText = this.removeAccents(text.toLowerCase());
-        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
-        return searchTerms.every(term => normalizedText.includes(term));
+        const searchTerms = this.removeAccents(search.toLowerCase())
+            .split(/\s+/)
+            .filter((t) => t.length > 0);
+        return searchTerms.every((term) => normalizedText.includes(term));
     }
 
     // Location Handlers
@@ -250,7 +246,7 @@ export class Cotizar implements OnInit {
         this.cities = [];
 
         if (this.userData.country) {
-            this.ubicacionService.getStates(this.userData.country.id).subscribe(res => {
+            this.ubicacionService.getStates(this.userData.country.id).subscribe((res) => {
                 this.states = res.data || [];
                 this.cd.markForCheck();
             });
@@ -262,7 +258,7 @@ export class Cotizar implements OnInit {
         this.cities = [];
 
         if (this.userData.state) {
-            this.ubicacionService.getCities(this.userData.state.id).subscribe(res => {
+            this.ubicacionService.getCities(this.userData.state.id).subscribe((res) => {
                 this.cities = res.data || [];
                 this.cd.markForCheck();
             });
@@ -316,19 +312,19 @@ export class Cotizar implements OnInit {
     get filteredCities() {
         if (!this.cities) return [];
         if (!this.citySearch) return this.cities;
-        return this.cities.filter(c => this.flexibleMatch(c.name, this.citySearch));
+        return this.cities.filter((c) => this.flexibleMatch(c.name, this.citySearch));
     }
 
     get filteredCountries() {
         if (!this.countries) return [];
         if (!this.countrySearch) return this.countries;
-        return this.countries.filter(c => this.flexibleMatch(c.name, this.countrySearch));
+        return this.countries.filter((c) => this.flexibleMatch(c.name, this.countrySearch));
     }
 
     get filteredStates() {
         if (!this.states) return [];
         if (!this.stateSearch) return this.states;
-        return this.states.filter(st => this.flexibleMatch(st.name, this.stateSearch));
+        return this.states.filter((st) => this.flexibleMatch(st.name, this.stateSearch));
     }
 
     /**
@@ -370,16 +366,18 @@ export class Cotizar implements OnInit {
     /**
      * Aplicar ubicación (país/departamento/ciudad) a partir de IDs del tercero
      */
-    private applyLocationFromTercero(location: {
-        country_id?: number | null;
-        state_id?: number | null;
-        city_id?: number | null;
-    } | null) {
+    private applyLocationFromTercero(
+        location: {
+            country_id?: number | null;
+            state_id?: number | null;
+            city_id?: number | null;
+        } | null
+    ) {
         if (!location || !location.country_id || !this.countries.length) {
             return;
         }
 
-        const country = this.countries.find(c => c.id === location.country_id);
+        const country = this.countries.find((c) => c.id === location.country_id);
         if (!country) {
             return;
         }
@@ -387,20 +385,20 @@ export class Cotizar implements OnInit {
         this.userData.country = country;
 
         // Cargar departamentos y seleccionar el correspondiente
-        this.ubicacionService.getStates(country.id).subscribe(res => {
+        this.ubicacionService.getStates(country.id).subscribe((res) => {
             this.states = res.data || [];
 
             if (location.state_id) {
-                const state = this.states.find(s => s.id === location.state_id);
+                const state = this.states.find((s) => s.id === location.state_id);
                 if (state) {
                     this.userData.state = state;
 
                     // Cargar ciudades y seleccionar la correspondiente
-                    this.ubicacionService.getCities(state.id).subscribe(resCities => {
+                    this.ubicacionService.getCities(state.id).subscribe((resCities) => {
                         this.cities = resCities.data || [];
 
                         if (location.city_id) {
-                            const city = this.cities.find(c => c.id === location.city_id);
+                            const city = this.cities.find((c) => c.id === location.city_id);
                             if (city) {
                                 this.userData.city = city;
                             }
@@ -486,13 +484,13 @@ export class Cotizar implements OnInit {
     nextFormStep() {
         if (this.formStep === 1) {
             // Validation Logic Step 1
-            const hasEmptySystem = this.items.some(item => !item.system);
+            const hasEmptySystem = this.items.some((item) => !item.system);
             if (hasEmptySystem) {
                 alert('Por favor selecciona un sistema para cada ítem.');
                 return;
             }
-            
-            const hasInvalidQuantity = this.items.some(item => item.quantity === null || item.quantity < 1);
+
+            const hasInvalidQuantity = this.items.some((item) => item.quantity === null || item.quantity < 1);
             if (hasInvalidQuantity) {
                 alert('Por favor corrige las cantidades. No se permiten datos negativos o iguales a cero.');
                 return;
@@ -551,20 +549,20 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        const defaultSys = this.systems.find(s => s.nombre.toLowerCase() === 'por defecto') || (this.systems.length > 0 ? this.systems[0] : null);
+        const defaultSys = this.systems.find((s) => s.nombre.toLowerCase() === 'por defecto') || (this.systems.length > 0 ? this.systems[0] : null);
         const defaultSysName = defaultSys ? defaultSys.nombre : '';
-        
-        this.items.push({ 
-            system: defaultSysName, 
-            description: '', 
-            quantity: 1, 
-            reference: '', 
-            files: [] as File[], 
-            openSystem: false, 
-            systemSearch: '', 
-            openDescription: false, 
-            descriptionSearch: '', 
-            comment: '' 
+
+        this.items.push({
+            system: defaultSysName,
+            description: '',
+            quantity: 1,
+            reference: '',
+            files: [] as File[],
+            openSystem: false,
+            systemSearch: '',
+            openDescription: false,
+            descriptionSearch: '',
+            comment: ''
         });
         this.cd.markForCheck();
     }
@@ -584,11 +582,11 @@ export class Cotizar implements OnInit {
 
     procesarMasivo() {
         if (!this.bulkText || this.processingBulk) return;
-        
+
         const lines = this.bulkText.split('\n');
         const referenciasParaProcesar: Array<{ cantidad: number; codigo: string }> = [];
 
-        lines.forEach(line => {
+        lines.forEach((line) => {
             const trimmed = line.trim();
             if (!trimmed) return;
 
@@ -613,7 +611,7 @@ export class Cotizar implements OnInit {
         this.cd.markForCheck();
 
         // Buscar el ID de la marca seleccionada
-        const brandObj = this.brands.find(b => b.nombre === this.selectedBrand);
+        const brandObj = this.brands.find((b) => b.nombre === this.selectedBrand);
         const marcaId = brandObj ? brandObj.id : null;
 
         // Llamar al servicio optimizado con el flag esTemporal = true y el marcaId
@@ -685,10 +683,10 @@ export class Cotizar implements OnInit {
         const files = Array.from(event.target.files as FileList);
         if (files.length > 0) {
             if (!this.items[index].files) this.items[index].files = [] as File[];
-            
+
             // Limit to 10 total
             const remaining = 10 - this.items[index].files.length;
-            
+
             if (remaining <= 0) {
                 alert('Ya has alcanzado el máximo de 10 imágenes por ítem.');
                 return;
@@ -696,23 +694,23 @@ export class Cotizar implements OnInit {
 
             const toAdd = files.slice(0, remaining);
             this.items[index].files.push(...toAdd);
-            
+
             // Si el modal está abierto para este ítem, generar previsualizaciones adicionales
             if (this.displayImagesModal && this.selectedItemIndex === index) {
-                const newPreviews = toAdd.map(file => {
+                const newPreviews = toAdd.map((file) => {
                     const url = URL.createObjectURL(file);
                     return { itemImageSrc: url, thumbnailImageSrc: url, file: file };
                 });
                 this.galleriaImages.push(...newPreviews);
             }
-            
+
             if (files.length > remaining) {
                 alert('Solo se agregaron ' + remaining + ' imágenes. Máximo 10 permitidas por ítem.');
             }
-            
+
             // Reset input so searching the same file again triggers (change)
             event.target.value = '';
-            
+
             this.cd.markForCheck();
         }
     }
@@ -720,17 +718,17 @@ export class Cotizar implements OnInit {
     removeFile(itemIndex: number, fileIndex: number) {
         if (this.items[itemIndex].files) {
             this.items[itemIndex].files.splice(fileIndex, 1);
-            
+
             // Si el modal está abierto para este ítem, actualizar las previsualizaciones
             if (this.displayImagesModal && this.selectedItemIndex === itemIndex) {
                 if (this.galleriaImages[fileIndex]) {
                     URL.revokeObjectURL(this.galleriaImages[fileIndex].itemImageSrc);
                     this.galleriaImages.splice(fileIndex, 1);
                 }
-                
+
                 // Forzar refresco de p-galleria recreando el array
                 this.galleriaImages = [...this.galleriaImages];
-                
+
                 if (this.items[itemIndex].files.length === 0) {
                     this.closeImagesModal();
                 }
@@ -741,19 +739,19 @@ export class Cotizar implements OnInit {
 
     openImagesModal(index: number) {
         if (!this.items[index]?.files?.length) return;
-        
+
         this.selectedItemIndex = index;
-        
+
         // Limpiar previsualizaciones antiguas
-        this.galleriaImages.forEach(p => URL.revokeObjectURL(p.itemImageSrc));
+        this.galleriaImages.forEach((p) => URL.revokeObjectURL(p.itemImageSrc));
         this.galleriaImages = [];
-        
+
         // Crear nuevas previsualizaciones
         this.galleriaImages = this.items[index].files.map((file: File) => {
             const url = URL.createObjectURL(file);
             return { itemImageSrc: url, thumbnailImageSrc: url, file: file };
         });
-        
+
         this.displayImagesModal = true;
         this.cd.markForCheck();
     }
@@ -761,7 +759,7 @@ export class Cotizar implements OnInit {
     closeImagesModal() {
         this.displayImagesModal = false;
         this.selectedItemIndex = -1;
-        this.galleriaImages.forEach(p => URL.revokeObjectURL(p.itemImageSrc));
+        this.galleriaImages.forEach((p) => URL.revokeObjectURL(p.itemImageSrc));
         this.galleriaImages = [];
         this.cd.markForCheck();
     }
@@ -791,14 +789,14 @@ export class Cotizar implements OnInit {
     getFilteredSystems(item: any) {
         if (!this.systems) return [];
         if (!item.systemSearch) return this.systems;
-        return this.systems.filter(s => this.flexibleMatch(s.nombre, item.systemSearch));
+        return this.systems.filter((s) => this.flexibleMatch(s.nombre, item.systemSearch));
     }
 
     getFilteredDescriptions(item: any) {
         if (!this.systems) return [];
 
         const search = item.descriptionSearch;
-        const currentSystem = this.systems.find(s => s.nombre.toLowerCase() === item.system.toLowerCase());
+        const currentSystem = this.systems.find((s) => s.nombre.toLowerCase() === item.system.toLowerCase());
 
         // Si no hay búsqueda, mostrar solo los del sistema actual
         if (!search) {
@@ -807,10 +805,10 @@ export class Cotizar implements OnInit {
 
         // Si hay búsqueda, buscar en TODOS los sistemas
         let allMatches: any[] = [];
-        
-        this.systems.forEach(sys => {
+
+        this.systems.forEach((sys) => {
             const matches = (sys.listas || []).filter((d: any) => this.flexibleMatch(d.nombre, search));
-            
+
             // Enriquecer con nombre del sistema si no es el actual
             matches.forEach((m: any) => {
                 const enrichedMatch = { ...m, systemName: sys.nombre };
@@ -822,10 +820,10 @@ export class Cotizar implements OnInit {
         return allMatches.sort((a, b) => {
             const aIsCurrent = a.systemName === item.system;
             const bIsCurrent = b.systemName === item.system;
-            
+
             if (aIsCurrent && !bIsCurrent) return -1;
             if (!aIsCurrent && bIsCurrent) return 1;
-            
+
             return a.nombre.localeCompare(b.nombre);
         });
     }

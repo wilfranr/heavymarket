@@ -22,7 +22,6 @@ import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.sele
 import { TerceroService } from '../../../core/services/tercero.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
 
-
 /**
  * Componente de Lista de Pedidos
  *
@@ -56,17 +55,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
             </p-tabs>
 
             <!-- Tabla de Pedidos -->
-            <p-table
-                #dt1
-                [value]="pedidos()"
-                [loading]="loading()"
-                [paginator]="true"
-                [rows]="15"
-                [totalRecords]="total()"
-                styleClass="p-datatable-gridlines"
-                [globalFilterFields]="globalFilterFields()"
-                [rowHover]="true"
-            >
+            <p-table #dt1 [value]="pedidos()" [loading]="loading()" [paginator]="true" [rows]="15" [totalRecords]="total()" styleClass="p-datatable-gridlines" [globalFilterFields]="globalFilterFields()" [rowHover]="true">
                 <ng-template pTemplate="caption">
                     <div class="flex justify-between items-center flex-column sm:flex-row">
                         <p-button label="Limpiar" class="p-button-outlined mb-2" icon="pi pi-filter-slash" (onClick)="limpiarFiltros(dt1)" severity="secondary" [outlined]="true"></p-button>
@@ -101,8 +90,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                             </div>
                                         </ng-template>
                                         <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                            <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full">
-                                            </p-select>
+                                            <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full"> </p-select>
                                         </ng-template>
                                     </p-columnFilter>
                                 </div>
@@ -157,7 +145,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                     <span class="text-muted-color">—</span>
                                 }
                             </td>
-} @else {
+                        } @else {
                             @let comPed = resumenComentariosPedido(pedido);
                             <td>{{ pedido.id }}</td>
                             <td>{{ pedido.tercero?.nombre || 'N/A' }}</td>
@@ -203,11 +191,13 @@ import { AuthService } from '../../../core/auth/services/auth.service';
         <p-confirmDialog></p-confirmDialog>
     `,
     encapsulation: ViewEncapsulation.None,
-    styles: [`
-        app-pedidos-list .p-tablist-tab-list {
-            justify-content: center;
-        }
-    `]
+    styles: [
+        `
+            app-pedidos-list .p-tablist-tab-list {
+                justify-content: center;
+            }
+        `
+    ]
 })
 export class PedidosListComponent implements OnInit {
     readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
@@ -268,8 +258,6 @@ export class PedidosListComponent implements OnInit {
     // Opciones para filtros
     terceros: any[] = [];
     vendedores: any[] = [];
-
-
 
     estadosTabs: any[] = [];
     selectedTabValue: string = 'Todos';
@@ -347,8 +335,6 @@ export class PedidosListComponent implements OnInit {
         const search = event.target.value;
         this.loadPedidos({ search });
     }
-
-
 
     onTerceroChange(value: any) {
         this.selectedTercero = value;
@@ -543,5 +529,4 @@ export class PedidosListComponent implements OnInit {
         }
         return false;
     }
-
 }

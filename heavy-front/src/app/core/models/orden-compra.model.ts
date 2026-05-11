@@ -104,4 +104,5 @@ export interface UpdateOrdenCompraDto {
     direccion?: string;
     telefono?: string;
     guia?: string;
+    referencias?: CreateOrdenCompraReferenciaDto[];
 }

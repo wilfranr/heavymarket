@@ -89,7 +89,7 @@
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block"> Cliente <span class="text-red-400">*</span> </label>
                                     <div class="flex gap-2">
-                                        <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" placeholder="Buscar cliente..." styleClass="flex-1 h-[42px]" [filterMatchMode]="filterMode" appendTo="body"> </p-select>
+                                        <p-select formControlName="tercero_id" [options]="terceros" [filter]="true" placeholder="Buscar cliente..." styleClass="flex-1 h-[42px]" appendTo="body"> </p-select>
                                         <button
                                             type="button"
                                             (click)="openCreateTerceroDialog()"
@@ -104,7 +104,16 @@
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block">Contacto</label>
                                     <div class="flex gap-2">
-                                        <p-select formControlName="contacto_id" [options]="contactos" [filter]="true" placeholder="Seleccionar contacto..." [disabled]="!pedidoForm.get('tercero_id')?.value" styleClass="flex-1 h-[42px]" appendTo="body"> </p-select>
+                                        <p-select
+                                            formControlName="contacto_id"
+                                            [options]="contactos"
+                                            [filter]="true"
+                                            placeholder="Seleccionar contacto..."
+                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                            styleClass="flex-1 h-[42px]"
+                                            appendTo="body"
+                                        >
+                                        </p-select>
                                         <button
                                             type="button"
                                             (click)="openCreateContactoDialog()"
@@ -160,17 +169,17 @@
                                 <div>
                                     <label class="theme-text-secondary text-sm font-medium mb-2 block">Máquina</label>
                                     <div class="flex gap-2">
-                                        <p-select
-                                            formControlName="maquina_id"
-                                            [options]="maquinas"
-                                            [filter]="true"
-                                            [showClear]="true"
-                                            placeholder="Seleccionar máquina..."
-                                            [disabled]="!pedidoForm.get('tercero_id')?.value"
-                                            styleClass="flex-1 h-[42px]"
-                                            appendTo="body"
-                                        >
-                                        </p-select>
+                                    <p-select
+                                        formControlName="maquina_id"
+                                        [options]="maquinas()"
+                                        [filter]="true"
+                                        [showClear]="true"
+                                        placeholder="Seleccionar máquina..."
+                                        [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                        styleClass="flex-1 h-[42px]"
+                                        appendTo="body"
+                                    >
+                                    </p-select>
                                         <button
                                             type="button"
                                             (click)="openCreateMaquinaDialog()"
@@ -225,12 +234,12 @@
                                     </div>
                                     }
                                 </div>
-                                } @else if (pedidoForm.get('tercero_id')?.value && maquinas.length === 0) {
+                                } @else if (pedidoForm.get('tercero_id')?.value && maquinas().length === 0) {
                                 <div class="pt-3 border-t theme-border">
-                                    <div class="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3">
+                                    <div class="rounded-lg p-3" style="background: var(--p-warn-background); border: 1px solid var(--p-warn-border);">
                                         <div class="flex items-start gap-2">
-                                            <i class="pi pi-info-circle text-amber-400 text-sm mt-0.5"></i>
-                                            <p class="text-amber-200 text-xs">Este cliente no tiene máquinas registradas</p>
+                                            <i class="pi pi-info-circle text-sm mt-0.5" style="color: var(--p-warn-color);"></i>
+                                            <p class="text-xs" style="color: var(--p-warn-color);">Este cliente no tiene máquinas registradas</p>
                                         </div>
                                     </div>
                                 </div>
@@ -338,11 +347,7 @@
                             >
                                 <!-- Selección de fila (borrado masivo) -->
                                 <div class="w-[50px] flex justify-center items-center">
-                                    <p-checkbox
-                                        [inputId]="'pedido-create-ref-sel-' + refIndex"
-                                        formControlName="seleccionado"
-                                        [binary]="true"
-                                    />
+                                    <p-checkbox [inputId]="'pedido-create-ref-sel-' + refIndex" formControlName="seleccionado" [binary]="true" />
                                 </div>
 
                                 <!-- Sistema -->
@@ -358,7 +363,17 @@
                                 </div>
 
                                 <div class="w-[15%]">
-                                    <p-select formControlName="lista_id" [options]="tiposPorFila[refIndex]" placeholder="Tipo" [filter]="true" appendTo="body" styleClass="w-full h-[42px]" [filterMatchMode]="filterMode" filterBy="_search" [panelStyle]="{'max-width': '400px'}">
+                                    <p-select
+                                        formControlName="lista_id"
+                                        [options]="tiposPorFila[refIndex]"
+                                        placeholder="Tipo"
+                                        [filter]="true"
+                                        appendTo="body"
+                                        styleClass="w-full h-[42px]"
+                                        [filterMatchMode]="filterMode"
+                                        filterBy="_search"
+                                        [panelStyle]="{'max-width': '400px'}"
+                                    >
                                         <ng-template pTemplate="item" let-tipo>
                                             <div class="flex flex-col max-w-full">
                                                 <span class="font-semibold">{{ tipo.label }}</span>
@@ -375,13 +390,7 @@
 
                                 <!-- Referencia -->
                                 <div class="flex-1">
-                                    <input
-                                        pInputText
-                                        formControlName="definicion"
-                                        placeholder="Escribir código de referencia..."
-                                        class="w-full h-[42px] font-semibold rounded-lg uppercase"
-                                        (blur)="resolverReferenciaFila($index)"
-                                    />
+                                    <input pInputText formControlName="definicion" placeholder="Escribir código de referencia..." class="w-full h-[42px] font-semibold rounded-lg uppercase" (blur)="resolverReferenciaFila($index)" />
                                 </div>
 
                                 <!-- Actions -->
@@ -856,10 +865,4 @@
 <p-confirmDialog></p-confirmDialog>
 
 <!-- Modal Edición de Referencia (inline desde pedido) -->
-<app-referencia-edit-modal
-    [visible]="showReferenciaEditModal"
-    (visibleChange)="onReferenciaEditVisibleChange($event)"
-    [referenciaId]="editReferenciaId"
-    title="Editar referencia"
-    (onReferenciaUpdated)="onReferenciaActualizada($event)"
-/>
+<app-referencia-edit-modal [visible]="showReferenciaEditModal" (visibleChange)="onReferenciaEditVisibleChange($event)" [referenciaId]="editReferenciaId" title="Editar referencia" (onReferenciaUpdated)="onReferenciaActualizada($event)" />

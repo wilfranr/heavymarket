@@ -70,7 +70,9 @@ class OrdenCompra extends Model
         'valor_iva',
         'valor_descuento',
         'guia',
+        'transportadora_id',
         'color',
+        'fecha_despacho',
     ];
 
     protected $normalizableAttributes = [
@@ -83,11 +85,13 @@ class OrdenCompra extends Model
     protected $casts = [
         'fecha_expedicion' => 'datetime',
         'fecha_entrega' => 'datetime',
+        'fecha_despacho' => 'datetime',
         'cantidad' => 'integer',
         'valor_unitario' => 'decimal:2',
         'valor_total' => 'decimal:2',
         'valor_iva' => 'decimal:2',
         'valor_descuento' => 'decimal:2',
+        'transportadora_id' => 'integer',
     ];
 
     /**
@@ -96,6 +100,14 @@ class OrdenCompra extends Model
     public function tercero(): BelongsTo
     {
         return $this->belongsTo(Tercero::class);
+    }
+
+    /**
+     * Relación con la transportadora
+     */
+    public function transportadora(): BelongsTo
+    {
+        return $this->belongsTo(Transportadora::class);
     }
 
     /**

@@ -69,7 +69,7 @@ export class NotificationsWidget {
 
     handleNotificationClick(notification: any): void {
         this.notificationService.markAsRead(notification.id);
-        
+
         if (notification.data?.id) {
             if (notification.type.startsWith('pedido_')) {
                 this.router.navigate(['/app/pedidos', notification.data.id]);

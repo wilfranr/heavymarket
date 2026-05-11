@@ -8,9 +8,13 @@ import { LandingService } from '../../../core/services/landing';
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule],
     templateUrl: './footer-section.html',
-    styles: [`
-        .cursor-pointer { cursor: pointer; }
-    `]
+    styles: [
+        `
+            .cursor-pointer {
+                cursor: pointer;
+            }
+        `
+    ]
 })
 export class FooterSection {
     @Output() openTerms = new EventEmitter<void>();
@@ -62,13 +66,13 @@ export class FooterSection {
                 this.isSubmitting = false;
                 this.submitSuccess = true;
                 this.contactForm.reset();
-                setTimeout(() => this.submitSuccess = false, 5000);
+                setTimeout(() => (this.submitSuccess = false), 5000);
             },
             error: (err) => {
                 this.isSubmitting = false;
                 this.submitError = true;
                 console.error(err);
-                setTimeout(() => this.submitError = false, 5000);
+                setTimeout(() => (this.submitError = false), 5000);
             }
         });
     }

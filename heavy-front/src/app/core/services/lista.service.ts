@@ -6,11 +6,7 @@ import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
 /** Clave estable para fusionar Marca vs Fabricantes cuando el mismo nombre tiene dos IDs distintos. */
 function claveNombreLista(nombre: string): string {
-    return nombre
-        .trim()
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/\p{M}/gu, '');
+    return nombre.trim().toLowerCase().normalize('NFD').replace(/\p{M}/gu, '');
 }
 
 /**
@@ -67,9 +63,7 @@ export class ListaService extends ApiService {
                     añadir(item, true);
                 }
 
-                return Array.from(porNombre.values()).sort((a, b) =>
-                    a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' })
-                );
+                return Array.from(porNombre.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
             })
         );
     }

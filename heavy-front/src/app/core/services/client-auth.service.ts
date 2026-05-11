@@ -10,7 +10,7 @@ import { environment } from '../../../environments/environment';
 export class ClientAuthService {
     private apiUrl = `${environment.apiUrl}/landing/auth`;
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
     register(data: any): Observable<any> {
         return this.http.post(`${this.apiUrl}/register`, data);
@@ -27,8 +27,6 @@ export class ClientAuthService {
     me(): Observable<any> {
         const token = localStorage.getItem('clientToken');
         const headers = new HttpHeaders().set('Authorization', `Bearer ${token}`);
-        return this.http.get<any>(`${environment.apiUrl}/me`, { headers }).pipe(
-            map(res => res.data)
-        );
+        return this.http.get<any>(`${environment.apiUrl}/me`, { headers }).pipe(map((res) => res.data));
     }
 }

@@ -30,12 +30,7 @@ describe('ArticuloEditComponent', () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
         await TestBed.configureTestingModule({
-            imports: [
-                EditComponent,
-                ReactiveFormsModule,
-                HttpClientTestingModule,
-                StoreModule.forRoot({})
-            ],
+            imports: [EditComponent, ReactiveFormsModule, HttpClientTestingModule, StoreModule.forRoot({})],
             providers: [
                 provideMockStore(),
                 { provide: Router, useValue: routerSpy },
@@ -56,7 +51,7 @@ describe('ArticuloEditComponent', () => {
         router = TestBed.inject(Router);
 
         store.overrideSelector(selectArticuloById(1), mockArticulo);
-        
+
         fixture.detectChanges();
     });
 

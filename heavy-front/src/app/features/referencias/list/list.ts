@@ -2,14 +2,16 @@ import { Component, OnInit, inject, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { Actions, ofType } from '@ngrx/effects';
+import { Observable, merge } from 'rxjs';
+import { take } from 'rxjs/operators';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { CardModule } from 'primeng/card';
 import { InputTextModule } from 'primeng/inputtext';
 import { ToastModule } from 'primeng/toast';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { ConfirmationService } from 'primeng/api';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { SelectModule } from 'primeng/select';
 import { FormsModule } from '@angular/forms';
@@ -20,7 +22,7 @@ import { TagModule } from 'primeng/tag';
 import { CheckboxModule } from 'primeng/checkbox';
 
 import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
-import { loadReferencias, deleteReferencia, updateReferencia } from '../../../store/referencias/actions/referencias.actions';
+import { loadReferencias, deleteReferencia, updateReferencia, updateReferenciaSuccess, updateReferenciaFailure } from '../../../store/referencias/actions/referencias.actions';
 import { selectAllReferencias, selectReferenciasLoading, selectReferenciasPagination } from '../../../store/referencias/selectors/referencias.selectors';
 import { ListaService } from '../../../core/services/lista.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
@@ -36,16 +38,35 @@ import { RippleModule } from 'primeng/ripple';
 @Component({
     selector: 'app-referencias-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, TextareaModule, ReferenciaCreateModalComponent, RippleModule, IconFieldModule, InputIconModule, TagModule, CheckboxModule],
-    providers: [MessageService, ConfirmationService],
+    imports: [
+        CommonModule,
+        RouterModule,
+        TableModule,
+        ButtonModule,
+        CardModule,
+        InputTextModule,
+        ToastModule,
+        ConfirmDialogModule,
+        SelectModule,
+        FormsModule,
+        TooltipModule,
+        TextareaModule,
+        ReferenciaCreateModalComponent,
+        RippleModule,
+        IconFieldModule,
+        InputIconModule,
+        TagModule,
+        CheckboxModule
+    ],
+    providers: [ConfirmationService],
     templateUrl: './list.html'
 })
 export class ListComponent implements OnInit {
     @ViewChild('dt') dt!: Table;
 
     private readonly store = inject(Store);
+    private readonly actions$ = inject(Actions);
     private readonly router = inject(Router);
-    private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
@@ -199,40 +220,46 @@ export class ListComponent implements OnInit {
         this.editingReferencias[referencia.id] = { ...referencia };
     }
 
-    /**
-     * Guarda los cambios de la fila
-     */
-    onRowEditSave(event: any) {
-        const referencia = event.data;
+    guardarEdicion(referencia: Referencia) {
+        const editCopy = this.editingReferencias[referencia.id];
         const data: UpdateReferenciaDto = {
-            referencia: referencia.referencia,
-            marca_id: referencia.marca_id,
-            articulo_id: referencia.articulo_id,
-            comentario: referencia.comentario
+            referencia: editCopy?.referencia ?? referencia.referencia,
+            marca_id: editCopy?.marca_id ?? referencia.marca_id,
+            articulo_id: editCopy?.articulo_id ?? referencia.articulo_id,
+            comentario: editCopy?.comentario ?? referencia.comentario
         };
 
+        // Salir del modo edición de PrimeNG manualmente
+        if (this.dt?.editingRowKeys) {
+            delete this.dt.editingRowKeys[referencia.id];
+        }
+
+        merge(
+            this.actions$.pipe(ofType(updateReferenciaSuccess), take(1)),
+            this.actions$.pipe(ofType(updateReferenciaFailure), take(1))
+        )
+            .pipe(take(1))
+            .subscribe((action) => {
+                if (action.type === updateReferenciaSuccess.type) {
+                    delete this.editingReferencias[referencia.id];
+                    this.cargarReferencias();
+                }
+            });
+
         this.store.dispatch(updateReferencia({ id: referencia.id, data }));
-        delete this.editingReferencias[referencia.id];
-
-        this.messageService.add({
-            severity: 'success',
-            summary: 'Éxito',
-            detail: 'Referencia actualizada correctamente'
-        });
-
-        setTimeout(() => this.cargarReferencias(), 500);
     }
 
-    /**
-     * Cancela la edición de la fila
-     */
-    onRowEditCancel(event: any) {
-        const referencia = event.data;
+    cancelarEdicion(referencia: Referencia) {
         const original = this.editingReferencias[referencia.id];
         if (original) {
             Object.assign(referencia, original);
         }
         delete this.editingReferencias[referencia.id];
+
+        // Salir del modo edición de PrimeNG manualmente
+        if (this.dt?.editingRowKeys) {
+            delete this.dt.editingRowKeys[referencia.id];
+        }
     }
 
     /**

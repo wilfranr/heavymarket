@@ -25,8 +25,8 @@ test.describe('Listas – pestaña Fabricantes', () => {
                 descripcion: 'Sincronizado desde catálogo',
                 logo: null,
                 created_at: '2026-04-04T12:00:00.000000Z',
-                updated_at: '2026-04-04T12:00:00.000000Z',
-            },
+                updated_at: '2026-04-04T12:00:00.000000Z'
+            }
         };
 
         const listPayload = {
@@ -35,22 +35,19 @@ test.describe('Listas – pestaña Fabricantes', () => {
                 current_page: 1,
                 last_page: 1,
                 per_page: 10,
-                total: 1,
-            },
+                total: 1
+            }
         };
 
         await page.addInitScript(() => {
-            localStorage.setItem(
-                'access_token',
-                'playwright-test-token'
-            );
+            localStorage.setItem('access_token', 'playwright-test-token');
             localStorage.setItem(
                 'current_user',
                 JSON.stringify({
                     id: 1,
                     name: 'Usuario Prueba',
                     email: 'pw@test.local',
-                    roles: ['Administrador'],
+                    roles: ['Administrador']
                 })
             );
         });
@@ -63,7 +60,7 @@ test.describe('Listas – pestaña Fabricantes', () => {
             await route.fulfill({
                 status: 200,
                 contentType: 'application/json',
-                body: JSON.stringify(listPayload),
+                body: JSON.stringify(listPayload)
             });
         });
 
@@ -71,7 +68,7 @@ test.describe('Listas – pestaña Fabricantes', () => {
         await expect(page).toHaveURL(/\/app\/listas/, { timeout: 15_000 });
 
         await expect(page.getByRole('heading', { name: /Listas \(Catálogos\)/i })).toBeVisible({
-            timeout: 15_000,
+            timeout: 15_000
         });
 
         // PrimeNG sustituye nodos de pestaña al refrescar; clic vía DOM evita "element detached" en Playwright.

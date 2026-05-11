@@ -3,16 +3,12 @@
     <div class="flex justify-content-between align-items-center mb-4">
         <div>
             <h5 class="m-0">Gestión de Tipos de Máquina</h5>
-            <span class="text-600">Organiza los tipos de máquina en sus categorías correspondientes para el
-                cotizador.</span>
+            <span class="text-600">Organiza los tipos de máquina en sus categorías correspondientes para el cotizador.</span>
         </div>
-        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadCategories()"
-            [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom"></button>
+        <button pButton icon="pi pi-refresh" class="p-button-rounded p-button-text" (click)="loadCategories()" [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom"></button>
     </div>
 
-    <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-striped"
-        [tableStyle]="{'min-width': '60rem'}">
-
+    <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-striped" [tableStyle]="{ 'min-width': '60rem' }">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 5rem"></th>
@@ -25,8 +21,7 @@
             <!-- Main Row -->
             <tr>
                 <td>
-                    <div (click)="toggleRow(category)"
-                        class="cursor-pointer p-2 inline-flex align-items-center justify-content-center border-circle hover:surface-hover transition-colors transition-duration-150">
+                    <div (click)="toggleRow(category)" class="cursor-pointer p-2 inline-flex align-items-center justify-content-center border-circle hover:surface-hover transition-colors transition-duration-150">
                         <i [class]="expandedRows[category.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"></i>
                     </div>
                 </td>
@@ -45,37 +40,43 @@
                             Maquinaria en {{ category.nombre }}
                         </div>
 
-                        <p-table [value]="category.children" dataKey="id"
-                            styleClass="p-datatable-sm p-datatable-gridlines">
+                        <p-table [value]="category.children" dataKey="id" styleClass="p-datatable-sm p-datatable-gridlines">
                             <ng-template pTemplate="header">
-            <tr>
-                <th>Tipo de Máquina</th>
-                <th>Descripción</th>
-                <th style="width: 250px">Cambiar Categoría</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-machine>
-            <tr>
-                <td>{{ machine.nombre }}</td>
-                <td class="text-sm text-400">{{ machine.definicion || 'Sin descripción' }}</td>
-                <td>
-                    <p-select [options]="allCategories()" [ngModel]="category.id" optionLabel="nombre" optionValue="id"
-                        (onChange)="onParentChange(machine, $event.value)" styleClass="w-full p-inputtext-sm"
-                        appendTo="body" [filter]="true" filterBy="nombre">
-                    </p-select>
+                                <tr>
+                                    <th>Tipo de Máquina</th>
+                                    <th>Descripción</th>
+                                    <th style="width: 250px">Cambiar Categoría</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-machine>
+                                <tr>
+                                    <td>{{ machine.nombre }}</td>
+                                    <td class="text-sm text-400">{{ machine.definicion || 'Sin descripción' }}</td>
+                                    <td>
+                                        <p-select
+                                            [options]="allCategories()"
+                                            [ngModel]="category.id"
+                                            optionLabel="nombre"
+                                            optionValue="id"
+                                            (onChange)="onParentChange(machine, $event.value)"
+                                            styleClass="w-full p-inputtext-sm"
+                                            appendTo="body"
+                                            [filter]="true"
+                                            filterBy="nombre"
+                                        >
+                                        </p-select>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="3" class="text-center p-4">No hay máquinas asignadas a esta categoría.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
+                    </div>
                 </td>
             </tr>
         </ng-template>
-        <ng-template pTemplate="emptymessage">
-            <tr>
-                <td colspan="3" class="text-center p-4">No hay máquinas asignadas a esta categoría.</td>
-            </tr>
-        </ng-template>
     </p-table>
-</div>
-</td>
-</tr>
-</ng-template>
-
-</p-table>
 </div>

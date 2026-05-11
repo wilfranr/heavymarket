@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Referencia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Transforma los datos de referencias en una respuesta JSON estructurada.
  *
- * @property \App\Models\Referencia $resource
+ * @property Referencia $resource
  */
 class ReferenciaResource extends JsonResource
 {
@@ -28,6 +29,7 @@ class ReferenciaResource extends JsonResource
             'referencia' => $this->referencia,
             'marca_id' => $this->marca_id,
             'articulo_id' => $this->articulo_id,
+            'es_temporal' => $this->es_temporal,
             'comentario' => $this->comentario,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

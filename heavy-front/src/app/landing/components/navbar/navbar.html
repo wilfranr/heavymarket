@@ -15,8 +15,7 @@
             </div>
             <div class="navbar-frame">
                 <div class="navbar-column">
-                    <div class="navbar-link-frame products-menu-wrapper" (mouseenter)="onMouseEnter()"
-                        (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen()">
+                    <div class="navbar-link-frame products-menu-wrapper" (mouseenter)="onMouseEnter()" (mouseleave)="onMouseLeave()" [class.menu-active]="isMenuOpen()">
                         <a routerLink="/productos" class="navbar-link products-link">
                             <span class="link-text">Nuestros productos</span>
                         </a>
@@ -30,11 +29,8 @@
                                         <h3 class="dropdown-menu-title">Productos por categorías</h3>
                                         <ul class="dropdown-menu-list">
                                             @for (category of categories(); track category.slug) {
-                                            <li class="dropdown-menu-item"
-                                                [class.active]="activeCategory() === category.slug"
-                                                (mouseenter)="setActiveCategory(category.slug)">
-                                                <a href="#" class="dropdown-menu-link"
-                                                    (click)="$event.preventDefault()">{{ category.nombre }}</a>
+                                            <li class="dropdown-menu-item" [class.active]="activeCategory() === category.slug" (mouseenter)="setActiveCategory(category.slug)">
+                                                <a href="#" class="dropdown-menu-link" (click)="$event.preventDefault()">{{ category.nombre }}</a>
                                             </li>
                                             }
                                         </ul>
@@ -43,8 +39,7 @@
                                 <!-- Frame 10 - Contenido de artículos -->
                                 <div class="dropdown-articles-wrapper">
                                     @for (category of categories(); track category.slug) {
-                                    <div class="dropdown-articles-content category-content"
-                                         [style.display]="activeCategory() === category.slug ? 'flex' : 'none'">
+                                    <div class="dropdown-articles-content category-content" [style.display]="activeCategory() === category.slug ? 'flex' : 'none'">
                                         <div class="dropdown-articles-inner">
                                             <div class="dropdown-articles-header">
                                                 <h4 class="dropdown-articles-title">{{ category.nombre }}</h4>
@@ -52,26 +47,20 @@
                                             <div class="dropdown-articles-grid">
                                                 @if (category.subcategorias && category.subcategorias.length > 0) {
                                                 <div class="dropdown-articles-column">
-                                                    @for (sub of category.subcategorias |
-                                                    slice:0:getHalf(category.subcategorias.length); track sub.slug) {
-                                                    <div class="dropdown-blog-item"
-                                                        [routerLink]="['/productos', category.slug, sub.slug]">
+                                                    @for (sub of category.subcategorias | slice:0:getHalf(category.subcategorias.length); track sub.slug) {
+                                                    <div class="dropdown-blog-item" [routerLink]="['/productos', category.slug, sub.slug]">
                                                         <div class="dropdown-blog-image">
                                                             <img [src]="sub.imagen_url" [alt]="sub.nombre" />
                                                         </div>
                                                         <div class="dropdown-blog-content">
                                                             <div class="dropdown-blog-text">
                                                                 <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
-                                                                <p class="dropdown-blog-description">{{ sub.descripcion
-                                                                    }}</p>
+                                                                <p class="dropdown-blog-description">{{ sub.descripcion }}</p>
                                                             </div>
                                                             <button class="dropdown-blog-button">
                                                                 <span class="dropdown-button-text">Saber más</span>
-                                                                <svg class="dropdown-arrow-icon" width="16" height="16"
-                                                                    viewBox="0 0 16 16" fill="none">
-                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
-                                                                        stroke-width="2" stroke-linecap="round"
-                                                                        stroke-linejoin="round" />
+                                                                <svg class="dropdown-arrow-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                                 </svg>
                                                             </button>
                                                         </div>
@@ -79,26 +68,20 @@
                                                     }
                                                 </div>
                                                 <div class="dropdown-articles-column">
-                                                    @for (sub of category.subcategorias |
-                                                    slice:getHalf(category.subcategorias.length); track sub.slug) {
-                                                    <div class="dropdown-blog-item"
-                                                        [routerLink]="['/productos', category.slug, sub.slug]">
+                                                    @for (sub of category.subcategorias | slice:getHalf(category.subcategorias.length); track sub.slug) {
+                                                    <div class="dropdown-blog-item" [routerLink]="['/productos', category.slug, sub.slug]">
                                                         <div class="dropdown-blog-image">
                                                             <img [src]="sub.imagen_url" [alt]="sub.nombre" />
                                                         </div>
                                                         <div class="dropdown-blog-content">
                                                             <div class="dropdown-blog-text">
                                                                 <h5 class="dropdown-blog-title">{{ sub.nombre }}</h5>
-                                                                <p class="dropdown-blog-description">{{ sub.descripcion
-                                                                    }}</p>
+                                                                <p class="dropdown-blog-description">{{ sub.descripcion }}</p>
                                                             </div>
                                                             <button class="dropdown-blog-button">
                                                                 <span class="dropdown-button-text">Saber más</span>
-                                                                <svg class="dropdown-arrow-icon" width="16" height="16"
-                                                                    viewBox="0 0 16 16" fill="none">
-                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F"
-                                                                        stroke-width="2" stroke-linecap="round"
-                                                                        stroke-linejoin="round" />
+                                                                <svg class="dropdown-arrow-icon" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                                                                    <path d="M6 3L11 8L6 13" stroke="#0C0E0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                                                 </svg>
                                                             </button>
                                                         </div>
@@ -137,9 +120,7 @@
                             <div class="user-info-brief" *ngIf="currentUser">
                                 <span class="user-name-text">{{ currentUser.name.split(' ')[0] }}</span>
                             </div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                                 <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                                 <circle cx="12" cy="7" r="4"></circle>
                             </svg>
@@ -200,8 +181,7 @@
                 </div>
             </div>
 
-            <app-auth-modal [visible]="isAuthModalVisible" (close)="isAuthModalVisible = false"
-                (termsClick)="openTerms.emit()" (loginSuccess)="currentUser = $event"></app-auth-modal>
+            <app-auth-modal [visible]="isAuthModalVisible" (close)="isAuthModalVisible = false" (termsClick)="openTerms.emit()" (loginSuccess)="currentUser = $event"></app-auth-modal>
         </div>
     </div>
 </div>
@@ -223,12 +203,10 @@
     <div class="mobile-menu-content">
         <!-- Nuestros productos con categorías expandibles -->
         <div class="mobile-menu-section">
-            <button class="mobile-menu-item mobile-menu-expandable" (click)="toggleCategory('productos', $event)"
-                [class.expanded]="isCategoryExpanded('productos')">
+            <button class="mobile-menu-item mobile-menu-expandable" (click)="toggleCategory('productos', $event)" [class.expanded]="isCategoryExpanded('productos')">
                 <span class="mobile-menu-text">Nuestros productos</span>
                 <svg class="mobile-menu-chevron" width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                        stroke-linejoin="round" />
+                    <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
 
@@ -236,20 +214,16 @@
                 <div class="mobile-menu-categories">
                     @for (category of categories(); track category.slug) {
                     <div class="mobile-category-item">
-                        <button class="mobile-category-header" (click)="toggleCategory(category.slug, $event)"
-                            [class.expanded]="isCategoryExpanded(category.slug)">
+                        <button class="mobile-category-header" (click)="toggleCategory(category.slug, $event)" [class.expanded]="isCategoryExpanded(category.slug)">
                             <span class="mobile-category-name">{{ category.nombre }}</span>
                             <svg class="mobile-category-chevron" width="14" height="14" viewBox="0 0 16 16" fill="none">
-                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round" />
+                                <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                             </svg>
                         </button>
 
                         <div class="mobile-subcategories" [class.expanded]="isCategoryExpanded(category.slug)">
-                            @if (category.subcategorias && category.subcategorias.length > 0) {
-                            @for (sub of category.subcategorias; track sub.slug) {
-                            <div class="mobile-product-card" [routerLink]="['/productos', category.slug, sub.slug]"
-                                (click)="closeMobileMenu()">
+                            @if (category.subcategorias && category.subcategorias.length > 0) { @for (sub of category.subcategorias; track sub.slug) {
+                            <div class="mobile-product-card" [routerLink]="['/productos', category.slug, sub.slug]" (click)="closeMobileMenu()">
                                 <div class="mobile-product-image">
                                     <img [src]="sub.imagen_url" [alt]="sub.nombre" />
                                 </div>
@@ -259,14 +233,12 @@
                                     <button class="mobile-product-button">
                                         <span>Saber más</span>
                                         <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                                            <path d="M6 3L11 8L6 13" stroke="#0C0E0F" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round" />
+                                            <path d="M6 3L11 8L6 13" stroke="#0C0E0F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
                                         </svg>
                                     </button>
                                 </div>
                             </div>
-                            }
-                            }
+                            } }
                         </div>
                     </div>
                     }

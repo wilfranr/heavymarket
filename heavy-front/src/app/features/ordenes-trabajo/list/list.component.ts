@@ -60,13 +60,14 @@ import { PedidoService } from '../../../core/services/pedido.service';
                 <ng-template pTemplate="header">
                     <tr>
                         <th>ID</th>
+                        <th>Origen</th>
                         <th>Cliente</th>
                         <th>Pedido</th>
                         <th>Estado</th>
                         <th>Transportadora</th>
                         <th>Fecha Ingreso</th>
                         <th>Fecha Entrega</th>
-                        <th>Guía</th>
+                        <th>Guia</th>
                         <th>Acciones</th>
                     </tr>
                 </ng-template>
@@ -74,6 +75,13 @@ import { PedidoService } from '../../../core/services/pedido.service';
                 <ng-template pTemplate="body" let-orden>
                     <tr>
                         <td>OT-{{ orden.id }}</td>
+                        <td>
+                            @if (orden.cotizacion_id) {
+                                <p-tag value="Cotizacion" severity="info" styleClass="text-xs"> </p-tag>
+                            } @else {
+                                <span class="text-gray-400">-</span>
+                            }
+                        </td>
                         <td>{{ orden.tercero?.nombre || 'N/A' }}</td>
                         <td>#{{ orden.pedido_id || 'N/A' }}</td>
                         <td>

@@ -3,9 +3,13 @@
 namespace App\Models;
 
 use App\Traits\NormalizesResources;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Modelo Tercero - Gestiona proveedores, clientes y terceros del sistema CYH
@@ -35,18 +39,18 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
  * @property int $country_id ID del país del tercero
  * @property int $state_id ID del estado/provincia del tercero
  * @property int $city_id ID de la ciudad del tercero
- * @property \Carbon\Carbon $created_at Fecha de creación del tercero
- * @property \Carbon\Carbon $updated_at Fecha de última actualización
+ * @property Carbon $created_at Fecha de creación del tercero
+ * @property Carbon $updated_at Fecha de última actualización
  * @property-read Country $country País del tercero
  * @property-read State $state Estado/provincia del tercero
  * @property-read City $city Ciudad del tercero
- * @property-read \Illuminate\Database\Eloquent\Collection|Maquina[] $maquinas Máquinas asociadas al tercero
- * @property-read \Illuminate\Database\Eloquent\Collection|Contacto[] $contactos Contactos del tercero
- * @property-read \Illuminate\Database\Eloquent\Collection|Direccion[] $direcciones Direcciones adicionales
- * @property-read \Illuminate\Database\Eloquent\Collection|Pedido[] $pedidos Pedidos asociados al tercero
- * @property-read \Illuminate\Database\Eloquent\Collection|Sistema[] $sistemas Sistemas asociados al tercero
- * @property-read \Illuminate\Database\Eloquent\Collection|Fabricante[] $fabricantes Fabricantes asociados
- * @property-read \Illuminate\Database\Eloquent\Collection|Categoria[] $categorias Categorías del tercero
+ * @property-read Collection|Maquina[] $maquinas Máquinas asociadas al tercero
+ * @property-read Collection|Contacto[] $contactos Contactos del tercero
+ * @property-read Collection|Direccion[] $direcciones Direcciones adicionales
+ * @property-read Collection|Pedido[] $pedidos Pedidos asociados al tercero
+ * @property-read Collection|Sistema[] $sistemas Sistemas asociados al tercero
+ * @property-read Collection|Fabricante[] $fabricantes Fabricantes asociados
+ * @property-read Collection|Categoria[] $categorias Categorías del tercero
  *
  * @since 1.0.0
  *
@@ -83,11 +87,13 @@ class Tercero extends Model
         'state_id',                   // ID del estado/provincia del tercero
         'city_id',                    // ID de la ciudad del tercero
         'user_id',                    // ID del usuario relacionado (opcional)
-        'landing_access',             // Habilita el acceso a la landing page
+        'landing_access',             // Habilita el acceso a la landing page (Cliente)
+        'provider_access',            // Habilita el acceso al portal de proveedores
     ];
 
     protected $casts = [
         'landing_access' => 'boolean',
+        'provider_access' => 'boolean',
     ];
 
     protected $normalizableAttributes = [
@@ -100,7 +106,7 @@ class Tercero extends Model
     /**
      * Relación con el país del tercero.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function country()
     {
@@ -110,7 +116,7 @@ class Tercero extends Model
     /**
      * Relación con la ciudad del tercero.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function city()
     {
@@ -120,7 +126,7 @@ class Tercero extends Model
     /**
      * Relación con el estado/provincia del tercero.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function state()
     {
@@ -131,7 +137,7 @@ class Tercero extends Model
      * Relación muchos a muchos con máquinas.
      * Un tercero puede estar asociado a múltiples máquinas.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function maquinas()
     {
@@ -142,7 +148,7 @@ class Tercero extends Model
      * Relación con los contactos del tercero.
      * Un tercero puede tener múltiples contactos.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function contactos()
     {
@@ -153,7 +159,7 @@ class Tercero extends Model
      * Relación con las direcciones del tercero.
      * Un tercero puede tener múltiples direcciones.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function direcciones()
     {
@@ -164,7 +170,7 @@ class Tercero extends Model
      * Relación con los pedidos del tercero.
      * Un tercero puede tener múltiples pedidos.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function pedidos()
     {
@@ -203,7 +209,7 @@ class Tercero extends Model
      * Relación muchos a muchos con categorías.
      * Un tercero puede estar asociado a múltiples categorías.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function categorias()
     {
@@ -214,17 +220,17 @@ class Tercero extends Model
      * Relación con las referencias de proveedor del tercero.
      * Un tercero puede tener múltiples referencias de proveedor.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function pedidosReferenciaProveedor()
     {
-        return $this->hasMany(\App\Models\PedidoReferenciaProveedor::class, 'tercero_id');
+        return $this->hasMany(PedidoReferenciaProveedor::class, 'tercero_id');
     }
 
     /**
      * Relación con el usuario del sistema.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function user()
     {

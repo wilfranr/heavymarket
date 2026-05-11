@@ -428,16 +428,16 @@ export class EditComponent implements OnInit {
      * Carga las referencias mediante búsqueda remota
      */
     cargarReferencias(search?: string): void {
-        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+        this.referenciaService.getAll({ search, per_page: 50, disponibles: true }).subscribe({
             next: (res) => {
                 const nuevas = res.data;
                 // Combinar con las que ya tiene el artículo para no perderlas de la vista
                 const actuales = this.articuloActual?.referencias || [];
 
                 // Usar un Map para evitar duplicados por ID
-                const map = new Map();
+                const map = new Map<number, Referencia>();
                 actuales.forEach((r) => map.set(r.id, r));
-                nuevas.forEach((r: any) => map.set(r.id, r));
+                nuevas.forEach((r: Referencia) => map.set(r.id, r));
 
                 this.referenciasDisponibles = Array.from(map.values());
             }

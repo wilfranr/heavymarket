@@ -1,15 +1,4 @@
-import {
-    Component,
-    OnInit,
-    inject,
-    Input,
-    Output,
-    EventEmitter,
-    OnChanges,
-    SimpleChanges,
-    ChangeDetectionStrategy,
-    signal
-} from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, ChangeDetectionStrategy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -31,17 +20,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 @Component({
     selector: 'app-referencia-edit-modal',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        DialogModule,
-        ButtonModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        ToastModule,
-        ProgressSpinnerModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, ProgressSpinnerModule],
     templateUrl: './referencia-edit-modal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [MessageService]
@@ -121,7 +100,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
                     comentario: r.comentario ?? ''
                 });
                 if (r.marca && !this.marcas().some((m) => m.id === r.marca!.id)) {
-                    this.marcas.update(prev => [r.marca as Lista, ...prev]);
+                    this.marcas.update((prev) => [r.marca as Lista, ...prev]);
                 }
                 this.loadingData = false;
             },
@@ -171,10 +150,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
             },
             error: (error) => {
                 this.loading = false;
-                const msg =
-                    error.error?.message ||
-                    (typeof error.error?.error === 'string' ? error.error.error : null) ||
-                    'No se pudo actualizar la referencia.';
+                const msg = error.error?.message || (typeof error.error?.error === 'string' ? error.error.error : null) || 'No se pudo actualizar la referencia.';
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: msg });
             }
         });

@@ -86,7 +86,7 @@ class TerceroController extends Controller
      */
     public function store(StoreTerceroRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Tercero::class);
+        $this->authorize('create', Tercero::class);
 
         return DB::transaction(function () use ($request) {
             try {

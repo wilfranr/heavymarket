@@ -13,15 +13,7 @@ import { finalize } from 'rxjs/operators';
 @Component({
     selector: 'app-machine-type-list',
     standalone: true,
-    imports: [
-        CommonModule,
-        FormsModule,
-        TableModule,
-        ButtonModule,
-        ToastModule,
-        TooltipModule,
-        SelectModule
-    ],
+    imports: [CommonModule, FormsModule, TableModule, ButtonModule, ToastModule, TooltipModule, SelectModule],
     providers: [MessageService],
     templateUrl: './machine-type-list.component.html'
 })
@@ -36,7 +28,7 @@ export class MachineTypeListComponent implements OnInit {
     constructor(
         private landingService: LandingManageService,
         private messageService: MessageService
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.loadCategories();
@@ -44,13 +36,14 @@ export class MachineTypeListComponent implements OnInit {
 
     loadCategories() {
         this.loading.set(true);
-        this.landingService.getAdminMachineTypes()
+        this.landingService
+            .getAdminMachineTypes()
             .pipe(finalize(() => this.loading.set(false)))
             .subscribe({
                 next: (data) => {
                     this.categories.set(data);
                     // Filter down to just the parent categories for the dropdown selection
-                    this.allCategories.set(data.map(c => ({ ...c, children: [] })));
+                    this.allCategories.set(data.map((c) => ({ ...c, children: [] })));
                 },
                 error: (err) => {
                     this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar los tipos de máquina.' });
@@ -70,16 +63,18 @@ export class MachineTypeListComponent implements OnInit {
     }
 
     onParentChange(machineType: any, newParentId: number) {
-        this.landingService.updateLista(machineType.id, {
-            parent_id: newParentId
-        }).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Máquina "${machineType.nombre}" re-categorizada.` });
-                this.loadCategories(); // Reload to show in new category
-            },
-            error: (err) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar la categoría.' });
-            }
-        });
+        this.landingService
+            .updateLista(machineType.id, {
+                parent_id: newParentId
+            })
+            .subscribe({
+                next: () => {
+                    this.messageService.add({ severity: 'success', summary: 'Actualizado', detail: `Máquina "${machineType.nombre}" re-categorizada.` });
+                    this.loadCategories(); // Reload to show in new category
+                },
+                error: (err) => {
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo cambiar la categoría.' });
+                }
+            });
     }
 }

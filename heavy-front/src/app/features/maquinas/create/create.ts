@@ -268,7 +268,7 @@ export class CreateComponent implements OnInit {
             if (comp.modelo) formData.append(`componentes[${index}][modelo]`, comp.modelo);
             if (comp.serie) formData.append(`componentes[${index}][serie]`, comp.serie);
             if (comp.comentario) formData.append(`componentes[${index}][comentario]`, comp.comentario);
-            
+
             if (comp.fotoPlacaFile) {
                 formData.append(`componentes[${index}][foto_placa]`, comp.fotoPlacaFile);
             }

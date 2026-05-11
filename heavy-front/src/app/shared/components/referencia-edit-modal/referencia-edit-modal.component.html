@@ -1,18 +1,6 @@
 <p-toast />
-<p-dialog
-    [(visible)]="visible"
-    [header]="title"
-    [modal]="true"
-    [style]="{ width: '480px', maxWidth: '95vw' }"
-    [draggable]="false"
-    [resizable]="false"
-    appendTo="body"
-    [dismissableMask]="true"
-    (onHide)="closeDialog()"
->
-    <p class="text-sm mb-4" style="color: var(--p-text-muted-color)">
-        Los cambios se guardan en el catálogo y se reflejan en esta fila del análisis.
-    </p>
+<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '480px', maxWidth: '95vw' }" [draggable]="false" [resizable]="false" appendTo="body" [dismissableMask]="true" (onHide)="closeDialog()">
+    <p class="text-sm mb-4" style="color: var(--p-text-muted-color)">Los cambios se guardan en el catálogo y se reflejan en esta fila del análisis.</p>
 
     @if (loadingData) {
         <div class="flex justify-center py-10">
@@ -21,16 +9,8 @@
     } @else {
         <form [formGroup]="referenciaForm" (ngSubmit)="guardar()" class="grid grid-cols-1 gap-4">
             <div class="field">
-                <label for="edit-referencia" class="block text-sm font-medium mb-2"
-                    >Código / referencia <span class="text-red-500">*</span></label
-                >
-                <input
-                    id="edit-referencia"
-                    pInputText
-                    formControlName="referencia"
-                    placeholder="Ej: 1R-0749"
-                    class="w-full"
-                />
+                <label for="edit-referencia" class="block text-sm font-medium mb-2">Código / referencia <span class="text-red-500">*</span></label>
+                <input id="edit-referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749" class="w-full" />
                 @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
                     <small class="text-red-500">El código es obligatorio</small>
                 }
@@ -79,25 +59,12 @@
 
             <div class="field">
                 <label for="edit-comentario" class="block text-sm font-medium mb-2">Descripción / comentario</label>
-                <textarea
-                    id="edit-comentario"
-                    pTextarea
-                    formControlName="comentario"
-                    [rows]="3"
-                    placeholder="Texto que ayuda a identificar la pieza en el análisis"
-                    class="w-full"
-                ></textarea>
+                <textarea id="edit-comentario" pTextarea formControlName="comentario" [rows]="3" placeholder="Texto que ayuda a identificar la pieza en el análisis" class="w-full"></textarea>
             </div>
 
             <div class="flex justify-end gap-2 pt-4" style="border-top: 1px solid var(--p-content-border-color)">
                 <p-button label="Cancelar" severity="secondary" [text]="true" type="button" (onClick)="closeDialog()" />
-                <p-button
-                    label="Guardar"
-                    icon="pi pi-check"
-                    type="submit"
-                    [loading]="loading"
-                    [disabled]="referenciaForm.invalid"
-                />
+                <p-button label="Guardar" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="referenciaForm.invalid" />
             </div>
         </form>
     }

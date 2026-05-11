@@ -5,8 +5,7 @@
         <ng-template pTemplate="header">
             <div class="flex justify-between items-center p-4">
                 <h2 class="text-2xl font-bold">Editar Sistema</h2>
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()">
-                </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"> </p-button>
             </div>
         </ng-template>
 
@@ -15,42 +14,31 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Nombre -->
                 <div class="field">
-                    <label for="nombre" class="block text-sm font-medium mb-2"> Nombre <span
-                            class="text-red-500">*</span> </label>
-                    <input pInputText id="nombre" formControlName="nombre" placeholder="Nombre del sistema"
-                        class="w-full"
-                        [class.ng-invalid]="sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched" />
+                    <label for="nombre" class="block text-sm font-medium mb-2"> Nombre <span class="text-red-500">*</span> </label>
+                    <input pInputText id="nombre" formControlName="nombre" placeholder="Nombre del sistema" class="w-full" [class.ng-invalid]="sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched" />
                     @if (sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched) {
-                    <small class="p-error"> @if (sistemaForm.get('nombre')?.errors?.['required']) { El nombre es
-                        requerido } @else if (sistemaForm.get('nombre')?.errors?.['maxlength']) { El nombre no puede
-                        exceder 255 caracteres } </small>
+                    <small class="p-error"> @if (sistemaForm.get('nombre')?.errors?.['required']) { El nombre es requerido } @else if (sistemaForm.get('nombre')?.errors?.['maxlength']) { El nombre no puede exceder 255 caracteres } </small>
                     }
                 </div>
 
                 <!-- Imagen -->
                 <div class="field">
                     <label class="block text-sm font-medium mb-2"> Imagen </label>
-                    <app-image-upload 
-                        (fileSelected)="onImagenSelected($event)" 
-                        [currentImage]="previewUrl">
-                    </app-image-upload>
+                    <app-image-upload (fileSelected)="onImagenSelected($event)" [currentImage]="previewUrl"> </app-image-upload>
                 </div>
 
                 <!-- Descripción -->
                 <div class="field md:col-span-2">
                     <label for="descripcion" class="block text-sm font-medium mb-2"> Descripción </label>
-                    <textarea pTextarea id="descripcion" formControlName="descripcion"
-                        placeholder="Descripción del sistema" [rows]="4" class="w-full"> </textarea>
+                    <textarea pTextarea id="descripcion" formControlName="descripcion" placeholder="Descripción del sistema" [rows]="4" class="w-full"> </textarea>
                 </div>
             </div>
 
             <p-divider />
 
             <div class="flex justify-end gap-2 mt-4">
-                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()"
-                    [disabled]="loading"> </p-button>
-                <p-button label="Actualizar Sistema" icon="pi pi-check" type="submit" [loading]="loading"
-                    [disabled]="sistemaForm.invalid"> </p-button>
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="cancelar()" [disabled]="loading"> </p-button>
+                <p-button label="Actualizar Sistema" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="sistemaForm.invalid"> </p-button>
             </div>
         </form>
 
@@ -59,9 +47,17 @@
         <div class="mt-8">
             <h3 class="text-lg font-semibold mb-4 border-b pb-2">Artículos Asociados</h3>
 
-            <p-table [value]="sistema.articulos" [paginator]="true" [rows]="10" [rowsPerPageOptions]="[5, 10, 20]"
-                [tableStyle]="{ 'min-width': '50rem' }" responsiveLayout="scroll"
-                styleClass="p-datatable-sm p-datatable-striped" [rowHover]="true" selectionMode="single">
+            <p-table
+                [value]="sistema.articulos"
+                [paginator]="true"
+                [rows]="10"
+                [rowsPerPageOptions]="[5, 10, 20]"
+                [tableStyle]="{ 'min-width': '50rem' }"
+                responsiveLayout="scroll"
+                styleClass="p-datatable-sm p-datatable-striped"
+                [rowHover]="true"
+                selectionMode="single"
+            >
                 <ng-template pTemplate="header">
                     <tr>
                         <th style="width: 80px">ID</th>
@@ -75,20 +71,16 @@
                         <td>{{ articulo.id }}</td>
                         <td>
                             @if (articulo.foto) {
-                            <img [src]="articulo.foto" [alt]="articulo.nombre"
-                                class="w-10 h-10 object-cover rounded-md shadow-sm" />
+                            <img [src]="articulo.foto" [alt]="articulo.nombre" class="w-10 h-10 object-cover rounded-md shadow-sm" />
                             } @else {
-                            <div
-                                class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
+                            <div class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
                                 <i class="pi pi-image text-gray-400"></i>
                             </div>
                             }
                         </td>
                         <td class="font-medium">{{ articulo.nombre }}</td>
                         <td>
-                            <div class="line-clamp-2" [title]="articulo.definicion">
-                                {{ articulo.definicion || 'Sin definición' }}
-                            </div>
+                            <div class="line-clamp-2" [title]="articulo.definicion">{{ articulo.definicion || 'Sin definición' }}</div>
                         </td>
                     </tr>
                 </ng-template>
@@ -99,9 +91,7 @@
                 </ng-template>
             </p-table>
         </div>
-        }
-
-        } @else {
+        } } @else {
         <div class="text-center py-8">
             <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
             <p class="text-gray-600 mt-4">Cargando sistema...</p>

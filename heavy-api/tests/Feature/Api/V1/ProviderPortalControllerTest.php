@@ -1,0 +1,234 @@
+<?php
+
+namespace Tests\Feature\Api\V1;
+
+use App\Models\Lista;
+use App\Models\OrdenCompra;
+use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\PedidoReferenciaProveedor;
+use App\Models\Tercero;
+use App\Models\Transportadora;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
+
+class ProviderPortalControllerTest extends TestCase
+{
+    use RefreshDatabase;
+
+    protected $provider;
+
+    protected $tercero;
+
+    protected $marca;
+
+    protected $categoria;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Setup Role
+        Role::create(['name' => 'Proveedor', 'guard_name' => 'web']);
+
+        // Setup Provider User
+        $this->provider = User::factory()->create();
+        $this->provider->assignRole('Proveedor');
+
+        // Setup Tercero Profile
+        $this->tercero = Tercero::factory()->create([
+            'user_id' => $this->provider->id,
+            'provider_access' => true,
+            'tipo' => 'Proveedor',
+        ]);
+
+        // Setup Brands and Categories (Listas)
+        $this->marca = Lista::create(['nombre' => 'Caterpillar', 'tipo' => 'Fabricantes']);
+        $this->categoria = Lista::create(['nombre' => 'Empaques', 'tipo' => 'Categoría Comercial']);
+
+        // Link Provider to Brand and Category
+        $this->tercero->fabricantes()->attach($this->marca->id);
+        $this->tercero->categoriasComerciales()->attach($this->categoria->id);
+    }
+
+    /** @test */
+    public function test_it_returns_matching_opportunities_for_provider()
+    {
+        // 1. Matching Reference (En_Costeo + Correct Brand + Correct Category)
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $refMatch = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // 2. Non-matching (Wrong State)
+        $pedidoAnalisis = Pedido::factory()->create(['estado' => 'En_Analisis']);
+        $refWrongState = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedidoAnalisis->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // 3. Non-matching (Wrong Brand)
+        $otraMarca = Lista::create(['nombre' => 'Komatsu', 'tipo' => 'Fabricantes']);
+        $refWrongBrand = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $otraMarca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // 4. Non-matching (Wrong Category)
+        $otraCat = Lista::create(['nombre' => 'Motores', 'tipo' => 'Categoría Comercial']);
+        $refWrongCat = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $otraCat->id,
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $refMatch->id);
+    }
+
+    /** @test */
+    public function test_it_excludes_already_costed_references()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // Provider already submitted a cost
+        PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $ref->id,
+            'proveedor_id' => $this->tercero->id,
+            'cantidad' => 1,
+            'costo_unidad' => 100,
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(0, 'data');
+    }
+
+    /** @test */
+    public function test_provider_can_submit_costing_offer()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 150.50,
+                'dias_entrega' => 5,
+                'comentario' => 'Oferta de prueba',
+            ]);
+
+        $response->assertStatus(201)
+            ->assertJsonPath('message', 'Oferta de costeo enviada exitosamente.');
+
+        $this->assertDatabaseHas('pedido_referencia_proveedor', [
+            'pedido_referencia_id' => $ref->id,
+            'proveedor_id' => $this->tercero->id,
+            'costo_unidad' => 150.50,
+            'dias_entrega' => 5,
+        ]);
+    }
+
+    /** @test */
+    public function test_provider_cannot_submit_cost_twice_for_same_reference()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // First submission
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 100,
+                'dias_entrega' => 3,
+            ])->assertStatus(201);
+
+        // Second submission (should fail by validation)
+        $response = $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 120,
+                'dias_entrega' => 2,
+            ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['pedido_referencia_id']);
+    }
+
+    /** @test */
+    public function test_provider_can_list_their_purchase_orders()
+    {
+        // 1. OC belonging to this provider
+        $ocMatch = OrdenCompra::factory()->create([
+            'proveedor_id' => $this->tercero->id,
+            'estado' => 'Pendiente',
+        ]);
+
+        // 2. OC belonging to another provider
+        $otroTercero = Tercero::factory()->create(['tipo' => 'Proveedor']);
+        $ocOther = OrdenCompra::factory()->create([
+            'proveedor_id' => $otroTercero->id,
+            'estado' => 'Pendiente',
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->getJson('/v1/provider/purchase-orders');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $ocMatch->id);
+    }
+
+    /** @test */
+    public function test_provider_can_register_dispatch()
+    {
+        $transportadora = Transportadora::factory()->create();
+        $oc = OrdenCompra::factory()->create([
+            'proveedor_id' => $this->tercero->id,
+            'estado' => 'Pendiente',
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->putJson("/v1/provider/purchase-orders/{$oc->id}/dispatch", [
+                'guia' => 'GUIA-12345',
+                'transportadora_id' => $transportadora->id,
+                'fecha_despacho' => now()->toDateString(),
+                'observaciones' => 'Despacho realizado por la mañana',
+            ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('message', 'Despacho registrado correctamente.');
+
+        $this->assertDatabaseHas('orden_compras', [
+            'id' => $oc->id,
+            'guia' => 'GUIA-12345',
+            'transportadora_id' => $transportadora->id,
+            'estado' => 'Despachado',
+        ]);
+    }
+}

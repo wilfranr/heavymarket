@@ -139,9 +139,9 @@ export class EditComponent implements OnInit {
      */
     private initForm(maquina: any): void {
         this.maquinaForm = this.fb.group({
-            tipo: [maquina.tipo_id ? +maquina.tipo_id : (maquina.tipo?.id ? +maquina.tipo.id : (maquina.tipo ? +maquina.tipo : null)), [Validators.required]],
+            tipo: [maquina.tipo_id ? +maquina.tipo_id : maquina.tipo?.id ? +maquina.tipo.id : maquina.tipo ? +maquina.tipo : null, [Validators.required]],
             modelo: [maquina.modelo, [Validators.required, Validators.maxLength(255)]],
-            fabricante_id: [maquina.fabricante_id ? +maquina.fabricante_id : (maquina.fabricante?.id ? +maquina.fabricante.id : null), [Validators.required]],
+            fabricante_id: [maquina.fabricante_id ? +maquina.fabricante_id : maquina.fabricante?.id ? +maquina.fabricante.id : null, [Validators.required]],
             serie: [maquina.serie || ''],
             arreglo: [maquina.arreglo || ''],
             foto: [maquina.foto || null],
@@ -253,7 +253,7 @@ export class EditComponent implements OnInit {
             if (comp.modelo) formData.append(`componentes[${index}][modelo]`, comp.modelo);
             if (comp.serie) formData.append(`componentes[${index}][serie]`, comp.serie);
             if (comp.comentario) formData.append(`componentes[${index}][comentario]`, comp.comentario);
-            
+
             if (comp.fotoPlacaFile) {
                 formData.append(`componentes[${index}][foto_placa]`, comp.fotoPlacaFile);
             }

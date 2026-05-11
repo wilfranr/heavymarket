@@ -43,7 +43,6 @@ export const cancelarPedido = createAction('[Pedidos] Cancelar Pedido', props<{ 
 export const cancelarPedidoSuccess = createAction('[Pedidos] Cancelar Pedido Success', props<{ pedido: Pedido }>());
 export const cancelarPedidoFailure = createAction('[Pedidos] Cancelar Pedido Failure', props<{ error: string }>());
 
-
 // Select Pedido
 export const selectPedido = createAction('[Pedidos] Select Pedido', props<{ id: number | null }>());
 

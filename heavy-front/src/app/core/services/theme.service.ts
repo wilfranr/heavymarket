@@ -20,7 +20,7 @@ export class ThemeService {
      */
     private getInitialTheme(): Theme {
         const saved = localStorage.getItem(this.THEME_KEY);
-        return (saved === 'light' || saved === 'dark') ? saved : 'dark';
+        return saved === 'light' || saved === 'dark' ? saved : 'dark';
     }
 
     /**

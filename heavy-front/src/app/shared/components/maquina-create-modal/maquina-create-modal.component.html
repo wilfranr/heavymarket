@@ -1,194 +1,226 @@
-<p-dialog [header]="isEditMode ? 'Editar máquina' : 'Crear máquina'" [(visible)]="visible" [modal]="true"
-    [style]="{ width: '750px' }" [draggable]="false" [resizable]="false" (onHide)="closeDialog()"
-    styleClass="rounded-[2rem] overflow-hidden">
-
+<p-dialog [header]="isEditMode ? 'Editar máquina' : 'Crear máquina'" [(visible)]="visible" [modal]="true" [style]="{ width: '750px' }" [draggable]="false" [resizable]="false" (onHide)="closeDialog()" styleClass="rounded-[2rem] overflow-hidden">
     @if (!isEditMode) {
-    <div class="mb-6 text-gray-400 text-sm px-2">
-        Registre una nueva máquina. Se asociará automáticamente al tercero seleccionado.
-    </div>
+        <div class="mb-6 text-gray-400 text-sm px-2">Registre una nueva máquina. Se asociará automáticamente al tercero seleccionado.</div>
     }
 
     @if (loadingMaquina) {
-    <div class="flex flex-col items-center justify-center py-20 gap-4">
-        <p-progressSpinner styleClass="w-12 h-12" strokeWidth="4" />
-        <span class="text-sm text-gray-400 font-bold tracking-widest uppercase">Cargando máquina...</span>
-    </div>
+        <div class="flex flex-col items-center justify-center py-20 gap-4">
+            <p-progressSpinner styleClass="w-12 h-12" strokeWidth="4" />
+            <span class="text-sm text-gray-400 font-bold tracking-widest uppercase">Cargando máquina...</span>
+        </div>
     } @else {
-
-    <form [formGroup]="createMaquinaForm" (ngSubmit)="saveMaquina()" class="px-2">
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-            <!-- Tipo -->
-            <div class="field">
-                <label for="tipo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Tipo<span class="text-red-500">*</span></label>
-                <div class="flex gap-2">
-                    <p-select id="tipo" formControlName="tipo" [options]="tiposMaquina()" optionLabel="label"
-                        optionValue="value" placeholder="Tipo..." styleClass="w-full flex-1 rounded-xl"
-                        [filter]="true" filterBy="label" appendTo="body"></p-select>
-                    <p-button icon="pi pi-plus" severity="secondary" [rounded]="true" (onClick)="openCreateTipoDialog()"></p-button>
-                </div>
-            </div>
-
-            <!-- Fabricante -->
-            <div class="field">
-                <label for="fabricante_id" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Fabricante<span
-                        class="text-red-500">*</span></label>
-                <p-select id="fabricante_id" formControlName="fabricante_id" [options]="fabricantes()"
-                    optionLabel="label" optionValue="value" optionImage="foto" [filter]="true" filterBy="label"
-                    placeholder="Fabricante..." styleClass="w-full rounded-xl" appendTo="body">
-                </p-select>
-            </div>
-
-            <!-- Modelo -->
-            <div class="field">
-                <label for="modelo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Modelo<span class="text-red-500">*</span></label>
-                <input id="modelo" type="text" pInputText formControlName="modelo" class="w-full rounded-xl" placeholder="Modelo" />
-            </div>
-
-            <!-- Serie -->
-            <div class="field">
-                <label for="serie" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Serie</label>
-                <input id="serie" type="text" pInputText formControlName="serie" class="w-full rounded-xl" placeholder="Serie" />
-            </div>
-
-            <!-- Arreglo -->
-            <div class="field md:col-span-2">
-                <label for="arreglo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Arreglo</label>
-                <input id="arreglo" type="text" pInputText formControlName="arreglo" class="w-full rounded-xl" placeholder="Arreglo" />
-            </div>
-
-            <!-- Componentes Section -->
-            <div class="md:col-span-2 mt-4">
-                <div class="flex justify-between items-center mb-4">
-                    <div class="flex items-center gap-3">
-                        <i class="pi pi-cog text-[#fdb831]"></i>
-                        <h3 class="font-bold text-lg">Componentes</h3>
+        <form [formGroup]="createMaquinaForm" (ngSubmit)="saveMaquina()" class="px-2">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Tipo -->
+                <div class="field">
+                    <label for="tipo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Tipo<span class="text-red-500">*</span></label>
+                    <div class="flex gap-2">
+                        <p-select
+                            id="tipo"
+                            formControlName="tipo"
+                            [options]="tiposMaquina()"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Tipo..."
+                            styleClass="w-full flex-1 rounded-xl"
+                            [filter]="true"
+                            filterBy="label"
+                            appendTo="body"
+                        ></p-select>
+                        <p-button icon="pi pi-plus" severity="secondary" [rounded]="true" (onClick)="openCreateTipoDialog()"></p-button>
                     </div>
-                    <p-button icon="pi pi-plus" [rounded]="true" severity="warn" label="Agregar" (onClick)="addComponente()" styleClass="text-xs font-bold px-4"></p-button>
                 </div>
-                
-                <div formArrayName="componentes" class="flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
-                    @for (comp of componentes.controls; track $index) {
-                    <div [formGroupName]="$index" class="p-4 border border-surface-border rounded-2xl bg-surface-ground/30 relative hover:border-[#fdb831]/30 transition-all">
-                        <div class="absolute top-2 right-2 flex gap-1">
-                            <p-button icon="pi pi-copy" severity="warn" [rounded]="true" [text]="true" 
-                                [pTooltip]="'Duplicar'" (onClick)="duplicateComponente($index)"></p-button>
-                            <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" 
-                                [pTooltip]="'Eliminar'" (onClick)="removeComponente($index)"></p-button>
+
+                <!-- Fabricante -->
+                <div class="field">
+                    <label for="fabricante_id" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Fabricante<span class="text-red-500">*</span></label>
+                    <p-select
+                        id="fabricante_id"
+                        formControlName="fabricante_id"
+                        [options]="fabricantes()"
+                        optionLabel="label"
+                        optionValue="value"
+                        optionImage="foto"
+                        [filter]="true"
+                        filterBy="label"
+                        placeholder="Fabricante..."
+                        styleClass="w-full rounded-xl"
+                        appendTo="body"
+                    >
+                    </p-select>
+                </div>
+
+                <!-- Modelo -->
+                <div class="field">
+                    <label for="modelo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Modelo<span class="text-red-500">*</span></label>
+                    <input id="modelo" type="text" pInputText formControlName="modelo" class="w-full rounded-xl" placeholder="Modelo" />
+                </div>
+
+                <!-- Serie -->
+                <div class="field">
+                    <label for="serie" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Serie</label>
+                    <input id="serie" type="text" pInputText formControlName="serie" class="w-full rounded-xl" placeholder="Serie" />
+                </div>
+
+                <!-- Arreglo -->
+                <div class="field md:col-span-2">
+                    <label for="arreglo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Arreglo</label>
+                    <input id="arreglo" type="text" pInputText formControlName="arreglo" class="w-full rounded-xl" placeholder="Arreglo" />
+                </div>
+
+                <!-- Componentes Section -->
+                <div class="md:col-span-2 mt-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <div class="flex items-center gap-3">
+                            <i class="pi pi-cog text-[#fdb831]"></i>
+                            <h3 class="font-bold text-lg">Componentes</h3>
                         </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-                            <div>
-                                <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Sistema</label>
-                                <p-select formControlName="sistema_id" [options]="sistemas()" optionLabel="nombre"
-                                    optionValue="id" placeholder="Sistema..." styleClass="w-full text-sm rounded-xl"
-                                    [filter]="true" filterBy="nombre" appendTo="body"></p-select>
-                            </div>
-                            
-                            <div>
-                                <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Marca / OEM</label>
-                                <p-select formControlName="marca_id" [options]="marcasYFabricantes()" optionLabel="nombre"
-                                    optionValue="id" placeholder="Marca..." styleClass="w-full text-sm rounded-xl"
-                                    [filter]="true" filterBy="nombre" appendTo="body"></p-select>
-                            </div>
-                            
-                            <div>
-                                <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Modelo</label>
-                                <input type="text" pInputText formControlName="modelo" placeholder="Modelo" class="w-full text-sm rounded-xl" />
-                            </div>
+                        <p-button icon="pi pi-plus" [rounded]="true" severity="warn" label="Agregar" (onClick)="addComponente()" styleClass="text-xs font-bold px-4"></p-button>
+                    </div>
 
-                            <div>
-                                <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Serie</label>
-                                <input type="text" pInputText formControlName="serie" placeholder="Serie" class="w-full text-sm rounded-xl" />
-                            </div>
-                            
-                            <div class="md:col-span-2 flex items-center gap-4">
-                                <div class="flex-1">
-                                    <label class="text-[10px] font-black uppercase text-gray-500 block mb-2">Foto Placa y Observaciones</label>
-                                    <div class="flex items-center gap-2 p-2 bg-surface-card rounded-xl border border-surface-border">
-                                        <!-- Camera -->
-                                        <p-button icon="pi pi-camera" [severity]="comp.get('fotoPlacaFile')?.value ? 'success' : 'warn'" [rounded]="true" [text]="true"
-                                            [pTooltip]="comp.get('fotoPlacaFile')?.value ? 'Foto seleccionada' : 'Adjuntar foto'"
-                                            (onClick)="placaUpload.click()"></p-button>
-                                        
-                                        <!-- Comment Toggle -->
-                                        <p-button icon="pi pi-comment" [severity]="comp.get('comentario')?.value ? 'warn' : 'secondary'" [rounded]="true" [text]="true"
-                                            [pTooltip]="'Observaciones'"
-                                            (onClick)="opModal.toggle($event)"></p-button>
+                    <div formArrayName="componentes" class="flex flex-col gap-4 max-h-[350px] overflow-y-auto pr-2 custom-scrollbar">
+                        @for (comp of componentes.controls; track $index) {
+                            <div [formGroupName]="$index" class="p-4 border border-surface-border rounded-2xl bg-surface-ground/30 relative hover:border-[#fdb831]/30 transition-all">
+                                <div class="absolute top-2 right-2 flex gap-1">
+                                    <p-button icon="pi pi-copy" severity="warn" [rounded]="true" [text]="true" [pTooltip]="'Duplicar'" (onClick)="duplicateComponente($index)"></p-button>
+                                    <p-button icon="pi pi-trash" severity="danger" [rounded]="true" [text]="true" [pTooltip]="'Eliminar'" (onClick)="removeComponente($index)"></p-button>
+                                </div>
 
-                                        <p-popover #opModal>
-                                            <div class="p-3 w-80">
-                                                <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Observaciones del Componente</label>
-                                                <textarea pTextarea formControlName="comentario" rows="3" class="w-full rounded-xl text-sm p-3 border-surface-border bg-surface-ground/20" placeholder="Escriba aquí..."></textarea>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Sistema</label>
+                                        <p-select
+                                            formControlName="sistema_id"
+                                            [options]="sistemas()"
+                                            optionLabel="nombre"
+                                            optionValue="id"
+                                            placeholder="Sistema..."
+                                            styleClass="w-full text-sm rounded-xl"
+                                            [filter]="true"
+                                            filterBy="nombre"
+                                            appendTo="body"
+                                        ></p-select>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Marca / OEM</label>
+                                        <p-select
+                                            formControlName="marca_id"
+                                            [options]="marcasYFabricantes()"
+                                            optionLabel="nombre"
+                                            optionValue="id"
+                                            placeholder="Marca..."
+                                            styleClass="w-full text-sm rounded-xl"
+                                            [filter]="true"
+                                            filterBy="nombre"
+                                            appendTo="body"
+                                        ></p-select>
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Modelo</label>
+                                        <input type="text" pInputText formControlName="modelo" placeholder="Modelo" class="w-full text-sm rounded-xl" />
+                                    </div>
+
+                                    <div>
+                                        <label class="text-[10px] font-black uppercase text-gray-500 block mb-1">Serie</label>
+                                        <input type="text" pInputText formControlName="serie" placeholder="Serie" class="w-full text-sm rounded-xl" />
+                                    </div>
+
+                                    <div class="md:col-span-2 flex items-center gap-4">
+                                        <div class="flex-1">
+                                            <label class="text-[10px] font-black uppercase text-gray-500 block mb-2">Foto Placa y Observaciones</label>
+                                            <div class="flex items-center gap-2 p-2 bg-surface-card rounded-xl border border-surface-border">
+                                                <!-- Camera -->
+                                                <p-button
+                                                    icon="pi pi-camera"
+                                                    [severity]="comp.get('fotoPlacaFile')?.value ? 'success' : 'warn'"
+                                                    [rounded]="true"
+                                                    [text]="true"
+                                                    [pTooltip]="comp.get('fotoPlacaFile')?.value ? 'Foto seleccionada' : 'Adjuntar foto'"
+                                                    (onClick)="placaUpload.click()"
+                                                ></p-button>
+
+                                                <!-- Comment Toggle -->
+                                                <p-button
+                                                    icon="pi pi-comment"
+                                                    [severity]="comp.get('comentario')?.value ? 'warn' : 'secondary'"
+                                                    [rounded]="true"
+                                                    [text]="true"
+                                                    [pTooltip]="'Observaciones'"
+                                                    (onClick)="opModal.toggle($event)"
+                                                ></p-button>
+
+                                                <p-popover #opModal>
+                                                    <div class="p-3 w-80">
+                                                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Observaciones del Componente</label>
+                                                        <textarea pTextarea formControlName="comentario" rows="3" class="w-full rounded-xl text-sm p-3 border-surface-border bg-surface-ground/20" placeholder="Escriba aquí..."></textarea>
+                                                    </div>
+                                                </p-popover>
+
+                                                <span class="text-[10px] text-gray-400 truncate flex-1" *ngIf="comp.get('fotoPlacaFile')?.value">
+                                                    {{ comp.get('fotoPlacaFile')?.value.name }}
+                                                </span>
+                                                <span class="text-[10px] text-gray-500" *ngIf="!comp.get('fotoPlacaFile')?.value">Sin foto placa</span>
+                                                <input #placaUpload type="file" class="hidden" accept="image/*" (change)="onFotoPlacaSelected($any($event.target).files[0], $index)" />
                                             </div>
-                                        </p-popover>
-
-                                        <span class="text-[10px] text-gray-400 truncate flex-1" *ngIf="comp.get('fotoPlacaFile')?.value">
-                                            {{ comp.get('fotoPlacaFile')?.value.name }}
-                                        </span>
-                                        <span class="text-[10px] text-gray-500" *ngIf="!comp.get('fotoPlacaFile')?.value">Sin foto placa</span>
-                                        <input #placaUpload type="file" class="hidden" accept="image/*" (change)="onFotoPlacaSelected($any($event.target).files[0], $index)">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
+                        } @empty {
+                            <div class="flex flex-col items-center justify-center py-10 border-2 border-dashed border-surface-border rounded-2xl bg-surface-ground/10">
+                                <i class="pi pi-box text-2xl text-gray-600 mb-2"></i>
+                                <span class="text-sm text-gray-500 italic">No hay componentes adicionales</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Photos Section -->
+                <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <!-- Foto -->
+                    <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
+                        <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Máquina</label>
+                        <p-fileUpload mode="basic" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Elegir Foto" chooseIcon="pi pi-image" styleClass="p-button-secondary p-button-sm w-full" (onSelect)="onFileSelect($event, 'foto')">
+                        </p-fileUpload>
+                        <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('foto')?.value">
+                            <i class="pi pi-check-circle text-green-500"></i>
+                            Archivo seleccionado
                         </div>
                     </div>
-                    } @empty {
-                    <div class="flex flex-col items-center justify-center py-10 border-2 border-dashed border-surface-border rounded-2xl bg-surface-ground/10">
-                        <i class="pi pi-box text-2xl text-gray-600 mb-2"></i>
-                        <span class="text-sm text-gray-500 italic">No hay componentes adicionales</span>
-                    </div>
-                    }
-                </div>
-            </div>
 
-            <!-- Photos Section -->
-            <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <!-- Foto -->
-                <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
-                    <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Máquina</label>
-                    <p-fileUpload mode="basic" [showUploadButton]="false" [showCancelButton]="false"
-                        chooseLabel="Elegir Foto" chooseIcon="pi pi-image" styleClass="p-button-secondary p-button-sm w-full"
-                        (onSelect)="onFileSelect($event, 'foto')">
-                    </p-fileUpload>
-                    <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('foto')?.value">
-                        <i class="pi pi-check-circle text-green-500"></i>
-                        Archivo seleccionado
-                    </div>
-                </div>
-
-                <!-- FotoId -->
-                <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
-                    <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Placa ID</label>
-                    <p-fileUpload mode="basic" [showUploadButton]="false" [showCancelButton]="false"
-                        chooseLabel="Elegir Placa" chooseIcon="pi pi-id-card" styleClass="p-button-secondary p-button-sm w-full"
-                        (onSelect)="onFileSelect($event, 'fotoId')">
-                    </p-fileUpload>
-                    <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('fotoId')?.value">
-                        <i class="pi pi-check-circle text-green-500"></i>
-                        Archivo seleccionado
+                    <!-- FotoId -->
+                    <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
+                        <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Placa ID</label>
+                        <p-fileUpload
+                            mode="basic"
+                            [showUploadButton]="false"
+                            [showCancelButton]="false"
+                            chooseLabel="Elegir Placa"
+                            chooseIcon="pi pi-id-card"
+                            styleClass="p-button-secondary p-button-sm w-full"
+                            (onSelect)="onFileSelect($event, 'fotoId')"
+                        >
+                        </p-fileUpload>
+                        <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('fotoId')?.value">
+                            <i class="pi pi-check-circle text-green-500"></i>
+                            Archivo seleccionado
+                        </div>
                     </div>
                 </div>
             </div>
 
-        </div>
-
-        <div class="flex justify-end gap-3 mt-10 mb-4">
-            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="closeDialog()" styleClass="font-bold"></p-button>
-            @if (!isEditMode) {
-            <p-button label="Crear y Otro" severity="secondary" (onClick)="saveMaquina(true)"
-                [loading]="loading" styleClass="font-bold"></p-button>
-            }
-            <p-button [label]="isEditMode ? 'Actualizar' : 'Registrar'" type="submit" [loading]="loading" severity="warn"
-                [disabled]="createMaquinaForm.invalid" styleClass="font-bold px-8"></p-button>
-        </div>
-
-    </form>
+            <div class="flex justify-end gap-3 mt-10 mb-4">
+                <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="closeDialog()" styleClass="font-bold"></p-button>
+                @if (!isEditMode) {
+                    <p-button label="Crear y Otro" severity="secondary" (onClick)="saveMaquina(true)" [loading]="loading" styleClass="font-bold"></p-button>
+                }
+                <p-button [label]="isEditMode ? 'Actualizar' : 'Registrar'" type="submit" [loading]="loading" severity="warn" [disabled]="createMaquinaForm.invalid" styleClass="font-bold px-8"></p-button>
+            </div>
+        </form>
     }
 </p-dialog>
 
 <!-- Modal para crear tipo de máquina -->
-<app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina"
-    (onListaCreated)="onTipoCreated($event)">
-</app-lista-create-modal>
+<app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina" (onListaCreated)="onTipoCreated($event)"> </app-lista-create-modal>

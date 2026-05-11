@@ -7,4 +7,4 @@ import { RouterModule } from '@angular/router';
     templateUrl: './quote-section.html',
     styles: ``
 })
-export class QuoteSection { }
+export class QuoteSection {}

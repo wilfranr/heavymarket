@@ -1,173 +1,189 @@
-<p-dialog [(visible)]="visible" [modal]="true" [draggable]="false" [resizable]="false" (onHide)="onClose()"
-    [showHeader]="false" [closable]="true" [dismissableMask]="true" styleClass="auth-modal-dialog"
-    maskStyleClass="auth-modal-mask" appendTo="body" [baseZIndex]="11000"
-    [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }">
-
+<p-dialog
+    [(visible)]="visible"
+    [modal]="true"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="onClose()"
+    [showHeader]="false"
+    [closable]="true"
+    [dismissableMask]="true"
+    styleClass="auth-modal-dialog"
+    maskStyleClass="auth-modal-mask"
+    appendTo="body"
+    [baseZIndex]="11000"
+    [style]="{ width: '500px', maxWidth: '95vw', border: 'none' }"
+>
     <!-- Force Landing Dark Theme (Pure Black) -->
-    <div class="landing-dark-theme" style="display: flex; flex-direction: column; width: 100%;">
-
-        <div class="relative" style="display: flex; flex-direction: column; width: 100%;">
+    <div class="landing-dark-theme" style="display: flex; flex-direction: column; width: 100%">
+        <div class="relative" style="display: flex; flex-direction: column; width: 100%">
             <!-- Close Button -->
-            <button (click)="onClose()"
+            <button
+                (click)="onClose()"
                 class="absolute top-0 right-0 z-5 -mt-2 -mr-2 surface-card text-900 border-circle w-2rem h-2rem flex align-items-center justify-content-center hover:bg-gray-800 transition-colors cursor-pointer border-none shadow-2"
-                style="background: #1a1c1e; color: #fff;">
+                style="background: #1a1c1e; color: #fff"
+            >
                 <i class="pi pi-times" style="font-size: 0.8rem"></i>
             </button>
 
             <!-- Card Structure with Yellow/Dark Gradient -->
-            <div
-                style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, #fdb831 10%, rgba(12, 14, 15, 0) 30%); width: 100%; box-sizing: border-box;">
-
-                <div class="w-full auth-card"
-                    style="border-radius: 53px; padding: 3rem 2.5rem; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background: #0c0e0f;">
-
-                    <div class="text-center mb-5" style="display: flex; flex-direction: column; align-items: center;">
+            <div style="border-radius: 56px; padding: 0.3rem; background: linear-gradient(180deg, #fdb831 10%, rgba(12, 14, 15, 0) 30%); width: 100%; box-sizing: border-box">
+                <div class="w-full auth-card" style="border-radius: 53px; padding: 3rem 2.5rem; display: flex; flex-direction: column; width: 100%; box-sizing: border-box; background: #0c0e0f">
+                    <div class="text-center mb-5" style="display: flex; flex-direction: column; align-items: center">
                         <div class="text-white text-4xl font-bold mb-3 tracking-tight">HeavyMarket</div>
-                        <span class="text-gray-400 font-medium text-lg">{{ activeTab === 'login' ? 'Inicia sesión para
-                            continuar' : 'Crea tu cuenta para comenzar' }}</span>
+                        <span class="text-gray-400 font-medium text-lg">{{
+                            activeTab === 'login'
+                                ? 'Inicia sesión para
+                            continuar'
+                                : 'Crea tu cuenta para comenzar'
+                        }}</span>
                     </div>
 
                     <!-- Login Form -->
                     @if (activeTab === 'login') {
-                    <form [formGroup]="loginForm" (ngSubmit)="onSubmitLogin()"
-                        style="display: flex; flex-direction: column; width: 100%;">
-                        <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%;">
-
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
-                                <input id="email" type="text" pInputText formControlName="email"
-                                    class="w-full custom-input" placeholder="Email"
-                                    [ngStyle]="{'border-color': (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) || serverErrors.login ? '#ff4d4d' : '#333'}"
-                                    style="padding: 1rem; font-size: 1.1rem; width: 100%; box-sizing: border-box; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px;">
-                                <small *ngIf="serverErrors.login" class="text-red-400 mt-1">{{ serverErrors.login
-                                    }}</small>
-                            </div>
-
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="password"
-                                    class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
-                                <p-password id="password" [toggleMask]="true" formControlName="password"
-                                    placeholder="Contraseña" [feedback]="false" styleClass="w-full custom-password"
-                                    inputStyleClass="w-full p-3 text-lg" [style]="{'width': '100%'}"></p-password>
-                            </div>
-
-                            <div class="flex align-items-center justify-content-between mb-2 gap-2"
-                                style="display: flex; flex-direction: row; align-items: center; justify-content: space-between;">
-                                <div class="flex align-items-center"
-                                    style="display: flex; flex-direction: row; align-items: center;">
-                                    <p-checkbox id="rememberme" [binary]="true"
-                                        styleClass="dark-checkbox mr-2"></p-checkbox>
-                                    <label for="rememberme" class="text-gray-300 cursor-pointer">Recordarme</label>
+                        <form [formGroup]="loginForm" (ngSubmit)="onSubmitLogin()" style="display: flex; flex-direction: column; width: 100%">
+                            <div style="display: flex; flex-direction: column; gap: 1.5rem; width: 100%">
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
+                                    <input
+                                        id="email"
+                                        type="text"
+                                        pInputText
+                                        formControlName="email"
+                                        class="w-full custom-input"
+                                        placeholder="Email"
+                                        [ngStyle]="{ 'border-color': (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) || serverErrors.login ? '#ff4d4d' : '#333' }"
+                                        style="padding: 1rem; font-size: 1.1rem; width: 100%; box-sizing: border-box; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px"
+                                    />
+                                    <small *ngIf="serverErrors.login" class="text-red-400 mt-1">{{ serverErrors.login }}</small>
                                 </div>
-                                <a class="font-medium no-underline text-right cursor-pointer"
-                                    style="color: #fdb831">¿Olvidaste tu contraseña?</a>
-                            </div>
 
-                            <button type="submit" [disabled]="isLoading()"
-                                class="w-full p-3 text-xl font-bold border-none cursor-pointer"
-                                style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s;">
-                                @if (isLoading()) { <i class="pi pi-spin pi-spinner mr-2"></i> }
-                                Iniciar Sesión
-                            </button>
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="password" class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
+                                    <p-password
+                                        id="password"
+                                        [toggleMask]="true"
+                                        formControlName="password"
+                                        placeholder="Contraseña"
+                                        [feedback]="false"
+                                        styleClass="w-full custom-password"
+                                        inputStyleClass="w-full p-3 text-lg"
+                                        [style]="{ width: '100%' }"
+                                    ></p-password>
+                                </div>
 
-                            <!-- <div class="text-center mt-3">
+                                <div class="flex align-items-center justify-content-between mb-2 gap-2" style="display: flex; flex-direction: row; align-items: center; justify-content: space-between">
+                                    <div class="flex align-items-center" style="display: flex; flex-direction: row; align-items: center">
+                                        <p-checkbox id="rememberme" [binary]="true" styleClass="dark-checkbox mr-2"></p-checkbox>
+                                        <label for="rememberme" class="text-gray-300 cursor-pointer">Recordarme</label>
+                                    </div>
+                                    <a class="font-medium no-underline text-right cursor-pointer" style="color: #fdb831">¿Olvidaste tu contraseña?</a>
+                                </div>
+
+                                <button type="submit" [disabled]="isLoading()" class="w-full p-3 text-xl font-bold border-none cursor-pointer" style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s">
+                                    @if (isLoading()) {
+                                        <i class="pi pi-spin pi-spinner mr-2"></i>
+                                    }
+                                    Iniciar Sesión
+                                </button>
+
+                                <!-- <div class="text-center mt-3">
                                 <span class="text-gray-500 font-medium">¿No tienes cuenta? </span>
                                 <a (click)="toggleTab('register')" class="font-bold no-underline cursor-pointer"
                                     style="color: #fdb831"> Regístrate </a>
                             </div> -->
-                        </div>
-                    </form>
+                            </div>
+                        </form>
                     }
 
                     <!-- Register Form -->
                     @if (activeTab === 'register') {
-                    <form [formGroup]="registerForm" (ngSubmit)="onSubmitRegister()"
-                        style="display: flex; flex-direction: column; width: 100%;">
-                        <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%;">
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="name" class="block text-gray-200 text-xl font-medium mb-2">Nombre
-                                    Completo</label>
-                                <input id="name" type="text" pInputText formControlName="name"
-                                    class="w-full custom-input" placeholder="Juan Pérez"
-                                    [ngStyle]="{'border-color': (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) || serverErrors.name ? '#ff4d4d' : '#333'}"
-                                    style="width: 100%; box-sizing: border-box; padding: 1rem; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px;">
-                                <small *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched"
-                                    class="text-red-400 mt-1">Nombre es requerido</small>
-                                <small *ngIf="serverErrors.name" class="text-red-400 mt-1">{{ serverErrors.name[0]
-                                    }}</small>
-                            </div>
+                        <form [formGroup]="registerForm" (ngSubmit)="onSubmitRegister()" style="display: flex; flex-direction: column; width: 100%">
+                            <div style="display: flex; flex-direction: column; gap: 1rem; width: 100%">
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="name" class="block text-gray-200 text-xl font-medium mb-2">Nombre Completo</label>
+                                    <input
+                                        id="name"
+                                        type="text"
+                                        pInputText
+                                        formControlName="name"
+                                        class="w-full custom-input"
+                                        placeholder="Juan Pérez"
+                                        [ngStyle]="{ 'border-color': (registerForm.get('name')?.invalid && registerForm.get('name')?.touched) || serverErrors.name ? '#ff4d4d' : '#333' }"
+                                        style="width: 100%; box-sizing: border-box; padding: 1rem; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px"
+                                    />
+                                    <small *ngIf="registerForm.get('name')?.invalid && registerForm.get('name')?.touched" class="text-red-400 mt-1">Nombre es requerido</small>
+                                    <small *ngIf="serverErrors.name" class="text-red-400 mt-1">{{ serverErrors.name[0] }}</small>
+                                </div>
 
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="reg_email"
-                                    class="block text-gray-200 text-xl font-medium mb-2">Email</label>
-                                <input id="reg_email" type="text" pInputText formControlName="email"
-                                    class="w-full custom-input" placeholder="Email"
-                                    [ngStyle]="{'border-color': (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) || serverErrors.email ? '#ff4d4d' : '#333'}"
-                                    style="width: 100%; box-sizing: border-box; padding: 1rem; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px;">
-                                <small
-                                    *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched"
-                                    class="text-red-400 mt-1">Email es requerido</small>
-                                <small
-                                    *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched"
-                                    class="text-red-400 mt-1">Email inválido</small>
-                                <small *ngIf="serverErrors.email" class="text-red-400 mt-1">{{ serverErrors.email[0]
-                                    }}</small>
-                            </div>
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="reg_email" class="block text-gray-200 text-xl font-medium mb-2">Email</label>
+                                    <input
+                                        id="reg_email"
+                                        type="text"
+                                        pInputText
+                                        formControlName="email"
+                                        class="w-full custom-input"
+                                        placeholder="Email"
+                                        [ngStyle]="{ 'border-color': (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) || serverErrors.email ? '#ff4d4d' : '#333' }"
+                                        style="width: 100%; box-sizing: border-box; padding: 1rem; background: #1a1c1e; color: #fff; border: 1px solid #333; border-radius: 12px"
+                                    />
+                                    <small *ngIf="registerForm.get('email')?.hasError('required') && registerForm.get('email')?.touched" class="text-red-400 mt-1">Email es requerido</small>
+                                    <small *ngIf="registerForm.get('email')?.hasError('email') && registerForm.get('email')?.touched" class="text-red-400 mt-1">Email inválido</small>
+                                    <small *ngIf="serverErrors.email" class="text-red-400 mt-1">{{ serverErrors.email[0] }}</small>
+                                </div>
 
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="reg_password"
-                                    class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
-                                <p-password id="reg_password" [toggleMask]="true" formControlName="password"
-                                    placeholder="Contraseña" [feedback]="true" styleClass="w-full custom-password"
-                                    [ngStyle]="{'border-color': (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) || serverErrors.password ? '#ff4d4d' : 'transparent'}"
-                                    inputStyleClass="w-full p-3" [style]="{'width': '100%'}"></p-password>
-                                <small
-                                    *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')"
-                                    class="text-red-400 mt-1">Mínimo 8 caracteres</small>
-                                <small *ngIf="serverErrors.password" class="text-red-400 mt-1">{{
-                                    serverErrors.password[0] }}</small>
-                            </div>
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="reg_password" class="block text-gray-200 font-medium text-xl mb-2">Contraseña</label>
+                                    <p-password
+                                        id="reg_password"
+                                        [toggleMask]="true"
+                                        formControlName="password"
+                                        placeholder="Contraseña"
+                                        [feedback]="true"
+                                        styleClass="w-full custom-password"
+                                        [ngStyle]="{ 'border-color': (registerForm.get('password')?.invalid && registerForm.get('password')?.touched) || serverErrors.password ? '#ff4d4d' : 'transparent' }"
+                                        inputStyleClass="w-full p-3"
+                                        [style]="{ width: '100%' }"
+                                    ></p-password>
+                                    <small *ngIf="registerForm.get('password')?.invalid && registerForm.get('password')?.touched && !registerForm.get('password')?.hasError('serverError')" class="text-red-400 mt-1">Mínimo 8 caracteres</small>
+                                    <small *ngIf="serverErrors.password" class="text-red-400 mt-1">{{ serverErrors.password[0] }}</small>
+                                </div>
 
-                            <div style="display: flex; flex-direction: column;">
-                                <label for="confirmPassword"
-                                    class="block text-gray-200 font-medium text-xl mb-2">Confirmar Contraseña</label>
-                                <p-password id="confirmPassword" [toggleMask]="true" formControlName="confirmPassword"
-                                    placeholder="Confirmar Contraseña" [feedback]="false"
-                                    [ngStyle]="{'border-color': (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || registerForm.hasError('passwordMismatch') ? '#ff4d4d' : 'transparent'}"
-                                    styleClass="w-full custom-password" inputStyleClass="w-full p-3"
-                                    [style]="{'width': '100%'}"></p-password>
-                                <small
-                                    *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched"
-                                    class="text-red-400 mt-1">Confirmación requerida</small>
-                                <small
-                                    *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched"
-                                    class="text-red-400 mt-1">Las contraseñas no coinciden</small>
-                            </div>
+                                <div style="display: flex; flex-direction: column">
+                                    <label for="confirmPassword" class="block text-gray-200 font-medium text-xl mb-2">Confirmar Contraseña</label>
+                                    <p-password
+                                        id="confirmPassword"
+                                        [toggleMask]="true"
+                                        formControlName="confirmPassword"
+                                        placeholder="Confirmar Contraseña"
+                                        [feedback]="false"
+                                        [ngStyle]="{ 'border-color': (registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched) || registerForm.hasError('passwordMismatch') ? '#ff4d4d' : 'transparent' }"
+                                        styleClass="w-full custom-password"
+                                        inputStyleClass="w-full p-3"
+                                        [style]="{ width: '100%' }"
+                                    ></p-password>
+                                    <small *ngIf="registerForm.get('confirmPassword')?.invalid && registerForm.get('confirmPassword')?.touched" class="text-red-400 mt-1">Confirmación requerida</small>
+                                    <small *ngIf="registerForm.hasError('passwordMismatch') && registerForm.get('confirmPassword')?.touched" class="text-red-400 mt-1">Las contraseñas no coinciden</small>
+                                </div>
 
-                            <div class="flex align-items-center mb-3 gap-2"
-                                style="display: flex; flex-direction: row; align-items: center;">
-                                <p-checkbox id="accept" formControlName="acceptTerms" [binary]="true"
-                                    styleClass="dark-checkbox mr-2"></p-checkbox>
-                                <label for="accept" class="text-gray-300 cursor-pointer text-sm">Acepto los <a
-                                        (click)="termsClick.emit()" class="font-medium no-underline cursor-pointer"
-                                        style="color: #fdb831">términos
-                                        y condiciones</a></label>
-                            </div>
+                                <div class="flex align-items-center mb-3 gap-2" style="display: flex; flex-direction: row; align-items: center">
+                                    <p-checkbox id="accept" formControlName="acceptTerms" [binary]="true" styleClass="dark-checkbox mr-2"></p-checkbox>
+                                    <label for="accept" class="text-gray-300 cursor-pointer text-sm">Acepto los <a (click)="termsClick.emit()" class="font-medium no-underline cursor-pointer" style="color: #fdb831">términos y condiciones</a></label>
+                                </div>
 
-                            <button type="submit" [disabled]="isLoading()"
-                                class="w-full p-3 text-xl font-bold border-none cursor-pointer"
-                                style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s;">
-                                @if (isLoading()) { <i class="pi pi-spin pi-spinner mr-2"></i> }
-                                Crear Cuenta
-                            </button>
+                                <button type="submit" [disabled]="isLoading()" class="w-full p-3 text-xl font-bold border-none cursor-pointer" style="background: #fdb831; color: #0c0e0f; border-radius: 64px; transition: background 0.2s">
+                                    @if (isLoading()) {
+                                        <i class="pi pi-spin pi-spinner mr-2"></i>
+                                    }
+                                    Crear Cuenta
+                                </button>
 
-                            <div class="text-center mt-3">
-                                <span class="text-gray-500 font-medium">¿Ya tienes cuenta? </span>
-                                <a (click)="toggleTab('login')" class="font-bold no-underline cursor-pointer"
-                                    style="color: #fdb831"> Inicia sesión </a>
+                                <div class="text-center mt-3">
+                                    <span class="text-gray-500 font-medium">¿Ya tienes cuenta? </span>
+                                    <a (click)="toggleTab('login')" class="font-bold no-underline cursor-pointer" style="color: #fdb831"> Inicia sesión </a>
+                                </div>
                             </div>
-                        </div>
-                    </form>
+                        </form>
                     }
 
                     <!-- Social Login Divider -->

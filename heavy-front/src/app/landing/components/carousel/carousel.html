@@ -15,14 +15,12 @@
         <div class="carousel-controls">
             <button class="carousel-arrow carousel-arrow-left" (click)="prevSlide()">
                 <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M32.5 13L19.5 26L32.5 39" stroke="rgba(247, 253, 242, 0.4)" stroke-width="2.25"
-                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M32.5 13L19.5 26L32.5 39" stroke="rgba(247, 253, 242, 0.4)" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
             <button class="carousel-arrow carousel-arrow-right" (click)="nextSlide()">
                 <svg width="52" height="52" viewBox="0 0 52 52" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M19.5 13L32.5 26L19.5 39" stroke="rgba(247, 253, 242, 0.4)" stroke-width="2.25"
-                        stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M19.5 13L32.5 26L19.5 39" stroke="rgba(247, 253, 242, 0.4)" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round" />
                 </svg>
             </button>
         </div>
@@ -31,13 +29,10 @@
             <div class="carousel-text-container">
                 @if (currentSlide === 0) {
                 <h2 class="carousel-title active">Trabajamos con las marcas más prestigiosas del mercado</h2>
-                }
-                @if (currentSlide === 1) {
+                } @if (currentSlide === 1) {
                 <h2 class="carousel-title active">Te brindamos una plataforma de cotización moderna y fácil de usar</h2>
-                }
-                @if (currentSlide === 2) {
-                <h2 class="carousel-title active">Asistencia continua, las 24 horas, para ayudarte con cualquier
-                    consulta</h2>
+                } @if (currentSlide === 2) {
+                <h2 class="carousel-title active">Asistencia continua, las 24 horas, para ayudarte con cualquier consulta</h2>
                 }
             </div>
             <div class="carousel-dots">

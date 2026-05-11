@@ -6,20 +6,16 @@
     <div class="flex justify-between items-center mb-4">
         <div>
             <h2 class="m-0">Categorías Landing</h2>
-            <p class="text-sm text-surface-500 mt-1 mb-0">Gestiona las categorías y selecciona hasta 6 para el mega menú
-                principal.</p>
+            <p class="text-sm text-surface-500 mt-1 mb-0">Gestiona las categorías y selecciona hasta 6 para el mega menú principal.</p>
         </div>
         <div class="flex gap-2 items-center">
-            <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" (onClick)="loadCategories()"
-                [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom" />
+            <p-button icon="pi pi-refresh" [text]="true" [rounded]="true" (onClick)="loadCategories()" [loading]="loading()" pTooltip="Recargar" tooltipPosition="bottom" />
             <p-button label="Nueva Categoría" icon="pi pi-plus" (onClick)="openNewCategory()" />
         </div>
     </div>
 
     <!-- Tabla categorías -->
-    <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-sm"
-        [tableStyle]="{'min-width': '55rem'}">
-
+    <p-table [value]="categories()" [loading]="loading()" dataKey="id" styleClass="p-datatable-sm" [tableStyle]="{ 'min-width': '55rem' }">
         <ng-template pTemplate="header">
             <tr>
                 <th style="width: 3.5rem"></th>
@@ -34,8 +30,7 @@
         <ng-template pTemplate="body" let-category>
             <tr>
                 <td>
-                    <p-button [icon]="expandedRows[category.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'"
-                        [text]="true" [rounded]="true" severity="secondary" (onClick)="toggleRow(category)" />
+                    <p-button [icon]="expandedRows[category.id] ? 'pi pi-chevron-down' : 'pi pi-chevron-right'" [text]="true" [rounded]="true" severity="secondary" (onClick)="toggleRow(category)" />
                 </td>
                 <td>
                     <!-- Placeholder para posible imagen de categoría a futuro -->
@@ -49,10 +44,8 @@
                 </td>
                 <td>
                     <div class="flex gap-1">
-                        <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true"
-                            (onClick)="editCategory(category)" pTooltip="Editar" tooltipPosition="top" />
-                        <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true"
-                            (onClick)="deleteCategory(category)" pTooltip="Eliminar" tooltipPosition="top" />
+                        <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" (onClick)="editCategory(category)" pTooltip="Editar" tooltipPosition="top" />
+                        <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="deleteCategory(category)" pTooltip="Eliminar" tooltipPosition="top" />
                     </div>
                 </td>
             </tr>
@@ -60,117 +53,106 @@
             <!-- Fila expandida: subcategorías -->
             <tr *ngIf="expandedRows[category.id]">
                 <td colspan="6" class="p-0 border-none">
-                    <div class="px-6 py-4"
-                        style="border-top: 1px solid var(--p-surface-border); border-bottom: 1px solid var(--p-surface-border);">
+                    <div class="px-6 py-4" style="border-top: 1px solid var(--p-surface-border); border-bottom: 1px solid var(--p-surface-border)">
                         <div class="flex justify-between items-center mb-3">
                             <span class="font-semibold text-surface-600">
-                                Subcategorías de <strong>{{ category.nombre }}</strong>
-                                ({{ category.subcategorias?.length || 0 }})
+                                Subcategorías de <strong>{{ category.nombre }}</strong> ({{ category.subcategorias?.length || 0 }})
                             </span>
-                            <p-button label="Añadir Subcategoría" icon="pi pi-plus" severity="success" size="small"
-                                (onClick)="openNewSubcategory(category)" />
+                            <p-button label="Añadir Subcategoría" icon="pi pi-plus" severity="success" size="small" (onClick)="openNewSubcategory(category)" />
                         </div>
 
                         <p-table [value]="category.subcategorias" dataKey="id" styleClass="p-datatable-sm">
                             <ng-template pTemplate="header">
-            <tr>
-                <th style="width: 4rem">Img</th>
-                <th>Nombre</th>
-                <th style="width: 140px">Activo</th>
-                <th style="width: 180px">En Mega Menú</th>
-                <th style="width: 110px">Acciones</th>
-            </tr>
-        </ng-template>
-        <ng-template pTemplate="body" let-sub>
-            <tr>
-                <td>
-                    <ng-container *ngIf="sub.imagen_url; else noImage">
-                        <img [src]="sub.imagen_url" alt="{{ sub.nombre }}"
-                            class="w-10 h-10 rounded-md object-cover border border-surface-border" />
-                    </ng-container>
-                    <ng-template #noImage>
-                        <div
-                            class="w-10 h-10 rounded-md border border-dashed border-surface-border flex items-center justify-center text-xs text-surface-400">
-                            N/A
-                        </div>
-                    </ng-template>
-                </td>
-                <td>{{ sub.nombre }}</td>
-                <td>
-                    <p-toggleswitch [(ngModel)]="sub.estado" (onChange)="onSubcategoryStatusChange(sub)" />
-                </td>
-                <td>
-                    <p-toggleswitch [(ngModel)]="sub.mostrar_en_navbar" (onChange)="onSubcategoryToggle(sub)" />
-                </td>
-                <td>
-                    <div class="flex gap-1">
-                        <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" size="small"
-                            (onClick)="editSubcategory(sub)" pTooltip="Editar" tooltipPosition="top" />
-                        <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small"
-                            (onClick)="deleteSubcategory(sub)" pTooltip="Eliminar" tooltipPosition="top" />
+                                <tr>
+                                    <th style="width: 4rem">Img</th>
+                                    <th>Nombre</th>
+                                    <th style="width: 140px">Activo</th>
+                                    <th style="width: 180px">En Mega Menú</th>
+                                    <th style="width: 110px">Acciones</th>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="body" let-sub>
+                                <tr>
+                                    <td>
+                                        <ng-container *ngIf="sub.imagen_url; else noImage">
+                                            <img [src]="sub.imagen_url" alt="{{ sub.nombre }}" class="w-10 h-10 rounded-md object-cover border border-surface-border" />
+                                        </ng-container>
+                                        <ng-template #noImage>
+                                            <div class="w-10 h-10 rounded-md border border-dashed border-surface-border flex items-center justify-center text-xs text-surface-400">N/A</div>
+                                        </ng-template>
+                                    </td>
+                                    <td>{{ sub.nombre }}</td>
+                                    <td>
+                                        <p-toggleswitch [(ngModel)]="sub.estado" (onChange)="onSubcategoryStatusChange(sub)" />
+                                    </td>
+                                    <td>
+                                        <p-toggleswitch [(ngModel)]="sub.mostrar_en_navbar" (onChange)="onSubcategoryToggle(sub)" />
+                                    </td>
+                                    <td>
+                                        <div class="flex gap-1">
+                                            <p-button icon="pi pi-pencil" severity="warn" [text]="true" [rounded]="true" size="small" (onClick)="editSubcategory(sub)" pTooltip="Editar" tooltipPosition="top" />
+                                            <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" size="small" (onClick)="deleteSubcategory(sub)" pTooltip="Eliminar" tooltipPosition="top" />
+                                        </div>
+                                    </td>
+                                </tr>
+                            </ng-template>
+                            <ng-template pTemplate="emptymessage">
+                                <tr>
+                                    <td colspan="5" class="text-center py-4 text-surface-400">No hay subcategorías registradas.</td>
+                                </tr>
+                            </ng-template>
+                        </p-table>
                     </div>
                 </td>
             </tr>
         </ng-template>
+
         <ng-template pTemplate="emptymessage">
             <tr>
-                <td colspan="5" class="text-center py-4 text-surface-400">
-                    No hay subcategorías registradas.
+                <td colspan="6" class="text-center py-8">
+                    <i class="pi pi-inbox text-4xl text-surface-400 mb-2"></i>
+                    <p class="text-surface-600">No se encontraron categorías</p>
                 </td>
             </tr>
         </ng-template>
     </p-table>
 </div>
-</td>
-</tr>
-</ng-template>
-
-<ng-template pTemplate="emptymessage">
-    <tr>
-        <td colspan="6" class="text-center py-8">
-            <i class="pi pi-inbox text-4xl text-surface-400 mb-2"></i>
-            <p class="text-surface-600">No se encontraron categorías</p>
-        </td>
-    </tr>
-</ng-template>
-</p-table>
-</div>
 
 <!-- ===== DIALOG: Categoría ===== -->
-<p-dialog [(visible)]="categoryDialog" [style]="{width: '460px'}"
-    [header]="isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría'" [modal]="true">
+<p-dialog [(visible)]="categoryDialog" [style]="{ width: '460px' }" [header]="isEditingCategory ? 'Editar Categoría' : 'Nueva Categoría'" [modal]="true">
     <ng-template pTemplate="content">
         <div class="grid grid-cols-1 gap-4 pt-2">
             <!-- Nombre -->
             <div class="field">
-                <label for="cat_nombre" class="block text-sm font-medium mb-2">
-                    Nombre <span class="text-red-500">*</span>
-                </label>
-                <input pInputText id="cat_nombre" [(ngModel)]="currentCategory.nombre" class="w-full"
-                    placeholder="Ej: Herramienta de Corte" autofocus />
+                <label for="cat_nombre" class="block text-sm font-medium mb-2"> Nombre <span class="text-red-500">*</span> </label>
+                <input pInputText id="cat_nombre" [(ngModel)]="currentCategory.nombre" class="w-full" placeholder="Ej: Herramienta de Corte" autofocus />
             </div>
 
             <!-- Descripción -->
             <div class="field">
                 <label for="cat_desc" class="block text-sm font-medium mb-2">Descripción General</label>
-                <textarea pTextarea id="cat_desc" [(ngModel)]="currentCategory.descripcion_general" [rows]="3"
-                    class="w-full" styleClass="w-full"
+                <textarea
+                    pTextarea
+                    id="cat_desc"
+                    [(ngModel)]="currentCategory.descripcion_general"
+                    [rows]="3"
+                    class="w-full"
+                    styleClass="w-full"
                     placeholder="Breve descripción de la categoría (opcional)..."
-                    style="overflow-y: hidden; resize: none;"
-                    (input)="onCategoryDescriptionInput($event)"></textarea>
+                    style="overflow-y: hidden; resize: none"
+                    (input)="onCategoryDescriptionInput($event)"
+                ></textarea>
             </div>
 
             <!-- Toggles -->
             <div class="field">
                 <div class="flex items-center gap-3 mb-2">
                     <p-toggleswitch [(ngModel)]="currentCategory.estado" inputId="cat_estado" />
-                    <label for="cat_estado" class="text-sm font-medium cursor-pointer">Categoría activa
-                        (visible)</label>
+                    <label for="cat_estado" class="text-sm font-medium cursor-pointer">Categoría activa (visible)</label>
                 </div>
                 <div class="flex items-center gap-3">
                     <p-toggleswitch [(ngModel)]="currentCategory.mostrar_en_navbar" inputId="cat_navbar" />
-                    <label for="cat_navbar" class="text-sm font-medium cursor-pointer">Mostrar en Mega Menú (máx.
-                        6)</label>
+                    <label for="cat_navbar" class="text-sm font-medium cursor-pointer">Mostrar en Mega Menú (máx. 6)</label>
                 </div>
             </div>
         </div>
@@ -179,47 +161,42 @@
     <ng-template pTemplate="footer">
         <p-divider />
         <div class="flex justify-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
-                (onClick)="categoryDialog = false" />
+            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="categoryDialog = false" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveCategory()" />
         </div>
     </ng-template>
 </p-dialog>
 
 <!-- ===== DIALOG: Subcategoría ===== -->
-<p-dialog [(visible)]="subcategoryDialog" [style]="{width: '460px'}"
-    [header]="isEditingSubcategory ? 'Editar Subcategoría' : 'Nueva Subcategoría'" [modal]="true">
+<p-dialog [(visible)]="subcategoryDialog" [style]="{ width: '460px' }" [header]="isEditingSubcategory ? 'Editar Subcategoría' : 'Nueva Subcategoría'" [modal]="true">
     <ng-template pTemplate="content">
         <div class="grid grid-cols-1 gap-4 pt-2">
             <!-- Nombre -->
             <div class="field">
-                <label for="sub_nombre" class="block text-sm font-medium mb-2">
-                    Nombre <span class="text-red-500">*</span>
-                </label>
-                <input pInputText id="sub_nombre" [(ngModel)]="currentSubcategory.nombre" class="w-full"
-                    placeholder="Ej: Puntas de balde" autofocus />
+                <label for="sub_nombre" class="block text-sm font-medium mb-2"> Nombre <span class="text-red-500">*</span> </label>
+                <input pInputText id="sub_nombre" [(ngModel)]="currentSubcategory.nombre" class="w-full" placeholder="Ej: Puntas de balde" autofocus />
             </div>
 
             <!-- Descripción -->
             <div class="field">
                 <label for="sub_desc" class="block text-sm font-medium mb-2">Descripción</label>
-                <textarea pTextarea id="sub_desc" [(ngModel)]="currentSubcategory.descripcion" [rows]="3" class="w-full"
-                    styleClass="w-full" placeholder="Descripción breve (opcional)..."></textarea>
+                <textarea pTextarea id="sub_desc" [(ngModel)]="currentSubcategory.descripcion" [rows]="3" class="w-full" styleClass="w-full" placeholder="Descripción breve (opcional)..."></textarea>
             </div>
 
             <!-- Imagen -->
             <div class="field">
                 <label class="block text-sm font-medium mb-2">Imagen de la subcategoría</label>
-                <app-image-upload [label]="'Imagen para la tarjeta de la landing'" [icon]="'pi pi-image'"
+                <app-image-upload
+                    [label]="'Imagen para la tarjeta de la landing'"
+                    [icon]="'pi pi-image'"
                     [currentImage]="isEditingSubcategory ? currentSubcategory.imagen_url || null : null"
-                    (fileSelected)="onSubcategoryImageSelected($event)" [height]="'12rem'">
+                    (fileSelected)="onSubcategoryImageSelected($event)"
+                    [height]="'12rem'"
+                >
                 </app-image-upload>
                 <div class="flex items-center gap-2 mt-2" *ngIf="isEditingSubcategory && currentSubcategory.imagen_url">
-                    <p-checkbox inputId="removeImage" [(ngModel)]="subcategoryRemoveImage"
-                        [binary]="true"></p-checkbox>
-                    <label for="removeImage" class="text-xs text-surface-500 cursor-pointer">
-                        Eliminar imagen actual y usar la imagen por defecto
-                    </label>
+                    <p-checkbox inputId="removeImage" [(ngModel)]="subcategoryRemoveImage" [binary]="true"></p-checkbox>
+                    <label for="removeImage" class="text-xs text-surface-500 cursor-pointer"> Eliminar imagen actual y usar la imagen por defecto </label>
                 </div>
             </div>
 
@@ -231,8 +208,7 @@
                 </div>
                 <div class="flex items-center gap-3">
                     <p-toggleswitch [(ngModel)]="currentSubcategory.mostrar_en_navbar" inputId="sub_navbar" />
-                    <label for="sub_navbar" class="text-sm font-medium cursor-pointer">Mostrar en Mega Menú (máx.
-                        4)</label>
+                    <label for="sub_navbar" class="text-sm font-medium cursor-pointer">Mostrar en Mega Menú (máx. 4)</label>
                 </div>
             </div>
         </div>
@@ -241,8 +217,7 @@
     <ng-template pTemplate="footer">
         <p-divider />
         <div class="flex justify-end gap-2">
-            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true"
-                (onClick)="subcategoryDialog = false" />
+            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="subcategoryDialog = false" />
             <p-button label="Guardar" icon="pi pi-check" (onClick)="saveSubcategory()" />
         </div>
     </ng-template>

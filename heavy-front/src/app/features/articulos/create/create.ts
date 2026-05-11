@@ -201,17 +201,20 @@ export class CreateComponent implements OnInit {
      * @param search Término de búsqueda opcional
      */
     cargarReferencias(search?: string): void {
-        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+        const seleccionadasIds = this.referenciasCruzadas.value
+            .map((r: any) => r.referencia_id)
+            .filter((id: any) => id !== null);
+
+        this.referenciaService.getAll({ search, per_page: 50, disponibles: true }).subscribe({
             next: (res) => {
                 const nuevas = res.data;
-                // Preservar las que ya están seleccionadas en el formulario
-                const seleccionadasIds = this.referenciasCruzadas.value.map((r: any) => r.referencia_id).filter((id: any) => id !== null);
 
+                // Preservar las que ya están seleccionadas en el formulario
                 const yaCargadas = this.referenciasDisponibles.filter((r) => seleccionadasIds.includes(r.id));
 
-                const map = new Map();
+                const map = new Map<number, Referencia>();
                 yaCargadas.forEach((r) => map.set(r.id, r));
-                nuevas.forEach((r: any) => map.set(r.id, r));
+                nuevas.forEach((r: Referencia) => map.set(r.id, r));
 
                 this.referenciasDisponibles = Array.from(map.values());
             }

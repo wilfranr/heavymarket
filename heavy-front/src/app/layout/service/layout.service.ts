@@ -242,7 +242,7 @@ export class LayoutService {
     private getPrimaryPalette(colorName: string): any {
         const preset = this.layoutConfig().preset as 'Aura' | 'Lara' | 'Nora';
         const primitive = presets[preset].primitive;
-        
+
         if (colorName === 'heavy') {
             return {
                 50: '#fffaf0',
@@ -258,7 +258,7 @@ export class LayoutService {
                 950: '#4d2b00'
             };
         }
-        
+
         return (primitive as any)?.[colorName] || (primitive as any)?.[this.layoutConfig().primary || 'yellow'];
     }
 
@@ -269,8 +269,8 @@ export class LayoutService {
         }
 
         const palette = this.getPrimaryPalette(colorName);
-        this.layoutConfig.update(prev => ({ ...prev, primary: colorName }));
-        
+        this.layoutConfig.update((prev) => ({ ...prev, primary: colorName }));
+
         const preset = this.layoutConfig().preset;
         const config = {
             semantic: {

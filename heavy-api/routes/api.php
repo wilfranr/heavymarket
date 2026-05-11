@@ -18,7 +18,10 @@ use App\Http\Controllers\Api\V1\NotificationController;
 use App\Http\Controllers\Api\V1\OrdenCompraController;
 use App\Http\Controllers\Api\V1\OrdenTrabajoController;
 use App\Http\Controllers\Api\V1\PedidoController;
+use App\Http\Controllers\Api\V1\ProviderAuthController;
+use App\Http\Controllers\Api\V1\ProviderPortalController;
 use App\Http\Controllers\Api\V1\ReferenciaController;
+use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SistemaController;
 use App\Http\Controllers\Api\V1\TerceroController;
 use App\Http\Controllers\Api\V1\TransportadoraController;
@@ -26,8 +29,8 @@ use App\Http\Controllers\Api\V1\TRMController;
 use App\Http\Controllers\Api\V1\UbicacionController;
 use App\Http\Controllers\Api\V1\UserController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Broadcast;
+use Illuminate\Support\Facades\Route;
 
 /**
  * Rutas de autenticación para canales privados de WebSockets (Reverb)
@@ -90,6 +93,14 @@ Route::prefix('v1')->group(function () {
     });
 
     /**
+     * Rutas de Autenticación para Proveedores
+     */
+    Route::prefix('auth/provider')->group(function () {
+        Route::post('/register', [ProviderAuthController::class, 'register']);
+        Route::post('/login', [ProviderAuthController::class, 'login']);
+    });
+
+    /**
      * Rutas protegidas con autenticación Sanctum
      */
     Route::middleware('auth:sanctum')->group(function () {
@@ -106,7 +117,7 @@ Route::prefix('v1')->group(function () {
         Route::delete('/tokens/{tokenId}', [AuthController::class, 'revokeToken']);
 
         // Global Search
-        Route::get('/search', [App\Http\Controllers\Api\V1\SearchController::class, 'index']);
+        Route::get('/search', [SearchController::class, 'index']);
 
         /**
          * Información del usuario autenticado
@@ -124,11 +135,21 @@ Route::prefix('v1')->group(function () {
         });
 
         /**
+         * Portal de Proveedores
+         */
+        Route::middleware('role:Proveedor')->prefix('provider')->group(function () {
+            Route::get('/opportunities', [ProviderPortalController::class, 'opportunities']);
+            Route::post('/submit-cost', [ProviderPortalController::class, 'submitCost']);
+            Route::get('/purchase-orders', [ProviderPortalController::class, 'purchaseOrders']);
+            Route::put('/purchase-orders/{id}/dispatch', [ProviderPortalController::class, 'updateDispatch']);
+        });
+
+        /**
          * Recursos principales del sistema
          */
         Route::post('pedidos/{pedido}/enviar-a-costeo', [PedidoController::class, 'enviarACosteo'])->name('pedidos.enviar-a-costeo');
         Route::post('pedidos/{pedido}/enviar-a-analisis', [PedidoController::class, 'enviarAAnalisis'])->name('pedidos.enviar-a-analisis');
-        
+
         // Transiciones de estado
         Route::post('pedidos/{pedido}/publicar', [PedidoController::class, 'publicar'])->name('pedidos.publicar');
         Route::post('pedidos/{pedido}/cotizar', [PedidoController::class, 'cotizar'])->name('pedidos.cotizar');
@@ -139,7 +160,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/devolver-vendedor', [PedidoController::class, 'devolverAVendedor'])->name('pedidos.devolver-vendedor');
         Route::post('pedidos/{pedido}/devolver-analista', [PedidoController::class, 'devolverAAnalista'])->name('pedidos.devolver-analista');
         Route::post('pedidos/{pedido}/guardar-costeo', [PedidoController::class, 'guardarCosteo'])->name('pedidos.guardar-costeo');
-        
+
         Route::apiResource('pedidos', PedidoController::class);
 
         // Rutas adicionales para gestión de referencias en pedidos
@@ -165,6 +186,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('ordenes-compra', OrdenCompraController::class);
         Route::get('ordenes-compra/{ordenes_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);
+        Route::get('ordenes-trabajo/{ordenes_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
 
         /**
          * Catálogos y referencias

@@ -16,17 +16,7 @@ import { ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-create-modal',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        DialogModule,
-        ButtonModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        ToastModule,
-        FileUploadModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, FileUploadModule],
     templateUrl: './lista-create-modal.component.html',
     providers: [MessageService],
     styles: []
@@ -114,9 +104,9 @@ export class ListaCreateModalComponent implements OnInit, OnChanges {
         const formValue = this.listaForm.value;
         const formData = new FormData();
 
-        Object.keys(formValue).forEach(key => {
+        Object.keys(formValue).forEach((key) => {
             const value = formValue[key];
-            
+
             // Lógica para no enviar fotos cruzadas
             if (formValue.tipo === 'Piezas Estandar' && key === 'foto') return;
             if (formValue.tipo !== 'Piezas Estandar' && key === 'fotoMedida') return;

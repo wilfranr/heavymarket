@@ -31,7 +31,7 @@ export class ProductDetail implements OnInit {
         private router: Router,
         private landingService: LandingService,
         private _location: Location
-    ) { }
+    ) {}
 
     ngOnInit() {
         this.route.params.subscribe((params) => {

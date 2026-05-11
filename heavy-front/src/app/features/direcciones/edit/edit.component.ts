@@ -55,12 +55,35 @@ import { Country, State, City } from '../../../core/models/ubicacion.model';
 
                         <div class="col-12 md:col-4">
                             <label for="state_id" class="block mb-2">Departamento/Estado</label>
-                            <p-select formControlName="state_id" [options]="departamentos" optionLabel="name" optionValue="id" placeholder="Seleccione un departamento" [filter]="true" [showClear]="true" (onChange)="onDepartamentoChange()" [disabled]="!direccionForm.get('country_id')?.value" styleClass="w-full"> </p-select>
+                            <p-select
+                                formControlName="state_id"
+                                [options]="departamentos"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Seleccione un departamento"
+                                [filter]="true"
+                                [showClear]="true"
+                                (onChange)="onDepartamentoChange()"
+                                [disabled]="!direccionForm.get('country_id')?.value"
+                                styleClass="w-full"
+                            >
+                            </p-select>
                         </div>
 
                         <div class="col-12 md:col-4">
                             <label for="city_id" class="block mb-2">Ciudad</label>
-                            <p-select formControlName="city_id" [options]="ciudades" optionLabel="name" optionValue="id" placeholder="Seleccione una ciudad" [filter]="true" [showClear]="true" [disabled]="!direccionForm.get('state_id')?.value && !direccionForm.get('country_id')?.value" styleClass="w-full"> </p-select>
+                            <p-select
+                                formControlName="city_id"
+                                [options]="ciudades"
+                                optionLabel="name"
+                                optionValue="id"
+                                placeholder="Seleccione una ciudad"
+                                [filter]="true"
+                                [showClear]="true"
+                                [disabled]="!direccionForm.get('state_id')?.value && !direccionForm.get('country_id')?.value"
+                                styleClass="w-full"
+                            >
+                            </p-select>
                         </div>
 
                         <div class="col-12 md:col-6">

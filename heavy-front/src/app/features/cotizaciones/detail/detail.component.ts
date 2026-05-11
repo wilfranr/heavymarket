@@ -111,14 +111,16 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                                 <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del Cliente</span>
                                 <div class="flex items-center gap-1">
                                     <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="viewTercero(cot.tercero)" pTooltip="Ver detalle de cliente"></p-button>
-                                    <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" 
-                                        (onClick)="sendEmail(cot.tercero?.email)" 
-                                        [disabled]="!cot.tercero?.email"
-                                        pTooltip="Enviar correo"></p-button>
-                                    <p-button icon="pi pi-whatsapp" [rounded]="true" [text]="true" severity="success" 
-                                        (onClick)="sendWhatsApp(cot.pedido?.contacto?.telefono || cot.tercero?.telefono)" 
+                                    <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail(cot.tercero?.email)" [disabled]="!cot.tercero?.email" pTooltip="Enviar correo"></p-button>
+                                    <p-button
+                                        icon="pi pi-whatsapp"
+                                        [rounded]="true"
+                                        [text]="true"
+                                        severity="success"
+                                        (onClick)="sendWhatsApp(cot.pedido?.contacto?.telefono || cot.tercero?.telefono)"
                                         [disabled]="!(cot.pedido?.contacto?.telefono || cot.tercero?.telefono)"
-                                        pTooltip="Enviar WhatsApp"></p-button>
+                                        pTooltip="Enviar WhatsApp"
+                                    ></p-button>
                                 </div>
                             </div>
                             <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
@@ -245,30 +247,18 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
 
                     <!-- Acciones Finales -->
                     <div class="flex flex-wrap justify-end gap-4 mt-4 mb-20 px-8">
-                        <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="onBack()">
-                            <i class="pi pi-arrow-left"></i> Volver al listado
-                        </button>
-                        <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;">
-                            <i class="pi pi-pencil"></i> Editar
-                        </button>
+                        <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="onBack()"><i class="pi pi-arrow-left"></i> Volver al listado</button>
+                        <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"><i class="pi pi-pencil"></i> Editar</button>
                         @if (cot.estado === 'En_Proceso' || cot.estado === 'Pendiente') {
-                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;">
-                                <i class="pi pi-times"></i> Rechazar
-                            </button>
-                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;">
-                                <i class="pi pi-check"></i> Aprobar
-                            </button>
+                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;"><i class="pi pi-times"></i> Rechazar</button>
+                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"><i class="pi pi-check"></i> Aprobar</button>
                         }
-                        <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="onDownloadPDF()">
-                            <i class="pi pi-send"></i> Enviar / Descargar PDF
-                        </button>
+                        <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="onDownloadPDF()"><i class="pi pi-send"></i> Enviar / Descargar PDF</button>
                     </div>
                 </div>
 
                 <!-- Modales de detalle -->
-                <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{width: '900px', 'max-width': '95vw'}"
-                    [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body"
-                    styleClass="machine-detail-modal">
+                <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{ width: '900px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" styleClass="machine-detail-modal">
                     <ng-template pTemplate="header">
                         <div class="w-full text-center">
                             @if (selectedMaquina(); as m) {
@@ -284,15 +274,9 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                     }
                 </p-dialog>
 
-                <p-dialog [(visible)]="displayTerceroDialog" [modal]="true" [style]="{width: '1000px', 'max-width': '95vw'}"
-                    [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" header="Detalle del Cliente">
+                <p-dialog [(visible)]="displayTerceroDialog" [modal]="true" [style]="{ width: '1000px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" header="Detalle del Cliente">
                     @if (selectedTercero(); as t) {
-                        <app-tercero-form 
-                            [terceroId]="t.id" 
-                            [isViewMode]="true"
-                            [showLandingAccess]="false"
-                            (onCancel)="displayTerceroDialog.set(false)">
-                        </app-tercero-form>
+                        <app-tercero-form [terceroId]="t.id" [isViewMode]="true" [showLandingAccess]="false" (onCancel)="displayTerceroDialog.set(false)"> </app-tercero-form>
                     }
                 </p-dialog>
             } @else {
@@ -322,12 +306,12 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
             }
 
             .text-brand-yellow {
-                color: #FDB831 !important;
+                color: #fdb831 !important;
             }
 
             .bg-brand-yellow {
-                background-color: #FDB831 !important;
-                color: #0C0E0F !important;
+                background-color: #fdb831 !important;
+                color: #0c0e0f !important;
             }
 
             .btn-pill {
@@ -343,8 +327,8 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                 justify-content: center;
 
                 &.btn-primary {
-                    background-color: #FDB831;
-                    color: #0C0E0F;
+                    background-color: #fdb831;
+                    color: #0c0e0f;
                     box-shadow: 0 4px 12px rgba(253, 184, 49, 0.3);
 
                     &:hover {
@@ -355,8 +339,8 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
 
                 &.btn-outline {
                     background-color: transparent;
-                    color: #FDB831;
-                    border: 2px solid #FDB831;
+                    color: #fdb831;
+                    border: 2px solid #fdb831;
 
                     &:hover {
                         background-color: rgba(253, 184, 49, 0.1);
@@ -385,7 +369,7 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                     border-radius: 64px;
                 }
                 .machine-table-header {
-                    background-color: #FDB831;
+                    background-color: #fdb831;
                     color: #000;
                     font-weight: bold;
                     padding: 0.5rem;
@@ -471,7 +455,7 @@ export class DetailComponent implements OnInit {
 
     viewMaquina(maquina: any): void {
         if (!maquina) return;
-        
+
         // Cargamos la máquina completa para asegurar que tenga los componentes
         this.maquinaService.getById(maquina.id).subscribe({
             next: (response: any) => {

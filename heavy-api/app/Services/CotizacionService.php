@@ -6,12 +6,15 @@ namespace App\Services;
 
 use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
+use App\Models\Empresa;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraReferencia;
 use App\Models\OrdenTrabajo;
+use App\Models\OrdenTrabajoReferencia;
 use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\PedidoReferenciaProveedor;
 use App\Models\TRM;
-use App\Models\Empresa;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
@@ -63,6 +66,7 @@ class CotizacionService
     {
         $total = $cotizacion->referenciasProveedores->sum(function ($item) {
             $prp = $item->pedidoReferenciaProveedor;
+
             return $prp ? $prp->cantidad * $prp->precio_unitario : 0;
         });
 
@@ -146,7 +150,7 @@ class CotizacionService
     {
         $pedido = $cotizacion->pedido;
 
-        OrdenTrabajo::create([
+        $ordenTrabajo = OrdenTrabajo::create([
             'user_id' => auth()->id(),
             'tercero_id' => $cotizacion->tercero_id,
             'pedido_id' => $pedido?->id,
@@ -161,6 +165,30 @@ class CotizacionService
             'archivo' => null,
             'motivo_cancelacion' => null,
         ]);
+
+        // Copiar referencias de la cotizacion a la orden de trabajo
+        foreach ($cotizacion->referenciasProveedores as $item) {
+            $prp = $item->pedidoReferenciaProveedor;
+            if (! $prp) {
+                continue;
+            }
+
+            // Buscar o crear el PedidoReferencia asociado
+            $pedidoReferencia = PedidoReferencia::where('pedido_id', $pedido?->id)
+                ->where('referencia_id', $prp->referencia_id)
+                ->first();
+
+            if ($pedidoReferencia) {
+                OrdenTrabajoReferencia::create([
+                    'orden_trabajo_id' => $ordenTrabajo->id,
+                    'pedido_referencia_id' => $pedidoReferencia->id,
+                    'cantidad' => $prp->cantidad,
+                    'cantidad_recibida' => 0,
+                    'estado' => 'Pendiente',
+                    'recibido' => false,
+                ]);
+            }
+        }
     }
 
     /**
@@ -235,7 +263,7 @@ class CotizacionService
     {
         $cotizacion->update([
             'estado' => 'Rechazada',
-            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '') . "\nRechazo: " . $motivo) : $cotizacion->observaciones,
+            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '')."\nRechazo: ".$motivo) : $cotizacion->observaciones,
         ]);
 
         return $cotizacion;
@@ -268,9 +296,35 @@ class CotizacionService
     }
 
     /**
+     * Generar PDF de la orden de trabajo
+     */
+    public function generarPDFOrdenTrabajo(OrdenTrabajo $ordenTrabajo)
+    {
+        $ordenTrabajo->load([
+            'tercero.city',
+            'pedido.maquina',
+            'cotizacion.user',
+            'transportadora',
+            'direccion',
+            'referencias.pedidoReferencia.referencia.articulo',
+            'referencias.pedidoReferencia.referencia.marca',
+        ]);
+
+        // Priorizar Heavymarket (siglas HM o ID 2)
+        $empresa = Empresa::where('siglas', 'HM')->first() ?? Empresa::where('id', 2)->first() ?? Empresa::first();
+
+        $pdf = Pdf::loadView('pdf.orden_trabajo', [
+            'ordenTrabajo' => $ordenTrabajo,
+            'empresa' => $empresa,
+        ]);
+
+        return $pdf;
+    }
+
+    /**
      * Finalizar el proceso de costeo y generar la cotización
      *
-     * @param array $items Seleccionados (IDs de pedido_referencia_proveedor)
+     * @param  array  $items  Seleccionados (IDs de pedido_referencia_proveedor)
      */
     public function finalizarCosteo(Pedido $pedido, array $items, int $userId): Cotizacion
     {
@@ -295,7 +349,7 @@ class CotizacionService
                 ]);
 
                 // Sumar al total (asumiendo que el precio ya está en el proveedor)
-                $prov = \App\Models\PedidoReferenciaProveedor::find($itemData['id']);
+                $prov = PedidoReferenciaProveedor::find($itemData['id']);
                 if ($prov) {
                     $total += $prov->valor_total;
                 }
