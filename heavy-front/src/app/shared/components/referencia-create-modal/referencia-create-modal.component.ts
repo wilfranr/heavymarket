@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -23,20 +23,7 @@ import { Articulo } from '../../../core/models/articulo.model';
 @Component({
     selector: 'app-referencia-create-modal',
     standalone: true,
-    imports: [
-        CommonModule,
-        ReactiveFormsModule,
-        DialogModule,
-        ButtonModule,
-        InputTextModule,
-        TextareaModule,
-        SelectModule,
-        ToastModule,
-        InputGroupModule,
-        InputGroupAddonModule,
-        TagModule,
-        TooltipModule
-    ],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TagModule, TooltipModule],
     templateUrl: './referencia-create-modal.component.html',
     styles: [],
     providers: [MessageService]
@@ -50,15 +37,17 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
 
     @Input() visible: boolean = false;
     @Input() title: string = 'Crear Nueva Referencia';
-    @Input() articuloId?: number; // Artículo al que se asociará automáticamente
+    @Input() articuloId?: number | null; // Artículo al que se asociará automáticamente
+    @Input() marcaId?: number | null; // Marca que se pre-seleccionará
+    @Input() showArticuloField: boolean = true; // Controla si se muestra el campo de artículo
 
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onReferenciaCreated = new EventEmitter<any>();
 
     referenciaForm!: FormGroup;
     loading = false;
-    marcas: Lista[] = [];
-    articulos: Articulo[] = [];
+    marcas = signal<Lista[]>([]);
+    articulos = signal<Articulo[]>([]);
 
     ngOnInit(): void {
         this.initForm();
@@ -84,7 +73,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     private cargarMarcas(): void {
         this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
             next: (items) => {
-                this.marcas = items;
+                this.marcas.set(items);
             }
         });
     }
@@ -92,14 +81,19 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     private cargarArticulos(): void {
         this.articuloService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
-                this.articulos = response.data;
+                this.articulos.set(response.data);
             }
         });
     }
 
     resetForm(): void {
         if (this.referenciaForm) {
-            this.referenciaForm.reset();
+            this.referenciaForm.reset({
+                referencia: '',
+                marca_id: this.marcaId || null,
+                articulo_id: this.articuloId || null,
+                comentario: ''
+            });
         }
     }
 

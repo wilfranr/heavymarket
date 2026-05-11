@@ -428,4 +428,4 @@
 <app-lista-create-modal [(visible)]="showListaModal" [tipoDefault]="currentListaTipo" [title]="'Nuevo Item: ' + currentListaTipo" (onListaCreated)="onListaGeneralCreated($event)"> </app-lista-create-modal>
 
 <!-- Modal para crear nueva Referencia sobre la marcha -->
-<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>
+<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [showArticuloField]="false" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>

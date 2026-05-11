@@ -1,19 +1,13 @@
 <p-toast />
-<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '450px' }" [draggable]="false"
-    [resizable]="false" (onHide)="closeDialog()">
-
-    <div class="mb-4 text-gray-400 text-sm">
-        Crea una nueva referencia y será asociada al artículo correspondiente
-    </div>
+<p-dialog [(visible)]="visible" [header]="title" [modal]="true" [style]="{ width: '450px' }" [draggable]="false" [resizable]="false" (onHide)="closeDialog()">
+    <div class="mb-4 text-gray-400 text-sm">Crea una nueva referencia y será asociada al artículo correspondiente</div>
 
     <form [formGroup]="referenciaForm" (ngSubmit)="saveReferencia()">
         <div class="grid grid-cols-1 gap-4">
-            
             <!-- Referencia -->
             <div>
                 <label for="referencia" class="block mb-2 font-semibold">Código / Referencia<span class="text-red-500">*</span></label>
-                <input id="referencia" pInputText formControlName="referencia" 
-                       placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
+                <input id="referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
                 @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
                     <small class="text-red-500">El código es requerido</small>
                 }
@@ -22,26 +16,32 @@
             <!-- Marca / fabricante (listas Marca y Fabricantes) -->
             <div>
                 <label for="marca_id" class="block mb-2 font-semibold">Marca / fabricante<span class="text-red-500">*</span></label>
-                <p-select id="marca_id" [options]="marcas" formControlName="marca_id" optionLabel="nombre" optionValue="id"
-                    placeholder="Marca o fabricante" [filter]="true" filterBy="nombre,definicion"
-                    styleClass="w-full" appendTo="body">
-                </p-select>
+                <p-select id="marca_id" [options]="marcas()" formControlName="marca_id" optionLabel="nombre" optionValue="id" placeholder="Marca o fabricante" [filter]="true" filterBy="nombre,definicion" styleClass="w-full" appendTo="body"> </p-select>
                 @if (referenciaForm.get('marca_id')?.touched && referenciaForm.get('marca_id')?.invalid) {
                     <small class="text-red-500">La marca es requerida</small>
                 }
             </div>
 
             <!-- Artículo -->
-            @if (!articuloId) {
+            @if (showArticuloField && !articuloId) {
                 <div>
                     <label for="articulo_id" class="block mb-2 font-semibold">Artículo Relacionado (Opcional)</label>
-                    <p-select id="articulo_id" [options]="articulos" formControlName="articulo_id" optionLabel="descripcionEspecifica"
-                        optionValue="id" placeholder="Vincule un artículo" [filter]="true"
-                        filterBy="descripcionEspecifica,definicion" styleClass="w-full" appendTo="body">
+                    <p-select
+                        id="articulo_id"
+                        [options]="articulos()"
+                        formControlName="articulo_id"
+                        optionLabel="descripcionEspecifica"
+                        optionValue="id"
+                        placeholder="Vincule un artículo"
+                        [filter]="true"
+                        filterBy="descripcionEspecifica,definicion"
+                        styleClass="w-full"
+                        appendTo="body"
+                    >
                         <ng-template let-articulo pTemplate="item">
                             <div class="flex flex-col">
                                 <span class="font-medium text-xs">{{ articulo.definicion }}</span>
-                                <small class="text-gray-500" style="font-size: 10px;">{{ articulo.descripcionEspecifica }}</small>
+                                <small class="text-gray-500" style="font-size: 10px">{{ articulo.descripcionEspecifica }}</small>
                             </div>
                         </ng-template>
                     </p-select>
@@ -51,8 +51,7 @@
             <!-- Comentario -->
             <div>
                 <label for="comentario" class="block mb-2 font-semibold">Comentario</label>
-                <textarea id="comentario" pTextarea formControlName="comentario" rows="3" 
-                          placeholder="Detalles adicionales" class="w-full resize-none"></textarea>
+                <textarea id="comentario" pTextarea formControlName="comentario" rows="3" placeholder="Detalles adicionales" class="w-full resize-none"></textarea>
             </div>
         </div>
 
