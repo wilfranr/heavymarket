@@ -1,4 +1,4 @@
-import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList, signal, computed } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, HostListener, ViewChildren, QueryList, signal, computed, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Navbar } from '../../landing/components/navbar/navbar';
@@ -11,7 +11,8 @@ import { Router, RouterModule } from '@angular/router';
     standalone: true,
     imports: [CommonModule, Navbar, FooterSection, FormsModule, RouterModule],
     templateUrl: './products.html',
-    styleUrls: ['../../../assets/css/products.css']
+    styleUrls: ['../../../assets/css/landing.css', '../../../assets/css/products.css'],
+    encapsulation: ViewEncapsulation.None
 })
 export class Products implements OnInit, AfterViewInit {
     categories = signal<Category[]>([]);

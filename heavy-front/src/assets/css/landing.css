@@ -107,10 +107,12 @@ app-banner {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
+    gap: 24px;
     padding: 0px 5%;
     width: 100%;
     max-width: 1440px;
     height: 100%;
+    min-width: 0;
 }
 
 /* Logo completo horizontal */
@@ -120,11 +122,10 @@ app-banner {
     align-items: center;
     padding: 0px;
     gap: 2.34px;
-    margin: 0 auto;
+    margin: 0;
     width: 229.74px;
     height: 30.65px;
-    flex: none;
-    flex-grow: 0;
+    flex: 0 0 auto;
 }
 
 .logo-image {
@@ -139,12 +140,13 @@ app-banner {
     flex-direction: row;
     align-items: center;
     padding: 0px;
-    gap: 32px;
-    margin: 0 auto;
-    width: 798px;
+    gap: 24px;
+    margin: 0;
+    width: auto;
+    min-width: 0;
     height: 44px;
-    flex: none;
-    flex-grow: 0;
+    flex: 1 1 auto;
+    justify-content: flex-end;
 }
 
 /* Column - Columna de enlaces */
@@ -153,101 +155,49 @@ app-banner {
     flex-direction: row;
     align-items: center;
     padding: 0px;
-    gap: 32px;
-    width: 667px;
+    gap: 24px;
+    width: auto;
+    min-width: 0;
     height: 44px;
-    flex: none;
-    flex-grow: 0;
+    flex: 0 1 auto;
 }
 
-/* Frame 12 - Primer enlace */
-.navbar-link-frame:nth-child(1) {
+/* Contenedor de cada enlace del menú */
+.navbar-link-frame {
     display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    width: 181px;
-    height: 44px;
-    flex: none;
-    flex-grow: 0;
-}
-
-/* Ajuste para split button wrapper */
-.navbar-link-frame.products-menu-wrapper {
-    display: inline-flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     padding: 10px;
     gap: 0;
     width: auto;
+    min-width: 0;
     height: 44px;
-    flex: none;
-    flex-grow: 0;
+    flex: 0 0 auto;
+}
+
+.navbar-link-frame.products-menu-wrapper {
     position: relative;
-}
-
-/* Frame 12 - Segundo enlace */
-.navbar-link-frame:nth-child(2) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    width: 122px;
-    height: 44px;
-    flex: none;
-    flex-grow: 0;
-}
-
-/* Frame 13 - Tercer enlace */
-.navbar-link-frame:nth-child(3) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    width: 144px;
-    height: 44px;
-    flex: none;
-    flex-grow: 0;
-}
-
-/* Frame 14 - Cuarto enlace */
-.navbar-link-frame:nth-child(4) {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 10px;
-    gap: 10px;
-    width: 124px;
-    height: 44px;
-    flex: none;
-    flex-grow: 0;
 }
 
 /* Link Two */
 .navbar-link {
     display: flex;
     flex-direction: row;
-    align-items: flex-start;
+    align-items: center;
+    justify-content: center;
     padding: 0px;
-    gap: 10px;
+    gap: 0;
+    width: auto;
+    height: 24px;
     flex: none;
-    align-self: stretch;
-    flex-grow: 0;
     text-decoration: none;
 }
 
-/* Link text - Primer enlace */
-.navbar-link-frame:nth-child(1) .link-text {
-    width: 161px;
-    height: 24px;
+.navbar-link .link-text {
+    width: auto;
+    max-width: none;
+    height: auto;
     font-family: 'Figtree', sans-serif;
     font-style: normal;
     font-weight: 600;
@@ -255,98 +205,14 @@ app-banner {
     line-height: 24px;
     letter-spacing: -0.008em;
     color: #ffffff;
+    white-space: nowrap;
     flex: none;
-    flex-grow: 0;
     transition: color 0.2s ease;
-}
-
-/* Link text - Segundo enlace */
-.navbar-link-frame:nth-child(2) .link-text {
-    width: 102px;
-    height: 24px;
-    font-family: 'Figtree', sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: -0.008em;
-    color: #ffffff;
-    flex: none;
-    flex-grow: 0;
-    transition: color 0.2s ease;
-}
-
-/* Link text - Tercer enlace */
-.navbar-link-frame:nth-child(3) .link-text {
-    width: 124px;
-    height: 24px;
-    font-family: 'Figtree', sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: -0.008em;
-    color: #ffffff;
-    flex: none;
-    flex-grow: 0;
-    transition: color 0.2s ease;
-}
-
-/* Link text - Cuarto enlace */
-.navbar-link-frame:nth-child(4) .link-text {
-    width: 104px;
-    height: 24px;
-    font-family: 'Figtree', sans-serif;
-    font-style: normal;
-    font-weight: 600;
-    font-size: 18px;
-    line-height: 24px;
-    letter-spacing: -0.008em;
-    color: #ffffff;
-    flex: none;
-    flex-grow: 0;
-    transition: color 0.2s ease;
-}
-
-/* Link Two - Ajustes de ancho según el frame */
-.navbar-link-frame:nth-child(1) .navbar-link {
-    width: 161px;
-    height: 24px;
-}
-
-.navbar-link-frame:nth-child(2) .navbar-link {
-    width: 102px;
-    height: 24px;
-}
-
-.navbar-link-frame:nth-child(3) .navbar-link {
-    width: 124px;
-    height: 24px;
-}
-
-.navbar-link-frame:nth-child(4) .navbar-link {
-    width: 104px;
-    height: 24px;
 }
 
 /* Hover effects */
-.navbar-link-frame:hover .navbar-link .link-text {
-    color: #fdb831;
-}
-
-.navbar-link-frame:nth-child(1):hover .link-text {
-    color: #fdb831;
-}
-
-.navbar-link-frame:nth-child(2):hover .link-text {
-    color: #fdb831;
-}
-
-.navbar-link-frame:nth-child(3):hover .link-text {
-    color: #fdb831;
-}
-
-.navbar-link-frame:nth-child(4):hover .link-text {
+.navbar-link-frame:hover .navbar-link .link-text,
+.navbar-link-frame:hover .link-text {
     color: #fdb831;
 }
 
@@ -360,8 +226,7 @@ app-banner {
     gap: 16px;
     width: auto;
     height: 40px;
-    flex: none;
-    flex-grow: 0;
+    flex: 0 0 auto;
 }
 
 /* Button */
@@ -2301,8 +2166,9 @@ a.contact-email:hover {
         gap: 16px;
     }
 
-    .navbar-link-frame .link-text {
+    .navbar-link .link-text {
         font-size: 16px;
+        white-space: nowrap;
     }
 
     .carousel-wrapper {
@@ -2624,10 +2490,12 @@ a.contact-email:hover {
     .navbar-link-frame {
         width: 100%;
         height: auto;
+        justify-content: flex-start;
     }
 
-    .navbar-link-frame .link-text {
+    .navbar-link .link-text {
         font-size: 16px;
+        white-space: normal;
     }
 
     .navbar-actions {

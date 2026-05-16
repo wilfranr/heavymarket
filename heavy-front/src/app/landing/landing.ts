@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewEncapsulation } from '@angular/core';
 import { Navbar } from './components/navbar/navbar';
 import { Carousel } from './components/carousel/carousel';
 import { BrandsSection } from './components/brands-section/brands-section';
@@ -15,7 +15,8 @@ import { TermsModalComponent } from './components/terms-modal/terms-modal.compon
     selector: 'app-landing',
     imports: [Navbar, Carousel, BrandsSection, QuoteSection, WhoWeAreSection, ValuesSection, StepsSection, SystemsSection, FooterSection, TermsModalComponent],
     templateUrl: './landing.html',
-    styles: ``
+    styleUrls: ['../../assets/css/landing.css'],
+    encapsulation: ViewEncapsulation.None
 })
 export class Landing {
     showTerms = false;

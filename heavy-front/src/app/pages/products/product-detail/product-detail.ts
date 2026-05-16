@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Navbar } from '../../../landing/components/navbar/navbar';
 import { FooterSection } from '../../../landing/components/footer-section/footer-section';
@@ -10,7 +10,8 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
     standalone: true,
     imports: [CommonModule, Navbar, FooterSection, RouterModule],
     templateUrl: './product-detail.html',
-    styleUrls: ['../../../../assets/css/product-detail.css']
+    styleUrls: ['../../../../assets/css/landing.css', '../../../../assets/css/product-detail.css'],
+    encapsulation: ViewEncapsulation.None
 })
 export class ProductDetail implements OnInit {
     categorySlug: string = '';

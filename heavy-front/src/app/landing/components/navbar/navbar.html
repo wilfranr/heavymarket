@@ -50,7 +50,7 @@
                                                     @for (sub of category.subcategorias | slice:0:getHalf(category.subcategorias.length); track sub.slug) {
                                                     <div class="dropdown-blog-item" [routerLink]="['/productos', category.slug, sub.slug]">
                                                         <div class="dropdown-blog-image">
-                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre" />
+                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre" width="120" height="80" loading="lazy" decoding="async" />
                                                         </div>
                                                         <div class="dropdown-blog-content">
                                                             <div class="dropdown-blog-text">
@@ -71,7 +71,7 @@
                                                     @for (sub of category.subcategorias | slice:getHalf(category.subcategorias.length); track sub.slug) {
                                                     <div class="dropdown-blog-item" [routerLink]="['/productos', category.slug, sub.slug]">
                                                         <div class="dropdown-blog-image">
-                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre" />
+                                                            <img [src]="sub.imagen_url" [alt]="sub.nombre" width="120" height="80" loading="lazy" decoding="async" />
                                                         </div>
                                                         <div class="dropdown-blog-content">
                                                             <div class="dropdown-blog-text">
@@ -225,7 +225,7 @@
                             @if (category.subcategorias && category.subcategorias.length > 0) { @for (sub of category.subcategorias; track sub.slug) {
                             <div class="mobile-product-card" [routerLink]="['/productos', category.slug, sub.slug]" (click)="closeMobileMenu()">
                                 <div class="mobile-product-image">
-                                    <img [src]="sub.imagen_url" [alt]="sub.nombre" />
+                                    <img [src]="sub.imagen_url" [alt]="sub.nombre" width="120" height="80" loading="lazy" decoding="async" />
                                 </div>
                                 <div class="mobile-product-info">
                                     <h5 class="mobile-product-name">{{ sub.nombre }}</h5>

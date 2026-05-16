@@ -1,9 +1,8 @@
 import { Routes } from '@angular/router';
 import { AppLayout } from './app/layout/component/app.layout';
-import { Dashboard } from './app/pages/dashboard/dashboard';
 import { Documentation } from './app/pages/documentation/documentation';
-import { Landing } from './app/landing/landing';
 import { Products } from './app/pages/products/products';
+import { appStoreProviders } from './app/core/config/app-store.providers';
 import { ProductDetail } from './app/pages/products/product-detail/product-detail';
 import { Notfound } from './app/pages/notfound/notfound';
 import { authGuard } from './app/core/auth/guards/auth.guard';
@@ -16,7 +15,8 @@ const noVendedorRoles = ['super_admin', 'Administrador', 'Analista', 'analista']
 export const appRoutes: Routes = [
     {
         path: '',
-        component: Landing
+        loadComponent: () => import('./app/landing/landing').then((m) => m.Landing),
+        data: { preload: true }
     },
     {
         path: 'productos',
@@ -28,14 +28,20 @@ export const appRoutes: Routes = [
     },
     {
         path: 'cotizar',
-        loadComponent: () => import('./app/pages/cotizar/cotizar').then((m) => m.Cotizar)
+        loadComponent: () => import('./app/pages/cotizar/cotizar').then((m) => m.Cotizar),
+        data: { preload: true }
     },
     {
         path: 'app',
         component: AppLayout,
+        providers: [...appStoreProviders],
+        data: { preload: false },
         canActivate: [authGuard],
         children: [
-            { path: '', component: Dashboard },
+            {
+                path: '',
+                loadComponent: () => import('./app/pages/dashboard/dashboard').then((m) => m.Dashboard)
+            },
             { path: 'uikit', loadChildren: () => import('./app/pages/uikit/uikit.routes'), canActivate: [roleGuard], data: { roles: adminRoles } },
             { path: 'documentation', component: Documentation, canActivate: [roleGuard], data: { roles: adminRoles } },
             { path: 'pages', loadChildren: () => import('./app/pages/pages.routes'), canActivate: [roleGuard], data: { roles: adminRoles } },
@@ -153,7 +159,8 @@ export const appRoutes: Routes = [
     {
         path: 'provider',
         component: AppLayout,
-        canActivate: [authGuard], // Cambiaré esto a providerGuard más adelante si es necesario, pero por ahora el authGuard base asegura que haya un token.
+        providers: [...appStoreProviders],
+        canActivate: [authGuard],
         loadChildren: () => import('./app/features/provider-portal/provider-portal.routes').then((m) => m.providerPortalRoutes)
     },
     // { path: 'landing', component: Landing },

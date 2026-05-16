@@ -21,6 +21,15 @@ class LandingBrandImageService
      */
     public function logoMeta(Lista $lista, int $maxWidth = self::DEFAULT_MAX_WIDTH, int $maxHeight = self::DEFAULT_MAX_HEIGHT): ?array
     {
+        $source = $this->resolveSourcePath($lista);
+        if ($source === null) {
+            return null;
+        }
+
+        $maxWidth = max(80, min(560, $maxWidth));
+        $maxHeight = max(40, min(280, $maxHeight));
+        $version = substr(md5($source.filemtime($source)."{$maxWidth}x{$maxHeight}"), 0, 12);
+
         $path = $this->getOrCreateThumbnail($lista, $maxWidth, $maxHeight);
         if ($path === null) {
             return null;
@@ -32,7 +41,7 @@ class LandingBrandImageService
         }
 
         return [
-            'url' => url("v1/landing/brands/{$lista->id}/logo"),
+            'url' => url("v1/landing/brands/{$lista->id}/logo")."?v={$version}",
             'width' => $info[0],
             'height' => $info[1],
         ];

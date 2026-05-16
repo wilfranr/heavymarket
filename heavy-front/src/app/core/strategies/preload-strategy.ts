@@ -4,23 +4,18 @@ import { Observable, of, timer } from 'rxjs';
 import { mergeMap } from 'rxjs/operators';
 
 /**
- * Estrategia de precarga personalizada
- * Precarga módulos lazy después de un delay, mejorando la experiencia inicial
+ * Precarga opt-in: solo rutas con data.preload === true (p. ej. landing, cotizar).
+ * Evita cargar chunks de /app sin el contexto de effects y sin activar inject(Store) en preload.
  */
 @Injectable({
     providedIn: 'root'
 })
 export class CustomPreloadStrategy implements PreloadingStrategy {
-    /**
-     * Precarga módulos con delay de 2 segundos
-     * Los módulos con data.preload=false no se precargan
-     */
-    preload(route: Route, load: () => Observable<any>): Observable<any> {
-        if (route.data && route.data['preload'] === false) {
+    preload(route: Route, load: () => Observable<unknown>): Observable<unknown> {
+        if (route.data?.['preload'] !== true) {
             return of(null);
         }
 
-        // Delay de 2 segundos para no afectar la carga inicial
         return timer(2000).pipe(mergeMap(() => load()));
     }
 }

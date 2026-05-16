@@ -3,11 +3,8 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { heavymarketImageLoader } from './app/core/image/heavymarket-image.loader';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
-import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling, withPreloading } from '@angular/router';
+import { provideRouter, withInMemoryScrolling, withPreloading } from '@angular/router';
 import { CustomPreloadStrategy } from './app/core/strategies/preload-strategy';
-import { provideStore } from '@ngrx/store';
-import { provideEffects } from '@ngrx/effects';
-import { provideStoreDevtools } from '@ngrx/store-devtools';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import Aura from '@primeuix/themes/aura';
 import { definePreset } from '@primeuix/themes';
@@ -15,6 +12,10 @@ import { providePrimeNG } from 'primeng/config';
 import { LOCALE_ID } from '@angular/core';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
+import { appRoutes } from './app.routes';
+import { rootStoreProviders } from './app/core/config/app-store.reducers';
+import { authInterceptor } from './app/core/auth/interceptors/auth.interceptor';
+import { errorInterceptor } from './app/core/auth/interceptors/error.interceptor';
 
 registerLocaleData(localeEs);
 
@@ -67,94 +68,15 @@ const MyPreset = definePreset(Aura, {
         }
     }
 });
-import { appRoutes } from './app.routes';
-import { authInterceptor } from './app/core/auth/interceptors/auth.interceptor';
-import { errorInterceptor } from './app/core/auth/interceptors/error.interceptor';
-import { authReducer } from './app/store/auth/reducers/auth.reducer';
-import { pedidosReducer } from './app/store/pedidos/reducers/pedidos.reducer';
-import { tercerosReducer } from './app/store/terceros/reducers/terceros.reducer';
-import { listasReducer } from './app/store/listas/reducers/listas.reducer';
-import { sistemasReducer } from './app/store/sistemas/reducers/sistemas.reducer';
-import { referenciasReducer } from './app/store/referencias/reducers/referencias.reducer';
-import { maquinasReducer } from './app/store/maquinas/reducers/maquinas.reducer';
-import { articulosReducer } from './app/store/articulos/reducers/articulos.reducer';
-import { cotizacionesReducer } from './app/store/cotizaciones/reducers/cotizaciones.reducer';
-import { ordenesCompraReducer } from './app/store/ordenes-compra/reducers/ordenes-compra.reducer';
-import { ordenesTrabajoReducer } from './app/store/ordenes-trabajo/reducers/ordenes-trabajo.reducer';
-import { empresasReducer } from './app/store/empresas/reducers/empresas.reducer';
-import { categoriasReducer } from './app/store/categorias/reducers/categorias.reducer';
-import { contactosReducer } from './app/store/contactos/reducers/contactos.reducer';
-import { direccionesReducer } from './app/store/direcciones/reducers/direcciones.reducer';
-import { transportadorasReducer } from './app/store/transportadoras/reducers/transportadoras.reducer';
-import { trmsReducer } from './app/store/trms/reducers/trms.reducer';
-import { AuthEffects } from './app/store/auth/effects/auth.effects';
-import { PedidosEffects } from './app/store/pedidos/effects/pedidos.effects';
-import { TercerosEffects } from './app/store/terceros/effects/terceros.effects';
-import { ListasEffects } from './app/store/listas/effects/listas.effects';
-import { SistemasEffects } from './app/store/sistemas/effects/sistemas.effects';
-import { ReferenciasEffects } from './app/store/referencias/effects/referencias.effects';
-import { MaquinasEffects } from './app/store/maquinas/effects/maquinas.effects';
-import { ArticulosEffects } from './app/store/articulos/effects/articulos.effects';
-import { CotizacionesEffects } from './app/store/cotizaciones/effects/cotizaciones.effects';
-import { OrdenesCompraEffects } from './app/store/ordenes-compra/effects/ordenes-compra.effects';
-import { OrdenesTrabajoEffects } from './app/store/ordenes-trabajo/effects/ordenes-trabajo.effects';
-import { EmpresasEffects } from './app/store/empresas/effects/empresas.effects';
-import { CategoriasEffects } from './app/store/categorias/effects/categorias.effects';
-import { ContactosEffects } from './app/store/contactos/effects/contactos.effects';
-import { DireccionesEffects } from './app/store/direcciones/effects/direcciones.effects';
-import { TransportadorasEffects } from './app/store/transportadoras/effects/transportadoras.effects';
-import { TRMsEffects } from './app/store/trms/effects/trms.effects';
-import { usersReducer } from './app/store/users/reducers/users.reducer';
-import { UsersEffects } from './app/store/users/effects/users.effects';
 
 export const appConfig: ApplicationConfig = {
     providers: [
         provideZonelessChangeDetection(),
-        provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withEnabledBlockingInitialNavigation(), withPreloading(CustomPreloadStrategy)),
+        provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withPreloading(CustomPreloadStrategy)),
         provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor])),
+        ...rootStoreProviders,
         provideAnimationsAsync(),
         providePrimeNG({ theme: { preset: MyPreset, options: { darkModeSelector: '.app-dark' } } }),
-        provideStore({
-            auth: authReducer,
-            pedidos: pedidosReducer,
-            terceros: tercerosReducer,
-            listas: listasReducer,
-            sistemas: sistemasReducer,
-            referencias: referenciasReducer,
-            maquinas: maquinasReducer,
-            articulos: articulosReducer,
-            cotizaciones: cotizacionesReducer,
-            ordenesCompra: ordenesCompraReducer,
-            ordenesTrabajo: ordenesTrabajoReducer,
-            empresas: empresasReducer,
-            categorias: categoriasReducer,
-            contactos: contactosReducer,
-            direcciones: direccionesReducer,
-            transportadoras: transportadorasReducer,
-            trms: trmsReducer,
-            users: usersReducer
-        }),
-        provideEffects([
-            AuthEffects,
-            PedidosEffects,
-            TercerosEffects,
-            ListasEffects,
-            SistemasEffects,
-            ReferenciasEffects,
-            MaquinasEffects,
-            ArticulosEffects,
-            CotizacionesEffects,
-            OrdenesCompraEffects,
-            OrdenesTrabajoEffects,
-            EmpresasEffects,
-            CategoriasEffects,
-            ContactosEffects,
-            DireccionesEffects,
-            TransportadorasEffects,
-            TRMsEffects,
-            UsersEffects
-        ]),
-        provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService,
         { provide: LOCALE_ID, useValue: 'es' },

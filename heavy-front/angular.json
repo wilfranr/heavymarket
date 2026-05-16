@@ -31,9 +31,7 @@
                             "src/assets"
                         ],
                         "styles": [
-                            "src/assets/styles.scss",
-                            "src/assets/css/landing.css",
-                            "src/assets/css/cotizador.css"
+                            "src/assets/styles.scss"
                         ],
                         "scripts": []
                     },
