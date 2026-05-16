@@ -1,15 +1,11 @@
 <div class="hm-brands-section">
     <div class="hm-brands-marquee">
         <div class="hm-brands-track">
-            @for (brand of brands; track brand.id) {
+            @for (brand of marqueeBrands(); track $index) {
             <div class="hm-brands-card">
-                <img [src]="brand.logo" [alt]="brand.nombre" class="hm-brands-img" />
-            </div>
-            }
-            <!-- Duplicate for seamless loop -->
-            @for (brand of brands; track 'copy-' + brand.id) {
-            <div class="hm-brands-card">
-                <img [src]="brand.logo" [alt]="brand.nombre" class="hm-brands-img" />
+                <div class="hm-brands-img-wrap">
+                    <img [src]="brand.logo" [alt]="brand.nombre" loading="lazy" decoding="async" class="hm-brands-img" />
+                </div>
             </div>
             }
         </div>

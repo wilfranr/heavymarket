@@ -3,8 +3,27 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Mail\NewContactLead;
+use App\Mail\QuoteRequestedAdmin;
+use App\Mail\QuoteRequestedClient;
+use App\Models\Articulo;
 use App\Models\CategoriaLanding;
+use App\Models\ClienteInteresado;
+use App\Models\Lista;
+use App\Models\Maquina;
+use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\PedidoReferenciaImagen;
+use App\Models\Referencia;
+use App\Models\Sistema;
+use App\Models\SubcategoriaLanding;
+use App\Models\Tercero;
+use App\Services\LandingBrandImageService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class LandingController extends Controller
 {
@@ -26,7 +45,7 @@ class LandingController extends Controller
      */
     public function machineTypesAdmin()
     {
-        return \App\Models\Lista::where('tipo', 'Categoría de Máquina')
+        return Lista::where('tipo', 'Categoría de Máquina')
             ->with(['children' => function ($q) {
                 $q->where('tipo', 'Tipo de Máquina')->orderBy('nombre');
             }])
@@ -73,19 +92,49 @@ class LandingController extends Controller
     /**
      * Obtener marcas para el carrusel de la landing
      */
-    public function brands()
+    public function brands(LandingBrandImageService $brandImages)
     {
-        $brands = \App\Models\Lista::where('tipo', 'Fabricantes')
+        $brands = Lista::query()
+            ->where('tipo', 'Fabricantes')
             ->orderBy('nombre')
             ->get();
 
-        return response()->json($brands);
+        return response()->json(
+            $brands
+                ->map(function (Lista $lista) use ($brandImages) {
+                    $meta = $brandImages->logoMeta($lista);
+                    if ($meta === null) {
+                        return null;
+                    }
+
+                    return [
+                        'id' => $lista->id,
+                        'nombre' => $lista->nombre,
+                        'logo' => $meta['url'],
+                        'logoWidth' => $meta['width'],
+                        'logoHeight' => $meta['height'],
+                    ];
+                })
+                ->filter()
+                ->values()
+        );
+    }
+
+    /**
+     * Logo optimizado para el carrusel de marcas (ancho máx. configurable vía ?w=).
+     */
+    public function brandLogo(Lista $lista, Request $request, LandingBrandImageService $brandImages)
+    {
+        $maxWidth = (int) $request->query('w', LandingBrandImageService::DEFAULT_MAX_WIDTH);
+        $maxHeight = (int) $request->query('h', LandingBrandImageService::DEFAULT_MAX_HEIGHT);
+
+        return $brandImages->streamLogo($lista, $maxWidth, $maxHeight);
     }
 
     public function quoteData()
     {
         // 1. Obtener Categorías de Máquina y sus Tipos desde la DB
-        $categoriesData = \App\Models\Lista::where('tipo', 'Categoría de Máquina')
+        $categoriesData = Lista::where('tipo', 'Categoría de Máquina')
             ->with(['children' => function ($q) {
                 $q->where('tipo', 'Tipo de Máquina')->orderBy('nombre');
             }])
@@ -93,13 +142,13 @@ class LandingController extends Controller
 
         $categoriesMap = [];
         foreach ($categoriesData as $cat) {
-            $slug = \Illuminate\Support\Str::slug($cat->nombre);
+            $slug = Str::slug($cat->nombre);
             $subcategorias = [];
 
             foreach ($cat->children->transform(function ($item) {
                 $imageUrl = null;
                 $rawFoto = $item->getRawOriginal('foto');
-                
+
                 if ($rawFoto) {
                     if (str_starts_with($rawFoto, 'http')) {
                         $imageUrl = $rawFoto;
@@ -123,7 +172,7 @@ class LandingController extends Controller
                     'nombre' => $item->nombre,
                     'descripcion' => $item->definicion,
                     'imagen_url' => $item->imagen_url,
-                    'slug' => \Illuminate\Support\Str::slug($item->nombre),
+                    'slug' => Str::slug($item->nombre),
                 ];
             }
 
@@ -152,22 +201,22 @@ class LandingController extends Controller
         }
 
         // 2. Fabricantes para el Formulario
-        $brands = \App\Models\Lista::where('tipo', 'Fabricantes')
+        $brands = Lista::where('tipo', 'Fabricantes')
             ->orderBy('nombre')
             ->get();
 
         // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
-        $allItemTypes = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+        $allItemTypes = Lista::where('tipo', 'Tipo de Artículo')
             ->select('id', 'nombre', 'foto')
             ->orderBy('nombre')
             ->get();
 
-        $defaultSystem = \App\Models\Sistema::where('nombre', 'Por Defecto')->first();
+        $defaultSystem = Sistema::where('nombre', 'Por Defecto')->first();
         if ($defaultSystem) {
             $defaultSystem->setRelation('listas', $allItemTypes);
         }
 
-        $otherSystems = \App\Models\Sistema::where('nombre', '!=', 'Por Defecto')
+        $otherSystems = Sistema::where('nombre', '!=', 'Por Defecto')
             ->with(['listas' => function ($query) {
                 $query->where('tipo', 'Tipo de Artículo')
                     ->select('listas.id', 'listas.nombre', 'listas.foto')
@@ -183,7 +232,7 @@ class LandingController extends Controller
         $systems = $systems->concat($otherSystems);
 
         // 4. Modelos (Distintos modelos de la tabla Maquinas)
-        $models = \App\Models\Maquina::select('modelo')
+        $models = Maquina::select('modelo')
             ->whereNotNull('modelo')
             ->distinct()
             ->orderBy('modelo')
@@ -226,7 +275,7 @@ class LandingController extends Controller
             'selectedSeries' => 'nullable|string',
         ]);
 
-        return \Illuminate\Support\Facades\DB::transaction(function () use ($request) {
+        return DB::transaction(function () use ($request) {
             $userData = $request->input('userData') ?? [];
             $authenticatedUser = $request->user(); // Usuario logueado via Sanctum (cliente registrado)
 
@@ -237,18 +286,18 @@ class LandingController extends Controller
             if ($authenticatedUser) {
                 // Cliente logueado - usar su usuario y tercero existente
                 $userId = $authenticatedUser->id;
-                $tercero = \App\Models\Tercero::where('user_id', $userId)->first();
+                $tercero = Tercero::where('user_id', $userId)->first();
             } else {
                 // Cliente no logueado - buscar por email
                 $email = $userData['email'] ?? null;
                 if ($email) {
-                    $tercero = \App\Models\Tercero::where('email', $email)->first();
+                    $tercero = Tercero::where('email', $email)->first();
                 }
             }
 
             // Crear tercero si no existe (para clientes no registrados)
             if (! $tercero && $userData['email'] ?? null) {
-                $tercero = \App\Models\Tercero::create([
+                $tercero = Tercero::create([
                     'nombre' => $userData['name'] ?? 'Sin nombre',
                     'email' => $userData['email'],
                     'telefono' => $userData['phone'] ?? null,
@@ -269,7 +318,7 @@ class LandingController extends Controller
             $fabricanteId = null;
             if ($request->filled('selectedBrand')) {
                 $brandName = trim($request->input('selectedBrand'));
-                $fabricante = \App\Models\Lista::where('tipo', 'Fabricantes')
+                $fabricante = Lista::where('tipo', 'Fabricantes')
                     ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($brandName)])
                     ->first();
                 $fabricanteId = $fabricante?->id;
@@ -284,13 +333,13 @@ class LandingController extends Controller
 
                 // Intento 1: Buscar por serie si se proporcionó una
                 if ($request->filled('selectedSeries')) {
-                    $maquina = \App\Models\Maquina::where('serie', $request->input('selectedSeries'))->first();
+                    $maquina = Maquina::where('serie', $request->input('selectedSeries'))->first();
                 }
 
                 // Intento 2: Si no hay serie, buscar una máquina idéntica ya asociada a este cliente
                 // Esto evita crear duplicados de máquinas "Por definir" para el mismo cliente
                 if (! $maquina) {
-                    $maquina = \App\Models\Maquina::whereHas('terceros', function ($q) use ($tercero) {
+                    $maquina = Maquina::whereHas('terceros', function ($q) use ($tercero) {
                         $q->where('tercero_id', $tercero->id);
                     })
                         ->where('tipo', $request->input('selectedType'))
@@ -301,7 +350,7 @@ class LandingController extends Controller
 
                 // Si no existe, crear una nueva máquina
                 if (! $maquina) {
-                    $maquina = \App\Models\Maquina::create([
+                    $maquina = Maquina::create([
                         'tipo' => $request->input('selectedType'),
                         'modelo' => $request->input('selectedModel') ?? 'Por definir',
                         'serie' => $request->input('selectedSeries'), // NULL si no existe
@@ -324,7 +373,7 @@ class LandingController extends Controller
 
             // 4. Crear el Pedido
             // Si hay usuario logueado, asignar user_id; si no, pedido sin asignar (para admins/analistas)
-            $pedido = \App\Models\Pedido::create([
+            $pedido = Pedido::create([
                 'tercero_id' => $tercero?->id,
                 'user_id' => $userId, // null si cliente no registrado
                 'estado' => 'Nuevo',
@@ -336,19 +385,19 @@ class LandingController extends Controller
 
             // 5. Procesar Ítems
             $itemsData = $request->input('items');
-            \Illuminate\Support\Facades\Log::info('Procesando items cotización:', ['count' => count($itemsData), 'data' => $itemsData]);
+            Log::info('Procesando items cotización:', ['count' => count($itemsData), 'data' => $itemsData]);
 
             foreach ($itemsData as $index => $itemData) {
                 $systemName = trim($itemData['system'] ?? '');
-                $sistema = \App\Models\Sistema::whereRaw('LOWER(nombre) = ?', [mb_strtolower($systemName)])->first()
-                    ?? \App\Models\Sistema::where('nombre', 'Por Defecto')->first();
+                $sistema = Sistema::whereRaw('LOWER(nombre) = ?', [mb_strtolower($systemName)])->first()
+                    ?? Sistema::where('nombre', 'Por Defecto')->first();
                 $sistemaId = $sistema?->id;
 
                 // Tipo de artículo = Lista (tipo "Tipo de Artículo") relacionada con este sistema
                 $description = trim($itemData['description'] ?? '');
                 $lista = null;
                 if ($sistemaId && $description !== '') {
-                    $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+                    $lista = Lista::where('tipo', 'Tipo de Artículo')
                         ->whereHas('sistemas', fn ($q) => $q->where('sistemas.id', $sistemaId))
                         ->whereRaw('LOWER(nombre) = ?', [mb_strtolower($description)])
                         ->first();
@@ -356,14 +405,14 @@ class LandingController extends Controller
 
                 // Fallback a "Por Defecto" si no se encuentra el tipo especificado
                 if (! $lista) {
-                    $lista = \App\Models\Lista::where('tipo', 'Tipo de Artículo')
+                    $lista = Lista::where('tipo', 'Tipo de Artículo')
                         ->whereRaw('LOWER(nombre) = ?', ['por defecto'])
                         ->first();
                 }
                 $listaId = $lista?->id;
 
                 // Articulo opcional (para Referencia) - por si existe definición coincidente
-                $articulo = \App\Models\Articulo::whereRaw('LOWER(definicion) = ?', [mb_strtolower($description)])
+                $articulo = Articulo::whereRaw('LOWER(definicion) = ?', [mb_strtolower($description)])
                     ->orWhereRaw('LOWER(descripcionEspecifica) = ?', [mb_strtolower($description)])
                     ->first();
                 $articuloId = $articulo?->id;
@@ -375,7 +424,7 @@ class LandingController extends Controller
 
                 if ($referenciaId) {
                     // Si ya existe el ID, aseguramos que tenga la marca de la cotización si es temporal o no tiene marca
-                    $referenciaExistente = \App\Models\Referencia::find($referenciaId);
+                    $referenciaExistente = Referencia::find($referenciaId);
                     if ($referenciaExistente && $fabricanteId) {
                         $updateData = [];
                         if (! $referenciaExistente->marca_id || ($referenciaExistente->es_temporal && $referenciaExistente->marca_id !== $fabricanteId)) {
@@ -389,10 +438,10 @@ class LandingController extends Controller
                     // Referencia del usuario (código libre); definicion en PedidoReferencia = solo esto
                     $referenceText = $referenceUser !== '' ? $referenceUser : ('Pendiente - '.$description);
 
-                    $referencia = \App\Models\Referencia::where('referencia', $referenceText)->first();
+                    $referencia = Referencia::where('referencia', $referenceText)->first();
 
                     if (! $referencia) {
-                        $referencia = \App\Models\Referencia::create([
+                        $referencia = Referencia::create([
                             'referencia' => strtoupper($referenceText),
                             'articulo_id' => $articuloId,
                             'marca_id' => $fabricanteId,
@@ -462,7 +511,7 @@ class LandingController extends Controller
                     $comentarioPedidoRef = 'Sin comentario adicional';
                 }
 
-                $pedidoRef = \App\Models\PedidoReferencia::create([
+                $pedidoRef = PedidoReferencia::create([
                     'pedido_id' => $pedido->id,
                     'referencia_id' => $referenciaId,
                     'sistema_id' => $sistemaId,
@@ -478,10 +527,10 @@ class LandingController extends Controller
 
                 // Registrar TODAS las imágenes en tabla de imágenes por ítem
                 foreach ($imagePaths as $path) {
-                    \App\Models\PedidoReferenciaImagen::create([
+                    PedidoReferenciaImagen::create([
                         'pedido_referencia_id' => $pedidoRef->id,
                         'imagen' => $path,
-                        'origen' => \App\Models\PedidoReferenciaImagen::ORIGEN_CLIENTE,
+                        'origen' => PedidoReferenciaImagen::ORIGEN_CLIENTE,
                     ]);
                 }
             }
@@ -490,13 +539,13 @@ class LandingController extends Controller
             try {
                 $pedido->load(['tercero', 'referencias.referencia', 'referencias.sistema']);
 
-                \Illuminate\Support\Facades\Mail::to($tercero->email)
-                    ->send(new \App\Mail\QuoteRequestedClient($pedido));
+                Mail::to($tercero->email)
+                    ->send(new QuoteRequestedClient($pedido));
 
-                \Illuminate\Support\Facades\Mail::to('comercial@heavymarket.net')
-                    ->send(new \App\Mail\QuoteRequestedAdmin($pedido));
+                Mail::to('comercial@heavymarket.net')
+                    ->send(new QuoteRequestedAdmin($pedido));
             } catch (\Exception $e) {
-                \Illuminate\Support\Facades\Log::error('Error enviando correos de cotización: '.$e->getMessage());
+                Log::error('Error enviando correos de cotización: '.$e->getMessage());
             }
 
             return response()->json([
@@ -521,7 +570,7 @@ class LandingController extends Controller
             'acepta_tratamiento_datos' => 'required|accepted',
         ]);
 
-        $clienteInteresado = \App\Models\ClienteInteresado::create([
+        $clienteInteresado = ClienteInteresado::create([
             ...$validated,
             'acepta_tratamiento_datos' => true,
             'estado' => 'nuevo',
@@ -529,10 +578,10 @@ class LandingController extends Controller
 
         try {
             // Send email to commercial team asynchronously (if queue is configured) or synchronously
-            \Illuminate\Support\Facades\Mail::to('comercial@heavymarket.net')
-                ->send(new \App\Mail\NewContactLead($clienteInteresado));
+            Mail::to('comercial@heavymarket.net')
+                ->send(new NewContactLead($clienteInteresado));
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Error enviando correo de nuevo lead de contacto: '.$e->getMessage());
+            Log::error('Error enviando correo de nuevo lead de contacto: '.$e->getMessage());
         }
 
         return response()->json([
@@ -599,7 +648,7 @@ class LandingController extends Controller
         $data = $validated;
         unset($data['imagen']);
 
-        $subcategoria = new \App\Models\SubcategoriaLanding($data);
+        $subcategoria = new SubcategoriaLanding($data);
 
         if ($request->hasFile('imagen')) {
             $subcategoria->imagen = $request->file('imagen')->store('landing', 'public');
@@ -610,14 +659,14 @@ class LandingController extends Controller
         return response()->json($subcategoria, 201);
     }
 
-    public function destroySubcategoria(\App\Models\SubcategoriaLanding $subcategoria)
+    public function destroySubcategoria(SubcategoriaLanding $subcategoria)
     {
         $subcategoria->delete();
 
         return response()->json(['message' => 'Subcategoría eliminada']);
     }
 
-    public function updateSubcategoria(Request $request, \App\Models\SubcategoriaLanding $subcategoria)
+    public function updateSubcategoria(Request $request, SubcategoriaLanding $subcategoria)
     {
         $validated = $request->validate([
             'nombre' => 'sometimes|string|max:255',
@@ -659,8 +708,8 @@ class LandingController extends Controller
      */
     public function contactLeads()
     {
-        $terceroEmails = \App\Models\Tercero::whereNotNull('email')->pluck('email')->toArray();
-        $leads = \App\Models\ClienteInteresado::whereNotIn('correo_electronico', $terceroEmails)
+        $terceroEmails = Tercero::whereNotNull('email')->pluck('email')->toArray();
+        $leads = ClienteInteresado::whereNotIn('correo_electronico', $terceroEmails)
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -676,7 +725,7 @@ class LandingController extends Controller
             'estado' => 'required|string|in:nuevo,contactado,descartado',
         ]);
 
-        $lead = \App\Models\ClienteInteresado::findOrFail($id);
+        $lead = ClienteInteresado::findOrFail($id);
         $lead->update(['estado' => $validated['estado']]);
 
         return response()->json([

@@ -1,6 +1,16 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { catchError, map } from 'rxjs/operators';
+import { of } from 'rxjs';
 import { LandingService } from '../../../core/services/landing';
+
+interface LandingBrandDto {
+    id: number;
+    nombre: string;
+    logo?: string;
+    foto?: string;
+}
 
 interface Brand {
     id: number;
@@ -14,34 +24,42 @@ interface Brand {
     imports: [CommonModule],
     templateUrl: './brands-section.html',
     styleUrl: './brands-section.scss',
-    encapsulation: ViewEncapsulation.None
+    encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class BrandsSection implements OnInit {
-    brands: Brand[] = [];
+export class BrandsSection {
+    private readonly landingService = inject(LandingService);
 
-    constructor(private landingService: LandingService) {}
+    readonly brands = toSignal(
+        this.landingService.getBrands().pipe(
+            map((data) => normalizeBrands(data)),
+            map((items) => shuffleBrands(items)),
+            catchError(() => of([] as Brand[]))
+        ),
+        { initialValue: [] as Brand[] }
+    );
 
-    ngOnInit() {
-        this.landingService.getBrands().subscribe((data) => {
-            const normalizedBrands: Brand[] = (data ?? [])
-                .map((brand) => ({
-                    id: brand.id,
-                    nombre: brand.nombre,
-                    // El backend expone la imagen como `foto`; mantenemos compatibilidad con `logo`.
-                    logo: brand.logo ?? brand.foto ?? ''
-                }))
-                .filter((brand) => !!brand.logo);
+    readonly marqueeBrands = computed(() => {
+        const items = this.brands();
+        return items.length > 0 ? [...items, ...items] : [];
+    });
+}
 
-            this.brands = this.shuffle(normalizedBrands);
-        });
+function normalizeBrands(data: LandingBrandDto[] | null | undefined): Brand[] {
+    return (data ?? [])
+        .map((brand) => ({
+            id: brand.id,
+            nombre: brand.nombre,
+            logo: brand.logo ?? brand.foto ?? ''
+        }))
+        .filter((brand) => !!brand.logo);
+}
+
+function shuffleBrands(array: Brand[]): Brand[] {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
     }
-
-    private shuffle(array: Brand[]): Brand[] {
-        const shuffled = [...array];
-        for (let i = shuffled.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-        }
-        return shuffled;
-    }
+    return shuffled;
 }

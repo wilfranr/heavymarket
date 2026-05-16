@@ -70,6 +70,7 @@ Route::prefix('v1')->group(function () {
     Route::get('/landing/navbar-data', [LandingController::class, 'navbarData']);
     Route::get('/landing/quote-data', [LandingController::class, 'quoteData']);
     Route::get('/landing/brands', [LandingController::class, 'brands']);
+    Route::get('/landing/brands/{lista}/logo', [LandingController::class, 'brandLogo']);
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote'])->middleware('auth:sanctum');
     Route::post('/landing/contact', [LandingController::class, 'submitContactForm']);
 

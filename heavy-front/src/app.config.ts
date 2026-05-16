@@ -1,4 +1,6 @@
+import { IMAGE_CONFIG, IMAGE_LOADER } from '@angular/common';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { heavymarketImageLoader } from './app/core/image/heavymarket-image.loader';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { provideRouter, withEnabledBlockingInitialNavigation, withInMemoryScrolling, withPreloading } from '@angular/router';
@@ -155,6 +157,13 @@ export const appConfig: ApplicationConfig = {
         provideStoreDevtools({ maxAge: 25, logOnly: false }),
         MessageService,
         ConfirmationService,
-        { provide: LOCALE_ID, useValue: 'es' }
+        { provide: LOCALE_ID, useValue: 'es' },
+        { provide: IMAGE_LOADER, useValue: heavymarketImageLoader },
+        {
+            provide: IMAGE_CONFIG,
+            useValue: {
+                breakpoints: [140, 280, 560]
+            }
+        }
     ]
 };
