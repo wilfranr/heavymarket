@@ -2,6 +2,9 @@
 
 use App\Models\Empresa;
 use Spatie\Permission\Models\Role;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 /**
  * Tests de Feature para EmpresaController
@@ -15,8 +18,8 @@ beforeEach(function () {
 });
 
 it('index devuelve lista paginada de empresas', function () {
-    Empresa::create(['nombre' => 'Empresa 1', 'siglas' => 'E1', 'celular' => '3001234567', 'email' => 'e1@test.com', 'nit' => '111']);
-    Empresa::create(['nombre' => 'Empresa 2', 'siglas' => 'E2', 'celular' => '3001234568', 'email' => 'e2@test.com', 'nit' => '222']);
+    Empresa::create(['nombre' => 'Empresa 1', 'siglas' => 'E1', 'celular' => '3001234567', 'email' => 'e1@test.com', 'nit' => '111', 'direccion' => 'Calle 1', 'representante' => 'Rep 1']);
+    Empresa::create(['nombre' => 'Empresa 2', 'siglas' => 'E2', 'celular' => '3001234568', 'email' => 'e2@test.com', 'nit' => '222', 'direccion' => 'Calle 2', 'representante' => 'Rep 2']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/empresas');
@@ -41,6 +44,8 @@ it('store crea una empresa exitosamente', function () {
             'nit' => '123456789-0',
             'email' => 'empresa@test.com',
             'celular' => '3001234567',
+            'direccion' => 'Calle Test',
+            'representante' => 'Representante Test',
         ]);
 
     $response->assertStatus(201)
@@ -52,7 +57,7 @@ it('store crea una empresa exitosamente', function () {
 });
 
 it('show devuelve una empresa especifica', function () {
-    $empresa = Empresa::create(['nombre' => 'Empresa Show', 'siglas' => 'ES', 'celular' => '3001234567', 'email' => 'show@test.com', 'nit' => '333']);
+    $empresa = Empresa::create(['nombre' => 'Empresa Show', 'siglas' => 'ES', 'celular' => '3001234567', 'email' => 'show@test.com', 'nit' => '333', 'direccion' => 'Calle Show', 'representante' => 'Rep Show']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/empresas/'.$empresa->id);
@@ -62,7 +67,7 @@ it('show devuelve una empresa especifica', function () {
 });
 
 it('update modifica una empresa', function () {
-    $empresa = Empresa::create(['nombre' => 'Original', 'siglas' => 'OR', 'celular' => '3001234567', 'email' => 'orig@test.com', 'nit' => '444']);
+    $empresa = Empresa::create(['nombre' => 'Original', 'siglas' => 'OR', 'celular' => '3001234567', 'email' => 'orig@test.com', 'nit' => '444', 'direccion' => 'Calle Ori', 'representante' => 'Rep Ori']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->putJson('/v1/empresas/'.$empresa->id, [
@@ -74,7 +79,7 @@ it('update modifica una empresa', function () {
 });
 
 it('destroy elimina una empresa', function () {
-    $empresa = Empresa::create(['nombre' => 'ToDelete', 'siglas' => 'TD', 'celular' => '3001234567', 'email' => 'del@test.com', 'nit' => '555']);
+    $empresa = Empresa::create(['nombre' => 'ToDelete', 'siglas' => 'TD', 'celular' => '3001234567', 'email' => 'del@test.com', 'nit' => '555', 'direccion' => 'Calle Del', 'representante' => 'Rep Del']);
 
     $this->actingAs($this->user, 'sanctum')
         ->deleteJson('/v1/empresas/'.$empresa->id)

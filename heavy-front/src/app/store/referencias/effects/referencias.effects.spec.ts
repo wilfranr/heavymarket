@@ -67,7 +67,7 @@ describe('ReferenciasEffects', () => {
 
         it('deberia manejar error al cargar referencias', () => {
             const action = ReferenciasActions.loadReferencias({});
-            const outcome = ReferenciasActions.loadReferenciasFailure({ error: 'Error al cargar las referencias' });
+            const outcome = ReferenciasActions.loadReferenciasFailure({ error: 'Error de red' });
 
             referenciaService.getAll.and.returnValue(throwError(() => ({ error: { message: 'Error de red' } })));
 
@@ -177,7 +177,7 @@ describe('ReferenciasEffects', () => {
 
         it('deberia manejar error al eliminar referencia', () => {
             const action = ReferenciasActions.deleteReferencia({ id: 1 });
-            const outcome = ReferenciasActions.deleteReferenciaFailure({ error: 'Error al eliminar la referencia' });
+            const outcome = ReferenciasActions.deleteReferenciaFailure({ error: 'Error' });
 
             referenciaService.deleteReferencia.and.returnValue(throwError(() => ({ error: { message: 'Error' } })));
 

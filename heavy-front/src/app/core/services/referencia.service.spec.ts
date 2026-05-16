@@ -48,7 +48,7 @@ describe('ReferenciaService', () => {
                 expect(response.data[0].referencia).toBe('TEST-REF-001');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias');
             expect(req.request.method).toBe('GET');
             req.flush(mockPaginatedResponse);
         });
@@ -57,7 +57,7 @@ describe('ReferenciaService', () => {
             service.getAll({ search: 'test', marca_id: 10, es_temporal: true }).subscribe();
 
             const req = httpMock.expectOne(req =>
-                req.url === 'api/v1/referencias' &&
+                req.url === 'http://localhost:8000/v1/referencias' &&
                 req.params.get('search') === 'test' &&
                 req.params.get('marca_id') === '10' &&
                 req.params.get('es_temporal') === 'true'
@@ -87,7 +87,7 @@ describe('ReferenciaService', () => {
                 expect(response.data.referencia).toBe('TEST-REF-001');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias/1');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/1');
             expect(req.request.method).toBe('GET');
             req.flush(mockResponse);
         });
@@ -108,7 +108,7 @@ describe('ReferenciaService', () => {
                 expect(response.message).toBe('Referencia creada exitosamente');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias');
             expect(req.request.method).toBe('POST');
             expect(req.request.body).toEqual(createData);
             req.flush(mockResponse);
@@ -128,7 +128,7 @@ describe('ReferenciaService', () => {
                 expect(response.message).toBe('Referencia actualizada exitosamente');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias/1');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/1');
             expect(req.request.method).toBe('PUT');
             expect(req.request.body).toEqual(updateData);
             req.flush(mockResponse);
@@ -143,7 +143,7 @@ describe('ReferenciaService', () => {
                 expect(response.message).toBe('Referencia eliminada exitosamente');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias/1');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/1');
             expect(req.request.method).toBe('DELETE');
             req.flush(mockResponse);
         });
@@ -163,7 +163,7 @@ describe('ReferenciaService', () => {
                 expect(response.no_encontrados).toContain('REF-002');
             });
 
-            const req = httpMock.expectOne('api/v1/referencias/bulk-search');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/bulk-search');
             expect(req.request.method).toBe('POST');
             expect(req.request.body).toEqual({ items });
             req.flush(mockResponse);
@@ -179,7 +179,7 @@ describe('ReferenciaService', () => {
                 expect(response.data.length).toBe(1);
             });
 
-            const req = httpMock.expectOne('api/v1/referencias/bulk-search-or-create');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/bulk-search-or-create');
             expect(req.request.method).toBe('POST');
             expect(req.request.body).toEqual({
                 items,
@@ -198,7 +198,7 @@ describe('ReferenciaService', () => {
 
             service.bulkSearchOrCreate(items).subscribe();
 
-            const req = httpMock.expectOne('api/v1/referencias/bulk-search-or-create');
+            const req = httpMock.expectOne('http://localhost:8000/v1/referencias/bulk-search-or-create');
             expect(req.request.body).toEqual({
                 items,
                 es_temporal: false

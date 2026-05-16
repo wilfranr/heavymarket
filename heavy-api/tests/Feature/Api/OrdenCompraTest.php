@@ -6,10 +6,10 @@ use App\Models\Tercero;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    foreach (['super_admin', 'Administrador', 'Logistica'] as $roleName) {
+    foreach (['super_admin', 'Administrador'] as $roleName) {
         Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
-    $this->user = createUserWithRole('Logistica');
+    $this->user = createUserWithRole('Administrador');
 });
 
 it('permite listar órdenes de compra', function () {

@@ -1,15 +1,39 @@
 import { TestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { NotificationService } from './notification.service';
 import { NotificationType } from '../models/notification.model';
+import { AuthService } from '../auth/services/auth.service';
+import { ToastService } from './toast.service';
+import { of } from 'rxjs';
 
 describe('NotificationService', () => {
     let service: NotificationService;
+    let authServiceSpy: any;
+    let toastServiceSpy: any;
 
     beforeEach(() => {
+        authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'getToken']);
+        authServiceSpy.currentUser.and.returnValue({ id: 1, name: 'Test User' });
+        authServiceSpy.getToken.and.returnValue('mock-token');
+
+        toastServiceSpy = jasmine.createSpyObj('ToastService', ['info', 'success', 'error', 'warning']);
+
         TestBed.configureTestingModule({
-            providers: [NotificationService]
+            imports: [HttpClientTestingModule],
+            providers: [
+                NotificationService,
+                { provide: AuthService, useValue: authServiceSpy },
+                { provide: ToastService, useValue: toastServiceSpy }
+            ]
         });
         service = TestBed.inject(NotificationService);
+        const httpMock = TestBed.inject(HttpTestingController);
+
+        // Responder a la carga inicial del constructor
+        const req = httpMock.expectOne((req) => req.url.includes('/notifications'));
+        req.flush({ data: [
+            { id: '1', title: 'Test 1', message: 'Msg 1', type: 'info', read: false, created_at: new Date().toISOString() }
+        ]});
     });
 
     it('should be created', () => {
@@ -29,11 +53,11 @@ describe('NotificationService', () => {
         expect(unreadCount).toBe(expectedUnread);
     });
 
-    describe('addNotification', () => {
+    describe('addLocalNotification', () => {
         it('should add new notification', () => {
             const initialCount = service.notifications().length;
 
-            service.addNotification({
+            service.addLocalNotification({
                 type: 'pedido_creado',
                 title: 'Nuevo Pedido',
                 message: 'Se creó el pedido #123'
@@ -45,7 +69,7 @@ describe('NotificationService', () => {
         });
 
         it('should add notification with correct icon and color', () => {
-            service.addNotification({
+            service.addLocalNotification({
                 type: 'orden_confirmada',
                 title: 'Orden Confirmada',
                 message: 'La orden fue confirmada'
@@ -59,7 +83,7 @@ describe('NotificationService', () => {
         it('should increment unread count', () => {
             const initialUnread = service.unreadCount();
 
-            service.addNotification({
+            service.addLocalNotification({
                 type: 'sistema',
                 title: 'Sistema',
                 message: 'Actualización disponible'
@@ -139,7 +163,7 @@ describe('NotificationService', () => {
 
         types.forEach((type) => {
             it(`should handle ${type} notification type`, () => {
-                service.addNotification({
+                service.addLocalNotification({
                     type,
                     title: `Test ${type}`,
                     message: `Testing ${type}`

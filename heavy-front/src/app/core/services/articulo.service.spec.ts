@@ -53,9 +53,9 @@ describe('ArticuloService', () => {
     });
 
     it('should get article by id', () => {
-        service.getById(1).subscribe((articulo) => {
-            expect(articulo.id).toBe(1);
-            expect(articulo.definicion).toBe('Acople Dentado');
+        service.getById(1).subscribe((res) => {
+            expect(res.data.id).toBe(1);
+            expect(res.data.definicion).toBe('Acople Dentado');
         });
 
         const req = httpMock.expectOne((req) => req.url.includes('/v1/articulos/1'));
@@ -90,7 +90,7 @@ describe('ArticuloService', () => {
     });
 
     it('should delete article', () => {
-        service.delete(1).subscribe((res) => {
+        service.deleteArticulo(1).subscribe((res) => {
             expect(res.message).toBe('Eliminado');
         });
 

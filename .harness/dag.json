@@ -1,43 +1,76 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-10T07:30:00Z",
-  "issue": "#99",
-  "description": "Cambiar botón editar referencia del análisis para crear artículo",
+  "last_updated": "2026-05-16T11:35:00Z",
+  "issue": "tests-stabilization",
+  "description": "Estabilización y Mejora de Cobertura de Pruebas (MySQL Migration)",
   "nodes": [
     {
-      "id": "99-frontend-analysis",
-      "description": "Frontend: Modificar comportamiento del botón en análisis. Si referencia tiene artículo → modal editar artículo. Si no tiene o es temporal → modal crear artículo.",
+      "id": "tests-backend-fix",
+      "description": "Backend: Migración a MySQL, corrección de FKs, Route Model Binding y esquema de base de datos.",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
+      "required_skill": "testing_expert",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "path": "heavy-api/phpunit.xml",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "path": "heavy-api/database/migrations/2026_01_01_000001_create_base_tables_for_testing.php",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "path": "heavy-api/database/migrations/2026_04_28_000001_create_cotizaciones_tables.php",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "path": "heavy-api/routes/api.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "99-validate",
-      "description": "Validacion: Verificar que el botón abre el modal correcto según estado de referencia.",
+      "id": "tests-frontend-env",
+      "description": "Frontend: Soporte Zone.js, compatibilidad Jasmine y ResourceLoader global en Vitest.",
       "status": "done",
-      "required_skill": null,
-      "depends_on": ["99-frontend-analysis"],
-      "files": [],
-      "review_notes": "Implementacion completada. Build exitoso. Boton ahora evalua articulo_id y es_temporal para decidir modal."
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/test-setup.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "tests-frontend-unit-existing",
+      "description": "Frontend: Corrección de aserciones asíncronas, URLs y mocks en specs existentes.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": ["tests-frontend-env"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/services/articulo.service.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/auth/services/auth.service.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/store/referencias/effects/referencias.effects.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "tests-final-validate",
+      "description": "Validación Final: 100% PASS en ambas plataformas.",
+      "status": "done",
+      "required_skill": "testing_expert",
+      "depends_on": ["tests-backend-fix", "tests-frontend-unit-existing"],
+      "files": []
     }
   ]
 }

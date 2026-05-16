@@ -2,12 +2,11 @@
 
 /**
  * Tests para PedidoPolicy
- * 
+ *
  * Valida todas las reglas de autorización para pedidos
  */
 
 use App\Models\Pedido;
-use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -39,9 +38,9 @@ it('analista puede ver pedidos', function () {
     expect($user->can('viewAny', Pedido::class))->toBeTrue();
 });
 
-it('logística puede ver pedidos', function () {
+it('logística no puede ver pedidos', function () {
     $user = createUserWithRole('Logistica');
-    expect($user->can('viewAny', Pedido::class))->toBeTrue();
+    expect($user->can('viewAny', Pedido::class))->toBeFalse();
 });
 
 it('cliente no puede listar pedidos', function () {

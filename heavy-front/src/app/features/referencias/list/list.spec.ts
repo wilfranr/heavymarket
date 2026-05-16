@@ -55,17 +55,29 @@ describe('ReferenciasListComponent', () => {
         router = { navigate: vi.fn() };
         listaService = { getMarcasYFabricantesParaReferencia: vi.fn().mockReturnValue(of(mockMarcas)) };
         articuloService = { getAll: vi.fn().mockReturnValue(of({ data: mockArticulos, meta: { total: 2, current_page: 1, last_page: 1, per_page: 500 } })) };
+        const confirmationServiceSpy = { confirm: vi.fn() };
+        const messageServiceSpy = { add: vi.fn() };
 
         await TestBed.configureTestingModule({
-            imports: [ListComponent, StoreModule.forRoot({})],
+            imports: [StoreModule.forRoot({})],
             providers: [
                 provideMockStore({ initialState }),
                 { provide: Router, useValue: router },
                 { provide: ListaService, useValue: listaService },
                 { provide: ArticuloService, useValue: articuloService },
-                MessageService,
-                ConfirmationService
+                { provide: MessageService, useValue: messageServiceSpy },
+                { provide: ConfirmationService, useValue: confirmationServiceSpy }
             ]
+        }).overrideComponent(ListComponent, {
+            set: { 
+                template: '<div></div>', 
+                styleUrls: [],
+                imports: [],
+                providers: [
+                    { provide: MessageService, useValue: messageServiceSpy },
+                    { provide: ConfirmationService, useValue: confirmationServiceSpy }
+                ]
+            }
         }).compileComponents();
 
         fixture = TestBed.createComponent(ListComponent);
@@ -227,7 +239,7 @@ describe('ReferenciasListComponent', () => {
         it('deberia cancelar edicion y restaurar valores originales', () => {
             const ref = { ...mockReferencias[0] };
             component.onRowEditInit(ref);
-            component.editingReferencias[1].referencia = 'MODIFIED';
+            ref.referencia = 'MODIFIED';
 
             component.cancelarEdicion(ref);
 

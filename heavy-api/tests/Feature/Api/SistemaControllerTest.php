@@ -103,9 +103,9 @@ it('permite crear sistema con imagen', function () {
     $response->assertStatus(201);
 
     $sistema = Sistema::where('nombre', 'Sistema con Imagen')->first();
-    expect($sistema->imagen)->not->toBeNull();
+    expect($sistema->getRawOriginal('imagen'))->not->toBeNull();
 
-    Storage::disk('public')->assertExists($sistema->imagen);
+    Storage::disk('public')->assertExists($sistema->getRawOriginal('imagen'));
 });
 
 it('permite ver detalle de sistema', function () {

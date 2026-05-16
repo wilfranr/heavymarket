@@ -4,15 +4,12 @@
  * Tests unitarios para PedidoService
  */
 
+use App\Models\PedidoReferencia;
+use App\Models\Empresa;
 use App\Services\PedidoService;
-use Mockery;
 
 beforeEach(function () {
     $this->pedidoService = new PedidoService;
-});
-
-afterEach(function () {
-    Mockery::close();
 });
 
 it('calcula valores nacionales exitoso', function () {
@@ -23,7 +20,7 @@ it('calcula valores nacionales exitoso', function () {
         'ubicacion' => 'Nacional',
     ];
 
-    $pedidoReferencia = Mockery::mock(\App\Models\PedidoReferencia::class);
+    $pedidoReferencia = new PedidoReferencia();
     $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);
 
     // 1000 + 20% = 1200. Total 2400.
@@ -39,16 +36,15 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
         'ubicacion' => 'Internacional',
     ];
 
-    $empresaMock = Mockery::mock('alias:App\Models\Empresa');
-    $empresaMock->shouldReceive('where->first')->andReturn((object) [
+    Empresa::create([
+        'nombre' => 'Test',
         'trm' => 0,
         'flete' => 10,
     ]);
 
-    $referenciaObj = new \stdClass;
-    $referenciaObj->peso = 0;
+    $referenciaObj = (object) ['peso' => 0];
 
-    $pedidoReferencia = Mockery::mock(\App\Models\PedidoReferencia::class);
+    $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
     $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
 
     $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);

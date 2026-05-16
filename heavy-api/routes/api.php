@@ -183,11 +183,11 @@ Route::prefix('v1')->group(function () {
         Route::get('cotizaciones/{cotizacion}/download-pdf', [CotizacionController::class, 'downloadPDF'])->name('cotizaciones.download-pdf');
         Route::post('cotizaciones/{cotizacion}/approve', [CotizacionController::class, 'approve'])->name('cotizaciones.approve');
         Route::post('cotizaciones/{cotizacion}/reject', [CotizacionController::class, 'reject'])->name('cotizaciones.reject');
-        Route::apiResource('cotizaciones', CotizacionController::class);
-        Route::apiResource('ordenes-compra', OrdenCompraController::class);
-        Route::get('ordenes-compra/{ordenes_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
-        Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class);
-        Route::get('ordenes-trabajo/{ordenes_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
+        Route::apiResource('cotizaciones', CotizacionController::class)->parameters(['cotizaciones' => 'cotizacion']);
+        Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
+        Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);
+        Route::get('ordenes-compra/{orden_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
+        Route::get('ordenes-trabajo/{orden_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
 
         /**
          * Catálogos y referencias
@@ -222,7 +222,7 @@ Route::prefix('v1')->group(function () {
          */
         Route::apiResource('empresas', EmpresaController::class);
         Route::apiResource('contactos', ContactoController::class);
-        Route::apiResource('direcciones', DireccionController::class);
+        Route::apiResource('direcciones', DireccionController::class)->parameters(['direcciones' => 'direccion']);
         Route::apiResource('transportadoras', TransportadoraController::class);
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
         Route::apiResource('trms', TRMController::class);

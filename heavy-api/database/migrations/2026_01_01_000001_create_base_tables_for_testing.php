@@ -33,10 +33,10 @@ return new class extends Migration
             Schema::create('terceros', function (Blueprint $table) {
                 $table->id();
                 $table->string('tipo_documento', 20)->nullable();
-                $table->string('documento', 50)->nullable();
-                $table->string('razon_social', 255)->nullable();
+                $table->string('numero_documento', 50)->nullable();
+                $table->string('nombre', 255)->nullable();
                 $table->string('nombre_comercial', 255)->nullable();
-                $table->string('tipo_tercero', 20)->nullable();
+                $table->string('tipo', 30)->nullable();
                 $table->string('email', 255)->nullable();
                 $table->string('telefono', 50)->nullable();
                 $table->string('celular', 50)->nullable();
@@ -137,7 +137,21 @@ return new class extends Migration
                 $table->id();
                 $table->string('nombre', 255);
                 $table->string('descripcion', 500)->nullable();
+                $table->string('imagen', 255)->nullable();
                 $table->timestamps();
+            });
+        }
+
+        // 7.1 sistema_lista (tabla pivot sistema-lista)
+        if (! Schema::hasTable('sistema_lista')) {
+            Schema::create('sistema_lista', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('sistema_id');
+                $table->unsignedBigInteger('lista_id');
+                $table->timestamps();
+
+                $table->foreign('sistema_id')->references('id')->on('sistemas')->onDelete('cascade');
+                $table->foreign('lista_id')->references('id')->on('listas')->onDelete('cascade');
             });
         }
 
@@ -292,8 +306,64 @@ return new class extends Migration
             Schema::create('countries', function (Blueprint $table) {
                 $table->id();
                 $table->string('name', 100);
+                $table->string('iso2', 10)->nullable();
                 $table->string('codigo', 10)->nullable();
+                $table->string('phonecode', 20)->nullable();
+                $table->boolean('is_active')->default(true);
+                $table->softDeletes();
                 $table->timestamps();
+            });
+        }
+
+        // 13.1 empresas
+        if (! Schema::hasTable('empresas')) {
+            Schema::create('empresas', function (Blueprint $table) {
+                $table->id();
+                $table->string('nombre');
+                $table->string('siglas')->nullable();
+                $table->string('nit')->nullable();
+                $table->string('email')->nullable();
+                $table->string('celular')->nullable();
+                $table->string('telefono')->nullable();
+                $table->string('direccion')->nullable();
+                $table->string('representante')->nullable();
+                $table->string('logo_light')->nullable();
+                $table->string('logo_dark')->nullable();
+                $table->boolean('estado')->default(true);
+                $table->decimal('trm', 15, 2)->default(0);
+                $table->decimal('flete', 15, 2)->default(0);
+                $table->softDeletes();
+                $table->timestamps();
+            });
+        }
+
+        // 13.2 states
+        if (! Schema::hasTable('states')) {
+            Schema::create('states', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->unsignedBigInteger('country_id');
+                $table->boolean('is_active')->default(true);
+                $table->softDeletes();
+                $table->timestamps();
+
+                $table->foreign('country_id')->references('id')->on('countries');
+            });
+        }
+
+        // 13.3 cities
+        if (! Schema::hasTable('cities')) {
+            Schema::create('cities', function (Blueprint $table) {
+                $table->id();
+                $table->string('name');
+                $table->unsignedBigInteger('country_id');
+                $table->unsignedBigInteger('state_id');
+                $table->boolean('is_active')->default(true);
+                $table->softDeletes();
+                $table->timestamps();
+
+                $table->foreign('country_id')->references('id')->on('countries');
+                $table->foreign('state_id')->references('id')->on('states');
             });
         }
 

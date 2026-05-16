@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\OrdenTrabajo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 
@@ -36,8 +37,9 @@ it('Logistica no puede crear orden de trabajo', function () {
 
 it('Logistica no puede actualizar orden de trabajo', function () {
     $user = createUserWithRole('Logistica');
+    $orden = OrdenTrabajo::factory()->create();
 
-    $response = $this->actingAs($user)->putJson('/v1/ordenes-trabajo/1', [
+    $response = $this->actingAs($user)->putJson("/v1/ordenes-trabajo/{$orden->id}", [
         'descripcion' => 'Updated',
     ]);
 

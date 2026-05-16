@@ -78,7 +78,7 @@ class OrdenTrabajoController extends Controller
 
             $validated = $request->validated();
 
-            $ordenTrabajo = OrdenTrabajo::create([
+            $orden_trabajo = OrdenTrabajo::create([
                 'user_id' => $request->user()->id,
                 'tercero_id' => $validated['tercero_id'] ?? null,
                 'pedido_id' => $validated['pedido_id'] ?? null,
@@ -97,7 +97,7 @@ class OrdenTrabajoController extends Controller
 
             DB::commit();
 
-            $ordenTrabajo->load([
+            $orden_trabajo->load([
                 'tercero',
                 'pedido',
                 'cotizacion',
@@ -108,7 +108,7 @@ class OrdenTrabajoController extends Controller
             ]);
 
             return response()->json([
-                'data' => new OrdenTrabajoResource($ordenTrabajo),
+                'data' => new OrdenTrabajoResource($orden_trabajo),
                 'message' => 'Orden de trabajo creada exitosamente',
             ], 201);
 
@@ -125,9 +125,9 @@ class OrdenTrabajoController extends Controller
     /**
      * Mostrar una orden de trabajo específica
      */
-    public function show(OrdenTrabajo $ordenTrabajo): JsonResponse
+    public function show(OrdenTrabajo $orden_trabajo): JsonResponse
     {
-        $ordenTrabajo->load([
+        $orden_trabajo->load([
             'tercero',
             'pedido',
             'cotizacion',
@@ -139,14 +139,14 @@ class OrdenTrabajoController extends Controller
         ]);
 
         return response()->json([
-            'data' => new OrdenTrabajoResource($ordenTrabajo),
+            'data' => new OrdenTrabajoResource($orden_trabajo),
         ]);
     }
 
     /**
      * Actualizar una orden de trabajo
      */
-    public function update(Request $request, OrdenTrabajo $ordenTrabajo): JsonResponse
+    public function update(Request $request, OrdenTrabajo $orden_trabajo): JsonResponse
     {
         $rules = [
             'estado' => [
@@ -174,10 +174,10 @@ class OrdenTrabajoController extends Controller
 
         try {
             if (! empty($validated)) {
-                $ordenTrabajo->update($validated);
+                $orden_trabajo->update($validated);
             }
 
-            $ordenTrabajo->load([
+            $orden_trabajo->load([
                 'tercero',
                 'pedido',
                 'cotizacion',
@@ -188,7 +188,7 @@ class OrdenTrabajoController extends Controller
             ]);
 
             return response()->json([
-                'data' => new OrdenTrabajoResource($ordenTrabajo),
+                'data' => new OrdenTrabajoResource($orden_trabajo),
                 'message' => 'Orden de trabajo actualizada exitosamente',
             ]);
 
@@ -203,13 +203,13 @@ class OrdenTrabajoController extends Controller
     /**
      * Eliminar una orden de trabajo
      */
-    public function destroy(OrdenTrabajo $ordenTrabajo): JsonResponse
+    public function destroy(OrdenTrabajo $orden_trabajo): JsonResponse
     {
         try {
             // Eliminar referencias primero
-            $ordenTrabajo->referencias()->delete();
+            $orden_trabajo->referencias()->delete();
 
-            $ordenTrabajo->delete();
+            $orden_trabajo->delete();
 
             return response()->json([
                 'message' => 'Orden de trabajo eliminada exitosamente',
@@ -226,12 +226,12 @@ class OrdenTrabajoController extends Controller
     /**
      * Generar y descargar el PDF de la orden de trabajo
      */
-    public function downloadPDF(OrdenTrabajo $ordenTrabajo)
+    public function downloadPDF(OrdenTrabajo $orden_trabajo)
     {
         try {
-            $pdf = $this->cotizacionService->generarPDFOrdenTrabajo($ordenTrabajo);
+            $pdf = $this->cotizacionService->generarPDFOrdenTrabajo($orden_trabajo);
 
-            return $pdf->download("OT-{$ordenTrabajo->id}.pdf");
+            return $pdf->download("OT-{$orden_trabajo->id}.pdf");
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al generar el PDF',

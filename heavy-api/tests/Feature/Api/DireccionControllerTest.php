@@ -3,6 +3,9 @@
 use App\Models\Direccion;
 use App\Models\Tercero;
 use Spatie\Permission\Models\Role;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+
+uses(RefreshDatabase::class);
 
 /**
  * Tests de Feature para DireccionController

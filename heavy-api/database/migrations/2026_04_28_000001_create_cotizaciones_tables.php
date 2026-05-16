@@ -8,7 +8,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (!Schema::hasTable('cotizaciones')) {
+        if (! Schema::hasTable('cotizaciones')) {
             Schema::create('cotizaciones', function (Blueprint $table) {
                 $table->id();
                 $table->foreignId('user_id')->constrained()->onDelete('cascade');
@@ -23,12 +23,12 @@ return new class extends Migration
             });
         }
 
-        if (!Schema::hasTable('cotizacion_referencia_proveedores')) {
+        if (! Schema::hasTable('cotizacion_referencia_proveedores')) {
             Schema::create('cotizacion_referencia_proveedores', function (Blueprint $table) {
                 $table->id();
-                $table->foreignId('cotizacion_id')->constrained()->onDelete('cascade');
+                $table->foreignId('cotizacion_id')->constrained('cotizaciones')->onDelete('cascade');
                 $table->foreignId('pedido_referencia_proveedor_id')
-                    ->constrained('pedido_referencia_proveedor')
+                    ->constrained('pedido_referencia_proveedor', indexName: 'cot_ref_prov_pedido_ref_prov_id_fk')
                     ->onDelete('cascade');
                 $table->timestamps();
             });
