@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { map, catchError } from 'rxjs/operators';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 
 export interface SubCategory {
@@ -20,11 +20,22 @@ export interface Category {
     subcategorias: SubCategory[];
 }
 
+export interface LandingBrandDto {
+    id: number;
+    nombre: string;
+    logo?: string;
+    logoWidth?: number;
+    logoHeight?: number;
+    foto?: string;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class LandingService {
     private trmUrl = 'https://www.datos.gov.co/resource/32sa-8pi3.json';
+    private brandsCache$?: Observable<LandingBrandDto[]>;
+    private navbarCache$?: Observable<Category[]>;
 
     constructor(private http: HttpClient) {}
 
@@ -44,12 +55,17 @@ export class LandingService {
     }
 
     getNavbarCategories(): Observable<Category[]> {
-        return this.http.get<Category[]>(`${environment.apiUrl}/landing/navbar-data`).pipe(
-            catchError((error) => {
-                console.error('Error fetching navbar categories:', error);
-                return of([]);
-            })
-        );
+        if (!this.navbarCache$) {
+            this.navbarCache$ = this.http.get<Category[]>(`${environment.apiUrl}/landing/navbar-data`).pipe(
+                catchError((error) => {
+                    console.error('Error fetching navbar categories:', error);
+                    return of([]);
+                }),
+                shareReplay(1)
+            );
+        }
+
+        return this.navbarCache$;
     }
 
     getAllCategories(): Observable<Category[]> {
@@ -61,35 +77,42 @@ export class LandingService {
         );
     }
 
-    getBrands(): Observable<any[]> {
-        return this.http.get<any[]>(`${environment.apiUrl}/landing/brands`).pipe(
-            catchError((error) => {
-                console.error('Error fetching brands:', error);
-                return of([]);
-            })
-        );
+    getBrands(): Observable<LandingBrandDto[]> {
+        if (!this.brandsCache$) {
+            this.brandsCache$ = this.http.get<LandingBrandDto[]>(`${environment.apiUrl}/landing/brands`).pipe(
+                catchError((error) => {
+                    console.error('Error fetching brands:', error);
+                    return of([]);
+                }),
+                shareReplay(1)
+            );
+        }
+
+        return this.brandsCache$;
     }
 
     getQuoteData(): Observable<any> {
-        return this.http.get<any>(`${environment.apiUrl}/landing/quote-data`).pipe(
-            catchError((error) => {
-                console.error('Error fetching quote data:', error);
-                return of({ categories: [], brands: [], systems: [], models: [] });
+        return this.http
+            .get<any>(`${environment.apiUrl}/landing/quote-data`, {
+                headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' }
             })
-        );
+            .pipe(
+                catchError((error) => {
+                    console.error('Error fetching quote data:', error);
+                    return of({ categories: [], brands: [], systems: [], articleTypes: [], models: [] });
+                })
+            );
     }
 
     submitQuote(data: any): Observable<any> {
         const formData = new FormData();
 
-        // Appending top-level strings
         formData.append('selectedBrand', data.selectedBrand || '');
         formData.append('selectedType', data.selectedType || '');
         formData.append('selectedModel', data.selectedModel || '');
         formData.append('selectedSeries', data.selectedSeries || '');
         formData.append('selectedArrangement', data.selectedArrangement || '');
 
-        // Appending nested userData
         Object.keys(data.userData).forEach((key) => {
             let value = data.userData[key];
             if (value && typeof value === 'object' && value.id) {
@@ -99,7 +122,6 @@ export class LandingService {
             }
         });
 
-        // Appending items with potential files
         data.items.forEach((item: any, index: number) => {
             formData.append(`items[${index}][system]`, item.system);
             formData.append(`items[${index}][description]`, item.description || '');
@@ -126,6 +148,7 @@ export class LandingService {
 
         return this.http.post<any>(`${environment.apiUrl}/landing/submit-quote`, formData, { headers });
     }
+
     submitContactForm(data: any): Observable<any> {
         return this.http.post<any>(`${environment.apiUrl}/landing/contact`, data).pipe(
             catchError((error) => {

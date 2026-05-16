@@ -48,7 +48,7 @@
                                     <input type="text" [(ngModel)]="typeSearch" placeholder="Buscar tipo..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" />
                                     <i class="pi pi-search"></i>
                                 </div>
-                                <div class="cotizador-dropdown-item" *ngFor="let type of allTypes" (click)="selectType(type)">{{ type.nombre }}</div>
+                                <div class="cotizador-dropdown-item" *ngFor="let type of allTypes()" (click)="selectType(type)">{{ type.nombre }}</div>
                             </div>
                         </div>
 
@@ -56,19 +56,26 @@
                         <div class="cotizador-filter-group" style="position: relative">
                             <button class="cotizador-select" (click)="toggleBrand()">
                                 <div style="display: flex; align-items: center; gap: 10px">
-                                    <img *ngIf="selectedBrandObj?.logo" [src]="selectedBrandObj?.logo" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; padding: 2px" alt="" />
+                                    <img *ngIf="selectedBrandObj()?.logo" [src]="selectedBrandObj()?.logo" style="width: 24px; height: 24px; object-fit: contain; border-radius: 4px; background: white; padding: 2px" alt="" />
                                     <span class="cotizador-select-text">{{ selectedBrand || 'Seleccionar una marca' }} <span class="text-red-500">*</span></span>
                                 </div>
                                 <div class="cotizador-select-icon">
                                     <i class="pi pi-chevron-right"></i>
                                 </div>
                             </button>
-                            <div class="cotizador-dropdown" *ngIf="openBrand" style="width: 100%; top: 50px; z-index: 100">
+                            <div class="cotizador-dropdown cotizador-dropdown--brands" *ngIf="openBrand()">
                                 <div class="cotizador-dropdown-search">
-                                    <input type="text" [(ngModel)]="brandSearch" placeholder="Buscar marca..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" />
+                                    <input
+                                        type="text"
+                                        [ngModel]="brandSearch()"
+                                        (ngModelChange)="brandSearch.set($event)"
+                                        placeholder="Buscar marca..."
+                                        (click)="$event.stopPropagation()"
+                                        class="cotizador-dropdown-input"
+                                    />
                                     <i class="pi pi-search"></i>
                                 </div>
-                                <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands" (click)="selectBrand(brand)" style="display: flex; align-items: center; gap: 12px; padding: 10px 15px">
+                                <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands()" (click)="selectBrand(brand)" style="display: flex; align-items: center; gap: 12px; padding: 10px 15px">
                                     <img *ngIf="brand.logo" [src]="brand.logo" style="width: 28px; height: 28px; object-fit: contain; border-radius: 4px; background: white; padding: 2px" alt="" />
                                     <div *ngIf="!brand.logo" style="width: 28px; height: 28px; background: #334155; border-radius: 4px; display: flex; align-items: center; justify-content: center">
                                         <i class="pi pi-image" style="font-size: 12px; color: #94a3b8"></i>
@@ -109,7 +116,7 @@
                     <ng-container *ngIf="currentView === 'grid'">
                         <!-- Tabs -->
                         <div class="cotizador-tabs">
-                            <div class="cotizador-tab" *ngFor="let cat of categories" [class.active]="activeTab === cat.slug" (click)="setActiveTab(cat.slug)">
+                            <div class="cotizador-tab" *ngFor="let cat of categories()" [class.active]="activeTab() === cat.slug" (click)="setActiveTab(cat.slug)">
                                 <span class="cotizador-tab-text">{{ cat.nombre }}</span>
                             </div>
                         </div>
@@ -117,12 +124,12 @@
                         <!-- Grid -->
                         <div class="cotizador-grid-container">
                             <div class="cotizador-grid">
-                                <ng-container *ngIf="activeCategory">
-                                    <div class="cotizador-card" *ngFor="let sub of activeCategory.subcategorias" [class.selected]="selectedCard?.id === sub.id" (click)="selectCard(sub)">
+                                <ng-container *ngIf="activeCategory() as category">
+                                    <div class="cotizador-card" *ngFor="let sub of category.subcategorias" [class.selected]="selectedCard?.id === sub.id" (click)="selectCard(sub)">
                                         <div class="cotizador-card-image" [style.background-image]="'url(' + sub.imagen_url + ')'" style="background-size: cover; background-position: center"></div>
                                         <div class="cotizador-card-content">
                                             <h3 class="cotizador-card-title">{{ sub.nombre }}</h3>
-                                            <div class="cotizador-card-tag"><span>{{ activeCategory.nombre }}</span></div>
+                                            <div class="cotizador-card-tag"><span>{{ category.nombre }}</span></div>
                                             <p class="cotizador-card-description">{{ sub.descripcion }}</p>
                                             <button class="cotizador-card-btn">Seleccionar máquina</button>
                                         </div>
@@ -150,7 +157,7 @@
                         <!-- Breadcrumb -->
                         <div class="cotizador-breadcrumb">
                             Cotización /
-                            <span class="cotizador-highlight">{{ activeCategory?.nombre || 'Categoría' }}</span> / <span class="cotizador-highlight">{{ selectedType || 'Tipo' }}</span> /
+                            <span class="cotizador-highlight">{{ activeCategory()?.nombre || 'Categoría' }}</span> / <span class="cotizador-highlight">{{ selectedType || 'Tipo' }}</span> /
                             <span class="cotizador-highlight">{{ selectedBrand || 'Marca' }}</span> / <span class="cotizador-highlight">{{ selectedModel || 'Modelo' }}</span> / Formulario
                         </div>
 

@@ -19,11 +19,12 @@ use App\Models\Sistema;
 use App\Models\SubcategoriaLanding;
 use App\Models\Tercero;
 use App\Services\LandingBrandImageService;
+use App\Services\QuoteDataService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Str;
 
 class LandingController extends Controller
 {
@@ -86,7 +87,7 @@ class LandingController extends Controller
             }])
             ->get();
 
-        return response()->json($categorias);
+        return $this->publicJsonCached($categorias);
     }
 
     /**
@@ -99,25 +100,25 @@ class LandingController extends Controller
             ->orderBy('nombre')
             ->get();
 
-        return response()->json(
-            $brands
-                ->map(function (Lista $lista) use ($brandImages) {
-                    $meta = $brandImages->logoMeta($lista);
-                    if ($meta === null) {
-                        return null;
-                    }
+        $payload = $brands
+            ->map(function (Lista $lista) use ($brandImages) {
+                $meta = $brandImages->logoMeta($lista);
+                if ($meta === null) {
+                    return null;
+                }
 
-                    return [
-                        'id' => $lista->id,
-                        'nombre' => $lista->nombre,
-                        'logo' => $meta['url'],
-                        'logoWidth' => $meta['width'],
-                        'logoHeight' => $meta['height'],
-                    ];
-                })
-                ->filter()
-                ->values()
-        );
+                return [
+                    'id' => $lista->id,
+                    'nombre' => $lista->nombre,
+                    'logo' => $meta['url'],
+                    'logoWidth' => $meta['width'],
+                    'logoHeight' => $meta['height'],
+                ];
+            })
+            ->filter()
+            ->values();
+
+        return $this->publicJsonCached($payload);
     }
 
     /**
@@ -131,119 +132,9 @@ class LandingController extends Controller
         return $brandImages->streamLogo($lista, $maxWidth, $maxHeight);
     }
 
-    public function quoteData()
+    public function quoteData(QuoteDataService $quoteData): JsonResponse
     {
-        // 1. Obtener Categorías de Máquina y sus Tipos desde la DB
-        $categoriesData = Lista::where('tipo', 'Categoría de Máquina')
-            ->with(['children' => function ($q) {
-                $q->where('tipo', 'Tipo de Máquina')->orderBy('nombre');
-            }])
-            ->get();
-
-        $categoriesMap = [];
-        foreach ($categoriesData as $cat) {
-            $slug = Str::slug($cat->nombre);
-            $subcategorias = [];
-
-            foreach ($cat->children->transform(function ($item) {
-                $imageUrl = null;
-                $rawFoto = $item->getRawOriginal('foto');
-
-                if ($rawFoto) {
-                    if (str_starts_with($rawFoto, 'http')) {
-                        $imageUrl = $rawFoto;
-                    } elseif (str_contains($rawFoto, '/')) {
-                        $imageUrl = asset('storage/'.$rawFoto);
-                    } else {
-                        // Lógica para rutas legadas en Tipos de Máquina
-                        $oldPath = 'Aplicativo/03. Tipos de Maquina/'.$rawFoto;
-                        if (file_exists(storage_path('app/public/'.$oldPath))) {
-                            $imageUrl = asset('storage/'.$oldPath);
-                        }
-                    }
-                }
-
-                $item->imagen_url = $imageUrl ?? asset('images/no-image.png');
-
-                return $item;
-            }) as $item) {
-                $subcategorias[] = [
-                    'id' => $item->id,
-                    'nombre' => $item->nombre,
-                    'descripcion' => $item->definicion,
-                    'imagen_url' => $item->imagen_url,
-                    'slug' => Str::slug($item->nombre),
-                ];
-            }
-
-            $categoriesMap[$slug] = [
-                'nombre' => $cat->nombre,
-                'slug' => $slug,
-                'subcategorias' => $subcategorias,
-            ];
-        }
-
-        // Mantener orden específico deseado
-        $orderedCategories = [];
-        $desiredOrder = ['construccion', 'equipo-ligero', 'mineria', 'pavimentacion', 'subterraneo', 'utilitarios', 'otros'];
-
-        foreach ($desiredOrder as $slug) {
-            if (isset($categoriesMap[$slug])) {
-                $orderedCategories[] = $categoriesMap[$slug];
-            }
-        }
-
-        // Agregar cualquier categoría extra que no esté en el orden deseado
-        foreach ($categoriesMap as $slug => $data) {
-            if (! in_array($slug, $desiredOrder)) {
-                $orderedCategories[] = $data;
-            }
-        }
-
-        // 2. Fabricantes para el Formulario
-        $brands = Lista::where('tipo', 'Fabricantes')
-            ->orderBy('nombre')
-            ->get();
-
-        // 3. Sistemas para el Formulario (que incluyen listas de Tipo de Artículo)
-        $allItemTypes = Lista::where('tipo', 'Tipo de Artículo')
-            ->select('id', 'nombre', 'foto')
-            ->orderBy('nombre')
-            ->get();
-
-        $defaultSystem = Sistema::where('nombre', 'Por Defecto')->first();
-        if ($defaultSystem) {
-            $defaultSystem->setRelation('listas', $allItemTypes);
-        }
-
-        $otherSystems = Sistema::where('nombre', '!=', 'Por Defecto')
-            ->with(['listas' => function ($query) {
-                $query->where('tipo', 'Tipo de Artículo')
-                    ->select('listas.id', 'listas.nombre', 'listas.foto')
-                    ->orderBy('listas.nombre');
-            }])
-            ->orderBy('nombre')
-            ->get(['id', 'nombre', 'imagen']);
-
-        $systems = collect();
-        if ($defaultSystem) {
-            $systems->push($defaultSystem);
-        }
-        $systems = $systems->concat($otherSystems);
-
-        // 4. Modelos (Distintos modelos de la tabla Maquinas)
-        $models = Maquina::select('modelo')
-            ->whereNotNull('modelo')
-            ->distinct()
-            ->orderBy('modelo')
-            ->pluck('modelo');
-
-        return response()->json([
-            'categories' => $orderedCategories,
-            'brands' => $brands,
-            'systems' => $systems,
-            'models' => $models,
-        ]);
+        return $this->publicJsonCached($quoteData->build(), 300);
     }
 
     /**
@@ -733,5 +624,12 @@ class LandingController extends Controller
             'message' => 'Estado actualizado correctamente',
             'data' => $lead,
         ]);
+    }
+
+    private function publicJsonCached(mixed $data, int $maxAge = 300): JsonResponse
+    {
+        return response()
+            ->json($data)
+            ->header('Cache-Control', "public, max-age={$maxAge}, stale-while-revalidate=60");
     }
 }
