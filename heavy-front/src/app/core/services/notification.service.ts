@@ -1,4 +1,4 @@
-import { Injectable, signal, computed, inject, effect } from '@angular/core';
+import { Injectable, signal, inject, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Notification, NotificationType, CreateNotificationDto } from '../models/notification.model';
 import { environment } from '../../../environments/environment';
@@ -22,22 +22,34 @@ export class NotificationService {
     private echo: Echo<any> | null = null;
 
     private notificationsSignal = signal<Notification[]>([]);
-    public notifications = this.notificationsSignal.asReadonly();
+    private unreadCountSignal = signal(0);
+    private notificationsLoaded = false;
+    private unreadCountLoaded = false;
 
-    public unreadCount = computed(() => this.notificationsSignal().filter((n) => !n.read).length);
+    public notifications = this.notificationsSignal.asReadonly();
+    public unreadCount = this.unreadCountSignal.asReadonly();
 
     constructor() {
-        this.loadNotifications();
+        effect(() => {
+            const user = this.authService.currentUser();
+            if (user) {
+                if (!this.unreadCountLoaded) {
+                    this.unreadCountLoaded = true;
+                    this.loadUnreadCount();
+                }
+            } else {
+                this.notificationsSignal.set([]);
+                this.unreadCountSignal.set(0);
+                this.notificationsLoaded = false;
+                this.unreadCountLoaded = false;
+            }
+        });
 
-        // Inicializar Echo solo si está habilitado en entorno
         if (environment.pusherEnabled) {
             this.initEchoIfEnabled();
         }
     }
 
-    /**
-     * Inicializa el efecto para Echo solo si está habilitado
-     */
     private initEchoIfEnabled(): void {
         effect(() => {
             const user = this.authService.currentUser();
@@ -50,9 +62,6 @@ export class NotificationService {
         });
     }
 
-    /**
-     * Inicializa Laravel Echo para escuchar notificaciones en tiempo real
-     */
     private initializeEcho(userId: number | string): void {
         try {
             (window as any).Pusher = Pusher;
@@ -83,9 +92,6 @@ export class NotificationService {
         }
     }
 
-    /**
-     * Maneja una notificación recibida por WebSocket
-     */
     private handleIncomingNotification(notification: any): void {
         const newNotification: Notification = {
             id: notification.id,
@@ -99,32 +105,63 @@ export class NotificationService {
             data: notification.data
         };
 
-        // Actualizar signal
         const current = this.notificationsSignal();
         this.notificationsSignal.set([newNotification, ...current]);
+        this.unreadCountSignal.update((count) => count + 1);
 
-        // Mostrar aviso visual (Toast)
         this.toastService.info(newNotification.message, newNotification.title, newNotification);
     }
 
     /**
-     * Carga notificaciones desde la API
+     * Carga solo el contador de no leídas (ligero, para el badge del topbar).
      */
+    loadUnreadCount(): void {
+        this.http.get<{ count: number }>(`${this.apiUrl}/unread-count`).subscribe({
+            next: (response) => this.unreadCountSignal.set(response.count ?? 0),
+            error: (err) => console.error('Error cargando contador de notificaciones', err)
+        });
+    }
+
+    /**
+     * Carga el listado completo solo cuando el usuario abre el panel o el widget del dashboard.
+     */
+    ensureNotificationsLoaded(): void {
+        if (this.notificationsLoaded) {
+            return;
+        }
+        this.loadNotifications();
+    }
+
     loadNotifications(): void {
         this.http.get<any>(this.apiUrl).subscribe({
             next: (response) => {
-                const notifications = response.data || response;
-                if (Array.isArray(notifications)) {
+                const notifications = this.extractNotifications(response);
+                if (notifications) {
                     this.notificationsSignal.set(notifications);
+                    this.notificationsLoaded = true;
+                    this.unreadCountSignal.set(notifications.filter((n) => !n.read).length);
                 }
             },
             error: (err) => console.error('Error cargando notificaciones', err)
         });
     }
 
-    /**
-     * Agrega una notificación localmente (optimista)
-     */
+    private extractNotifications(response: unknown): Notification[] | null {
+        if (Array.isArray(response)) {
+            return response as Notification[];
+        }
+        if (response && typeof response === 'object' && 'data' in response) {
+            const data = (response as { data: unknown }).data;
+            if (Array.isArray(data)) {
+                return data as Notification[];
+            }
+            if (data && typeof data === 'object' && 'data' in data && Array.isArray((data as { data: unknown }).data)) {
+                return (data as { data: Notification[] }).data;
+            }
+        }
+        return null;
+    }
+
     addLocalNotification(dto: CreateNotificationDto): void {
         const newNotification: Notification = {
             id: Date.now().toString(),
@@ -140,13 +177,16 @@ export class NotificationService {
 
         const current = this.notificationsSignal();
         this.notificationsSignal.set([newNotification, ...current]);
+        this.unreadCountSignal.update((count) => count + 1);
     }
 
-    /**
-     * Marca una notificación como leída
-     */
     markAsRead(id: string | number): void {
         const current = this.notificationsSignal();
+        const target = current.find((n) => n.id === id);
+        if (target && !target.read) {
+            this.unreadCountSignal.update((count) => Math.max(0, count - 1));
+        }
+
         const updated = current.map((n) => (n.id === id ? { ...n, read: true } : n));
         this.notificationsSignal.set(updated);
 
@@ -155,24 +195,23 @@ export class NotificationService {
         });
     }
 
-    /**
-     * Marca todas las notificaciones como leídas
-     */
     markAllAsRead(): void {
-        const current = this.notificationsSignal();
-        const updated = current.map((n) => ({ ...n, read: true }));
+        const updated = this.notificationsSignal().map((n) => ({ ...n, read: true }));
         this.notificationsSignal.set(updated);
+        this.unreadCountSignal.set(0);
 
         this.http.post(`${this.apiUrl}/mark-all-read`, {}).subscribe({
             error: () => this.loadNotifications()
         });
     }
 
-    /**
-     * Elimina una notificación
-     */
     deleteNotification(id: string | number): void {
         const current = this.notificationsSignal();
+        const target = current.find((n) => n.id === id);
+        if (target && !target.read) {
+            this.unreadCountSignal.update((count) => Math.max(0, count - 1));
+        }
+
         const updated = current.filter((n) => n.id !== id);
         this.notificationsSignal.set(updated);
 
@@ -181,9 +220,6 @@ export class NotificationService {
         });
     }
 
-    /**
-     * Obtiene el icono según el tipo de notificación
-     */
     private getIconForType(type: NotificationType): string {
         const iconMap: Record<NotificationType, string> = {
             pedido_creado: 'pi-shopping-cart',
@@ -201,9 +237,6 @@ export class NotificationService {
         return iconMap[type] || 'pi-bell';
     }
 
-    /**
-     * Obtiene el color según el tipo de notificación
-     */
     private getColorForType(type: NotificationType): string {
         const colorMap: Record<NotificationType, string> = {
             pedido_creado: 'blue',

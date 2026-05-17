@@ -1,0 +1,22 @@
+{
+    "/v1": {
+        "target": "http://127.0.0.1:8000",
+        "secure": false,
+        "changeOrigin": true
+    },
+    "/broadcasting": {
+        "target": "http://127.0.0.1:8000",
+        "secure": false,
+        "changeOrigin": true
+    },
+    "/images": {
+        "target": "http://127.0.0.1:8000",
+        "secure": false,
+        "changeOrigin": true
+    },
+    "/storage": {
+        "target": "http://127.0.0.1:8000",
+        "secure": false,
+        "changeOrigin": true
+    }
+}

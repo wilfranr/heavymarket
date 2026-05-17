@@ -22,7 +22,7 @@ export class ProviderAuthService {
     isAuthenticated = signal<boolean>(false);
     isLoading = signal<boolean>(false);
 
-    private readonly API_URL = `${environment.apiUrl}/v1/auth/provider`;
+    private readonly API_URL = `${environment.apiUrl}/auth/provider`;
     private readonly TOKEN_KEY = 'provider_access_token';
     private readonly USER_KEY = 'provider_current_user';
 

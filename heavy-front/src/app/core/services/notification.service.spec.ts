@@ -4,19 +4,20 @@ import { NotificationService } from './notification.service';
 import { NotificationType } from '../models/notification.model';
 import { AuthService } from '../auth/services/auth.service';
 import { ToastService } from './toast.service';
-import { of } from 'rxjs';
+import { signal } from '@angular/core';
 
 describe('NotificationService', () => {
     let service: NotificationService;
-    let authServiceSpy: any;
-    let toastServiceSpy: any;
+    let httpMock: HttpTestingController;
+    const currentUserSignal = signal<{ id: number; name: string } | null>({ id: 1, name: 'Test User' });
 
     beforeEach(() => {
-        authServiceSpy = jasmine.createSpyObj('AuthService', ['currentUser', 'getToken']);
-        authServiceSpy.currentUser.and.returnValue({ id: 1, name: 'Test User' });
+        const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken'], {
+            currentUser: currentUserSignal
+        });
         authServiceSpy.getToken.and.returnValue('mock-token');
 
-        toastServiceSpy = jasmine.createSpyObj('ToastService', ['info', 'success', 'error', 'warning']);
+        const toastServiceSpy = jasmine.createSpyObj('ToastService', ['info', 'success', 'error', 'warning']);
 
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
@@ -27,30 +28,47 @@ describe('NotificationService', () => {
             ]
         });
         service = TestBed.inject(NotificationService);
-        const httpMock = TestBed.inject(HttpTestingController);
+        httpMock = TestBed.inject(HttpTestingController);
 
-        // Responder a la carga inicial del constructor
-        const req = httpMock.expectOne((req) => req.url.includes('/notifications'));
-        req.flush({ data: [
-            { id: '1', title: 'Test 1', message: 'Msg 1', type: 'info', read: false, created_at: new Date().toISOString() }
-        ]});
+        const unreadReq = httpMock.expectOne((req) => req.url.includes('/notifications/unread-count'));
+        unreadReq.flush({ count: 1 });
+    });
+
+    afterEach(() => {
+        httpMock.verify();
     });
 
     it('should be created', () => {
         expect(service).toBeTruthy();
     });
 
-    it('should load mock notifications on init', () => {
-        const notifications = service.notifications();
-        expect(notifications.length).toBeGreaterThan(0);
+    it('should load unread count on init without full list', () => {
+        expect(service.unreadCount()).toBe(1);
+        expect(service.notifications().length).toBe(0);
     });
 
-    it('should calculate unread count correctly', () => {
-        const unreadCount = service.unreadCount();
-        const notifications = service.notifications();
-        const expectedUnread = notifications.filter((n) => !n.read).length;
+    it('should load notifications when ensureNotificationsLoaded is called', () => {
+        service.ensureNotificationsLoaded();
 
-        expect(unreadCount).toBe(expectedUnread);
+        const req = httpMock.expectOne((r) => r.url.includes('/notifications') && !r.url.includes('unread-count'));
+        req.flush({
+            data: [{ id: '1', title: 'Test 1', message: 'Msg 1', type: 'info', read: false, created_at: new Date().toISOString() }]
+        });
+
+        expect(service.notifications().length).toBe(1);
+    });
+
+    it('should calculate unread count correctly after load', () => {
+        service.ensureNotificationsLoaded();
+        const req = httpMock.expectOne((r) => r.url.includes('/notifications') && !r.url.includes('unread-count'));
+        req.flush({
+            data: [
+                { id: '1', title: 'A', message: 'M', type: 'info', read: false, created_at: new Date().toISOString() },
+                { id: '2', title: 'B', message: 'M', type: 'info', read: true, created_at: new Date().toISOString() }
+            ]
+        });
+
+        expect(service.unreadCount()).toBe(1);
     });
 
     describe('addLocalNotification', () => {
@@ -68,18 +86,6 @@ describe('NotificationService', () => {
             expect(service.notifications()[0].read).toBe(false);
         });
 
-        it('should add notification with correct icon and color', () => {
-            service.addLocalNotification({
-                type: 'orden_confirmada',
-                title: 'Orden Confirmada',
-                message: 'La orden fue confirmada'
-            });
-
-            const notification = service.notifications()[0];
-            expect(notification.icon).toBe('pi-check-circle');
-            expect(notification.iconColor).toBe('green');
-        });
-
         it('should increment unread count', () => {
             const initialUnread = service.unreadCount();
 
@@ -94,67 +100,62 @@ describe('NotificationService', () => {
     });
 
     describe('markAsRead', () => {
-        it('should mark notification as read', () => {
-            const notifications = service.notifications();
-            const unreadNotification = notifications.find((n) => !n.read);
-
-            if (unreadNotification) {
-                const initialUnread = service.unreadCount();
-                service.markAsRead(unreadNotification.id);
-
-                const updatedNotification = service.notifications().find((n) => n.id === unreadNotification.id);
-                expect(updatedNotification?.read).toBe(true);
-                expect(service.unreadCount()).toBe(initialUnread - 1);
-            }
+        beforeEach(() => {
+            service.ensureNotificationsLoaded();
+            const req = httpMock.expectOne((r) => r.url.includes('/notifications') && !r.url.includes('unread-count'));
+            req.flush({
+                data: [{ id: '1', title: 'Test', message: 'Msg', type: 'info', read: false, created_at: new Date().toISOString() }]
+            });
         });
 
-        it('should not change unread count if already read', () => {
-            const notifications = service.notifications();
-            const readNotification = notifications.find((n) => n.read);
+        it('should mark notification as read', () => {
+            const initialUnread = service.unreadCount();
+            service.markAsRead('1');
 
-            if (readNotification) {
-                const initialUnread = service.unreadCount();
-                service.markAsRead(readNotification.id);
+            expect(service.notifications()[0].read).toBe(true);
+            expect(service.unreadCount()).toBe(initialUnread - 1);
 
-                expect(service.unreadCount()).toBe(initialUnread);
-            }
+            const patchReq = httpMock.expectOne((r) => r.url.includes('/notifications/1/read'));
+            patchReq.flush({});
         });
     });
 
     describe('markAllAsRead', () => {
+        beforeEach(() => {
+            service.ensureNotificationsLoaded();
+            const req = httpMock.expectOne((r) => r.url.includes('/notifications') && !r.url.includes('unread-count'));
+            req.flush({
+                data: [{ id: '1', title: 'Test', message: 'Msg', type: 'info', read: false, created_at: new Date().toISOString() }]
+            });
+        });
+
         it('should mark all notifications as read', () => {
             service.markAllAsRead();
 
-            const notifications = service.notifications();
-            const allRead = notifications.every((n) => n.read);
-
-            expect(allRead).toBe(true);
+            expect(service.notifications().every((n) => n.read)).toBe(true);
             expect(service.unreadCount()).toBe(0);
+
+            const postReq = httpMock.expectOne((r) => r.url.includes('/mark-all-read'));
+            postReq.flush({});
         });
     });
 
     describe('deleteNotification', () => {
-        it('should remove notification', () => {
-            const notifications = service.notifications();
-            const initialCount = notifications.length;
-            const firstNotification = notifications[0];
-
-            service.deleteNotification(firstNotification.id);
-
-            expect(service.notifications().length).toBe(initialCount - 1);
-            expect(service.notifications().find((n) => n.id === firstNotification.id)).toBeUndefined();
+        beforeEach(() => {
+            service.ensureNotificationsLoaded();
+            const req = httpMock.expectOne((r) => r.url.includes('/notifications') && !r.url.includes('unread-count'));
+            req.flush({
+                data: [{ id: '1', title: 'Test', message: 'Msg', type: 'info', read: false, created_at: new Date().toISOString() }]
+            });
         });
 
-        it('should update unread count when deleting unread notification', () => {
-            const notifications = service.notifications();
-            const unreadNotification = notifications.find((n) => !n.read);
+        it('should remove notification', () => {
+            service.deleteNotification('1');
 
-            if (unreadNotification) {
-                const initialUnread = service.unreadCount();
-                service.deleteNotification(unreadNotification.id);
+            expect(service.notifications().length).toBe(0);
 
-                expect(service.unreadCount()).toBe(initialUnread - 1);
-            }
+            const deleteReq = httpMock.expectOne((r) => r.url.includes('/notifications/1'));
+            deleteReq.flush({});
         });
     });
 

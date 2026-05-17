@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-17T14:15:00Z",
+  "last_updated": "2026-05-17T15:05:00Z",
   "issue": "feat-sistema-lista-tipo-articulo",
   "description": "Gestión UI y API de la asociación N:N entre Sistemas y Listas (tipo Tipo de Artículo) vía pivot sistema_lista",
   "nodes": [
@@ -165,6 +165,141 @@
         "sla-front-sistema-detail"
       ],
       "review_notes": "Gates: 316 tests OK, ListaSistemaPivot 4/4, ng build OK. PHPStan no instalado en vendor. ng lint no definido en package.json.",
+      "files": []
+    },
+    {
+      "id": "pli-triage",
+      "description": "Triage: diagnóstico rendimiento vista app/listas (~1.7s API con 6.8 kB); paginación OK; foco backend accessors I/O y carga global de notifications",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "pli-backend-index-slim",
+      "description": "Backend: ListaIndexResource sin fabricante; index sin with(fabricante); foto URL sin file_exists en listado; select() columnas mínimas",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": ["pli-triage"],
+      "review_notes": "ListaIndexResource: foto legacy sin / retorna null en index. show/create/update siguen ListaResource.",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ListaController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/ListaIndexResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ListaIndexPerformanceTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "pli-front-notifications-lazy",
+      "description": "Frontend: diferir GET /notifications hasta abrir popover del topbar; unread-count ligero al login",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": ["pli-triage"],
+      "review_notes": "unreadCountLoaded evita duplicados; lista completa en openNotifications y dashboard widget.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/services/notification.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/layout/component/app.topbar.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/notification.service.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/pages/dashboard/components/notificationswidget.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "pli-front-list-ux",
+      "description": "Frontend: list OnPush + toSignal; sin sortComparer en paginación lazy; loadComponent por ruta",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["pli-backend-index-slim"],
+      "review_notes": "listas.routes loadComponent; afterNextRender primera carga; img solo con URL válida.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/listas/list/list.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/list/list.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/store/listas/reducers/listas.reducer.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/listas.routes.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "pli-dev-proxy-cors",
+      "description": "Dev: proxy.conf.json + apiUrl relativo; cors max_age 86400; sin withFetch",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": ["pli-triage"],
+      "review_notes": "environment.prod.ts sin cambios. Reiniciar ng serve tras proxy.",
+      "files": [
+        {
+          "path": "heavy-front/proxy.conf.json",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/angular.json",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/environments/environment.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app.config.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/config/cors.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/auth/services/provider-auth.service.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "pli-review",
+      "description": "Reviewer: gates php artisan test, ng build; checklist capas",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "pli-backend-index-slim",
+        "pli-front-notifications-lazy",
+        "pli-front-list-ux",
+        "pli-dev-proxy-cors"
+      ],
+      "review_notes": "Gates: 319 tests OK, ListaIndexPerformance 3/3, ng build OK. Usuario confirmó mejora tras loadComponent.",
       "files": []
     }
   ]

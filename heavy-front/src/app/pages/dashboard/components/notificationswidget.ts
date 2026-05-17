@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
@@ -52,12 +52,16 @@ import { NotificationService } from '../../../core/services/notification.service
         }
     </div>`
 })
-export class NotificationsWidget {
+export class NotificationsWidget implements OnInit {
     private readonly notificationService = inject(NotificationService);
     private readonly router = inject(Router);
 
     notifications = this.notificationService.notifications;
     unreadCount = this.notificationService.unreadCount;
+
+    ngOnInit(): void {
+        this.notificationService.ensureNotificationsLoaded();
+    }
 
     menuItems = [
         {

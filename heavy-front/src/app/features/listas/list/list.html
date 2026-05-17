@@ -23,11 +23,11 @@
     <!-- Tabla de Listas -->
     <p-table
         #dt
-        [value]="(listas$ | async) || []"
-        [loading]="loading$ | async"
+        [value]="listas()"
+        [loading]="loading()"
         [paginator]="true"
         [rows]="rowsPerPage"
-        [totalRecords]="(pagination$ | async)?.total || 0"
+        [totalRecords]="pagination().total"
         [first]="first"
         [lazy]="true"
         [showCurrentPageReport]="true"
@@ -73,9 +73,9 @@
                     <span class="text-sm text-surface-600" [title]="lista.definicion || ''"> {{ lista.definicion ? (lista.definicion.length > 50 ? lista.definicion.substring(0, 50) + '...' : lista.definicion) : '-' }} </span>
                 </td>
                 <td>
-                    @if (lista.foto || lista.fotoMedida) {
+                    @if (hasListaImagen(lista)) {
                     <div class="inline-block align-middle w-20 h-20 rounded shadow-sm overflow-hidden p-1 box-border" style="border: 1px solid var(--p-surface-border)">
-                        <img [src]="lista.foto || lista.fotoMedida" [alt]="lista.nombre" appFallbackImage class="block h-full w-full min-h-0 min-w-0 object-contain" />
+                        <img [src]="listaImagenSrc(lista)" [alt]="lista.nombre" loading="lazy" appFallbackImage class="block h-full w-full min-h-0 min-w-0 object-contain" />
                     </div>
                     } @else {
                     <span class="text-surface-400 text-xs italic">Sin imagen</span>

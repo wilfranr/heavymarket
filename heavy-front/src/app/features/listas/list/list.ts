@@ -1,8 +1,8 @@
-import { Component, OnInit, inject, ViewChild, ViewEncapsulation } from '@angular/core';
+import { afterNextRender, ChangeDetectionStrategy, Component, OnInit, inject, ViewChild, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { Observable } from 'rxjs';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { Table, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
@@ -34,6 +34,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
     providers: [MessageService, ConfirmationService],
     templateUrl: './list.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.OnPush,
     styles: [
         `
             app-listas-list .p-tablist-tab-list {
@@ -50,20 +51,19 @@ export class ListComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
-    listas$!: Observable<Lista[]>;
-    loading$!: Observable<boolean>;
-    pagination$!: Observable<{ total: number; currentPage: number; lastPage: number }>;
+    listas = toSignal(this.store.select(selectAllListas), { initialValue: [] as Lista[] });
+    loading = toSignal(this.store.select(selectListasLoading), { initialValue: false });
+    pagination = toSignal(this.store.select(selectListasPagination), {
+        initialValue: { total: 0, currentPage: 1, lastPage: 1 }
+    });
 
-    // Paginación
     currentPage = 1;
     rowsPerPage = 10;
     first = 0;
 
-    // Ordenamiento
     sortField = 'id';
-    sortOrder = 1; // 1 asc, -1 desc
+    sortOrder = 1;
 
-    // Filtros
     selectedTipo: ListaTipo | null = null;
     selectedTabValue: string = 'Todos';
     searchTerm = '';
@@ -82,13 +82,11 @@ export class ListComponent implements OnInit {
         { label: 'Piezas Estandar', value: 'Piezas Estandar', tipoValue: 'Piezas Estandar', icon: 'pi pi-objects-column' }
     ];
 
-    ngOnInit(): void {
-        this.loadListas();
-        this.listas$ = this.store.select(selectAllListas);
-        this.loading$ = this.store.select(selectListasLoading);
-        this.pagination$ = this.store.select(selectListasPagination);
+    constructor() {
+        afterNextRender(() => this.loadListas());
+    }
 
-        // Setup search debounce
+    ngOnInit(): void {
         this.searchSubject.pipe(debounceTime(500), distinctUntilChanged()).subscribe((term) => {
             this.searchTerm = term;
             this.currentPage = 1;
@@ -97,17 +95,11 @@ export class ListComponent implements OnInit {
         });
     }
 
-    /**
-     * Maneja la búsqueda
-     */
     onSearch(term: string): void {
         this.searchSubject.next(term);
     }
 
-    /**
-     * Cambia el tab seleccionado y filtra
-     */
-    onTabChange(value: any): void {
+    onTabChange(value: unknown): void {
         this.selectedTabValue = value as string;
         const tipo = this.tipos.find((t) => t.value === value);
         this.selectedTipo = tipo?.tipoValue ?? null;
@@ -116,9 +108,6 @@ export class ListComponent implements OnInit {
         this.loadListas();
     }
 
-    /**
-     * Limpia todos los filtros
-     */
     limpiarFiltros(): void {
         this.selectedTabValue = 'Todos';
         this.selectedTipo = null;
@@ -128,32 +117,30 @@ export class ListComponent implements OnInit {
         this.loadListas();
     }
 
-    /**
-     * Maneja el cambio de página
-     */
-    onPageChange(event: any): void {
+    onPageChange(event: { first: number; rows: number }): void {
         this.first = event.first;
         this.rowsPerPage = event.rows;
         this.currentPage = Math.floor(event.first / event.rows) + 1;
         this.loadListas();
     }
 
-    /**
-     * Maneja el ordenamiento
-     */
-    onSort(event: any): void {
+    onSort(event: { field: string; order: number }): void {
         this.sortField = event.field;
         this.sortOrder = event.order;
-        this.currentPage = 1; // Reset to first page when sorting
+        this.currentPage = 1;
         this.first = 0;
         this.loadListas();
     }
 
-    /**
-     * Carga las listas con los parámetros actuales
-     */
     private loadListas(): void {
-        const params: any = {
+        const params: {
+            page: number;
+            per_page: number;
+            sort_by: string;
+            sort_order: 'asc' | 'desc';
+            tipo?: ListaTipo;
+            search?: string;
+        } = {
             page: this.currentPage,
             per_page: this.rowsPerPage,
             sort_by: this.sortField,
@@ -168,23 +155,14 @@ export class ListComponent implements OnInit {
         this.store.dispatch(loadListas(params));
     }
 
-    /**
-     * Navega al detalle de la lista
-     */
     verDetalle(lista: Lista): void {
         this.router.navigate(['/app/listas', lista.id]);
     }
 
-    /**
-     * Navega al formulario de edición
-     */
     editarLista(lista: Lista): void {
         this.router.navigate(['/app/listas', lista.id, 'edit']);
     }
 
-    /**
-     * Elimina una lista con confirmación
-     */
     eliminarLista(lista: Lista): void {
         this.confirmationService.confirm({
             message: `¿Está seguro de eliminar la lista "${lista.nombre}"?`,
@@ -203,16 +181,19 @@ export class ListComponent implements OnInit {
         });
     }
 
-    /**
-     * Navega al formulario de creación
-     */
     crearLista(): void {
         this.router.navigate(['/app/listas/create']);
     }
 
-    /**
-     * Obtiene el severity del tag según el tipo
-     */
+    hasListaImagen(lista: Lista): boolean {
+        return Boolean(this.listaImagenSrc(lista));
+    }
+
+    listaImagenSrc(lista: Lista): string | undefined {
+        const src = lista.foto || lista.fotoMedida;
+        return src && src.trim() !== '' ? src : undefined;
+    }
+
     getTipoSeverity(tipo: string): 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast' {
         const severityMap: Record<string, 'success' | 'secondary' | 'info' | 'warn' | 'danger' | 'contrast'> = {
             Marca: 'success',

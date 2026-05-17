@@ -1,5 +1,5 @@
 import { IMAGE_CONFIG, IMAGE_LOADER } from '@angular/common';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { heavymarketImageLoader } from './app/core/image/heavymarket-image.loader';
 import { ApplicationConfig, provideZonelessChangeDetection } from '@angular/core';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
@@ -73,7 +73,7 @@ export const appConfig: ApplicationConfig = {
     providers: [
         provideZonelessChangeDetection(),
         provideRouter(appRoutes, withInMemoryScrolling({ anchorScrolling: 'enabled', scrollPositionRestoration: 'enabled' }), withPreloading(CustomPreloadStrategy)),
-        provideHttpClient(withFetch(), withInterceptors([authInterceptor, errorInterceptor])),
+        provideHttpClient(withInterceptors([authInterceptor, errorInterceptor])),
         ...rootStoreProviders,
         provideAnimationsAsync(),
         providePrimeNG({ theme: { preset: MyPreset, options: { darkModeSelector: '.app-dark' } } }),

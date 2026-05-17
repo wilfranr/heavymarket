@@ -1,27 +1,24 @@
 import { Routes } from '@angular/router';
-import { ListComponent } from './list/list';
-import { CreateComponent } from './create/create';
-import { EditComponent } from './edit/edit';
-import { DetailComponent } from './detail/detail';
 
 /**
- * Rutas del módulo de Listas
+ * Rutas del módulo de Listas.
+ * Cada vista en chunk propio (loadComponent) para no cargar create/edit/detail al abrir el listado.
  */
 export default [
     {
         path: '',
-        component: ListComponent
+        loadComponent: () => import('./list/list').then((m) => m.ListComponent)
     },
     {
         path: 'create',
-        component: CreateComponent
+        loadComponent: () => import('./create/create').then((m) => m.CreateComponent)
     },
     {
         path: ':id',
-        component: DetailComponent
+        loadComponent: () => import('./detail/detail').then((m) => m.DetailComponent)
     },
     {
         path: ':id/edit',
-        component: EditComponent
+        loadComponent: () => import('./edit/edit').then((m) => m.EditComponent)
     }
 ] as Routes;

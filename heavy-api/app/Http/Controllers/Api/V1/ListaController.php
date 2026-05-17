@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreListaRequest;
 use App\Http\Requests\UpdateListaRequest;
+use App\Http\Resources\ListaIndexResource;
 use App\Http\Resources\ListaResource;
 use App\Models\Lista;
 use App\Services\ListaSistemaSyncService;
@@ -39,7 +40,19 @@ class ListaController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = Lista::query()->with('fabricante');
+        $query = Lista::query()->select([
+            'id',
+            'tipo',
+            'nombre',
+            'definicion',
+            'foto',
+            'fotoMedida',
+            'sistema_id',
+            'parent_id',
+            'fabricante_id',
+            'created_at',
+            'updated_at',
+        ]);
 
         // Filtro por tipo
         if ($request->filled('tipo')) {
@@ -76,7 +89,7 @@ class ListaController extends Controller
         $listas = $query->paginate($perPage);
 
         return response()->json([
-            'data' => ListaResource::collection($listas),
+            'data' => ListaIndexResource::collection($listas),
             'meta' => [
                 'current_page' => $listas->currentPage(),
                 'last_page' => $listas->lastPage(),

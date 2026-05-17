@@ -73,7 +73,7 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action relative" (click)="notificationsPanel.toggle($event)">
+                    <button type="button" class="layout-topbar-action relative" (click)="openNotifications($event)">
                         <i class="pi pi-bell" pBadge [value]="unreadCount().toString()" severity="danger" *ngIf="unreadCount() > 0"></i>
                         <i class="pi pi-bell" *ngIf="unreadCount() === 0"></i>
                         <span>Notificaciones</span>
@@ -250,6 +250,11 @@ export class AppTopbar {
         if (this.searchQuery.trim()) {
             this.router.navigate(['/search'], { queryParams: { q: this.searchQuery } });
         }
+    }
+
+    openNotifications(event: Event): void {
+        this.notificationService.ensureNotificationsLoaded();
+        this.notificationsPanel.toggle(event);
     }
 
     handleNotificationClick(notification: any): void {

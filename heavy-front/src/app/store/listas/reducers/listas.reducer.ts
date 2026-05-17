@@ -16,8 +16,7 @@ export interface ListasState extends EntityState<Lista> {
 }
 
 export const adapter: EntityAdapter<Lista> = createEntityAdapter<Lista>({
-    selectId: (lista: Lista) => lista.id,
-    sortComparer: (a: Lista, b: Lista) => a.nombre.localeCompare(b.nombre)
+    selectId: (lista: Lista) => lista.id
 });
 
 const initialState: ListasState = adapter.getInitialState({

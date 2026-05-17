@@ -1,7 +1,8 @@
 export const environment = {
     production: false,
-    apiUrl: 'http://localhost:8000/v1',
-    apiBaseUrl: 'http://localhost:8000',
+    /** Rutas relativas: ng serve usa proxy.conf.json hacia Laravel (sin preflight CORS). */
+    apiUrl: '/v1',
+    apiBaseUrl: '',
     reverbKey: 'efwwsue7nfzam7jjst6r',
     reverbHost: 'localhost',
     reverbPort: 8081,
