@@ -110,6 +110,10 @@
       "depends_on": ["docs-modules-deep-dive", "docs-api-sync", "docs-front-sync"],
       "files": [
         {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        },
+        {
           "path": "README.md",
           "status": "validated"
         },

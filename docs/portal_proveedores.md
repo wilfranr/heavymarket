@@ -54,4 +54,16 @@ Una vez que el cliente final aprueba una cotización, el sistema genera automát
 *   `OrdenCompra`: Documento final generado tras aprobación de cotización.
 
 ---
-*Última actualización: 9 de Mayo, 2026*
+
+## 🛠️ Mapa de Implementación (Anclas Técnicas)
+
+Para entender la lógica del Portal de Proveedores y el Costeo Colaborativo, consulte:
+
+1. **El Contrato (Backend Model)**: `heavy-api/app/Models/PedidoReferenciaProveedor.php` (Almacena ofertas y selección de marcas).
+2. **El Cerebro (API Controller)**: `heavy-api/app/Http/Controllers/Api/V1/PedidoReferenciaProveedorController.php` (Procesa el envío de ofertas).
+3. **El Transporte (Frontend DTO)**: `heavy-front/src/app/core/models/pedido.model.ts` (Contiene las interfaces para costeo nacional/internacional).
+4. **La Fachada (Frontend Service)**: `heavy-front/src/app/core/services/pedido.service.ts` (Gestión de comparativa de proveedores).
+5. **Tiempo Real (Event/Socket)**: `heavy-api/app/Events/NewReferencesAvailable.php` (Dispara avisos vía Laravel Reverb).
+
+---
+*Última actualización: 17 de Mayo, 2026*

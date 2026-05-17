@@ -290,5 +290,17 @@ Aún no implementado. Se recomienda agregar:
 
 ---
 
+## 🛠️ Mapa de Implementación (Anclas Técnicas)
+
+Para entender el flujo logístico de las Órdenes de Trabajo, consulte estos archivos clave:
+
+1. **El Contrato (Backend Model)**: `heavy-api/app/Models/OrdenTrabajo.php` (Define estados: Pendiente, En Proceso, Completado, Cancelado).
+2. **El Cerebro (API Controller)**: `heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php` (Gestión de estados y despacho).
+3. **El Transporte (Frontend DTO)**: `heavy-front/src/app/core/models/orden-trabajo.model.ts` (Interfaces de datos logísticos).
+4. **La Fachada (Frontend Service)**: `heavy-front/src/app/core/services/orden-trabajo.service.ts` (Servicio de sincronización de estados).
+5. **La Interacción (Feature UI)**: `heavy-front/src/app/features/ordenes-trabajo/` (Vistas de listado y control de semaforización).
+
+---
+
 *Documento creado: Mayo 2026*
 *Última actualización: Mayo 2026*

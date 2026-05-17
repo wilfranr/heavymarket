@@ -62,5 +62,17 @@ graph LR
     end
     Angular -- JSON/HTTPS --> Laravel
     Laravel -- Eloquent --> DB
-    Laravel -- Disk API --> Storage
-```
+---
+
+## 🛠️ Mapa de Implementación (Infraestructura Core)
+
+Para entender los cimientos técnicos de HeavyMarket, consulte:
+
+1. **La Base (API REST)**: `heavy-api/app/Http/Controllers/Controller.php` (Lógica base de controladores).
+2. **La Seguridad (Auth)**: `heavy-api/app/Models/User.php` (Roles y permisos Spatie).
+3. **El Motor UI (Front)**: `heavy-front/src/app/core/services/api.service.ts` (Centralización de peticiones HTTP con Signals).
+4. **El Estilo (Layout)**: `heavy-front/src/app/layout/` (Estructura visual de la SPA).
+5. **El Puente (CORS/Proxy)**: `heavy-front/proxy.conf.json` (Comunicación entre dev server y backend).
+
+---
+*Última actualización: 17 de Mayo, 2026*

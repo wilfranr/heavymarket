@@ -15,6 +15,7 @@ Bienvenido al sistema de gestión de HeavyMarket. Este archivo sirve como el pun
 4. **Reactividad**: Usar **Signals** para todo el estado del frontend; evitar observables para bindings de template. `output()` requiere `.emit()` tanto en TypeScript como en templates.
 5. **Arquitectura**: La aplicación es **Zoneless**. Es OBLIGATORIO invocar y seguir las directrices de la skill `software_architect` para cualquier cambio estructural, definición de nuevos patrones o ajustes en la arquitectura base.
 6. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
+7. **Inducción Quirúrgica**: Para entender, explicar o trabajar en un módulo funcional, el agente **DEBE** consultar primero la sección `## 🛠️ Mapa de Implementación` en su respectivo manual en `docs/`. Está prohibido realizar búsquedas ciegas en todo el repositorio si existe un mapa de archivos clave definido.
 
 ## Memoria persistente (Engram MCP)
 

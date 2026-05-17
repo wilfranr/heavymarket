@@ -58,7 +58,15 @@ La interfaz de usuario incluye un componente especializado que permite ingresar 
 1.  **Captura**: El usuario busca una referencia.
 2.  **Asociación**: Si la referencia ya existe, puede ver a qué `Artículo` está vinculada.
 3.  **Equivalencia**: El usuario puede agregar múltiples referencias a un mismo artículo, creando automáticamente una red de equivalencias técnicas (cross-references).
-uzadas
-1.  **Captura**: El usuario busca una referencia.
-2.  **Asociación**: Si la referencia ya existe, puede ver a qué `Artículo` está vinculada.
-3.  **Equivalencia**: El usuario puede agregar múltiples referencias a un mismo artículo, creando automáticamente una red de equivalencias técnicas (cross-references).
+
+---
+
+## 🛠️ Mapa de Implementación (Anclas Técnicas)
+
+Para entender este flujo de manera quirúrgica, el agente debe consultar estos archivos en orden:
+
+1. **El Contrato (Backend Model)**: `heavy-api/app/Models/Articulo.php` (Define campos de ficha técnica, fotos y pesos).
+2. **El Cerebro (API Controller)**: `heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php` (Lógica de validación y almacenamiento).
+3. **El Transporte (Frontend DTO)**: `heavy-front/src/app/core/models/articulo.model.ts` (Estructura de datos en TypeScript).
+4. **La Fachada (Frontend Service)**: `heavy-front/src/app/core/services/articulo.service.ts` (Comunicación mediante Signals).
+5. **La Interacción (Feature UI)**: `heavy-front/src/app/features/listas/` (Utilizado como CRUD de referencia para la gestión de definiciones técnicas).

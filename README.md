@@ -25,6 +25,7 @@ Esta es la puerta de entrada al ecosistema de HeavyMarket. Para mantener la cohe
 - [**Arquitectura del Sistema**](./docs/arquitectura.md): Diagramas de flujo y diseño estructural.
 - [**Especificación Funcional**](./docs/especificacion_funcional.md): Reglas de negocio y alcance del sistema.
 - [**Diccionario de Datos**](./docs/diccionario_datos.md): Entidades y relaciones principales.
+- [**Módulo de Pedidos**](./docs/modulo_pedidos.md): Gestión comercial, TRM y flujo de cotización.
 - [**Módulo de Artículos**](./docs/modulo_articulos.md): Gestión de catálogo técnico y repuestos.
 - [**Órdenes de Trabajo**](./docs/modulo_ordenes_trabajo.md): Flujo logístico y semaforización.
 - [**Portal de Proveedores**](./docs/portal_proveedores.md): Guía del módulo de costeo colaborativo.
