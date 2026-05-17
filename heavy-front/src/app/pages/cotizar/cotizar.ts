@@ -24,6 +24,8 @@ import { GalleriaModule } from 'primeng/galleria';
     encapsulation: ViewEncapsulation.None
 })
 export class Cotizar implements OnInit {
+    private static readonly DEFAULT_ARTICLE_TYPE_ID = 3425;
+
     // View State
     currentView: 'grid' | 'form' = 'grid';
     formStep: 1 | 2 | 3 = 1;
@@ -211,12 +213,7 @@ export class Cotizar implements OnInit {
                 }));
                 this.brands.set(quoteBrands.length > 0 ? quoteBrands : endpointBrands);
 
-                if (this.items.length > 0 && !this.items[0].system) {
-                    const defaultSys = this.systems.find((s) => s.nombre.toLowerCase() === 'por defecto') || this.systems[0];
-                    if (defaultSys) {
-                        this.items[0].system = defaultSys.nombre;
-                    }
-                }
+                this.items.forEach((item) => this.applyItemDefaults(item));
 
                 const cats = this.categories();
                 if (cats.length > 0) {
@@ -250,6 +247,43 @@ export class Cotizar implements OnInit {
 
     private removeAccents(str: string): string {
         return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    private getDefaultSystem(): { id: number; nombre: string } | null {
+        if (!this.systems.length) {
+            return null;
+        }
+
+        return this.systems.find((s) => s.nombre.toLowerCase() === 'por defecto') ?? this.systems[0];
+    }
+
+    private getDefaultArticleType(): { id: number; nombre: string; sistema_ids: number[] } | null {
+        if (!this.articleTypes.length) {
+            return null;
+        }
+
+        const byId = this.articleTypes.find((t) => t.id === Cotizar.DEFAULT_ARTICLE_TYPE_ID);
+        if (byId) {
+            return byId;
+        }
+
+        return this.articleTypes.find((t) => t.nombre.toLowerCase() === 'por defecto') ?? null;
+    }
+
+    private applyItemDefaults(item: { system?: string; description?: string }): void {
+        if (!item.system) {
+            const defaultSys = this.getDefaultSystem();
+            if (defaultSys) {
+                item.system = defaultSys.nombre;
+            }
+        }
+
+        if (!item.description) {
+            const defaultType = this.getDefaultArticleType();
+            if (defaultType) {
+                item.description = defaultType.nombre;
+            }
+        }
     }
 
     private flexibleMatch(text: string, search: string): boolean {
@@ -574,11 +608,8 @@ export class Cotizar implements OnInit {
 
     // Form Items Logic
     addItem() {
-        const defaultSys = this.systems.find((s) => s.nombre.toLowerCase() === 'por defecto') || (this.systems.length > 0 ? this.systems[0] : null);
-        const defaultSysName = defaultSys ? defaultSys.nombre : '';
-
-        this.items.push({
-            system: defaultSysName,
+        const newItem = {
+            system: '',
             description: '',
             quantity: 1,
             reference: '',
@@ -588,7 +619,9 @@ export class Cotizar implements OnInit {
             openDescription: false,
             descriptionSearch: '',
             comment: ''
-        });
+        };
+        this.applyItemDefaults(newItem);
+        this.items.push(newItem);
         this.cd.markForCheck();
     }
 
@@ -790,9 +823,13 @@ export class Cotizar implements OnInit {
     }
 
     selectItemSystem(index: number, system: any) {
-        // Reset description if system changes
         if (this.items[index].system !== system.nombre) {
-            this.items[index].description = '';
+            if (system.nombre.toLowerCase() === 'por defecto') {
+                const defaultType = this.getDefaultArticleType();
+                this.items[index].description = defaultType?.nombre ?? '';
+            } else {
+                this.items[index].description = '';
+            }
         }
         this.items[index].system = system.nombre;
         this.items[index].openSystem = false;
