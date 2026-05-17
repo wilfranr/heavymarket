@@ -11,7 +11,7 @@ import { Direccion, CreateDireccionDto, UpdateDireccionDto } from '../models/dir
 })
 export class DireccionService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/direcciones`;
+        return `direcciones`;
     }
 
     /**

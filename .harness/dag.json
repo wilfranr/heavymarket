@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-17T13:10:00Z",
-  "issue": "docs-audit-and-refactor",
-  "description": "Auditoría, depuración y actualización integral de la documentación del proyecto",
+  "last_updated": "2026-05-17T23:38:00Z",
+  "issue": "pedido-edit-tipo-dropdown",
+  "description": "Alinear dropdown Tipo en editar pedido con create: catálogo getByTipo, panel rápido, Por Defecto y carga de filas existentes",
   "nodes": [
     {
       "id": "docs-init-triage",
@@ -164,6 +164,45 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "pedido-edit-tipo-triage",
+      "description": "Triage: Validar paridad con create (0dcf3e7) y planificar port en editar pedido",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Confirmado: edit usa tiposPorFila[] + getAll(sistema_id) siempre; aplica getTiposArticuloPorSistema, panel 100 ítems, preload catálogo. Preservar listaId al cargar pedido."
+    },
+    {
+      "id": "pedido-edit-tipo-implement",
+      "description": "Implementar catálogo tipos optimizado en edit (filas, lote, nuevas referencias) reutilizando ListaService y patrón create",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["pedido-edit-tipo-triage"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "pedido-edit-tipo-tests",
+      "description": "Validar gates frontend: ng build y regresión manual flujo editar pedido (carga existente, nueva fila, lote, búsqueda tipo)",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": ["pedido-edit-tipo-implement"],
+      "files": []
     }
   ]
 }

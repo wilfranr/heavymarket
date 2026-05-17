@@ -11,7 +11,7 @@ import { TRM, CreateTRMDto, UpdateTRMDto } from '../models/trm.model';
 })
 export class TRMService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/trms`;
+        return `trms`;
     }
 
     /**

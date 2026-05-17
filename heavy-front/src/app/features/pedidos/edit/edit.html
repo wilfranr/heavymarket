@@ -287,9 +287,12 @@
                             </div>
 
                             <div class="w-[18%]">
+                                @if (isRowTiposReady($index)) {
                                 <p-select
                                     formControlName="lista_id"
-                                    [options]="tiposPorFila[$index]"
+                                    [options]="getTiposPanelOptions($index)"
+                                    optionLabel="label"
+                                    optionValue="value"
                                     placeholder="Tipo de artículo"
                                     styleClass="w-full h-[48px] flex items-center"
                                     [class]="campoTieneErrorCosteo($index, 'lista_id') ? 'campo-error' : ''"
@@ -299,7 +302,10 @@
                                     (onChange)="onListaChange($event.value, $index)"
                                     [filterMatchMode]="filterMode"
                                     filterBy="_search"
+                                    [resetFilterOnHide]="true"
                                     [panelStyle]="{'max-width': '450px'}"
+                                    (onShow)="onTiposPanelShow($index)"
+                                    (onFilter)="onFilterTiposPanel($event, $index)"
                                 >
                                     <ng-template pTemplate="item" let-tipo>
                                         <div class="flex flex-col max-w-full">
@@ -308,6 +314,9 @@
                                         </div>
                                     </ng-template>
                                 </p-select>
+                                } @else {
+                                <div class="w-full h-[48px] flex items-center px-3 rounded-lg border border-gray-300 dark:border-slate-600/40 text-xs theme-text-secondary">Cargando...</div>
+                                }
                                 @if (campoTieneErrorCosteo($index, 'lista_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
@@ -513,9 +522,12 @@
 
             <div class="flex flex-col gap-2 relative">
                 <label class="font-bold text-gray-800 dark:text-white">2. Tipo de artículo <span class="text-red-500">*</span></label>
+                @if (tiposLoteCatalog().ready || tiposArticuloCatalogReady()) {
                 <p-select
                     formControlName="articulo_id"
-                    [options]="tiposLote"
+                    [options]="getTiposLotePanelOptions()"
+                    optionLabel="label"
+                    optionValue="value"
                     placeholder="Tipo de artículo"
                     styleClass="w-full"
                     [filter]="true"
@@ -523,6 +535,10 @@
                     (onChange)="onArticuloLoteChange($event.value)"
                     [filterMatchMode]="filterMode"
                     filterBy="_search"
+                    [resetFilterOnHide]="true"
+                    [panelStyle]="{'max-width': '400px'}"
+                    (onShow)="onTiposLotePanelShow()"
+                    (onFilter)="onFilterTiposLotePanel($event)"
                 >
                     <ng-template pTemplate="item" let-tipo>
                         <div class="flex flex-col">
@@ -531,6 +547,9 @@
                         </div>
                     </ng-template>
                 </p-select>
+                } @else {
+                <div class="w-full h-[42px] flex items-center px-3 rounded-lg border border-gray-300 dark:border-slate-600/40 text-sm theme-text-secondary">Cargando tipos...</div>
+                }
             </div>
 
             <div class="flex flex-col gap-2 relative">

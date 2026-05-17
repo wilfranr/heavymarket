@@ -11,7 +11,7 @@ import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, UpdatePe
 })
 export class PedidoReferenciaProveedorService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/pedidos`;
+        return `pedidos`;
     }
 
     /**

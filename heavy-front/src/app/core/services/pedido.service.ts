@@ -63,7 +63,7 @@ export class PedidoService extends ApiService {
      * Eliminar un pedido (Borrado físico - Usar con precaución)
      */
     deletePedido(id: number): Observable<void> {
-        return this.http.delete<void>(`${this.API_URL}/${this.endpoint}/${id}`);
+        return this.delete<void>(`${this.endpoint}/${id}`);
     }
 
     /**

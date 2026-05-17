@@ -1,6 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
+import { AbstractControl, FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable, combineLatest, filter, forkJoin, of, take } from 'rxjs';
@@ -52,6 +52,18 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
 
+type TipoListaSelectOption = {
+    label: string;
+    value: number;
+    descripcion?: string;
+    _search: string;
+};
+
+type RowTiposCatalogEntry = {
+    ready: boolean;
+    options: TipoListaSelectOption[];
+};
+
 /**
  * Componente de edición de pedido
  * Formulario para editar un pedido existente con gestión de referencias
@@ -94,7 +106,10 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
     styleUrl: './edit.scss'
 })
 export class EditComponent implements OnInit {
+    private static readonly DEFAULT_ARTICLE_TYPE_LISTA_ID = 3425;
+
     private readonly fb = inject(FormBuilder);
+    private readonly cdr = inject(ChangeDetectorRef);
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -156,8 +171,13 @@ export class EditComponent implements OnInit {
     maquinaModalEdicionId: number | null = null;
 
     // Opciones en cascada por fila (índice del FormArray)
-    tiposPorFila: any[][] = [];
+    readonly rowTiposCatalog = signal<Record<number, RowTiposCatalogEntry>>({});
     referenciasPorFila: any[][] = [];
+    tiposArticuloCatalog: TipoListaSelectOption[] = [];
+    readonly tiposArticuloCatalogReady = signal(false);
+    private readonly tiposPanelFilter: Record<number, string> = {};
+    private readonly TIPOS_PANEL_MAX = 100;
+    private tiposLotePanelFilter = '';
 
     proveedores: any[] = []; // Lista de proveedores (terceros tipo Proveedor)
     articulos: any[] = []; // Lista de artículos disponibles
@@ -203,14 +223,14 @@ export class EditComponent implements OnInit {
     // Lote de Referencias
     displayLoteDialog = false;
     loteForm!: FormGroup;
-    tiposLote: any[] = [];
-    tiposLoteOriginal: any[] = [];
+    readonly tiposLoteCatalog = signal<RowTiposCatalogEntry>({ ready: false, options: [] });
+    tiposLoteOriginal: TipoListaSelectOption[] = [];
     referenciasLote: any[] = [];
     filterMode: any = 'flexible';
 
     // Respaldos para filtrado flexible
     sistemasOriginal: any[] = [];
-    tiposPorFilaOriginal: any[][] = [];
+    tiposPorFilaOriginal: TipoListaSelectOption[][] = [];
 
     // Dialogos de comentario e imagen
     displayComentarioDialog = false;
@@ -487,22 +507,254 @@ export class EditComponent implements OnInit {
         this.sistemas = this.sistemasOriginal.filter(s => this.flexibleMatch(s._search, query));
     }
 
-    onFilterTipos(event: any, index: number) {
-        const query = (event.filter || '').trim();
-        if (!query) {
-            this.tiposPorFila[index] = [...(this.tiposPorFilaOriginal[index] || [])];
-            return;
-        }
-        this.tiposPorFila[index] = (this.tiposPorFilaOriginal[index] || []).filter((t: any) => this.flexibleMatch(t._search, query));
+    private mapListasToOptions(listas: { id: number; nombre: string; definicion?: string | null }[]): TipoListaSelectOption[] {
+        return listas.map((lista) => ({
+            label: lista.nombre,
+            value: lista.id,
+            descripcion: lista.definicion ?? undefined,
+            _search: `${lista.nombre} ${lista.definicion || ''}`
+        }));
     }
 
-    onFilterTiposLote(event: any) {
-        const query = (event.filter || '').trim();
-        if (!query) {
-            this.tiposLote = [...this.tiposLoteOriginal];
+    private deferViewUpdate(fn: () => void): void {
+        setTimeout(() => {
+            fn();
+            this.cdr.markForCheck();
+        }, 0);
+    }
+
+    private setRowTiposCatalog(index: number, entry: RowTiposCatalogEntry): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: entry }));
+            this.tiposPorFilaOriginal[index] = [...entry.options];
+        });
+    }
+
+    private clearRowTiposCatalog(index: number, after?: () => void): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: false, options: [] } }));
+            this.tiposPorFilaOriginal[index] = [];
+            after?.();
+        });
+    }
+
+    private shiftRowTiposCatalogAfterRemove(removedIndex: number): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => {
+                const next: Record<number, RowTiposCatalogEntry> = {};
+                Object.entries(state).forEach(([key, entry]) => {
+                    const i = Number(key);
+                    if (i < removedIndex) {
+                        next[i] = entry;
+                    } else if (i > removedIndex) {
+                        next[i - 1] = entry;
+                    }
+                });
+                return next;
+            });
+        });
+    }
+
+    private normalizeLabel(value: string): string {
+        return this.removeAccents(value.toLowerCase().trim());
+    }
+
+    private patchDefaultListaForRow(row: AbstractControl | null, options: TipoListaSelectOption[], systemLabel?: string): void {
+        if (!row || this.normalizeLabel(systemLabel ?? '') !== 'por defecto') {
             return;
         }
-        this.tiposLote = this.tiposLoteOriginal.filter((t: any) => this.flexibleMatch(t._search, query));
+
+        const currentListaId = row.get('lista_id')?.value;
+        if (currentListaId != null && options.some((o) => o.value === currentListaId)) {
+            return;
+        }
+
+        const defaultListaId = this.resolveDefaultListaId(options);
+        if (defaultListaId) {
+            row.patchValue({ lista_id: defaultListaId }, { emitEvent: true });
+        }
+    }
+
+    private applyRowTiposLoaded(index: number, options: TipoListaSelectOption[], row: AbstractControl | null, systemLabel?: string): void {
+        if (this.normalizeLabel(systemLabel ?? '') === 'por defecto') {
+            this.applyRowTiposReadyPorDefecto(index, row, systemLabel);
+            return;
+        }
+
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options } }));
+            this.tiposPorFilaOriginal[index] = [...options];
+            this.deferViewUpdate(() => {
+                this.patchDefaultListaForRow(row, options, systemLabel);
+            });
+        });
+    }
+
+    private applyRowTiposReadyPorDefecto(index: number, row: AbstractControl | null, systemLabel?: string): void {
+        this.tiposPanelFilter[index] = '';
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options: [] } }));
+            this.deferViewUpdate(() => {
+                this.patchDefaultListaForRow(row, this.tiposArticuloCatalog, systemLabel);
+            });
+        });
+    }
+
+    private syncPendingPorDefectoRows(): void {
+        this.referenciasFormArray.controls.forEach((row, index) => {
+            const sistemaId = row.get('sistema_id')?.value as number | null;
+            if (!this.isSistemaPorDefecto(sistemaId)) {
+                return;
+            }
+
+            const system = this.sistemas.find((s) => s.value === sistemaId);
+            const catalog = this.rowTiposCatalog()[index];
+            if (!catalog?.ready) {
+                this.applyRowTiposReadyPorDefecto(index, row, system?.label);
+            }
+        });
+    }
+
+    private buildTiposPanelSlice(source: TipoListaSelectOption[], filter: string, selectedId: number | null): TipoListaSelectOption[] {
+        const list = filter ? source.filter((t) => this.flexibleMatch(t._search, filter)) : source;
+        if (list.length <= this.TIPOS_PANEL_MAX) {
+            return list;
+        }
+
+        const slice = list.slice(0, this.TIPOS_PANEL_MAX);
+        if (selectedId == null) {
+            return slice;
+        }
+
+        const selected = source.find((t) => t.value === selectedId);
+        if (selected && !slice.some((t) => t.value === selectedId)) {
+            return [selected, ...list.filter((t) => t.value !== selectedId).slice(0, this.TIPOS_PANEL_MAX - 1)];
+        }
+
+        return slice;
+    }
+
+    isRowTiposReady(index: number): boolean {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.tiposArticuloCatalogReady();
+        }
+        return !!this.rowTiposCatalog()[index]?.ready;
+    }
+
+    getTiposPanelOptions(index: number): TipoListaSelectOption[] {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        const selectedId = (row?.get('lista_id')?.value ?? null) as number | null;
+        const filter = this.tiposPanelFilter[index] ?? '';
+
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.buildTiposPanelSlice(this.tiposArticuloCatalog, filter, selectedId);
+        }
+
+        const rowOptions = this.rowTiposCatalog()[index]?.options ?? [];
+        if (!filter) {
+            return rowOptions;
+        }
+        return rowOptions.filter((t) => this.flexibleMatch(t._search, filter));
+    }
+
+    onTiposPanelShow(index: number): void {
+        this.tiposPanelFilter[index] = '';
+        this.cdr.markForCheck();
+    }
+
+    onFilterTiposPanel(event: { filter?: string }, index: number): void {
+        this.tiposPanelFilter[index] = (event.filter ?? '').trim();
+        this.cdr.markForCheck();
+    }
+
+    getTiposLotePanelOptions(): TipoListaSelectOption[] {
+        const selectedId = (this.loteForm.get('articulo_id')?.value ?? null) as number | null;
+        const source = this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog;
+        return this.buildTiposPanelSlice(source, this.tiposLotePanelFilter, selectedId);
+    }
+
+    onTiposLotePanelShow(): void {
+        this.tiposLotePanelFilter = '';
+        this.cdr.markForCheck();
+    }
+
+    onFilterTiposLotePanel(event: { filter?: string }): void {
+        this.tiposLotePanelFilter = (event.filter ?? '').trim();
+        this.cdr.markForCheck();
+    }
+
+    private isSistemaPorDefecto(sistemaId: number | null): boolean {
+        const system = this.sistemas.find((s) => s.value === sistemaId);
+        return this.normalizeLabel(system?.label ?? '') === 'por defecto';
+    }
+
+    private fetchTiposArticuloOptions(sistemaId: number): Observable<TipoListaSelectOption[]> {
+        const esPorDefecto = this.isSistemaPorDefecto(sistemaId);
+        if (esPorDefecto && this.tiposArticuloCatalogReady()) {
+            return of(this.tiposArticuloCatalog);
+        }
+
+        return this.listaService.getTiposArticuloPorSistema(sistemaId, esPorDefecto).pipe(
+            map((listas) => {
+                const options = this.mapListasToOptions(listas);
+                if (esPorDefecto) {
+                    this.tiposArticuloCatalog = options;
+                    this.tiposArticuloCatalogReady.set(true);
+                }
+                return options;
+            })
+        );
+    }
+
+    private preloadTiposPorDefecto(): void {
+        this.listaService.getByTipo('Tipo de Artículo', undefined, 5000).subscribe({
+            next: (listas) => {
+                const options = this.mapListasToOptions(listas);
+                this.deferViewUpdate(() => {
+                    this.tiposArticuloCatalog = options;
+                    this.tiposArticuloCatalogReady.set(true);
+                    this.syncPendingPorDefectoRows();
+                });
+            }
+        });
+    }
+
+    private resolveDefaultListaId(tipos: { label: string; value: number }[]): number | null {
+        if (!tipos.length) {
+            return null;
+        }
+
+        const byId = tipos.find((t) => t.value === EditComponent.DEFAULT_ARTICLE_TYPE_LISTA_ID);
+        if (byId) {
+            return byId.value;
+        }
+
+        const byName = tipos.find((t) => this.normalizeLabel(t.label) === 'por defecto');
+        return byName?.value ?? null;
+    }
+
+    private resolveDefaultListaIdFromCache(): number | null {
+        if (!this.tiposArticuloCatalog.length) {
+            return null;
+        }
+        return this.resolveDefaultListaId(this.tiposArticuloCatalog);
+    }
+
+    private getDefaultSistemaId(): number | null {
+        const defaultSistema = this.sistemas.find((s) => this.normalizeLabel(s.label) === 'por defecto');
+        return defaultSistema?.value ?? null;
+    }
+
+    private tiposSourceForRow(index: number): TipoListaSelectOption[] {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.tiposArticuloCatalog;
+        }
+        return this.rowTiposCatalog()[index]?.options ?? [];
     }
 
     /**
@@ -681,6 +933,8 @@ export class EditComponent implements OnInit {
 
         // Cargar artículos disponibles
         this.loadArticulos();
+
+        this.preloadTiposPorDefecto();
     }
 
     /**
@@ -867,7 +1121,6 @@ export class EditComponent implements OnInit {
         referencias.forEach((ref, idx) => {
             const index = this.referenciasFormArray.length;
 
-            this.tiposPorFila[index] = [];
             this.referenciasPorFila[index] = [];
 
             const articuloId = (ref.referencia as any)?.articulo_id || null;
@@ -892,7 +1145,7 @@ export class EditComponent implements OnInit {
             this.referenciasFormArray.push(referenciaForm);
 
             if (ref.sistema_id) {
-                this.cargarTiposPorSistema(ref.sistema_id, index, null, ref.lista_id ?? undefined);
+                this.cargarTiposPorSistema(ref.sistema_id, index, ref.referencia_id ?? null, ref.lista_id ?? undefined);
             }
 
             if (articuloId) {
@@ -911,15 +1164,24 @@ export class EditComponent implements OnInit {
     agregarReferencia(data: any = {}): void {
         const index = this.referenciasFormArray.length;
 
-        const defaultSistema = this.sistemas.find(s => s.label.toLowerCase() === 'por defecto');
-        const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
+        if (data.tipos?.length) {
+            this.setRowTiposCatalog(index, { ready: true, options: data.tipos });
+        }
+
+        this.referenciasPorFila[index] = data.referencias || [];
+
+        const defaultSistemaId = this.getDefaultSistemaId();
+        const sistemaInicialId = (data.sistema_id ?? defaultSistemaId) as number | null;
+        const esSistemaPorDefecto = this.isSistemaPorDefecto(sistemaInicialId);
+        const defaultListaId =
+            data.lista_id ?? (esSistemaPorDefecto && data.referencia_id == null ? this.resolveDefaultListaIdFromCache() : null);
 
         const referenciaForm = this.fb.group({
             id: [data?.id ?? null],
             estado: [data?.estado ?? true],
             seleccionado: [false],
-            sistema_id: [data?.sistema_id ?? defaultSistemaId],
-            lista_id: [data?.lista_id ?? null],
+            sistema_id: [sistemaInicialId],
+            lista_id: [data.lista_id ?? defaultListaId],
             articulo_id: [data?.articulo_id ?? null],
             referencia_id: [data?.referencia_id ?? null],
             marca_id: [data?.marca_id ?? null],
@@ -928,13 +1190,17 @@ export class EditComponent implements OnInit {
             definicion: [data?.definicion ?? ''],
             imagen: [data?.imagen ?? null],
             imagenes: [data?.imagenes ?? []],
-            files: [[]] // Nuevos archivos binarios
+            files: [[]]
         });
 
         this.referenciasFormArray.push(referenciaForm);
 
-        if (referenciaForm.get('sistema_id')?.value) {
-            this.cargarTiposPorSistema(referenciaForm.get('sistema_id')?.value, index);
+        if (sistemaInicialId) {
+            this.cargarTiposPorSistema(sistemaInicialId, index, data.referencia_id ?? null, data.lista_id ?? defaultListaId ?? undefined);
+        }
+
+        if (data.articulo_id && (!data.referencias || data.referencias.length === 0)) {
+            this.cargarReferenciasPorArticulo(data.articulo_id, index);
         }
     }
 
@@ -1030,12 +1296,26 @@ export class EditComponent implements OnInit {
     onSistemaChange(sistemaId: number | null, index: number): void {
         const row = this.referenciasFormArray.at(index);
         row.patchValue({ lista_id: null, articulo_id: null, referencia_id: null }, { emitEvent: false });
-        this.tiposPorFila[index] = [];
         this.referenciasPorFila[index] = [];
 
-        if (!sistemaId) return;
+        if (!sistemaId) {
+            this.clearRowTiposCatalog(index);
+            return;
+        }
 
-        this.cargarTiposPorSistema(sistemaId, index);
+        const systemLabel = this.sistemas.find((s) => s.value === sistemaId)?.label;
+        const fetchTipos = () => {
+            if (this.isSistemaPorDefecto(sistemaId) && this.tiposArticuloCatalogReady()) {
+                this.applyRowTiposReadyPorDefecto(index, row, systemLabel);
+                return;
+            }
+
+            this.fetchTiposArticuloOptions(sistemaId).subscribe({
+                next: (options) => this.applyRowTiposLoaded(index, options, row, systemLabel)
+            });
+        };
+
+        this.clearRowTiposCatalog(index, fetchTipos);
     }
 
     /**
@@ -1048,7 +1328,7 @@ export class EditComponent implements OnInit {
 
         if (!listaId) return;
 
-        const opciones = this.tiposPorFila[index] || [];
+        const opciones = this.tiposSourceForRow(index);
         const opcion = opciones.find((o: any) => o.value === listaId);
         const listaNombre = opcion?.label ?? '';
         if (!listaNombre) return;
@@ -1070,50 +1350,89 @@ export class EditComponent implements OnInit {
     /**
      * Carga los tipos de artículo (Listas) asociados a un sistema
      */
-    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, listaIdPreseleccionado?: number | null): void {
-        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        // En edición inicial, this.sistemas puede no estar cargado aún.
-        // Filtrar siempre por sistema_id evita traer una página genérica
-        // que no incluya el lista_id ya guardado y deje el select en blanco.
-        params.sistema_id = sistemaId;
+    private cargarTiposPorSistema(
+        sistemaId: number,
+        index: number,
+        referenciaIdPreseleccionada?: number | null,
+        listaIdPreseleccionado?: number | null
+    ): void {
+        const row = this.referenciasFormArray.at(index);
+        const systemLabel = this.sistemas.find((s) => s.value === sistemaId)?.label;
+        const applyDefault = listaIdPreseleccionado == null;
 
-        this.listaService.getAll(params).subscribe({
-            next: (response) => {
-                const listasAsociadas = response.data;
-                const opciones = listasAsociadas.map((lista: any) => ({
-                    label: lista.nombre,
-                    value: lista.id,
-                    descripcion: lista.definicion,
-                    _search: `${lista.nombre} ${lista.definicion || ''}`
-                }));
-                this.tiposPorFila[index] = opciones;
-                this.tiposPorFilaOriginal[index] = [...opciones];
-
-                if (listaIdPreseleccionado != null) {
-                    const row = this.referenciasFormArray.at(index);
-                    row.patchValue({ lista_id: listaIdPreseleccionado }, { emitEvent: false });
-                    const listaNombre = opciones.find((o: any) => o.value === listaIdPreseleccionado)?.label;
-                    if (listaNombre) {
-                        this.articuloService.getAll({ per_page: 500 }).subscribe({
-                            next: (resArt) => {
-                                const articulo = resArt.data.find((a: any) =>
-                                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
-                                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
-                                );
-                                if (articulo) {
-                                    row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
-                                    this.cargarReferenciasPorArticulo(articulo.id, index);
-                                }
-                                if (referenciaIdPreseleccionada && !articulo) {
-                                    this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
-                                }
-                            }
-                        });
-                    }
-                } else if (referenciaIdPreseleccionada) {
+        const finalizePreselect = () => {
+            if (listaIdPreseleccionado == null) {
+                if (referenciaIdPreseleccionada) {
                     this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
                 }
+                return;
             }
+
+            row.patchValue({ lista_id: listaIdPreseleccionado }, { emitEvent: false });
+            const opciones = this.tiposSourceForRow(index);
+            const listaNombre =
+                opciones.find((o) => o.value === listaIdPreseleccionado)?.label ??
+                this.tiposArticuloCatalog.find((o) => o.value === listaIdPreseleccionado)?.label ??
+                '';
+
+            if (!listaNombre) {
+                if (referenciaIdPreseleccionada) {
+                    this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
+                }
+                return;
+            }
+
+            this.articuloService.getAll({ per_page: 500 }).subscribe({
+                next: (resArt) => {
+                    const articulo = resArt.data.find(
+                        (a: any) =>
+                            (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
+                            (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
+                    );
+                    if (articulo) {
+                        row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
+                        this.cargarReferenciasPorArticulo(articulo.id, index);
+                    } else if (referenciaIdPreseleccionada) {
+                        this.autoseleccionarArticuloPorReferencia(index, referenciaIdPreseleccionada);
+                    }
+                }
+            });
+        };
+
+        const loadTipos = (options: TipoListaSelectOption[]) => {
+            if (this.isSistemaPorDefecto(sistemaId)) {
+                this.tiposPanelFilter[index] = '';
+                this.deferViewUpdate(() => {
+                    this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options: [] } }));
+                    this.deferViewUpdate(() => {
+                        if (applyDefault) {
+                            this.patchDefaultListaForRow(row, this.tiposArticuloCatalog, systemLabel);
+                        }
+                        finalizePreselect();
+                    });
+                });
+                return;
+            }
+
+            this.deferViewUpdate(() => {
+                this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options } }));
+                this.tiposPorFilaOriginal[index] = [...options];
+                this.deferViewUpdate(() => {
+                    if (applyDefault) {
+                        this.patchDefaultListaForRow(row, options, systemLabel);
+                    }
+                    finalizePreselect();
+                });
+            });
+        };
+
+        if (this.isSistemaPorDefecto(sistemaId) && this.tiposArticuloCatalogReady()) {
+            loadTipos(this.tiposArticuloCatalog);
+            return;
+        }
+
+        this.fetchTiposArticuloOptions(sistemaId).subscribe({
+            next: (options) => loadTipos(options)
         });
     }
 
@@ -1533,15 +1852,14 @@ export class EditComponent implements OnInit {
 
     private quitarFilaReferencia(index: number): void {
         this.referenciasFormArray.removeAt(index);
-        if (index < this.tiposPorFila.length) {
-            this.tiposPorFila.splice(index, 1);
-        }
         if (index < this.referenciasPorFila.length) {
             this.referenciasPorFila.splice(index, 1);
         }
         if (index < this.tiposPorFilaOriginal.length) {
             this.tiposPorFilaOriginal.splice(index, 1);
         }
+        delete this.tiposPanelFilter[index];
+        this.shiftRowTiposCatalogAfterRemove(index);
     }
 
     hayReferenciasSeleccionadas(): boolean {
@@ -1581,8 +1899,18 @@ export class EditComponent implements OnInit {
      * Inicia el flujo de agregado múltiple
      */
     abrirDialogoLote(): void {
-        this.loteForm.reset({ cantidad_lote: 1 });
+        const defaultSistemaId = this.getDefaultSistemaId();
+        const defaultListaId = this.resolveDefaultListaIdFromCache();
+        this.loteForm.reset({
+            cantidad_lote: 1,
+            sistema_id: defaultSistemaId,
+            articulo_id: defaultListaId,
+            referencias_seleccionadas: []
+        });
         this.displayLoteDialog = true;
+        if (defaultSistemaId) {
+            this.onSistemaLoteChange(defaultSistemaId);
+        }
     }
 
     cerrarDialogoLote(): void {
@@ -1872,34 +2200,56 @@ export class EditComponent implements OnInit {
         this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
         this.loteForm.get('articulo_id')?.disable();
         this.loteForm.get('referencias_seleccionadas')?.disable();
-        this.tiposLote = [];
         this.referenciasLote = [];
 
-        if (!sistemaId) return;
+        if (!sistemaId) {
+            this.deferViewUpdate(() => {
+                this.tiposLoteCatalog.set({ ready: false, options: [] });
+            });
+            return;
+        }
 
-        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        // Mantener misma lógica que en filas: al tener sistema seleccionado,
-        // filtrar siempre por sistema_id para obtener opciones consistentes.
-        params.sistema_id = sistemaId;
+        const esPorDefecto = this.isSistemaPorDefecto(sistemaId);
 
-        this.listaService.getAll(params).subscribe({
-            next: (response) => {
-                const listasAsociadas = response.data;
-                this.articuloService.getAll({ per_page: 500 }).subscribe({
-                    next: (resArt) => {
-                        this.tiposLote = listasAsociadas.map((lista: any) => ({
-                            label: lista.nombre,
-                            value: lista.id,
-                            descripcion: lista.definicion,
-                            _search: `${lista.nombre} ${lista.definicion || ''}`
-                        }));
-                        this.tiposLoteOriginal = [...this.tiposLote];
-                        if (this.tiposLote.length > 0) {
-                            this.loteForm.get('articulo_id')?.enable();
+        const applyLoteTipos = (options: TipoListaSelectOption[]) => {
+            this.deferViewUpdate(() => {
+                this.tiposLoteOriginal = [...options];
+                this.tiposLoteCatalog.set({ ready: true, options });
+                if (options.length > 0) {
+                    this.loteForm.get('articulo_id')?.enable();
+                }
+                if (esPorDefecto) {
+                    this.deferViewUpdate(() => {
+                        const defaultListaId = this.resolveDefaultListaId(options);
+                        if (defaultListaId) {
+                            this.loteForm.patchValue({ articulo_id: defaultListaId });
+                            this.onArticuloLoteChange(defaultListaId);
                         }
+                    });
+                }
+            });
+        };
+
+        this.deferViewUpdate(() => {
+            this.tiposLoteCatalog.set({ ready: false, options: [] });
+
+            if (esPorDefecto && this.tiposArticuloCatalogReady()) {
+                this.tiposLotePanelFilter = '';
+                this.deferViewUpdate(() => {
+                    this.tiposLoteCatalog.set({ ready: true, options: [] });
+                    this.loteForm.get('articulo_id')?.enable();
+                    const defaultListaId = this.resolveDefaultListaId(this.tiposArticuloCatalog);
+                    if (defaultListaId) {
+                        this.loteForm.patchValue({ articulo_id: defaultListaId });
+                        this.onArticuloLoteChange(defaultListaId);
                     }
                 });
+                return;
             }
+
+            this.fetchTiposArticuloOptions(sistemaId).subscribe({
+                next: (options) => applyLoteTipos(options)
+            });
         });
     }
 
@@ -1936,29 +2286,22 @@ export class EditComponent implements OnInit {
         const refs = data.referencias_seleccionadas;
 
         refs.forEach((refId: number) => {
-            const index = this.referenciasFormArray.length;
-            this.tiposPorFila[index] = [];
-            this.referenciasPorFila[index] = [];
+            const refModel = this.referenciasLote.find((r) => r.value === refId);
 
-            const refModel = this.referenciasLote.find(r => r.value === refId);
-
-            const referenciaForm = this.fb.group({
-                id: [null],
-                estado: [true],
-                seleccionado: [false],
-                sistema_id: [data.sistema_id],
-                articulo_id: [data.articulo_id],
-                referencia_id: [refId],
-                marca_id: [null],
-                cantidad: [data.cantidad_lote, [Validators.required, Validators.min(1)]],
-                comentario: [''],
-                definicion: [refModel?.definicion || ''],
-                imagen: [null]
+            this.agregarReferencia({
+                sistema_id: data.sistema_id,
+                lista_id: data.articulo_id,
+                articulo_id: null,
+                referencia_id: refId,
+                cantidad: data.cantidad_lote,
+                definicion: refModel?.definicion || '',
+                tipos: [
+                    ...(this.tiposLoteCatalog().options.length > 0
+                        ? this.tiposLoteCatalog().options
+                        : this.tiposArticuloCatalog)
+                ],
+                referencias: [...this.referenciasLote]
             });
-
-            this.referenciasFormArray.push(referenciaForm);
-            this.cargarTiposPorSistema(data.sistema_id, index, null, data.articulo_id);
-            this.cargarReferenciasPorArticulo(data.articulo_id, index);
         });
 
         this.messageService.add({ severity: 'success', summary: 'Agregado en Lote', detail: `Se insertaron ${refs.length} referencias exitosamente.` });

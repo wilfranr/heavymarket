@@ -11,7 +11,7 @@ import { PedidoArticulo, CreatePedidoArticuloDto, UpdatePedidoArticuloDto } from
 })
 export class PedidoArticuloService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/pedidos`;
+        return `pedidos`;
     }
 
     /**

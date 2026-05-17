@@ -12,7 +12,7 @@ import { Cotizacion, CreateCotizacionDto, UpdateCotizacionDto } from '../models/
 })
 export class CotizacionService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/cotizaciones`;
+        return `cotizaciones`;
     }
 
     /**

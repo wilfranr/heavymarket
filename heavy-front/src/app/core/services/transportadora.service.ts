@@ -11,7 +11,7 @@ import { Transportadora, CreateTransportadoraDto, UpdateTransportadoraDto } from
 })
 export class TransportadoraService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/transportadoras`;
+        return `transportadoras`;
     }
 
     /**

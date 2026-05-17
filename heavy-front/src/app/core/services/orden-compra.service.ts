@@ -11,7 +11,7 @@ import { OrdenCompra, CreateOrdenCompraDto, UpdateOrdenCompraDto } from '../mode
 })
 export class OrdenCompraService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/ordenes-compra`;
+        return `ordenes-compra`;
     }
 
     /**

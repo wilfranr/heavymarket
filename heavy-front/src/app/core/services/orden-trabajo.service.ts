@@ -11,7 +11,7 @@ import { OrdenTrabajo, CreateOrdenTrabajoDto, UpdateOrdenTrabajoDto } from '../m
 })
 export class OrdenTrabajoService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/ordenes-trabajo`;
+        return `ordenes-trabajo`;
     }
 
     /**

@@ -11,7 +11,7 @@ import { Contacto, CreateContactoDto, UpdateContactoDto } from '../models/contac
 })
 export class ContactoService extends ApiService {
     protected getBaseUrl(): string {
-        return `${this.API_URL}/contactos`;
+        return `contactos`;
     }
 
     /**
