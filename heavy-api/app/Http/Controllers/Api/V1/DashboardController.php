@@ -95,7 +95,7 @@ class DashboardController extends Controller
                 DB::raw('SUM(orden_compra_referencia.valor_total) as total_value')
             )
             ->when($filter, fn ($q) => $q->where('pedidos.user_id', $user->id))
-            ->groupBy('referencias.id', 'referencias.referencia')
+            ->groupBy('referencias.referencia')
             ->orderByDesc('total_value')
             ->limit(5);
 
