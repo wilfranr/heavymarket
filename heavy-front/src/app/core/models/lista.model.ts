@@ -1,3 +1,5 @@
+import type { Sistema } from './sistema.model';
+
 /**
  * Modelo de Lista
  *
@@ -11,6 +13,7 @@ export interface Lista {
     foto: string | null;
     fotoMedida: string | null;
     sistema_id: number | null;
+    sistema_ids?: number[];
     parent_id: number | null;
     fabricante_id: number | null;
     created_at: string;
@@ -18,7 +21,7 @@ export interface Lista {
     deleted_at: string | null;
 
     // Relaciones
-    sistemas?: unknown[];
+    sistemas?: Sistema[];
     fabricante?: ListaFabricanteResumen | null;
 }
 
@@ -47,6 +50,7 @@ export interface CreateListaDto {
     foto?: string;
     fotoMedida?: string;
     sistema_id?: number;
+    sistema_ids?: number[];
     parent_id?: number;
 }
 
@@ -60,5 +64,6 @@ export interface UpdateListaDto {
     foto?: string;
     fotoMedida?: string;
     sistema_id?: number;
+    sistema_ids?: number[];
     parent_id?: number;
 }

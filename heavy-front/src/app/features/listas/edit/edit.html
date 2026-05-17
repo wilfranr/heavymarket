@@ -10,6 +10,7 @@
             </div>
         </ng-template>
 
+        @if (formReady() && sistemasCatalog().ready) {
         <form [formGroup]="listaForm" (ngSubmit)="onSubmit()">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Tipo -->
@@ -29,6 +30,25 @@
                     <small class="p-error"> @if (listaForm.get('nombre')?.errors?.['required']) { El nombre es requerido } @else if (listaForm.get('nombre')?.errors?.['maxlength']) { El nombre no puede exceder 255 caracteres } </small>
                     }
                 </div>
+
+                @if (listaForm.get('tipo')?.value === 'Tipo de Artículo') {
+                <div class="field md:col-span-2">
+                    <label for="sistema_ids" class="block text-sm font-medium mb-2">Sistemas asociados</label>
+                    <p-multiSelect
+                        id="sistema_ids"
+                        formControlName="sistema_ids"
+                        [options]="sistemasCatalog().options"
+                        optionLabel="label"
+                        optionValue="value"
+                        placeholder="Seleccione los sistemas..."
+                        [filter]="true"
+                        display="chip"
+                        styleClass="w-full"
+                        appendTo="body"
+                    ></p-multiSelect>
+                    <small class="block mt-1" style="color: var(--p-text-muted-color)">Un tipo de artículo puede pertenecer a varios sistemas.</small>
+                </div>
+                }
 
                 <!-- Definición -->
                 <div class="field md:col-span-2">
@@ -61,6 +81,13 @@
                 <p-button label="Actualizar Lista" icon="pi pi-check" type="submit" [loading]="loading" [disabled]="listaForm.invalid"> </p-button>
             </div>
         </form>
+        } @else {
+        <div class="py-8 px-4">
+            <p-skeleton width="100%" height="2.5rem" styleClass="mb-3" />
+            <p-skeleton width="100%" height="2.5rem" styleClass="mb-3" />
+            <p-skeleton width="60%" height="2.5rem" />
+        </div>
+        }
     </p-card>
     } @else {
     <p-card>

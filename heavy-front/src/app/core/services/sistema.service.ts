@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { Sistema, CreateSistemaDto, UpdateSistemaDto } from '../models/sistema.model';
+import { Sistema, CreateSistemaDto, UpdateSistemaDto, SyncSistemaTiposArticuloDto } from '../models/sistema.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
 /**
@@ -53,5 +53,12 @@ export class SistemaService extends ApiService {
      */
     deleteSistema(id: number): Observable<any> {
         return this.delete(`${this.endpoint}/${id}`);
+    }
+
+    /**
+     * Sincroniza los tipos de artículo (listas) asociados a un sistema.
+     */
+    syncTiposArticulo(id: number, data: SyncSistemaTiposArticuloDto): Observable<ApiResponse<Sistema>> {
+        return this.put<ApiResponse<Sistema>>(`${this.endpoint}/${id}/tipos-articulo`, data);
     }
 }

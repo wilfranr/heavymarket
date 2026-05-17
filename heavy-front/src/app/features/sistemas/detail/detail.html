@@ -12,68 +12,64 @@
         </ng-template>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Información Básica -->
             <div>
                 <h3 class="text-lg font-semibold mb-4">Información Básica</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="text-sm font-medium text-gray-600">ID</label>
+                        <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">ID</label>
                         <p class="text-base">{{ sistema.id }}</p>
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Nombre</label>
+                        <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">Nombre</label>
                         <p class="text-base font-semibold">{{ sistema.nombre }}</p>
                     </div>
                     <div>
-                        <label class="text-sm font-medium text-gray-600">Descripción</label>
+                        <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">Descripción</label>
                         <p class="text-base">{{ sistema.descripcion || '-' }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Imagen -->
             <div>
                 <h3 class="text-lg font-semibold mb-4">Imagen</h3>
                 @if (sistema.imagen) {
                 <img [src]="sistema.imagen" [alt]="sistema.nombre" class="w-full max-w-xs h-auto rounded-lg shadow-md" />
                 } @else {
-                <p class="text-gray-400">No hay imagen disponible</p>
+                <p style="color: var(--p-text-muted-color)">No hay imagen disponible</p>
                 }
             </div>
         </div>
 
         <p-divider />
 
-        <!-- Fechas -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
             <div>
-                <label class="text-sm font-medium text-gray-600">Fecha de Creación</label>
+                <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">Fecha de Creación</label>
                 <p class="text-base">{{ sistema.created_at | date:'medium' }}</p>
             </div>
             <div>
-                <label class="text-sm font-medium text-gray-600">Última Actualización</label>
+                <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">Última Actualización</label>
                 <p class="text-base">{{ sistema.updated_at | date:'medium' }}</p>
             </div>
             @if (sistema.deleted_at) {
             <div>
-                <label class="text-sm font-medium text-gray-600">Fecha de Eliminación</label>
+                <label class="text-sm font-medium" style="color: var(--p-text-muted-color)">Fecha de Eliminación</label>
                 <p class="text-base text-red-500">{{ sistema.deleted_at | date:'medium' }}</p>
             </div>
             }
         </div>
     </p-card>
 
-    <!-- Artículos -->
-    @if (sistema.articulos && sistema.articulos.length > 0) {
     <div class="mt-6">
         <p-card>
             <ng-template pTemplate="header">
                 <div class="p-4">
-                    <h3 class="text-xl font-bold">Artículos Asociados</h3>
-                    <p class="text-gray-600 text-sm mt-1">Lista de tipos de artículo que pertenecen a este sistema</p>
+                    <h3 class="text-xl font-bold">Tipos de artículo asociados</h3>
+                    <p class="text-sm mt-1" style="color: var(--p-text-muted-color)">Para agregar o quitar tipos, use Editar sistema.</p>
                 </div>
             </ng-template>
 
+            @if (sistema.articulos && sistema.articulos.length > 0) {
             <p-table
                 [value]="sistema.articulos"
                 [paginator]="true"
@@ -100,8 +96,8 @@
                             @if (articulo.foto) {
                             <img [src]="articulo.foto" [alt]="articulo.nombre" class="w-12 h-12 object-cover rounded-md shadow-sm" />
                             } @else {
-                            <div class="w-12 h-12 flex items-center justify-center bg-gray-100 rounded-md border border-gray-200">
-                                <i class="pi pi-image text-gray-400"></i>
+                            <div class="w-12 h-12 flex items-center justify-center rounded-md" style="border: 1px solid var(--p-surface-border)">
+                                <i class="pi pi-image" style="color: var(--p-text-muted-color)"></i>
                             </div>
                             }
                         </td>
@@ -111,19 +107,17 @@
                         </td>
                     </tr>
                 </ng-template>
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="4" class="text-center p-4">No se encontraron artículos para este sistema.</td>
-                    </tr>
-                </ng-template>
             </p-table>
+            } @else {
+            <p class="text-center py-6 px-4" style="color: var(--p-text-muted-color)">No hay tipos de artículo asociados a este sistema.</p>
+            }
         </p-card>
     </div>
-    } } @else {
+    } @else {
     <p-card>
         <div class="text-center py-8">
-            <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
-            <p class="text-gray-600 mt-4">Cargando sistema...</p>
+            <i class="pi pi-spin pi-spinner text-4xl" style="color: var(--p-text-muted-color)"></i>
+            <p class="mt-4" style="color: var(--p-text-muted-color)">Cargando sistema...</p>
         </div>
     </p-card>
     }

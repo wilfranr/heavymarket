@@ -9,15 +9,17 @@ import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
-import { TableModule } from 'primeng/table';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadSistemaById, updateSistema } from '../../../store/sistemas/actions/sistemas.actions';
 import { selectSistemaById } from '../../../store/sistemas/selectors/sistemas.selectors';
-import { UpdateSistemaDto } from '../../../core/models/sistema.model';
+import { Sistema } from '../../../core/models/sistema.model';
+import { SistemaService } from '../../../core/services/sistema.service';
+import { ListaService } from '../../../core/services/lista.service';
 
 /**
  * Componente de edición de sistema
@@ -25,7 +27,7 @@ import { UpdateSistemaDto } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, TableModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, MultiSelectModule, ToastModule, DividerModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -35,15 +37,22 @@ export class EditComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
+    private readonly sistemaService = inject(SistemaService);
+    private readonly listaService = inject(ListaService);
 
     sistemaForm!: FormGroup;
-    sistema$!: Observable<any>;
+    sistema$!: Observable<Sistema | null>;
     sistemaId!: number;
     loading = false;
     imagenFile: File | null = null;
     previewUrl: string | null = null;
 
+    tiposArticuloOptions: { label: string; value: number }[] = [];
+    private formInitialized = false;
+
     ngOnInit(): void {
+        this.loadTiposArticuloCatalog();
+
         this.route.params.subscribe((params) => {
             this.sistemaId = +params['id'];
             this.store.dispatch(loadSistemaById({ id: this.sistemaId }));
@@ -57,28 +66,38 @@ export class EditComponent implements OnInit {
         });
     }
 
-    /**
-     * Inicializa el formulario con los datos del sistema
-     */
-    private initForm(sistema: any): void {
-        this.previewUrl = sistema.imagen;
-        this.sistemaForm = this.fb.group({
-            nombre: [sistema.nombre, [Validators.required, Validators.maxLength(255)]],
-            descripcion: [sistema.descripcion || ''],
-            imagen: [sistema.imagen || null]
+    private loadTiposArticuloCatalog(): void {
+        this.listaService.getAll({ tipo: 'Tipo de Artículo', per_page: 500, sort_by: 'nombre', sort_order: 'asc' }).subscribe({
+            next: (response) => {
+                this.tiposArticuloOptions = response.data.map((lista) => ({
+                    label: lista.nombre,
+                    value: lista.id
+                }));
+            }
         });
     }
 
-    /**
-     * Maneja la selección de imagen
-     */
-    onImagenSelected(file: any): void {
+    private initForm(sistema: Sistema): void {
+        if (this.formInitialized) {
+            return;
+        }
+        this.formInitialized = true;
+
+        this.previewUrl = sistema.imagen;
+        const listaIds = (sistema.articulos ?? []).map((a) => a.id);
+
+        this.sistemaForm = this.fb.group({
+            nombre: [sistema.nombre, [Validators.required, Validators.maxLength(255)]],
+            descripcion: [sistema.descripcion || ''],
+            imagen: [sistema.imagen || null],
+            lista_ids: [listaIds]
+        });
+    }
+
+    onImagenSelected(file: File): void {
         this.imagenFile = file;
     }
 
-    /**
-     * Maneja el envío del formulario
-     */
     onSubmit(): void {
         if (this.sistemaForm.invalid) {
             this.markFormGroupTouched(this.sistemaForm);
@@ -102,31 +121,39 @@ export class EditComponent implements OnInit {
             formData.append('imagen', this.imagenFile);
         }
 
-        this.store.dispatch(updateSistema({ id: this.sistemaId, data: formData as any }));
+        const listaIds: number[] = formValue.lista_ids ?? [];
 
-        // Escuchar el resultado de la acción
-        this.store
-            .select((state) => (state as any).sistemas)
-            .subscribe((sistemasState: any) => {
-                if (!sistemasState.loading && !sistemasState.error && this.loading) {
-                    this.loading = false;
-                    this.router.navigate(['/app/sistemas', this.sistemaId]);
-                } else if (!sistemasState.loading && sistemasState.error && this.loading) {
-                    this.loading = false;
-                }
-            });
+        this.sistemaService.syncTiposArticulo(this.sistemaId, { lista_ids: listaIds }).subscribe({
+            next: () => {
+                this.store.dispatch(updateSistema({ id: this.sistemaId, data: formData }));
+
+                this.store
+                    .select((state) => (state as { sistemas: { loading: boolean; error: string | null } }).sistemas)
+                    .subscribe((sistemasState) => {
+                        if (!sistemasState.loading && !sistemasState.error && this.loading) {
+                            this.loading = false;
+                            this.store.dispatch(loadSistemaById({ id: this.sistemaId }));
+                            this.router.navigate(['/app/sistemas', this.sistemaId]);
+                        } else if (!sistemasState.loading && sistemasState.error && this.loading) {
+                            this.loading = false;
+                        }
+                    });
+            },
+            error: () => {
+                this.loading = false;
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudieron guardar los tipos de artículo'
+                });
+            }
+        });
     }
 
-    /**
-     * Cancela y regresa al detalle
-     */
     cancelar(): void {
         this.router.navigate(['/app/sistemas', this.sistemaId]);
     }
 
-    /**
-     * Marca todos los campos del formulario como touched
-     */
     private markFormGroupTouched(formGroup: FormGroup): void {
         Object.keys(formGroup.controls).forEach((key) => {
             const control = formGroup.get(key);
@@ -136,12 +163,5 @@ export class EditComponent implements OnInit {
                 this.markFormGroupTouched(control);
             }
         });
-    }
-
-    /**
-     * Navega al detalle del artículo / lista
-     */
-    verArticulo(id: number): void {
-        this.router.navigate(['/app/listas', id]);
     }
 }

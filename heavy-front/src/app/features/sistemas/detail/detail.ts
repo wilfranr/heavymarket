@@ -38,23 +38,14 @@ export class DetailComponent implements OnInit {
         });
     }
 
-    /**
-     * Navega al formulario de edición
-     */
     editarSistema(): void {
         this.router.navigate(['/app/sistemas', this.sistemaId, 'edit']);
     }
 
-    /**
-     * Regresa a la lista
-     */
     volver(): void {
         this.router.navigate(['/app/sistemas']);
     }
 
-    /**
-     * Navega al detalle del artículo / lista
-     */
     verArticulo(id: number): void {
         this.router.navigate(['/app/listas', id]);
     }

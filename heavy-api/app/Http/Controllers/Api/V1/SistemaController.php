@@ -6,22 +6,28 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreSistemaRequest;
+use App\Http\Requests\SyncSistemaTiposArticuloRequest;
 use App\Http\Requests\UpdateSistemaRequest;
 use App\Http\Resources\SistemaResource;
 use App\Models\Sistema;
+use App\Services\ListaSistemaSyncService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\Request;
 /**
  * Controlador API para gestión de Sistemas
  *
  * Maneja todas las operaciones CRUD de sistemas a través del API REST.
  */
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class SistemaController extends Controller
 {
     use AuthorizesRequests;
+
+    public function __construct(
+        private readonly ListaSistemaSyncService $listaSistemaSync
+    ) {}
 
     /**
      * Listar todos los sistemas con filtros opcionales
@@ -70,12 +76,12 @@ class SistemaController extends Controller
      */
     public function store(StoreSistemaRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Sistema::class);
+        $this->authorize('create', Sistema::class);
         $data = $request->validated();
         if (isset($data['descripcion'])) {
             $data['descripcion'] = ucwords($data['descripcion']);
         }
-        
+
         // Manejar carga de imagen
         if ($request->hasFile('imagen')) {
             $data['imagen'] = $request->file('imagen')->store('sistemas', 'public');
@@ -128,6 +134,28 @@ class SistemaController extends Controller
         return response()->json([
             'message' => 'Sistema actualizado exitosamente',
             'data' => new SistemaResource($sistema->fresh()),
+        ]);
+    }
+
+    /**
+     * Sincronizar tipos de artículo asociados a un sistema.
+     */
+    public function syncTiposArticulo(SyncSistemaTiposArticuloRequest $request, Sistema $sistema): JsonResponse
+    {
+        $this->authorize('update', $sistema);
+
+        /** @var list<int> $listaIds */
+        $listaIds = array_map('intval', $request->validated('lista_ids', []));
+
+        $this->listaSistemaSync->syncSistemaTiposArticulo($sistema, $listaIds);
+
+        $sistema->load(['listas' => function ($query) {
+            $query->where('tipo', 'Tipo de Artículo');
+        }]);
+
+        return response()->json([
+            'message' => 'Tipos de artículo sincronizados correctamente',
+            'data' => new SistemaResource($sistema),
         ]);
     }
 

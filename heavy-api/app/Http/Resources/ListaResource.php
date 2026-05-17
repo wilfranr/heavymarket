@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Lista;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * Transforma los datos de listas (catálogos) en una respuesta JSON estructurada.
  *
- * @property \App\Models\Lista $resource
+ * @property Lista $resource
  */
 class ListaResource extends JsonResource
 {
@@ -44,8 +45,13 @@ class ListaResource extends JsonResource
             'updated_at' => $this->updated_at?->toISOString(),
             'deleted_at' => $this->deleted_at?->toISOString(),
 
+            'sistema_ids' => $this->when(
+                $this->relationLoaded('sistemas'),
+                fn () => $this->sistemas->pluck('id')->map(fn ($id) => (int) $id)->values()->all()
+            ),
+
             // Relaciones opcionales
-            'sistemas' => $this->whenLoaded('sistemas'),
+            'sistemas' => SistemaResource::collection($this->whenLoaded('sistemas')),
             'fabricante' => $this->whenLoaded(
                 'fabricante',
                 fn () => (new FabricanteResource($this->fabricante))->resolve($request)

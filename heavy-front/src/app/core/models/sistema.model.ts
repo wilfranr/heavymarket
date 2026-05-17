@@ -1,3 +1,5 @@
+import type { Lista } from './lista.model';
+
 /**
  * Modelo de Sistema
  *
@@ -11,7 +13,16 @@ export interface Sistema {
     created_at: string;
     updated_at: string;
     deleted_at: string | null;
-    articulos?: any[]; // Tipo de Artículo listas
+    articulos?: Lista[];
+}
+
+export interface SyncSistemaTiposArticuloDto {
+    lista_ids: number[];
+}
+
+export interface SistemaSelectOption {
+    label: string;
+    value: number;
 }
 
 /**

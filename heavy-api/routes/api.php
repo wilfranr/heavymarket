@@ -211,6 +211,8 @@ Route::prefix('v1')->group(function () {
         Route::post('referencias/bulk-search', [ReferenciaController::class, 'bulkSearch']);
         Route::post('referencias/bulk-search-or-create', [ReferenciaController::class, 'bulkSearchOrCreate']);
         Route::apiResource('referencias', ReferenciaController::class);
+        Route::put('sistemas/{sistema}/tipos-articulo', [SistemaController::class, 'syncTiposArticulo'])
+            ->name('sistemas.sync-tipos-articulo');
         Route::apiResource('sistemas', SistemaController::class);
         Route::apiResource('maquinas', MaquinaController::class);
         Route::apiResource('categorias', CategoriaController::class);

@@ -3,19 +3,26 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
+import { map } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { SkeletonModule } from 'primeng/skeleton';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { createLista } from '../../../store/listas/actions/listas.actions';
 import { ListaTipo } from '../../../core/models/lista.model';
+import { SistemaService } from '../../../core/services/sistema.service';
+import { SistemaSelectOption } from '../../../core/models/sistema.model';
+import { appendSistemaIdsToFormData } from '../../../core/utils/lista-form-data.util';
 
 /**
  * Componente de creación de lista
@@ -24,7 +31,7 @@ import { ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, MultiSelectModule, ToastModule, DividerModule, SkeletonModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './create.html'
 })
@@ -33,8 +40,24 @@ export class CreateComponent implements OnInit {
     private readonly store = inject(Store);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
+    private readonly sistemaService = inject(SistemaService);
 
     listaForm!: FormGroup;
+
+    readonly sistemasCatalog = toSignal(
+        this.sistemaService.getAll({ per_page: 200, sort_by: 'nombre', sort_order: 'asc' }).pipe(
+            map((response) => ({
+                ready: true,
+                options: response.data.map(
+                    (s): SistemaSelectOption => ({
+                        label: s.nombre,
+                        value: s.id
+                    })
+                )
+            }))
+        ),
+        { initialValue: { ready: false, options: [] as SistemaSelectOption[] } }
+    );
 
     tiposOptions = [
         { label: 'Marca', value: 'Marca' as ListaTipo },
@@ -62,7 +85,7 @@ export class CreateComponent implements OnInit {
             definicion: ['', [Validators.maxLength(1000)]],
             foto: [null],
             fotoMedida: [null],
-            sistema_id: [null]
+            sistema_ids: [[] as number[]]
         });
     }
 
@@ -93,7 +116,10 @@ export class CreateComponent implements OnInit {
         formData.append('tipo', formValue.tipo);
         formData.append('nombre', formValue.nombre);
         if (formValue.definicion) formData.append('definicion', formValue.definicion);
-        if (formValue.sistema_id) formData.append('sistema_id', formValue.sistema_id);
+
+        if (formValue.tipo === 'Tipo de Artículo') {
+            appendSistemaIdsToFormData(formData, formValue.sistema_ids ?? []);
+        }
 
         if (this.fotoFile) formData.append('foto', this.fotoFile);
         if (this.fotoMedidaFile) formData.append('fotoMedida', this.fotoMedidaFile);
@@ -101,8 +127,8 @@ export class CreateComponent implements OnInit {
         this.store.dispatch(createLista({ data: formData }));
 
         this.store
-            .select((state) => (state as any).listas)
-            .subscribe((listasState: any) => {
+            .select((state) => (state as { listas: { loading: boolean; error: string | null } }).listas)
+            .subscribe((listasState) => {
                 if (!listasState.loading && !listasState.error && this.loading) {
                     this.loading = false;
                     this.router.navigate(['/app/listas']);

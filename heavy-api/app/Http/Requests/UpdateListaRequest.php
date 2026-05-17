@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Models\Lista;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,22 +22,55 @@ class UpdateListaRequest extends FormRequest
         return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('sistema_ids') || $this->has('sistema_ids_cleared')) {
+            $this->merge([
+                'sistema_ids' => $this->normalizeSistemaIdsInput(),
+            ]);
+        }
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function normalizeSistemaIdsInput(): array
+    {
+        if ($this->has('sistema_ids_cleared')) {
+            return [];
+        }
+
+        $raw = $this->input('sistema_ids');
+
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+
+            return is_array($decoded) ? array_map('intval', $decoded) : [];
+        }
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return array_map('intval', $raw);
+    }
+
     /**
      * Reglas de validación que aplican a la petición.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
         /** @var Lista|null $lista */
         $lista = $this->route('lista');
-        
+
         // Fallback en caso de que el binding no sea un objeto
-        if (!$lista instanceof \App\Models\Lista) {
-            $lista = \App\Models\Lista::find($lista);
+        if (! $lista instanceof Lista) {
+            $lista = Lista::find($lista);
         }
 
-        if (!$lista) {
+        if (! $lista) {
             return []; // O manejar error de no encontrado
         }
 
@@ -89,6 +123,8 @@ class UpdateListaRequest extends FormRequest
             'foto' => ['nullable', 'image', 'max:5120'],
             'fotoMedida' => ['nullable', 'image', 'max:5120'],
             'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'sistema_ids' => ['nullable', 'array'],
+            'sistema_ids.*' => ['integer', 'exists:sistemas,id'],
             'parent_id' => ['nullable', 'integer', 'exists:listas,id'],
         ];
     }

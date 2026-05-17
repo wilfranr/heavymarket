@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,10 +21,47 @@ class StoreListaRequest extends FormRequest
         return $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista']);
     }
 
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('sistema_ids') || $this->has('sistema_ids_cleared')) {
+            $this->merge([
+                'sistema_ids' => $this->normalizeSistemaIdsInput() ?? [],
+            ]);
+        }
+    }
+
+    /**
+     * @return list<int>|null
+     */
+    private function normalizeSistemaIdsInput(): ?array
+    {
+        if ($this->has('sistema_ids_cleared')) {
+            return [];
+        }
+
+        if (! $this->has('sistema_ids')) {
+            return null;
+        }
+
+        $raw = $this->input('sistema_ids');
+
+        if (is_string($raw)) {
+            $decoded = json_decode($raw, true);
+
+            return is_array($decoded) ? array_map('intval', $decoded) : [];
+        }
+
+        if (! is_array($raw)) {
+            return [];
+        }
+
+        return array_map('intval', $raw);
+    }
+
     /**
      * Reglas de validación que aplican a la petición.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {
@@ -52,6 +90,8 @@ class StoreListaRequest extends FormRequest
             'foto' => ['nullable', 'image', 'max:5120'],
             'fotoMedida' => ['nullable', 'image', 'max:5120'],
             'sistema_id' => ['nullable', 'integer', 'exists:sistemas,id'],
+            'sistema_ids' => ['nullable', 'array'],
+            'sistema_ids.*' => ['integer', 'exists:sistemas,id'],
             'parent_id' => ['nullable', 'integer', 'exists:listas,id'],
         ];
     }

@@ -1,27 +1,57 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-16T11:35:00Z",
-  "issue": "tests-stabilization",
-  "description": "Estabilización y Mejora de Cobertura de Pruebas (MySQL Migration)",
+  "last_updated": "2026-05-17T14:15:00Z",
+  "issue": "feat-sistema-lista-tipo-articulo",
+  "description": "Gestión UI y API de la asociación N:N entre Sistemas y Listas (tipo Tipo de Artículo) vía pivot sistema_lista",
   "nodes": [
     {
-      "id": "tests-backend-fix",
-      "description": "Backend: Migración a MySQL, corrección de FKs, Route Model Binding y esquema de base de datos.",
+      "id": "sla-triage",
+      "description": "Triage: Análisis de modelo pivot, brecha API/UI y plan de nodos en DAG",
       "status": "done",
-      "required_skill": "testing_expert",
+      "required_skill": "software_architect",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-api/phpunit.xml",
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "sla-backend-pivot-sync",
+      "description": "Backend: sincronizar pivot sistema_lista en store/update de Lista (sistema_ids[]) y endpoint PUT sistemas/{id}/tipos-articulo (lista_ids[]); mantener compatibilidad con sistema_id y filtro index existente",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["sla-triage"],
+      "review_notes": "ListaSistemaSyncService encapsula pivot; sync parcial en Sistema evita borrar otras listas del pivot.",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/ListaSistemaSyncService.php",
           "status": "validated"
         },
         {
-          "path": "heavy-api/database/migrations/2026_01_01_000001_create_base_tables_for_testing.php",
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ListaController.php",
           "status": "validated"
         },
         {
-          "path": "heavy-api/database/migrations/2026_04_28_000001_create_cotizaciones_tables.php",
+          "path": "heavy-api/app/Http/Controllers/Api/V1/SistemaController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreListaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateListaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/SyncSistemaTiposArticuloRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/ListaResource.php",
           "status": "validated"
         },
         {
@@ -31,45 +61,110 @@
       ]
     },
     {
-      "id": "tests-frontend-env",
-      "description": "Frontend: Soporte Zone.js, compatibilidad Jasmine y ResourceLoader global en Vitest.",
-      "status": "done",
-      "required_skill": "devops_deployment_pro",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/test-setup.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "tests-frontend-unit-existing",
-      "description": "Frontend: Corrección de aserciones asíncronas, URLs y mocks en specs existentes.",
+      "id": "sla-backend-tests",
+      "description": "Backend: tests Pest para sync pivot, filtro por sistema_id y show de sistema con listas",
       "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": ["tests-frontend-env"],
+      "depends_on": ["sla-backend-pivot-sync"],
       "files": [
         {
-          "path": "heavy-front/src/app/core/services/articulo.service.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/auth/services/auth.service.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/store/referencias/effects/referencias.effects.spec.ts",
+          "path": "heavy-api/tests/Feature/Api/V1/ListaSistemaPivotTest.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "tests-final-validate",
-      "description": "Validación Final: 100% PASS en ambas plataformas.",
+      "id": "sla-front-models-services",
+      "description": "Frontend: tipar sistema_ids/sistemas en Lista, método syncTiposArticulo en SistemaService y DTOs",
       "status": "done",
-      "required_skill": "testing_expert",
-      "depends_on": ["tests-backend-fix", "tests-frontend-unit-existing"],
+      "required_skill": "software_architect",
+      "depends_on": ["sla-backend-pivot-sync"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/lista.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/sistema.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/sistema.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/utils/lista-form-data.util.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "sla-front-listas-crud",
+      "description": "Frontend: MultiSelect de sistemas en create/edit de lista cuando tipo=Tipo de Artículo; enviar sistema_ids[] en FormData",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["sla-front-models-services"],
+      "review_notes": "Corregido NG0100 con toSignal + render diferido del formulario hasta catalog.ready.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/listas/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/listas/detail/detail.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "sla-front-sistema-detail",
+      "description": "Frontend: detalle sistema solo lectura de tipos; edición de asociaciones en sistemas/edit con MultiSelect",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["sla-front-models-services"],
+      "review_notes": "Seguimiento opcional: aplicar mismo patrón toSignal en sistemas/edit para tiposArticuloOptions (riesgo NG0100 en dev).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/sistemas/detail/detail.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/sistemas/detail/detail.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/sistemas/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/sistemas/edit/edit.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "sla-review",
+      "description": "Reviewer: gates php artisan test, phpstan, ng lint, ng build; validar checklist capas",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "sla-backend-tests",
+        "sla-front-listas-crud",
+        "sla-front-sistema-detail"
+      ],
+      "review_notes": "Gates: 316 tests OK, ListaSistemaPivot 4/4, ng build OK. PHPStan no instalado en vendor. ng lint no definido en package.json.",
       "files": []
     }
   ]

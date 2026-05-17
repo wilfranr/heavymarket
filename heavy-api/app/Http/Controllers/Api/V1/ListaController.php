@@ -9,6 +9,7 @@ use App\Http\Requests\StoreListaRequest;
 use App\Http\Requests\UpdateListaRequest;
 use App\Http\Resources\ListaResource;
 use App\Models\Lista;
+use App\Services\ListaSistemaSyncService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 /**
@@ -22,6 +23,10 @@ use Illuminate\Http\Request;
 class ListaController extends Controller
 {
     use AuthorizesRequests;
+
+    public function __construct(
+        private readonly ListaSistemaSyncService $listaSistemaSync
+    ) {}
 
     /**
      * Listar todas las listas con filtros opcionales
@@ -114,7 +119,7 @@ class ListaController extends Controller
      */
     public function store(StoreListaRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Lista::class);
+        $this->authorize('create', Lista::class);
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
@@ -127,8 +132,15 @@ class ListaController extends Controller
 
         $data['nombre'] = ucwords($data['nombre']);
 
+        $sistemaIds = $this->listaSistemaSync->resolveSistemaIdsFromPayload(
+            $data['sistema_ids'] ?? null,
+            isset($data['sistema_id']) ? (int) $data['sistema_id'] : null
+        );
+        unset($data['sistema_ids']);
+
         $lista = Lista::create($data);
-        $lista->load('fabricante');
+        $this->listaSistemaSync->syncListaSistemas($lista, $sistemaIds);
+        $lista->load(['fabricante', 'sistemas']);
 
         return response()->json([
             'message' => 'Lista creada exitosamente',
@@ -169,8 +181,19 @@ class ListaController extends Controller
             $data['fotoMedida'] = $request->file('fotoMedida')->store('listas/medidas', 'public');
         }
 
+        $sistemaIds = null;
+        if ($request->has('sistema_ids') || $request->has('sistema_ids_cleared') || array_key_exists('sistema_id', $data)) {
+            $sistemaIds = $this->listaSistemaSync->resolveSistemaIdsFromPayload(
+                $data['sistema_ids'] ?? null,
+                array_key_exists('sistema_id', $data) ? (int) $data['sistema_id'] : null
+            );
+        }
+        unset($data['sistema_ids']);
+
         $lista->update($data);
-        $lista->load('fabricante');
+        $lista->refresh();
+        $this->listaSistemaSync->syncListaSistemas($lista, $sistemaIds);
+        $lista->load(['fabricante', 'sistemas']);
 
         return response()->json([
             'message' => 'Lista actualizada exitosamente',

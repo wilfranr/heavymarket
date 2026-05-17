@@ -1,23 +1,30 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { toSignal } from '@angular/core/rxjs-interop';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
+import { MultiSelectModule } from 'primeng/multiselect';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
+import { SkeletonModule } from 'primeng/skeleton';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { loadListaById, updateLista } from '../../../store/listas/actions/listas.actions';
 import { selectListaById } from '../../../store/listas/selectors/listas.selectors';
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
+import { SistemaSelectOption } from '../../../core/models/sistema.model';
+import { SistemaService } from '../../../core/services/sistema.service';
+import { appendSistemaIdsToFormData } from '../../../core/utils/lista-form-data.util';
 
 /**
  * Componente de edición de lista
@@ -26,7 +33,7 @@ import { Lista, ListaTipo } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-lista-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, MultiSelectModule, ToastModule, DividerModule, SkeletonModule, ImageUploadComponent],
     providers: [MessageService],
     templateUrl: './edit.html'
 })
@@ -36,10 +43,28 @@ export class EditComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly route = inject(ActivatedRoute);
     private readonly messageService = inject(MessageService);
+    private readonly sistemaService = inject(SistemaService);
 
     listaForm!: FormGroup;
     lista$!: Observable<Lista | null>;
     listaId!: number;
+
+    readonly formReady = signal(false);
+
+    readonly sistemasCatalog = toSignal(
+        this.sistemaService.getAll({ per_page: 200, sort_by: 'nombre', sort_order: 'asc' }).pipe(
+            map((response) => ({
+                ready: true,
+                options: response.data.map(
+                    (s): SistemaSelectOption => ({
+                        label: s.nombre,
+                        value: s.id
+                    })
+                )
+            }))
+        ),
+        { initialValue: { ready: false, options: [] as SistemaSelectOption[] } }
+    );
 
     tiposOptions = [
         { label: 'Marca', value: 'Marca' as ListaTipo },
@@ -64,12 +89,26 @@ export class EditComponent implements OnInit {
             this.lista$ = this.store.select(selectListaById(this.listaId));
 
             this.lista$.subscribe((lista) => {
-                if (!lista) {
+                if (!lista || this.formReady()) {
                     return;
                 }
                 this.initForm(lista);
             });
         });
+    }
+
+    private resolveSistemaIds(lista: Lista): number[] {
+        if (lista.sistema_ids?.length) {
+            return lista.sistema_ids;
+        }
+        if (lista.sistemas?.length) {
+            return lista.sistemas.map((s) => s.id);
+        }
+        if (lista.sistema_id) {
+            return [lista.sistema_id];
+        }
+
+        return [];
     }
 
     private initForm(lista: Lista): void {
@@ -79,8 +118,9 @@ export class EditComponent implements OnInit {
             definicion: [lista.definicion || '', [Validators.maxLength(1000)]],
             foto: [lista.foto || null],
             fotoMedida: [lista.fotoMedida || null],
-            sistema_id: [lista.sistema_id || null]
+            sistema_ids: [this.resolveSistemaIds(lista)]
         });
+        this.formReady.set(true);
     }
 
     onFotoSelected(file: File): void {
@@ -111,7 +151,10 @@ export class EditComponent implements OnInit {
         formData.append('tipo', formValue.tipo);
         formData.append('nombre', formValue.nombre);
         if (formValue.definicion) formData.append('definicion', formValue.definicion);
-        if (formValue.sistema_id) formData.append('sistema_id', formValue.sistema_id);
+
+        if (formValue.tipo === 'Tipo de Artículo') {
+            appendSistemaIdsToFormData(formData, formValue.sistema_ids ?? []);
+        }
 
         const isPiezaEstandar = formValue.tipo === 'Piezas Estandar';
 
@@ -121,8 +164,8 @@ export class EditComponent implements OnInit {
         this.store.dispatch(updateLista({ id: this.listaId, data: formData }));
 
         this.store
-            .select((state) => (state as any).listas)
-            .subscribe((listasState: any) => {
+            .select((state) => (state as { listas: { loading: boolean; error: string | null } }).listas)
+            .subscribe((listasState) => {
                 if (!listasState.loading && !listasState.error && this.loading) {
                     this.loading = false;
                     this.router.navigate(['/app/listas', this.listaId]);
