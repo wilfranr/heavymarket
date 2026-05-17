@@ -4,7 +4,7 @@
 
     @if (loadingData) {
         <div class="flex justify-center py-10">
-            <p-progressSpinner styleClass="w-12 h-12" strokeWidth="4" />
+            <i class="pi pi-spin pi-spinner text-4xl text-gray-400"></i>
         </div>
     } @else {
         <form [formGroup]="referenciaForm" (ngSubmit)="guardar()" class="grid grid-cols-1 gap-4">
@@ -34,27 +34,35 @@
             </div>
 
             <div class="field">
-                <label for="edit-articulo_id" class="block text-sm font-medium mb-2">Artículo relacionado</label>
-                <p-select
-                    id="edit-articulo_id"
-                    formControlName="articulo_id"
-                    [options]="articulos()"
-                    optionLabel="descripcionEspecifica"
-                    optionValue="id"
-                    placeholder="Vincule un artículo"
-                    [filter]="true"
-                    filterBy="descripcionEspecifica,definicion"
-                    [showClear]="true"
-                    styleClass="w-full"
-                    appendTo="body"
-                >
-                    <ng-template let-articulo pTemplate="item">
-                        <div class="flex flex-col">
-                            <span class="font-medium text-xs">{{ articulo.definicion }}</span>
-                            <small class="text-muted-color text-[10px]">{{ articulo.descripcionEspecifica }}</small>
-                        </div>
-                    </ng-template>
-                </p-select>
+                <label for="edit-articulo_id" class="block text-sm font-medium mb-2">Artículo relacionado <span class="text-red-500">*</span></label>
+                <p-inputgroup>
+                    <p-select
+                        id="edit-articulo_id"
+                        formControlName="articulo_id"
+                        [options]="articulos()"
+                        optionLabel="descripcionEspecifica"
+                        optionValue="id"
+                        placeholder="Seleccione un artículo"
+                        [filter]="true"
+                        filterBy="descripcionEspecifica,definicion"
+                        [showClear]="true"
+                        styleClass="w-full"
+                        appendTo="body"
+                    >
+                        <ng-template let-articulo pTemplate="item">
+                            <div class="flex flex-col">
+                                <span class="font-medium text-xs">{{ articulo.definicion }}</span>
+                                <small class="text-muted-color text-[10px]">{{ articulo.descripcionEspecifica }}</small>
+                            </div>
+                        </ng-template>
+                    </p-select>
+                    <p-inputgroup-addon class="bg-[#0c0c0e] border-white/5 border-l-0 rounded-r-lg">
+                        <p-button icon="pi pi-plus" [text]="true" severity="secondary" (onClick)="abrirCrearArticulo()" pTooltip="Crear nuevo artículo" tooltipPosition="top"></p-button>
+                    </p-inputgroup-addon>
+                </p-inputgroup>
+                @if (referenciaForm.get('articulo_id')?.touched && referenciaForm.get('articulo_id')?.invalid) {
+                    <small class="text-red-500">El artículo es obligatorio</small>
+                }
             </div>
 
             <div class="field">
@@ -69,3 +77,6 @@
         </form>
     }
 </p-dialog>
+
+<!-- Modal para crear artículo asociado -->
+<app-articulo-create-modal [(visible)]="showArticuloModal" title="Crear Artículo" (onArticuloCreated)="onArticuloCreado($event)" />

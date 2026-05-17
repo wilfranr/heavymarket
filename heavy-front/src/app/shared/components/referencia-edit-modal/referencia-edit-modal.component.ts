@@ -8,7 +8,9 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
+import { InputGroupModule } from 'primeng/inputgroup';
+import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { ListaService } from '../../../core/services/lista.service';
@@ -16,11 +18,12 @@ import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
+import { ArticuloCreateModalComponent } from '../articulo-create-modal/articulo-create-modal.component';
 
 @Component({
     selector: 'app-referencia-edit-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, ProgressSpinnerModule],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TooltipModule, ArticuloCreateModalComponent],
     templateUrl: './referencia-edit-modal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [MessageService]
@@ -44,6 +47,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
     loadingData = false;
     marcas = signal<Lista[]>([]);
     articulos = signal<Articulo[]>([]);
+    showArticuloModal = false;
 
     ngOnInit(): void {
         this.initForm();
@@ -61,7 +65,7 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
         this.referenciaForm = this.fb.group({
             referencia: ['', [Validators.required, Validators.maxLength(255)]],
             marca_id: [null as number | null],
-            articulo_id: [null as number | null],
+            articulo_id: [null as number | null, [Validators.required]],
             comentario: ['', [Validators.maxLength(500)]]
         });
     }
@@ -79,6 +83,22 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
             next: (response) => {
                 this.articulos.set(response.data);
             }
+        });
+    }
+
+    abrirCrearArticulo(): void {
+        this.showArticuloModal = true;
+    }
+
+    onArticuloCreado(nuevoArticulo: any): void {
+        // Agregar el nuevo artículo a la lista local para que aparezca en el dropdown
+        this.articulos.update((prev) => [nuevoArticulo, ...prev]);
+        // Asignar automáticamente el artículo recién creado a la referencia
+        this.referenciaForm.patchValue({ articulo_id: nuevoArticulo.id });
+        this.messageService.add({
+            severity: 'success',
+            summary: 'Artículo creado',
+            detail: `El artículo "${nuevoArticulo.descripcionEspecifica}" ha sido asociado a esta referencia.`
         });
     }
 
