@@ -363,24 +363,33 @@
                                 </div>
 
                                 <div class="w-[15%]">
+                                    @if (isRowTiposReady(refIndex)) {
                                     <p-select
                                         formControlName="lista_id"
-                                        [options]="tiposPorFila[refIndex]"
+                                        [options]="getTiposPanelOptions(refIndex)"
+                                        optionLabel="label"
+                                        optionValue="value"
                                         placeholder="Tipo"
                                         [filter]="true"
                                         appendTo="body"
                                         styleClass="w-full h-[42px]"
                                         [filterMatchMode]="filterMode"
                                         filterBy="_search"
+                                        [resetFilterOnHide]="true"
                                         [panelStyle]="{'max-width': '400px'}"
+                                        (onShow)="onTiposPanelShow(refIndex)"
+                                        (onFilter)="onFilterTiposPanel($event, refIndex)"
                                     >
                                         <ng-template pTemplate="item" let-tipo>
-                                            <div class="flex flex-col max-w-full">
-                                                <span class="font-semibold">{{ tipo.label }}</span>
-                                                <small class="text-[10px] theme-text-secondary opacity-60 whitespace-normal leading-tight mt-1" *ngIf="tipo.descripcion"> {{ tipo.descripcion }} </small>
+                                            <div class="flex flex-col">
+                                                <span>{{ tipo.label }}</span>
+                                                <small class="text-[10px] theme-text-secondary opacity-60" *ngIf="tipo.descripcion"> {{ tipo.descripcion }} </small>
                                             </div>
                                         </ng-template>
                                     </p-select>
+                                    } @else {
+                                    <div class="w-full h-[42px] flex items-center px-3 rounded-lg border border-slate-600/40 text-xs theme-text-secondary">Cargando...</div>
+                                    }
                                 </div>
 
                                 <!-- Cantidad -->
@@ -615,9 +624,12 @@
 
         <div class="flex flex-col gap-2 relative">
             <label class="font-bold text-gray-800 dark:text-white">2. Tipo de artículo <span class="text-red-500">*</span></label>
+            @if (tiposLoteCatalog().ready || tiposArticuloCatalogReady()) {
             <p-select
                 formControlName="articulo_id"
-                [options]="tiposLote"
+                [options]="getTiposLotePanelOptions()"
+                optionLabel="label"
+                optionValue="value"
                 placeholder="Tipo de artículo"
                 styleClass="w-full"
                 [filter]="true"
@@ -625,6 +637,10 @@
                 (onChange)="onArticuloLoteChange($event.value)"
                 [filterMatchMode]="filterMode"
                 filterBy="_search"
+                [resetFilterOnHide]="true"
+                [panelStyle]="{'max-width': '400px'}"
+                (onShow)="onTiposLotePanelShow()"
+                (onFilter)="onFilterTiposLotePanel($event)"
             >
                 <ng-template pTemplate="item" let-tipo>
                     <div class="flex flex-col">
@@ -633,6 +649,9 @@
                     </div>
                 </ng-template>
             </p-select>
+            } @else {
+            <div class="w-full h-[42px] flex items-center px-3 rounded-lg border border-slate-600/40 text-sm theme-text-secondary">Cargando tipos...</div>
+            }
         </div>
 
         <div class="flex flex-col gap-2 relative">

@@ -1,4 +1,5 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
+import { AbstractControl } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -49,6 +50,18 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+type TipoListaSelectOption = {
+    label: string;
+    value: number;
+    descripcion?: string;
+    _search: string;
+};
+
+type RowTiposCatalogEntry = {
+    ready: boolean;
+    options: TipoListaSelectOption[];
+};
+
 /**
  * Componente de creación de pedido con Wizard de 2 pasos
  */
@@ -91,6 +104,8 @@ import { catchError, map } from 'rxjs/operators';
     styleUrl: './create.scss'
 })
 export class CreateComponent implements OnInit {
+    private static readonly DEFAULT_ARTICLE_TYPE_LISTA_ID = 3425;
+
     private readonly fb = inject(FormBuilder);
     // ... services injections ...
     private readonly store = inject(Store);
@@ -98,6 +113,7 @@ export class CreateComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly filterService = inject(FilterService);
+    private readonly cdr = inject(ChangeDetectorRef);
     private readonly terceroService = inject(TerceroService);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly sistemaService = inject(SistemaService);
@@ -135,8 +151,14 @@ export class CreateComponent implements OnInit {
     tiposArticulos: any[] = []; // Opciones globales si se necesita
 
     // Cascading options por fila (índice del FormArray)
-    tiposPorFila: any[][] = [];
+    readonly rowTiposCatalog = signal<Record<number, RowTiposCatalogEntry>>({});
     referenciasPorFila: any[][] = [];
+    /** Catálogo completo en memoria (como `sistemas`); no se pasa entero al p-select. */
+    tiposArticuloCatalog: TipoListaSelectOption[] = [];
+    readonly tiposArticuloCatalogReady = signal(false);
+    private readonly tiposPanelFilter: Record<number, string> = {};
+    private readonly TIPOS_PANEL_MAX = 100;
+    private tiposLotePanelFilter = '';
 
     // Terceros completos para info cards
     tercerosFull: any[] = [];
@@ -172,8 +194,8 @@ export class CreateComponent implements OnInit {
     // Lote de Referencias
     displayLoteDialog = false;
     loteForm!: FormGroup;
-    tiposLote: any[] = [];
-    tiposLoteOriginal: any[] = [];
+    readonly tiposLoteCatalog = signal<RowTiposCatalogEntry>({ ready: false, options: [] });
+    tiposLoteOriginal: TipoListaSelectOption[] = [];
     referenciasLote: any[] = [];
     filterMode: any = 'flexible';
 
@@ -201,8 +223,21 @@ export class CreateComponent implements OnInit {
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
 
      ngOnInit(): void {
+        this.registerFlexibleFilter();
         this.initForm();
         this.loadInitialData();
+    }
+
+    private registerFlexibleFilter(): void {
+        this.filterService.register('flexible', (value: unknown, filter: unknown): boolean => {
+            if (filter === undefined || filter === null || String(filter).trim() === '') {
+                return true;
+            }
+            if (value === undefined || value === null) {
+                return false;
+            }
+            return this.flexibleMatch(String(value), String(filter));
+        });
     }
     
 
@@ -271,6 +306,261 @@ export class CreateComponent implements OnInit {
         return str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
     }
 
+    private mapListasToOptions(listas: { id: number; nombre: string; definicion?: string | null }[]): TipoListaSelectOption[] {
+        return listas.map((lista) => ({
+            label: lista.nombre,
+            value: lista.id,
+            descripcion: lista.definicion ?? undefined,
+            _search: `${lista.nombre} ${lista.definicion || ''}`
+        }));
+    }
+
+    /** Aplaza mutaciones de vista al siguiente macrotask (evita NG0100 en modo dev). */
+    private deferViewUpdate(fn: () => void): void {
+        setTimeout(() => {
+            fn();
+            this.cdr.markForCheck();
+        }, 0);
+    }
+
+    private setRowTiposCatalog(index: number, entry: RowTiposCatalogEntry): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: entry }));
+            this.tiposPorFilaOriginal[index] = [...entry.options];
+        });
+    }
+
+    private clearRowTiposCatalog(index: number, after?: () => void): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: false, options: [] } }));
+            this.tiposPorFilaOriginal[index] = [];
+            after?.();
+        });
+    }
+
+    private shiftRowTiposCatalogAfterRemove(removedIndex: number): void {
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => {
+                const next: Record<number, RowTiposCatalogEntry> = {};
+                Object.entries(state).forEach(([key, entry]) => {
+                    const i = Number(key);
+                    if (i < removedIndex) {
+                        next[i] = entry;
+                    } else if (i > removedIndex) {
+                        next[i - 1] = entry;
+                    }
+                });
+                return next;
+            });
+        });
+    }
+
+    private normalizeLabel(value: string): string {
+        return this.removeAccents(value.toLowerCase().trim());
+    }
+
+    private patchDefaultListaForRow(row: AbstractControl | null, options: TipoListaSelectOption[], systemLabel?: string): void {
+        if (!row || this.normalizeLabel(systemLabel ?? '') !== 'por defecto') {
+            return;
+        }
+
+        const currentListaId = row.get('lista_id')?.value;
+        if (currentListaId != null && options.some((o) => o.value === currentListaId)) {
+            return;
+        }
+
+        const defaultListaId = this.resolveDefaultListaId(options);
+        if (defaultListaId) {
+            row.patchValue({ lista_id: defaultListaId }, { emitEvent: true });
+        }
+    }
+
+    private applyRowTiposLoaded(index: number, options: TipoListaSelectOption[], row: AbstractControl | null, systemLabel?: string): void {
+        if (this.normalizeLabel(systemLabel ?? '') === 'por defecto') {
+            this.applyRowTiposReadyPorDefecto(index, row, systemLabel);
+            return;
+        }
+
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options } }));
+            this.tiposPorFilaOriginal[index] = [...options];
+            this.deferViewUpdate(() => {
+                this.patchDefaultListaForRow(row, options, systemLabel);
+            });
+        });
+    }
+
+    private applyRowTiposReadyPorDefecto(index: number, row: AbstractControl | null, systemLabel?: string): void {
+        this.tiposPanelFilter[index] = '';
+        this.deferViewUpdate(() => {
+            this.rowTiposCatalog.update((state) => ({ ...state, [index]: { ready: true, options: [] } }));
+            this.deferViewUpdate(() => {
+                this.patchDefaultListaForRow(row, this.tiposArticuloCatalog, systemLabel);
+            });
+        });
+    }
+
+    private syncPendingPorDefectoRows(): void {
+        this.referenciasFormArray.controls.forEach((row, index) => {
+            const sistemaId = row.get('sistema_id')?.value as number | null;
+            if (!this.isSistemaPorDefecto(sistemaId)) {
+                return;
+            }
+
+            const system = this.sistemas.find((s) => s.value === sistemaId);
+            const catalog = this.rowTiposCatalog()[index];
+            if (!catalog?.ready) {
+                this.applyRowTiposReadyPorDefecto(index, row, system?.label);
+            } else {
+                this.deferViewUpdate(() => {
+                    this.patchDefaultListaForRow(row, this.tiposArticuloCatalog, system?.label);
+                });
+            }
+        });
+    }
+
+    private buildTiposPanelSlice(source: TipoListaSelectOption[], filter: string, selectedId: number | null): TipoListaSelectOption[] {
+        const list = filter ? source.filter((t) => this.flexibleMatch(t._search, filter)) : source;
+        if (list.length <= this.TIPOS_PANEL_MAX) {
+            return list;
+        }
+
+        const slice = list.slice(0, this.TIPOS_PANEL_MAX);
+        if (selectedId == null) {
+            return slice;
+        }
+
+        const selected = source.find((t) => t.value === selectedId);
+        if (selected && !slice.some((t) => t.value === selectedId)) {
+            return [selected, ...list.filter((t) => t.value !== selectedId).slice(0, this.TIPOS_PANEL_MAX - 1)];
+        }
+
+        return slice;
+    }
+
+    isRowTiposReady(index: number): boolean {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.tiposArticuloCatalogReady();
+        }
+        return !!this.rowTiposCatalog()[index]?.ready;
+    }
+
+    getTiposPanelOptions(index: number): TipoListaSelectOption[] {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        const selectedId = (row?.get('lista_id')?.value ?? null) as number | null;
+        const filter = this.tiposPanelFilter[index] ?? '';
+
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.buildTiposPanelSlice(this.tiposArticuloCatalog, filter, selectedId);
+        }
+
+        const rowOptions = this.rowTiposCatalog()[index]?.options ?? [];
+        if (!filter) {
+            return rowOptions;
+        }
+        return rowOptions.filter((t) => this.flexibleMatch(t._search, filter));
+    }
+
+    onTiposPanelShow(index: number): void {
+        this.tiposPanelFilter[index] = '';
+        this.cdr.markForCheck();
+    }
+
+    onFilterTiposPanel(event: { filter?: string }, index: number): void {
+        this.tiposPanelFilter[index] = (event.filter ?? '').trim();
+        this.cdr.markForCheck();
+    }
+
+    getTiposLotePanelOptions(): TipoListaSelectOption[] {
+        const selectedId = (this.loteForm.get('articulo_id')?.value ?? null) as number | null;
+        const source = this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog;
+        return this.buildTiposPanelSlice(source, this.tiposLotePanelFilter, selectedId);
+    }
+
+    onTiposLotePanelShow(): void {
+        this.tiposLotePanelFilter = '';
+        this.cdr.markForCheck();
+    }
+
+    onFilterTiposLotePanel(event: { filter?: string }): void {
+        this.tiposLotePanelFilter = (event.filter ?? '').trim();
+        this.cdr.markForCheck();
+    }
+
+    private isSistemaPorDefecto(sistemaId: number | null): boolean {
+        const system = this.sistemas.find((s) => s.value === sistemaId);
+        return this.normalizeLabel(system?.label ?? '') === 'por defecto';
+    }
+
+    private fetchTiposArticuloOptions(sistemaId: number): Observable<TipoListaSelectOption[]> {
+        const esPorDefecto = this.isSistemaPorDefecto(sistemaId);
+        if (esPorDefecto && this.tiposArticuloCatalogReady()) {
+            return of(this.tiposArticuloCatalog);
+        }
+
+        return this.listaService.getTiposArticuloPorSistema(sistemaId, esPorDefecto).pipe(
+            map((listas) => {
+                const options = this.mapListasToOptions(listas);
+                if (esPorDefecto) {
+                    this.tiposArticuloCatalog = options;
+                    this.tiposArticuloCatalogReady.set(true);
+                }
+                return options;
+            })
+        );
+    }
+
+    private preloadTiposPorDefecto(): void {
+        this.listaService.getByTipo('Tipo de Artículo', undefined, 5000).subscribe({
+            next: (listas) => {
+                const options = this.mapListasToOptions(listas);
+                this.deferViewUpdate(() => {
+                    this.tiposArticuloCatalog = options;
+                    this.tiposArticuloCatalogReady.set(true);
+                    this.syncPendingPorDefectoRows();
+                });
+            }
+        });
+    }
+
+    private resolveDefaultListaId(tipos: { label: string; value: number }[]): number | null {
+        if (!tipos.length) {
+            return null;
+        }
+
+        const byId = tipos.find((t) => t.value === CreateComponent.DEFAULT_ARTICLE_TYPE_LISTA_ID);
+        if (byId) {
+            return byId.value;
+        }
+
+        const byName = tipos.find((t) => this.normalizeLabel(t.label) === 'por defecto');
+        return byName?.value ?? null;
+    }
+
+    private resolveDefaultListaIdFromCache(): number | null {
+        if (!this.tiposArticuloCatalog.length) {
+            return null;
+        }
+        return this.resolveDefaultListaId(this.tiposArticuloCatalog);
+    }
+
+    private tiposSourceForRow(index: number): TipoListaSelectOption[] {
+        const row = this.referenciasFormArray.at(index);
+        const sistemaId = row?.get('sistema_id')?.value as number | null;
+        if (this.isSistemaPorDefecto(sistemaId)) {
+            return this.tiposArticuloCatalog;
+        }
+        return this.rowTiposCatalog()[index]?.options ?? [];
+    }
+
+    private getDefaultSistemaId(): number | null {
+        const defaultSistema = this.sistemas.find((s) => this.normalizeLabel(s.label) === 'por defecto');
+        return defaultSistema?.value ?? null;
+    }
+
     public flexibleMatch(text: string, search: string): boolean {
         if (!search) return true;
         const normalizedText = this.removeAccents(text.toLowerCase());
@@ -298,44 +588,6 @@ export class CreateComponent implements OnInit {
         this.terceros = this.tercerosOriginal.filter((t) => this.flexibleMatch(t.label, query));
     }
 
-    onFilterTipos(event: any, index: number) {
-        const query = (event.filter || '').trim();
-        const row = this.referenciasFormArray.at(index);
-        const currentSistemaId = row.get('sistema_id')?.value;
-
-        if (!query) {
-            this.tiposPorFila[index] = [...(this.tiposPorFilaOriginal[index] || [])];
-            return;
-        }
-
-        // Búsqueda global en todos los sistemas (como en el cotizador)
-        const allMatches: any[] = [];
-        this.sistemasOriginal.forEach((sys) => {
-            const params: any = { tipo: 'Tipo de Artículo', per_page: 200, sistema_id: sys.value };
-            // Nota: Aquí dependemos de que los sistemas originales ya tengan sus listas si queremos búsqueda instantánea
-            // Pero como se cargan bajo demanda en onSistemaChange, vamos a usar los datos que ya tenemos si es posible
-            // O mejor, buscamos en un catálogo global si existe.
-
-            // Para simplificar y ser coherentes con p-select, vamos a buscar en todos los tipos ya cargados en tiposPorFilaOriginal
-            // Pero eso solo cubriría el sistema actual.
-        });
-
-        // REFINAMIENTO: Usar un catálogo global de tipos si está disponible
-        // En loadInitialData cargamos this.tiposArticulos, pero son strings.
-
-        // Vamos a facilitar la búsqueda multi-término en el sistema actual por ahora,
-        // ya que la estructura de cascada de la administración es más estricta que el landing.
-        this.tiposPorFila[index] = (this.tiposPorFilaOriginal[index] || []).filter((t: any) => this.flexibleMatch(t._search, query));
-    }
-
-    onFilterTiposLote(event: any) {
-        const query = (event.filter || '').trim();
-        if (!query) {
-            this.tiposLote = [...this.tiposLoteOriginal];
-            return;
-        }
-        this.tiposLote = this.tiposLoteOriginal.filter((t: any) => this.flexibleMatch(t._search, query));
-    }
 
     /**
      * Muestra el diálogo para crear un nuevo tercero
@@ -526,6 +778,7 @@ export class CreateComponent implements OnInit {
 
         // Cargar tipos de artículos
         this.loadTiposArticulos();
+        this.preloadTiposPorDefecto();
     }
 
     /**
@@ -536,33 +789,38 @@ export class CreateComponent implements OnInit {
 
         if (clear && row) {
             row.patchValue({ lista_id: null, articulo_id: null, referencia_id: null }, { emitEvent: false });
-            this.tiposPorFila[index] = [];
             this.referenciasPorFila[index] = [];
         }
 
-        if (!sistemaId) return;
-
-        // Si el sistema es "Por defecto", no filtramos por sistema_id para obtener todos los tipos
-        const system = this.sistemas.find((s) => s.value === sistemaId);
-        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        if (system && system.label.toLowerCase() !== 'por defecto') {
-            params.sistema_id = sistemaId;
+        if (!sistemaId) {
+            if (clear) {
+                this.clearRowTiposCatalog(index);
+            }
+            return;
         }
 
-        // Cargar Listas (Tipos de Artículo) asociados al sistema
-        this.listaService.getAll(params).subscribe({
-            next: (response) => {
-                const listasAsociadas = response.data;
+        const systemLabel = this.sistemas.find((s) => s.value === sistemaId)?.label;
 
-                this.tiposPorFila[index] = listasAsociadas.map((lista) => ({
-                    label: lista.nombre,
-                    value: lista.id,
-                    descripcion: lista.definicion,
-                    _search: `${lista.nombre} ${lista.definicion || ''}`
-                }));
-                this.tiposPorFilaOriginal[index] = [...this.tiposPorFila[index]];
+        const loadTipos = (options: TipoListaSelectOption[]) => {
+            this.applyRowTiposLoaded(index, options, row, systemLabel);
+        };
+
+        const fetchTipos = () => {
+            if (this.isSistemaPorDefecto(sistemaId) && this.tiposArticuloCatalogReady()) {
+                this.applyRowTiposReadyPorDefecto(index, row, systemLabel);
+                return;
             }
-        });
+
+            this.fetchTiposArticuloOptions(sistemaId).subscribe({
+                next: (options) => loadTipos(options)
+            });
+        };
+
+        if (clear) {
+            this.clearRowTiposCatalog(index, fetchTipos);
+        } else {
+            fetchTipos();
+        }
     }
 
     /**
@@ -575,7 +833,7 @@ export class CreateComponent implements OnInit {
 
         if (!listaId) return;
 
-        const opciones = this.tiposPorFila[index] || [];
+        const opciones = this.tiposSourceForRow(index);
         const opcion = opciones.find((o: any) => o.value === listaId);
         const listaNombre = opcion?.label ?? '';
         if (!listaNombre) return;
@@ -821,18 +1079,23 @@ export class CreateComponent implements OnInit {
     agregarReferencia(data: any = {}): void {
         const index = this.referenciasFormArray.length;
 
-        // Inicializar opciones vacías para esta fila o usar las proveídas
-        this.tiposPorFila[index] = data.tipos || [];
+        if (data.tipos?.length) {
+            this.setRowTiposCatalog(index, { ready: true, options: data.tipos });
+        }
         this.referenciasPorFila[index] = data.referencias || [];
 
-        const defaultSistema = this.sistemas.find((s) => s.label.toLowerCase() === 'por defecto');
-        const defaultSistemaId = defaultSistema ? defaultSistema.value : null;
+        const defaultSistemaId = this.getDefaultSistemaId();
+        const sistemaInicialId = (data.sistema_id ?? defaultSistemaId) as number | null;
+        const sistemaInicial = this.sistemas.find((s) => s.value === sistemaInicialId);
+        const esSistemaPorDefecto = this.normalizeLabel(sistemaInicial?.label ?? '') === 'por defecto';
+        const defaultListaId =
+            data.lista_id ?? (esSistemaPorDefecto ? this.resolveDefaultListaIdFromCache() : null);
 
         const referenciaForm = this.fb.group({
             estado: [true],
             seleccionado: [false],
-            sistema_id: [data.sistema_id ?? defaultSistemaId],
-            lista_id: [data.lista_id ?? null],
+            sistema_id: [sistemaInicialId],
+            lista_id: [defaultListaId],
             articulo_id: [data.articulo_id ?? null],
             referencia_id: [data.referencia_id ?? null],
             marca_id: [data.marca_id ?? null],
@@ -861,11 +1124,9 @@ export class CreateComponent implements OnInit {
             this.onArticuloChange(articuloId as number | null, index); // por default clear = true
         });
 
-        // Si ya viene con sistema_id y no se pre-cargaron tipos, cargar tipos inmediatamente
-        if (data.sistema_id && (!data.tipos || data.tipos.length === 0)) {
-            this.onSistemaChange(data.sistema_id, index, false);
+        if (sistemaInicialId && (!data.tipos || data.tipos.length === 0)) {
+            this.onSistemaChange(sistemaInicialId, index, false);
         }
-        // Si ya viene con articulo_id y no se pre-cargaron referencias, cargar referencias inmediatamente
         if (data.articulo_id && (!data.referencias || data.referencias.length === 0)) {
             this.onArticuloChange(data.articulo_id, index, false);
         }
@@ -880,15 +1141,13 @@ export class CreateComponent implements OnInit {
 
     private quitarFilaReferencia(index: number): void {
         this.referenciasFormArray.removeAt(index);
-        if (index < this.tiposPorFila.length) {
-            this.tiposPorFila.splice(index, 1);
-        }
         if (index < this.referenciasPorFila.length) {
             this.referenciasPorFila.splice(index, 1);
         }
         if (index < this.tiposPorFilaOriginal.length) {
             this.tiposPorFilaOriginal.splice(index, 1);
         }
+        this.shiftRowTiposCatalogAfterRemove(index);
     }
 
     hayReferenciasSeleccionadas(): boolean {
@@ -928,8 +1187,18 @@ export class CreateComponent implements OnInit {
      * Inicia el flujo de agregado múltiple
      */
     abrirDialogoLote(): void {
-        this.loteForm.reset({ cantidad_lote: 1 });
+        const defaultSistemaId = this.getDefaultSistemaId();
+        const defaultListaId = this.resolveDefaultListaIdFromCache();
+        this.loteForm.reset({
+            cantidad_lote: 1,
+            sistema_id: defaultSistemaId,
+            articulo_id: defaultListaId,
+            referencias_seleccionadas: []
+        });
         this.displayLoteDialog = true;
+        if (defaultSistemaId) {
+            this.onSistemaLoteChange(defaultSistemaId);
+        }
     }
 
     cerrarDialogoLote(): void {
@@ -1137,31 +1406,57 @@ export class CreateComponent implements OnInit {
         this.loteForm.patchValue({ articulo_id: null, referencias_seleccionadas: [] });
         this.loteForm.get('articulo_id')?.disable();
         this.loteForm.get('referencias_seleccionadas')?.disable();
-        this.tiposLote = [];
         this.referenciasLote = [];
 
-        if (!sistemaId) return;
-
-        const system = this.sistemas.find((s) => s.value === sistemaId);
-        const params: any = { tipo: 'Tipo de Artículo', per_page: 200 };
-        if (system && system.label.toLowerCase() !== 'por defecto') {
-            params.sistema_id = sistemaId;
+        if (!sistemaId) {
+            this.deferViewUpdate(() => {
+                this.tiposLoteCatalog.set({ ready: false, options: [] });
+            });
+            return;
         }
 
-        this.listaService.getAll(params).subscribe({
-            next: (response) => {
-                const listasAsociadas = response.data;
-                this.tiposLote = listasAsociadas.map((lista: any) => ({
-                    label: lista.nombre,
-                    value: lista.id,
-                    descripcion: lista.definicion,
-                    _search: `${lista.nombre} ${lista.definicion || ''}`
-                }));
-                this.tiposLoteOriginal = [...this.tiposLote];
-                if (this.tiposLote.length > 0) {
+        const systemLabel = this.sistemas.find((s) => s.value === sistemaId)?.label;
+        const esPorDefecto = this.isSistemaPorDefecto(sistemaId);
+
+        const applyLoteTipos = (options: TipoListaSelectOption[]) => {
+            this.deferViewUpdate(() => {
+                this.tiposLoteOriginal = [...options];
+                this.tiposLoteCatalog.set({ ready: true, options });
+                if (options.length > 0) {
                     this.loteForm.get('articulo_id')?.enable();
                 }
+                if (esPorDefecto) {
+                    this.deferViewUpdate(() => {
+                        const defaultListaId = this.resolveDefaultListaId(options);
+                        if (defaultListaId) {
+                            this.loteForm.patchValue({ articulo_id: defaultListaId });
+                            this.onArticuloLoteChange(defaultListaId);
+                        }
+                    });
+                }
+            });
+        };
+
+        this.deferViewUpdate(() => {
+            this.tiposLoteCatalog.set({ ready: false, options: [] });
+
+            if (esPorDefecto && this.tiposArticuloCatalogReady()) {
+                this.tiposLotePanelFilter = '';
+                this.deferViewUpdate(() => {
+                    this.tiposLoteCatalog.set({ ready: true, options: [] });
+                    this.loteForm.get('articulo_id')?.enable();
+                    const defaultListaId = this.resolveDefaultListaId(this.tiposArticuloCatalog);
+                    if (defaultListaId) {
+                        this.loteForm.patchValue({ articulo_id: defaultListaId });
+                        this.onArticuloLoteChange(defaultListaId);
+                    }
+                });
+                return;
             }
+
+            this.fetchTiposArticuloOptions(sistemaId).subscribe({
+                next: (options) => applyLoteTipos(options)
+            });
         });
     }
 
@@ -1209,7 +1504,9 @@ export class CreateComponent implements OnInit {
                 referencia_id: refId,
                 cantidad: data.cantidad_lote,
                 definicion: refModel?.definicion || '',
-                tipos: [...this.tiposLote],
+                tipos: [
+                    ...(this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog)
+                ],
                 referencias: [...this.referenciasLote]
             });
         });

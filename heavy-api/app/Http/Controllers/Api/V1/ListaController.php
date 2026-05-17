@@ -117,9 +117,11 @@ class ListaController extends Controller
             $query->where('nombre', 'like', "%{$search}%");
         }
 
+        $limit = min(max((int) $request->input('limit', 500), 1), 5000);
+
         $listas = $query->with('fabricante')
             ->orderBy('nombre', 'asc')
-            ->limit(100) // Listas completas para dropdowns
+            ->limit($limit)
             ->get();
 
         return response()->json([

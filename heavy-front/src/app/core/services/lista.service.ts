@@ -23,9 +23,31 @@ export class ListaService extends ApiService {
     /**
      * Obtener listas por tipo (sin paginación, para dropdowns)
      */
-    getByTipo(tipo: ListaTipo, search?: string): Observable<Lista[]> {
-        const params = search ? { search } : {};
-        return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${tipo}`, params).pipe(map((response) => response.data));
+    getByTipo(tipo: ListaTipo, search?: string, limit = 500): Observable<Lista[]> {
+        const params: Record<string, string | number> = { limit };
+        if (search) {
+            params['search'] = search;
+        }
+        return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${encodeURIComponent(tipo)}`, params).pipe(map((response) => response.data));
+    }
+
+    /**
+     * Tipos de artículo para cascada pedido/cotización.
+     * Sistema "Por Defecto": todas las listas tipo Tipo de Artículo (sin filtro pivot).
+     * Otro sistema: listas asociadas vía pivot o sistema_id legacy.
+     */
+    getTiposArticuloPorSistema(sistemaId: number, esSistemaPorDefecto: boolean): Observable<Lista[]> {
+        if (esSistemaPorDefecto) {
+            return this.getByTipo('Tipo de Artículo', undefined, 5000);
+        }
+
+        return this.getAll({
+            tipo: 'Tipo de Artículo',
+            sistema_id: sistemaId,
+            per_page: 500,
+            sort_by: 'nombre',
+            sort_order: 'asc'
+        }).pipe(map((response) => response.data));
     }
 
     /**
