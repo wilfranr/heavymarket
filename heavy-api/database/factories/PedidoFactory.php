@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\PedidoOrigen;
 use App\Models\Contacto;
 use App\Models\Lista;
 use App\Models\Maquina;
@@ -23,6 +24,7 @@ class PedidoFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
+            'origen' => PedidoOrigen::Panel,
             'tercero_id' => Tercero::factory(),
             'direccion' => fake()->optional()->address(),
             'comentario' => fake()->optional()->sentence(),
@@ -134,6 +136,13 @@ class PedidoFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tercero_id' => $tercero->id,
+        ]);
+    }
+
+    public function landing(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'origen' => PedidoOrigen::Landing,
         ]);
     }
 }

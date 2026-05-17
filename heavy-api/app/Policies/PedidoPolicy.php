@@ -33,10 +33,9 @@ class PedidoPolicy
             return true;
         }
 
-        // Vendedor ve: sus pedidos O pedidos de clientes
+        // Vendedor ve: sus pedidos o pedidos con origen landing
         if ($user->hasRole('Vendedor')) {
-            return $pedido->user_id === $user->id
-                || $pedido->user->hasRole('Cliente');
+            return $pedido->esVisibleParaVendedor($user);
         }
 
         return false;
@@ -66,10 +65,10 @@ class PedidoPolicy
         }
 
         // Admin pueden editar todo
-        // Vendedor puede editar sus pedidos O pedidos de clientes (les toma el pedido)
+        // Vendedor puede editar sus pedidos o pedidos landing (les toma el pedido)
         return $user->hasAnyRole(['super_admin', 'Administrador'])
             || $user->id === $pedido->user_id
-            || ($pedido->user && $pedido->user->hasRole('Cliente'));
+            || $pedido->esDeLanding();
     }
 
     /**

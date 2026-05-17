@@ -268,21 +268,21 @@ it('analista no puede ver pedido fuera de análisis', function () {
         ->getJson("/v1/pedidos/{$pedido->id}")->assertStatus(403);
 });
 
-it('vendedor ve pedidos de clientes', function () {
+it('vendedor ve pedidos landing y los propios', function () {
     $cliente = createUserWithRole('Cliente');
 
-    $pedidoDelCliente = \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
+    $pedidoLanding = \App\Models\Pedido::factory()->landing()->create(['user_id' => $cliente->id]);
     $pedidoDelVendedor = \App\Models\Pedido::factory()->create(['user_id' => $this->user->id]);
+    \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/pedidos');
 
     $response->assertStatus(200);
-    $data = $response->json('data');
+    $ids = array_column($response->json('data'), 'id');
 
-    expect($data)->toHaveCount(2);
-    $ids = array_column($data, 'id');
-    expect($ids)->toContain($pedidoDelCliente->id, $pedidoDelVendedor->id);
+    expect($ids)->toHaveCount(2)
+        ->and($ids)->toContain($pedidoLanding->id, $pedidoDelVendedor->id);
 });
 
 it('vendedor no ve pedidos de otros vendedores', function () {
@@ -301,15 +301,58 @@ it('vendedor no ve pedidos de otros vendedores', function () {
         ->and($data[0]['id'])->toBe($pedidoDelVendedor->id);
 });
 
-it('auto-asigna pedido de cliente al editar', function () {
-    $cliente = createUserWithRole('Cliente');
-    $pedido = \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
+it('vendedor user_id 9 ve pedido landing id 5 en listado y detalle', function () {
+    $vendedor = createUserWithRole('Vendedor', ['id' => 9]);
+    $cliente = createUserWithRole('Cliente', ['id' => 7]);
+
+    \App\Models\Pedido::factory()->landing()->create([
+        'id' => 5,
+        'user_id' => $cliente->id,
+        'comentario' => 'Cotización Landing: Excavadora 320',
+    ]);
+    \App\Models\Pedido::factory()->create(['user_id' => createUserWithRole('Vendedor')->id]);
+
+    $this->actingAs($vendedor, 'sanctum')
+        ->getJson('/v1/pedidos/5')
+        ->assertOk()
+        ->assertJsonPath('data.id', 5)
+        ->assertJsonPath('data.origen', 'landing');
+
+    $ids = array_column(
+        $this->actingAs($vendedor, 'sanctum')->getJson('/v1/pedidos')->json('data'),
+        'id'
+    );
+
+    expect($ids)->toContain(5)->and($ids)->toHaveCount(1);
+});
+
+it('auto-asigna pedido landing al editar', function () {
+    $pedido = \App\Models\Pedido::factory()->landing()->create(['user_id' => null]);
 
     $this->actingAs($this->user, 'sanctum')
         ->putJson("/v1/pedidos/{$pedido->id}", [
-            'comentario' => 'Comentario actualizado por vendedor',
+            'comentario' => 'Atendido por vendedor',
         ])->assertStatus(200);
 
     $pedido->refresh();
-    expect($pedido->user_id)->toBe($this->user->id);
+    expect($pedido->user_id)->toBe($this->user->id)
+        ->and($pedido->origen)->toBe(\App\Enums\PedidoOrigen::Landing);
+});
+
+it('auto-asigna pedido landing id 5 al editar como vendedor user_id 9', function () {
+    $vendedor = createUserWithRole('Vendedor', ['id' => 9]);
+    $pedido = \App\Models\Pedido::factory()->landing()->create([
+        'id' => 5,
+        'user_id' => createUserWithRole('Cliente', ['id' => 7])->id,
+    ]);
+
+    $this->actingAs($vendedor, 'sanctum')
+        ->putJson('/v1/pedidos/5', [
+            'comentario' => 'Tomado por vendedor 9',
+        ])->assertStatus(200);
+
+    $pedido->refresh();
+    expect($pedido->user_id)->toBe(9)
+        ->and($pedido->id)->toBe(5)
+        ->and($pedido->origen)->toBe(\App\Enums\PedidoOrigen::Landing);
 });

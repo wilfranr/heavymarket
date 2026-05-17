@@ -6,6 +6,7 @@
  * Valida todas las reglas de autorización para pedidos
  */
 
+use App\Enums\PedidoOrigen;
 use App\Models\Pedido;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -74,12 +75,36 @@ it('vendedor ve sus propios pedidos', function () {
     expect($vendedor->can('view', $pedido))->toBeTrue();
 });
 
-it('vendedor ve pedidos de clientes', function () {
+it('vendedor ve pedidos con origen landing aunque user_id sea de cliente', function () {
     $vendedor = createUserWithRole('Vendedor');
     $cliente = createUserWithRole('Cliente');
-    $pedido = Pedido::factory()->create(['user_id' => $cliente->id]);
+    $pedido = Pedido::factory()->landing()->create(['user_id' => $cliente->id]);
 
     expect($vendedor->can('view', $pedido))->toBeTrue();
+});
+
+it('vendedor no ve pedidos de cliente sin origen landing', function () {
+    $vendedor = createUserWithRole('Vendedor');
+    $cliente = createUserWithRole('Cliente');
+    $pedido = Pedido::factory()->create([
+        'user_id' => $cliente->id,
+        'origen' => PedidoOrigen::Panel,
+    ]);
+
+    expect($vendedor->can('view', $pedido))->toBeFalse();
+});
+
+it('vendedor user_id 9 ve pedido landing id 5', function () {
+    $vendedor = createUserWithRole('Vendedor', ['id' => 9]);
+    $cliente = createUserWithRole('Cliente', ['id' => 7]);
+    $pedido = Pedido::factory()->landing()->create([
+        'id' => 5,
+        'user_id' => $cliente->id,
+    ]);
+
+    expect($vendedor->can('view', $pedido))->toBeTrue()
+        ->and($pedido->id)->toBe(5)
+        ->and($vendedor->id)->toBe(9);
 });
 
 it('vendedor no ve pedidos de otros vendedores', function () {
@@ -156,10 +181,10 @@ it('vendedor puede actualizar sus pedidos fuera de análisis', function () {
     expect($vendedor->can('update', $pedido))->toBeTrue();
 });
 
-it('vendedor puede actualizar pedidos de clientes', function () {
+it('vendedor puede actualizar pedidos landing', function () {
     $vendedor = createUserWithRole('Vendedor');
     $cliente = createUserWithRole('Cliente');
-    $pedido = Pedido::factory()->create([
+    $pedido = Pedido::factory()->landing()->create([
         'user_id' => $cliente->id,
         'estado' => 'Nuevo',
     ]);

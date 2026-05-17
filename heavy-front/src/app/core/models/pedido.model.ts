@@ -1,9 +1,12 @@
 /**
  * Modelo de Pedido
  */
+export type PedidoOrigen = 'panel' | 'landing';
+
 export interface Pedido {
     id: number;
-    user_id: number;
+    user_id: number | null;
+    origen?: PedidoOrigen;
     tercero_id: number;
     direccion: string | null;
     comentario: any | null;

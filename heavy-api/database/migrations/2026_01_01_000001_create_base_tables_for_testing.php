@@ -201,6 +201,7 @@ return new class extends Migration
             Schema::create('pedidos', function (Blueprint $table) {
                 $table->id();
                 $table->unsignedBigInteger('user_id')->nullable();
+                $table->string('origen', 20)->default('panel');
                 $table->unsignedBigInteger('tercero_id')->nullable();
                 $table->string('direccion', 200)->nullable();
                 $table->text('comentario')->nullable();

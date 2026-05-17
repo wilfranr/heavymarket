@@ -19,7 +19,14 @@
                 <h1 class="text-3xl font-bold text-color m-0">Pedido #{{ pedido.id }}</h1>
                 <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="'text-sm px-3 py-1 rounded-full ' + pedidoEstadoTagClass(pedido.estado)"></p-tag>
             </div>
-            <p class="text-muted-color mt-2 mb-0">Creado el {{ pedido.created_at | date: 'dd/MM/yyyy HH:mm' }} @if(pedido.user){ por {{ pedido.user.name }} }</p>
+            <p class="text-muted-color mt-2 mb-0 flex flex-wrap items-center gap-2">
+                <span>Creado el {{ pedido.created_at | date: 'dd/MM/yyyy HH:mm' }} @if (pedido.user) { por {{ pedido.user.name }} }</span>
+                <p-tag
+                    [value]="pedidoOrigenEtiqueta(pedido.origen)"
+                    [styleClass]="'text-xs px-2 py-0.5 rounded-full ' + pedidoOrigenTagClass(pedido.origen)"
+                    [rounded]="true"
+                ></p-tag>
+            </p>
         </div>
         <div class="flex gap-2">
             <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volver()"></p-button>

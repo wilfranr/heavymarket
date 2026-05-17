@@ -28,6 +28,7 @@ class PedidoResource extends JsonResource
         return [
             'id' => $this->id,
             'user_id' => $this->user_id,
+            'origen' => $this->origen?->value ?? $this->origen,
             'tercero_id' => $this->tercero_id,
             'direccion' => $this->direccion,
             'comentario' => $this->comentario,

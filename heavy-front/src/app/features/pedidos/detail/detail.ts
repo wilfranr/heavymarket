@@ -17,6 +17,7 @@ import { PanelModule } from 'primeng/panel';
 
 import { Pedido, PedidoReferencia } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
+import { pedidoOrigenEtiqueta, pedidoOrigenTagClass } from '../../../core/utils/pedido-origen-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -43,6 +44,8 @@ export interface ComentarioReferenciaVista {
 export class DetailComponent implements OnInit {
     readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
     readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
+    readonly pedidoOrigenEtiqueta = pedidoOrigenEtiqueta;
+    readonly pedidoOrigenTagClass = pedidoOrigenTagClass;
 
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);

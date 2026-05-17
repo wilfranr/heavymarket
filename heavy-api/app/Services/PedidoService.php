@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PedidoOrigen;
 use App\Models\Empresa;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
@@ -30,6 +31,7 @@ class PedidoService
         return DB::transaction(function () use ($data, $user) {
             $pedido = Pedido::create([
                 'user_id' => $user->id,
+                'origen' => PedidoOrigen::Panel,
                 'tercero_id' => $data['tercero_id'],
                 'direccion' => $data['direccion'] ?? null,
                 'comentario' => $data['comentario'] ?? null,

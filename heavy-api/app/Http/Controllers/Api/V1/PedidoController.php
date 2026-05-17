@@ -66,16 +66,9 @@ class PedidoController extends Controller
         if ($user->hasRole('Analista')) {
             $query->where('estado', 'En_Analisis');
         }
-        // Vendedores ven: sus pedidos O pedidos de clientes (user con rol Cliente)
+        // Vendedores ven: sus pedidos o pedidos con origen landing
         elseif (! $user->hasAnyRole(['super_admin', 'Administrador'])) {
-            $query->where(function ($q) use ($user) {
-                $q->where('user_id', $user->id)
-                    ->orWhereHas('user', function ($q2) {
-                        $q2->whereHas('roles', function ($q3) {
-                            $q3->where('name', 'Cliente');
-                        });
-                    });
-            });
+            $query->visibleParaVendedor($user);
         }
 
         // Filtros (Estado, Tercero, Fabricante, Máquina, Vendedor)
@@ -172,11 +165,7 @@ class PedidoController extends Controller
     {
         $this->authorize('update', $pedido);
 
-        // Auto-asignar si el pedido es de un Cliente
-        if ($pedido->user && $pedido->user->hasRole('Cliente')) {
-            $pedido->user_id = $request->user()->id;
-            $pedido->save();
-        }
+        $this->asignarPedidoExternoAlVendedor($pedido, $request->user());
 
         // Usar máquina de estados
         if (! $pedido->puedeTransitarA(PedidoEstado::En_Analisis)) {
@@ -232,11 +221,7 @@ class PedidoController extends Controller
         }
 
         try {
-            // Auto-asignar: Si el pedido pertenece a un Cliente, el vendedor lo toma (se reemplaza al Cliente)
-            if ($pedido->user && $pedido->user->hasRole('Cliente')) {
-                $pedido->user_id = $request->user()->id;
-                $pedido->save();
-            }
+            $this->asignarPedidoExternoAlVendedor($pedido, $request->user());
 
             $estadoAnterior = $pedido->getEstadoEnum();
             $validated = $request->validated();
@@ -503,12 +488,7 @@ class PedidoController extends Controller
         $this->authorize('update', $pedido);
 
         try {
-            // Auto-asignar si el pedido es de un Cliente
-            if ($pedido->user && $pedido->user->hasRole('Cliente')) {
-                $pedido->user_id = $request->user()->id;
-            } elseif ($pedido->user_id === null) {
-                $pedido->user_id = $request->user()->id;
-            }
+            $this->asignarPedidoExternoAlVendedor($pedido, $request->user());
 
             $pedido->transitarA(PedidoEstado::Nuevo);
             $pedido->save();
@@ -956,5 +936,22 @@ class PedidoController extends Controller
             // 2. Broadcast directo al canal del tercero para widgets en tiempo real
             broadcast(new NewReferencesAvailable($prov->id, $count))->toOthers();
         }
+    }
+
+    /**
+     * Toma ownership de pedidos de cliente o landing (sin vendedor asignado).
+     */
+    private function asignarPedidoExternoAlVendedor(Pedido $pedido, User $vendedor): void
+    {
+        if (! $pedido->esDeLanding()) {
+            return;
+        }
+
+        if ($pedido->user_id === $vendedor->id) {
+            return;
+        }
+
+        $pedido->user_id = $vendedor->id;
+        $pedido->save();
     }
 }
