@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, OnChanges, SimpleChanges, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -11,7 +11,6 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TextareaModule } from 'primeng/textarea';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { ProgressSpinnerModule } from 'primeng/progressspinner';
 
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaService } from '../../../core/services/lista.service';
@@ -39,7 +38,6 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
         ToastModule,
         TextareaModule,
         InputNumberModule,
-        ProgressSpinnerModule,
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
@@ -48,7 +46,7 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
     providers: [MessageService],
     templateUrl: './articulo-edit-modal.component.html'
 })
-export class ArticuloEditModalComponent implements OnInit {
+export class ArticuloEditModalComponent implements OnInit, OnChanges {
     @Input() visible = false;
     @Input() title = 'Editar Artículo';
     @Input() articuloId: number | null = null;
@@ -60,6 +58,7 @@ export class ArticuloEditModalComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly referenciaService = inject(ReferenciaService);
     private readonly messageService = inject(MessageService);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     articuloForm!: FormGroup;
     loading = false;
@@ -86,6 +85,15 @@ export class ArticuloEditModalComponent implements OnInit {
         this.cargarTipos();
         this.cargarReferencias();
         if (this.articuloId) {
+            this.cargarArticulo();
+        }
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['articuloId'] && changes['articuloId'].currentValue) {
+            this.cargarArticulo();
+        }
+        if (changes['visible'] && changes['visible'].currentValue && this.articuloId) {
             this.cargarArticulo();
         }
     }
@@ -140,6 +148,7 @@ export class ArticuloEditModalComponent implements OnInit {
                 }
 
                 this.loading = false;
+                this.cdr.detectChanges();
             },
             error: (error) => {
                 console.error('Error al cargar artículo:', error);
@@ -162,6 +171,7 @@ export class ArticuloEditModalComponent implements OnInit {
                 if (currentDef) {
                     this.selectedTipoData = tipos.find((t) => t.nombre === currentDef) || null;
                 }
+                this.cdr.detectChanges();
             },
             error: (error) => {
                 console.error('Error al cargar tipos:', error);
@@ -238,6 +248,7 @@ export class ArticuloEditModalComponent implements OnInit {
                 nuevas.forEach((r: any) => map.set(r.id, r));
 
                 this.referenciasDisponibles = Array.from(map.values());
+                this.cdr.detectChanges();
             }
         });
     }

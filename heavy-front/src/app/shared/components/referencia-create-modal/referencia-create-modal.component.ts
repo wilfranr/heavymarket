@@ -40,6 +40,7 @@ export class ReferenciaCreateModalComponent implements OnInit, OnChanges {
     @Input() articuloId?: number | null; // Artículo al que se asociará automáticamente
     @Input() marcaId?: number | null; // Marca que se pre-seleccionará
     @Input() showArticuloField: boolean = true; // Controla si se muestra el campo de artículo
+    @Input() hideArticuloField: boolean = false; // Oculta el campo de artículo (usado desde crear artículo)
 
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onReferenciaCreated = new EventEmitter<any>();

@@ -191,4 +191,4 @@
 <app-lista-create-modal [(visible)]="showTipoModal" tipoDefault="Piezas Estandar" title="Nueva Pieza Estándar" (onListaCreated)="onTipoCreado($event)"> </app-lista-create-modal>
 
 <!-- Modal para crear nueva Referencia sobre la marcha -->
-<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>
+<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [hideArticuloField]="true" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>

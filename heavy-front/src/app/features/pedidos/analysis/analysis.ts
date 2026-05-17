@@ -775,15 +775,10 @@ export class AnalysisComponent implements OnInit {
         const parte = partes.at(parteIndex);
 
         if (refObj) {
-            const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
             const payload: any = {
-                categoria: refObj.lista_id || refObj.articulo_id
+                categoria: refObj.lista_id || refObj.articulo_id,
+                descripcion: this.descripcionAnalisisDesdeOpcion(refObj)
             };
-
-            // Prellenar descripción solo si está vacía
-            if (!currentDesc) {
-                payload.descripcion = this.descripcionAnalisisDesdeOpcion(refObj);
-            }
 
             parte.patchValue(payload);
         }
@@ -986,31 +981,17 @@ export class AnalysisComponent implements OnInit {
         this.activeItemIndex = itemIndex;
         this.activeParteIndex = parteIndex;
 
-        const item = this.referenciasFormArray.at(itemIndex);
-        const listaId = item.get('lista_id')?.value;
-        const listaNombre = this.nombresTipoListaPorId[listaId];
-
-        // 1. Resolver Articulo ID por nombre de categoría
-        this.createReferenciaArticuloId = null;
-        if (listaNombre) {
-            this.articuloService.getAll({ per_page: 500 }).subscribe({
-                next: (res) => {
-                    const art = res.data.find((a: any) =>
-                        (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
-                        (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
-                    );
-                    if (art) this.createReferenciaArticuloId = art.id;
-                }
-            });
-        }
-
-        // 2. Resolver Marca ID (Fabricante del Pedido)
+        // 1. Resolver Marca ID (Fabricante del Pedido)
         this.createReferenciaMarcaId = null;
         this.pedido$.pipe(take(1)).subscribe(pedido => {
             if (pedido?.fabricante_id) {
                 this.createReferenciaMarcaId = pedido.fabricante_id;
             }
         });
+
+        // 2. NO pre-asociar artículo automáticamente. La referencia se creará como temporal
+        // y el analista podrá asociarla a un artículo existente o crear uno nuevo después.
+        this.createReferenciaArticuloId = null;
 
         this.showReferenciaModal = true;
     }
@@ -1026,7 +1007,7 @@ export class AnalysisComponent implements OnInit {
             parte.get('referencia_id')?.setValue(nuevaRef.id);
 
             const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
-            if (!currentDesc) {
+            if (this.debeSobrescribirDescripcion(currentDesc)) {
                 parte.patchValue({
                     descripcion: this.descripcionAnalisisDesdeOpcion(this.opcionReferenciaDesdeApi(nuevaRef))
                 });
@@ -1054,23 +1035,63 @@ export class AnalysisComponent implements OnInit {
 
         // Obtener datos de la referencia desde las opciones cargadas
         const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
-        const opt = listaId
+
+        let opt = listaId
             ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId)
             : this.referencias.find((x) => x.value === refId);
 
+        // Búsqueda exhaustiva en todos los catálogos si no se encontró
         if (!opt) {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'No se encontraron datos de la referencia.'
+            for (const catId in this.referenciasPorTipo) {
+                const found = this.referenciasPorTipo[catId].find((x) => x.value === refId);
+                if (found) {
+                    opt = found;
+                    break;
+                }
+            }
+        }
+
+        // Si aún no se encuentra, buscar en el catálogo global
+        if (!opt) {
+            opt = this.referencias.find((x) => x.value === refId);
+        }
+
+        if (!opt) {
+            // Fallback: buscar directamente en el API
+            this.referenciaService.getById(refId).pipe(take(1)).subscribe({
+                next: (resp) => {
+                    const refData = resp.data;
+                    if (refData) {
+                        const optFallback = this.opcionReferenciaDesdeApi(refData);
+                        this.procesarEditarReferencia(optFallback, itemIndex, parteIndex);
+                    } else {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'No se encontraron datos de la referencia.'
+                        });
+                    }
+                },
+                error: (err) => {
+                    console.error('Error buscando referencia en API:', err);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: 'No se pudieron cargar los datos de la referencia.'
+                    });
+                }
             });
             return;
         }
 
+        this.procesarEditarReferencia(opt, itemIndex, parteIndex);
+    }
+
+    private procesarEditarReferencia(opt: any, itemIndex: number, parteIndex: number): void {
         // Guardar contexto para actualizar después
         this.articuloContextItemIndex = itemIndex;
         this.articuloContextParteIndex = parteIndex;
-        this.articuloContextReferenciaId = refId;
+        this.articuloContextReferenciaId = opt.value;
 
         // Evaluar estado de la referencia
         const tieneArticulo = !!opt.articulo_id && !opt.es_temporal;
@@ -1079,10 +1100,12 @@ export class AnalysisComponent implements OnInit {
             // Caso 1: Referencia asociada a artículo existente → Editar artículo
             this.editArticuloId = opt.articulo_id;
             this.showArticuloEditModal = true;
+            this.showArticuloCreateModal = false;
         } else {
             // Caso 2: Sin artículo o temporal → Crear artículo asociando esta referencia
-            this.createReferenciaArticuloId = null; // Se asociará vía referencia_id en el modal
+            this.createReferenciaArticuloId = null;
             this.showArticuloCreateModal = true;
+            this.showArticuloEditModal = false;
         }
     }
 
@@ -1106,7 +1129,7 @@ export class AnalysisComponent implements OnInit {
             const opt = this.opcionReferenciaDesdeApi(ref);
 
             const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
-            if (!currentDesc) {
+            if (this.debeSobrescribirDescripcion(currentDesc)) {
                 parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
             }
 
@@ -1139,7 +1162,7 @@ export class AnalysisComponent implements OnInit {
                 Object.values(this.referenciasPorTipo).flat().find((x) => x.value === refId);
             if (opt) {
                 const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
-                if (!currentDesc) {
+                if (this.debeSobrescribirDescripcion(currentDesc)) {
                     parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
                 }
             }
@@ -1222,6 +1245,16 @@ export class AnalysisComponent implements OnInit {
             return texto || String(opt.articulo_nombre || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
         }
         return opt.descripcion || opt.articulo_nombre || 'Sin descripción';
+    }
+
+    /**
+     * Determina si una descripción debe ser sobrescrita al cambiar referencia.
+     * Retorna true si está vacía o es el comentario genérico de landing.
+     */
+    private debeSobrescribirDescripcion(currentDesc: string): boolean {
+        const trimmed = currentDesc.trim();
+        if (!trimmed) return true;
+        return trimmed.includes('Referencia manual desde Landing') || trimmed.includes('Requiere revisión');
     }
 
     /** Misma lógica desde una línea `PedidoReferencia` con `referencia.articulo` cargado. */
@@ -1324,11 +1357,8 @@ export class AnalysisComponent implements OnInit {
                     take(1)
                 )
                 .subscribe((pedido) => {
-                    console.log('Pedido recibido:', pedido);
-                    console.log('Referencias:', pedido?.referencias);
                     if (pedido) {
                         if (pedido.referencias && pedido.referencias.length > 0) {
-                            console.log('Procesando', pedido.referencias.length, 'referencias');
                             // 1. Recolectar todos los lista_id únicos
                             const tiposUnicos = new Set<number>();
                             pedido.referencias.forEach((r) => {
@@ -1337,8 +1367,6 @@ export class AnalysisComponent implements OnInit {
                                     this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
                                 }
                             });
-
-                            console.log('Tipos únicos encontrados:', Array.from(tiposUnicos));
 
                             // 2. Cargar TODAS las referencias por tipo ANTES de construir el formulario
                             const cargas = Array.from(tiposUnicos).map((tipoId) =>
@@ -1354,14 +1382,12 @@ export class AnalysisComponent implements OnInit {
                             if (cargas.length > 0) {
                                 forkJoin(cargas).subscribe({
                                     next: (resultados) => {
-                                        console.log('Resultados de forkJoin:', resultados);
                                         resultados.forEach(({ tipoId, data }) => {
                                             this.referenciasPorTipo[tipoId] = data.map((r: any) => this.opcionReferenciaDesdeApi(r));
                                         });
                                         // 3. Ahora sí construir el formulario con las opciones ya disponibles
                                         if (pedido.referencias) {
                                             this.cargarReferenciasAlFormArray(pedido.referencias);
-                                            console.log('Formulario construido con', this.referenciasFormArray.length, 'items');
                                             this.cdr.detectChanges();
                                         }
                                     },
@@ -1375,12 +1401,9 @@ export class AnalysisComponent implements OnInit {
                                     }
                                 });
                             } else if (pedido.referencias) {
-                                console.log('No hay tipos únicos, construyendo formulario directamente');
                                 this.cargarReferenciasAlFormArray(pedido.referencias);
                                 this.cdr.detectChanges();
                             }
-                        } else {
-                            console.log('Pedido sin referencias o array vacío');
                         }
                         this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
                     }

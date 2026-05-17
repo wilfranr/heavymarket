@@ -23,7 +23,7 @@
             </div>
 
             <!-- Artículo -->
-            @if (showArticuloField && !articuloId) {
+            @if (showArticuloField && !articuloId && !hideArticuloField) {
                 <div>
                     <label for="articulo_id" class="block mb-2 font-semibold">Artículo Relacionado (Opcional)</label>
                     <p-select
