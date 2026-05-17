@@ -1,78 +1,47 @@
-# Heavy Front - Frontend Angular 20
+# Heavy Front - Frontend Angular 21 (Zoneless)
 
-Frontend SPA para el sistema HeavyMarket construido con Angular 20 y PrimeNG 20 (template Sakai).
+Frontend SPA para el sistema HeavyMarket construido con **Angular 21** y **PrimeNG 21** (arquitectura moderna basada en Signals).
 
-## Tecnologías Instaladas
+## Tecnologías Principales
 
-- **Angular 20.3.16** - Framework frontend
-- **PrimeNG 20** - Librería de componentes UI
-- **Tailwind CSS 4.1** - Framework CSS utility-first
-- **Chart.js 4.4** - Librería de gráficos
-- **NgRx 18** - Gestión de estado (Store, Effects, Entity, DevTools)
-- **Pusher JS 8** - WebSockets para chat en tiempo real
-- **XLSX 0.18** - Manejo de archivos Excel
+- **Angular 21.0+** - Framework frontend con arquitectura **Zoneless**.
+- **Signals** - Motor de reactividad primario para gestión de estado y detección de cambios.
+- **PrimeNG 21** - Librería de componentes UI premium.
+- **Tailwind CSS 4** - Framework CSS utility-first con integración nativa PrimeUI.
+- **NgRx 19** - Gestión de estado global (Store, Effects) utilizado para datos transversales.
+- **Playwright** - Framework de pruebas de integración y E2E.
 
-## Estructura del Proyecto (Sakai Base)
+## Arquitectura del Proyecto
 
-```
-src/app/
-├── layout/              # Layout principal (sidebar, topbar, footer)
-│   ├── component/
-│   └── service/
-├── pages/               # Páginas base de Sakai
-│   ├── auth/           # Login, access, error
-│   ├── dashboard/      # Dashboard con widgets
-│   ├── crud/           # Ejemplo de CRUD
-│   ├── landing/        # Landing page
-│   ├── service/        # Servicios de ejemplo
-│   └── uikit/          # Ejemplos de componentes UI
-└── app.routes.ts       # Configuración de rutas
-```
-
-## Estructura a Agregar (HeavyMarket)
+El proyecto sigue una estructura modular basada en características (features), optimizada para Lazy Loading y mantenibilidad.
 
 ```
 src/app/
-├── core/                # NUEVO - Funcionalidad core
-│   ├── auth/
-│   │   ├── services/
-│   │   ├── guards/
-│   │   ├── interceptors/
-│   │   └── models/
-│   ├── services/
-│   └── models/
-├── features/            # NUEVO - Módulos de negocio
+├── core/                # Funcionalidad core y singletons
+│   ├── auth/           # Autenticación, guards e interceptores
+│   ├── services/       # Servicios de comunicación API (Signals-based)
+│   └── models/         # Interfaces y DTOs estrictos
+├── features/            # Módulos de negocio (Smart Components)
 │   ├── pedidos/
 │   ├── cotizaciones/
-│   ├── ordenes-compra/
-│   ├── ordenes-trabajo/
-│   ├── terceros/
-│   ├── articulos/
-│   └── referencias/
-├── shared/              # NUEVO - Componentes compartidos
-│   ├── components/
-│   ├── directives/
-│   └── pipes/
-└── store/               # NUEVO - NgRx store
-    ├── actions/
-    ├── reducers/
-    ├── effects/
-    └── selectors/
+│   ├── sistemas/       # Gestión de sistemas de maquinaria
+│   ├── listas/         # Catálogos y tipos de artículo
+│   └── terceros/
+├── shared/              # Componentes, directivas y pipes reutilizables
+├── layout/              # Estructura visual (sidebar, topbar)
+└── store/               # Estado global NgRx (Actions, Reducers, Selectors)
 ```
 
-## Configuración de Entornos
+## Estándares de Desarrollo
 
-### Desarrollo (`environment.ts`)
-```typescript
-apiUrl: 'http://localhost:8000/api/v1'
-apiBaseUrl: 'http://localhost:8000'
-```
+### 1. Reactividad con Signals
+El proyecto es **Zoneless**. Toda la comunicación entre componentes y la gestión de estado local debe realizarse mediante **Signals** (`signal`, `computed`, `effect`). Se debe evitar el uso de `BehaviorSubject` para bindings de template.
 
-### Producción (`environment.prod.ts`)
-```typescript
-apiUrl: 'https://heavymarket.net/api/v1'
-apiBaseUrl: 'https://heavymarket.net'
-```
+### 2. Estilos y UI
+Se utiliza **Tailwind CSS 4** para el layout y espaciado. No se permite el uso de PrimeFlex. Para colores y tematización, se deben usar las variables CSS de PrimeNG (ej. `var(--p-primary-color)`) para garantizar compatibilidad con el **Modo Oscuro**.
+
+### 3. Relaciones N:N
+Para la gestión de relaciones múltiples (ej. Sistemas y Tipos de Artículo), se utiliza el componente `MultiSelect` de PrimeNG y la utilidad `appendSistemaIdsToFormData` para la persistencia vía `FormData`.
 
 ## Instalación y Ejecución
 
@@ -84,131 +53,33 @@ npm install
 ### Iniciar Servidor de Desarrollo
 ```bash
 npm start
-# o
-ng serve
 ```
-
 La aplicación estará disponible en `http://localhost:4200`
 
 ### Build de Producción
 ```bash
-npm run build
-# o
-ng build --configuration=production
+ng build
 ```
-
-Los archivos compilados estarán en `dist/`
 
 ## Comandos Útiles
 
 ```bash
-# Ejecutar tests
-npm test
+# Ejecutar tests E2E
+npx playwright test
 
 # Ejecutar linter
 npm run lint
 
 # Formatear código
 npm run format
-
-# Generar componente
-ng generate component features/pedidos/pedido-list
-
-# Generar servicio
-ng generate service core/services/api
-
-# Generar guard
-ng generate guard core/guards/auth
-
-# Generar interceptor
-ng generate interceptor core/interceptors/auth
 ```
 
-## Componentes Disponibles (PrimeNG)
+## Documentación de Referencia
 
-El template Sakai incluye ejemplos de uso de todos los componentes de PrimeNG:
-
-- **Tables**: DataTable con filtros, paginación, ordenamiento
-- **Forms**: Input, Dropdown, Calendar, FileUpload, etc.
-- **Buttons**: Button, SplitButton, SpeedDial
-- **Overlays**: Dialog, Sidebar, Toast
-- **Charts**: Line, Bar, Pie, Doughnut
-- **Navigation**: Menu, Breadcrumb, Steps
-- **Misc**: ProgressBar, Badge, Chip, Tag
-
-Ver ejemplos en `src/app/pages/uikit/`
-
-## Características de Sakai
-
-### Layout Responsive
-- Sidebar colapsable
-- Topbar con búsqueda y notificaciones
-- Footer personalizable
-- Soporte para modo claro/oscuro
-
-### Temas
-El sistema incluye múltiples temas pre-configurados de PrimeNG:
-- Lara (Light/Dark)
-- Aura (Light/Dark)
-- Material (Light/Dark)
-
-Cambiar tema en `app.component.ts`
-
-### Routing
-- Lazy loading de módulos
-- Guards de autenticación
-- Rutas protegidas
-
-## Integración con Backend
-
-### Configurar HttpClient
-Ya está configurado en `app.config.ts` con `provideHttpClient()`
-
-### Crear Interceptor de Autenticación
-```typescript
-// src/app/core/interceptors/auth.interceptor.ts
-export const authInterceptor: HttpInterceptorFn = (req, next) => {
-    const token = localStorage.getItem('access_token');
-    if (token) {
-        req = req.clone({
-            setHeaders: { Authorization: `Bearer ${token}` }
-        });
-    }
-    return next(req);
-};
-```
-
-### Configurar en app.config.ts
-```typescript
-export const appConfig: ApplicationConfig = {
-    providers: [
-        provideHttpClient(
-            withInterceptors([authInterceptor])
-        ),
-        // ... otros providers
-    ]
-};
-```
-
-## Próximos Pasos
-
-1. Crear estructura de carpetas (core, features, shared, store)
-2. Implementar servicio de autenticación
-3. Crear interceptores (auth, error)
-4. Implementar guards de rutas
-5. Crear módulos de features
-6. Implementar NgRx store
-7. Conectar con API Laravel
-8. Personalizar branding (logo, colores, nombre)
-
-## Documentación
-
-- [Angular 20 Documentation](https://angular.dev/)
+- [Angular Signals Guide](https://angular.dev/guide/signals)
 - [PrimeNG Documentation](https://primeng.org/)
-- [Sakai Template](https://github.com/primefaces/sakai-ng)
+- [Tailwind CSS 4](https://tailwindcss.com/docs/v4-beta)
 - [NgRx Documentation](https://ngrx.io/)
-- [Tailwind CSS](https://tailwindcss.com/)
 
-## Licencia
-
-MIT
+---
+**Última actualización:** 17 de Mayo, 2026

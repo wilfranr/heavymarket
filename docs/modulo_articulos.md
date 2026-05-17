@@ -52,14 +52,13 @@ Almacena dimensiones críticas para asegurar la compatibilidad.
 - **Visualización**: En el frontend, estas medidas se superponen o se asocian a la `foto_medida` para una validación visual rápida.
 
 ### Conversor de Pesos
-La interfaz de usuario incluye un conversor dinámico que permite ingresar pesos en:
-- Gramos (g)
-- Libras (lb)
-- Onzas (oz)
-- Toneladas (t)
-El sistema lo convierte automáticamente a **Kilogramos (kg)** antes de guardar, asegurando que el módulo de costeo internacional funcione con una unidad de medida unificada.
+La interfaz de usuario incluye un componente especializado que permite ingresar pesos en **Gramos (g)**. El sistema realiza la conversión automática a **Kilogramos (kg)** antes de persistir el dato, asegurando que el módulo de costeo internacional opere sobre una unidad de medida estandarizada.
 
 ## 4. Flujo Operativo de Referencias Cruzadas
+1.  **Captura**: El usuario busca una referencia.
+2.  **Asociación**: Si la referencia ya existe, puede ver a qué `Artículo` está vinculada.
+3.  **Equivalencia**: El usuario puede agregar múltiples referencias a un mismo artículo, creando automáticamente una red de equivalencias técnicas (cross-references).
+uzadas
 1.  **Captura**: El usuario busca una referencia.
 2.  **Asociación**: Si la referencia ya existe, puede ver a qué `Artículo` está vinculada.
 3.  **Equivalencia**: El usuario puede agregar múltiples referencias a un mismo artículo, creando automáticamente una red de equivalencias técnicas (cross-references).

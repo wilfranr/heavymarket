@@ -1,306 +1,123 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-17T15:05:00Z",
-  "issue": "feat-sistema-lista-tipo-articulo",
-  "description": "Gestión UI y API de la asociación N:N entre Sistemas y Listas (tipo Tipo de Artículo) vía pivot sistema_lista",
+  "last_updated": "2026-05-17T13:10:00Z",
+  "issue": "docs-audit-and-refactor",
+  "description": "Auditoría, depuración y actualización integral de la documentación del proyecto",
   "nodes": [
     {
-      "id": "sla-triage",
-      "description": "Triage: Análisis de modelo pivot, brecha API/UI y plan de nodos en DAG",
+      "id": "docs-init-triage",
+      "description": "Triage: Análisis de coherencia entre GEMINI.md, AGENTS.md y protocolos de .agents/",
       "status": "done",
-      "required_skill": "software_architect",
+      "required_skill": "tech_doc_expert",
       "depends_on": [],
       "files": [
         {
-          "path": ".harness/dag.json",
+          "path": "GEMINI.md",
+          "status": "validated"
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "validated"
+        },
+        {
+          "path": ".agents/AGENT.md",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "sla-backend-pivot-sync",
-      "description": "Backend: sincronizar pivot sistema_lista en store/update de Lista (sistema_ids[]) y endpoint PUT sistemas/{id}/tipos-articulo (lista_ids[]); mantener compatibilidad con sistema_id y filtro index existente",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": ["sla-triage"],
-      "review_notes": "ListaSistemaSyncService encapsula pivot; sync parcial en Sistema evita borrar otras listas del pivot.",
-      "files": [
-        {
-          "path": "heavy-api/app/Services/ListaSistemaSyncService.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/ListaController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/SistemaController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Requests/StoreListaRequest.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Requests/UpdateListaRequest.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Requests/SyncSistemaTiposArticuloRequest.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Resources/ListaResource.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/routes/api.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "sla-backend-tests",
-      "description": "Backend: tests Pest para sync pivot, filtro por sistema_id y show de sistema con listas",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": ["sla-backend-pivot-sync"],
-      "files": [
-        {
-          "path": "heavy-api/tests/Feature/Api/V1/ListaSistemaPivotTest.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "sla-front-models-services",
-      "description": "Frontend: tipar sistema_ids/sistemas en Lista, método syncTiposArticulo en SistemaService y DTOs",
+      "id": "docs-biz-logic-refactor",
+      "description": "Negocio: Actualización de especificación funcional, arquitectura y diccionarios de datos",
       "status": "done",
       "required_skill": "software_architect",
-      "depends_on": ["sla-backend-pivot-sync"],
+      "depends_on": ["docs-init-triage"],
       "files": [
         {
-          "path": "heavy-front/src/app/core/models/lista.model.ts",
+          "path": "docs/arquitectura.md",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/core/models/sistema.model.ts",
+          "path": "docs/especificacion_funcional.md",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/core/services/sistema.service.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/utils/lista-form-data.util.ts",
+          "path": "docs/diccionario_datos.md",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "sla-front-listas-crud",
-      "description": "Frontend: MultiSelect de sistemas en create/edit de lista cuando tipo=Tipo de Artículo; enviar sistema_ids[] en FormData",
+      "id": "docs-modules-deep-dive",
+      "description": "Módulos: Depuración de manuales de artículos, órdenes de trabajo y proveedores",
+      "status": "done",
+      "required_skill": "tech_doc_expert",
+      "depends_on": ["docs-biz-logic-refactor"],
+      "files": [
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_ordenes_trabajo.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/portal_proveedores.md",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "docs-api-sync",
+      "description": "Backend: Sincronización de API_DOCUMENTATION.md con Laravel 13 y Scramble",
+      "status": "done",
+      "required_skill": "tech_doc_expert",
+      "depends_on": ["docs-init-triage"],
+      "files": [
+        {
+          "path": "heavy-api/API_DOCUMENTATION.md",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/MIGRACIONES.md",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "docs-front-sync",
+      "description": "Frontend: Actualización de estándares Angular 21, Signals y Zoneless en READMEs",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["sla-front-models-services"],
-      "review_notes": "Corregido NG0100 con toSignal + render diferido del formulario hasta catalog.ready.",
+      "depends_on": ["docs-init-triage"],
       "files": [
         {
-          "path": "heavy-front/src/app/features/listas/create/create.ts",
+          "path": "heavy-front/README_HEAVYMARKET.md",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/features/listas/create/create.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/edit/edit.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/edit/edit.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/detail/detail.html",
+          "path": "heavy-front/AGENTS.md",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "sla-front-sistema-detail",
-      "description": "Frontend: detalle sistema solo lectura de tipos; edición de asociaciones en sistemas/edit con MultiSelect",
+      "id": "docs-final-cleanup",
+      "description": "Cierre: Limpieza de archivos obsoletos (PROGRESO.md, issue_trm.md) y consolidación de README.md",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["sla-front-models-services"],
-      "review_notes": "Seguimiento opcional: aplicar mismo patrón toSignal en sistemas/edit para tiposArticuloOptions (riesgo NG0100 en dev).",
+      "required_skill": "tech_doc_expert",
+      "depends_on": ["docs-modules-deep-dive", "docs-api-sync", "docs-front-sync"],
       "files": [
         {
-          "path": "heavy-front/src/app/features/sistemas/detail/detail.ts",
+          "path": "README.md",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/features/sistemas/detail/detail.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/sistemas/edit/edit.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/sistemas/edit/edit.html",
+          "path": "docs/archive/PROGRESO.md",
           "status": "validated"
         }
       ]
-    },
-    {
-      "id": "sla-review",
-      "description": "Reviewer: gates php artisan test, phpstan, ng lint, ng build; validar checklist capas",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": [
-        "sla-backend-tests",
-        "sla-front-listas-crud",
-        "sla-front-sistema-detail"
-      ],
-      "review_notes": "Gates: 316 tests OK, ListaSistemaPivot 4/4, ng build OK. PHPStan no instalado en vendor. ng lint no definido en package.json.",
-      "files": []
-    },
-    {
-      "id": "pli-triage",
-      "description": "Triage: diagnóstico rendimiento vista app/listas (~1.7s API con 6.8 kB); paginación OK; foco backend accessors I/O y carga global de notifications",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [],
-      "files": [
-        {
-          "path": ".harness/dag.json",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pli-backend-index-slim",
-      "description": "Backend: ListaIndexResource sin fabricante; index sin with(fabricante); foto URL sin file_exists en listado; select() columnas mínimas",
-      "status": "done",
-      "required_skill": "sql_query_analyst",
-      "depends_on": ["pli-triage"],
-      "review_notes": "ListaIndexResource: foto legacy sin / retorna null en index. show/create/update siguen ListaResource.",
-      "files": [
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/ListaController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Resources/ListaIndexResource.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/tests/Feature/Api/V1/ListaIndexPerformanceTest.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pli-front-notifications-lazy",
-      "description": "Frontend: diferir GET /notifications hasta abrir popover del topbar; unread-count ligero al login",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["pli-triage"],
-      "review_notes": "unreadCountLoaded evita duplicados; lista completa en openNotifications y dashboard widget.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/core/services/notification.service.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/layout/component/app.topbar.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/services/notification.service.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/pages/dashboard/components/notificationswidget.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pli-front-list-ux",
-      "description": "Frontend: list OnPush + toSignal; sin sortComparer en paginación lazy; loadComponent por ruta",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["pli-backend-index-slim"],
-      "review_notes": "listas.routes loadComponent; afterNextRender primera carga; img solo con URL válida.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/listas/list/list.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/list/list.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/store/listas/reducers/listas.reducer.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/listas.routes.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pli-dev-proxy-cors",
-      "description": "Dev: proxy.conf.json + apiUrl relativo; cors max_age 86400; sin withFetch",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["pli-triage"],
-      "review_notes": "environment.prod.ts sin cambios. Reiniciar ng serve tras proxy.",
-      "files": [
-        {
-          "path": "heavy-front/proxy.conf.json",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/angular.json",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/environments/environment.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app.config.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/config/cors.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/auth/services/provider-auth.service.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pli-review",
-      "description": "Reviewer: gates php artisan test, ng build; checklist capas",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": [
-        "pli-backend-index-slim",
-        "pli-front-notifications-lazy",
-        "pli-front-list-ux",
-        "pli-dev-proxy-cors"
-      ],
-      "review_notes": "Gates: 319 tests OK, ListaIndexPerformance 3/3, ng build OK. Usuario confirmó mejora tras loadComponent.",
-      "files": []
     }
   ]
 }

@@ -135,6 +135,7 @@ export class AnalysisComponent implements OnInit {
 
     submitting = false;
     finalizing = false;
+    itemsLoading = false;
 
     /** Solo analistas y administración pueden pasar el pedido a costeo (no vendedores). */
     get puedePasarACosteo(): boolean {
@@ -1187,6 +1188,7 @@ export class AnalysisComponent implements OnInit {
         this.referenciaService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
                 this.referencias = response.data.map((r: any) => this.opcionReferenciaDesdeApi(r));
+                this.cdr.detectChanges();
             }
         });
     }
@@ -1310,7 +1312,6 @@ export class AnalysisComponent implements OnInit {
     }
 
     private loadInitialData(): void {
-        // Cargar sistemas y categorías en paralelo (Fix: "Tipo Desconocido")
         forkJoin({
             sistemas: this.sistemaService.getAll({ per_page: 100 }),
             tipos: this.listaService.getByTipo('Categoría Comercial')
@@ -1320,8 +1321,8 @@ export class AnalysisComponent implements OnInit {
                 this.tiposArticuloFull = tipos;
                 this.sistemas = sistemas.data.map((s) => ({ label: s.nombre, value: s.id }));
                 this.tiposArticulo = tipos.map((l: any) => ({ label: l.nombre, value: l.id }));
-                // Cargar referencias solo cuando los catálogos estén listos
                 this.loadReferencias();
+                this.cdr.detectChanges();
             }
         });
     }
@@ -1359,6 +1360,7 @@ export class AnalysisComponent implements OnInit {
                 .subscribe((pedido) => {
                     if (pedido) {
                         if (pedido.referencias && pedido.referencias.length > 0) {
+                            this.itemsLoading = true;
                             // 1. Recolectar todos los lista_id únicos
                             const tiposUnicos = new Set<number>();
                             pedido.referencias.forEach((r) => {
@@ -1388,6 +1390,7 @@ export class AnalysisComponent implements OnInit {
                                         // 3. Ahora sí construir el formulario con las opciones ya disponibles
                                         if (pedido.referencias) {
                                             this.cargarReferenciasAlFormArray(pedido.referencias);
+                                            this.itemsLoading = false;
                                             this.cdr.detectChanges();
                                         }
                                     },
@@ -1396,12 +1399,14 @@ export class AnalysisComponent implements OnInit {
                                         // Fallback: construir formulario aunque fallen las cargas
                                         if (pedido.referencias) {
                                             this.cargarReferenciasAlFormArray(pedido.referencias);
+                                            this.itemsLoading = false;
                                             this.cdr.detectChanges();
                                         }
                                     }
                                 });
                             } else if (pedido.referencias) {
                                 this.cargarReferenciasAlFormArray(pedido.referencias);
+                                this.itemsLoading = false;
                                 this.cdr.detectChanges();
                             }
                         }

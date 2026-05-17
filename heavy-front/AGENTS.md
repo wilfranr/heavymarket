@@ -118,7 +118,12 @@ La aplicación sigue una arquitectura basada en características (features) y ca
 - Para dialogs inline simples, `ngModel` es aceptable.
 - Validaciones deben reflejar las reglas del backend (Laravel).
 
-### 6. Diseño UI/UX y Tematización
+### 6. Relaciones N:N y Sincronización
+- **Multi-select**: Usar `p-multiSelect` de PrimeNG para asociaciones múltiples.
+- **Persistencia**: Al enviar datos mediante `FormData` (cuando hay imágenes), usar la utilidad `appendSistemaIdsToFormData` (o similar) para serializar arrays de IDs como JSON o campos individuales según requiera el backend.
+- **UX**: Siempre que sea posible, permitir la gestión de asociaciones desde la vista de **Detalle** del recurso padre para evitar redirecciones innecesarias.
+
+### 7. Diseño UI/UX y Tematización
 - **Soporte Dual (Claro/Oscuro)**: Todos los componentes y vistas nuevas o modificadas DEBEN funcionar y verse bien tanto en modo claro (Light Mode) como en modo oscuro (Dark Mode).
   - Nunca hardcodear colores de fondo o texto que solo funcionen en un modo.
   - Usar variables CSS de PrimeNG (`var(--p-surface-*)`, `var(--p-primary-*)`) para colores adaptativos.

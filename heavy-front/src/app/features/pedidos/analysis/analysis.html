@@ -199,6 +199,13 @@
                 <span class="text-sm font-semibold text-slate-600 dark:text-slate-300">Requerimientos del análisis</span>
             </div>
 
+            @if (itemsLoading) {
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; background: transparent;">
+                <span class="loader" style="--base-color: #1e293b;"></span>
+                <p class="loader-text" style="color: #fdb831; font-size: 1.1rem; font-weight: 500; margin-top: 1.5rem; animation: pulse 2s infinite;">Cargando requerimientos...</p>
+            </div>
+            } @else {
+
             <!-- Bulk Import Area (Toggleable) -->
             @if (showBulkImport) {
             <div class="theme-card rounded-xl border-2 border-brand-yellow/30 p-6 mb-8 bg-brand-yellow/5 animate-fade-in">
@@ -378,6 +385,7 @@
                     </div>
                 </div>
             </div>
+            }
             }
 
             <!-- Global Item Actions (Add more requirements) -->

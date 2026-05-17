@@ -3,28 +3,28 @@
 El sistema HeavyMarket sigue un patrón de arquitectura desacoplada, separando completamente la lógica de negocio y persistencia (Backend) de la interfaz de usuario (Frontend).
 
 ## 1. Backend (heavy-api)
-Construido con **Laravel 11+**, enfocado en proporcionar una API REST robusta y segura.
+Construido con **Laravel 13**, enfocado en proporcionar una API REST robusta y segura.
 
-*   **Autenticación**: Utiliza **Laravel Sanctum** para tokens API y autenticación de estado para la Landing.
+*   **Autenticación**: Utiliza **Laravel Sanctum** para tokens API.
 *   **Estructura de API**:
     *   `Routes`: Definidas en `api.php` bajo la versión `/v1/`.
     *   `Controllers`: Ubicados en `app/Http/Controllers/Api/V1/`, siguiendo el estándar de controladores de API.
-    *   `Resources`: Uso de API Resources para respuestas JSON consistentes (`PedidoResource`, `PedidoReferenciaResource`, `ReferenciaResource`, etc.).
+    *   `Resources`: Uso de API Resources para respuestas JSON consistentes.
 *   **Capa de Datos**:
-    *   **Eloquent ORM**: Para la interacción con la base de datos MySQL.
-    *   **Traits**: Uso de `NormalizesResources` para estandarizar el formato de textos en los modelos (Title case, uppercase para códigos, etc.).
+    *   **Eloquent ORM**: Para la interacción con la base de datos MySQL 8+.
+    *   **Traits**: Uso de `NormalizesResources` para estandarizar el formato de textos en los modelos.
 *   **Seguridad**: Middleware `auth:sanctum` y autorización por roles (Administrador, super_admin, Vendedor, Analista, Logística).
 
 ## 2. Frontend (heavy-front)
 Construido con **Angular 21**, diseñado como una Single Page Application (SPA) modular y escalable bajo una arquitectura **Zoneless**.
 
-*   **Arquitectura Reactiva**: Uso nativo de **Signals** para la gestión de estado reactivo y detección de cambios eficiente sin `zone.js`.
+*   **Arquitectura Reactiva**: Uso nativo de **Signals** para la gestión de estado reactivo y detección de cambios eficiente. Se prioriza el uso de `signal`, `computed` y `effect` sobre RxJS para el estado de componentes.
+*   **Gestión de Estado**: El proyecto está en migración total hacia **Signals**. El uso de NgRx está deprecado y solo se mantiene en módulos antiguos hasta su refactorización definitiva.
 *   **Estructura de Directorios**:
     *   `core/`: Servicios globales, guardias de autenticación e interceptores.
-    *   `shared/`: Componentes, directivas y pipes reutilizables en toda la aplicación.
+    *   `shared/`: Componentes, directivas y pipes reutilizables.
     *   `features/`: Módulos de negocio (Pedidos, Terceros, Cotizaciones) cargados mediante **Lazy Loading**.
-*   **UI Framework**: Utiliza **PrimeNG 20+** y **Tailwind CSS 4+** para una interfaz moderna, responsive y con soporte completo para temas (oscuro/claro).
-*   **Gestión de Estado**: Integración de **NgRx** para el estado global y Signals para el estado local de los componentes.
+*   **UI Framework**: Utiliza **PrimeNG 18+** y **Tailwind CSS 4+** para una interfaz moderna, responsive y con soporte completo para temas (oscuro/claro).
 *   **Comunicación API**: Implementada a través de `ApiService` que centraliza las peticiones HTTP hacia el backend de Laravel.
 
 ## 3. Flujo de Referencias (Diseño Actual)

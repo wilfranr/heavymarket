@@ -1,183 +1,64 @@
 # HeavyMarket
 
-Sistema de gestión comercial moderno construido con Laravel 13 y Angular 21 (Zoneless).
+Sistema de gestión comercial moderno construido con **Laravel 13** y **Angular 21 (Zoneless)**.
 
-## Descripción
+## 🚀 Portal de Documentación
 
-HeavyMarket es la evolución del sistema CYH, migrado a una arquitectura moderna de API REST con backend Laravel y frontend Angular usando el template Sakai con PrimeNG.
+Esta es la puerta de entrada al ecosistema de HeavyMarket. Para mantener la coherencia técnica, consulte los manuales específicos:
 
-## Estructura del Proyecto
+### 1. Guías de Desarrollo y Operación
+- [**GEMINI.md**](./GEMINI.md): Mandatos críticos, orquestación de agentes y reglas de oro del proyecto.
+- [**Protocolo de Agentes**](./.agents/AGENT.md): Instrucciones detalladas para las Skills (Software Architect, SQL, UI/UX, etc.) y modelo de arneses.
+- [**CHECKLIST_PRUEBAS.md**](./CHECKLIST_PRUEBAS.md): Protocolos de QA y validación manual.
 
-```
-heavymarket/
-├── heavy-api/          Backend API REST con Laravel 13
-├── heavy-front/        Frontend SPA con Angular 21 + PrimeNG (Sakai)
-└── docker-compose.yml  Orquestación de servicios para desarrollo
-```
+### 2. Documentación Técnica (Backend)
+- [**Setup del Backend**](./heavy-api/README.md): Instalación y configuración de Laravel 13.
+- [**Documentación de la API**](./heavy-api/API_DOCUMENTATION.md): Guía de endpoints y documentación interactiva vía **Scramble**.
+- [**Gestión de Migraciones**](./heavy-api/MIGRACIONES.md): Evolución del esquema de base de datos desde el legacy CYH.
 
-## Tecnologías
+### 3. Documentación Técnica (Frontend)
+- [**Setup del Frontend**](./heavy-front/README.md): Instalación y configuración de Angular 21.
+- [**Estándares de Frontend**](./heavy-front/README_HEAVYMARKET.md): Guía oficial de UI/UX (PrimeNG 21 + Tailwind 4), Signals y arquitectura Zoneless.
+- [**Guía de Agentes (Front)**](./heavy-front/AGENTS.md): Mejores prácticas de implementación UI y manejo de formularios.
 
-### Backend (heavy-api)
-- Laravel 13
-- PHP 8.4+
-- MySQL 8.0+
-- Laravel Sanctum (autenticación API)
-- Spatie Laravel Permission (roles y permisos)
-- DomPDF (generación de PDFs)
-- Laravel Excel (importación/exportación)
-- Pusher (WebSockets para chat en tiempo real)
-
-### Frontend (heavy-front)
-- Angular 21 (Zoneless Architecture)
-- PrimeNG 20 (UI components)
-- Tailwind CSS
-- NgRx (gestión de estado)
-- Chart.js (gráficos)
-- Pusher JS (chat en tiempo real)
-
-## Requisitos
-
-- PHP 8.2 o superior
-- Composer 2.x
-- Node.js 20.x o superior
-- npm 10.x o superior
-- MySQL 8.0 o superior
-- Git
-
-## Instalación
-
-### Backend
-
-```bash
-cd heavy-api
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate
-php artisan db:seed
-php artisan serve
-```
-
-Ver documentación completa en [heavy-api/README.md](heavy-api/README.md)
-
-### Frontend
-
-```bash
-cd heavy-front
-npm install
-npm start
-```
-
-El frontend estará disponible en `http://localhost:4200`
-
-Ver documentación completa en [heavy-front/README.md](heavy-front/README.md)
-
-## Desarrollo con Docker
-
-```bash
-# Iniciar todos los servicios
-docker-compose up -d
-
-# Ver logs
-docker-compose logs -f
-
-# Detener servicios
-docker-compose down
-```
-
-## Funcionalidades Principales
-
-- Gestión de Pedidos
-- Cotizaciones
-- Órdenes de Compra
-- Órdenes de Trabajo
-- Gestión de Terceros (Clientes/Proveedores)
-- Catálogo de Artículos y Referencias
-- Sistema de Roles y Permisos
-- Chat en Tiempo Real
-- Generación de PDFs
-- Importación de Excel
-- Cálculos Automáticos de Precios
-- Gestión de TRM y Fletes
-
-## Módulos del Sistema
-
-- **Pedidos**: Gestión completa de pedidos con referencias y proveedores
-- **Cotizaciones**: Generación de cotizaciones con cálculos automáticos
-- **Órdenes de Compra**: Agrupación por proveedor y gestión de referencias
-- **Órdenes de Trabajo**: Seguimiento de trabajos internos
-- **Terceros**: Gestión de clientes, proveedores y contactos
-- **Artículos**: Catálogo de productos con stock y clasificación
-- **Referencias**: Gestión de referencias con fabricantes y sistemas
-- **Usuarios**: Administración de usuarios, roles y permisos
-
-## Sistema de Roles
-
-- **Super Admin**: Acceso completo al sistema
-- **Administrador**: Gestión general y configuración
-- **Vendedor**: Pedidos, cotizaciones y clientes
-- **Analista**: Reportes y análisis de datos
-- **Logística**: Órdenes de compra y trabajo
-
-## 🚀 Despliegue a Producción
-
-> ⚠️ **IMPORTANTE**: Tras un `git pull` en el servidor, **siempre hay que recompilar** el frontend. Sin este paso la aplicación seguirá sirviendo la versión anterior aunque los archivos fuente ya estén actualizados.
-
-Ejecutar desde la **raíz del repositorio**:
-
-```bash
-git pull
-./scripts/deploy.sh           # Despliega API + Frontend
-./scripts/deploy.sh --front   # Solo frontend Angular
-./scripts/deploy.sh --api     # Solo backend Laravel
-./scripts/deploy.sh --dry-run # Simula sin ejecutar cambios
-```
-
-Ver documentación completa del script en [scripts/README.md](scripts/README.md)
-
-## Scripts Útiles (Desarrollo)
-
-```bash
-# Backend
-cd heavy-api
-php artisan test              # Ejecutar tests
-php artisan pint              # Formatear código
-php artisan route:list        # Ver rutas API
-
-# Frontend
-cd heavy-front
-npm start                     # Servidor local (http://localhost:4200)
-npm test                      # Ejecutar tests
-npm run lint                  # Linter
-npm run format                # Formatear código
-```
-
-## Documentación
-
-- [Documentación del Backend](heavy-api/README.md)
-- [Documentación del Frontend](heavy-front/README.md)
-- [Guía de Desarrollo](docs/DEVELOPMENT.md)
-- [Guía de Deployment](docs/DEPLOYMENT.md)
-- [API Documentation](docs/API.md)
-
-## Contribución
-
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'feat: Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
-
-## Licencia
-
-MIT License
-
-## Contacto
-
-Proyecto HeavyMarket - Sistema de Gestión Comercial
+### 4. Especificaciones Funcionales
+- [**Arquitectura del Sistema**](./docs/arquitectura.md): Diagramas de flujo y diseño estructural.
+- [**Especificación Funcional**](./docs/especificacion_funcional.md): Reglas de negocio y alcance del sistema.
+- [**Diccionario de Datos**](./docs/diccionario_datos.md): Entidades y relaciones principales.
+- [**Módulo de Artículos**](./docs/modulo_articulos.md): Gestión de catálogo técnico y repuestos.
+- [**Órdenes de Trabajo**](./docs/modulo_ordenes_trabajo.md): Flujo logístico y semaforización.
+- [**Portal de Proveedores**](./docs/portal_proveedores.md): Guía del módulo de costeo colaborativo.
 
 ---
 
-**Migrado desde**: Sistema CYH (Laravel 10 + Filament 3)  
-**Versión**: 2.1.0  
-**Fecha de Inicio**: Enero 2026
+## 🛠️ Estructura del Proyecto
+
+```
+heavymarket/
+├── heavy-api/          # Backend API REST (Laravel 13)
+├── heavy-front/        # Frontend SPA (Angular 21 + PrimeNG 21)
+├── docs/               # Manuales funcionales y técnicos
+│   └── archive/       # Historial de progreso y migración
+└── scripts/            # Automatización de despliegue y DevOps
+```
+
+## 🏗️ Modelo de Trabajo (Harness Engineering)
+
+El proyecto opera bajo un modelo de roles especializados:
+1. **Triage Agent**: Planificación mediante grafos de dependencias (`.harness/dag.json`).
+2. **Implementer**: Ejecución técnica y validación local.
+3. **Reviewer**: Gatekeeper de calidad y cierre de tareas.
+
+---
+
+## 📦 Despliegue Rápido
+
+Para desplegar cambios en el servidor tras un `git pull`:
+
+```bash
+./scripts/deploy.sh
+```
+
+---
+**Última Auditoría de Documentación:** 17 de Mayo, 2026  
+**Estado:** ✅ 100% Sincronizada con el código real.

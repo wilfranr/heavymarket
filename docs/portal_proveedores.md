@@ -20,14 +20,15 @@ Cuando un pedido interno pasa al estado `En_Costeo`, se activa el motor de empar
 2.  **Privacidad**: No ve quién es el cliente, ni el pedido completo, ni precios de otros proveedores.
 3.  **Datos a Ingresar**:
     *   **Precio de Costo**: (Moneda base del sistema).
-    *   **Marca ofrecida**: (Sugerencia de marca si no es la original).
+    *   **Marca Sugerida**: El proveedor puede proponer una marca diferente (`marca_id`) si la solicitada no está disponible o tiene una mejor opción equivalente.
     *   **Días de Entrega**: Lead time estimado.
 4.  **Inmutabilidad**: Una vez enviado el costeo, el proveedor **no puede editarlo**. El registro se bloquea para ese proveedor.
 
-### B. Notificaciones
-*   **Tipo**: Notificaciones In-App (vía Laravel Reverb).
+### B. Notificaciones en Tiempo Real
+*   **Tecnología**: El portal utiliza **Laravel Reverb** para comunicación vía WebSockets.
 *   **Evento**: `NewReferencesAvailable`.
-*   **Acción**: Aviso visual en tiempo real cuando entra una referencia que encaja con su perfil.
+*   **Acción**: Aviso visual instantáneo cuando se publica una referencia que encaja con el perfil del proveedor (Marcas o Categorías).
+
 
 ## 4. Flujo de Órdenes de Compra (Postventa)
 Una vez que el cliente final aprueba una cotización, el sistema genera automáticamente una **Orden de Compra (OC)** por proveedor.

@@ -60,15 +60,20 @@ Cliente → Pedido → Cotización → [APROBADA] → Orden de Trabajo
 | `estado` | enum | Estado del ítem (llegó/pendiente/cancelado) |
 | `notas` | text | Notas específicas del ítem |
 | `timestamps` | timestamps | created_at, updated_at |
-
 ### Estados de la Orden (General)
 
 | Estado | Descripción |
 |--------|-------------|
 | `Pendiente` | Creada, esperando recepción de repuestos |
-| `En_Proceso` | Al menos un ítem ha llegado |
-| `Completa` | Todos los ítems marcados como recibidos |
-| `Cancelada` | La orden fue cancelada |
+| `En Proceso` | Al menos un ítem ha llegado o está en gestión |
+| `Completado` | Todos los ítems marcados como recibidos y orden finalizada |
+| `Cancelado` | La orden fue cancelada íntegramente |
+
+## 4. Logística y Despacho
+El módulo se integra con el catálogo de **Transportadoras**. Al despachar una orden, el personal de logística puede:
+- Seleccionar la **Transportadora** encargada.
+- Ingresar el **Número de Guía** para rastreo.
+- Adjuntar el **Archivo/Foto** de la guía física o comprobante de despacho.
 
 ### Estados de los Ítems (Semaforización)
 

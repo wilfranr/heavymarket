@@ -85,7 +85,14 @@ Generadas a partir de un pedido después de un proceso de costeo.
 *   **Campos Clave**: `pedido_id`, `total`, `estado`, `fecha_vencimiento`.
 *   **Relaciones**:
     *   `N:1` con `Pedido` y `Tercero`.
-    *   `1:N` con `CotizacionReferenciaProveedor` (Detalle de precios por proveedor).
+    *   `1:N` con `PedidoReferenciaProveedor` (Opciones de costeo recolectadas).
+
+### 6. Opciones de Costeo (`pedido_referencia_proveedor`)
+Almacena las diferentes cotizaciones recibidas de proveedores para una línea de pedido específica.
+*   **Campos Clave**: `pedido_referencia_id`, `proveedor_id`, `costo`, `moneda`, `tiempo_entrega`, `seleccionado` (boolean).
+*   **Relaciones**:
+    *   `N:1` con `PedidoReferencia`.
+    *   `N:1` con `Tercero` (Proveedor).
 
 ## Tablas de Soporte (Listas)
 El sistema utiliza una tabla genérica llamada `listas` para gestionar catálogos dinámicos:
