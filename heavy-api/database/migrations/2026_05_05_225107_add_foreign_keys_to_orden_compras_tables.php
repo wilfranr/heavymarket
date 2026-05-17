@@ -54,30 +54,34 @@ return new class extends Migration
             });
         }
 
-        if (! $this->hasForeignKey('orden_compra_referencia', 'orden_compra_id')) {
-            Schema::table('orden_compra_referencia', function (Blueprint $table) {
-                $table->foreign('orden_compra_id')->references('id')->on('orden_compras')->cascadeOnDelete();
-            });
-        }
-        if (! $this->hasForeignKey('orden_compra_referencia', 'referencia_id')) {
-            Schema::table('orden_compra_referencia', function (Blueprint $table) {
-                $table->foreign('referencia_id')->references('id')->on('referencias')->restrictOnDelete();
-            });
-        }
-        if (! $this->hasIndex('orden_compra_referencia', 'idx_ocr_orden_compra_id')) {
-            Schema::table('orden_compra_referencia', function (Blueprint $table) {
-                $table->index('orden_compra_id', 'idx_ocr_orden_compra_id');
-            });
+        if (Schema::hasTable('orden_compra_referencia')) {
+            if (! $this->hasForeignKey('orden_compra_referencia', 'orden_compra_id')) {
+                Schema::table('orden_compra_referencia', function (Blueprint $table) {
+                    $table->foreign('orden_compra_id')->references('id')->on('orden_compras')->cascadeOnDelete();
+                });
+            }
+            if (! $this->hasForeignKey('orden_compra_referencia', 'referencia_id')) {
+                Schema::table('orden_compra_referencia', function (Blueprint $table) {
+                    $table->foreign('referencia_id')->references('id')->on('referencias')->restrictOnDelete();
+                });
+            }
+            if (! $this->hasIndex('orden_compra_referencia', 'idx_ocr_orden_compra_id')) {
+                Schema::table('orden_compra_referencia', function (Blueprint $table) {
+                    $table->index('orden_compra_id', 'idx_ocr_orden_compra_id');
+                });
+            }
         }
     }
 
     public function down(): void
     {
-        Schema::table('orden_compra_referencia', function (Blueprint $table) {
-            $table->dropForeign(['orden_compra_id']);
-            $table->dropForeign(['referencia_id']);
-            $table->dropIndex('idx_ocr_orden_compra_id');
-        });
+        if (Schema::hasTable('orden_compra_referencia')) {
+            Schema::table('orden_compra_referencia', function (Blueprint $table) {
+                $table->dropForeign(['orden_compra_id']);
+                $table->dropForeign(['referencia_id']);
+                $table->dropIndex('idx_ocr_orden_compra_id');
+            });
+        }
 
         Schema::table('orden_compras', function (Blueprint $table) {
             $table->dropForeign(['tercero_id']);
