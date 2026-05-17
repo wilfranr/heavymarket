@@ -187,9 +187,9 @@ export class AnalysisComponent implements OnInit {
     showArticuloCreateModal = false;
     showArticuloEditModal = false;
     editArticuloId: number | null = null;
-    private articuloContextItemIndex = -1;
-    private articuloContextParteIndex = -1;
-    private articuloContextReferenciaId: number | null = null;
+    articuloContextItemIndex = -1;
+    articuloContextParteIndex = -1;
+    articuloContextReferenciaId: number | null = null;
 
     // Lógica de agregado en lote (similar a edit)
     displayLoteDialog = false;
@@ -995,6 +995,13 @@ export class AnalysisComponent implements OnInit {
         this.createReferenciaArticuloId = null;
 
         this.showReferenciaModal = true;
+    }
+
+    abrirCrearArticuloDesdeParte(itemIndex: number, parteIndex: number): void {
+        this.articuloContextItemIndex = itemIndex;
+        this.articuloContextParteIndex = parteIndex;
+        this.articuloContextReferenciaId = this.getPartesFormArray(itemIndex).at(parteIndex).get('referencia_id')?.value;
+        this.showArticuloCreateModal = true;
     }
 
     onReferenciaCreada(nuevaRef: any): void {

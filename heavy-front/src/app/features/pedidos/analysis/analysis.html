@@ -369,6 +369,17 @@
                                                 tooltipPosition="top"
                                                 (onClick)="abrirEditarReferencia(i, j)"
                                             />
+                                            } @else {
+                                            <p-button
+                                                icon="pi pi-pencil"
+                                                [rounded]="true"
+                                                [text]="true"
+                                                severity="secondary"
+                                                styleClass="!text-white hover:!bg-white/10"
+                                                pTooltip="Crear artículo para esta referencia"
+                                                tooltipPosition="top"
+                                                (onClick)="abrirCrearArticuloDesdeParte(i, j)"
+                                            />
                                             } @if (j > 0) {
                                             <p-button icon="pi pi-minus" [rounded]="true" severity="danger" (onClick)="removeParte(i, j)" />
                                             }
@@ -423,7 +434,7 @@
 <app-referencia-edit-modal [visible]="showReferenciaEditModal" (visibleChange)="onReferenciaEditVisibleChange($event)" [referenciaId]="editReferenciaId" title="Editar referencia" (onReferenciaUpdated)="onReferenciaActualizada($event)" />
 
 <!-- Modales de Artículo -->
-<app-articulo-create-modal [(visible)]="showArticuloCreateModal" title="Crear Artículo desde Referencia" (onArticuloCreated)="onArticuloCreated($event)" />
+<app-articulo-create-modal [(visible)]="showArticuloCreateModal" title="Crear Artículo desde Referencia" [referenciaId]="articuloContextReferenciaId" (onArticuloCreated)="onArticuloCreated($event)" />
 
 <app-articulo-edit-modal [(visible)]="showArticuloEditModal" [articuloId]="editArticuloId" title="Editar Artículo" (onArticuloUpdated)="onArticuloEditClosed()" (visibleChange)="onArticuloEditClosed()" />
 

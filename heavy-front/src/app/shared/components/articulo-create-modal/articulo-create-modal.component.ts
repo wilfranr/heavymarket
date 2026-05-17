@@ -49,6 +49,9 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
 export class ArticuloCreateModalComponent implements OnInit {
     @Input() visible = false;
     @Input() title = 'Crear Artículo';
+    @Input() articuloId?: number | null;
+    @Input() marcaId?: number | null;
+    @Input() referenciaId?: number | null; // Referencia a la que se asociará el artículo creado
     @Output() visibleChange = new EventEmitter<boolean>();
     @Output() onArticuloCreated = new EventEmitter<any>();
 
@@ -323,14 +326,37 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     private handleCreateSuccess(articulo: any): void {
-        this.messageService.add({
-            severity: 'success',
-            summary: 'Exito',
-            detail: 'Articulo creado correctamente'
-        });
-        this.onArticuloCreated.emit(articulo);
-        this.closeDialog();
-        this.loading = false;
+        // Si hay una referenciaId, actualizar esa referencia con el artículo recién creado
+        if (this.referenciaId) {
+            this.referenciaService.update(this.referenciaId, { articulo_id: articulo.id }).subscribe({
+                next: () => {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Artículo creado y asociado a la referencia correctamente.'
+                    });
+                    this.onArticuloCreated.emit(articulo);
+                    this.closeDialog();
+                    this.loading = false;
+                },
+                error: (error) => {
+                    console.error('Error asociando referencia al artículo:', error);
+                    // Aún así emitimos el artículo creado
+                    this.onArticuloCreated.emit(articulo);
+                    this.closeDialog();
+                    this.loading = false;
+                }
+            });
+        } else {
+            this.messageService.add({
+                severity: 'success',
+                summary: 'Éxito',
+                detail: 'Artículo creado correctamente.'
+            });
+            this.onArticuloCreated.emit(articulo);
+            this.closeDialog();
+            this.loading = false;
+        }
     }
 
     private handleCreateError(error: any): void {
