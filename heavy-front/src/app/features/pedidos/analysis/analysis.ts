@@ -1,11 +1,11 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray, FormControl, AbstractControl } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Actions, ofType } from '@ngrx/effects';
-import { Observable, filter, take, map, forkJoin, merge } from 'rxjs';
+import { Observable, filter, take, map, forkJoin, merge, catchError, of } from 'rxjs';
 
 import { CardModule } from 'primeng/card';
 import { ButtonModule } from 'primeng/button';
@@ -112,6 +112,7 @@ export class AnalysisComponent implements OnInit {
     private readonly authService = inject(AuthService);
     private readonly articuloService = inject(ArticuloService);
     private readonly pedidoService = inject(PedidoService);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     pedidoForm!: FormGroup;
     pedido$!: Observable<Pedido | undefined>;
@@ -1323,13 +1324,63 @@ export class AnalysisComponent implements OnInit {
                     take(1)
                 )
                 .subscribe((pedido) => {
+                    console.log('Pedido recibido:', pedido);
+                    console.log('Referencias:', pedido?.referencias);
                     if (pedido) {
-                        if (pedido.referencias) {
-                            this.cargarReferenciasAlFormArray(pedido.referencias);
-                            // Pre-cargar catálogos por cada tipo de artículo único
+                        if (pedido.referencias && pedido.referencias.length > 0) {
+                            console.log('Procesando', pedido.referencias.length, 'referencias');
+                            // 1. Recolectar todos los lista_id únicos
+                            const tiposUnicos = new Set<number>();
                             pedido.referencias.forEach((r) => {
-                                if (r.lista_id) this.cargarReferenciasParaTipo(r.lista_id);
+                                if (r.lista_id) tiposUnicos.add(r.lista_id);
+                                if (r.lista_id && r.lista?.nombre) {
+                                    this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
+                                }
                             });
+
+                            console.log('Tipos únicos encontrados:', Array.from(tiposUnicos));
+
+                            // 2. Cargar TODAS las referencias por tipo ANTES de construir el formulario
+                            const cargas = Array.from(tiposUnicos).map((tipoId) =>
+                                this.referenciaService.getAll({ articulo_id: tipoId, per_page: 500 }).pipe(
+                                    map((resp) => ({ tipoId, data: resp.data })),
+                                    catchError((err) => {
+                                        console.error(`Error cargando referencias para tipo ${tipoId}:`, err);
+                                        return of({ tipoId, data: [] });
+                                    })
+                                )
+                            );
+
+                            if (cargas.length > 0) {
+                                forkJoin(cargas).subscribe({
+                                    next: (resultados) => {
+                                        console.log('Resultados de forkJoin:', resultados);
+                                        resultados.forEach(({ tipoId, data }) => {
+                                            this.referenciasPorTipo[tipoId] = data.map((r: any) => this.opcionReferenciaDesdeApi(r));
+                                        });
+                                        // 3. Ahora sí construir el formulario con las opciones ya disponibles
+                                        if (pedido.referencias) {
+                                            this.cargarReferenciasAlFormArray(pedido.referencias);
+                                            console.log('Formulario construido con', this.referenciasFormArray.length, 'items');
+                                            this.cdr.detectChanges();
+                                        }
+                                    },
+                                    error: (err) => {
+                                        console.error('Error en forkJoin de cargas:', err);
+                                        // Fallback: construir formulario aunque fallen las cargas
+                                        if (pedido.referencias) {
+                                            this.cargarReferenciasAlFormArray(pedido.referencias);
+                                            this.cdr.detectChanges();
+                                        }
+                                    }
+                                });
+                            } else if (pedido.referencias) {
+                                console.log('No hay tipos únicos, construyendo formulario directamente');
+                                this.cargarReferenciasAlFormArray(pedido.referencias);
+                                this.cdr.detectChanges();
+                            }
+                        } else {
+                            console.log('Pedido sin referencias o array vacío');
                         }
                         this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
                     }
@@ -1339,16 +1390,12 @@ export class AnalysisComponent implements OnInit {
 
     private cargarReferenciasAlFormArray(referencias: PedidoReferencia[]): void {
         this.referenciasFormArray.clear();
-        this.nombresTipoListaPorId = {};
 
         // Agrupar las referencias por lista_id (el concepto/requerimiento) y sistema_id
         // Esto permite que el backend (lista plana) se vea como tarjetas agrupadas en el frontend
         const grupos: { [key: string]: any } = {};
 
         referencias.forEach((r) => {
-            if (r.lista_id && r.lista?.nombre) {
-                this.nombresTipoListaPorId[r.lista_id] = r.lista.nombre;
-            }
             // Clave única por requerimiento: sistema + tipo + descripcion + cantidad + id
             // Se incluye el r.id para asegurar que cada línea del pedido sea un card independiente si ya existe en DB.
             // Si el id es nulo (items nuevos), se agrupan por metadata para permitir añadir alternativas.
