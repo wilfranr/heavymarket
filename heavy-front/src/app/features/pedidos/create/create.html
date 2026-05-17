@@ -520,21 +520,27 @@
 </div>
 
 <!-- Create Client Dialog -->
-<app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" (onTerceroCreated)="onTerceroCreated($event)"> </app-tercero-create-modal>
+@if (displayCreateTerceroDialog) {
+    <app-tercero-create-modal [(visible)]="displayCreateTerceroDialog" (onTerceroCreated)="onTerceroCreated($event)"> </app-tercero-create-modal>
+}
 
 <!-- Crear / editar máquina (mismo modal que en terceros) -->
-<app-maquina-create-modal
-    [visible]="displayCreateMaquinaDialog"
-    (visibleChange)="onMaquinaModalFromPedidoVisibleChange($event)"
-    [terceroId]="maquinaIdEdicionModal ? null : terceroId()"
-    [maquinaId]="maquinaIdEdicionModal"
-    (onMaquinaCreated)="onMaquinaCreated($event)"
-    (onMaquinaUpdated)="onMaquinaUpdatedFromPedidoModal($event)"
->
-</app-maquina-create-modal>
+@if (displayCreateMaquinaDialog) {
+    <app-maquina-create-modal
+        [visible]="displayCreateMaquinaDialog"
+        (visibleChange)="onMaquinaModalFromPedidoVisibleChange($event)"
+        [terceroId]="maquinaIdEdicionModal ? null : terceroId()"
+        [maquinaId]="maquinaIdEdicionModal"
+        (onMaquinaCreated)="onMaquinaCreated($event)"
+        (onMaquinaUpdated)="onMaquinaUpdatedFromPedidoModal($event)"
+    >
+    </app-maquina-create-modal>
+}
 
 <!-- Create Contacto Dialog -->
-<app-contacto-create-modal [(visible)]="displayCreateContactoDialog" [terceroId]="terceroId()" (onContactoCreated)="onContactoCreated($event)"> </app-contacto-create-modal>
+@if (displayCreateContactoDialog) {
+    <app-contacto-create-modal [(visible)]="displayCreateContactoDialog" [terceroId]="terceroId()" (onContactoCreated)="onContactoCreated($event)"> </app-contacto-create-modal>
+}
 
 <!-- Help Dialog -->
 <p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" [style]="{width: '70vw'}" [draggable]="false" [resizable]="false">
@@ -884,4 +890,6 @@
 <p-confirmDialog></p-confirmDialog>
 
 <!-- Modal Edición de Referencia (inline desde pedido) -->
-<app-referencia-edit-modal [visible]="showReferenciaEditModal" (visibleChange)="onReferenciaEditVisibleChange($event)" [referenciaId]="editReferenciaId" title="Editar referencia" (onReferenciaUpdated)="onReferenciaActualizada($event)" />
+@if (showReferenciaEditModal) {
+    <app-referencia-edit-modal [visible]="showReferenciaEditModal" (visibleChange)="onReferenciaEditVisibleChange($event)" [referenciaId]="editReferenciaId" title="Editar referencia" (onReferenciaUpdated)="onReferenciaActualizada($event)" />
+}

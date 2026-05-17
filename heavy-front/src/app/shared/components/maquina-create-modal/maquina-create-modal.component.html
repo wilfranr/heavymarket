@@ -223,4 +223,6 @@
 </p-dialog>
 
 <!-- Modal para crear tipo de máquina -->
-<app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina" (onListaCreated)="onTipoCreated($event)"> </app-lista-create-modal>
+@if (showCreateTipoModal) {
+    <app-lista-create-modal [(visible)]="showCreateTipoModal" tipoDefault="Tipo de Máquina" title="Crear Tipo de Máquina" (onListaCreated)="onTipoCreated($event)"> </app-lista-create-modal>
+}

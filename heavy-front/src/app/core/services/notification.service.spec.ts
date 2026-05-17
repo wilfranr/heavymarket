@@ -12,9 +12,8 @@ describe('NotificationService', () => {
     const currentUserSignal = signal<{ id: number; name: string } | null>({ id: 1, name: 'Test User' });
 
     beforeEach(() => {
-        const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken'], {
-            currentUser: currentUserSignal
-        });
+        const authServiceSpy = jasmine.createSpyObj('AuthService', ['getToken']);
+        authServiceSpy.currentUser = currentUserSignal;
         authServiceSpy.getToken.and.returnValue('mock-token');
 
         const toastServiceSpy = jasmine.createSpyObj('ToastService', ['info', 'success', 'error', 'warning']);
@@ -29,6 +28,9 @@ describe('NotificationService', () => {
         });
         service = TestBed.inject(NotificationService);
         httpMock = TestBed.inject(HttpTestingController);
+
+        // Forzar ejecución de efectos reactivos (loadUnreadCount)
+        TestBed.flushEffects();
 
         const unreadReq = httpMock.expectOne((req) => req.url.includes('/notifications/unread-count'));
         unreadReq.flush({ count: 1 });

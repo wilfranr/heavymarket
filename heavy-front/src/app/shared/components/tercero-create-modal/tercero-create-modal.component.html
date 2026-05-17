@@ -366,4 +366,6 @@
     </div>
 </p-dialog>
 
-<app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" (onMaquinaCreated)="onMaquinaCreated($event)"> </app-maquina-create-modal>
+@if (displayCreateMaquinaDialog) {
+    <app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" (onMaquinaCreated)="onMaquinaCreated($event)"> </app-maquina-create-modal>
+}

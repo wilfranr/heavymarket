@@ -122,6 +122,48 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "perf-lazy-load-modals",
+      "description": "Performance: Implementar carga diferida (@if) para modales de Terceros, Máquinas y Referencias",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "perf-service-caching",
+      "description": "Performance: Implementar caché reactiva (shareReplay) en servicios de catálogos core",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": ["perf-lazy-load-modals"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/services/sistema.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/lista.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/fabricante.service.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }

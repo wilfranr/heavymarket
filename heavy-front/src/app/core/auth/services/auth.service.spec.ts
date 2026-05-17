@@ -35,7 +35,7 @@ describe('AuthService', () => {
         expect(service).toBeTruthy();
     });
 
-    const apiUrl = 'http://localhost:8000/v1';
+    const apiUrl = '/v1';
 
     describe('login', () => {
         it('should login user and store token', async () => {

@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { Sistema, CreateSistemaDto, UpdateSistemaDto, SyncSistemaTiposArticuloDto } from '../models/sistema.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
@@ -14,12 +14,28 @@ import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 })
 export class SistemaService extends ApiService {
     private readonly endpoint = 'sistemas';
+    private cache$ = new Map<string, Observable<PaginatedResponse<Sistema>>>();
 
     /**
-     * Obtener todos los sistemas con filtros
+     * Obtener todos los sistemas con filtros.
+     * Implementa caché reactiva para optimizar peticiones repetitivas de catálogos.
      */
     getAll(params?: { search?: string; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number; include?: string }): Observable<PaginatedResponse<Sistema>> {
-        return this.get<PaginatedResponse<Sistema>>(this.endpoint, params);
+        const cacheKey = JSON.stringify(params || {});
+
+        if (!this.cache$.has(cacheKey)) {
+            const request$ = this.get<PaginatedResponse<Sistema>>(this.endpoint, params).pipe(shareReplay(1));
+            this.cache$.set(cacheKey, request$);
+        }
+
+        return this.cache$.get(cacheKey)!;
+    }
+
+    /**
+     * Limpia la caché de sistemas.
+     */
+    clearCache(): void {
+        this.cache$.clear();
     }
 
     /**
@@ -33,6 +49,7 @@ export class SistemaService extends ApiService {
      * Crear un nuevo sistema
      */
     create(data: CreateSistemaDto | FormData): Observable<ApiResponse<Sistema>> {
+        this.clearCache();
         return this.post<ApiResponse<Sistema>>(this.endpoint, data);
     }
 
@@ -40,6 +57,7 @@ export class SistemaService extends ApiService {
      * Actualizar un sistema existente
      */
     update(id: number, data: UpdateSistemaDto | FormData): Observable<ApiResponse<Sistema>> {
+        this.clearCache();
         if (data instanceof FormData) {
             // Spoofing PUT method for Laravel with FormData
             data.append('_method', 'PUT');
@@ -52,6 +70,7 @@ export class SistemaService extends ApiService {
      * Eliminar un sistema (soft delete)
      */
     deleteSistema(id: number): Observable<any> {
+        this.clearCache();
         return this.delete(`${this.endpoint}/${id}`);
     }
 
@@ -59,6 +78,7 @@ export class SistemaService extends ApiService {
      * Sincroniza los tipos de artículo (listas) asociados a un sistema.
      */
     syncTiposArticulo(id: number, data: SyncSistemaTiposArticuloDto): Observable<ApiResponse<Sistema>> {
+        this.clearCache();
         return this.put<ApiResponse<Sistema>>(`${this.endpoint}/${id}/tipos-articulo`, data);
     }
 }

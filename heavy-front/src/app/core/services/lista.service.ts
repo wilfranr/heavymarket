@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { forkJoin, Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, shareReplay } from 'rxjs/operators';
 import { Lista, CreateListaDto, UpdateListaDto, ListaTipo } from '../models/lista.model';
 import { ApiService, PaginatedResponse, ApiResponse } from './api.service';
 
@@ -19,16 +19,35 @@ function claveNombreLista(nombre: string): string {
 })
 export class ListaService extends ApiService {
     private readonly endpoint = 'listas';
+    private cache$ = new Map<string, Observable<any>>();
 
     /**
-     * Obtener listas por tipo (sin paginación, para dropdowns)
+     * Limpia la caché de listas.
+     */
+    clearCache(): void {
+        this.cache$.clear();
+    }
+
+    /**
+     * Obtener listas por tipo (sin paginación, para dropdowns).
+     * Implementa caché reactiva.
      */
     getByTipo(tipo: ListaTipo, search?: string, limit = 500): Observable<Lista[]> {
-        const params: Record<string, string | number> = { limit };
-        if (search) {
-            params['search'] = search;
+        const cacheKey = `getByTipo:${tipo}:${search || ''}:${limit}`;
+        
+        if (!this.cache$.has(cacheKey)) {
+            const params: Record<string, string | number> = { limit };
+            if (search) {
+                params['search'] = search;
+            }
+            const request$ = this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${encodeURIComponent(tipo)}`, params).pipe(
+                map((response) => response.data),
+                shareReplay(1)
+            );
+            this.cache$.set(cacheKey, request$);
         }
-        return this.get<{ data: Lista[] }>(`${this.endpoint}/tipo/${encodeURIComponent(tipo)}`, params).pipe(map((response) => response.data));
+
+        return this.cache$.get(cacheKey)!;
     }
 
     /**
@@ -52,49 +71,64 @@ export class ListaService extends ApiService {
 
     /**
      * Opciones unificadas para selects de referencia: listas tipo Marca y Fabricantes.
-     * Se deduplica por nombre (misma marca suele tener dos filas con IDs distintos) y,
-     * si chocan, se prioriza la entrada tipo Fabricantes (issue #48).
+     * Implementa caché reactiva.
      */
     getMarcasYFabricantesParaReferencia(): Observable<Lista[]> {
-        return forkJoin({
-            marcas: this.getByTipo('Marca'),
-            fabricantes: this.getByTipo('Fabricantes')
-        }).pipe(
-            map(({ marcas, fabricantes }) => {
-                const porNombre = new Map<string, Lista>();
+        const cacheKey = 'getMarcasYFabricantesParaReferencia';
 
-                const añadir = (item: Lista, preferirSobreExistente: boolean) => {
-                    const key = claveNombreLista(item.nombre);
-                    if (key === '') {
-                        return;
-                    }
-                    const prev = porNombre.get(key);
-                    if (!prev) {
-                        porNombre.set(key, item);
-                        return;
-                    }
-                    if (preferirSobreExistente && prev.tipo !== 'Fabricantes' && item.tipo === 'Fabricantes') {
-                        porNombre.set(key, item);
-                    }
-                };
+        if (!this.cache$.has(cacheKey)) {
+            const request$ = forkJoin({
+                marcas: this.getByTipo('Marca'),
+                fabricantes: this.getByTipo('Fabricantes')
+            }).pipe(
+                map(({ marcas, fabricantes }) => {
+                    const porNombre = new Map<string, Lista>();
 
-                for (const item of marcas) {
-                    añadir(item, false);
-                }
-                for (const item of fabricantes) {
-                    añadir(item, true);
-                }
+                    const añadir = (item: Lista, preferirSobreExistente: boolean) => {
+                        const key = claveNombreLista(item.nombre);
+                        if (key === '') {
+                            return;
+                        }
+                        const prev = porNombre.get(key);
+                        if (!prev) {
+                            porNombre.set(key, item);
+                            return;
+                        }
+                        if (preferirSobreExistente && prev.tipo !== 'Fabricantes' && item.tipo === 'Fabricantes') {
+                            porNombre.set(key, item);
+                        }
+                    };
 
-                return Array.from(porNombre.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
-            })
-        );
+                    for (const item of marcas) {
+                        añadir(item, false);
+                    }
+                    for (const item of fabricantes) {
+                        añadir(item, true);
+                    }
+
+                    return Array.from(porNombre.values()).sort((a, b) => a.nombre.localeCompare(b.nombre, 'es', { sensitivity: 'base' }));
+                }),
+                shareReplay(1)
+            );
+            this.cache$.set(cacheKey, request$);
+        }
+
+        return this.cache$.get(cacheKey)!;
     }
 
     /**
-     * Obtener todas las listas con filtros
+     * Obtener todas las listas con filtros.
+     * Implementa caché reactiva.
      */
     getAll(params?: { tipo?: ListaTipo; search?: string; sistema_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Lista>> {
-        return this.get<PaginatedResponse<Lista>>(this.endpoint, params);
+        const cacheKey = `getAll:${JSON.stringify(params || {})}`;
+
+        if (!this.cache$.has(cacheKey)) {
+            const request$ = this.get<PaginatedResponse<Lista>>(this.endpoint, params).pipe(shareReplay(1));
+            this.cache$.set(cacheKey, request$);
+        }
+
+        return this.cache$.get(cacheKey)!;
     }
 
     /**
@@ -105,13 +139,15 @@ export class ListaService extends ApiService {
     }
 
     create(data: CreateListaDto | FormData): Observable<ApiResponse<Lista>> {
-        return this.post<ApiResponse<Lista>>(this.endpoint, data);
+        this.clearCache();
+        return this.post<ApiResponse<ApiResponse<Lista>>>(this.endpoint, data).pipe(map(r => r.data)) as any;
     }
 
     /**
      * Actualizar una lista existente
      */
     update(id: number, data: UpdateListaDto | FormData): Observable<ApiResponse<Lista>> {
+        this.clearCache();
         if (data instanceof FormData) {
             data.append('_method', 'PUT');
             return this.post<ApiResponse<Lista>>(`${this.endpoint}/${id}`, data);
@@ -123,6 +159,7 @@ export class ListaService extends ApiService {
      * Eliminar una lista (soft delete)
      */
     deleteLista(id: number): Observable<any> {
+        this.clearCache();
         return this.delete(`${this.endpoint}/${id}`);
     }
 }
