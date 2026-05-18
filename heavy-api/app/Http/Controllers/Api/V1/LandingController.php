@@ -67,7 +67,7 @@ class LandingController extends Controller
             ->orderBy('nombre', 'asc')
             ->get();
 
-        return response()->json($categorias);
+        return $this->publicJsonCached($categorias);
     }
 
     /**

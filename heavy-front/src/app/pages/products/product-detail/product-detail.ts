@@ -1,5 +1,5 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, ViewEncapsulation, signal, inject } from '@angular/core';
+import { CommonModule, Location } from '@angular/common';
 import { Navbar } from '../../../landing/components/navbar/navbar';
 import { FooterSection } from '../../../landing/components/footer-section/footer-section';
 import { LandingService, Category, SubCategory } from '../../../core/services/landing';
@@ -14,64 +14,77 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
     encapsulation: ViewEncapsulation.None
 })
 export class ProductDetail implements OnInit {
-    categorySlug: string = '';
-    subCategorySlug: string = '';
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
+    private readonly landingService = inject(LandingService);
+    private readonly _location = inject(Location);
 
-    category: Category | null = null;
-    subCategory: SubCategory | null = null;
+    categorySlug = signal<string>('');
+    subCategorySlug = signal<string>('');
 
-    loading: boolean = true;
-    error: boolean = false;
+    category = signal<Category | null>(null);
+    subCategory = signal<SubCategory | null>(null);
 
-    // Propiedades opcionales del modelo Category/SubCategory que no están en la interfaz pero se usan en la vista
-    // Podemos extender la interfaz localmente o manejarlo con 'any' temporalmente
-    categoryDescription: string = '';
+    loading = signal<boolean>(true);
+    error = signal<boolean>(false);
 
-    constructor(
-        private route: ActivatedRoute,
-        private router: Router,
-        private landingService: LandingService,
-        private _location: Location
-    ) {}
+    categoryDescription = signal<string>('');
 
     ngOnInit() {
         this.route.params.subscribe((params) => {
-            this.categorySlug = params['category'];
-            this.subCategorySlug = params['subcategory'];
+            this.categorySlug.set(params['category'] || '');
+            this.subCategorySlug.set(params['subcategory'] || '');
             this.loadProduct();
         });
     }
 
     loadProduct() {
-        this.loading = true;
+        this.loading.set(true);
+        this.error.set(false);
+
+        // Agregamos un timeout de seguridad para que la UI no se quede bloqueada
+        const safetyTimeout = setTimeout(() => {
+            if (this.loading()) {
+                console.warn('Carga de producto tomó demasiado tiempo, desactivando spinner por seguridad.');
+                this.loading.set(false);
+            }
+        }, 5000);
+
         this.landingService.getAllCategories().subscribe({
             next: (categories) => {
-                const cat = categories.find((c) => c.slug === this.categorySlug);
-                if (cat) {
-                    this.category = cat;
-                    const sub = cat.subcategorias.find((s) => s.slug === this.subCategorySlug);
-                    if (sub) {
-                        this.subCategory = sub;
-                        // Simulamos la descripción general de la categoría si no viene en el API
-                        this.categoryDescription = `Explore nuestra gama completa de ${cat.nombre} diseñados para el máximo rendimiento y durabilidad en condiciones exigentes.`;
+                clearTimeout(safetyTimeout);
+                
+                // Usamos setTimeout(0) para asegurar que el renderizado ocurra en un tick diferente, 
+                // resolviendo problemas de detección de cambios en modo Zoneless.
+                setTimeout(() => {
+                    const cat = categories.find((c) => c.slug === this.categorySlug());
+                    if (cat) {
+                        this.category.set(cat);
+                        const sub = (cat.subcategorias || []).find((s) => s.slug === this.subCategorySlug());
+                        if (sub) {
+                            this.subCategory.set(sub);
+                            this.categoryDescription.set(
+                                `Explore nuestra gama completa de ${cat.nombre} diseñados para el máximo rendimiento y durabilidad en condiciones exigentes.`
+                            );
+                        } else {
+                            this.error.set(true);
+                        }
                     } else {
-                        this.error = true;
+                        this.error.set(true);
                     }
-                } else {
-                    this.error = true;
-                }
-                this.loading = false;
+                    this.loading.set(false);
+                }, 0);
             },
             error: (err) => {
-                console.error(err);
-                this.error = true;
-                this.loading = false;
+                clearTimeout(safetyTimeout);
+                console.error('Error loading product:', err);
+                this.error.set(true);
+                this.loading.set(false);
             }
         });
     }
 
     goBack() {
-        window.history.back();
+        this._location.back();
     }
 }
-import { Location } from '@angular/common';

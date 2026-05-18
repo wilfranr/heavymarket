@@ -116,17 +116,14 @@ class SubcategoriaLanding extends Model
         }
 
         if ($secondaryImagen) {
-            $path = storage_path('app/public/'.$secondaryImagen);
-            if (file_exists($path)) {
-                if (Str::startsWith($secondaryImagen, ['landing/', 'listas/'])) {
-                    return asset('storage/'.$secondaryImagen);
-                }
-                if (Str::startsWith($secondaryImagen, 'storage/')) {
-                    return asset($secondaryImagen);
-                }
-
-                return asset('images/'.$secondaryImagen);
+            if (Str::startsWith($secondaryImagen, ['landing/', 'listas/'])) {
+                return asset('storage/'.$secondaryImagen);
             }
+            if (Str::startsWith($secondaryImagen, 'storage/')) {
+                return asset($secondaryImagen);
+            }
+
+            return asset('images/'.$secondaryImagen);
         }
 
         return $this->imagen_url;

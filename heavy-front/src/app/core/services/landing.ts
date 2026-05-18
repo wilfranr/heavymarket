@@ -11,13 +11,16 @@ export interface SubCategory {
     imagen_url: string;
     imagen_secundaria_url: string;
     descripcion: string;
+    mostrar_en_navbar?: boolean;
 }
 
 export interface Category {
+    id: number;
     nombre: string;
     slug: string;
     descripcion_general?: string;
     subcategorias: SubCategory[];
+    mostrar_en_navbar?: boolean;
 }
 
 export interface LandingBrandDto {
@@ -36,6 +39,7 @@ export class LandingService {
     private trmUrl = 'https://www.datos.gov.co/resource/32sa-8pi3.json';
     private brandsCache$?: Observable<LandingBrandDto[]>;
     private navbarCache$?: Observable<Category[]>;
+    private allCategoriesCache$?: Observable<Category[]>;
 
     constructor(private http: HttpClient) {}
 
@@ -55,6 +59,16 @@ export class LandingService {
     }
 
     getNavbarCategories(): Observable<Category[]> {
+        // Si ya tenemos todas las categorías, las filtramos para el navbar
+        if (this.allCategoriesCache$) {
+            return this.allCategoriesCache$.pipe(
+                map(categories => categories.filter(c => c.mostrar_en_navbar).map(c => ({
+                    ...c,
+                    subcategorias: c.subcategorias.filter(s => s.mostrar_en_navbar)
+                })))
+            );
+        }
+
         if (!this.navbarCache$) {
             this.navbarCache$ = this.http.get<Category[]>(`${environment.apiUrl}/landing/navbar-data`).pipe(
                 catchError((error) => {
@@ -69,12 +83,17 @@ export class LandingService {
     }
 
     getAllCategories(): Observable<Category[]> {
-        return this.http.get<Category[]>(`${environment.apiUrl}/landing/categories`).pipe(
-            catchError((error) => {
-                console.error('Error fetching all categories:', error);
-                return of([]);
-            })
-        );
+        if (!this.allCategoriesCache$) {
+            this.allCategoriesCache$ = this.http.get<Category[]>(`${environment.apiUrl}/landing/categories`).pipe(
+                catchError((error) => {
+                    console.error('Error fetching all categories:', error);
+                    return of([]);
+                }),
+                shareReplay(1)
+            );
+        }
+
+        return this.allCategoriesCache$;
     }
 
     getBrands(): Observable<LandingBrandDto[]> {

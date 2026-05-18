@@ -3,11 +3,11 @@
         <app-navbar></app-navbar>
     </div>
 
-    @if (loading) {
+    @if (loading()) {
     <div class="flex justify-center items-center h-screen" style="padding-top: 100px">
         <p>Cargando producto...</p>
     </div>
-    } @else if (error) {
+    } @else if (error()) {
     <div class="flex flex-col justify-center items-center h-screen" style="padding-top: 100px">
         <h2 class="text-2xl font-bold mb-4">Producto no encontrado</h2>
         <button class="product-detail-button secondary" routerLink="/productos">
@@ -20,24 +20,24 @@
         <!-- Header con Breadcrumb -->
         <div class="products-header">
             <h1 class="products-title">Nuestros productos</h1>
-            <p class="products-breadcrumb">{{ category?.nombre }} / <a routerLink="/productos" class="breadcrumb-link">Productos</a> / <strong>{{ subCategory?.nombre }}</strong></p>
+            <p class="products-breadcrumb">{{ category()?.nombre }} / <a routerLink="/productos" class="breadcrumb-link">Productos</a> / <strong>{{ subCategory()?.nombre }}</strong></p>
         </div>
 
         <div class="product-detail-container">
             <!-- Título de detalle -->
-            <h1 class="product-detail-title" id="product-title">{{ subCategory?.nombre }}</h1>
+            <h1 class="product-detail-title" id="product-title">{{ subCategory()?.nombre }}</h1>
 
             <!-- Primera sección -->
             <div class="product-detail-section">
                 <!-- Texto izquierdo -->
                 <div class="product-detail-text">
-                    <p class="product-detail-description">{{ subCategory?.descripcion }}</p>
+                    <p class="product-detail-description">{{ subCategory()?.descripcion }}</p>
                 </div>
                 <!-- Imagen derecha -->
                 <div class="product-detail-image">
                     <img
-                        [src]="subCategory?.imagen_url || '/images/no-image.png'"
-                        [alt]="subCategory?.nombre"
+                        [src]="subCategory()?.imagen_url || '/images/no-image.png'"
+                        [alt]="subCategory()?.nombre"
                         onerror="
                             this.onerror = null;
                             this.src = '/images/no-image.png';
@@ -51,8 +51,8 @@
                 <!-- Imagen izquierda -->
                 <div class="product-detail-image">
                     <img
-                        [src]="subCategory?.imagen_secundaria_url || subCategory?.imagen_url || '/images/no-image.png'"
-                        [alt]="subCategory?.nombre"
+                        [src]="subCategory()?.imagen_secundaria_url || subCategory()?.imagen_url || '/images/no-image.png'"
+                        [alt]="subCategory()?.nombre"
                         onerror="
                             this.onerror = null;
                             this.src = '/images/no-image.png';
@@ -61,7 +61,7 @@
                 </div>
                 <!-- Texto y botones derecho -->
                 <div class="product-detail-text">
-                    <p class="product-detail-description">{{ categoryDescription }}</p>
+                    <p class="product-detail-description">{{ categoryDescription() }}</p>
                     <!-- Actions - Botones -->
                     <div class="product-detail-actions">
                         <button class="product-detail-button primary" routerLink="/cotizar">
