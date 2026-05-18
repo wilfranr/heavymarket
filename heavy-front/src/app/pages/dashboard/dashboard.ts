@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { NotificationsWidget } from './components/notificationswidget';
 import { StatsWidget } from './components/statswidget';
 import { RecentSalesWidget } from './components/recentsaleswidget';
@@ -36,8 +37,16 @@ import { AuthService } from '../../core/auth/services/auth.service';
         </div>
     `
 })
-export class Dashboard {
+export class Dashboard implements OnInit {
     private authService = inject(AuthService);
+    private router = inject(Router);
+
+    ngOnInit(): void {
+        // Redirección forzada para proveedores que aterrizan en el dashboard administrativo
+        if (this.authService.hasAnyRole(['Proveedor', 'proveedor'])) {
+            this.router.navigate(['/provider/opportunities']);
+        }
+    }
 
     get isSuperAdmin(): boolean {
         return this.authService.hasRole('super_admin');

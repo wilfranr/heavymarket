@@ -9,7 +9,7 @@ import { ApiService, PaginatedResponse, ApiResponse, QueryParams } from '../../.
     providedIn: 'root'
 })
 export class ProviderPortalService extends ApiService {
-    private readonly endpoint = '/v1/provider';
+    private readonly endpoint = 'provider';
 
     /**
      * Obtener oportunidades de costeo filtradas por especialidad

@@ -23,8 +23,15 @@ export class AppMenu implements OnInit {
     private providerAuthService = inject(ProviderAuthService);
 
     ngOnInit() {
-        // Caso 1: Sesión de Proveedor
-        if (this.providerAuthService.isProvider()) {
+        const hasAdminRole = this.authService.hasAnyRole(['super_admin', 'Administrador']);
+        const hasAnalistaRole = this.authService.hasAnyRole(['Analista', 'analista']);
+        const hasVendedorRole = this.authService.hasAnyRole(['Vendedor', 'vendedor']);
+        const hasLogisticaRole = this.authService.hasAnyRole(['Logistica', 'logistica']);
+        const hasClienteRole = this.authService.hasAnyRole(['Cliente', 'cliente']);
+        const hasProveedorRole = this.authService.hasAnyRole(['Proveedor', 'proveedor']);
+
+        // Caso 1: Sesión de Proveedor (Detección unificada)
+        if (this.providerAuthService.isProvider() || hasProveedorRole) {
             this.model = [
                 {
                     label: 'Portal de Proveedores',
@@ -36,7 +43,7 @@ export class AppMenu implements OnInit {
                 {
                     label: 'Perfil',
                     items: [
-                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.providerAuthService.logout() }
+                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => hasProveedorRole ? this.authService.logout().subscribe() : this.providerAuthService.logout() }
                     ]
                 }
             ];
@@ -44,10 +51,6 @@ export class AppMenu implements OnInit {
         }
 
         // Caso 2: Sesión Interna (Asesores, Analistas, Admin)
-        const hasAdminRole = this.authService.hasAnyRole(['super_admin', 'Administrador']);
-        const hasAnalistaRole = this.authService.hasAnyRole(['Analista', 'analista']);
-        const hasVendedorRole = this.authService.hasAnyRole(['Vendedor', 'vendedor']);
-        const hasLogisticaRole = this.authService.hasAnyRole(['Logistica', 'logistica']);
 
         // Caso especial: Logistica solo ve Órdenes de Trabajo
         if (hasLogisticaRole && !hasAdminRole) {
@@ -82,6 +85,21 @@ export class AppMenu implements OnInit {
                         { label: 'Artículos', icon: 'pi pi-fw pi-box', routerLink: ['/app/articulos'] },
                         { label: 'Referencias', icon: 'pi pi-fw pi-hashtag', routerLink: ['/app/referencias'] }
                     ]
+                }
+            ];
+            return;
+        }
+
+        // Caso especial: Cliente (Solo ve sus pedidos)
+        if (hasClienteRole && !hasAdminRole && !hasVendedorRole && !hasAnalistaRole && !hasLogisticaRole) {
+            this.model = [
+                {
+                    label: 'Mi Cuenta',
+                    items: [{ label: 'Mis Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }]
+                },
+                {
+                    label: 'Perfil',
+                    items: [{ label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }]
                 }
             ];
             return;

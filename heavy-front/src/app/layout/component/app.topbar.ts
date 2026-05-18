@@ -15,6 +15,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 import { LayoutService } from '../service/layout.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { AuthService } from '../../core/auth/services/auth.service';
+import { ProviderAuthService } from '../../core/auth/services/provider-auth.service';
 import { GlobalSearchService, SearchResult } from '../../core/services/global-search.service';
 
 @Component({
@@ -26,7 +27,7 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
             <button class="layout-menu-button layout-topbar-action" (click)="layoutService.onMenuToggle()">
                 <i class="pi pi-bars"></i>
             </button>
-            <a class="layout-topbar-logo" routerLink="/app">
+            <a class="layout-topbar-logo" [routerLink]="isProvider() ? '/provider/opportunities' : '/app'">
                 <img [src]="layoutService.isDarkTheme() ? 'assets/images/logo.svg' : 'assets/images/logo-black.svg'" alt="CYH Heavy Market" style="height: 35px; width: auto;" />
             </a>
         </div>
@@ -136,6 +137,7 @@ import { GlobalSearchService, SearchResult } from '../../core/services/global-se
 export class AppTopbar {
     private readonly notificationService = inject(NotificationService);
     private readonly authService = inject(AuthService);
+    private readonly providerAuthService = inject(ProviderAuthService);
     private readonly router = inject(Router);
     private readonly searchService = inject(GlobalSearchService);
     public readonly layoutService = inject(LayoutService);
@@ -147,6 +149,10 @@ export class AppTopbar {
     unreadCount = this.notificationService.unreadCount;
     currentUser = this.authService.currentUser;
     isAuthenticated = this.authService.isAuthenticated;
+
+    isProvider(): boolean {
+        return this.providerAuthService.isProvider();
+    }
 
     searchQuery = '';
     selectedSearchResult: any = null;

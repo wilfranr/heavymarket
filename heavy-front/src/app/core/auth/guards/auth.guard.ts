@@ -20,6 +20,18 @@ export const authGuard: CanActivateFn = (route, state) => {
     const router = inject(Router);
 
     if (authService.isLoggedIn()) {
+        /* 
+        // Comentado temporalmente para diagnosticar bucle infinito
+        const isProvider = authService.hasAnyRole(['Proveedor', 'proveedor']);
+        const isAccessingAdminArea = state.url === '/app' || state.url.startsWith('/app/');
+
+        // Redirección forzada para proveedores que intentan entrar al área administrativa
+        if (isProvider && isAccessingAdminArea) {
+            router.navigate(['/provider/opportunities']);
+            return false;
+        }
+        */
+
         return true;
     }
 

@@ -130,14 +130,25 @@ class PedidoService
         }
 
         foreach ($referenciasData as $refData) {
+            $referenciaCatalogoId = $refData['referencia_id'] ?? null;
+            $marcaId = $refData['marca_id'] ?? null;
+
+            // Si se selecciona una referencia de catálogo y no se especifica marca, heredar la del catálogo
+            if ($referenciaCatalogoId && empty($marcaId)) {
+                $refCatalogo = \App\Models\Referencia::find($referenciaCatalogoId);
+                if ($refCatalogo && $refCatalogo->marca_id) {
+                    $marcaId = $refCatalogo->marca_id;
+                }
+            }
+
             if (isset($refData['id']) && $refData['id']) {
                 $referencia = $pedido->referencias()->find($refData['id']);
                 if ($referencia) {
                     $referencia->update([
-                        'referencia_id' => $refData['referencia_id'] ?: null,
+                        'referencia_id' => $referenciaCatalogoId ?: null,
                         'sistema_id' => $refData['sistema_id'] ?? null,
                         'lista_id' => $refData['lista_id'] ?? null,
-                        'marca_id' => $refData['marca_id'] ?? null,
+                        'marca_id' => $marcaId,
                         'definicion' => $refData['definicion'] ?? null,
                         'cantidad' => $refData['cantidad'] ?? 1,
                         'comentario' => $refData['comentario'] ?? null,
@@ -149,10 +160,10 @@ class PedidoService
                 }
             } else {
                 $pedido->referencias()->create([
-                    'referencia_id' => $refData['referencia_id'] ?: null,
+                    'referencia_id' => $referenciaCatalogoId ?: null,
                     'sistema_id' => $refData['sistema_id'] ?? null,
                     'lista_id' => $refData['lista_id'] ?? null,
-                    'marca_id' => $refData['marca_id'] ?? null,
+                    'marca_id' => $marcaId,
                     'definicion' => $refData['definicion'] ?? null,
                     'cantidad' => $refData['cantidad'] ?? 1,
                     'comentario' => $refData['comentario'] ?? null,

@@ -77,10 +77,17 @@ export class Login {
         this.isLoading.set(true);
 
         this.authService.login({ email: this.email, password: this.password }).subscribe({
-            next: () => {
+            next: (response) => {
                 this.isLoading.set(false);
                 this.toastService.success('Inicio de sesión exitoso');
-                this.router.navigate(['/app']);
+
+                // Redirección inteligente por rol
+                const user = response.data.user;
+                if (user.roles.includes('Proveedor') || user.roles.includes('proveedor')) {
+                    this.router.navigate(['/provider/opportunities']);
+                } else {
+                    this.router.navigate(['/app']);
+                }
             },
             error: (error) => {
                 this.isLoading.set(false);

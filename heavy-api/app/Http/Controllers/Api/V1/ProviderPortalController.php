@@ -32,50 +32,65 @@ class ProviderPortalController extends Controller
      */
     public function opportunities(Request $request): JsonResponse
     {
-        $user = $request->user();
+        try {
+            $user = $request->user();
 
-        // Obtener el tercero asociado al usuario
-        $tercero = Tercero::where('user_id', $user->id)->first();
+            // Obtener el tercero asociado al usuario
+            $tercero = Tercero::where('user_id', $user->id)->first();
 
-        if (! $tercero) {
+            if (! $tercero) {
+                return response()->json([
+                    'message' => 'No se encontró un perfil de tercero asociado a su usuario.',
+                ], 404);
+            }
+
+            // Obtener marcas y categorías del proveedor
+            $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
+            $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
+
+            // Consulta de emparejamiento (Matching Engine)
+            $query = PedidoReferencia::query()
+                ->whereHas('pedido', function ($q) {
+                    $q->where('estado', 'En_Costeo');
+                })
+                ->where(function ($q) use ($misMarcas, $misCategorias) {
+                    $q->whereIn('marca_id', $misMarcas)
+                      ->orWhereIn('categoria_comercial_id', $misCategorias);
+                })
+                // Excluir si ya fue costeado por este proveedor
+                ->whereDoesntHave('proveedores', function ($q) use ($tercero) {
+                    $q->where('proveedor_id', $tercero->id);
+                });
+
+            // Ordenamiento y Carga de relaciones
+            $query->with(['referencia.marca', 'categoriaComercial', 'marca', 'pedido'])
+                ->orderBy('created_at', 'desc');
+
+            // Paginación
+            $perPage = (int) $request->input('per_page', 15);
+            $referencias = $query->paginate($perPage);
+
             return response()->json([
-                'message' => 'No se encontró un perfil de tercero asociado a su usuario.',
-            ], 404);
+                'data' => PedidoReferenciaResource::collection($referencias)->response()->getData()->data,
+                'provider' => [
+                    'id' => $tercero->id,
+                    'nombre' => $tercero->nombre,
+                    'is_national' => (int) $tercero->country_id === 48
+                ],
+                'meta' => [
+                    'current_page' => $referencias->currentPage(),
+                    'last_page' => $referencias->lastPage(),
+                    'per_page' => $referencias->perPage(),
+                    'total' => $referencias->total(),
+                ],
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error interno al cargar oportunidades.',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ], 500);
         }
-
-        // Obtener marcas y categorías del proveedor
-        $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
-        $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
-
-        // Consulta de emparejamiento
-        $query = PedidoReferencia::query()
-            ->whereHas('pedido', function ($q) {
-                $q->where('estado', 'En_Costeo');
-            })
-            ->whereIn('marca_id', $misMarcas)
-            ->whereIn('categoria_comercial_id', $misCategorias)
-            // Excluir si ya fue costeado por este proveedor
-            ->whereDoesntHave('proveedores', function ($q) use ($tercero) {
-                $q->where('proveedor_id', $tercero->id);
-            });
-
-        // Ordenamiento y Carga de relaciones
-        $query->with(['referencia.marca', 'categoriaComercial', 'marca', 'pedido'])
-            ->orderBy('created_at', 'desc');
-
-        // Paginación
-        $perPage = (int) $request->input('per_page', 15);
-        $referencias = $query->paginate($perPage);
-
-        return response()->json([
-            'data' => PedidoReferenciaResource::collection($referencias),
-            'meta' => [
-                'current_page' => $referencias->currentPage(),
-                'last_page' => $referencias->lastPage(),
-                'per_page' => $referencias->perPage(),
-                'total' => $referencias->total(),
-            ],
-        ]);
     }
 
     /**

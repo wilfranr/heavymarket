@@ -1,11 +1,9 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { TableModule } from 'primeng/table';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
-import { DialogModule } from 'primeng/dialog';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
@@ -17,141 +15,206 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-costing-opportunities',
     standalone: true,
-    imports: [CommonModule, TableModule, ButtonModule, DialogModule, ReactiveFormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, TagModule],
+    imports: [CommonModule, ButtonModule, ReactiveFormsModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, TagModule],
     providers: [MessageService],
     template: `
-        <div class="card">
-            <div class="flex justify-content-between align-items-center mb-4">
-                <h2 class="m-0"><i class="pi pi-bolt text-emerald-600 mr-2"></i>Oportunidades de Costeo</h2>
-                <p-button icon="pi pi-refresh" [loading]="loading()" (onClick)="loadOpportunities()" [outlined]="true" label="Actualizar"></p-button>
+        <div class="flex flex-col gap-6 p-4">
+            <!-- Header Section -->
+            <div class="flex justify-between items-center bg-surface-0 dark:bg-surface-900 p-4 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
+                <div>
+                    <h1 class="text-2xl font-bold m-0 flex items-center gap-3">
+                        <i class="pi pi-bolt text-emerald-500 text-3xl"></i>
+                        Oportunidades de Costeo
+                    </h1>
+                    <p class="text-surface-500 mt-1 m-0">Oferte sus mejores precios para las piezas solicitadas.</p>
+                </div>
+                <p-button icon="pi pi-refresh" [loading]="loading()" (onClick)="loadOpportunities()" [outlined]="true" label="Sincronizar" severity="secondary"></p-button>
             </div>
 
-            <p-table [value]="opportunities()" [loading]="loading()" [rows]="10" [paginator]="true" responsiveLayout="scroll" styleClass="p-datatable-gridlines">
-                <ng-template pTemplate="header">
-                    <tr>
-                        <th>Ref. Pedido</th>
-                        <th>Descripción / Definición</th>
-                        <th>Marca Requerida</th>
-                        <th>Categoría</th>
-                        <th class="text-center">Cantidad</th>
-                        <th class="text-center">Acción</th>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="body" let-ref>
-                    <tr>
-                        <td class="font-bold text-primary">#{{ ref.id }}</td>
-                        <td>
-                            <div class="flex flex-column">
-                                <span class="font-medium">{{ ref.referencia?.referencia || 'N/A' }}</span>
-                                <small class="text-gray-500">{{ ref.definicion }}</small>
+            <!-- List of Opportunities -->
+            <div *ngIf="opportunities().length > 0; else emptyState" class="flex flex-col gap-4">
+                <div *ngFor="let ref of opportunities()" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700 overflow-hidden transition-all hover:shadow-md">
+                    
+                    <!-- Header Row (Piece Info) -->
+                    <div class="bg-surface-50 dark:bg-surface-800 px-4 py-3 flex flex-wrap items-center gap-4 border-b border-surface-200 dark:border-surface-700">
+                        <p-tag value="DISPONIBLE" severity="success" [rounded]="true" class="text-xs"></p-tag>
+                        <p-tag [value]="ref.categoria_comercial?.nombre || 'General'" [rounded]="true" class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none text-xs font-semibold px-3"></p-tag>
+                        
+                        <div class="flex items-center gap-2">
+                            <span class="text-surface-500 text-sm">Cant.</span>
+                            <span class="font-bold text-surface-900 dark:text-surface-0">{{ ref.cantidad }}</span>
+                        </div>
+
+                        <div class="h-4 w-px bg-surface-300 dark:bg-surface-600 hidden md:block"></div>
+
+                        <span class="font-bold text-blue-600 dark:text-blue-400 text-lg tracking-tight">{{ ref.referencia?.referencia || 'N/A' }}</span>
+                        <span class="text-surface-600 dark:text-surface-400 font-medium">{{ ref.definicion || 'Sin definición' }}</span>
+
+                        <div class="ml-auto flex items-center gap-2">
+                            <p-button icon="pi pi-comments" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Comentarios del analista"></p-button>
+                            <i class="pi pi-chevron-up text-surface-400"></i>
+                        </div>
+                    </div>
+
+                    <!-- Input Row (Form) -->
+                    <div class="p-5">
+                        <div class="grid grid-cols-12 gap-4 items-end">
+                            
+                            <!-- Item ID -->
+                            <div class="col-span-12 md:col-span-1 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Ítem</label>
+                                <div class="bg-surface-100 dark:bg-surface-800 text-surface-500 rounded-lg p-2.5 text-center font-medium border border-surface-200 dark:border-surface-700">
+                                    {{ ref.id }}
+                                </div>
                             </div>
-                        </td>
-                        <td>
-                            <p-tag [value]="ref.marca?.nombre || 'N/A'" severity="info"></p-tag>
-                        </td>
-                        <td>{{ ref.categoria_comercial?.nombre || 'N/A' }}</td>
-                        <td class="text-center font-bold">{{ ref.cantidad }}</td>
-                        <td class="text-center">
-                            <p-button label="Costear" icon="pi pi-dollar" severity="success" (onClick)="openCostingDialog(ref)"></p-button>
-                        </td>
-                    </tr>
-                </ng-template>
-                <ng-template pTemplate="emptymessage">
-                    <tr>
-                        <td colspan="6" class="text-center py-5">
-                            <i class="pi pi-info-circle text-4xl text-gray-400 mb-3"></i>
-                            <p class="text-gray-500">No hay nuevas piezas disponibles para su especialidad en este momento.</p>
-                        </td>
-                    </tr>
-                </ng-template>
-            </p-table>
-        </div>
 
-        <!-- Diálogo de Costeo -->
-        <p-dialog [(visible)]="displayDialog" [header]="'Enviar Oferta de Costeo'" [modal]="true" [style]="{ width: '450px' }" [draggable]="false">
-            @if (selectedRef) {
-                <div class="mb-4 p-3 bg-surface-50 dark:bg-surface-800 border-round">
-                    <div class="mb-2"><strong>Pieza:</strong> {{ selectedRef.referencia?.referencia }}</div>
-                    <div><strong>Cantidad Requerida:</strong> {{ selectedRef.cantidad }} unidades</div>
+                            <!-- Cantidad -->
+                            <div class="col-span-12 md:col-span-1 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Cant.</label>
+                                <p-inputNumber [(ngModel)]="ref.cantidad" [disabled]="true" inputStyleClass="w-full text-center font-bold bg-surface-50 dark:bg-surface-800" styleClass="w-full"></p-inputNumber>
+                            </div>
+
+                            <!-- Marca Select -->
+                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Marca Ofrecida</label>
+                                <p-select 
+                                    [options]="marcas" 
+                                    [(ngModel)]="ref.form_marca_id"
+                                    optionLabel="label" 
+                                    optionValue="value" 
+                                    [filter]="true" 
+                                    [placeholder]="ref.marca?.nombre || 'Seleccionar'" 
+                                    class="w-full h-[46px]"
+                                    styleClass="w-full border-surface-300 rounded-lg"
+                                    [showClear]="true">
+                                </p-select>
+                            </div>
+
+                            <!-- Entrega Select -->
+                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Entrega</label>
+                                <p-select 
+                                    [options]="tiemposEntrega" 
+                                    [(ngModel)]="ref.form_dias_entrega"
+                                    optionLabel="label" 
+                                    optionValue="value" 
+                                    placeholder="Seleccionar"
+                                    class="w-full h-[46px]"
+                                    styleClass="w-full border-surface-300 rounded-lg">
+                                </p-select>
+                            </div>
+
+                            <!-- Costo Input -->
+                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">
+                                    {{ providerInfo().is_national ? 'Costo COP' : 'Costo USD' }}
+                                </label>
+                                <p-inputNumber 
+                                    [(ngModel)]="ref.form_costo"
+                                    [mode]="'currency'" 
+                                    [currency]="providerInfo().is_national ? 'COP' : 'USD'" 
+                                    [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'" 
+                                    inputStyleClass="w-full font-bold text-lg h-[46px] border-surface-300 rounded-lg"
+                                    styleClass="w-full"
+                                    [min]="0">
+                                </p-inputNumber>
+                            </div>
+
+                            <!-- Observaciones -->
+                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
+                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Observaciones</label>
+                                <input pInputText [(ngModel)]="ref.form_comentario" class="w-full h-[46px] border-surface-300 rounded-lg" placeholder="Stock, origen..." />
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="col-span-12 md:col-span-2 flex justify-end">
+                                <p-button 
+                                    label="Agregar" 
+                                    icon="pi pi-plus" 
+                                    [loading]="ref.submitting"
+                                    [disabled]="!ref.form_costo || ref.form_dias_entrega === undefined"
+                                    (onClick)="submitCost(ref)"
+                                    styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold">
+                                </p-button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+            </div>
 
-                <form [formGroup]="costingForm" (ngSubmit)="onSubmit()">
-                    <div class="field mb-4">
-                        <label for="costo" class="block font-bold mb-2">Precio de Costo (Unidad) <span class="text-red-500">*</span></label>
-                        <p-inputNumber id="costo" formControlName="costo_unidad" mode="currency" currency="USD" locale="en-US" styleClass="w-full" [min]="0"></p-inputNumber>
-                        @if (costingForm.get('costo_unidad')?.invalid && costingForm.get('costo_unidad')?.touched) {
-                            <small class="p-error">El precio de costo es requerido.</small>
-                        }
+            <!-- Empty State -->
+            <ng-template #emptyState>
+                <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-12 text-center border-2 border-dashed border-surface-200 dark:border-surface-700 flex flex-col items-center gap-4">
+                    <div class="w-20 h-20 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center">
+                        <i class="pi pi-inbox text-4xl text-surface-400"></i>
                     </div>
-
-                    <div class="field mb-4">
-                        <label for="dias" class="block font-bold mb-2">Días de Entrega <span class="text-red-500">*</span></label>
-                        <p-inputNumber id="dias" formControlName="dias_entrega" [showButtons]="true" [min]="0" suffix=" días" styleClass="w-full"></p-inputNumber>
-                        @if (costingForm.get('dias_entrega')?.invalid && costingForm.get('dias_entrega')?.touched) {
-                            <small class="p-error">Especifique el tiempo de entrega.</small>
-                        }
+                    <div>
+                        <h3 class="text-xl font-bold text-surface-900 dark:text-surface-0 m-0">Sin oportunidades pendientes</h3>
+                        <p class="text-surface-500 mt-2 max-w-md mx-auto">No hay piezas que coincidan con su especialidad en este momento. Le notificaremos cuando los analistas publiquen nuevos requerimientos.</p>
                     </div>
-
-                    <div class="field mb-4">
-                        <label for="marca" class="block font-bold mb-2">Marca Ofrecida (Opcional)</label>
-                        <p-select [options]="marcas" formControlName="marca_id" optionLabel="label" optionValue="value" [filter]="true" placeholder="Dejar original ({{ selectedRef.marca?.nombre }})" styleClass="w-full" [showClear]="true"></p-select>
-                    </div>
-
-                    <div class="field mb-4">
-                        <label for="comentario" class="block font-bold mb-2">Observaciones</label>
-                        <textarea pInputTextarea id="comentario" formControlName="comentario" rows="3" class="w-full p-inputtext p-component" placeholder="Notas adicionales sobre stock, procedencia, etc."></textarea>
-                    </div>
-
-                    <div class="flex justify-content-end gap-2 mt-5">
-                        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="displayDialog = false" [disabled]="submitting()"></p-button>
-                        <p-button label="Enviar Costeo" icon="pi pi-check" severity="success" type="submit" [loading]="submitting()" [disabled]="costingForm.invalid"></p-button>
-                    </div>
-                </form>
-            }
-        </p-dialog>
+                    <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
+                </div>
+            </ng-template>
+        </div>
 
         <p-toast></p-toast>
     `,
-    styles: []
+    styles: [`
+        :host ::ng-deep .p-select {
+            border-radius: 0.5rem;
+        }
+        :host ::ng-deep .p-inputnumber-input {
+            border-radius: 0.5rem;
+        }
+        :host ::ng-deep .p-button {
+            border-radius: 0.5rem;
+        }
+    `]
 })
 export class CostingOpportunitiesComponent implements OnInit {
     private providerPortalService = inject(ProviderPortalService);
     private listaService = inject(ListaService);
-    private fb = inject(FormBuilder);
     private messageService = inject(MessageService);
 
     opportunities = signal<any[]>([]);
+    providerInfo = signal<{id?: number, nombre?: string, is_national: boolean}>({ is_national: true });
     loading = signal(false);
-    submitting = signal(false);
-    displayDialog = false;
-    selectedRef: any = null;
     marcas: any[] = [];
-    costingForm!: FormGroup;
+    tiemposEntrega = [
+        { label: 'Inmediato', value: 0 },
+        { label: '1-3 días', value: 3 },
+        { label: '4-7 días', value: 7 },
+        { label: '8-15 días', value: 15 },
+        { label: 'Más de 15 días', value: 20 }
+    ];
 
     ngOnInit(): void {
-        this.initForm();
         this.loadOpportunities();
         this.loadMarcas();
-    }
-
-    private initForm(): void {
-        this.costingForm = this.fb.group({
-            costo_unidad: [null, [Validators.required, Validators.min(0)]],
-            dias_entrega: [null, [Validators.required, Validators.min(0)]],
-            marca_id: [null],
-            comentario: ['']
-        });
     }
 
     loadOpportunities(): void {
         this.loading.set(true);
         this.providerPortalService.getOpportunities().subscribe({
-            next: (response) => {
-                this.opportunities.set(response.data);
+            next: (response: any) => {
+                const items = (response.data || []).map((item: any) => ({
+                    ...item,
+                    form_costo: null,
+                    form_dias_entrega: 0,
+                    form_marca_id: item.marca_id,
+                    form_comentario: '',
+                    submitting: false
+                }));
+                this.opportunities.set(items);
+                
+                if (response.provider) {
+                    this.providerInfo.set(response.provider);
+                }
                 this.loading.set(false);
             },
             error: (error) => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudieron cargar las oportunidades.' });
+                const errorMsg = error.error?.message || 'No se pudieron cargar las oportunidades.';
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
                 this.loading.set(false);
             }
         });
@@ -165,37 +228,26 @@ export class CostingOpportunitiesComponent implements OnInit {
         });
     }
 
-    openCostingDialog(ref: any): void {
-        this.selectedRef = ref;
-        this.costingForm.reset({
-            costo_unidad: null,
-            dias_entrega: null,
-            marca_id: null,
-            comentario: ''
-        });
-        this.displayDialog = true;
-    }
+    submitCost(ref: any): void {
+        ref.submitting = true;
 
-    onSubmit(): void {
-        if (this.costingForm.invalid || !this.selectedRef) return;
+        const payload = {
+            pedido_referencia_id: ref.id,
+            costo_unidad: ref.form_costo,
+            dias_entrega: ref.form_dias_entrega,
+            marca_id: ref.form_marca_id,
+            comentario: ref.form_comentario
+        };
 
-        this.submitting.set(true);
-        const formValue = this.costingForm.value;
-
-        this.providerPortalService.submitCost({
-            pedido_referencia_id: this.selectedRef.id,
-            ...formValue
-        }).subscribe({
+        this.providerPortalService.submitCost(payload).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Oferta enviada correctamente.' });
-                this.displayDialog = false;
-                this.submitting.set(false);
-                this.loadOpportunities(); // Recargar para quitar la pieza ya costeada
+                this.opportunities.set(this.opportunities().filter(o => o.id !== ref.id));
             },
             error: (error: any) => {
                 const errorMsg = error.error?.message || 'Error al enviar la oferta.';
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
-                this.submitting.set(false);
+                ref.submitting = false;
             }
         });
     }
