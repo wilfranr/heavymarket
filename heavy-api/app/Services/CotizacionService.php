@@ -280,7 +280,7 @@ class CotizacionService
             'pedido.maquina',
             'user',
             'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo',
-            'referenciasProveedores.pedidoReferenciaProveedor.referencia', // Añadido para mostrar el código
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia',
             'referenciasProveedores.pedidoReferenciaProveedor.marca',
         ]);
 
@@ -290,7 +290,7 @@ class CotizacionService
         $pdf = Pdf::loadView('pdf.cotizacion', [
             'cotizacion' => $cotizacion,
             'empresa' => $empresa,
-        ]);
+        ])->setOption('isPhpEnabled', true);
 
         return $pdf;
     }

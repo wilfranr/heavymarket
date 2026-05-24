@@ -60,7 +60,7 @@ export class CotizacionService extends ApiService {
      * Descargar PDF de la cotización
      */
     downloadPDF(id: number): Observable<Blob> {
-        return this.http.get(`${this.getBaseUrl()}/${id}/download-pdf`, {
+        return this.http.get(this.formatUrl(`${this.getBaseUrl()}/${id}/download-pdf`), {
             responseType: 'blob'
         });
     }

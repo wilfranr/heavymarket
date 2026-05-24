@@ -5,342 +5,510 @@
     <title>Cotización COT-{{ $cotizacion->id }}</title>
     <style>
         @page {
-            margin: 1cm;
+            margin: 1.2cm 1cm 1cm 1cm;
         }
         body {
             font-family: 'Helvetica', 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            color: #1a1a1a;
-            font-size: 10px;
-            line-height: 1.2;
+            color: #1e293b;
+            font-size: 9px;
+            line-height: 1.3;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
+        
         /* Header */
         .header-table {
-            margin-bottom: 5px;
+            width: 100%;
+            margin-bottom: 20px;
         }
-        .company-name {
-            font-size: 18px;
-            font-weight: bold;
-            color: #334155;
-            text-align: center;
-            margin: 0;
+        .header-table td {
+            vertical-align: top;
         }
-        .company-info {
-            text-align: center;
-            font-size: 8px;
-            color: #4b5563;
+        .header-table td.meta-container {
+            vertical-align: top;
         }
         .logo-container {
-            text-align: right;
-            width: 150px;
+            width: 140px;
+            text-align: left;
         }
         .logo {
             max-width: 140px;
+            max-height: 70px;
+            object-fit: contain;
         }
-        
-        .doc-title {
-            text-align: center;
-            font-size: 16px;
+        .company-info-container {
+            text-align: left;
+            padding-left: 8px;
+            font-size: 8.5px;
+            color: #475569;
+            line-height: 1.4;
+        }
+        .company-name {
+            font-size: 13px;
             font-weight: bold;
-            margin: 10px 0;
-            text-transform: uppercase;
-            letter-spacing: 2px;
+            color: #0f172a;
+            margin: 0 0 4px 0;
+            text-align: left;
+        }
+        .meta-container {
+            width: 140px;
+            padding: 0;
+        }
+        .meta-table {
+            width: 100%;
+            height: 82px;
+            border-collapse: collapse;
+        }
+        .meta-spacer {
+            height: 68px;
+            padding: 0;
+            margin: 0;
+            font-size: 1px;
+            line-height: 1px;
+        }
+        .meta-date {
+            text-align: right;
+            vertical-align: bottom;
+            font-size: 8.5px;
+            color: #475569;
+            padding: 0;
+            white-space: nowrap;
         }
 
-        /* Bloques de Información */
-        .info-block {
-            background-color: #f3f4f6;
-            margin-bottom: 10px;
-            border: 1px solid #d1d5db;
+        /* Bloque Cliente y Título */
+        .client-section {
+            width: 100%;
+            margin-bottom: 15px;
+        }
+        .client-section td {
+            vertical-align: top;
+        }
+        .client-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .client-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0 0 3px 0;
+        }
+        .client-info {
+            font-size: 9px;
+            color: #334155;
+            line-height: 1.3;
+        }
+        .doc-title-container {
+            text-align: right;
+        }
+        .doc-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #0f172a;
+            margin: 0;
+            text-transform: uppercase;
+        }
+        .doc-number {
+            font-size: 10px;
+            color: #475569;
+            margin-top: 2px;
+        }
+
+        /* Informaciones Adicionales */
+        .info-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .info-table {
+            width: 100%;
+            border-top: 1px solid #cbd5e1;
+            border-bottom: 1px solid #cbd5e1;
+            margin-bottom: 20px;
+            font-size: 9px;
         }
         .info-table td {
-            padding: 4px 8px;
-            border: 0.5px solid #d1d5db;
+            padding: 4px 0;
+            vertical-align: top;
         }
-        .label-cell {
-            background-color: #e5e7eb;
+        .info-label {
             font-weight: bold;
-            width: 80px;
-            text-transform: uppercase;
-            font-size: 9px;
+            color: #334155;
+            width: 18%;
         }
-        .value-cell {
-            background-color: #ffffff;
-        }
-        .id-cell {
-            background-color: #9ca3af;
-            color: white;
-            font-weight: bold;
-            text-align: center;
-            font-size: 14px;
+        .info-value {
+            color: #0f172a;
+            width: 32%;
         }
 
-        /* Tabla de Items */
-        .items-table {
-            margin-top: 10px;
-            border: 1px solid #334155;
+        /* Tabla de Productos */
+        .badge-container {
+            margin-bottom: -1px;
         }
-        .items-table th {
-            background-color: #475569;
+        .products-badge {
+            background-color: #f5b041;
+            color: white;
+            display: inline-block;
+            padding: 3px 12px;
+            font-weight: bold;
+            font-size: 8.5px;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            text-transform: uppercase;
+        }
+        .products-table {
+            width: 100%;
+            border: 1px solid #cbd5e1;
+            font-size: 9px;
+        }
+        .products-table th {
+            background-color: #f5b041;
             color: white;
             padding: 6px;
             font-weight: bold;
             text-transform: uppercase;
-            font-size: 9px;
-            border: 0.5px solid #1e293b;
+            font-size: 8px;
+            border: 1px solid #cbd5e1;
+            text-align: center;
         }
-        .items-table td {
-            padding: 6px;
-            border: 0.5px solid #94a3b8;
-            font-size: 9px;
-            height: 15px;
-        }
-        .alt-row {
-            background-color: #f8fafc;
+        .products-table td {
+            padding: 5px 6px;
+            border: 1px solid #cbd5e1;
+            vertical-align: middle;
         }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
+        .text-left { text-align: left; }
 
-        /* Totales y Notas */
-        .bottom-section {
-            margin-top: 15px;
+        /* Totales */
+        .totals-wrapper {
+            width: 100%;
+            margin-top: 10px;
         }
-        .bank-info {
-            width: 60%;
-            font-size: 9px;
-            font-weight: bold;
-        }
-        .totals-container {
-            width: 35%;
+        .totals-table {
+            width: 250px;
             float: right;
+            font-size: 9.5px;
         }
         .totals-table td {
-            padding: 5px;
-            font-size: 11px;
+            padding: 4px 0;
         }
         .totals-label {
+            text-align: left;
+            font-weight: bold;
+            color: #334155;
+        }
+        .totals-value {
             text-align: right;
-            font-weight: bold;
-            text-transform: uppercase;
-            padding-right: 15px;
+            color: #0f172a;
         }
-        .total-highlight {
-            color: #dc2626;
+        .total-row td {
+            border-top: 1px solid #475569;
+            padding-top: 6px;
             font-weight: bold;
-            font-size: 14px;
+            font-size: 11px;
         }
-        .legal-notes {
-            clear: both;
-            margin-top: 20px;
-            font-size: 7.5px;
-            color: #4b5563;
-            text-align: justify;
-            border-top: 1px solid #d1d5db;
-            padding-top: 5px;
+        .double-border-row td {
+            border-top: 1px dashed #94a3b8;
+            height: 1px;
+            padding: 0;
         }
 
-        /* Marcas Footer */
-        .brands-footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
-            text-align: center;
-            padding-bottom: 10px;
+        /* Observaciones y Términos */
+        .bottom-section {
+            clear: both;
+            margin-top: 25px;
         }
-        .brand-text {
-            font-weight: 900;
-            font-style: italic;
-            font-size: 14px;
+        .notes-title {
+            font-size: 11px;
+            font-weight: bold;
+            color: #475569;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+        .notes-content {
+            font-size: 9px;
             color: #334155;
-            margin: 0 15px;
-            display: inline-block;
+            line-height: 1.3;
+            text-align: justify;
+            margin: 0 0 15px 0;
+        }
+        .legal-text {
+            font-size: 7.5px;
+            color: #64748b;
+            text-align: justify;
+            line-height: 1.3;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 6px;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
+
+    @php
+        // Resolver ruta del logo
+        $logoPath = null;
+        if (file_exists(public_path('images/logo-pdf.png'))) {
+            $logoPath = public_path('images/logo-pdf.png');
+        } elseif (isset($empresa->logo_dark) && file_exists(public_path('storage/' . $empresa->logo_dark))) {
+            $logoPath = public_path('storage/' . $empresa->logo_dark);
+        } elseif (isset($empresa->logo_light) && file_exists(public_path('storage/' . $empresa->logo_light))) {
+            $logoPath = public_path('storage/' . $empresa->logo_light);
+        } elseif (file_exists(public_path('images/logo.png'))) {
+            $logoPath = public_path('images/logo.png');
+        }
+    @endphp
+
+    <!-- Encabezado -->
     <table class="header-table">
         <tr>
-            <td style="width: 20%;"></td>
-            <td style="width: 60%;">
-                <p class="company-name">{{ strtoupper($empresa->nombre ?? 'HEAVYMARKET') }}</p>
-                <div class="company-info">
-                    NIT: {{ $empresa->nit ?? '901337993-8' }}<br>
-                    {{ $empresa->direccion ?? 'BOGOTÁ, COLOMBIA' }}<br>
-                    TELÉFONO: {{ $empresa->telefono ?? '6578676' }}<br>
-                    {{ $empresa->email ?? 'wilfranr@gmail.com' }}<br>
-                    {{ strtoupper($empresa->ciudad ?? 'BOGOTÁ') }}, {{ strtoupper($empresa->pais ?? 'COLOMBIA') }}
-                </div>
-            </td>
-            <td class="logo-container">
-                @if(isset($empresa->logo_dark))
-                    <img src="{{ public_path('storage/' . $empresa->logo_dark) }}" class="logo">
-                @elseif(isset($empresa->logo_light))
-                    <img src="{{ public_path('storage/' . $empresa->logo_light) }}" class="logo">
+            <!-- Logo -->
+            <td class="logo-container" style="vertical-align: top;">
+                @if($logoPath)
+                    <img src="{{ $logoPath }}" class="logo">
                 @else
-                    <div style="background: #334155; color: white; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center;">HEAVYMARKET</div>
+                    <div style="background: #e2e8f0; color: #475569; padding: 10px; font-weight: bold; text-align: center; border-radius: 4px; font-size: 11px;">HEAVYMARKET</div>
                 @endif
+            </td>
+            <!-- Información de la Empresa -->
+            <td class="company-info-container" style="vertical-align: top;">
+                <h1 class="company-name">{{ $empresa?->nombre ?? 'Heavymarket S.A.S.' }}</h1>
+                Nit. {{ $empresa?->nit ?? '901.881.206-8' }}<br>
+                Dirección: {{ $empresa?->direccion ?? 'Carrera 79 C No. 40 A – 72 sur – Bogotá, Colombia' }}<br>
+                TEL: {{ $empresa?->telefono ?? '320 840 0279' }}<br>
+                Correo: {{ $empresa?->email ?? 'comercial@heavymarket.net' }}<br>
+                Sitio web: {{ $empresa?->web ?? 'www.heavymarket.net' }}
+            </td>
+            <!-- Metadatos: fecha al pie del bloque (página vía script DomPDF arriba) -->
+            <td class="meta-container">
+                <table class="meta-table">
+                    <tr>
+                        <td class="meta-spacer">&nbsp;</td>
+                    </tr>
+                    <tr>
+                        <td class="meta-date">
+                            Fecha: {{ $cotizacion->fecha_emision?->format('d/m/Y') ?? now()->format('d/m/Y') }}
+                        </td>
+                    </tr>
+                </table>
             </td>
         </tr>
     </table>
 
-    <div class="doc-title">Cotización</div>
+    <!-- Bloque de Cliente y Título de Cotización -->
+    <table class="client-section">
+        <tr>
+            <!-- Datos del Cliente -->
+            <td>
+                <div class="client-title">Datos del cliente:</div>
+                <h2 class="client-name">{{ strtoupper($cotizacion->tercero?->razon_social ?? $cotizacion->tercero?->nombre ?? 'N/A') }}</h2>
+                <div class="client-info">
+                    <strong>Dirección:</strong> {{ strtoupper($cotizacion->tercero?->direccion ?? 'N/A') }}<br>
+                    <strong>Teléfono:</strong> {{ $cotizacion->tercero?->telefono ?? $cotizacion->tercero?->celular ?? 'N/A' }}<br>
+                    <strong>Email:</strong> {{ strtolower($cotizacion->tercero?->email ?? 'N/A') }}
+                </div>
+            </td>
+            <!-- Título del Documento -->
+            <td class="doc-title-container" style="width: 30%;">
+                <h1 class="doc-title">Cotización</h1>
+                <div class="doc-number">No. {{ $cotizacion->id }}</div>
+            </td>
+        </tr>
+    </table>
 
-    <!-- Bloque 1: COT e Info General -->
-    <div class="info-block">
-        <table class="info-table">
-            <tr>
-                <td class="label-cell id-cell">COT</td>
-                <td class="value-cell id-cell" style="color: #1a1a1a;">{{ $cotizacion->id }}</td>
-                <td class="label-cell">ELABORADA POR:</td>
-                <td class="value-cell" colspan="3">{{ strtoupper($cotizacion->user->name) }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">FECHA</td>
-                <td class="value-cell text-center">{{ $cotizacion->fecha_emision->format('Y-m-d') }}</td>
-                <td class="label-cell">RAZON SOCIAL:</td>
-                <td class="value-cell" style="width: 200px;">{{ strtoupper($cotizacion->tercero->razon_social ?? $cotizacion->tercero->nombre) }}</td>
-                <td class="label-cell">NIT:</td>
-                <td class="value-cell">{{ $cotizacion->tercero->documento }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">VALIDEZ</td>
-                <td class="value-cell text-center">{{ $cotizacion->fecha_vencimiento->format('Y-m-d') }}</td>
-                <td class="label-cell">CIUDAD:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->tercero->city->name ?? 'BOGOTÁ') }}</td>
-                <td class="label-cell">TELEFONO:</td>
-                <td class="value-cell">{{ $cotizacion->tercero->telefono ?? $cotizacion->tercero->celular }}</td>
-            </tr>
-        </table>
+    <!-- Informaciones Adicionales -->
+    <div class="info-title">Informaciones adicionales</div>
+    <table class="info-table">
+        <tr>
+            <td class="info-label">Vendedor</td>
+            <td class="info-value">: {{ $cotizacion->user?->name ?? 'N/A' }}</td>
+            <td class="info-label">Máquina</td>
+            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->tipo ?? 'N/A') }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Teléfono Vendedor</td>
+            <td class="info-value">: {{ $cotizacion->user?->tercero?->celular ?? $cotizacion->user?->tercero?->telefono ?? '320 840 0279' }}</td>
+            <td class="info-label">Fabricante</td>
+            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->fabricante?->nombre ?? 'N/A') }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Período de validez</td>
+            <td class="info-value">: {{ $cotizacion->fecha_emision?->format('d/m/Y') ?? now()->format('d/m/Y') }} al {{ $cotizacion->fecha_vencimiento?->format('d/m/Y') ?? now()->addDays(15)->format('d/m/Y') }}</td>
+            <td class="info-label">Modelo</td>
+            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->modelo ?? 'N/A') }}</td>
+        </tr>
+        <tr>
+            <td class="info-label">Condición de pago</td>
+            <td class="info-value">: Contado</td>
+            <td class="info-label">Serie</td>
+            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->serie ?? 'N/A') }}</td>
+        </tr>
+    </table>
+
+    <!-- Tabla de Productos -->
+    <div class="badge-container">
+        <div class="products-badge">Productos</div>
     </div>
-
-    <!-- Bloque 2: Datos Máquina -->
-    <div class="info-block">
-        <table class="info-table">
-            <tr>
-                <td class="label-cell">MAQUINA:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->pedido->maquina->tipo ?? 'N/A') }}</td>
-                <td class="label-cell">DIRECCION:</td>
-                <td class="value-cell" colspan="3">{{ strtoupper($cotizacion->tercero->direccion ?? 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">MARCA:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->pedido->maquina->fabricante->nombre ?? 'N/A') }}</td>
-                <td class="label-cell">E-MAIL:</td>
-                <td class="value-cell">{{ strtolower($cotizacion->tercero->email ?? 'N/A') }}</td>
-                <td class="label-cell">PAGO:</td>
-                <td class="value-cell">CONTADO</td>
-            </tr>
-            <tr>
-                <td class="label-cell">MODELO:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->pedido->maquina->modelo ?? 'N/A') }}</td>
-                <td class="label-cell">CONTACTO:</td>
-                <td class="value-cell" colspan="3">{{ strtoupper($cotizacion->pedido->contacto->nombre ?? 'N/A') }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">SERIE:</td>
-                <td class="value-cell">{{ strtoupper($cotizacion->pedido->maquina->serie ?? 'N/A') }}</td>
-                <td class="label-cell">TELEFONO:</td>
-                <td class="value-cell" colspan="3">{{ $cotizacion->pedido->contacto->telefono ?? 'N/A' }}</td>
-            </tr>
-        </table>
-    </div>
-
-    <!-- Tabla de Items -->
-    <table class="items-table">
+    <table class="products-table">
         <thead>
             <tr>
-                <th style="width: 30px;">ITEM</th>
+                <th style="width: 50px;">FOTO</th>
                 <th style="width: 40px;">CANT</th>
-                <th style="width: 90px;">REFERENCIA</th>
-                <th>DESCRIPCION</th>
-                <th style="width: 70px;">MARCA</th>
-                <th style="width: 70px;">ENTREGA</th>
-                <th style="width: 80px;">VENTA</th>
-                <th style="width: 90px;">TOTAL</th>
+                <th style="width: 80px;">REF</th>
+                <th>Descripción</th>
+                <th style="width: 80px;">Marca</th>
+                <th style="width: 85px;">Entrega</th>
+                <th style="width: 80px;">Venta</th>
+                <th style="width: 90px;">Total</th>
             </tr>
         </thead>
         <tbody>
             @foreach($cotizacion->referenciasProveedores as $index => $item)
-                <tr class="{{ $index % 2 == 0 ? '' : 'alt-row' }}">
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="text-center">{{ $item->pedidoReferenciaProveedor->cantidad }}</td>
+                @php
+                    $prp = $item->pedidoReferenciaProveedor;
+                    $imagePath = null;
+                    $articulo = $prp?->pedidoReferencia?->referencia?->articulo
+                        ?? $prp?->referencia?->articulo;
+
+                    if ($articulo) {
+                        $rawFoto = $articulo->getRawOriginal('fotoDescriptiva');
+                        if ($rawFoto && ! filter_var($rawFoto, FILTER_VALIDATE_URL)) {
+                            $testPath = public_path('storage/' . ltrim($rawFoto, '/'));
+                            if (file_exists($testPath)) {
+                                $imagePath = $testPath;
+                            }
+                        }
+                    }
+                @endphp
+                <tr>
+                    <td class="text-center" style="padding: 3px;">
+                        @if($imagePath)
+                            <img src="{{ $imagePath }}" style="max-height: 40px; max-width: 40px; object-fit: contain; display: block; margin: 0 auto;">
+                        @else
+                            <div style="font-size: 7px; color: #94a3b8;">Sin Foto</div>
+                        @endif
+                    </td>
+                    <td class="text-center">
+                        {{ $prp?->cantidad ?? 1 }}
+                    </td>
                     <td class="text-center">
                         @if($item->mostrar_referencia)
-                            {{ $item->pedidoReferenciaProveedor->referencia->referencia ?? 'N/A' }}
+                            {{ $prp?->referencia?->referencia ?? 'N/A' }}
                         @else
                             N/A
                         @endif
                     </td>
-                    <td>{{ strtoupper($item->pedidoReferenciaProveedor->pedidoReferencia->referencia->articulo->definicion ?? 'REPUESTO') }}</td>
-                    <td class="text-center">{{ strtoupper($item->pedidoReferenciaProveedor->marca->nombre ?? 'N/A') }}</td>
+                    <td class="text-left">
+                        {{ strtoupper($prp?->pedidoReferencia?->referencia?->articulo?->definicion ?? 'REPUESTO') }}
+                    </td>
                     <td class="text-center">
-                        @if(($item->pedidoReferenciaProveedor->dias_entrega ?? 0) == 0)
+                        {{ strtoupper($prp?->marca?->nombre ?? 'N/A') }}
+                    </td>
+                    <td class="text-center">
+                        @if(($prp?->dias_entrega ?? 0) == 0)
                             INMEDIATA
                         @else
-                            {{ $item->pedidoReferenciaProveedor->dias_entrega }} DÍAS
+                            {{ $prp?->dias_entrega }} días hábiles
                         @endif
                     </td>
-                    <td class="text-right">$ {{ number_format($item->pedidoReferenciaProveedor->valor_unidad, 0, ',', '.') }}</td>
-                    <td class="text-right">$ {{ number_format($item->pedidoReferenciaProveedor->valor_total, 0, ',', '.') }}</td>
+                    <td class="text-right">
+                        {{ number_format($prp?->valor_unitario ?? 0, 0, ',', '.') }}
+                    </td>
+                    <td class="text-right">
+                        {{ number_format($prp?->valor_total ?? 0, 0, ',', '.') }}
+                    </td>
                 </tr>
             @endforeach
-            <!-- Filas vacías para completar el diseño como la referencia -->
-            @for($i = count($cotizacion->referenciasProveedores); $i < 10; $i++)
-                <tr class="{{ $i % 2 == 0 ? '' : 'alt-row' }}">
-                    <td>&nbsp;</td>
-                    <td></td><td></td><td></td><td></td><td></td>
-                    <td class="text-right">$ -</td>
-                    <td class="text-right">$ -</td>
-                </tr>
-            @endfor
         </tbody>
     </table>
 
+    <!-- Totales -->
+    <div class="totals-wrapper">
+        <table class="totals-table">
+            <tr>
+                <td class="totals-label">Subtotal:</td>
+                <td class="totals-value">COP {{ number_format($cotizacion->total ?? 0, 0, ',', '.') }}</td>
+            </tr>
+            <tr>
+                <td class="totals-label">IVA 19%:</td>
+                <td class="totals-value">COP {{ number_format(($cotizacion->total ?? 0) * 0.19, 0, ',', '.') }}</td>
+            </tr>
+            <tr class="total-row">
+                <td class="totals-label">Total a Pagar:</td>
+                <td class="totals-value">COP {{ number_format(($cotizacion->total ?? 0) * 1.19, 0, ',', '.') }}</td>
+            </tr>
+            <tr class="double-border-row">
+                <td colspan="2"></td>
+            </tr>
+        </table>
+        <div style="clear: both;"></div>
+    </div>
+
     <!-- Sección Inferior -->
     <div class="bottom-section">
-        <div style="float: left;" class="bank-info">
-            CONSIGNAR A NOMBRE DE HEAVYMARKET<br>
-            CUENTA DE AHORROS NO. 073514564 DEL BANCO DE BOGOTA<br>
-            CUENTA DE AHORROS NO. 108-000011-20 DE BANCOLOMBIA
+        <!-- Observaciones -->
+        @php
+            $obsText = '';
+            if (!empty($cotizacion->observaciones)) {
+                $obsText = $cotizacion->observaciones;
+            } elseif (!empty($cotizacion->pedido?->comentario)) {
+                $comentarioRaw = $cotizacion->pedido->comentario;
+                if (is_array($comentarioRaw)) {
+                    $comentariosArr = [];
+                    foreach ($comentarioRaw as $c) {
+                        if (isset($c['comentario'])) {
+                            $comentariosArr[] = $c['comentario'];
+                        }
+                    }
+                    $obsText = implode(', ', $comentariosArr);
+                } else {
+                    $obsText = $comentarioRaw;
+                }
+            }
+        @endphp
+
+        @if(!empty($obsText))
+            <div class="notes-title">Observaciones</div>
+            <p class="notes-content">{{ $obsText }}</p>
+        @endif
+
+        <!-- Condiciones -->
+        <div class="notes-title">Condiciones</div>
+        <p class="notes-content" style="font-weight: bold; line-height: 1.4; margin-bottom: 20px;">
+            CONSIGNAR A NOMBRE DE HEAVYMARKET S.A.S.<br>
+            CUENTA DE AHORROS NO. 04500009644 DE BANCOLOMBIA
+        </p>
+
+        <!-- Texto Legal -->
+        <div class="legal-text">
+            Cotización valida hasta la fecha establecida en el campo "validez". Esta cotización está sujeta a venta previa. La garantía del producto ofrecido aquí es la misma garantía ofrecida por el fabricante. HEAVYMARKET S.A.S. no se hace responsable por problemas consecuentes por materiales de fabricación y/o instalación deficiente del producto, esto será responsabilidad del cliente o el fabricante según corresponda el caso. El tiempo de entrega estipulado en la cotización presente es una estimación según condiciones normales de transporte o importación, no cuenta con retrasos en vuelos, aduanas o casos fortuitos. En caso de cualquier anormalidad en la entrega del producto, HEAVYMARKET S.A.S. informará al cliente. Al comprar el cliente acepta que entiende a cabalidad lo establecido en las anteriores líneas, cualquier información adicional, favor consultarla en nuestra línea WHATSAPP 320 840 0279 o escríbenos un correo a comercial@heavymarket.net
         </div>
-
-        <div class="totals-container">
-            <table class="totals-table">
-                <tr>
-                    <td class="totals-label">SUBTOTAL</td>
-                    <td class="text-right">$ {{ number_format($cotizacion->total, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td class="totals-label">IVA 19%</td>
-                    <td class="text-right">$ {{ number_format($cotizacion->total * 0.19, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td class="totals-label" style="font-size: 14px;">TOTAL</td>
-                    <td class="text-right total-highlight">$ {{ number_format($cotizacion->total * 1.19, 0, ',', '.') }}</td>
-                </tr>
-            </table>
-        </div>
     </div>
 
-    <div class="legal-notes">
-        Cotización valida hasta la fecha establecida en el campo "validez". Esta cotización está sujeta a venta previa. La garantía del producto ofrecido aquí es la misma garantía ofrecida por el fabricante. HEAVYMARKET no se hace responsable por problemas consecuentes por materiales de fabricación y/o instalación deficiente del producto, esto será responsabilidad del cliente o el fabricante según corresponda el caso. El tiempo de entrega estipulado en la cotización presente es una estimación según condiciones normales de transporte o importación, no cuenta con retrasos en vuelos, aduanas o casos fortuitos.
-    </div>
-
-    <!-- Footer Marcas -->
-    <div class="brands-footer">
-        <span class="brand-text" style="color: #facc15;">CAT</span>
-        <span class="brand-text" style="color: #2563eb;">KOMATSU</span>
-        <span class="brand-text" style="color: #ea580c;">HITACHI</span>
-        <span class="brand-text" style="color: #475569;">VOLVO</span>
-        <span class="brand-text" style="color: #dc2626;">TEREX</span>
-        <span class="brand-text" style="color: #0284c7;">KOBELCO</span>
-    </div>
+    <!-- Script de DomPDF: paginación arriba a la derecha (margen superior) -->
+    <script type="text/php">
+        if ( isset($pdf) ) {
+            $pdf->page_script('
+                $font = $fontMetrics->get_font("Helvetica", "normal");
+                $size = 8.5;
+                $text = "Pagina: " . $PAGE_NUM . "/" . $PAGE_COUNT;
+                $textWidth = $fontMetrics->get_text_width($text, $font, $size);
+                $pageWidth = $pdf->get_width();
+                $rightMargin = 28;
+                $x = $pageWidth - $textWidth - $rightMargin;
+                $pdf->text($x, 22, $text, $font, $size);
+            ');
+        }
+    </script>
 
 </body>
 </html>
