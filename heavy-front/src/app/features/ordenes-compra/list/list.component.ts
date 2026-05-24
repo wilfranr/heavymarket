@@ -26,7 +26,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
     selector: 'app-ordenes-compra-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Órdenes de Compra</h2>

@@ -88,7 +88,7 @@ import { Referencia } from '../../../core/models/referencia.model';
         ArticuloEditModalComponent,
         PopoverModule
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './analysis.html',
     styleUrl: './analysis.scss'
 })

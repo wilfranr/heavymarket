@@ -27,7 +27,7 @@ import { selectAllTerceros, selectTercerosLoading } from '../../../store/tercero
     selector: 'app-terceros-list',
     standalone: true,
     imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './list.html',
     styleUrl: './list.scss'
 })

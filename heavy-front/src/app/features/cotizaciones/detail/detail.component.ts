@@ -49,7 +49,7 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
         CurrencyPipe,
         DatePipe
     ],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="px-4 py-6 md:px-6 lg:px-8 bg-slate-50 dark:bg-transparent min-h-screen">
             @if (loading()) {

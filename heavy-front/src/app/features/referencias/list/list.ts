@@ -58,7 +58,6 @@ import { RippleModule } from 'primeng/ripple';
         TagModule,
         CheckboxModule
     ],
-    providers: [ConfirmationService],
     templateUrl: './list.html'
 })
 export class ListComponent implements OnInit {

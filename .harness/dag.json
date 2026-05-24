@@ -1,173 +1,13 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-18T00:06:00Z",
-  "issue": "pedido-edit-tipo-dropdown",
-  "description": "Alinear dropdown Tipo en editar pedido con create: catálogo getByTipo, panel rápido, Por Defecto y carga de filas existentes",
+  "last_updated": "2026-05-24T12:48:00Z",
+  "issue": "provider-opportunities-dropdown-overflow-fix",
+  "description": "Corregir el recorte visual (overflow clipping) de los dropdowns en la vista de Oportunidades del Portal de Proveedores",
   "nodes": [
     {
-      "id": "docs-init-triage",
-      "description": "Triage: Análisis de coherencia entre GEMINI.md, AGENTS.md y protocolos de .agents/",
-      "status": "done",
-      "required_skill": "tech_doc_expert",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "GEMINI.md",
-          "status": "validated"
-        },
-        {
-          "path": "AGENTS.md",
-          "status": "validated"
-        },
-        {
-          "path": ".agents/AGENT.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "docs-biz-logic-refactor",
-      "description": "Negocio: Actualización de especificación funcional, arquitectura y diccionarios de datos",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["docs-init-triage"],
-      "files": [
-        {
-          "path": "docs/arquitectura.md",
-          "status": "validated"
-        },
-        {
-          "path": "docs/especificacion_funcional.md",
-          "status": "validated"
-        },
-        {
-          "path": "docs/diccionario_datos.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "docs-modules-deep-dive",
-      "description": "Módulos: Depuración de manuales de artículos, órdenes de trabajo y proveedores",
-      "status": "done",
-      "required_skill": "tech_doc_expert",
-      "depends_on": ["docs-biz-logic-refactor"],
-      "files": [
-        {
-          "path": "docs/modulo_articulos.md",
-          "status": "validated"
-        },
-        {
-          "path": "docs/modulo_ordenes_trabajo.md",
-          "status": "validated"
-        },
-        {
-          "path": "docs/portal_proveedores.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "docs-api-sync",
-      "description": "Backend: Sincronización de API_DOCUMENTATION.md con Laravel 13 y Scramble",
-      "status": "done",
-      "required_skill": "tech_doc_expert",
-      "depends_on": ["docs-init-triage"],
-      "files": [
-        {
-          "path": "heavy-api/API_DOCUMENTATION.md",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/MIGRACIONES.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "docs-front-sync",
-      "description": "Frontend: Actualización de estándares Angular 21, Signals y Zoneless en READMEs",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["docs-init-triage"],
-      "files": [
-        {
-          "path": "heavy-front/README_HEAVYMARKET.md",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/AGENTS.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "docs-final-cleanup",
-      "description": "Cierre: Limpieza de archivos obsoletos (PROGRESO.md, issue_trm.md) y consolidación de README.md",
-      "status": "done",
-      "required_skill": "tech_doc_expert",
-      "depends_on": ["docs-modules-deep-dive", "docs-api-sync", "docs-front-sync"],
-      "files": [
-        {
-          "path": "docs/modulo_pedidos.md",
-          "status": "validated"
-        },
-        {
-          "path": "README.md",
-          "status": "validated"
-        },
-        {
-          "path": "docs/archive/PROGRESO.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "perf-lazy-load-modals",
-      "description": "Performance: Implementar carga diferida (@if) para modales de Terceros, Máquinas y Referencias",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/create/create.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "perf-service-caching",
-      "description": "Performance: Implementar caché reactiva (shareReplay) en servicios de catálogos core",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["perf-lazy-load-modals"],
-      "files": [
-        {
-          "path": "heavy-front/src/app/core/services/sistema.service.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/services/lista.service.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/services/fabricante.service.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "pedido-edit-tipo-triage",
-      "description": "Triage: Validar paridad con create (0dcf3e7) y planificar port en editar pedido",
+      "id": "provider-dropdown-triage",
+      "description": "Triage: Analizar y planificar la solución para el overflow de dropdowns en el portal de proveedores",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
@@ -176,35 +16,29 @@
           "path": ".harness/dag.json",
           "status": "validated"
         }
-      ],
-      "review_notes": "Confirmado: edit usa tiposPorFila[] + getAll(sistema_id) siempre; aplica getTiposArticuloPorSistema, panel 100 ítems, preload catálogo. Preservar listaId al cargar pedido."
+      ]
     },
     {
-      "id": "pedido-edit-tipo-implement",
-      "description": "Implementar catálogo tipos optimizado en edit (filas, lote, nuevas referencias) reutilizando ListaService y patrón create",
+      "id": "provider-dropdown-implement",
+      "description": "Implementar: Agregar appendTo=\"body\" a los dropdowns p-select en costing-opportunities.component.ts",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["pedido-edit-tipo-triage"],
+      "depends_on": ["provider-dropdown-triage"],
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
           "status": "validated"
         }
-      ],
-      "review_notes": "Paridad con create verificada: rowTiposCatalog, preload getByTipo, panel 100, registerFlexibleFilter, lote tiposLoteCatalog. ng build OK. ng lint no configurado en proyecto; ng test requiere builder vitest no instalado."
+      ]
     },
     {
-      "id": "pedido-edit-tipo-tests",
-      "description": "Validar gates frontend: ng build y regresión manual flujo editar pedido (carga existente, nueva fila, lote, búsqueda tipo)",
+      "id": "provider-dropdown-verify",
+      "description": "Verificar: Validar compilación ng build y correcta aplicación del fix en los dropdowns",
       "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": ["pedido-edit-tipo-implement"],
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["provider-dropdown-implement"],
       "files": [],
-      "review_notes": "Gate build: exit 0. Gate lint: target ausente. Gate test: @angular-devkit/build-angular:vitest no disponible. Sin spec de edit pedidos; regresión manual pendiente en entorno con datos."
+      "review_notes": "Compilación exitosa (ng build OK, salida código 0). Se verificó que los dropdowns (p-select) de marca y entrega ahora tienen configurado appendTo='body' para resolver el overflow clipping del contenedor con overflow-hidden."
     }
   ]
 }

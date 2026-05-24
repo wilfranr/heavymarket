@@ -28,7 +28,7 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
     selector: 'app-cotizaciones-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Cotizaciones</h2>

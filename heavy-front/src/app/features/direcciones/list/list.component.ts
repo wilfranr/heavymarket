@@ -24,7 +24,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
     selector: 'app-direcciones-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, ConfirmDialogModule, TagModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Direcciones</h2>

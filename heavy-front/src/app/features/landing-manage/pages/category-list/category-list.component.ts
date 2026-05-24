@@ -21,7 +21,7 @@ import { finalize } from 'rxjs/operators';
     selector: 'app-category-list',
     standalone: true,
     imports: [CommonModule, FormsModule, TableModule, ButtonModule, ToggleSwitchModule, InputNumberModule, ToastModule, TooltipModule, DialogModule, InputTextModule, ConfirmDialogModule, CheckboxModule, DividerModule, ImageUploadComponent],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './category-list.component.html'
 })
 export class CategoryListComponent implements OnInit {

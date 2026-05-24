@@ -22,7 +22,7 @@ import * as EmpresasSelectors from '../../../store/empresas/selectors/empresas.s
     selector: 'app-empresas-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Empresas</h2>

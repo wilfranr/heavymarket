@@ -28,7 +28,7 @@ import { selectAllArticulos, selectArticulosLoading, selectArticulosPagination }
     selector: 'app-articulos-list',
     standalone: true,
     imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './list.html'
 })
 export class ListComponent implements OnInit {

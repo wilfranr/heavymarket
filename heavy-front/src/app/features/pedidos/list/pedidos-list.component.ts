@@ -31,7 +31,6 @@ import { AuthService } from '../../../core/auth/services/auth.service';
     selector: 'app-pedidos-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule, TabsModule, TooltipModule],
-    providers: [ConfirmationService],
     template: `
         <div class="card">
             <!-- Header: Título + Acción principal -->

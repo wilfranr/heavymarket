@@ -21,7 +21,7 @@ import * as TransportadorasSelectors from '../../../store/transportadoras/select
     selector: 'app-transportadoras-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Transportadoras</h2>

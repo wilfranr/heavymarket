@@ -86,7 +86,8 @@ import { Lista } from '../../../core/models/lista.model';
                                     [placeholder]="ref.marca?.nombre || 'Seleccionar'" 
                                     class="w-full h-[46px]"
                                     styleClass="w-full border-surface-300 rounded-lg"
-                                    [showClear]="true">
+                                    [showClear]="true"
+                                    appendTo="body">
                                 </p-select>
                             </div>
 
@@ -100,7 +101,8 @@ import { Lista } from '../../../core/models/lista.model';
                                     optionValue="value" 
                                     placeholder="Seleccionar"
                                     class="w-full h-[46px]"
-                                    styleClass="w-full border-surface-300 rounded-lg">
+                                    styleClass="w-full border-surface-300 rounded-lg"
+                                    appendTo="body">
                                 </p-select>
                             </div>
 

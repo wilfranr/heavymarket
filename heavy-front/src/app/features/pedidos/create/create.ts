@@ -99,7 +99,7 @@ type RowTiposCatalogEntry = {
         ConfirmDialogModule,
         AutoCompleteModule
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './create.html',
     styleUrl: './create.scss'
 })

@@ -19,7 +19,7 @@ import * as TRMsSelectors from '../../../store/trms/selectors/trms.selectors';
     selector: 'app-trms-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, ConfirmDialogModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de TRM (Tasa Representativa del Mercado)</h2>

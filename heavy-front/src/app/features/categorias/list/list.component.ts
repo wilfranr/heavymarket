@@ -21,7 +21,7 @@ import * as CategoriasSelectors from '../../../store/categorias/selectors/catego
     selector: 'app-categorias-list',
     standalone: true,
     imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
-    providers: [ConfirmationService, MessageService],
+    providers: [MessageService],
     template: `
         <div class="card">
             <h2>Gestión de Categorías</h2>

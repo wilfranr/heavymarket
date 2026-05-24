@@ -33,7 +33,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
     selector: 'app-maquinas-list',
     standalone: true,
     imports: [CommonModule, RouterModule, TableModule, ButtonModule, CardModule, InputTextModule, ToastModule, ConfirmDialogModule, SelectModule, FormsModule, TooltipModule, IconFieldModule, InputIconModule, TagModule],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './list.html'
 })
 export class ListComponent implements OnInit {

@@ -31,7 +31,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
     selector: 'app-listas-list',
     standalone: true,
     imports: [CommonModule, RouterModule, TableModule, ButtonModule, InputTextModule, TagModule, ToastModule, ConfirmDialogModule, FormsModule, TooltipModule, FallbackImageDirective, IconFieldModule, InputIconModule, TabsModule],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './list.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,

@@ -101,7 +101,7 @@ type RowTiposCatalogEntry = {
         ReferenciaEditModalComponent,
         MaquinaDetailComponent
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './edit.html',
     styleUrl: './edit.scss'
 })

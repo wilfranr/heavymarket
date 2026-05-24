@@ -45,7 +45,7 @@ import { selectUsers, selectLoading, selectTotal, selectCurrentPage } from '../.
         MultiSelectModule,
         ToolbarModule
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './list.html'
 })
 export class ListComponent implements OnInit {

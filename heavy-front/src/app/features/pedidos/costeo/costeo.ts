@@ -67,7 +67,7 @@ import { ListaCreateModalComponent } from '../../../shared/components/lista-crea
         TerceroCreateModalComponent,
         ListaCreateModalComponent
     ],
-    providers: [MessageService, ConfirmationService],
+    providers: [MessageService],
     templateUrl: './costeo.html',
     styleUrl: '../edit/edit.scss' // Reusing edit styles
 })
