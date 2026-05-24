@@ -90,6 +90,7 @@ return new class extends Migration
                 $table->string('descripcion', 255)->nullable();
                 $table->integer('cantidad')->default(1);
                 $table->integer('dias_entrega')->nullable();
+                $table->string('Entrega', 50)->nullable();
                 $table->decimal('costo_unidad', 15, 2)->nullable();
                 $table->decimal('utilidad', 15, 2)->nullable();
                 $table->decimal('valor_unitario', 15, 2)->nullable();

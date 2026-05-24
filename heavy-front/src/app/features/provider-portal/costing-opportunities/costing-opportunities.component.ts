@@ -8,6 +8,7 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
+import { TabsModule } from 'primeng/tabs';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
@@ -15,7 +16,7 @@ import { Lista } from '../../../core/models/lista.model';
 @Component({
     selector: 'app-costing-opportunities',
     standalone: true,
-    imports: [CommonModule, ButtonModule, ReactiveFormsModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, TagModule],
+    imports: [CommonModule, ButtonModule, ReactiveFormsModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, TagModule, TabsModule],
     providers: [MessageService],
     template: `
         <div class="flex flex-col gap-6 p-4">
@@ -29,6 +30,26 @@ import { Lista } from '../../../core/models/lista.model';
                     <p class="text-surface-500 mt-1 m-0">Oferte sus mejores precios para las piezas solicitadas.</p>
                 </div>
                 <p-button icon="pi pi-refresh" [loading]="loading()" (onClick)="loadOpportunities()" [outlined]="true" label="Sincronizar" severity="secondary"></p-button>
+            </div>
+
+            <!-- Filtros de Estado -->
+            <div class="bg-surface-0 dark:bg-surface-900 p-2 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
+                <p-tabs [value]="activeStatus()" (valueChange)="onStatusChange($event)">
+                    <p-tablist styleClass="border-none bg-transparent">
+                        <p-tab value="pending" class="font-bold flex items-center gap-2">
+                            <i class="pi pi-clock text-blue-500"></i>
+                            Pendientes
+                        </p-tab>
+                        <p-tab value="sent" class="font-bold flex items-center gap-2">
+                            <i class="pi pi-send text-orange-500"></i>
+                            Enviados
+                        </p-tab>
+                        <p-tab value="approved" class="font-bold flex items-center gap-2">
+                            <i class="pi pi-check-circle text-emerald-500"></i>
+                            Aprobados
+                        </p-tab>
+                    </p-tablist>
+                </p-tabs>
             </div>
 
             <!-- List of Opportunities -->
@@ -87,7 +108,8 @@ import { Lista } from '../../../core/models/lista.model';
                                     class="w-full h-[46px]"
                                     styleClass="w-full border-surface-300 rounded-lg"
                                     [showClear]="true"
-                                    appendTo="body">
+                                    appendTo="body"
+                                    [disabled]="ref.already_costed">
                                 </p-select>
                             </div>
 
@@ -102,7 +124,8 @@ import { Lista } from '../../../core/models/lista.model';
                                     placeholder="Seleccionar"
                                     class="w-full h-[46px]"
                                     styleClass="w-full border-surface-300 rounded-lg"
-                                    appendTo="body">
+                                    appendTo="body"
+                                    [disabled]="ref.already_costed">
                                 </p-select>
                             </div>
 
@@ -118,19 +141,21 @@ import { Lista } from '../../../core/models/lista.model';
                                     [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'" 
                                     inputStyleClass="w-full font-bold text-lg h-[46px] border-surface-300 rounded-lg"
                                     styleClass="w-full"
-                                    [min]="0">
+                                    [min]="0"
+                                    [disabled]="ref.already_costed">
                                 </p-inputNumber>
                             </div>
 
                             <!-- Observaciones -->
                             <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Observaciones</label>
-                                <input pInputText [(ngModel)]="ref.form_comentario" class="w-full h-[46px] border-surface-300 rounded-lg" placeholder="Stock, origen..." />
+                                <input pInputText [(ngModel)]="ref.form_comentario" class="w-full h-[46px] border-surface-300 rounded-lg" placeholder="Stock, origen..." [disabled]="ref.already_costed" />
                             </div>
 
                             <!-- Submit Button -->
                             <div class="col-span-12 md:col-span-2 flex justify-end">
                                 <p-button 
+                                    *ngIf="!ref.already_costed; else alreadyCostedState"
                                     label="Agregar" 
                                     icon="pi pi-plus" 
                                     [loading]="ref.submitting"
@@ -138,6 +163,16 @@ import { Lista } from '../../../core/models/lista.model';
                                     (onClick)="submitCost(ref)"
                                     styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold">
                                 </p-button>
+                                <ng-template #alreadyCostedState>
+                                    <p-button 
+                                        [label]="activeStatus() === 'sent' ? 'Enviado' : 'Aprobado'" 
+                                        [icon]="activeStatus() === 'sent' ? 'pi pi-send' : 'pi pi-check'" 
+                                        [disabled]="true"
+                                        [outlined]="true"
+                                        [severity]="activeStatus() === 'sent' ? 'secondary' : 'success'"
+                                        styleClass="w-full py-3 rounded-lg font-bold">
+                                    </p-button>
+                                </ng-template>
                             </div>
                         </div>
                     </div>
@@ -181,6 +216,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     opportunities = signal<any[]>([]);
     providerInfo = signal<{id?: number, nombre?: string, is_national: boolean}>({ is_national: true });
     loading = signal(false);
+    activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
     marcas: any[] = [];
     tiemposEntrega = [
         { label: 'Inmediato', value: 0 },
@@ -197,15 +233,16 @@ export class CostingOpportunitiesComponent implements OnInit {
 
     loadOpportunities(): void {
         this.loading.set(true);
-        this.providerPortalService.getOpportunities().subscribe({
+        this.providerPortalService.getOpportunities({ status: this.activeStatus() }).subscribe({
             next: (response: any) => {
                 const items = (response.data || []).map((item: any) => ({
                     ...item,
-                    form_costo: null,
-                    form_dias_entrega: 0,
-                    form_marca_id: item.marca_id,
-                    form_comentario: '',
-                    submitting: false
+                    form_costo: item.form_costo || null,
+                    form_dias_entrega: item.form_dias_entrega !== undefined ? item.form_dias_entrega : 0,
+                    form_marca_id: item.form_marca_id || item.marca_id,
+                    form_comentario: item.form_comentario || '',
+                    submitting: false,
+                    already_costed: item.already_costed || false
                 }));
                 this.opportunities.set(items);
                 
@@ -252,5 +289,12 @@ export class CostingOpportunitiesComponent implements OnInit {
                 ref.submitting = false;
             }
         });
+    }
+
+    onStatusChange(status: any): void {
+        if (status) {
+            this.activeStatus.set(status);
+            this.loadOpportunities();
+        }
     }
 }

@@ -1,13 +1,13 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-24T12:48:00Z",
-  "issue": "provider-opportunities-dropdown-overflow-fix",
-  "description": "Corregir el recorte visual (overflow clipping) de los dropdowns en la vista de Oportunidades del Portal de Proveedores",
+  "last_updated": "2026-05-24T13:22:00Z",
+  "issue": "provider-opportunities-states-and-filters",
+  "description": "Implementar estados de costeo (Pendiente, Enviado, Aprobado) y filtros en la vista de oportunidades de costeo del Portal de Proveedores",
   "nodes": [
     {
-      "id": "provider-dropdown-triage",
-      "description": "Triage: Analizar y planificar la solución para el overflow de dropdowns en el portal de proveedores",
+      "id": "opportunities-states-triage",
+      "description": "Triage: Diseñar el filtrado en backend por parámetro de consulta (status) y la interfaz de pestañas de filtro en el frontend",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
@@ -19,11 +19,24 @@
       ]
     },
     {
-      "id": "provider-dropdown-implement",
-      "description": "Implementar: Agregar appendTo=\"body\" a los dropdowns p-select en costing-opportunities.component.ts",
+      "id": "opportunities-states-implement-backend",
+      "description": "Implementar Backend: Agregar filtro 'status' en el endpoint de oportunidades de ProviderPortalController.php",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": ["opportunities-states-triage"],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "opportunities-states-implement-frontend",
+      "description": "Implementar Frontend: Diseñar pestañas (p-tabs) de filtro en CostingOpportunitiesComponent y conectar con el servicio reactivo",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["provider-dropdown-triage"],
+      "depends_on": ["opportunities-states-implement-backend"],
       "files": [
         {
           "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
@@ -32,13 +45,13 @@
       ]
     },
     {
-      "id": "provider-dropdown-verify",
-      "description": "Verificar: Validar compilación ng build y correcta aplicación del fix en los dropdowns",
+      "id": "opportunities-states-verify",
+      "description": "Verificar: Ejecutar compilación ng build y pruebas unitarias de Pest para validar el funcionamiento integral de los estados de costeo",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["provider-dropdown-implement"],
+      "required_skill": "automated_tester",
+      "depends_on": ["opportunities-states-implement-frontend"],
       "files": [],
-      "review_notes": "Compilación exitosa (ng build OK, salida código 0). Se verificó que los dropdowns (p-select) de marca y entrega ahora tienen configurado appendTo='body' para resolver el overflow clipping del contenedor con overflow-hidden."
+      "review_notes": "Compilación del frontend (ng build) y suite de pruebas del backend (Pest, 320 tests) completadas exitosamente sin errores. La integración del selector p-tabs en frontend permite filtrar fluidamente entre los estados de costeo (Pendiente, Enviado, Aprobado) comunicándose de forma reactiva con el backend."
     }
   ]
 }

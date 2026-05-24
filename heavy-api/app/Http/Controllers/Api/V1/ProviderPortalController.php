@@ -48,7 +48,60 @@ class ProviderPortalController extends Controller
             $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
             $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
 
-            // Consulta de emparejamiento (Matching Engine)
+            $status = $request->input('status', 'pending');
+
+            if ($status === 'sent' || $status === 'approved') {
+                $dbStatus = $status === 'sent' ? 0 : 1;
+                $query = PedidoReferenciaProveedor::query()
+                    ->where('proveedor_id', $tercero->id)
+                    ->where('estado', $dbStatus)
+                    ->with(['pedidoReferencia.referencia.marca', 'pedidoReferencia.categoriaComercial', 'marca', 'pedidoReferencia.pedido'])
+                    ->orderBy('created_at', 'desc');
+
+                $perPage = (int) $request->input('per_page', 15);
+                $costeos = $query->paginate($perPage);
+
+                $data = collect($costeos->items())->map(function ($costeo) {
+                    return [
+                        'id' => $costeo->pedido_referencia_id,
+                        'costeo_proveedor_id' => $costeo->id,
+                        'cantidad' => $costeo->cantidad,
+                        'definicion' => $costeo->pedidoReferencia?->definicion ?? 'N/A',
+                        'referencia' => [
+                            'referencia' => $costeo->pedidoReferencia?->referencia?->referencia ?? 'N/A',
+                        ],
+                        'categoria_comercial' => [
+                            'nombre' => $costeo->pedidoReferencia?->categoriaComercial?->nombre ?? 'General',
+                        ],
+                        'marca' => [
+                            'nombre' => $costeo->marca?->nombre ?? 'N/A',
+                        ],
+                        'form_costo' => $costeo->costo_unidad,
+                        'form_dias_entrega' => $costeo->dias_entrega,
+                        'form_comentario' => $costeo->comentario,
+                        'form_marca_id' => $costeo->marca_id,
+                        'submitting' => false,
+                        'already_costed' => true,
+                    ];
+                });
+
+                return response()->json([
+                    'data' => $data,
+                    'provider' => [
+                        'id' => $tercero->id,
+                        'nombre' => $tercero->nombre,
+                        'is_national' => (int) $tercero->country_id === 48
+                    ],
+                    'meta' => [
+                        'current_page' => $costeos->currentPage(),
+                        'last_page' => $costeos->lastPage(),
+                        'per_page' => $costeos->perPage(),
+                        'total' => $costeos->total(),
+                    ],
+                ]);
+            }
+
+            // Consulta de emparejamiento (Matching Engine) para status = pending
             $query = PedidoReferencia::query()
                 ->whereHas('pedido', function ($q) {
                     $q->where('estado', 'En_Costeo');
@@ -109,18 +162,27 @@ class ProviderPortalController extends Controller
             $validated = $request->validated();
 
             $pedidoReferencia = PedidoReferencia::findOrFail($validated['pedido_referencia_id']);
+            $marcaId = $validated['marca_id'] ?? $pedidoReferencia->marca_id;
+
+            // Asociar automáticamente la marca al proveedor si no la tiene asociada
+            if ($marcaId && ! $tercero->fabricantes()->where('lista_id', $marcaId)->exists()) {
+                $tercero->fabricantes()->attach($marcaId);
+            }
 
             // Crear el registro de costeo
             $costeo = PedidoReferenciaProveedor::create([
                 'pedido_referencia_id' => $pedidoReferencia->id,
                 'referencia_id' => $pedidoReferencia->referencia_id,
                 'proveedor_id' => $tercero->id,
-                'marca_id' => $validated['marca_id'] ?? $pedidoReferencia->marca_id,
+                'marca_id' => $marcaId,
                 'costo_unidad' => $validated['costo_unidad'],
                 'dias_entrega' => $validated['dias_entrega'],
                 'comentario' => $validated['comentario'] ?? null,
                 'cantidad' => $pedidoReferencia->cantidad,
-                'estado' => 'Pendiente', // Pendiente de ser elegido por el asesor
+                'estado' => 0, // 0 = Pendiente de selección, 1 = Seleccionado por el asesor
+                'utilidad' => 0.00, // Requerido en MySQL real, inicializado en cero
+                'ubicacion' => (int) $tercero->country_id === 48 ? 'Nacional' : 'Internacional',
+                'Entrega' => (int) $validated['dias_entrega'] === 0 ? 'Inmediata' : 'Programada',
             ]);
 
             DB::commit();

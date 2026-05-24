@@ -25,6 +25,7 @@ class PedidoReferenciaProveedor extends Model
         'ubicacion',
         'estado',
         'cantidad',
+        'Entrega',
     ];
 
     public function pedidoReferencia()

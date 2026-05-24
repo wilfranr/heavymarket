@@ -72,19 +72,19 @@ class ProviderPortalControllerTest extends TestCase
             'categoria_comercial_id' => $this->categoria->id,
         ]);
 
-        // 3. Non-matching (Wrong Brand)
+        // 3. Non-matching (Wrong Brand and Category)
         $otraMarca = Lista::create(['nombre' => 'Komatsu', 'tipo' => 'Fabricantes']);
+        $otraCat = Lista::create(['nombre' => 'Motores', 'tipo' => 'Categoría Comercial']);
         $refWrongBrand = PedidoReferencia::factory()->create([
             'pedido_id' => $pedido->id,
             'marca_id' => $otraMarca->id,
-            'categoria_comercial_id' => $this->categoria->id,
+            'categoria_comercial_id' => $otraCat->id,
         ]);
 
-        // 4. Non-matching (Wrong Category)
-        $otraCat = Lista::create(['nombre' => 'Motores', 'tipo' => 'Categoría Comercial']);
+        // 4. Non-matching (Wrong Category and Brand)
         $refWrongCat = PedidoReferencia::factory()->create([
             'pedido_id' => $pedido->id,
-            'marca_id' => $this->marca->id,
+            'marca_id' => $otraMarca->id,
             'categoria_comercial_id' => $otraCat->id,
         ]);
 
@@ -230,5 +230,104 @@ class ProviderPortalControllerTest extends TestCase
             'transportadora_id' => $transportadora->id,
             'estado' => 'Despachado',
         ]);
+    }
+
+    /** @test */
+    public function test_provider_submitting_new_brand_auto_associates_brand()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => null,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $nuevaMarca = Lista::create(['nombre' => 'John Deere', 'tipo' => 'Fabricantes']);
+
+        // Asegurarse de que el proveedor NO tiene asociada esta marca inicialmente
+        $this->assertFalse($this->tercero->fabricantes()->where('lista_id', $nuevaMarca->id)->exists());
+
+        $response = $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 200.00,
+                'dias_entrega' => 4,
+                'marca_id' => $nuevaMarca->id,
+            ]);
+
+        $response->assertStatus(201);
+
+        // Confirmar que la marca ahora está asociada al proveedor
+        $this->assertTrue($this->tercero->fresh()->fabricantes()->where('lista_id', $nuevaMarca->id)->exists());
+    }
+
+    /** @test */
+    public function test_provider_can_filter_opportunities_by_sent_status()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // Crear una oferta enviada (estado 0)
+        PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $ref->id,
+            'referencia_id' => $ref->referencia_id,
+            'proveedor_id' => $this->tercero->id,
+            'marca_id' => $this->marca->id,
+            'costo_unidad' => 120.00,
+            'dias_entrega' => 3,
+            'cantidad' => 1,
+            'estado' => 0,
+            'utilidad' => 0.00,
+            'ubicacion' => 'Nacional',
+            'Entrega' => 'Programada'
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities?status=sent');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $ref->id)
+            ->assertJsonPath('data.0.already_costed', true)
+            ->assertJsonPath('data.0.form_costo', '120.00');
+    }
+
+    /** @test */
+    public function test_provider_can_filter_opportunities_by_approved_status()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        // Crear una oferta aprobada (estado 1)
+        PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $ref->id,
+            'referencia_id' => $ref->referencia_id,
+            'proveedor_id' => $this->tercero->id,
+            'marca_id' => $this->marca->id,
+            'costo_unidad' => 180.00,
+            'dias_entrega' => 0,
+            'cantidad' => 1,
+            'estado' => 1,
+            'utilidad' => 0.00,
+            'ubicacion' => 'Nacional',
+            'Entrega' => 'Inmediata'
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities?status=approved');
+
+        $response->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $ref->id)
+            ->assertJsonPath('data.0.already_costed', true)
+            ->assertJsonPath('data.0.form_costo', '180.00');
     }
 }

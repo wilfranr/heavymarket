@@ -53,7 +53,7 @@ class StoreProviderCosteoRequest extends FormRequest
                     $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
                     $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
 
-                    if (! in_array($ref->marca_id, $misMarcas) || ! in_array($ref->categoria_comercial_id, $misCategorias)) {
+                    if (! in_array($ref->marca_id, $misMarcas) && ! in_array($ref->categoria_comercial_id, $misCategorias)) {
                         $fail('Esta referencia no coincide con su especialidad registrada.');
                     }
                 },
