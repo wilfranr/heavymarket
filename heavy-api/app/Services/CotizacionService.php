@@ -279,8 +279,12 @@ class CotizacionService
             'pedido.contacto',
             'pedido.maquina',
             'user',
+            'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo.articuloJuegos.referencia.articulo',
+            'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo.articuloJuegos.referencia.lista',
             'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo',
-            'referenciasProveedores.pedidoReferenciaProveedor.referencia',
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia.articulo.articuloJuegos.referencia.articulo',
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia.articulo.articuloJuegos.referencia.lista',
+            'referenciasProveedores.pedidoReferenciaProveedor.referencia.articulo',
             'referenciasProveedores.pedidoReferenciaProveedor.marca',
         ]);
 
