@@ -291,8 +291,9 @@ export class CosteoComponent implements OnInit {
                 const tieneProveedoresEnDB = ref.proveedores && ref.proveedores.length > 0;
 
                 if (!tieneProveedoresEnDB && this.proveedoresCompletos().length > 0 && ref.referencia?.marca_id && ref.lista_id) {
+                    const esMarca = ref.marca?.tipo === 'Marca' || ref.referencia?.marca?.tipo === 'Marca';
                     const coincidentes = this.proveedoresCompletos().filter((p) => {
-                        const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(ref.referencia?.marca_id));
+                        const tieneFabricante = esMarca || p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(ref.referencia?.marca_id));
                         const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(ref.lista_id));
                         return tieneFabricante && tieneCategoria;
                     });
@@ -321,9 +322,12 @@ export class CosteoComponent implements OnInit {
 
         if (!marcaId || !categoriaComercialId) return this.proveedores();
 
+        const ref = this.pedido()?.referencias?.[refIndex];
+        const esMarca = ref?.marca?.tipo === 'Marca' || ref?.referencia?.marca?.tipo === 'Marca';
+
         return this.proveedoresCompletos()
             .filter((p) => {
-                const tieneFabricante = p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(marcaId));
+                const tieneFabricante = esMarca || p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(marcaId));
                 const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(categoriaComercialId));
                 return tieneFabricante && tieneCategoria;
             })
