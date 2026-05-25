@@ -112,6 +112,12 @@ export const appRoutes: Routes = [
                 data: { roles: noVendedorRoles }
             },
             {
+                path: 'countries',
+                loadChildren: () => import('./app/features/countries/countries.routes').then((m) => m.countriesRoutes),
+                canActivate: [roleGuard],
+                data: { roles: adminRoles }
+            },
+            {
                 path: 'listas',
                 loadChildren: () => import('./app/features/listas/listas.routes').then((m) => m.default),
                 canActivate: [roleGuard],

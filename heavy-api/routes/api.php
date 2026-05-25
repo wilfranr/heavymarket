@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\CategoriaController;
 use App\Http\Controllers\Api\V1\ClientAuthController;
 use App\Http\Controllers\Api\V1\ContactoController;
 use App\Http\Controllers\Api\V1\CotizacionController;
+use App\Http\Controllers\Api\V1\CountryController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\DireccionController;
 use App\Http\Controllers\Api\V1\EmpresaController;
@@ -74,14 +75,14 @@ Route::prefix('v1')->group(function () {
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote'])->middleware('auth:sanctum');
     Route::post('/landing/contact', [LandingController::class, 'submitContactForm']);
 
-    /**
-     * Rutas de Ubicaciones (públicas para formularios)
-     */
-    Route::prefix('ubicaciones')->group(function () {
-        Route::get('paises', [UbicacionController::class, 'countries']);
-        Route::get('departamentos', [UbicacionController::class, 'states']);
-        Route::get('ciudades', [UbicacionController::class, 'cities']);
-    });
+        /**
+         * Gestión de Ubicaciones (públicas para formularios)
+         */
+        Route::prefix('ubicaciones')->group(function () {
+            Route::get('paises', [UbicacionController::class, 'countries']);
+            Route::get('departamentos', [UbicacionController::class, 'states']);
+            Route::get('ciudades', [UbicacionController::class, 'cities']);
+        });
 
     /**
      * Rutas de Autenticación para Clientes (Landing)
@@ -226,6 +227,7 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class)->parameters(['direcciones' => 'direccion']);
         Route::apiResource('transportadoras', TransportadoraController::class);
+        Route::apiResource('countries', CountryController::class)->only(['index', 'show', 'update']);
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
         Route::apiResource('trms', TRMController::class);
 

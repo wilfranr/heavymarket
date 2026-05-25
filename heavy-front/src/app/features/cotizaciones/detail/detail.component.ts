@@ -560,6 +560,8 @@ export class DetailComponent implements OnInit {
             case 'Rechazada':
             case 'Vencida':
                 return 'danger';
+            case 'Borrador':
+                return 'warn';
             default:
                 return 'secondary';
         }

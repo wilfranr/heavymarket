@@ -312,6 +312,7 @@ export class ListComponent implements OnInit {
             case 'En_Proceso':
                 return 'info';
             case 'Pendiente':
+            case 'Borrador':
                 return 'warn';
             case 'Rechazada':
             case 'Vencida':

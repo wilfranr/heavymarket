@@ -232,7 +232,8 @@ export class NotificationService {
             orden_confirmada: 'pi-check-circle',
             tercero_nuevo: 'pi-users',
             sistema: 'pi-info-circle',
-            info: 'pi-bell'
+            info: 'pi-bell',
+            missing_freight_rate: 'pi-exclamation-triangle'
         };
         return iconMap[type] || 'pi-bell';
     }
@@ -249,7 +250,8 @@ export class NotificationService {
             orden_confirmada: 'green',
             tercero_nuevo: 'cyan',
             sistema: 'gray',
-            info: 'blue'
+            info: 'blue',
+            missing_freight_rate: 'orange'
         };
         return colorMap[type] || 'blue';
     }

@@ -14,7 +14,11 @@ class Country extends Model
         'name', 'iso2', 'iso3', 'numeric_code', 'phonecode', 'capital',
         'currency', 'currency_name', 'currency_symbol', 'tld', 'native',
         'region', 'subregion', 'timezones', 'translations', 'latitude',
-        'longitude', 'emoji', 'emojiU', 'flag', 'is_active',
+        'longitude', 'emoji', 'emojiU', 'flag', 'is_active', 'flete',
+    ];
+
+    protected $casts = [
+        'flete' => 'decimal:2',
     ];
 
     protected $normalizableAttributes = [

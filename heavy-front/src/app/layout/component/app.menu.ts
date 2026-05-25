@@ -115,7 +115,10 @@ export class AppMenu implements OnInit {
         if (hasAdminRole) {
             this.model.push({
                 label: 'Administración',
-                items: [{ label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] }]
+                items: [
+                    { label: 'Gestión de Usuarios', icon: 'pi pi-fw pi-id-card', routerLink: ['/app/usuarios'] },
+                    { label: 'Gestión de Países', icon: 'pi pi-fw pi-globe', routerLink: ['/app/countries'] }
+                ]
             });
         }
 

@@ -193,7 +193,8 @@ class PedidoService
                 $trm = 1;
             } // Evitar división/multiplicación por cero o negativo
 
-            $flete = (float) ($empresa?->flete ?? 0);
+            // Obtener flete desde el país del tercero (proveedor)
+            $flete = $this->obtenerFleteDesdeTercero($pedidoReferencia);
 
             // Obtener peso, asegurando que si no existe o es nulo, sea 0
             $referencia = $pedidoReferencia->referencia;
@@ -214,6 +215,30 @@ class PedidoService
             'valor_unidad' => $valor_unidad,
             'valor_total' => $valor_unidad * $cantidad,
         ];
+    }
+
+    /**
+     * Obtiene la tarifa de flete desde el país del tercero asociado al pedido
+     */
+    private function obtenerFleteDesdeTercero(PedidoReferencia $pedidoReferencia): float
+    {
+        try {
+            $pedido = $pedidoReferencia->loadMissing('pedido.tercero.country')->pedido;
+            $tercero = $pedido?->tercero;
+
+            if ($tercero && $tercero->country) {
+                $flete = (float) ($tercero->country->flete ?? 0);
+                if ($flete > 0) {
+                    return $flete;
+                }
+            }
+        } catch (\Exception $e) {
+            // Si no se puede cargar la relación, usar fallback
+        }
+
+        // Fallback: usar flete de la empresa si no hay flete en el país del tercero
+        $empresa = Empresa::where('estado', 1)->first();
+        return (float) ($empresa?->flete ?? 0);
     }
 
     /**

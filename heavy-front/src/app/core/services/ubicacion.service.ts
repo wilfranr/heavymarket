@@ -12,6 +12,23 @@ export class UbicacionService extends ApiService {
         return this.get<{ data: Country[] }>('ubicaciones/paises');
     }
 
+    getCountriesAdmin(params?: { page?: number; per_page?: number; search?: string; region?: string }): Observable<{ data: Country[]; meta: any }> {
+        const httpParams: any = {};
+        if (params?.page) httpParams.page = params.page;
+        if (params?.per_page) httpParams.per_page = params.per_page;
+        if (params?.search) httpParams.search = params.search;
+        if (params?.region) httpParams.region = params.region;
+        return this.get<{ data: Country[]; meta: any }>('countries', httpParams);
+    }
+
+    getCountry(id: number): Observable<{ data: Country }> {
+        return this.get<{ data: Country }>(`countries/${id}`);
+    }
+
+    updateCountry(id: number, data: { flete?: number | null; is_active?: boolean }): Observable<{ message: string; data: Country }> {
+        return this.put<{ message: string; data: Country }>(`countries/${id}`, data);
+    }
+
     getStates(countryId?: number): Observable<{ data: State[] }> {
         const params: any = {};
         if (countryId) {

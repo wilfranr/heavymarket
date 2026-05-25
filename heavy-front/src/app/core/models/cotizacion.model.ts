@@ -24,7 +24,7 @@ export interface Cotizacion {
 /**
  * Estados posibles de una cotización
  */
-export type CotizacionEstado = 'Pendiente' | 'Enviada' | 'Aprobada' | 'Rechazada' | 'Vencida' | 'En_Proceso';
+export type CotizacionEstado = 'Pendiente' | 'Enviada' | 'Aprobada' | 'Rechazada' | 'Vencida' | 'En_Proceso' | 'Borrador';
 
 /**
  * Modelo de CotizacionReferenciaProveedor

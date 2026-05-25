@@ -179,6 +179,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     paises = signal<Country[]>([]);
     departamentos = signal<State[]>([]);
     ciudades = signal<City[]>([]);
+    fletePaisSeleccionado = signal<number | null>(null);
 
     // Listas auxiliares
     maquinas: any[] = [];
@@ -273,6 +274,10 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             this.ubicacionService.getStates(data.country_id).subscribe((r) => {
                 this.departamentos.set(r.data);
             });
+            const pais = this.paises().find((p) => p.id === data.country_id);
+            if (pais && pais.flete) {
+                this.fletePaisSeleccionado.set(pais.flete);
+            }
         }
         if (data.state_id) {
             this.ubicacionService.getCities(data.state_id).subscribe((r) => {
@@ -477,9 +482,14 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         const countryId = this.createTerceroForm.get('country_id')?.value;
         this.departamentos.set([]);
         this.ciudades.set([]);
+        this.fletePaisSeleccionado.set(null);
         this.createTerceroForm.patchValue({ state_id: null, city_id: null });
         if (countryId) {
             this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) });
+            const pais = this.paises().find((p) => p.id === countryId);
+            if (pais && pais.flete) {
+                this.fletePaisSeleccionado.set(pais.flete);
+            }
         }
     }
 
@@ -503,7 +513,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
 
     private loadPaises(): void {
-        this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) });
+        this.ubicacionService.getCountriesAdmin({ per_page: 300 }).subscribe({ next: (r) => this.paises.set(r.data) });
     }
     private loadMaquinas(): void {
         this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => (this.maquinas = r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });

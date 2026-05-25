@@ -1,46 +1,188 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-24T15:10:00Z",
-  "issue": "pdf-cotizacion-header-align",
-  "description": "Alinear la información de la empresa a la izquierda inmediatamente después del logo en la cabecera del PDF de cotización, posicionar la página y la fecha alineadas a la derecha",
+  "last_updated": "2026-05-25T02:15:00Z",
+  "issue": "#133 - feat: tabla de fletes por país para cálculo de costeo",
+  "description": "El flete depende del país del proveedor (tercero), no del destino. Agregar campo flete a la tabla countries. Crear CRUD de países. Al crear/editar tercero, mostrar flete del país o permitir ingresarlo. En costeo, si el país del tercero no es Colombia, mostrar flete en modo disabled. Si no existe flete, el costeo queda en estado Borrador y se notifica al admin.",
   "nodes": [
     {
-      "id": "pdf-cotizacion-header-triage",
-      "description": "Triage: Planificar la maquetación del encabezado del PDF, calculando anchos y la posición de la paginación y fecha",
+      "id": "133-db-add-flete-to-countries",
+      "description": "Crear migración para agregar columna flete (decimal 10,2 nullable) a la tabla countries. Actualizar seed de Colombia con flete 2.5.",
       "status": "done",
-      "required_skill": "software_architect",
+      "required_skill": "sql_query_analyst",
       "depends_on": [],
       "files": [
         {
-          "path": ".harness/dag.json",
+          "path": "heavy-api/database/migrations/2026_05_25_001412_add_flete_to_countries_table.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-backend-country-crud",
+      "description": "Crear CRUD completo de países: CountryController (index, show, update), CountryResource, UpdateCountryRequest (validar flete >= 0). Rutas PUT /api/v1/countries/{id}. Solo Administrador puede actualizar.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["133-db-add-flete-to-countries"],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CountryController.php",
           "status": "validated"
         },
         {
-          "path": "implementation_plan.md",
+          "path": "heavy-api/app/Http/Resources/CountryResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateCountryRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "pdf-cotizacion-header-implementation",
-      "description": "Implementación: Modificar heavy-api/resources/views/pdf/cotizacion.blade.php para alinear los textos a la izquierda del logo y ajustar el script de DomPDF para el número de página",
-      "status": "awaiting_review",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["pdf-cotizacion-header-triage"],
+      "id": "133-backend-cotizacion-borrador-state",
+      "description": "Agregar estado 'Borrador' a cotizaciones: migración para modificar ENUM o columna estado. Modificar CotizacionService::finalizarCosteo() para validar flete del país del tercero. Si no existe flete, crear cotizacion en estado 'Borrador' y enviar MissingFreightRateNotification al admin.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["133-db-add-flete-to-countries"],
       "files": [
         {
-          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
-          "status": "implemented"
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
         }
       ]
     },
     {
-      "id": "pdf-cotizacion-header-verification",
-      "description": "Verificación: Ejecutar comando de Tinker para generar el PDF de cotización y validar visualmente el resultado con la imagen objetivo",
-      "status": "awaiting_review",
+      "id": "133-backend-pedido-service-flete",
+      "description": "Modificar PedidoService::calcularValores() para leer flete desde $tercero->country->flete en lugar de $empresa->flete. Si el país no tiene flete, retornar missing_freight_rate: true pero permitir el cálculo con flete 0 (el costeo quedará en borrador).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["133-db-add-flete-to-countries"],
+      "files": [
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-backend-country-crud-tests",
+      "description": "Crear tests feature para CRUD de países: listar, ver detalle, actualizar flete. Tests unitarios para validación de flete >= 0.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": ["133-backend-country-crud"],
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CountryControllerTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-frontend-country-model-service",
+      "description": "Actualizar modelo Country en frontend para incluir campo flete. Actualizar UbicacionService o crear CountryService con método updateCountry(id, data).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["133-backend-country-crud"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/ubicacion.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/ubicacion.service.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-frontend-country-crud-ui",
+      "description": "Crear feature /app/countries con list.component.ts (tabla PrimeNG con paises, columna flete editable inline o botón editar), edit.component.ts (formulario con select de país + input flete). Ruta protegida para adminRoles.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["133-frontend-country-model-service"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/countries/countries.routes.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/countries/list/list.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/countries/edit/edit.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-frontend-tercero-form-flete",
+      "description": "Modificar tercero-form.component.ts: al cambiar country_id, si el país tiene flete configurado, mostrarlo en un input disabled. Si no tiene flete, mostrar input para ingresarlo (solo si el usuario es admin). El valor se envía como flete_override en el formData del tercero.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["133-frontend-country-model-service"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-frontend-costeo-borrador-ui",
+      "description": "Actualizar vista de costeo: si el tercero seleccionado tiene país distinto a Colombia y el país no tiene flete configurado, mostrar advertencia visual y bloquear botón 'Enviar a cotización'. Si el costeo está en estado 'Borrador', mostrar badge y mensaje indicando que falta configurar flete.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["133-backend-cotizacion-borrador-state", "133-frontend-country-model-service"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/list/list.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-frontend-notification-type",
+      "description": "Agregar 'missing_freight_rate' al tipo NotificationType en notification.model.ts. Actualizar getIconForType y getColorForType en notification.service.ts para manejar el nuevo tipo con icono pi-exclamation-triangle y color orange.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["133-backend-cotizacion-borrador-state"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/notification.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/notification.service.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "133-verification",
+      "description": "Verificación completa: ejecutar php artisan test, ng lint, ng build. Validar flujo end-to-end: crear país con flete, crear tercero con ese país, ver flete en disabled en formulario, crear costeo internacional con flete, intentar costeo sin flete (debe quedar en borrador), notificación al admin, admin configura flete desde CRUD de países.",
+      "status": "done",
       "required_skill": "testing_expert",
-      "depends_on": ["pdf-cotizacion-header-implementation"],
+      "depends_on": [
+        "133-backend-country-crud-tests",
+        "133-frontend-country-crud-ui",
+        "133-frontend-tercero-form-flete",
+        "133-frontend-costeo-borrador-ui",
+        "133-frontend-notification-type"
+      ],
       "files": []
     }
   ]

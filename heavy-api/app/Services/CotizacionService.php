@@ -15,6 +15,8 @@ use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
 use App\Models\TRM;
+use App\Models\User;
+use App\Notifications\SystemNotification;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
@@ -333,12 +335,18 @@ class CotizacionService
     public function finalizarCosteo(Pedido $pedido, array $items, int $userId): Cotizacion
     {
         return DB::transaction(function () use ($pedido, $items, $userId) {
+            // Verificar si el tercero tiene flete configurado en su país
+            $fleteConfigurado = $this->verificarFleteConfigurado($pedido);
+
+            // Determinar el estado inicial
+            $estadoInicial = $fleteConfigurado ? 'Enviada' : 'Borrador';
+
             // 1. Crear la cotización
             $cotizacion = Cotizacion::create([
                 'pedido_id' => $pedido->id,
                 'tercero_id' => $pedido->tercero_id,
                 'user_id' => $userId,
-                'estado' => 'Enviada', // O el estado inicial deseado
+                'estado' => $estadoInicial,
                 'fecha_emision' => now(),
                 'fecha_vencimiento' => now()->addDays(15),
             ]);
@@ -361,10 +369,50 @@ class CotizacionService
 
             $cotizacion->update(['total' => $total]);
 
-            // 3. Actualizar estado del pedido
-            $pedido->update(['estado' => 'Cotizado']);
+            // 3. Actualizar estado del pedido solo si el flete está configurado
+            if ($fleteConfigurado) {
+                $pedido->update(['estado' => 'Cotizado']);
+            } else {
+                // Notificar al administrador sobre flete faltante
+                $this->notificarFleteFaltante($pedido, $cotizacion);
+            }
 
             return $cotizacion;
         });
+    }
+
+    /**
+     * Verifica si el tercero del pedido tiene flete configurado en su país
+     */
+    private function verificarFleteConfigurado(Pedido $pedido): bool
+    {
+        $tercero = $pedido->loadMissing('tercero.country')->tercero;
+
+        if (!$tercero || !$tercero->country) {
+            return true; // Si no hay país, asumimos que es nacional y no necesita flete
+        }
+
+        return (float) ($tercero->country->flete ?? 0) > 0;
+    }
+
+    /**
+     * Notifica al administrador sobre un flete faltante
+     */
+    private function notificarFleteFaltante(Pedido $pedido, Cotizacion $cotizacion): void
+    {
+        $tercero = $pedido->tercero;
+        $pais = $tercero->country;
+
+        $admins = User::role('Administrador')->get();
+        foreach ($admins as $admin) {
+            $admin->notify(new SystemNotification(
+                'missing_freight_rate',
+                'Flete no configurado - Costeo #'.$cotizacion->id.' en Borrador',
+                'El tercero "'.$tercero->nombre.'" (País: '.($pais?->name ?? 'N/A').') no tiene tarifa de flete configurada. El costeo quedó en estado Borrador.',
+                'pi-exclamation-triangle',
+                'orange',
+                ['cotizacion_id' => $cotizacion->id, 'tercero_id' => $tercero->id, 'country_id' => $pais?->id]
+            ));
+        }
     }
 }

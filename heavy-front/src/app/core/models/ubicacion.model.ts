@@ -3,6 +3,7 @@ export interface Country {
     name: string;
     iso2: string;
     phonecode: string;
+    flete?: number | null;
 }
 
 export interface State {
