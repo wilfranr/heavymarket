@@ -21,12 +21,13 @@ beforeEach(function () {
     $this->admin = createUserWithRole('Administrador');
 });
 
-it('analista puede solicitar flete y notifica a administradores', function () {
+it('super admin puede solicitar flete en pedido en costeo y notifica a administradores', function () {
+    $superAdmin = createUserWithRole('super_admin');
     $usa = Country::factory()->create(['name' => 'Estados Unidos', 'iso2' => 'US', 'flete' => null]);
     $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor', 'country_id' => $usa->id]);
-    $pedido = Pedido::factory()->create(['estado' => 'En_Costeo', 'user_id' => $this->analista->id]);
+    $pedido = Pedido::factory()->create(['estado' => 'En_Costeo', 'user_id' => $superAdmin->id]);
 
-    $response = $this->actingAs($this->analista, 'sanctum')
+    $response = $this->actingAs($superAdmin, 'sanctum')
         ->postJson("/v1/countries/{$usa->id}/solicitar-flete", [
             'flete' => 3.25,
             'proveedor_id' => $proveedor->id,
@@ -49,9 +50,9 @@ it('rechaza solicitud si el proveedor no pertenece al país', function () {
     $usa = Country::factory()->create(['iso2' => 'US']);
     $mexico = Country::factory()->create(['iso2' => 'MX']);
     $proveedor = Tercero::factory()->create(['country_id' => $mexico->id]);
-    $pedido = Pedido::factory()->create(['user_id' => $this->analista->id]);
+    $pedido = Pedido::factory()->create(['estado' => 'En_Costeo', 'user_id' => $this->admin->id]);
 
-    $this->actingAs($this->analista, 'sanctum')
+    $this->actingAs($this->admin, 'sanctum')
         ->postJson("/v1/countries/{$usa->id}/solicitar-flete", [
             'flete' => 2.5,
             'proveedor_id' => $proveedor->id,
