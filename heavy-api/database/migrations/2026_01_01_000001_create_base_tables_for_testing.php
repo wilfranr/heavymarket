@@ -93,7 +93,7 @@ return new class extends Migration
                 $table->string('Entrega', 50)->nullable();
                 $table->decimal('costo_unidad', 15, 2)->nullable();
                 $table->decimal('utilidad', 15, 2)->nullable();
-                $table->decimal('valor_unitario', 15, 2)->nullable();
+                $table->decimal('valor_unidad', 15, 2)->nullable();
                 $table->decimal('valor_total', 15, 2)->nullable();
                 $table->string('ubicacion', 255)->nullable();
                 $table->date('fecha_entrega')->nullable();

@@ -11,9 +11,11 @@ class CountryFactory extends Factory
 
     public function definition(): array
     {
+        $suffix = $this->faker->unique()->numberBetween(1000, 999999);
+
         return [
-            'name' => $this->faker->unique()->lexify('Pais ????'),
-            'iso2' => strtoupper($this->faker->unique()->lexify('??')),
+            'name' => 'Pais Test '.$suffix,
+            'iso2' => strtoupper(substr((string) $suffix, -2)),
             'is_active' => true,
         ];
     }
