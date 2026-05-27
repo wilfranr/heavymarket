@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log
 yarn-error.log
 package-lock.json
+!heavy-front/package-lock.json
 
 # Laravel
 heavy-api/vendor/
