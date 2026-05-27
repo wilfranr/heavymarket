@@ -93,7 +93,6 @@ it('guardar costeo con proveedor internacional con flete no marca missing_freigh
             ],
         ]);
 
-    \PHPUnit\Framework\Assert::assertSame(200, $response->status(), $response->getContent());
-
-    $response->assertJsonPath('missing_freight_rate', false);
+    $response->assertOk()
+        ->assertJsonPath('missing_freight_rate', false);
 });
