@@ -204,7 +204,10 @@ class PedidoService
             $missingFreightRate = $this->proveedorInternacionalSinFlete($proveedorId);
 
             $referencia = $pedidoReferencia->referencia;
-            $peso = (float) ($referencia->peso ?? 0);
+            if ($referencia) {
+                $referencia->loadMissing('articulo');
+            }
+            $peso = (float) ($referencia?->articulo?->peso ?? 0);
 
             $peso_libras = $peso / 453.592;
             $costo_base_usd = ($peso_libras * $flete) + $costo_unidad;

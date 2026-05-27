@@ -4,6 +4,7 @@
  * Tests de guardar-costeo y metadatos de flete por proveedor
  */
 
+use App\Models\Articulo;
 use App\Models\Country;
 use App\Models\Empresa;
 use App\Models\Pedido;
@@ -27,7 +28,8 @@ it('guardar costeo con proveedor internacional sin flete devuelve missing_freigh
         'estado' => 'En_Costeo',
         'user_id' => $this->admin->id,
     ]);
-    $referencia = Referencia::factory()->create(['peso' => 500]);
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
     $pedidoRef = PedidoReferencia::factory()->create([
         'pedido_id' => $pedido->id,
         'referencia_id' => $referencia->id,
@@ -64,7 +66,8 @@ it('guardar costeo con proveedor internacional con flete no marca missing_freigh
         'estado' => 'En_Costeo',
         'user_id' => $this->admin->id,
     ]);
-    $referencia = Referencia::factory()->create(['peso' => 500]);
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
     $pedidoRef = PedidoReferencia::factory()->create([
         'pedido_id' => $pedido->id,
         'referencia_id' => $referencia->id,

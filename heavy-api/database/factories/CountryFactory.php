@@ -12,8 +12,8 @@ class CountryFactory extends Factory
     public function definition(): array
     {
         return [
-            'name' => $this->faker->country(),
-            'iso2' => $this->faker->countryCode(),
+            'name' => $this->faker->unique()->lexify('Pais ????'),
+            'iso2' => strtoupper($this->faker->unique()->lexify('??')),
             'is_active' => true,
         ];
     }

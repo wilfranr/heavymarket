@@ -4,6 +4,7 @@
  * Tests de finalizar costeo y validación de flete por país del proveedor
  */
 
+use App\Models\Articulo;
 use App\Models\Country;
 use App\Models\Cotizacion;
 use App\Models\Empresa;
@@ -37,7 +38,8 @@ it('finalizar costeo sin flete deja cotización en Borrador y notifica', functio
         'user_id' => $this->admin->id,
     ]);
 
-    $referencia = Referencia::factory()->create(['peso' => 500]);
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
     $pedidoRef = PedidoReferencia::factory()->create([
         'pedido_id' => $pedido->id,
         'referencia_id' => $referencia->id,
@@ -89,7 +91,8 @@ it('finalizar costeo con flete configurado deja cotización Enviada', function (
         'user_id' => $this->admin->id,
     ]);
 
-    $referencia = Referencia::factory()->create(['peso' => 500]);
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
     $pedidoRef = PedidoReferencia::factory()->create([
         'pedido_id' => $pedido->id,
         'referencia_id' => $referencia->id,

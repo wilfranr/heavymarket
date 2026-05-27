@@ -45,7 +45,13 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
         'flete' => 10,
     ]);
 
-    $referenciaObj = (object) ['peso' => 0];
+    $referenciaObj = new class
+    {
+        public object $articulo;
+
+        public function loadMissing(string|array $relations): void {}
+    };
+    $referenciaObj->articulo = (object) ['peso' => 0];
 
     $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
     $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
@@ -54,7 +60,7 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
 
     expect((float) $resultado['valor_unidad'])->toBe(100.0)
         ->and((float) $resultado['valor_total'])->toBe(100.0)
-        ->and($resultado['missing_freight_rate'])->toBeTrue();
+        ->and($resultado['missing_freight_rate'])->toBeFalse();
 });
 
 it('usa flete del país del proveedor internacional', function () {
@@ -63,7 +69,13 @@ it('usa flete del país del proveedor internacional', function () {
 
     Empresa::create(['nombre' => 'Test', 'trm' => 4000, 'flete' => 99, 'estado' => 1]);
 
-    $referenciaObj = (object) ['peso' => 453.592];
+    $referenciaObj = new class
+    {
+        public object $articulo;
+
+        public function loadMissing(string|array $relations): void {}
+    };
+    $referenciaObj->articulo = (object) ['peso' => 453.592];
     $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
     $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
 

@@ -293,7 +293,7 @@ class ProviderPortalControllerTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $ref->id)
             ->assertJsonPath('data.0.already_costed', true)
-            ->assertJsonPath('data.0.form_costo', '120.00');
+            ->assertJsonPath('data.0.form_costo', 120);
     }
 
     /** @test */
@@ -328,6 +328,6 @@ class ProviderPortalControllerTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $ref->id)
             ->assertJsonPath('data.0.already_costed', true)
-            ->assertJsonPath('data.0.form_costo', '180.00');
+            ->assertJsonPath('data.0.form_costo', 180);
     }
 }

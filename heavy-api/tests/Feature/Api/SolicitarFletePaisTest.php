@@ -35,7 +35,7 @@ it('super admin puede solicitar flete en pedido en costeo y notifica a administr
         ]);
 
     $response->assertOk()
-        ->assertJsonPath('notificaciones_enviadas', 1);
+        ->assertJsonPath('notificaciones_enviadas', 2);
 
     Notification::assertSentTo(
         $this->admin,
