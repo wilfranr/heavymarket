@@ -1,0 +1,44 @@
+# Build y tests unitarios del frontend Angular (heavy-front).
+# Tests con Vitest (vitest.config.ts); ng test requiere migrar el builder en angular.json.
+
+name: Heavy Front — Build y tests
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'heavy-front/**'
+      - '.github/workflows/heavy-front-ci.yml'
+  pull_request:
+    paths:
+      - 'heavy-front/**'
+      - '.github/workflows/heavy-front-ci.yml'
+
+defaults:
+  run:
+    working-directory: heavy-front
+
+jobs:
+  front-ci:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: heavy-front/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Compilar aplicación
+        run: npm run build
+
+      - name: Ejecutar tests unitarios (Vitest)
+        run: npm run test:ci

@@ -8,6 +8,7 @@
         "watch": "ng build --watch --configuration development",
         "format": "prettier --write \"**/*.{js,mjs,ts,mts,d.ts,html}\" --cache",
         "test": "ng test",
+        "test:ci": "vitest run",
         "e2e": "playwright test",
         "e2e:ui": "playwright test --ui",
         "e2e:headed": "playwright test --headed"
