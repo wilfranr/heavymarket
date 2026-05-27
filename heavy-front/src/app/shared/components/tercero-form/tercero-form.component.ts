@@ -182,10 +182,10 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     fletePaisSeleccionado = signal<number | null>(null);
 
     // Listas auxiliares
-    maquinas: any[] = [];
-    fabricantes: any[] = [];
-    categoriasComerciales: any[] = [];
-    sistemas: any[] = [];
+    maquinas = signal<any[]>([]);
+    fabricantes = signal<any[]>([]);
+    categoriasComerciales = signal<any[]>([]);
+    sistemas = signal<any[]>([]);
 
     tiposDocumento = [
         { label: 'NIT', value: 'NIT' },
@@ -516,14 +516,14 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         this.ubicacionService.getCountriesAdmin({ per_page: 300 }).subscribe({ next: (r) => this.paises.set(r.data) });
     }
     private loadMaquinas(): void {
-        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => (this.maquinas = r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
+        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
     }
     private loadFabricantes(): void {
-        this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => (this.fabricantes = r.data.map((f) => ({ label: f.nombre, value: f.id }))) });
+        this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map((f) => ({ label: f.nombre, value: f.id }))) });
     }
     private loadCategoriasComerciales(): void {
         this.listaService.getByTipo('Categoría Comercial').subscribe({
-            next: (listas) => (this.categoriasComerciales = listas.map((l) => ({ label: l.nombre, value: l.id })))
+            next: (listas) => this.categoriasComerciales.set(listas.map((l) => ({ label: l.nombre, value: l.id })))
         });
     }
 
