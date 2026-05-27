@@ -9,7 +9,7 @@ uses(RefreshDatabase::class);
 it('CountryFleteSeeder asigna 2.5 a Colombia por iso2', function () {
     $colombia = Country::factory()->create(['name' => 'Colombia', 'iso2' => 'CO', 'flete' => null]);
 
-    $this->seed(CountryFleteSeeder::class);
+    (new CountryFleteSeeder)->run();
 
     expect((float) $colombia->fresh()->flete)->toBe(2.5);
 });
