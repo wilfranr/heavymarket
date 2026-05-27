@@ -2,7 +2,7 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-05-27T18:40:00Z",
-  "issue": "#133 - feat: fletes por país para cálculo de costeo",
+  "issue": "#133 - feat: fletes por país para cálculo de costeo (CERRADO en GitHub)",
   "description": "Fase 1 (cerrada): infraestructura countries.flete, CRUD países, notificaciones. Fase 2 (pendiente): corregir origen del flete (país del proveedor por línea, no cliente del pedido), pantalla pedidos/costeo, validación al finalizar cotización, tests y verificación E2E. Decisión arquitectónica: no usar tabla freight_rates (migración huérfana); fuente única countries.flete.",
   "architecture": {
     "flete_source": "proveedor.country.flete",
