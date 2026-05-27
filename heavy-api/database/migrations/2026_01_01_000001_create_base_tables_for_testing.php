@@ -68,7 +68,6 @@ return new class extends Migration
                 $table->unsignedBigInteger('sistema_id')->nullable();
                 $table->unsignedBigInteger('lista_id')->nullable();
                 $table->unsignedBigInteger('marca_id')->nullable();
-                $table->unsignedBigInteger('categoria_comercial_id')->nullable();
                 $table->string('definicion', 255)->nullable();
                 $table->integer('cantidad')->default(1);
                 $table->text('comentario')->nullable();
