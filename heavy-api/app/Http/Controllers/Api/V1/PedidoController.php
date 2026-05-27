@@ -806,7 +806,10 @@ class PedidoController extends Controller
         ]);
 
         try {
-            DB::transaction(function () use ($pedido, $validated) {
+            $missingFreightRate = false;
+            $countryIdsSinFlete = [];
+
+            DB::transaction(function () use ($pedido, $validated, &$missingFreightRate, &$countryIdsSinFlete) {
                 foreach ($validated['referencias'] as $refData) {
                     $pedidoReferencia = $pedido->referencias()->findOrFail($refData['id']);
 
@@ -830,17 +833,23 @@ class PedidoController extends Controller
                     }
 
                     foreach ($proveedores as $provData) {
-                        $ubicacion = 'Nacional';
-                        $tercero = Tercero::with('country')->find($provData['proveedor_id']);
-                        if ($tercero && ($tercero->country_id != 48 && ($tercero->country->iso2 ?? '') != 'CO')) {
-                            $ubicacion = 'Internacional';
-                        }
+                        $proveedorId = (int) $provData['proveedor_id'];
+                        $ubicacion = $this->pedidoService->ubicacionDesdeProveedor($proveedorId);
 
                         $calcData = array_merge($provData, [
                             'ubicacion' => $ubicacion,
+                            'proveedor_id' => $proveedorId,
                             'costo_unidad' => $provData['costo_unidad'],
                         ]);
                         $valores = $this->pedidoService->calcularValores($calcData, $pedidoReferencia);
+
+                        if ($valores['missing_freight_rate'] ?? false) {
+                            $missingFreightRate = true;
+                            $tercero = Tercero::with('country')->find($proveedorId);
+                            if ($tercero?->country_id) {
+                                $countryIdsSinFlete[] = $tercero->country_id;
+                            }
+                        }
 
                         $updateData = [
                             'proveedor_id' => $provData['proveedor_id'],
@@ -877,6 +886,8 @@ class PedidoController extends Controller
             return response()->json([
                 'message' => 'Costeo guardado exitosamente',
                 'data' => new PedidoResource($pedido),
+                'missing_freight_rate' => $missingFreightRate,
+                'country_ids_sin_flete' => array_values(array_unique($countryIdsSinFlete)),
             ]);
 
         } catch (\Exception $e) {

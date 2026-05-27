@@ -20,7 +20,13 @@
                     <i class="pi pi-save"></i>
                     <span>Guardar</span>
                 </button>
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white" (click)="finalizarCosteo()" [disabled]="submitting()">
+                <button
+                    type="button"
+                    class="btn-pill btn-primary flex items-center gap-2 bg-blue-600 hover:bg-blue-700 border-none text-white"
+                    (click)="finalizarCosteo()"
+                    [disabled]="submitting() || missingFreightEnSeleccion()"
+                    [pTooltip]="missingFreightEnSeleccion() ? 'Configure la tarifa de flete del país del proveedor en Gestión de Países' : ''"
+                >
                     <i class="pi pi-check-circle"></i>
                     <span>Generar Cotización</span>
                 </button>
@@ -30,6 +36,28 @@
                 </button>
             </div>
         </div>
+
+        @if (missingFreightEnSeleccion()) {
+        <div
+            class="mx-8 mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm"
+            style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)"
+        >
+            <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
+            <div class="flex flex-1 flex-col gap-3 text-slate-700 dark:text-slate-200 sm:flex-row sm:items-center sm:justify-between">
+                <p class="m-0">
+                    <span class="font-semibold">Falta tarifa de flete.</span>
+                    La fila marcada para cotizar incluye un proveedor internacional cuyo país no tiene tarifa USD/lb configurada.
+                </p>
+                <p-button
+                    label="Notificar a Administración"
+                    icon="pi pi-send"
+                    severity="warn"
+                    [outlined]="true"
+                    (onClick)="abrirDialogoSolicitudFlete()"
+                />
+            </div>
+        </div>
+        }
 
         @if (pedido(); as pedido) {
         <!-- Top Info Cards Grid -->
@@ -170,7 +198,7 @@
                     <div class="flex items-center gap-2 mb-3" [formGroup]="$any(prov)">
                         <!-- Check -->
                         <div class="w-[40px] text-center flex justify-center">
-                            <p-checkbox formControlName="seleccionado" [binary]="true"></p-checkbox>
+                            <p-checkbox formControlName="seleccionado" [binary]="true" (onChange)="onSeleccionProveedorChange()"></p-checkbox>
                         </div>
                         <!-- Cantidad -->
                         <div class="w-[70px]">
@@ -330,7 +358,14 @@
                 </div>
                 <div class="mt-6 flex gap-3">
                     <button type="button" class="flex-1 btn-pill bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-white border-none py-3" (click)="volver()">Cerrar</button>
-                    <button type="button" class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold" (click)="finalizarCosteo()">Generar Cotización</button>
+                    <button
+                        type="button"
+                        class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold disabled:opacity-50"
+                        (click)="finalizarCosteo()"
+                        [disabled]="submitting() || missingFreightEnSeleccion()"
+                    >
+                        Generar Cotización
+                    </button>
                 </div>
             </div>
         </div>
@@ -342,6 +377,41 @@
 <p-confirmDialog></p-confirmDialog>
 
 <!-- Diálogo de Devolución -->
+<p-dialog [(visible)]="showSolicitudFleteDialog" [modal]="true" [style]="{ width: '480px', 'max-width': '95vw' }" header="Solicitar tarifa de flete" appendTo="body">
+    @if (solicitudFleteContext(); as ctx) {
+    <div class="flex flex-col gap-4 pt-2">
+        <p class="text-sm text-slate-600 dark:text-slate-300 m-0">
+            Indique la tarifa sugerida (USD/lb) para que administración la configure en el país del proveedor.
+        </p>
+        <div class="rounded-lg border px-3 py-2 text-sm" style="border-color: var(--p-surface-border)">
+            <div><span class="font-semibold">País:</span> {{ ctx.countryName }}</div>
+            <div><span class="font-semibold">Proveedor:</span> {{ ctx.proveedorName }}</div>
+            <div><span class="font-semibold">Pedido:</span> #{{ pedidoId() }}</div>
+        </div>
+        <div class="field">
+            <label for="fleteSolicitado" class="block text-sm font-medium mb-2">Tarifa sugerida (USD/lb) <span class="text-red-500">*</span></label>
+            <p-inputNumber
+                inputId="fleteSolicitado"
+                [(ngModel)]="fleteSolicitado"
+                [min]="0"
+                [max]="100"
+                [minFractionDigits]="1"
+                [maxFractionDigits]="2"
+                mode="decimal"
+                styleClass="w-full"
+                placeholder="Ej: 2.5"
+            />
+        </div>
+    </div>
+    }
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="cerrarDialogoSolicitudFlete()" [disabled]="enviandoSolicitudFlete()" />
+            <p-button label="Enviar solicitud" icon="pi pi-send" (onClick)="enviarSolicitudFleteAdmin()" [loading]="enviandoSolicitudFlete()" [disabled]="fleteSolicitado() === null || (fleteSolicitado() ?? 0) < 0" />
+        </div>
+    </ng-template>
+</p-dialog>
+
 <p-dialog [(visible)]="displayDevolucionDialog" [modal]="true" [style]="{width: '500px'}" header="Devolver al analista">
     <div class="flex flex-col gap-4 py-2">
         <p class="text-sm text-gray-500 dark:text-gray-400">Explique el motivo por el cual devuelve este pedido al analista. Este comentario será visible para él.</p>

@@ -221,9 +221,15 @@ class CotizacionController extends Controller
                 $request->user()->id
             );
 
+            $esBorrador = $cotizacion->estado === 'Borrador';
+
             return response()->json([
                 'data' => new CotizacionResource($cotizacion),
-                'message' => 'Cotización generada exitosamente',
+                'message' => $esBorrador
+                    ? 'Cotización guardada en Borrador: falta configurar tarifa de flete para el país del proveedor.'
+                    : 'Cotización generada exitosamente',
+                'missing_freight_rate' => $esBorrador,
+                'cotizacion_estado' => $cotizacion->estado,
             ]);
 
         } catch (\Exception $e) {

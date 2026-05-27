@@ -4,8 +4,10 @@
  * Tests unitarios para PedidoService
  */
 
-use App\Models\PedidoReferencia;
+use App\Models\Country;
 use App\Models\Empresa;
+use App\Models\PedidoReferencia;
+use App\Models\Tercero;
 use App\Services\PedidoService;
 
 beforeEach(function () {
@@ -34,6 +36,7 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
         'utilidad' => 10,
         'cantidad' => 1,
         'ubicacion' => 'Internacional',
+        'proveedor_id' => null,
     ];
 
     Empresa::create([
@@ -49,8 +52,29 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
 
     $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);
 
-    // TRM 0 -> Fallback 1. Peso 0 -> Flete 0.
-    // Costo 100 + 10% = 110. Redondeado -2 = 100.
     expect((float) $resultado['valor_unidad'])->toBe(100.0)
-        ->and((float) $resultado['valor_total'])->toBe(100.0);
+        ->and((float) $resultado['valor_total'])->toBe(100.0)
+        ->and($resultado['missing_freight_rate'])->toBeTrue();
+});
+
+it('usa flete del país del proveedor internacional', function () {
+    $usa = Country::factory()->create(['iso2' => 'US', 'flete' => 4.0]);
+    $proveedor = Tercero::factory()->create(['country_id' => $usa->id]);
+
+    Empresa::create(['nombre' => 'Test', 'trm' => 4000, 'flete' => 99, 'estado' => 1]);
+
+    $referenciaObj = (object) ['peso' => 453.592];
+    $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
+    $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
+
+    $resultado = $this->pedidoService->calcularValores([
+        'costo_unidad' => 0,
+        'utilidad' => 0,
+        'cantidad' => 1,
+        'ubicacion' => 'Internacional',
+        'proveedor_id' => $proveedor->id,
+    ], $pedidoReferencia);
+
+    expect((float) $resultado['flete_usado'])->toBe(4.0)
+        ->and($resultado['missing_freight_rate'])->toBeFalse();
 });

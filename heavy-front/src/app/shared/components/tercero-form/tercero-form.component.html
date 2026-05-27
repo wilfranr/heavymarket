@@ -255,14 +255,22 @@
 
                     @if (fletePaisSeleccionado() !== null) {
                         <div>
-                            <label class="block mb-2 font-semibold">Tarifa de Flete del País</label>
+                            <label class="block mb-2 font-semibold">Tarifa de Flete del País (USD/lb)</label>
                             <input
                                 pInputText
-                                [value]="fletePaisSeleccionado() + '%'"
+                                [value]="fletePaisSeleccionado()"
                                 [disabled]="true"
                                 class="w-full"
                             />
-                            <small class="text-gray-500">Esta tarifa se aplica automáticamente a proveedores internacionales de este país.</small>
+                            <small class="text-gray-500">Se aplica en costeo a proveedores internacionales de este país.</small>
+                        </div>
+                    } @else if (createTerceroForm.get('country_id')?.value && !esPaisColombiaSeleccionado()) {
+                        <div
+                            class="rounded-lg border px-3 py-2 text-sm"
+                            style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 10%, transparent)"
+                        >
+                            <span class="font-medium text-slate-700 dark:text-slate-200">Este país no tiene tarifa de flete.</span>
+                            <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 ml-1 underline">Configurar en Gestión de Países</a>
                         </div>
                     }
                     <div>

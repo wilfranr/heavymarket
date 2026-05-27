@@ -233,7 +233,8 @@ export class NotificationService {
             tercero_nuevo: 'pi-users',
             sistema: 'pi-info-circle',
             info: 'pi-bell',
-            missing_freight_rate: 'pi-exclamation-triangle'
+            missing_freight_rate: 'pi-exclamation-triangle',
+            freight_rate_request: 'pi-exclamation-triangle'
         };
         return iconMap[type] || 'pi-bell';
     }
@@ -251,7 +252,8 @@ export class NotificationService {
             tercero_nuevo: 'cyan',
             sistema: 'gray',
             info: 'blue',
-            missing_freight_rate: 'orange'
+            missing_freight_rate: 'orange',
+            freight_rate_request: 'orange'
         };
         return colorMap[type] || 'blue';
     }

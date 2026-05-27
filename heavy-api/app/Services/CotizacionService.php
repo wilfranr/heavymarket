@@ -335,10 +335,7 @@ class CotizacionService
     public function finalizarCosteo(Pedido $pedido, array $items, int $userId): Cotizacion
     {
         return DB::transaction(function () use ($pedido, $items, $userId) {
-            // Verificar si el tercero tiene flete configurado en su país
-            $fleteConfigurado = $this->verificarFleteConfigurado($pedido);
-
-            // Determinar el estado inicial
+            $fleteConfigurado = $this->verificarFleteEnItemsSeleccionados($items);
             $estadoInicial = $fleteConfigurado ? 'Enviada' : 'Borrador';
 
             // 1. Crear la cotización
@@ -373,8 +370,7 @@ class CotizacionService
             if ($fleteConfigurado) {
                 $pedido->update(['estado' => 'Cotizado']);
             } else {
-                // Notificar al administrador sobre flete faltante
-                $this->notificarFleteFaltante($pedido, $cotizacion);
+                $this->notificarFleteFaltante($pedido, $cotizacion, $items);
             }
 
             return $cotizacion;
@@ -382,36 +378,59 @@ class CotizacionService
     }
 
     /**
-     * Verifica si el tercero del pedido tiene flete configurado en su país
+     * @param  array<int, array{id: int, mostrar_referencia: bool}>  $items
      */
-    private function verificarFleteConfigurado(Pedido $pedido): bool
+    private function verificarFleteEnItemsSeleccionados(array $items): bool
     {
-        $tercero = $pedido->loadMissing('tercero.country')->tercero;
+        $pedidoService = app(PedidoService::class);
 
-        if (!$tercero || !$tercero->country) {
-            return true; // Si no hay país, asumimos que es nacional y no necesita flete
+        foreach ($items as $itemData) {
+            $prov = PedidoReferenciaProveedor::with('tercero.country')->find($itemData['id']);
+            if (! $prov || ($prov->ubicacion ?? '') !== 'Internacional') {
+                continue;
+            }
+
+            if ($pedidoService->proveedorInternacionalSinFlete($prov->proveedor_id)) {
+                return false;
+            }
         }
 
-        return (float) ($tercero->country->flete ?? 0) > 0;
+        return true;
     }
 
     /**
-     * Notifica al administrador sobre un flete faltante
+     * @param  array<int, array{id: int, mostrar_referencia: bool}>  $items
      */
-    private function notificarFleteFaltante(Pedido $pedido, Cotizacion $cotizacion): void
+    private function notificarFleteFaltante(Pedido $pedido, Cotizacion $cotizacion, array $items): void
     {
-        $tercero = $pedido->tercero;
-        $pais = $tercero->country;
+        $pedidoService = app(PedidoService::class);
+        $detalles = [];
+
+        foreach ($items as $itemData) {
+            $prov = PedidoReferenciaProveedor::with('tercero.country')->find($itemData['id']);
+            if (! $prov || ($prov->ubicacion ?? '') !== 'Internacional') {
+                continue;
+            }
+            if (! $pedidoService->proveedorInternacionalSinFlete($prov->proveedor_id)) {
+                continue;
+            }
+            $proveedor = $prov->tercero;
+            $detalles[] = ($proveedor?->nombre ?? 'Proveedor').' ('.($proveedor?->country?->name ?? 'sin país').')';
+        }
+
+        $resumen = $detalles !== []
+            ? implode(', ', array_unique($detalles))
+            : 'Proveedor internacional sin tarifa configurada';
 
         $admins = User::role('Administrador')->get();
         foreach ($admins as $admin) {
             $admin->notify(new SystemNotification(
                 'missing_freight_rate',
-                'Flete no configurado - Costeo #'.$cotizacion->id.' en Borrador',
-                'El tercero "'.$tercero->nombre.'" (País: '.($pais?->name ?? 'N/A').') no tiene tarifa de flete configurada. El costeo quedó en estado Borrador.',
+                'Flete no configurado - Cotización #'.$cotizacion->id.' en Borrador',
+                'Pedido #'.$pedido->id.': '.$resumen.'. Configure la tarifa en Gestión de Países.',
                 'pi-exclamation-triangle',
                 'orange',
-                ['cotizacion_id' => $cotizacion->id, 'tercero_id' => $tercero->id, 'country_id' => $pais?->id]
+                ['cotizacion_id' => $cotizacion->id, 'pedido_id' => $pedido->id]
             ));
         }
     }

@@ -46,7 +46,7 @@ import { ToastModule } from 'primeng/toast';
                         <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                         <th pSortableColumn="name">País <p-sortIcon field="name"></p-sortIcon></th>
                         <th pSortableColumn="iso2">Código <p-sortIcon field="iso2"></p-sortIcon></th>
-                        <th pSortableColumn="flete">Flete (%) <p-sortIcon field="flete"></p-sortIcon></th>
+                        <th pSortableColumn="flete">Flete (USD/lb) <p-sortIcon field="flete"></p-sortIcon></th>
                         <th pSortableColumn="updated_at">Modificado <p-sortIcon field="updated_at"></p-sortIcon></th>
                         <th>Acciones</th>
                     </tr>
@@ -58,7 +58,7 @@ import { ToastModule } from 'primeng/toast';
                         <td>{{ country.iso2 }}</td>
                         <td>
                             <span [class.text-green-600]="country.flete" [class.font-semibold]="country.flete">
-                                {{ country.flete ? country.flete + '%' : 'Sin configurar' }}
+                                {{ country.flete ? country.flete + ' USD/lb' : 'Sin configurar' }}
                             </span>
                         </td>
                         <td>{{ country.updated_at | date:'short' }}</td>

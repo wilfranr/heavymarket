@@ -39,4 +39,14 @@ class Country extends Model
     {
         return $this->hasMany(City::class);
     }
+
+    public function isColombia(): bool
+    {
+        return $this->id === 48 || strtoupper((string) ($this->iso2 ?? '')) === 'CO';
+    }
+
+    public static function esColombia(?int $countryId, ?string $iso2 = null): bool
+    {
+        return $countryId === 48 || strtoupper((string) ($iso2 ?? '')) === 'CO';
+    }
 }

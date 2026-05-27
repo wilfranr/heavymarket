@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs/operators';
@@ -34,6 +35,7 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
     standalone: true,
     imports: [
         CommonModule,
+        RouterModule,
         ReactiveFormsModule,
         ButtonModule,
         InputTextModule,
@@ -476,6 +478,15 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
     openCreateSistemaDialog(): void {
         this.messageService.add({ severity: 'info', summary: 'Info', detail: 'Funcionalidad de crear sistema próximamente' });
+    }
+
+    esPaisColombiaSeleccionado(): boolean {
+        const countryId = this.createTerceroForm.get('country_id')?.value as number | null;
+        if (!countryId) {
+            return true;
+        }
+        const pais = this.paises().find((p) => p.id === countryId);
+        return countryId === 48 || pais?.iso2 === 'CO' || pais?.name?.toLowerCase().includes('colombia') === true;
     }
 
     onPaisChange(): void {

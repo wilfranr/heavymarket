@@ -46,7 +46,7 @@ import { ToastModule } from 'primeng/toast';
                         </div>
 
                         <div>
-                            <label class="block font-semibold mb-2">Tarifa de Flete (%)</label>
+                            <label class="block font-semibold mb-2">Tarifa de Flete (USD/lb)</label>
                             <input
                                 pInputText
                                 type="number"
@@ -58,7 +58,7 @@ import { ToastModule } from 'primeng/toast';
                                 step="0.1"
                             />
                             <small class="text-gray-500">
-                                Porcentaje de flete aplicado a proveedores internacionales de este país.
+                                Tarifa en dólares por libra para proveedores internacionales de este país.
                                 Dejar vacío si no aplica.
                             </small>
                         </div>

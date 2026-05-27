@@ -32,7 +32,8 @@ import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/
 import { TerceroService } from '../../../core/services/tercero.service';
 import { Tercero } from '../../../core/models/tercero.model';
 import { TRMService } from '../../../core/services/trm.service';
-import { EmpresaService } from '../../../core/services/empresa.service';
+import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { InputNumberModule } from 'primeng/inputnumber';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
@@ -64,6 +65,7 @@ import { ListaCreateModalComponent } from '../../../shared/components/lista-crea
         ConfirmDialogModule,
         PopoverModule,
         ToggleSwitchModule,
+        InputNumberModule,
         TerceroCreateModalComponent,
         ListaCreateModalComponent
     ],
@@ -81,9 +83,9 @@ export class CosteoComponent implements OnInit {
     private readonly pedidoService = inject(PedidoService);
     private readonly terceroService = inject(TerceroService);
     private readonly trmService = inject(TRMService);
-    private readonly empresaService = inject(EmpresaService);
     private readonly listaService = inject(ListaService);
     private readonly cotizacionService = inject(CotizacionService);
+    private readonly ubicacionService = inject(UbicacionService);
 
     readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
@@ -93,7 +95,18 @@ export class CosteoComponent implements OnInit {
 
     estadoActual = signal<PedidoEstado>('En_Costeo');
     trmCargada = signal<number>(4000);
-    fleteCargado = signal<number>(0);
+
+    missingFreightEnSeleccion = signal(false);
+
+    showSolicitudFleteDialog = signal(false);
+    solicitudFleteContext = signal<{
+        countryId: number;
+        countryName: string;
+        proveedorId: number;
+        proveedorName: string;
+    } | null>(null);
+    fleteSolicitado = signal<number | null>(null);
+    enviandoSolicitudFlete = signal(false);
 
     // Devolución
     displayDevolucionDialog = signal<boolean>(false);
@@ -148,7 +161,6 @@ export class CosteoComponent implements OnInit {
         this.initForm();
         this.loadPedido();
         this.loadTRM();
-        this.loadEmpresaConfig();
         this.loadMarcas();
     }
 
@@ -191,16 +203,6 @@ export class CosteoComponent implements OnInit {
             },
             error: () => {
                 this.messageService.add({ severity: 'warn', summary: 'TRM no disponible', detail: 'No se pudo cargar la TRM del servidor. Se usará el valor por defecto de $4,000.' });
-            }
-        });
-    }
-
-    private loadEmpresaConfig(): void {
-        this.empresaService.getAll().subscribe({
-            next: (resp) => {
-                if (resp.data.length > 0) {
-                    this.fleteCargado.set(resp.data[0].flete || 0);
-                }
             }
         });
     }
@@ -311,6 +313,8 @@ export class CosteoComponent implements OnInit {
                 this.referenciasFormArray.push(refFormGroup);
             });
         }
+
+        this.actualizarBannerFleteFaltante();
     }
 
     getProveedoresFiltrados(refIndex: number): any[] {
@@ -490,7 +494,7 @@ export class CosteoComponent implements OnInit {
             esNacional = proveedor?.country?.iso2 === 'CO' || proveedor?.country?.name?.toLowerCase().includes('colombia') || proveedor?.country_id === 48 || proveedor?.country?.id === 48;
         }
 
-        return this.fb.group({
+        const group = this.fb.group({
             id: [data?.id || null],
             // El backend devuelve 'estado' para indicar si está seleccionado
             seleccionado: [data?.seleccionado || data?.estado === 1 || data?.estado === true || false],
@@ -505,10 +509,16 @@ export class CosteoComponent implements OnInit {
             venta: [data?.valor_unidad || 0],
             cantidad: [data?.cantidad || 1]
         });
+
+        group.get('seleccionado')?.valueChanges.subscribe(() => this.actualizarBannerFleteFaltante());
+        group.get('proveedor_id')?.valueChanges.subscribe(() => this.actualizarBannerFleteFaltante());
+
+        return group;
     }
 
     agregarProveedorFila(formArray: FormArray, data?: any): void {
         formArray.push(this.crearProveedorFormGroup(data));
+        this.actualizarBannerFleteFaltante();
     }
 
     agregarProveedorVacio(formArray: FormArray): void {
@@ -639,6 +649,11 @@ export class CosteoComponent implements OnInit {
         }
 
         this.calcularFila(refIndex, provIndex);
+        this.actualizarBannerFleteFaltante();
+    }
+
+    onSeleccionProveedorChange(): void {
+        this.actualizarBannerFleteFaltante();
     }
 
     calcularFila(refIndex: number, provIndex: number): void {
@@ -677,7 +692,8 @@ export class CosteoComponent implements OnInit {
                 // 4. valor_unidad = round(costo_base_cop + (utilidad * costo_base_cop / 100) / 100) * 100 (centenas)
 
                 const pesoLibras = pesoGramos / 453.59;
-                const costoBaseUSD = pesoLibras * this.fleteCargado() + costoUSD;
+                const flete = this.obtenerFleteProveedor(proveedorId);
+                const costoBaseUSD = pesoLibras * flete + costoUSD;
                 const costoBaseCOP = costoBaseUSD * this.trmCargada();
                 const vUnidad = costoBaseCOP + (utilidad * costoBaseCOP) / 100;
 
@@ -754,8 +770,174 @@ export class CosteoComponent implements OnInit {
         });
     }
 
+    private esProveedorNacional(proveedor: Tercero | undefined): boolean {
+        if (!proveedor) {
+            return true;
+        }
+        return (
+            proveedor.country?.iso2 === 'CO' ||
+            proveedor.country?.name?.toLowerCase().includes('colombia') ||
+            proveedor.country_id === 48 ||
+            proveedor.country?.id === 48
+        );
+    }
+
+    obtenerFleteProveedor(proveedorId: number | null): number {
+        if (!proveedorId) {
+            return 0;
+        }
+        const proveedor = this.proveedoresCompletos().find((p) => p.id === proveedorId);
+        if (this.esProveedorNacional(proveedor)) {
+            return 0;
+        }
+        const country = proveedor?.country as { flete?: number | null } | undefined;
+        return Number(country?.flete ?? 0);
+    }
+
+    proveedorInternacionalSinFlete(proveedorId: number | null): boolean {
+        if (!proveedorId) {
+            return false;
+        }
+        const proveedor = this.proveedoresCompletos().find((p) => p.id === proveedorId);
+        return !this.esProveedorNacional(proveedor) && this.obtenerFleteProveedor(proveedorId) <= 0;
+    }
+
+    private actualizarBannerFleteFaltante(): void {
+        this.missingFreightEnSeleccion.set(this.hayProveedorSeleccionadoSinFlete());
+    }
+
+    abrirDialogoSolicitudFlete(): void {
+        const contexto = this.obtenerContextoFleteFaltante();
+        if (!contexto) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Sin contexto',
+                detail: 'Marque una fila con proveedor internacional sin tarifa de flete configurada.'
+            });
+            return;
+        }
+        this.solicitudFleteContext.set(contexto);
+        this.fleteSolicitado.set(null);
+        this.showSolicitudFleteDialog.set(true);
+    }
+
+    cerrarDialogoSolicitudFlete(): void {
+        this.showSolicitudFleteDialog.set(false);
+        this.solicitudFleteContext.set(null);
+        this.fleteSolicitado.set(null);
+    }
+
+    enviarSolicitudFleteAdmin(): void {
+        const contexto = this.solicitudFleteContext();
+        const flete = this.fleteSolicitado();
+
+        if (!contexto) {
+            return;
+        }
+
+        if (flete === null || flete < 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Tarifa requerida',
+                detail: 'Indique la tarifa sugerida en USD/lb.'
+            });
+            return;
+        }
+
+        this.enviandoSolicitudFlete.set(true);
+        this.ubicacionService
+            .solicitarFlete(contexto.countryId, {
+                flete,
+                proveedor_id: contexto.proveedorId,
+                pedido_id: this.pedidoId()
+            })
+            .subscribe({
+                next: (resp) => {
+                    this.enviandoSolicitudFlete.set(false);
+                    this.cerrarDialogoSolicitudFlete();
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Solicitud enviada',
+                        detail: resp.message,
+                        life: 8000
+                    });
+                },
+                error: (err) => {
+                    this.enviandoSolicitudFlete.set(false);
+                    this.messageService.add({
+                        severity: 'error',
+                        summary: 'Error',
+                        detail: err.error?.message || 'No se pudo enviar la solicitud.'
+                    });
+                }
+            });
+    }
+
+    private obtenerContextoFleteFaltante(): {
+        countryId: number;
+        countryName: string;
+        proveedorId: number;
+        proveedorName: string;
+    } | null {
+        if (!this.costeoForm) {
+            return null;
+        }
+
+        for (const ref of this.referenciasFormArray.controls) {
+            const proveedores = (ref.get('proveedores') as FormArray).controls;
+            for (const prov of proveedores) {
+                if (!prov.get('seleccionado')?.value) {
+                    continue;
+                }
+                const proveedorId = prov.get('proveedor_id')?.value as number | null;
+                if (!this.proveedorInternacionalSinFlete(proveedorId)) {
+                    continue;
+                }
+                const proveedor = this.proveedoresCompletos().find((p) => p.id === proveedorId);
+                const countryId = proveedor?.country_id ?? proveedor?.country?.id;
+                if (!countryId || !proveedorId) {
+                    continue;
+                }
+                return {
+                    countryId,
+                    countryName: proveedor?.country?.name ?? 'País',
+                    proveedorId,
+                    proveedorName: proveedor?.nombre ?? 'Proveedor'
+                };
+            }
+        }
+
+        return null;
+    }
+
+    private hayProveedorSeleccionadoSinFlete(): boolean {
+        if (!this.costeoForm) {
+            return false;
+        }
+
+        return this.referenciasFormArray.controls.some((ref) => {
+            const proveedores = (ref.get('proveedores') as FormArray).controls;
+            return proveedores.some((prov) => {
+                if (!prov.get('seleccionado')?.value) {
+                    return false;
+                }
+                const proveedorId = prov.get('proveedor_id')?.value as number | null;
+                return this.proveedorInternacionalSinFlete(proveedorId);
+            });
+        });
+    }
+
     finalizarCosteo(): void {
-        // 1. Verificar que haya al menos un item seleccionado (con o sin ID)
+        if (this.missingFreightEnSeleccion()) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Tarifa de flete faltante',
+                detail: 'Configure la tarifa USD/lb del país del proveedor en Gestión de Países antes de generar la cotización.',
+                life: 8000
+            });
+            return;
+        }
+
         const hasSelection = this.referenciasFormArray.controls.some((ref) => {
             const proveedores = (ref.get('proveedores') as FormArray).controls;
             return proveedores.some((prov) => prov.get('seleccionado')?.value);
@@ -832,12 +1014,26 @@ export class CosteoComponent implements OnInit {
             .subscribe({
                 next: (resp: any) => {
                     this.submitting.set(false);
-                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Cotización generada correctamente.' });
+                    const esBorrador = resp.data?.estado === 'Borrador' || resp.missing_freight_rate === true;
 
-                    // Opción: Descargar PDF automáticamente o redirigir
-                    if (resp.data && resp.data.id) {
+                    if (esBorrador) {
+                        this.messageService.add({
+                            severity: 'warn',
+                            summary: 'Cotización en Borrador',
+                            detail:
+                                resp.message ||
+                                'Falta tarifa de flete del país del proveedor. Un administrador fue notificado. Configure el valor en Gestión de Países.',
+                            life: 10000
+                        });
+                    } else {
+                        this.messageService.add({ severity: 'success', summary: 'Éxito', detail: resp.message || 'Cotización generada correctamente.' });
+                    }
+
+                    if (resp.data?.id && !esBorrador) {
                         this.descargarPDF(resp.data.id);
                         setTimeout(() => this.router.navigate(['/app/cotizaciones']), 2000);
+                    } else if (resp.data?.id && esBorrador) {
+                        setTimeout(() => this.router.navigate(['/app/cotizaciones', resp.data.id]), 2500);
                     }
                 },
                 error: (err: any) => {

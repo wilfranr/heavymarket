@@ -3,6 +3,13 @@
 **Fecha de inicio**: 18 de Enero, 2026  
 **Estado actual**: Fase 17 completada ✅ (Migración Angular 21 Zoneless)
 
+### Issue #133 — Fletes por país (Fase 2, 2026-05-27)
+
+- Fuente de tarifa: columna `countries.flete` (USD/lb), no tabla `freight_rates` (migración huérfana, sin uso).
+- El flete se resuelve por **país del proveedor** de cada línea de costeo, no por el cliente del pedido.
+- Sin tarifa: cotización en estado `Borrador`, notificación `missing_freight_rate`, UI bloquea “Generar Cotización”.
+- Admin configura tarifas en `/app/countries`. Seeder: `CountryFleteSeeder` (Colombia 2.5).
+
 ---
 
 ## ✅ Fases Completadas (1-15)

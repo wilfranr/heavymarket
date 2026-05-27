@@ -227,6 +227,8 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('contactos', ContactoController::class);
         Route::apiResource('direcciones', DireccionController::class)->parameters(['direcciones' => 'direccion']);
         Route::apiResource('transportadoras', TransportadoraController::class);
+        Route::post('countries/{country}/solicitar-flete', [CountryController::class, 'solicitarFlete'])
+            ->name('countries.solicitar-flete');
         Route::apiResource('countries', CountryController::class)->only(['index', 'show', 'update']);
         Route::get('trms/latest', [TRMController::class, 'latest'])->name('trms.latest');
         Route::apiResource('trms', TRMController::class);

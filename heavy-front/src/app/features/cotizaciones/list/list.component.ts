@@ -78,6 +78,9 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
                         <td>#{{ cotizacion.pedido_id }}</td>
                         <td>
                             <p-tag [value]="cotizacion.estado" [severity]="getEstadoSeverity(cotizacion.estado)"> </p-tag>
+                            @if (cotizacion.estado === 'Borrador') {
+                            <small class="block mt-1 text-orange-600 dark:text-orange-400">Falta tarifa de flete</small>
+                            }
                         </td>
                         <td>{{ cotizacion.fecha_emision | date: 'short' }}</td>
                         <td>{{ cotizacion.fecha_vencimiento | date: 'short' }}</td>

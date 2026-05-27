@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\PedidoOrigen;
+use App\Models\Country;
 use App\Models\Empresa;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
+use App\Models\Tercero;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use Illuminate\Support\Arr;
@@ -186,17 +188,21 @@ class PedidoService
         $cantidad = (int) ($datos['cantidad'] ?? 1);
         $ubicacion = $datos['ubicacion'] ?? 'Nacional';
 
+        $proveedorId = isset($datos['proveedor_id']) ? (int) $datos['proveedor_id'] : null;
+        $missingFreightRate = false;
+        $fleteUsado = null;
+
         if ($ubicacion === 'Internacional') {
             $empresa = Empresa::where('estado', 1)->first();
             $trm = (float) ($empresa?->trm ?? 1);
             if ($trm <= 0) {
                 $trm = 1;
-            } // Evitar división/multiplicación por cero o negativo
+            }
 
-            // Obtener flete desde el país del tercero (proveedor)
-            $flete = $this->obtenerFleteDesdeTercero($pedidoReferencia);
+            $flete = $this->obtenerFleteDesdeProveedor($proveedorId);
+            $fleteUsado = $flete;
+            $missingFreightRate = $this->proveedorInternacionalSinFlete($proveedorId);
 
-            // Obtener peso, asegurando que si no existe o es nulo, sea 0
             $referencia = $pedidoReferencia->referencia;
             $peso = (float) ($referencia->peso ?? 0);
 
@@ -214,31 +220,45 @@ class PedidoService
         return [
             'valor_unidad' => $valor_unidad,
             'valor_total' => $valor_unidad * $cantidad,
+            'flete_usado' => $fleteUsado,
+            'missing_freight_rate' => $missingFreightRate,
         ];
     }
 
-    /**
-     * Obtiene la tarifa de flete desde el país del tercero asociado al pedido
-     */
-    private function obtenerFleteDesdeTercero(PedidoReferencia $pedidoReferencia): float
+    public function esProveedorNacional(?int $proveedorId): bool
     {
-        try {
-            $pedido = $pedidoReferencia->loadMissing('pedido.tercero.country')->pedido;
-            $tercero = $pedido?->tercero;
-
-            if ($tercero && $tercero->country) {
-                $flete = (float) ($tercero->country->flete ?? 0);
-                if ($flete > 0) {
-                    return $flete;
-                }
-            }
-        } catch (\Exception $e) {
-            // Si no se puede cargar la relación, usar fallback
+        if (! $proveedorId) {
+            return true;
         }
 
-        // Fallback: usar flete de la empresa si no hay flete en el país del tercero
-        $empresa = Empresa::where('estado', 1)->first();
-        return (float) ($empresa?->flete ?? 0);
+        $tercero = Tercero::with('country')->find($proveedorId);
+        if (! $tercero || ! $tercero->country_id) {
+            return true;
+        }
+
+        return Country::esColombia($tercero->country_id, $tercero->country?->iso2);
+    }
+
+    public function obtenerFleteDesdeProveedor(?int $proveedorId): float
+    {
+        if ($this->esProveedorNacional($proveedorId)) {
+            return 0.0;
+        }
+
+        $tercero = Tercero::with('country')->find($proveedorId);
+
+        return (float) ($tercero?->country?->flete ?? 0);
+    }
+
+    public function proveedorInternacionalSinFlete(?int $proveedorId): bool
+    {
+        return ! $this->esProveedorNacional($proveedorId)
+            && $this->obtenerFleteDesdeProveedor($proveedorId) <= 0;
+    }
+
+    public function ubicacionDesdeProveedor(?int $proveedorId): string
+    {
+        return $this->esProveedorNacional($proveedorId) ? 'Nacional' : 'Internacional';
     }
 
     /**
