@@ -852,8 +852,10 @@ class PedidoController extends Controller
                         }
 
                         $updateData = [
+                            'pedido_referencia_id' => $pedidoReferencia->id,
+                            'referencia_id' => $pedidoReferencia->referencia_id,
                             'proveedor_id' => $provData['proveedor_id'],
-                            'marca_id' => $provData['marca_id'],
+                            'marca_id' => $provData['marca_id'] ?? null,
                             'dias_entrega' => $provData['dias_entrega'],
                             'costo_unidad' => $provData['costo_unidad'],
                             'utilidad' => $provData['utilidad'],

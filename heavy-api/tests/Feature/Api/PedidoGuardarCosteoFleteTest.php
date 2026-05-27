@@ -54,7 +54,7 @@ it('guardar costeo con proveedor internacional sin flete devuelve missing_freigh
             ],
         ]);
 
-    expect($response->status())->toBe(200, (string) ($response->json('error') ?? $response->getContent()));
+    \PHPUnit\Framework\Assert::assertSame(200, $response->status(), $response->getContent());
 
     $response->assertJsonPath('missing_freight_rate', true)
         ->assertJson(fn ($json) => count($json['country_ids_sin_flete'] ?? []) >= 1);
@@ -93,7 +93,7 @@ it('guardar costeo con proveedor internacional con flete no marca missing_freigh
             ],
         ]);
 
-    expect($response->status())->toBe(200, (string) ($response->json('error') ?? $response->getContent()));
+    \PHPUnit\Framework\Assert::assertSame(200, $response->status(), $response->getContent());
 
     $response->assertJsonPath('missing_freight_rate', false);
 });
