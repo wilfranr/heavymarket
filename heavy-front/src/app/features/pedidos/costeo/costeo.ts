@@ -268,8 +268,9 @@ export class CosteoComponent implements OnInit {
                     cantidad: [ref.cantidad || 1],
                     referencia_id: [ref.referencia_id],
                     categoria_nombre: [ref.lista?.nombre || 'General'],
-                    categoria_comercial_nombre: [ref.categoria_comercial?.nombre || 'Sin Categoría'],
+                    categoria_comercial_nombre: [ref.categoria_comercial?.nombre || (ref.categorias_comerciales && ref.categorias_comerciales.length > 0 ? ref.categorias_comerciales.map((c: any) => c.nombre).join(', ') : 'Sin Categoría')],
                     categoria_comercial_id: [ref.categoria_comercial_id],
+                    categoria_comercial_ids: [ref.categoria_comercial_ids || (ref.categoria_comercial_id ? [ref.categoria_comercial_id] : [])],
                     marca_nombre: [ref.marca?.nombre || (ref.referencia as any)?.marca?.nombre || 'Sin Marca'],
                     peso: [ref.referencia?.articulo?.peso || 0],
                     estado_str: ['Preparado'],
@@ -289,21 +290,8 @@ export class CosteoComponent implements OnInit {
 
                 const proveedoresArray = refFormGroup.get('proveedores') as FormArray;
 
-                // SUGERENCIA: Solo cargar proveedores sugeridos si la referencia NO tiene proveedores en la base de datos
-                const tieneProveedoresEnDB = ref.proveedores && ref.proveedores.length > 0;
-
-                if (!tieneProveedoresEnDB && this.proveedoresCompletos().length > 0 && ref.referencia?.marca_id && ref.lista_id) {
-                    const esMarca = ref.marca?.tipo === 'Marca' || ref.referencia?.marca?.tipo === 'Marca';
-                    const coincidentes = this.proveedoresCompletos().filter((p) => {
-                        const tieneFabricante = esMarca || p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(ref.referencia?.marca_id));
-                        const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(ref.lista_id));
-                        return tieneFabricante && tieneCategoria;
-                    });
-
-                    coincidentes.forEach((p) => {
-                        this.agregarProveedorFila(proveedoresArray, { proveedor_id: p.id });
-                    });
-                }
+                // Se removió el prellenado de filas por proveedor coincidente para mantener una sola fila inicial
+                // El listado de proveedores sugeridos ya se filtra dinámicamente en el select/dropdown de proveedores.
 
                 // Si después de todo no hay filas, añadir una vacía
                 if (proveedoresArray.length === 0) {
@@ -323,8 +311,9 @@ export class CosteoComponent implements OnInit {
 
         const marcaId = refGroup.get('marca_id')?.value || this.pedido()?.referencias?.[refIndex]?.referencia?.marca_id;
         const categoriaComercialId = refGroup.get('categoria_comercial_id')?.value;
+        const categoriaComercialIds = refGroup.get('categoria_comercial_ids')?.value || (categoriaComercialId ? [categoriaComercialId] : []);
 
-        if (!marcaId || !categoriaComercialId) return this.proveedores();
+        if (!marcaId || categoriaComercialIds.length === 0) return this.proveedores();
 
         const ref = this.pedido()?.referencias?.[refIndex];
         const esMarca = ref?.marca?.tipo === 'Marca' || ref?.referencia?.marca?.tipo === 'Marca';
@@ -332,7 +321,7 @@ export class CosteoComponent implements OnInit {
         return this.proveedoresCompletos()
             .filter((p) => {
                 const tieneFabricante = esMarca || p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(marcaId));
-                const tieneCategoria = p.categoria_comercial_ids?.some((id) => Number(id) === Number(categoriaComercialId));
+                const tieneCategoria = p.categoria_comercial_ids?.some((id) => categoriaComercialIds.some((cId: any) => Number(id) === Number(cId)));
                 return tieneFabricante && tieneCategoria;
             })
             .map((p) => ({
@@ -433,7 +422,7 @@ export class CosteoComponent implements OnInit {
         this.expandedRefIndices.set(current);
     }
 
-    showInfo(event: any, type: 'sistema' | 'articulo' | 'referencia', refIndex: number, op: Popover): void {
+    showInfo(event: any, type: 'sistema' | 'articulo' | 'referencia' | 'categorias_comerciales', refIndex: number, op: Popover): void {
         const refGroup = this.referenciasFormArray.at(refIndex);
 
         switch (type) {
@@ -468,6 +457,21 @@ export class CosteoComponent implements OnInit {
                     marca_nombre: refGroup.get('marca_nombre')?.value,
                     es_juego: false,
                     referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || []
+                };
+                break;
+            case 'categorias_comerciales':
+                const ccIds = refGroup.get('categoria_comercial_ids')?.value || [];
+                const ccNombre = refGroup.get('categoria_comercial_nombre')?.value || 'Sin Categoría';
+                const refObj = this.pedido()?.referencias?.[refIndex];
+                const catsList = refObj?.categorias_comerciales || (refObj?.categoria_comercial ? [refObj.categoria_comercial] : []);
+                
+                this.popoverData = {
+                    title: 'Categorías Comerciales',
+                    subtitle: catsList.length > 1 ? `${catsList.length} Categorías` : ccNombre,
+                    marca_nombre: null,
+                    es_juego: false,
+                    referencias_cruzadas: [],
+                    categorias: catsList.map((c: any) => c.nombre)
                 };
                 break;
         }

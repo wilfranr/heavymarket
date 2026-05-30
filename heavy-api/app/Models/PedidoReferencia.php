@@ -53,6 +53,16 @@ class PedidoReferencia extends Model
         return $this->belongsTo(Lista::class, 'categoria_comercial_id');
     }
 
+    public function categoriasComerciales(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    {
+        return $this->belongsToMany(
+            Lista::class,
+            'analysis_commercial_categories',
+            'pedido_referencia_id',
+            'categoria_comercial_id'
+        )->withTimestamps();
+    }
+
     public function marca(): BelongsTo
     {
         return $this->belongsTo(Lista::class, 'marca_id');

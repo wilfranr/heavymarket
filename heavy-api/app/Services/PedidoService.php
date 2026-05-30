@@ -143,6 +143,8 @@ class PedidoService
                 }
             }
 
+            $catIds = $refData['categoria_comercial_ids'] ?? [];
+
             if (isset($refData['id']) && $refData['id']) {
                 $referencia = $pedido->referencias()->find($refData['id']);
                 if ($referencia) {
@@ -159,9 +161,10 @@ class PedidoService
                         'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
                         'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
                     ]);
+                    $referencia->categoriasComerciales()->sync($catIds);
                 }
             } else {
-                $pedido->referencias()->create([
+                $newReferencia = $pedido->referencias()->create([
                     'referencia_id' => $referenciaCatalogoId ?: null,
                     'sistema_id' => $refData['sistema_id'] ?? null,
                     'lista_id' => $refData['lista_id'] ?? null,
@@ -174,6 +177,7 @@ class PedidoService
                     'mostrar_referencia' => filter_var($refData['mostrar_referencia'] ?? true, FILTER_VALIDATE_BOOLEAN),
                     'estado' => filter_var($refData['estado'] ?? true, FILTER_VALIDATE_BOOLEAN),
                 ]);
+                $newReferencia->categoriasComerciales()->sync($catIds);
             }
         }
     }

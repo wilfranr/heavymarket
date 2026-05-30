@@ -280,7 +280,8 @@ export class AnalysisComponent implements OnInit {
             referencia_id: [row.referencia_id],
             cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
             descripcion: [this.descripcionAnalisisDesdeOpcion(opt)],
-            categoria: [null]
+            categoria: [null],
+            categoria_ids: [[]]
         });
 
         const itemForm = this.fb.group({
@@ -310,7 +311,8 @@ export class AnalysisComponent implements OnInit {
             referencia_id: [row.referencia_id],
             cantidad: [row.cantidad || 1, [Validators.required, Validators.min(1)]],
             descripcion: [this.descripcionAnalisisDesdeOpcion(opt)],
-            categoria: [null]
+            categoria: [null],
+            categoria_ids: [[]]
         });
 
         partes.push(parte);
@@ -532,7 +534,8 @@ export class AnalysisComponent implements OnInit {
                         cantidad: [cantidad_lote],
                         referencia_id: [refId],
                         descripcion: [this.descripcionAnalisisDesdeOpcion(refModel ?? { descripcion: '', articulo_nombre: '' })],
-                        categoria: [articulo_id]
+                        categoria: [articulo_id],
+                        categoria_ids: [articulo_id ? [articulo_id] : []]
                     })
                 );
             });
@@ -557,7 +560,8 @@ export class AnalysisComponent implements OnInit {
                             cantidad: [cantidad_lote, [Validators.required, Validators.min(1)]],
                             referencia_id: [refId],
                             descripcion: [this.descripcionAnalisisDesdeOpcion(refModel ?? { descripcion: '', articulo_nombre: '' })],
-                            categoria: [articulo_id]
+                            categoria: [articulo_id],
+                            categoria_ids: [articulo_id ? [articulo_id] : []]
                         })
                     ])
                 });
@@ -599,7 +603,8 @@ export class AnalysisComponent implements OnInit {
                     cantidad: [1, [Validators.required, Validators.min(1)]],
                     referencia_id: [null],
                     descripcion: [''],
-                    categoria: [null]
+                    categoria: [null],
+                    categoria_ids: [[]]
                 })
             ])
         });
@@ -1307,7 +1312,8 @@ export class AnalysisComponent implements OnInit {
                 cantidad: [1, [Validators.required, Validators.min(1)]],
                 referencia_id: [null],
                 descripcion: [''],
-                categoria: [null]
+                categoria: [null],
+                categoria_ids: [[]]
             })
         );
     }
@@ -1474,7 +1480,8 @@ export class AnalysisComponent implements OnInit {
                           })
                       )
                     : this.textoDescripcionArticuloDesdePedidoLinea(r) || r.definicion || '',
-                categoria: r.categoria_comercial_id || r.lista_id
+                categoria: r.categoria_comercial_id || r.lista_id,
+                categorias: r.categoria_comercial_ids || (r.categoria_comercial_id ? [r.categoria_comercial_id] : [])
             });
         });
 
@@ -1502,7 +1509,8 @@ export class AnalysisComponent implements OnInit {
                             referencia_id: [p.referencia_id || null],
                             cantidad: [p.cantidad || 1, [Validators.required, Validators.min(1)]],
                             descripcion: [p.descripcion || ''],
-                            categoria: [p.categoria || null]
+                            categoria: [p.categoria || null],
+                            categoria_ids: [p.categorias || []]
                         })
                     )
                 )
@@ -1539,10 +1547,10 @@ export class AnalysisComponent implements OnInit {
         // una categoría que coincida con nuestro catálogo de Tipos de Artículo.
         for (const control of partes.controls) {
             const ref = control.get('referencia_id')?.value;
-            const cat = control.get('categoria')?.value;
+            const catIds = control.get('categoria_ids')?.value || [];
 
-            // Verificación de existencia real en el catálogo cargado
-            const catValida = this.tiposArticulo.some((t) => t.value === cat);
+            // Verificación de existencia real en el catálogo cargado para al menos una de las categorías seleccionadas
+            const catValida = Array.isArray(catIds) && catIds.length > 0 && catIds.every((id: any) => this.tiposArticulo.some((t) => t.value === id));
             const refOk = !!ref && (typeof ref === 'number' ? ref > 0 : ref.trim().length > 0);
 
             if (!refOk || !catValida) {
@@ -1579,6 +1587,7 @@ export class AnalysisComponent implements OnInit {
                     sistema_id: itemValue.sistema_id,
                     lista_id: itemValue.lista_id, // Usar SIEMPRE el del requerimiento/tarjeta (Tipo Técnico)
                     categoria_comercial_id: parteValue.categoria, // Categoría Comercial para filtrado de proveedores
+                    categoria_comercial_ids: parteValue.categoria_ids || [],
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
                     comentario: itemValue.comentario,

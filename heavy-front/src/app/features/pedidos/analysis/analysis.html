@@ -345,16 +345,17 @@
                                         <input type="text" pInputText formControlName="descripcion" placeholder="Descripción del artículo" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
                                     </td>
                                     <td class="p-2">
-                                        <p-select
+                                        <p-multiSelect
                                             [options]="tiposArticulo"
-                                            formControlName="categoria"
+                                            formControlName="categoria_ids"
                                             optionLabel="label"
                                             optionValue="value"
                                             [filter]="true"
                                             placeholder="Seleccionar"
                                             appendTo="body"
                                             styleClass="w-full !bg-[#334155] border-none text-white h-10"
-                                        ></p-select>
+                                            display="chip"
+                                        ></p-multiSelect>
                                     </td>
                                     <td class="p-3 pr-4 text-center rounded-r-lg">
                                         <div class="flex gap-1 justify-center items-center flex-wrap">

@@ -1,19 +1,121 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T13:58:30Z",
-  "issue": "mejorar-ui-edicion-cotizacion",
-  "description": "Mejorar la interfaz visual de la vista de edicion de cotizaciones utilizando TailwindCSS y PrimeNG.",
+  "last_updated": "2026-05-30T14:05:00Z",
+  "issue": "soporte-multiple-categoria-comercial-136",
+  "description": "Soporte de multiples categorias comerciales en el analisis de partes y costeo de referencias",
   "nodes": [
     {
-      "id": "mejorar-ui-edicion",
-      "description": "Refactorizar edit.component.ts para usar TailwindCSS para el diseno y rejillas, y p-datepicker de PrimeNG para la fecha.",
+      "id": "db-migration-pivote",
+      "description": "Crear tabla pivote analysis_commercial_categories y migrar datos existentes de categoria_comercial_id",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
+      "required_skill": "sql_query_analyst",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/src/app/features/cotizaciones/edit/edit.component.ts",
+          "path": "heavy-api/database/migrations/2026_05_30_141208_create_analysis_commercial_categories_table.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "backend-models-relations",
+      "description": "Agregar relacion belongsToMany en PedidoReferencia y adaptar PedidoReferenciaResource y PedidoService para soportar array de categorias",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["db-migration-pivote"],
+      "files": [
+        {
+          "path": "heavy-api/app/Models/PedidoReferencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/PedidoReferenciaResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdatePedidoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "backend-costeo-filtering",
+      "description": "Modificar logica de filtrado de proveedores en costeo (PedidoController/ProviderPortalController) usando whereIn sobre las categorias de la referencia",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["backend-models-relations"],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "frontend-model-updates",
+      "description": "Actualizar pedido.model.ts y DTOs de PedidoReferencia para incluir categoria_comercial_ids como array",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": ["backend-models-relations"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/pedido.model.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "frontend-ui-multiselect",
+      "description": "Reemplazar selector de categoria comercial por p-multiSelect de PrimeNG en formulario de analisis de partes",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["frontend-model-updates"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "frontend-ui-costeo-view",
+      "description": "Actualizar la vista de costeo para mostrar las multiples categorias seleccionadas y validar el filtro de proveedores",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["frontend-ui-multiselect", "backend-costeo-filtering"],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "test-validations",
+      "description": "Crear y ejecutar tests del backend y del frontend para validar el flujo multicategoria",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": ["frontend-ui-costeo-view"],
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/PedidoMultiCategoryTest.php",
           "status": "validated"
         }
       ]

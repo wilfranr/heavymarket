@@ -35,6 +35,7 @@ class PedidoReferenciaResource extends JsonResource
             'sistema_id' => $this->sistema_id,
             'lista_id' => $this->lista_id,
             'categoria_comercial_id' => $this->categoria_comercial_id,
+            'categoria_comercial_ids' => $this->categoriasComerciales->pluck('id'),
             'marca_id' => $this->marca_id,
             'definicion' => $this->definicion,
             'cantidad' => $this->cantidad,
@@ -52,6 +53,7 @@ class PedidoReferenciaResource extends JsonResource
             'sistema' => $this->whenLoaded('sistema'),
             'lista' => $this->whenLoaded('lista'),
             'categoria_comercial' => $this->whenLoaded('categoriaComercial'),
+            'categorias_comerciales' => $this->whenLoaded('categoriasComerciales'),
             'marca' => $this->whenLoaded('marca'),
             'imagenes' => $this->whenLoaded('imagenes', function () {
                 return PedidoReferenciaImagenResource::collection($this->imagenes);

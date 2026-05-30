@@ -150,7 +150,7 @@ class PedidoController extends Controller
             'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema', 'fabricante', 'contacto',
             'referencias' => function ($query): void {
                 $query->withCount('imagenes')
-                    ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'sistema', 'lista', 'categoriaComercial', 'marca', 'imagenes', 'proveedores.tercero']);
+                    ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'sistema', 'lista', 'categoriaComercial', 'categoriasComerciales', 'marca', 'imagenes', 'proveedores.tercero']);
             },
             'articulos.articulo', 'articulos.sistema',
         ]);
@@ -915,13 +915,18 @@ class PedidoController extends Controller
         $proveedoresANotificar = [];
 
         foreach ($referencias as $ref) {
-            // Buscar proveedores que manejen esta marca Y esta categoría
+            $categoriasComercialesIds = $ref->categoriasComerciales->pluck('id')->toArray();
+            if ($ref->categoria_comercial_id) {
+                $categoriasComercialesIds[] = $ref->categoria_comercial_id;
+            }
+            $categoriasComercialesIds = array_unique(array_filter($categoriasComercialesIds));
+
             $proveedores = Tercero::where('provider_access', true)
                 ->whereHas('fabricantes', function ($q) use ($ref) {
                     $q->where('lista_id', $ref->marca_id);
                 })
-                ->whereHas('categoriasComerciales', function ($q) use ($ref) {
-                    $q->where('lista_id', $ref->categoria_comercial_id);
+                ->whereHas('categoriasComerciales', function ($q) use ($categoriasComercialesIds) {
+                    $q->whereIn('lista_id', $categoriasComercialesIds);
                 })
                 ->with('user')
                 ->get();

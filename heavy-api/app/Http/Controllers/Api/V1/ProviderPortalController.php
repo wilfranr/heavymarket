@@ -108,7 +108,10 @@ class ProviderPortalController extends Controller
                 })
                 ->where(function ($q) use ($misMarcas, $misCategorias) {
                     $q->whereIn('marca_id', $misMarcas)
-                      ->orWhereIn('categoria_comercial_id', $misCategorias);
+                      ->orWhereIn('categoria_comercial_id', $misCategorias)
+                      ->orWhereHas('categoriasComerciales', function ($sub) use ($misCategorias) {
+                          $sub->whereIn('listas.id', $misCategorias);
+                      });
                 })
                 // Excluir si ya fue costeado por este proveedor
                 ->whereDoesntHave('proveedores', function ($q) use ($tercero) {
