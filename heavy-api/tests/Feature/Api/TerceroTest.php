@@ -130,3 +130,21 @@ it('permite buscar terceros', function () {
     $response->assertStatus(200)
         ->assertJsonCount(1, 'data');
 });
+
+it('rechaza crear tercero con maquina ya asignada a otro tercero', function () {
+    $maquina = \App\Models\Maquina::factory()->create();
+    $otroTercero = \App\Models\Tercero::factory()->create();
+    $maquina->terceros()->attach($otroTercero->id);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '900999888-1',
+            'nombre' => 'Tercero Nuevo',
+            'tipo' => 'Cliente',
+            'maquina_id' => [$maquina->id],
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['maquina_id.0']);
+});

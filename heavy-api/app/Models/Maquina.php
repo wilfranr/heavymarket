@@ -174,4 +174,16 @@ class Maquina extends Model
         $foto = $this->componentes->where('sistema_id', 49)->first()?->foto_placa;
         return $foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($foto) : null;
     }
+
+    /**
+     * Scope para filtrar máquinas disponibles (sin terceros asociados o exceptuando un tercero específico)
+     */
+    public function scopeAvailable($query, $exceptTerceroId = null)
+    {
+        return $query->whereDoesntHave('terceros', function ($q) use ($exceptTerceroId) {
+            if ($exceptTerceroId !== null) {
+                $q->where('tercero_id', '!=', (int) $exceptTerceroId);
+            }
+        });
+    }
 }

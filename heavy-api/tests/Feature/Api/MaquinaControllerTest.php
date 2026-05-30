@@ -241,3 +241,34 @@ it('permite actualizar componentes de máquina', function () {
         'modelo' => 'Nuevo Componente',
     ]);
 });
+
+it('permite filtrar por maquinas disponibles', function () {
+    $maquinaAsignada = \App\Models\Maquina::factory()->create([
+        'tipo' => $this->tipoMaquina->id,
+        'fabricante_id' => $this->fabricante->id,
+    ]);
+    $maquinaLibre = \App\Models\Maquina::factory()->create([
+        'tipo' => $this->tipoMaquina->id,
+        'fabricante_id' => $this->fabricante->id,
+    ]);
+
+    $tercero = \App\Models\Tercero::factory()->create();
+    $maquinaAsignada->terceros()->attach($tercero->id);
+
+    // Listar disponibles sin excepción
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/maquinas?disponibles=true');
+
+    $response->assertStatus(200);
+    // Solo debe retornar la máquina libre
+    expect($response->json('data'))->toHaveCount(1)
+        ->and($response->json('data.0.id'))->toBe($maquinaLibre->id);
+
+    // Listar disponibles exceptuando el tercero al que está asignada
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->getJson("/v1/maquinas?disponibles=true&except_tercero_id={$tercero->id}");
+
+    $response->assertStatus(200);
+    // Debe retornar ambas máquinas
+    expect($response->json('data'))->toHaveCount(2);
+});

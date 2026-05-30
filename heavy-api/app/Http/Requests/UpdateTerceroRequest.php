@@ -63,6 +63,20 @@ class UpdateTerceroRequest extends FormRequest
 
             // Relations
             'maquina_id' => ['nullable', 'array'],
+            'maquina_id.*' => [
+                'integer',
+                'exists:maquinas,id',
+                function ($attribute, $value, $fail) use ($terceroId) {
+                    $alreadyAssigned = \Illuminate\Support\Facades\DB::table('tercero_maquina')
+                        ->where('maquina_id', $value)
+                        ->where('tercero_id', '!=', $terceroId)
+                        ->exists();
+
+                    if ($alreadyAssigned) {
+                        $fail('La máquina seleccionada ya está asignada a otro tercero.');
+                    }
+                }
+            ],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],
             'categoria_comercial_id' => ['nullable', 'array'],

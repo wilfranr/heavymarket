@@ -489,7 +489,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) });
     }
     private loadMaquinas(): void {
-        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
+        this.maquinaService.getAll({ per_page: 100, disponibles: true }).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
     }
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map((f) => ({ label: f.nombre, value: f.id }))) });

@@ -1,44 +1,104 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T07:30:00Z",
-  "issue": "#ng0100-edit-articulo - bugfix: corregir ExpressionChangedAfterItHasBeenCheckedError en edicion de articulos",
-  "description": "El componente EditComponent arroja error NG0100 en la plantilla de edición de artículos debido al cambio síncrono/asíncrono de listas de medidas durante el ciclo de verificación inicial de Angular. Solución: migrar las listas a Signals según la directriz Zoneless del proyecto y ajustar la plantilla.",
+  "last_updated": "2026-05-30T07:45:00Z",
+  "issue": "#134 - fix: filtrar máquinas ya asignadas en creación de terceros",
+  "description": "Una máquina ya asignada a un cliente no debe aparecer disponible para otros terceros en el selector. Se implementará un scope available en Maquina.php, se expondrá en MaquinaController y se validará en StoreTerceroRequest y UpdateTerceroRequest. En el frontend se filtrarán solo las disponibles.",
   "nodes": [
     {
-      "id": "ng0100-refactor-signals",
-      "description": "Refactorizar las variables de estado tiposMedida, unidadesMedida y nombresMedida a Signals en edit.ts.",
+      "id": "134-backend-scope-maquina",
+      "description": "Implementar el scope scopeAvailable($query, $exceptTerceroId = null) en Maquina.php para filtrar máquinas sin relaciones en tercero_maquina.",
       "status": "done",
-      "required_skill": "software_architect",
+      "required_skill": "sql_query_analyst",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "path": "heavy-api/app/Models/Maquina.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ng0100-update-template",
-      "description": "Actualizar las referencias en edit.html para invocar los Signals con () en [options].",
+      "id": "134-backend-controller-index-filtro",
+      "description": "Modificar MaquinaController::index para admitir el parámetro disponibles y except_tercero_id, applying the scope correspondientemente.",
       "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "ng0100-verification",
-      "description": "Verificar que la aplicación de Angular compile sin errores en el frontend tras la refactorización.",
-      "status": "done",
-      "required_skill": "testing_expert",
+      "required_skill": null,
       "depends_on": [
-        "ng0100-refactor-signals",
-        "ng0100-update-template"
+        "134-backend-scope-maquina"
+      ],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/MaquinaController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "134-backend-validation-terceros",
+      "description": "Agregar validación en StoreTerceroRequest y UpdateTerceroRequest para asegurar que maquina_id no contenga IDs asociadas a otros terceros.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "134-frontend-filter-available",
+      "description": "Modificar tercero-form y tercero-create-modal para enviar el parámetro disponibles y except_tercero_id al listar las máquinas.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "134-backend-controller-index-filtro"
+      ],
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/maquina.service.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "134-frontend-warning-reactive-forms",
+      "description": "Corregir advertencia de Reactive Forms quitando el atributo [disabled] del HTML y controlándolo programáticamente en la clase del componente.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "134-verification",
+      "description": "Ejecutar validaciones y tests en backend y frontend.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "134-backend-validation-terceros",
+        "134-frontend-filter-available",
+        "134-frontend-warning-reactive-forms"
       ],
       "files": []
     }

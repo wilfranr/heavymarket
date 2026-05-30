@@ -219,6 +219,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['terceroId'] && this.terceroId) {
             this.loadTerceroData(this.terceroId);
+            this.loadMaquinas();
         }
     }
 
@@ -232,6 +233,14 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                     this.createTerceroForm.disable();
                 } else {
                     this.createTerceroForm.enable();
+                    const countryId = this.createTerceroForm.get('country_id')?.value;
+                    const stateId = this.createTerceroForm.get('state_id')?.value;
+                    if (!countryId) {
+                        this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
+                    }
+                    if (!stateId) {
+                        this.createTerceroForm.get('city_id')?.disable({ emitEvent: false });
+                    }
                 }
             },
             error: (err) => {
@@ -273,6 +282,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         }
 
         if (data.country_id) {
+            if (!this.isViewMode) {
+                this.createTerceroForm.get('state_id')?.enable({ emitEvent: false });
+            }
             this.ubicacionService.getStates(data.country_id).subscribe((r) => {
                 this.departamentos.set(r.data);
             });
@@ -282,6 +294,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             }
         }
         if (data.state_id) {
+            if (!this.isViewMode) {
+                this.createTerceroForm.get('city_id')?.enable({ emitEvent: false });
+            }
             this.ubicacionService.getCities(data.state_id).subscribe((r) => {
                 this.ciudades.set(r.data);
             });
@@ -337,8 +352,8 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
             direccion: ['', [Validators.required]],
             country_id: [null],
-            state_id: [null],
-            city_id: [null],
+            state_id: [{ value: null, disabled: true }],
+            city_id: [{ value: null, disabled: true }],
 
             rut: [null],
             certificacion_bancaria: [null],
@@ -377,6 +392,32 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             }
             pwControl.updateValueAndValidity();
         });
+
+        // Escuchar cambios de país para habilitar/deshabilitar departamento/estado
+        this.createTerceroForm.get('country_id')!.valueChanges.subscribe((countryId) => {
+            const stateControl = this.createTerceroForm.get('state_id')!;
+            const cityControl = this.createTerceroForm.get('city_id')!;
+            if (countryId && !this.isViewMode) {
+                stateControl.enable({ emitEvent: false });
+            } else {
+                stateControl.disable({ emitEvent: false });
+                cityControl.disable({ emitEvent: false });
+            }
+        });
+
+        // Escuchar cambios de departamento para habilitar/deshabilitar ciudad
+        this.createTerceroForm.get('state_id')!.valueChanges.subscribe((stateId) => {
+            const cityControl = this.createTerceroForm.get('city_id')!;
+            if (stateId && !this.isViewMode) {
+                cityControl.enable({ emitEvent: false });
+            } else {
+                cityControl.disable({ emitEvent: false });
+            }
+        });
+
+        if (this.isViewMode) {
+            this.createTerceroForm.disable();
+        }
     }
 
     // Reactive signals based on form state
@@ -413,6 +454,8 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 landing_access: false,
                 landing_password: ''
             });
+            this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
+            this.createTerceroForm.get('city_id')?.disable({ emitEvent: false });
             this.contactos.clear();
             this.departamentos.set([]);
             this.ciudades.set([]);
@@ -527,7 +570,11 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         this.ubicacionService.getCountriesAdmin({ per_page: 300 }).subscribe({ next: (r) => this.paises.set(r.data) });
     }
     private loadMaquinas(): void {
-        this.maquinaService.getAll({ per_page: 100 }).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
+        const params: any = { per_page: 100, disponibles: true };
+        if (this.terceroId) {
+            params.except_tercero_id = this.terceroId;
+        }
+        this.maquinaService.getAll(params).subscribe({ next: (r) => this.maquinas.set(r.data.map((m) => ({ label: `${m.modelo} - ${m.serie || 'Sin Serie'}`, value: m.id }))) });
     }
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map((f) => ({ label: f.nombre, value: f.id }))) });

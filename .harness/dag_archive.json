@@ -369,5 +369,51 @@
         "files": []
       }
     ]
+  },
+  {
+    "version": "2.0",
+    "project": "heavymarket",
+    "last_updated": "2026-05-30T07:30:00Z",
+    "issue": "#ng0100-edit-articulo - bugfix: corregir ExpressionChangedAfterItHasBeenCheckedError en edicion de articulos",
+    "description": "El componente EditComponent arroja error NG0100 en la plantilla de edición de artículos debido al cambio síncrono/asíncrono de listas de medidas durante el ciclo de verificación inicial de Angular. Solución: migrar las listas a Signals según la directriz Zoneless del proyecto y ajustar la plantilla.",
+    "nodes": [
+      {
+        "id": "ng0100-refactor-signals",
+        "description": "Refactorizar las variables de estado tiposMedida, unidadesMedida y nombresMedida a Signals en edit.ts.",
+        "status": "done",
+        "required_skill": "software_architect",
+        "depends_on": [],
+        "files": [
+          {
+            "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+            "status": "validated"
+          }
+        ]
+      },
+      {
+        "id": "ng0100-update-template",
+        "description": "Actualizar las referencias en edit.html para invocar los Signals con () en [options].",
+        "status": "done",
+        "required_skill": "software_architect",
+        "depends_on": [],
+        "files": [
+          {
+            "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+            "status": "validated"
+          }
+        ]
+      },
+      {
+        "id": "ng0100-verification",
+        "description": "Verificar que la aplicación de Angular compile sin errores en el frontend tras la refactorización.",
+        "status": "done",
+        "required_skill": "testing_expert",
+        "depends_on": [
+          "ng0100-refactor-signals",
+          "ng0100-update-template"
+        ],
+        "files": []
+      }
+    ]
   }
 ]

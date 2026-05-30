@@ -65,6 +65,14 @@ class MaquinaController extends Controller
             });
         }
 
+        // Filtro por disponibilidad
+        if ($request->boolean('disponibles')) {
+            $exceptTerceroId = $request->filled('except_tercero_id')
+                ? (int) $request->input('except_tercero_id')
+                : null;
+            $query->available($exceptTerceroId);
+        }
+
         // Ordenamiento
         $sortBy = $request->input('sort_by', 'modelo');
         $sortOrder = $request->input('sort_order', 'asc');

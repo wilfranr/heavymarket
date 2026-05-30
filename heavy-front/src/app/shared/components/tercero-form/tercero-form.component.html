@@ -134,7 +134,7 @@
                                 <p class="text-xs text-gray-400">Al activar esta opción, el tercero podrá iniciar sesión en la página de la landing con su correo electrónico y la contraseña asignada.</p>
                             </div>
                             <div class="flex-shrink-0">
-                                <p-toggleswitch id="landing_access" formControlName="landing_access" [disabled]="isViewMode"></p-toggleswitch>
+                                <p-toggleswitch id="landing_access" formControlName="landing_access"></p-toggleswitch>
                             </div>
                         </div>
 
@@ -165,7 +165,6 @@
                                             styleClass="w-full"
                                             inputStyleClass="w-full"
                                             placeholder="Mínimo 6 caracteres"
-                                            [disabled]="isViewMode"
                                         >
                                         </p-password>
                                         @if (createTerceroForm.get('landing_password')?.invalid && createTerceroForm.get('landing_password')?.touched) {
@@ -286,7 +285,6 @@
                             placeholder="Seleccione una opción"
                             styleClass="w-full"
                             (onChange)="onDepartamentoChange()"
-                            [disabled]="!createTerceroForm.get('country_id')?.value"
                             appendTo="body"
                         >
                         </p-select>
@@ -303,7 +301,6 @@
                             filterBy="name"
                             placeholder="Seleccione una opción"
                             styleClass="w-full"
-                            [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value"
                             appendTo="body"
                         >
                         </p-select>

@@ -59,6 +59,19 @@ class StoreTerceroRequest extends FormRequest
 
             // Relations
             'maquina_id' => ['nullable', 'array'],
+            'maquina_id.*' => [
+                'integer',
+                'exists:maquinas,id',
+                function ($attribute, $value, $fail) {
+                    $alreadyAssigned = \Illuminate\Support\Facades\DB::table('tercero_maquina')
+                        ->where('maquina_id', $value)
+                        ->exists();
+
+                    if ($alreadyAssigned) {
+                        $fail('La máquina seleccionada ya está asignada a otro tercero.');
+                    }
+                }
+            ],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],
             'categoria_comercial_id' => ['nullable', 'array'],
