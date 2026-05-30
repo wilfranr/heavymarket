@@ -455,46 +455,29 @@
 
     <!-- Sección Inferior -->
     <div class="bottom-section">
-        <!-- Observaciones: listado de artículos de las referencias cotizadas -->
         @php
-            $obsItems = [];
-
-            foreach ($cotizacion->referenciasProveedores as $cotItem) {
-                $prpObs = $cotItem->pedidoReferenciaProveedor;
-                $referenciaObs = $prpObs?->pedidoReferencia?->referencia ?? $prpObs?->referencia;
-                $articuloObs = $referenciaObs?->articulo;
-
-                if (! $articuloObs) {
-                    continue;
-                }
-
-                if ($articuloObs->articuloJuegos->isNotEmpty()) {
-                    foreach ($articuloObs->articuloJuegos as $juego) {
-                        $nombreComponente = $juego->referencia?->articulo?->definicion
-                            ?: $juego->referencia?->articulo?->descripcionEspecifica
-                            ?: $juego->referencia?->lista?->nombre
-                            ?: $juego->comentario;
-
-                        if ($nombreComponente) {
-                            $obsItems[] = mb_strtolower(trim($nombreComponente), 'UTF-8');
+            $obsText = '';
+            if (!empty($cotizacion->observaciones)) {
+                $obsText = $cotizacion->observaciones;
+            } elseif (!empty($cotizacion->pedido?->comentario)) {
+                $comentarioRaw = $cotizacion->pedido->comentario;
+                if (is_array($comentarioRaw)) {
+                    $comentariosArr = [];
+                    foreach ($comentarioRaw as $c) {
+                        if (isset($c['comentario'])) {
+                            $comentariosArr[] = $c['comentario'];
                         }
                     }
+                    $obsText = implode(', ', $comentariosArr);
                 } else {
-                    $nombreArticulo = $articuloObs->definicion ?: $articuloObs->descripcionEspecifica;
-
-                    if ($nombreArticulo) {
-                        $obsItems[] = mb_strtolower(trim($nombreArticulo), 'UTF-8');
-                    }
+                    $obsText = $comentarioRaw;
                 }
             }
-
-            $obsItems = array_values(array_unique(array_filter($obsItems)));
-            $obsText = $obsItems ? 'incluye: '.implode(', ', $obsItems).'.' : '';
         @endphp
 
         @if(!empty($obsText))
             <div class="notes-title">Observaciones</div>
-            <p class="notes-content">{{ $obsText }}</p>
+            <p class="notes-content">{!! nl2br(e($obsText)) !!}</p>
         @endif
 
         <!-- Condiciones -->

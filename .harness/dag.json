@@ -1,74 +1,30 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T13:16:40Z",
-  "issue": "#135 - fix: agregar tipo categoria comercial en desplegable de creacion de listas",
-  "description": "El tipo 'Categoría Comercial' existe en la BD pero no se muestra en el desplegable para crear o editar listas, y falla la validación en el backend. Se agregará a las reglas de validación (StoreListaRequest/UpdateListaRequest) y a las opciones de frontend (create.ts, edit.ts, lista-create-modal.component.ts, list.ts).",
+  "last_updated": "2026-05-30T13:55:00Z",
+  "issue": "fix-observaciones-cotizacion-pdf",
+  "description": "Restaurar las observaciones de la cotización en el PDF para que muestre el campo observaciones ingresado en la edición, en lugar de generar un listado de artículos cotizados.",
   "nodes": [
     {
-      "id": "135-backend-validation",
-      "description": "Agregar 'Categoría Comercial' al array de tipos permitidos en las reglas de validación en StoreListaRequest.php y UpdateListaRequest.php.",
+      "id": "fix-pdf-observations",
+      "description": "Reemplazar la lógica de generación de observaciones a partir de artículos por el valor del campo observaciones de la cotización (con fallback a comentarios del pedido si corresponde) en la vista Blade del PDF.",
       "status": "done",
       "required_skill": null,
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-api/app/Http/Requests/StoreListaRequest.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Requests/UpdateListaRequest.php",
+          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "135-frontend-dropdowns",
-      "description": "Agregar la opción 'Categoría Comercial' en los dropdowns de selección de tipo de lista en los componentes de creación, edición y modal.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [
-        "135-backend-validation"
-      ],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/listas/create/create.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/listas/edit/edit.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "135-frontend-list-severity",
-      "description": "Agregar el mapeo de severidad de color para 'Categoría Comercial' en list.ts para una visualización correcta de la insignia.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [
-        "135-frontend-dropdowns"
-      ],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/listas/list/list.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "135-verification",
-      "description": "Ejecutar validaciones y tests en backend y frontend para confirmar que el tipo se guarda y muestra correctamente.",
+      "id": "verification",
+      "description": "Verificar la correcta visualización de las observaciones en el PDF y el cumplimiento de las reglas del proyecto.",
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "135-backend-validation",
-        "135-frontend-dropdowns",
-        "135-frontend-list-severity"
+        "fix-pdf-observations"
       ],
       "files": []
     }
