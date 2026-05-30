@@ -31,11 +31,12 @@ services:
     volumes:
       - ./heavy-front:/app
       - /app/node_modules
+      - /app/.angular
     ports:
       - "4200:4200"
     networks:
       - heavymarket
-    command: sh -c "npm install && npm start"
+    command: sh -c "rm -rf .angular/cache && npm install && npm start"
     environment:
       - NODE_ENV=development
 
