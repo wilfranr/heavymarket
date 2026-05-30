@@ -200,6 +200,7 @@ export class ListComponent implements OnInit {
             Fabricantes: 'info',
             'Tipo de Máquina': 'info',
             'Tipo de Artículo': 'warn',
+            'Categoría Comercial': 'success',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
             'Nombre de Medida': 'contrast',

@@ -78,6 +78,7 @@ class StoreListaRequest extends FormRequest
                     'Nombre de Medida',
                     'Categoría de Máquina',
                     'Piezas Estandar',
+                    'Categoría Comercial',
                 ]),
             ],
             'nombre' => [

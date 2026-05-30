@@ -40,6 +40,7 @@ export class ListaCreateModalComponent implements OnInit, OnChanges {
         { label: 'Marca', value: 'Marca' as ListaTipo },
         { label: 'Tipo de Máquina', value: 'Tipo de Máquina' as ListaTipo },
         { label: 'Tipo de Artículo', value: 'Tipo de Artículo' as ListaTipo },
+        { label: 'Categoría Comercial', value: 'Categoría Comercial' as ListaTipo },
         { label: 'Unidad de Medida', value: 'Unidad de Medida' as ListaTipo },
         { label: 'Tipo de Medida', value: 'Tipo de Medida' as ListaTipo },
         { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo },

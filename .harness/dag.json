@@ -1,104 +1,74 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T07:45:00Z",
-  "issue": "#134 - fix: filtrar máquinas ya asignadas en creación de terceros",
-  "description": "Una máquina ya asignada a un cliente no debe aparecer disponible para otros terceros en el selector. Se implementará un scope available en Maquina.php, se expondrá en MaquinaController y se validará en StoreTerceroRequest y UpdateTerceroRequest. En el frontend se filtrarán solo las disponibles.",
+  "last_updated": "2026-05-30T13:16:40Z",
+  "issue": "#135 - fix: agregar tipo categoria comercial en desplegable de creacion de listas",
+  "description": "El tipo 'Categoría Comercial' existe en la BD pero no se muestra en el desplegable para crear o editar listas, y falla la validación en el backend. Se agregará a las reglas de validación (StoreListaRequest/UpdateListaRequest) y a las opciones de frontend (create.ts, edit.ts, lista-create-modal.component.ts, list.ts).",
   "nodes": [
     {
-      "id": "134-backend-scope-maquina",
-      "description": "Implementar el scope scopeAvailable($query, $exceptTerceroId = null) en Maquina.php para filtrar máquinas sin relaciones en tercero_maquina.",
+      "id": "135-backend-validation",
+      "description": "Agregar 'Categoría Comercial' al array de tipos permitidos en las reglas de validación en StoreListaRequest.php y UpdateListaRequest.php.",
       "status": "done",
-      "required_skill": "sql_query_analyst",
+      "required_skill": null,
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-api/app/Models/Maquina.php",
+          "path": "heavy-api/app/Http/Requests/StoreListaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateListaRequest.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "134-backend-controller-index-filtro",
-      "description": "Modificar MaquinaController::index para admitir el parámetro disponibles y except_tercero_id, applying the scope correspondientemente.",
+      "id": "135-frontend-dropdowns",
+      "description": "Agregar la opción 'Categoría Comercial' en los dropdowns de selección de tipo de lista en los componentes de creación, edición y modal.",
       "status": "done",
-      "required_skill": null,
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "134-backend-scope-maquina"
+        "135-backend-validation"
       ],
       "files": [
         {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/MaquinaController.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "134-backend-validation-terceros",
-      "description": "Agregar validación en StoreTerceroRequest y UpdateTerceroRequest para asegurar que maquina_id no contenga IDs asociadas a otros terceros.",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "path": "heavy-front/src/app/features/listas/create/create.ts",
           "status": "validated"
         },
         {
-          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "path": "heavy-front/src/app/features/listas/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "134-frontend-filter-available",
-      "description": "Modificar tercero-form y tercero-create-modal para enviar el parámetro disponibles y except_tercero_id al listar las máquinas.",
+      "id": "135-frontend-list-severity",
+      "description": "Agregar el mapeo de severidad de color para 'Categoría Comercial' en list.ts para una visualización correcta de la insignia.",
       "status": "done",
-      "required_skill": null,
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "134-backend-controller-index-filtro"
+        "135-frontend-dropdowns"
       ],
       "files": [
         {
-          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/core/services/maquina.service.ts",
+          "path": "heavy-front/src/app/features/listas/list/list.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "134-frontend-warning-reactive-forms",
-      "description": "Corregir advertencia de Reactive Forms quitando el atributo [disabled] del HTML y controlándolo programáticamente en la clase del componente.",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "134-verification",
-      "description": "Ejecutar validaciones y tests en backend y frontend.",
+      "id": "135-verification",
+      "description": "Ejecutar validaciones y tests en backend y frontend para confirmar que el tipo se guarda y muestra correctamente.",
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "134-backend-validation-terceros",
-        "134-frontend-filter-available",
-        "134-frontend-warning-reactive-forms"
+        "135-backend-validation",
+        "135-frontend-dropdowns",
+        "135-frontend-list-severity"
       ],
       "files": []
     }

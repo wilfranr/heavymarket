@@ -108,6 +108,7 @@ class UpdateListaRequest extends FormRequest
                     'Categoría de Máquina',
                     'Piezas Estandar',
                     'Fabricantes',
+                    'Categoría Comercial',
                 ]),
                 function ($attribute, $value, $fail) use ($lista) {
                     if ($value === 'Fabricantes' && ! $lista->esCatalogoFabricantes()) {
