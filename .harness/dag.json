@@ -1,44 +1,44 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T07:25:00Z",
-  "issue": "#cache-fix - bugfix: solucionar error 504 Outdated Optimize Dep de Angular en Docker",
-  "description": "Se experimentan fallos recurrentes de importación dinámica (error 504 Outdated Optimize Dep) en Angular debido al conflicto de caché de compilación de Vite montada en volumen de Docker. Solución: deshabilitar caché en angular.json y/o limpiar automáticamente en el arranque de Docker compose.",
+  "last_updated": "2026-05-30T07:30:00Z",
+  "issue": "#ng0100-edit-articulo - bugfix: corregir ExpressionChangedAfterItHasBeenCheckedError en edicion de articulos",
+  "description": "El componente EditComponent arroja error NG0100 en la plantilla de edición de artículos debido al cambio síncrono/asíncrono de listas de medidas durante el ciclo de verificación inicial de Angular. Solución: migrar las listas a Signals según la directriz Zoneless del proyecto y ajustar la plantilla.",
   "nodes": [
     {
-      "id": "cache-fix-angular-json",
-      "description": "Deshabilitar la caché de Angular en el archivo de configuración angular.json.",
+      "id": "ng0100-refactor-signals",
+      "description": "Refactorizar las variables de estado tiposMedida, unidadesMedida y nombresMedida a Signals en edit.ts.",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/angular.json",
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "cache-fix-docker-compose",
-      "description": "Limpiar automáticamente la caché .angular/cache antes de arrancar el servidor en docker-compose.yml y excluirla del volumen compartido mediante un volumen anónimo.",
+      "id": "ng0100-update-template",
+      "description": "Actualizar las referencias en edit.html para invocar los Signals con () en [options].",
       "status": "done",
-      "required_skill": "devops_deployment_pro",
+      "required_skill": "software_architect",
       "depends_on": [],
       "files": [
         {
-          "path": "docker-compose.yml",
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "cache-fix-verification",
-      "description": "Levantar el entorno de desarrollo y verificar que la aplicación de Angular compila e inicia correctamente sin presentar errores 504 en la consola del navegador.",
+      "id": "ng0100-verification",
+      "description": "Verificar que la aplicación de Angular compile sin errores en el frontend tras la refactorización.",
       "status": "done",
       "required_skill": "testing_expert",
       "depends_on": [
-        "cache-fix-angular-json",
-        "cache-fix-docker-compose"
+        "ng0100-refactor-signals",
+        "ng0100-update-template"
       ],
       "files": []
     }

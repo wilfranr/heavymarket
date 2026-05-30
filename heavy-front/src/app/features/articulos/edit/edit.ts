@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -122,9 +122,9 @@ export class EditComponent implements OnInit {
     ];
 
     // Variables para el CRUD de medidas
-    unidadesMedida: Lista[] = [];
-    tiposMedida: Lista[] = [];
-    nombresMedida: Lista[] = [];
+    unidadesMedida = signal<Lista[]>([]);
+    tiposMedida = signal<Lista[]>([]);
+    nombresMedida = signal<Lista[]>([]);
 
     // Archivos seleccionados
     fotoFile: File | null = null;
@@ -177,9 +177,9 @@ export class EditComponent implements OnInit {
      * Carga las listas de configuración para medidas
      */
     cargarListasMedidas(): void {
-        this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
-        this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
-        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
+        this.listaService.getByTipo('Unidad de Medida').subscribe((res) => this.unidadesMedida.set(res));
+        this.listaService.getByTipo('Tipo de Medida').subscribe((res) => this.tiposMedida.set(res));
+        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => this.nombresMedida.set(res));
     }
 
     /**

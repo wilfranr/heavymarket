@@ -368,7 +368,7 @@
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Tipo de Medida</label>
                     <p-inputgroup>
                         <p-select
-                            [options]="tiposMedida"
+                            [options]="tiposMedida()"
                             [(ngModel)]="medidaData.tipo"
                             [ngModelOptions]="{standalone: true}"
                             optionLabel="nombre"
@@ -388,7 +388,7 @@
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Nombre / Dimensión</label>
                     <p-inputgroup>
                         <p-select
-                            [options]="nombresMedida"
+                            [options]="nombresMedida()"
                             [(ngModel)]="medidaData.nombre"
                             [ngModelOptions]="{standalone: true}"
                             optionLabel="nombre"
@@ -413,7 +413,7 @@
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Unidad</label>
                     <p-inputgroup>
                         <p-select
-                            [options]="unidadesMedida"
+                            [options]="unidadesMedida()"
                             [(ngModel)]="medidaData.unidad"
                             [ngModelOptions]="{standalone: true}"
                             optionLabel="nombre"
