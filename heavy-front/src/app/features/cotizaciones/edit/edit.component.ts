@@ -9,6 +9,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
+import { DatePickerModule } from 'primeng/datepicker';
 import { MessageService } from 'primeng/api';
 import { updateCotizacion, loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
@@ -20,42 +21,49 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
 @Component({
     selector: 'app-cotizacion-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DatePickerModule],
     providers: [MessageService],
     template: `
-        <div class="card">
-            <h2>Editar Cotización #{{ cotizacionId() }}</h2>
-
-            @if (loading()) {
-                <div class="text-center py-8">
-                    <i class="pi pi-spin pi-spinner text-4xl"></i>
-                    <p class="mt-4">Cargando cotización...</p>
-                </div>
-            } @else if (cotizacionForm) {
-                <form [formGroup]="cotizacionForm" (ngSubmit)="onSubmit()">
-                    <div class="grid">
-                        <div class="col-12 md:col-6">
-                            <label for="estado" class="block mb-2">Estado</label>
-                            <p-select formControlName="estado" [options]="estadosOptions" placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
-                        </div>
-
-                        <div class="col-12 md:col-6">
-                            <label for="fecha_vencimiento" class="block mb-2">Fecha de Vencimiento</label>
-                            <input type="date" formControlName="fecha_vencimiento" [min]="minDate.toISOString().split('T')[0]" class="w-full p-inputtext p-component" style="width: 100%" />
-                        </div>
-
-                        <div class="col-12">
-                            <label for="observaciones" class="block mb-2">Observaciones</label>
-                            <textarea formControlName="observaciones" pInputTextarea rows="4" placeholder="Observaciones adicionales..." styleClass="w-full"> </textarea>
-                        </div>
+        <div class="container mx-auto p-4">
+            <p-card>
+                <ng-template pTemplate="header">
+                    <div class="flex justify-between items-center p-4 border-b border-surface-border">
+                        <h2 class="text-2xl font-bold">Editar Cotización #{{ cotizacionId() }}</h2>
+                        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="onCancel()"> </p-button>
                     </div>
+                </ng-template>
 
-                    <div class="flex justify-content-end gap-2 mt-4">
-                        <p-button label="Cancelar" severity="secondary" icon="pi pi-times" type="button" [outlined]="true" (onClick)="onCancel()"> </p-button>
-                        <p-button label="Actualizar Cotización" icon="pi pi-check" type="submit" [loading]="saving()" [disabled]="cotizacionForm.invalid"> </p-button>
+                @if (loading()) {
+                    <div class="text-center py-8">
+                        <i class="pi pi-spin pi-spinner text-4xl text-primary"></i>
+                        <p class="mt-4 text-surface-500">Cargando cotización...</p>
                     </div>
-                </form>
-            }
+                } @else if (cotizacionForm) {
+                    <form [formGroup]="cotizacionForm" (ngSubmit)="onSubmit()">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="field flex flex-col gap-2">
+                                <label for="estado" class="text-sm font-semibold">Estado</label>
+                                <p-select id="estado" formControlName="estado" [options]="estadosOptions" placeholder="Seleccione un estado" styleClass="w-full"> </p-select>
+                            </div>
+
+                            <div class="field flex flex-col gap-2">
+                                <label for="fecha_vencimiento" class="text-sm font-semibold">Fecha de Vencimiento</label>
+                                <p-datepicker id="fecha_vencimiento" formControlName="fecha_vencimiento" [minDate]="minDate" dateFormat="yy-mm-dd" [showIcon]="true" placeholder="Seleccione la fecha de vencimiento" styleClass="w-full"> </p-datepicker>
+                            </div>
+
+                            <div class="field md:col-span-2 flex flex-col gap-2">
+                                <label for="observaciones" class="text-sm font-semibold">Observaciones</label>
+                                <textarea id="observaciones" formControlName="observaciones" pTextarea [autoResize]="true" rows="4" placeholder="Observaciones adicionales..." class="w-full"> </textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-surface-border">
+                            <p-button label="Cancelar" severity="secondary" icon="pi pi-times" type="button" [outlined]="true" (onClick)="onCancel()"> </p-button>
+                            <p-button label="Actualizar Cotización" icon="pi pi-check" type="submit" [loading]="saving()" [disabled]="cotizacionForm.invalid"> </p-button>
+                        </div>
+                    </form>
+                }
+            </p-card>
         </div>
         <p-toast></p-toast>
     `,

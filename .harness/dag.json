@@ -1,32 +1,22 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T13:55:00Z",
-  "issue": "fix-observaciones-cotizacion-pdf",
-  "description": "Restaurar las observaciones de la cotización en el PDF para que muestre el campo observaciones ingresado en la edición, en lugar de generar un listado de artículos cotizados.",
+  "last_updated": "2026-05-30T13:58:30Z",
+  "issue": "mejorar-ui-edicion-cotizacion",
+  "description": "Mejorar la interfaz visual de la vista de edicion de cotizaciones utilizando TailwindCSS y PrimeNG.",
   "nodes": [
     {
-      "id": "fix-pdf-observations",
-      "description": "Reemplazar la lógica de generación de observaciones a partir de artículos por el valor del campo observaciones de la cotización (con fallback a comentarios del pedido si corresponde) en la vista Blade del PDF.",
+      "id": "mejorar-ui-edicion",
+      "description": "Refactorizar edit.component.ts para usar TailwindCSS para el diseno y rejillas, y p-datepicker de PrimeNG para la fecha.",
       "status": "done",
-      "required_skill": null,
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
+          "path": "heavy-front/src/app/features/cotizaciones/edit/edit.component.ts",
           "status": "validated"
         }
       ]
-    },
-    {
-      "id": "verification",
-      "description": "Verificar la correcta visualización de las observaciones en el PDF y el cumplimiento de las reglas del proyecto.",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": [
-        "fix-pdf-observations"
-      ],
-      "files": []
     }
   ]
 }
