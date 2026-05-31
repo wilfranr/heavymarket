@@ -74,12 +74,16 @@ export interface PedidoReferencia {
             es_pieza_estandar?: boolean;
             peso?: number | null;
             fotoDescriptiva?: string | null;
+            foto_medida?: string | null;
+            medidas?: any[];
             referencias?: any[];
             referencias_cruzadas?: any[];
+            componentes_juego?: any[];
         };
+        pertenece_a_juegos?: any[];
     };
     sistema?: any;
-    lista?: { id: number; nombre: string };
+    lista?: { id: number; nombre: string; fotoMedida?: string | null };
     categoria_comercial?: { id: number; nombre: string };
     categorias_comerciales?: { id: number; nombre: string }[];
     marca?: any;

@@ -1,124 +1,60 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-30T14:05:00Z",
-  "issue": "soporte-multiple-categoria-comercial-136",
-  "description": "Soporte de multiples categorias comerciales en el analisis de partes y costeo de referencias",
+  "last_updated": "2026-05-31T12:15:00Z",
+  "issue": "popover-articulo-enriquecido-139",
+  "description": "Enriquecer los popovers de articulo en costeo con plano esquematico, peso y tabla de cotas/medidas sin quitar las referencias cruzadas",
   "nodes": [
     {
-      "id": "db-migration-pivote",
-      "description": "Crear tabla pivote analysis_commercial_categories y migrar datos existentes de categoria_comercial_id",
-      "status": "done",
-      "required_skill": "sql_query_analyst",
+      "id": "backend-eager-loading-medidas",
+      "description": "Cargar ansiosamente (eager load) la relacion referencia.articulo.medidas en PedidoController y PedidoService",
+      "status": "awaiting_review",
+      "required_skill": null,
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-api/database/migrations/2026_05_30_141208_create_analysis_commercial_categories_table.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "backend-models-relations",
-      "description": "Agregar relacion belongsToMany en PedidoReferencia y adaptar PedidoReferenciaResource y PedidoService para soportar array de categorias",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": ["db-migration-pivote"],
-      "files": [
-        {
-          "path": "heavy-api/app/Models/PedidoReferencia.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Resources/PedidoReferenciaResource.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Requests/UpdatePedidoRequest.php",
-          "status": "validated"
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "implemented"
         },
         {
           "path": "heavy-api/app/Services/PedidoService.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "validated"
+          "status": "implemented"
         }
       ]
     },
     {
-      "id": "backend-costeo-filtering",
-      "description": "Modificar logica de filtrado de proveedores en costeo (PedidoController/ProviderPortalController) usando whereIn sobre las categorias de la referencia",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": ["backend-models-relations"],
-      "files": [
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "frontend-model-updates",
-      "description": "Actualizar pedido.model.ts y DTOs de PedidoReferencia para incluir categoria_comercial_ids como array",
-      "status": "done",
+      "id": "frontend-costeo-popover-ts",
+      "description": "Actualizar costeo.ts para agregar foto_medida y medidas al formGroup y mapear estos campos al popoverData.articulo",
+      "status": "awaiting_review",
       "required_skill": "software_architect",
-      "depends_on": ["backend-models-relations"],
-      "files": [
-        {
-          "path": "heavy-front/src/app/core/models/pedido.model.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "frontend-ui-multiselect",
-      "description": "Reemplazar selector de categoria comercial por p-multiSelect de PrimeNG en formulario de analisis de partes",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["frontend-model-updates"],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "frontend-ui-costeo-view",
-      "description": "Actualizar la vista de costeo para mostrar las multiples categorias seleccionadas y validar el filtro de proveedores",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["frontend-ui-multiselect", "backend-costeo-filtering"],
+      "depends_on": ["backend-eager-loading-medidas"],
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
-          "status": "validated"
+          "status": "implemented"
         }
       ]
     },
     {
-      "id": "test-validations",
-      "description": "Crear y ejecutar tests del backend y del frontend para validar el flujo multicategoria",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": ["frontend-ui-costeo-view"],
+      "id": "frontend-costeo-popover-html",
+      "description": "Diseñar la interfaz premium en costeo.html para el popover de articulo mostrando REF, DESCRIP, PESO, el plano tecnico y la tabla de cotas",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["frontend-costeo-popover-ts"],
       "files": [
         {
-          "path": "heavy-api/tests/Feature/Api/V1/PedidoMultiCategoryTest.php",
-          "status": "validated"
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
+          "status": "implemented"
         }
       ]
+    },
+    {
+      "id": "verification-gates",
+      "description": "Verificar calidad de codigo y ejecucion de tests unitarios de frontend y backend",
+      "status": "awaiting_review",
+      "required_skill": "automated_tester",
+      "depends_on": ["frontend-costeo-popover-html"],
+      "files": []
     }
   ]
 }

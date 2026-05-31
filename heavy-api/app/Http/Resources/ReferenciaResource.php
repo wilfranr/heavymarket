@@ -40,6 +40,14 @@ class ReferenciaResource extends JsonResource
             'articulos' => $this->whenLoaded('articulos'),
             'categoriaComercial' => $this->whenLoaded('categoriaComercial'),
             'lista_id' => $this->lista_id,
+            'pertenece_a_juegos' => $this->when(
+                $this->relationLoaded('articuloJuegos'),
+                fn () => $this->articuloJuegos->map(fn ($aj) => [
+                    'referencia' => $aj->articulo?->referenciasDirectas?->first()?->referencia ?? $aj->articulo?->definicion,
+                    'descripcion' => $aj->articulo?->definicion,
+                    'cantidad' => $aj->cantidad,
+                ])
+            ),
 
             // Cuando `articulo` está cargado (análisis / listados #69)
             'articulo_es_pieza_estandar' => $this->when(

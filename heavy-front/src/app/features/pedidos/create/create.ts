@@ -1210,20 +1210,26 @@ export class CreateComponent implements OnInit {
             return [];
         }
 
+        const esTextoInvalido = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            return s === '[object Object]' || s.includes('[object Object]') || s === 'Sin comentario adicional' || s === '';
+        };
+
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
             return raw
-                .filter((c) => c && typeof c.comentario === 'string')
+                .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
                 .map((c) => ({
                     origen: (c.origen as string) || 'Interno',
-                    comentario: c.comentario as string,
+                    comentario: String(c.comentario),
                     fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                 }));
         }
 
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
-            if (!trimmed || trimmed === 'Sin comentario adicional') {
+            if (esTextoInvalido(trimmed)) {
                 return [];
             }
 
@@ -1231,10 +1237,10 @@ export class CreateComponent implements OnInit {
                 const parsed = JSON.parse(trimmed);
                 if (Array.isArray(parsed)) {
                     return parsed
-                        .filter((c) => c && typeof c.comentario === 'string')
+                        .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
                         .map((c) => ({
                             origen: (c.origen as string) || 'Interno',
-                            comentario: c.comentario as string,
+                            comentario: String(c.comentario),
                             fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                         }));
                 }
@@ -1244,7 +1250,7 @@ export class CreateComponent implements OnInit {
 
             const sinPrefijo = trimmed.startsWith('Comentario del cliente:') ? trimmed.replace('Comentario del cliente:', '').trim() : trimmed;
 
-            if (!sinPrefijo) {
+            if (esTextoInvalido(sinPrefijo)) {
                 return [];
             }
 
@@ -1814,7 +1820,11 @@ export class CreateComponent implements OnInit {
                     formData.append(`referencias[${index}][lista_id]`, control.get('lista_id')?.value?.toString() || '');
                     formData.append(`referencias[${index}][marca_id]`, control.get('marca_id')?.value?.toString() || '');
                     formData.append(`referencias[${index}][cantidad]`, control.get('cantidad')?.value.toString());
-                    formData.append(`referencias[${index}][comentario]`, control.get('comentario')?.value || '');
+                    const comentarioRaw = control.get('comentario')?.value;
+                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
+                        ? JSON.stringify(comentarioRaw)
+                        : (comentarioRaw || '');
+                    formData.append(`referencias[${index}][comentario]`, comentarioStr);
                     formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
                     formData.append(`referencias[${index}][definicion]`, definicion);
 

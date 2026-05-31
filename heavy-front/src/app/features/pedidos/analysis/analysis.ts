@@ -853,34 +853,41 @@ export class AnalysisComponent implements OnInit {
     private parseComentariosRaw(raw: unknown): { origen: string; comentario: string; fecha?: string }[] {
         if (!raw) return [];
 
+        const esTextoInvalido = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            return s === '[object Object]' || s.includes('[object Object]') || s === 'Sin comentario adicional' || s === '';
+        };
+
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
             return raw
-                .filter((c) => c && typeof c.comentario === 'string')
+                .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
                 .map((c) => ({
                     origen: (c.origen as string) || 'Interno',
-                    comentario: c.comentario as string,
+                    comentario: String(c.comentario),
                     fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                 }));
         }
 
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
-            if (!trimmed || trimmed === 'Sin comentario adicional') return [];
+            if (esTextoInvalido(trimmed)) return [];
             try {
                 const parsed = JSON.parse(trimmed);
                 if (Array.isArray(parsed)) {
                     return parsed
-                        .filter((c) => c && typeof c.comentario === 'string')
+                        .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
                         .map((c) => ({
                             origen: (c.origen as string) || 'Interno',
-                            comentario: c.comentario as string,
+                            comentario: String(c.comentario),
                             fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                         }));
                 }
             } catch {
                 /* Formato legacy */
             }
+            if (esTextoInvalido(trimmed)) return [];
             return [{ origen: 'Legacy', comentario: trimmed }];
         }
         return [];
@@ -1581,6 +1588,11 @@ export class AnalysisComponent implements OnInit {
             partes.forEach((parteControl) => {
                 const parteValue = parteControl.value;
 
+                const comentarioRaw = itemValue.comentario;
+                const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
+                    ? JSON.stringify(comentarioRaw)
+                    : (comentarioRaw || '');
+
                 referenciasPayload.push({
                     id: parteValue.id || null,
                     referencia_id: parteValue.referencia_id || null,
@@ -1590,7 +1602,7 @@ export class AnalysisComponent implements OnInit {
                     categoria_comercial_ids: parteValue.categoria_ids || [],
                     cantidad: parteValue.cantidad || 1,
                     definicion: itemValue.definicion,
-                    comentario: itemValue.comentario,
+                    comentario: comentarioStr,
                     estado: 1
                 });
             });

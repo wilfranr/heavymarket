@@ -268,11 +268,12 @@ export class CosteoComponent implements OnInit {
                     cantidad: [ref.cantidad || 1],
                     referencia_id: [ref.referencia_id],
                     categoria_nombre: [ref.lista?.nombre || 'General'],
-                    categoria_comercial_nombre: [ref.categoria_comercial?.nombre || (ref.categorias_comerciales && ref.categorias_comerciales.length > 0 ? ref.categorias_comerciales.map((c: any) => c.nombre).join(', ') : 'Sin Categoría')],
+                    categoria_comercial_nombre: [(ref.categorias_comerciales && ref.categorias_comerciales.length > 0 ? ref.categorias_comerciales.map((c: any) => c.nombre).join(', ') : ref.categoria_comercial?.nombre) || 'Sin Categoría'],
                     categoria_comercial_id: [ref.categoria_comercial_id],
                     categoria_comercial_ids: [ref.categoria_comercial_ids || (ref.categoria_comercial_id ? [ref.categoria_comercial_id] : [])],
                     marca_nombre: [ref.marca?.nombre || (ref.referencia as any)?.marca?.nombre || 'Sin Marca'],
                     peso: [ref.referencia?.articulo?.peso || 0],
+                    comentario: [ref.comentario || null],
                     estado_str: ['Preparado'],
                     imagen: [ref.imagen || null],
                     imagenes: [ref.imagenes || []],
@@ -284,6 +285,10 @@ export class CosteoComponent implements OnInit {
                     articulo_definicion: [ref.referencia?.articulo?.definicion || null],
                     referencias_cruzadas: [ref.referencia?.articulo?.referencias_cruzadas || ref.referencia?.articulo?.referencias || []],
                     articulo_imagen: [ref.referencia?.articulo?.fotoDescriptiva || null],
+                    foto_medida: [ref.referencia?.articulo?.foto_medida || ref.lista?.fotoMedida || null],
+                    medidas: [ref.referencia?.articulo?.medidas || []],
+                    componentes_juego: [ref.referencia?.articulo?.componentes_juego || []],
+                    pertenece_a_juegos: [ref.referencia?.pertenece_a_juegos || []],
                     mostrar_referencia: [true],
                     proveedores: this.fb.array(ref.proveedores && ref.proveedores.length > 0 ? ref.proveedores.map((prov) => this.crearProveedorFormGroup(prov)) : [this.crearProveedorFormGroup()])
                 });
@@ -402,7 +407,8 @@ export class CosteoComponent implements OnInit {
     // --- Comentarios ---
     abrirDialogoComentario(refIndex: number): void {
         const refGroup = this.referenciasFormArray.at(refIndex);
-        this.comentariosItemActual = refGroup.get('comentarios')?.value || [];
+        const rawComentario = refGroup.get('comentario')?.value;
+        this.comentariosItemActual = this.parseComentariosRaw(rawComentario);
         this.displayComentarioDialog = true;
     }
 
@@ -439,24 +445,34 @@ export class CosteoComponent implements OnInit {
                 const defOriginal = refGroup.get('articulo_definicion')?.value;
                 const descEsp = refGroup.get('descripcion_especifica')?.value;
                 const refsCruzadas = refGroup.get('referencias_cruzadas')?.value || [];
-                // Detectar si es juego: si tiene referencias cruzadas con cantidad > 1 o si el flag está presente
-                const esJuego = refsCruzadas.length > 0 && refsCruzadas.some((rc: any) => (rc.pivot?.cantidad || rc.cantidad || 0) > 0);
+                const esJuegoArt = refGroup.get('componentes_juego')?.value?.length > 0;
 
                 this.popoverData = {
                     title: 'Artículo',
                     subtitle: descEsp || defOriginal,
                     marca_nombre: refGroup.get('marca_nombre')?.value,
-                    es_juego: esJuego,
-                    referencias_cruzadas: refsCruzadas
+                    es_juego: esJuegoArt,
+                    referencias_cruzadas: refsCruzadas,
+                    peso: refGroup.get('articulo_peso')?.value || refGroup.get('peso')?.value || 0,
+                    foto_medida: refGroup.get('foto_medida')?.value || null,
+                    medidas: refGroup.get('medidas')?.value || [],
+                    referencia_codigo: refGroup.get('referencia_codigo')?.value,
+                    componentes_juego: refGroup.get('componentes_juego')?.value || [],
+                    pertenece_a_juegos: refGroup.get('pertenece_a_juegos')?.value || []
                 };
                 break;
             case 'referencia':
+                const compJuego = refGroup.get('componentes_juego')?.value || [];
                 this.popoverData = {
                     title: 'Referencia',
                     subtitle: refGroup.get('referencia_codigo')?.value,
                     marca_nombre: refGroup.get('marca_nombre')?.value,
-                    es_juego: false,
-                    referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || []
+                    es_juego: compJuego.length > 0,
+                    referencias_cruzadas: refGroup.get('referencias_cruzadas')?.value || [],
+                    componentes_juego: compJuego,
+                    pertenece_a_juegos: refGroup.get('pertenece_a_juegos')?.value || [],
+                    foto_articulo: refGroup.get('articulo_imagen')?.value || null,
+                    articulo_definicion: refGroup.get('articulo_definicion')?.value || ''
                 };
                 break;
             case 'categorias_comerciales':
@@ -479,7 +495,7 @@ export class CosteoComponent implements OnInit {
         op.toggle(event);
     }
 
-    private formatImageUrl(url: string | null): string | null {
+    protected formatImageUrl(url: string | null): string | null {
         if (!url) return null;
         if (url.startsWith('http') || url.startsWith('data:')) return url;
         return `/storage/${url.replace(/^\/+/, '')}`;
@@ -529,20 +545,50 @@ export class CosteoComponent implements OnInit {
         this.agregarProveedorFila(formArray);
     }
 
-    private parseComentariosRaw(raw: string): any[] {
+    private parseComentariosRaw(raw: unknown): any[] {
         if (!raw) return [];
-        try {
-            // Intentar parsear si es JSON
-            if (raw.startsWith('[') || raw.startsWith('{')) {
-                const parsed = JSON.parse(raw);
-                return Array.isArray(parsed) ? parsed : [parsed];
-            }
-        } catch (e) {
-            // Si falla, tratar como texto plano
+
+        const esTextoInvalido = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            return s === '[object Object]' || s.includes('[object Object]') || s === 'Sin comentario adicional' || s === '';
+        };
+
+        // Si ya es un array (nuevo formato del API con casts)
+        if (Array.isArray(raw)) {
+            return raw
+                .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
+                .map((c) => ({
+                    origen: c.origen || 'Interno',
+                    comentario: String(c.comentario),
+                    fecha: c.fecha || undefined
+                }));
         }
 
-        // Si no es JSON, dividir por separadores comunes o tratar como uno solo
-        return [{ comentario: raw, origen: 'Vendedor', fecha: new Date() }];
+        if (typeof raw === 'string') {
+            const trimmed = raw.trim();
+            if (esTextoInvalido(trimmed)) return [];
+            try {
+                // Intentar parsear si es JSON
+                if (trimmed.startsWith('[') || trimmed.startsWith('{')) {
+                    const parsed = JSON.parse(trimmed);
+                    const list = Array.isArray(parsed) ? parsed : [parsed];
+                    return list
+                        .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
+                        .map((c) => ({
+                            origen: c.origen || 'Interno',
+                            comentario: String(c.comentario),
+                            fecha: c.fecha || undefined
+                        }));
+                }
+            } catch (e) {
+                // Si falla, tratar como texto plano legacy
+            }
+            if (esTextoInvalido(trimmed)) return [];
+            return [{ comentario: trimmed, origen: 'Vendedor', fecha: new Date() }];
+        }
+
+        return [];
     }
 
     getComentariosCount(index: number): number {

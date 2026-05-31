@@ -32,7 +32,11 @@ class ArticuloResource extends JsonResource
             'peso' => $this->peso,
             'comentarios' => $this->comentarios,
             'fotoDescriptiva' => $this->fotoDescriptiva && ! filter_var($this->fotoDescriptiva, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->fotoDescriptiva) : $this->fotoDescriptiva,
-            'foto_medida' => $this->foto_medida && ! filter_var($this->foto_medida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto_medida) : $this->foto_medida,
+            'foto_medida' => $this->foto_medida
+                ? (! filter_var($this->foto_medida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto_medida) : $this->foto_medida)
+                : ($this->relationLoaded('piezaEstandar') && $this->piezaEstandar && $this->piezaEstandar->fotoMedida
+                    ? (! filter_var($this->piezaEstandar->fotoMedida, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->piezaEstandar->fotoMedida) : $this->piezaEstandar->fotoMedida)
+                    : null),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
@@ -47,6 +51,15 @@ class ArticuloResource extends JsonResource
             ),
             'medidas' => $this->whenLoaded('medidas'),
             'articuloJuegos' => $this->whenLoaded('articuloJuegos'),
+            'componentes_juego' => $this->when(
+                $this->relationLoaded('articuloJuegos'),
+                fn () => $this->articuloJuegos->map(fn ($aj) => [
+                    'cantidad' => $aj->pivot?->cantidad ?? $aj->cantidad,
+                    'referencia' => $aj->referencia?->referencia,
+                    'descripcion' => $aj->referencia?->articulo?->definicion ?? $aj->referencia?->comentario,
+                    'comentario' => $aj->comentario,
+                ])
+            ),
         ];
     }
 }

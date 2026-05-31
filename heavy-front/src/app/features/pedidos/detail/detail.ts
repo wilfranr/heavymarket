@@ -179,21 +179,27 @@ export class DetailComponent implements OnInit {
             return [];
         }
 
+        const esTextoInvalido = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            return s === '[object Object]' || s.includes('[object Object]') || s === 'Sin comentario adicional' || s === '';
+        };
+
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
             return raw
                 .filter((c): c is { comentario?: string; origen?: string; fecha?: string } => !!c && typeof c === 'object')
-                .filter((c) => typeof c.comentario === 'string')
+                .filter((c) => c.comentario && !esTextoInvalido(c.comentario))
                 .map((c) => ({
                     origen: typeof c.origen === 'string' ? c.origen : 'Interno',
-                    comentario: c.comentario as string,
+                    comentario: String(c.comentario),
                     fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                 }));
         }
 
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
-            if (!trimmed || trimmed === 'Sin comentario adicional') {
+            if (esTextoInvalido(trimmed)) {
                 return [];
             }
 
@@ -202,10 +208,10 @@ export class DetailComponent implements OnInit {
                 if (Array.isArray(parsed)) {
                     return parsed
                         .filter((c): c is { comentario?: string; origen?: string; fecha?: string } => !!c && typeof c === 'object')
-                        .filter((c) => typeof c.comentario === 'string')
+                        .filter((c) => c.comentario && !esTextoInvalido(c.comentario))
                         .map((c) => ({
                             origen: typeof c.origen === 'string' ? c.origen : 'Interno',
-                            comentario: c.comentario as string,
+                            comentario: String(c.comentario),
                             fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                         }));
                 }
@@ -215,7 +221,7 @@ export class DetailComponent implements OnInit {
 
             const sinPrefijo = trimmed.startsWith('Comentario del cliente:') ? trimmed.replace('Comentario del cliente:', '').trim() : trimmed;
 
-            if (!sinPrefijo) {
+            if (esTextoInvalido(sinPrefijo)) {
                 return [];
             }
 

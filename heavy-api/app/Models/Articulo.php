@@ -64,6 +64,12 @@ class Articulo extends Model
         return $this->hasMany(Medida::class);
     }
 
+    public function piezaEstandar(): BelongsTo
+    {
+        return $this->belongsTo(Lista::class, 'definicion', 'nombre')
+            ->where('tipo', 'Piezas Estandar');
+    }
+
     public function pedidos(): HasMany
     {
         return $this->hasMany(Pedido::class);

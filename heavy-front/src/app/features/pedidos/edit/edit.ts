@@ -1922,18 +1922,26 @@ export class EditComponent implements OnInit {
             return [];
         }
 
+        const esTextoInvalido = (val: any): boolean => {
+            if (val === undefined || val === null) return true;
+            const s = String(val).trim();
+            return s === '[object Object]' || s.includes('[object Object]') || s === 'Sin comentario adicional' || s === '';
+        };
+
         // Si ya es un array (nuevo formato del API con casts)
         if (Array.isArray(raw)) {
-            return raw.filter((c) => c && typeof c.comentario === 'string').map((c) => ({
-                origen: (c.origen as string) || 'Interno',
-                comentario: c.comentario as string,
-                fecha: typeof c.fecha === 'string' ? c.fecha : undefined
-            }));
+            return raw
+                .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
+                .map((c) => ({
+                    origen: (c.origen as string) || 'Interno',
+                    comentario: String(c.comentario),
+                    fecha: typeof c.fecha === 'string' ? c.fecha : undefined
+                }));
         }
 
         if (typeof raw === 'string') {
             const trimmed = raw.trim();
-            if (!trimmed || trimmed === 'Sin comentario adicional') {
+            if (esTextoInvalido(trimmed)) {
                 return [];
             }
 
@@ -1941,10 +1949,10 @@ export class EditComponent implements OnInit {
                 const parsed = JSON.parse(trimmed);
                 if (Array.isArray(parsed)) {
                     return parsed
-                        .filter((c) => c && typeof c.comentario === 'string')
+                        .filter((c) => c && typeof c === 'object' && c.comentario && !esTextoInvalido(c.comentario))
                         .map((c) => ({
                             origen: (c.origen as string) || 'Interno',
-                            comentario: c.comentario as string,
+                            comentario: String(c.comentario),
                             fecha: typeof c.fecha === 'string' ? c.fecha : undefined
                         }));
                 }
@@ -1956,7 +1964,7 @@ export class EditComponent implements OnInit {
                 ? trimmed.replace('Comentario del cliente:', '').trim()
                 : trimmed;
 
-            if (!sinPrefijo) {
+            if (esTextoInvalido(sinPrefijo)) {
                 return [];
             }
 
@@ -2371,6 +2379,22 @@ export class EditComponent implements OnInit {
 
         // Validaciones adicionales según el estado
         if (nuevoEstado === 'En_Costeo' || nuevoEstado === 'Cotizado') {
+            const tienePorDefecto = this.referenciasFormArray.controls.some((control) => {
+                const sistemaId = control.get('sistema_id')?.value;
+                const listaId = control.get('lista_id')?.value;
+                return Number(sistemaId) === 62 && Number(listaId) === 3425;
+            });
+
+            if (tienePorDefecto) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se puede cambiar el estado a costeo si hay referencias con sistema y tipo de artículo por defecto.'
+                });
+                this.pedidoForm.patchValue({ estado: this.estadoActual });
+                return;
+            }
+
             // Verificar que haya referencias con proveedores
             const tieneProveedores = Array.from(this.proveedoresPorReferencia.values()).some((proveedores) => proveedores.length > 0);
 
@@ -2431,6 +2455,23 @@ export class EditComponent implements OnInit {
             return;
         }
 
+        if (nuevoEstado === 'En_Costeo') {
+            const tienePorDefecto = this.referenciasFormArray.controls.some((control) => {
+                const sistemaId = control.get('sistema_id')?.value;
+                const listaId = control.get('lista_id')?.value;
+                return Number(sistemaId) === 62 && Number(listaId) === 3425;
+            });
+
+            if (tienePorDefecto) {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error de Validación',
+                    detail: 'No se puede enviar a costeo con sistema y tipo de artículo por defecto en las líneas de análisis.'
+                });
+                return;
+            }
+        }
+
         this.submitting = true;
         this.resolverReferenciasAntesDeGuardar().subscribe({
             next: () => {
@@ -2463,7 +2504,11 @@ export class EditComponent implements OnInit {
                     formData.append(`referencias[${index}][lista_id]`, rawRef.lista_id ? rawRef.lista_id.toString() : '');
                     formData.append(`referencias[${index}][marca_id]`, rawRef.marca_id ? rawRef.marca_id.toString() : '');
                     formData.append(`referencias[${index}][cantidad]`, rawRef.cantidad.toString());
-                    formData.append(`referencias[${index}][comentario]`, rawRef.comentario || '');
+                    const comentarioRaw = rawRef.comentario;
+                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
+                        ? JSON.stringify(comentarioRaw)
+                        : (comentarioRaw || '');
+                    formData.append(`referencias[${index}][comentario]`, comentarioStr);
                     formData.append(`referencias[${index}][estado]`, (rawRef.estado ?? true) ? '1' : '0');
                     formData.append(`referencias[${index}][definicion]`, definicion);
                     

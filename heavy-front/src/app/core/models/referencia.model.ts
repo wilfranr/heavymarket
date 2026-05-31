@@ -20,6 +20,11 @@ export interface Referencia {
         descripcionEspecifica?: string;
         nombre?: string;
         es_pieza_estandar?: boolean;
+        peso?: number | null;
+        fotoDescriptiva?: string | null;
+        foto_medida?: string | null;
+        medidas?: any[];
+        componentes_juego?: any[];
     };
     articulo_es_pieza_estandar?: boolean;
     articulo_definicion?: string | null;
@@ -30,6 +35,7 @@ export interface Referencia {
         tipo: string;
     };
     articulos?: any[];
+    pertenece_a_juegos?: any[];
 }
 
 /**

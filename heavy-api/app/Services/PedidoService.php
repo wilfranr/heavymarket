@@ -81,7 +81,7 @@ class PedidoService
                 'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
-                        ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista']);
+                        ->with(['referencia.articulo.referencias.marca', 'referencia.articulo.medidas', 'referencia.articulo.piezaEstandar', 'referencia.articulo.articuloJuegos.referencia.articulo', 'referencia.articuloJuegos.articulo', 'sistema', 'lista']);
                 },
                 'articulos',
             ]);
@@ -105,7 +105,7 @@ class PedidoService
                 'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema', 'fabricante', 'contacto',
                 'referencias' => function ($query): void {
                     $query->withCount('imagenes')
-                        ->with(['referencia.articulo.referencias.marca', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
+                        ->with(['referencia.articulo.referencias.marca', 'referencia.articulo.medidas', 'referencia.articulo.piezaEstandar', 'referencia.articulo.articuloJuegos.referencia.articulo', 'referencia.articuloJuegos.articulo', 'sistema', 'lista', 'imagenes', 'proveedores.tercero']);
                 },
                 'articulos.articulo', 'articulos.sistema',
             ]);
