@@ -1,57 +1,57 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-05-31T12:15:00Z",
+  "last_updated": "2026-06-01T00:02:00Z",
   "issue": "popover-articulo-enriquecido-139",
   "description": "Enriquecer los popovers de articulo en costeo con plano esquematico, peso y tabla de cotas/medidas sin quitar las referencias cruzadas",
   "nodes": [
     {
       "id": "backend-eager-loading-medidas",
       "description": "Cargar ansiosamente (eager load) la relacion referencia.articulo.medidas en PedidoController y PedidoService",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Services/PedidoService.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "frontend-costeo-popover-ts",
       "description": "Actualizar costeo.ts para agregar foto_medida y medidas al formGroup y mapear estos campos al popoverData.articulo",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": ["backend-eager-loading-medidas"],
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "frontend-costeo-popover-html",
       "description": "Diseñar la interfaz premium en costeo.html para el popover de articulo mostrando REF, DESCRIP, PESO, el plano tecnico y la tabla de cotas",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["frontend-costeo-popover-ts"],
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "verification-gates",
       "description": "Verificar calidad de codigo y ejecucion de tests unitarios de frontend y backend",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": ["frontend-costeo-popover-html"],
       "files": []
