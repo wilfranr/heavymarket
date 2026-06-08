@@ -114,6 +114,19 @@ class ArticuloController extends Controller
             }
         }
 
+        if ($request->has('juegos')) {
+            $juegos = json_decode($request->input('juegos'), true);
+            if (is_array($juegos)) {
+                foreach ($juegos as $juegoData) {
+                    $articulo->articuloJuegos()->create([
+                        'referencia_id' => $juegoData['referencia_id'],
+                        'cantidad' => $juegoData['cantidad'],
+                        'comentario' => $juegoData['comentario'] ?? null,
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'message' => 'Artículo creado exitosamente',
             'data' => new ArticuloResource($articulo->load(['referencias.marca', 'referenciasDirectas.marca', 'articuloJuegos.referencia.marca'])),
@@ -176,6 +189,21 @@ class ArticuloController extends Controller
 
         if ($request->has('referencias_ids')) {
             $articulo->referencias()->sync($request->input('referencias_ids'));
+        }
+
+        if ($request->has('juegos')) {
+            $juegos = json_decode($request->input('juegos'), true);
+            if (is_array($juegos)) {
+                // Sincronizar borrando anteriores y creando nuevos
+                $articulo->articuloJuegos()->delete();
+                foreach ($juegos as $juegoData) {
+                    $articulo->articuloJuegos()->create([
+                        'referencia_id' => $juegoData['referencia_id'],
+                        'cantidad' => $juegoData['cantidad'],
+                        'comentario' => $juegoData['comentario'] ?? null,
+                    ]);
+                }
+            }
         }
 
         return response()->json([

@@ -36,6 +36,7 @@ class StoreArticuloRequest extends FormRequest
             'referencias_ids' => ['required', 'array', 'min:1'],
             'referencias_ids.*' => ['required', 'exists:referencias,id'],
             'medidas' => ['nullable', 'string'],
+            'juegos' => ['nullable', 'string'],
         ];
     }
 

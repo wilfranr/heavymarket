@@ -85,6 +85,7 @@ export class EditComponent implements OnInit {
     loading = false;
     tipos: Lista[] = [];
     referenciasDisponibles: Referencia[] = [];
+    referenciasJuegosDisponibles: Referencia[] = [];
     articuloActual: Articulo | null = null;
 
     // Variables para el modal de creación de tipo (Piezas Estandar)
@@ -97,6 +98,7 @@ export class EditComponent implements OnInit {
     // Variables para el modal de creación de referencia
     showReferenciaModal = false;
     currentReferenciaArrayIndex: number | null = null;
+    referenciaJuegosIndex: number | null = null;
 
     // Variables para diálogos de relaciones
     showReferenciaDialog = false;
@@ -136,6 +138,7 @@ export class EditComponent implements OnInit {
     ngOnInit(): void {
         this.cargarTipos();
         this.cargarReferencias();
+        this.cargarReferenciasJuegos();
         this.cargarListasMedidas();
 
         this.route.params.subscribe((params) => {
@@ -306,22 +309,41 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Abre el modal para crear una nueva referencia desde la pestaña de Juegos
+     * @param index Índice del FormArray
+     */
+    abrirCrearReferenciaJuegos(index: number): void {
+        this.referenciaJuegosIndex = index;
+        this.showReferenciaModal = true;
+    }
+
+    /**
      * Maneja la creación exitosa de una referencia
      */
     onReferenciaCreada(nuevaRef: any): void {
-        // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
-        if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
-            this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
+        // Añadir inmediatamente a las listas locales para que el renderizado sea instantáneo
+        if (nuevaRef) {
+            if (!this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
+                this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
+            }
+            if (!this.referenciasJuegosDisponibles.find((r) => r.id === nuevaRef.id)) {
+                this.referenciasJuegosDisponibles = [...this.referenciasJuegosDisponibles, nuevaRef];
+            }
         }
 
         if (this.currentReferenciaArrayIndex !== null) {
             const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
             control.patchValue({ referencia_id: nuevaRef.id });
+            this.currentReferenciaArrayIndex = null;
+        } else if (this.referenciaJuegosIndex !== null) {
+            const control = this.articuloJuegos.at(this.referenciaJuegosIndex);
+            control.patchValue({ referencia_id: nuevaRef.id });
+            this.referenciaJuegosIndex = null;
         }
 
-        this.cargarReferencias(); // Sincronizar con el servidor en segundo plano
+        this.cargarReferencias(); // Sincronizar con el servidor
+        this.cargarReferenciasJuegos();
         this.showReferenciaModal = false;
-        this.currentReferenciaArrayIndex = null;
     }
 
     /**
@@ -335,7 +357,8 @@ export class EditComponent implements OnInit {
             comentarios: [articulo.comentarios || ''],
             fotoDescriptiva: [articulo.fotoDescriptiva || null],
             foto_medida: [articulo.foto_medida || null],
-            referenciasCruzadas: this.fb.array([])
+            referenciasCruzadas: this.fb.array([]),
+            articuloJuegos: this.fb.array([])
         });
 
         // Cargar referencias existentes en el FormArray
@@ -350,6 +373,25 @@ export class EditComponent implements OnInit {
                 this.referenciasCruzadas.push(
                     this.fb.group({
                         referencia_id: [ref.id, Validators.required]
+                    })
+                );
+            });
+        }
+
+        // Cargar juegos existentes en el FormArray
+        if (articulo.articuloJuegos && articulo.articuloJuegos.length > 0) {
+            articulo.articuloJuegos.forEach((aj: any) => {
+                if (aj.referencia) {
+                    const exists = this.referenciasJuegosDisponibles.find((d) => d.id === aj.referencia.id);
+                    if (!exists) {
+                        this.referenciasJuegosDisponibles = [...this.referenciasJuegosDisponibles, aj.referencia];
+                    }
+                }
+                this.articuloJuegos.push(
+                    this.fb.group({
+                        referencia_id: [aj.referencia_id, Validators.required],
+                        cantidad: [aj.cantidad, [Validators.required, Validators.min(1)]],
+                        comentario: [aj.comentario || '']
                     })
                 );
             });
@@ -373,6 +415,13 @@ export class EditComponent implements OnInit {
      */
     get referenciasCruzadas(): FormArray {
         return this.articuloForm.get('referenciasCruzadas') as FormArray;
+    }
+
+    /**
+     * Getter para el FormArray de juegos (kits)
+     */
+    get articuloJuegos(): FormArray {
+        return this.articuloForm.get('articuloJuegos') as FormArray;
     }
 
     /**
@@ -445,6 +494,33 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * Carga las referencias para el juego/kit sin la restricción de disponibilidad
+     */
+    cargarReferenciasJuegos(search?: string): void {
+        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+            next: (res) => {
+                const nuevas = res.data;
+                const actuales = this.articuloActual?.articuloJuegos?.map(aj => aj.referencia).filter(Boolean) as Referencia[] || [];
+
+                const map = new Map<number, Referencia>();
+                actuales.forEach((r) => map.set(r.id, r));
+                nuevas.forEach((r: Referencia) => map.set(r.id, r));
+
+                this.referenciasJuegosDisponibles = Array.from(map.values());
+            }
+        });
+    }
+
+    onFilterReferenciasJuegos(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarReferenciasJuegos(search);
+        } else if (!search) {
+            this.cargarReferenciasJuegos();
+        }
+    }
+
+    /**
      * Abre el conversor de peso
      */
     abrirConversor(): void {
@@ -501,24 +577,17 @@ export class EditComponent implements OnInit {
     /**
      * Gestión de Juegos (Kits)
      */
-    abrirDialogoJuego(): void {
-        this.cargarReferencias();
-        this.juegoData = { referencia_id: 0, cantidad: 1, comentario: '' };
-        this.showJuegoDialog = true;
+    agregarJuego(): void {
+        const row = this.fb.group({
+            referencia_id: [null, Validators.required],
+            cantidad: [1, [Validators.required, Validators.min(1)]],
+            comentario: ['']
+        });
+        this.articuloJuegos.push(row);
     }
 
-    asociarJuego(): void {
-        if (!this.juegoData.referencia_id) return;
-        this.articuloService.addJuego(this.articuloId, this.juegoData).subscribe(() => {
-            this.reloadArticulo();
-            this.showJuegoDialog = false;
-        });
-    }
-
-    eliminarJuego(juego: ArticuloJuego): void {
-        this.articuloService.removeJuego(this.articuloId, juego.referencia_id).subscribe(() => {
-            this.reloadArticulo();
-        });
+    eliminarJuego(index: number): void {
+        this.articuloJuegos.removeAt(index);
     }
 
     /**
@@ -599,6 +668,9 @@ export class EditComponent implements OnInit {
         referenciasIds.forEach((id: number) => {
             formData.append('referencias_ids[]', id.toString());
         });
+
+        const juegosValores = this.articuloForm.get('articuloJuegos')?.value || [];
+        formData.append('juegos', JSON.stringify(juegosValores));
 
         this.store.dispatch(updateArticulo({ id: this.articuloId, data: formData }));
 

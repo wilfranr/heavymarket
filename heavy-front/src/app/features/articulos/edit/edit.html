@@ -130,6 +130,15 @@
                                         }
                                     </div>
                                 </p-tab>
+                                <p-tab [value]="2">
+                                    <div class="flex items-center gap-2 py-2">
+                                        <i class="pi pi-box text-sm"></i>
+                                        <span class="text-[10px] font-black uppercase tracking-widest">Juegos (Kits)</span>
+                                        @if (articuloActual.articuloJuegos && articuloActual.articuloJuegos.length > 0) {
+                                        <p-tag [value]="articuloActual.articuloJuegos.length.toString()" severity="success" styleClass="text-[9px] h-4 min-w-4 p-0"></p-tag>
+                                        }
+                                    </div>
+                                </p-tab>
                             </p-tablist>
 
                             <p-tabpanels>
@@ -260,6 +269,97 @@
                                                     <tr>
                                                         <td colspan="4" class="px-4 py-8 text-center">
                                                             <p class="text-gray-500 text-xs italic">No hay medidas técnicas registradas.</p>
+                                                        </td>
+                                                    </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </p-tabpanel>
+
+                                <!-- Panel de Juegos (Kits) -->
+                                <p-tabpanel [value]="2">
+                                    <div class="p-4 md:p-6 pt-2">
+                                        <div class="flex justify-between items-center mb-6">
+                                            <span class="text-xs text-gray-500 italic">Configure las piezas que componen este juego</span>
+                                            <p-button
+                                                label="Añadir Componente"
+                                                icon="pi pi-plus"
+                                                [text]="true"
+                                                size="small"
+                                                styleClass="text-[#fdb831] hover:bg-[#fdb831]/10 px-3 py-1 rounded transition-colors font-bold text-xs uppercase tracking-wider"
+                                                (onClick)="agregarJuego()"
+                                            ></p-button>
+                                        </div>
+
+                                        <div class="overflow-hidden rounded-2xl border border-surface-border bg-surface-ground/50">
+                                            <table class="w-full text-left border-collapse">
+                                                <thead>
+                                                    <tr class="bg-surface-ground">
+                                                        <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">Referencia / Código</th>
+                                                        <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase w-32">Cantidad</th>
+                                                        <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">Nota / Comentario</th>
+                                                        <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase text-center w-20">Acción</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody formArrayName="articuloJuegos">
+                                                    @for (juego of articuloJuegos.controls; track $index) {
+                                                    <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
+                                                        <td class="px-4 py-2">
+                                                            <p-inputgroup styleClass="w-full h-9">
+                                                                <p-select
+                                                                    formControlName="referencia_id"
+                                                                    [options]="referenciasJuegosDisponibles"
+                                                                    optionLabel="referencia"
+                                                                    optionValue="id"
+                                                                    placeholder="Seleccione..."
+                                                                    [filter]="true"
+                                                                    filterBy="referencia"
+                                                                    (onFilter)="onFilterReferenciasJuegos($event)"
+                                                                    appendTo="body"
+                                                                    styleClass="w-full rounded-l-xl border-surface-border"
+                                                                >
+                                                                    <ng-template let-item pTemplate="item">
+                                                                        <div class="flex flex-col">
+                                                                            <span class="font-bold text-sm">{{ item.referencia }}</span>
+                                                                            <span class="text-[10px] text-gray-500">{{ item.marca?.nombre }}</span>
+                                                                        </div>
+                                                                    </ng-template>
+                                                                </p-select>
+                                                                <p-inputgroup-addon styleClass="rounded-r-xl border-surface-border bg-surface-ground">
+                                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferenciaJuegos($index)"></p-button>
+                                                                </p-inputgroup-addon>
+                                                            </p-inputgroup>
+                                                        </td>
+                                                        <td class="px-4 py-2">
+                                                            <p-inputnumber
+                                                                formControlName="cantidad"
+                                                                placeholder="Cant"
+                                                                [showButtons]="true"
+                                                                [min]="1"
+                                                                styleClass="h-9 w-full"
+                                                                inputStyleClass="text-center font-semibold text-sm h-9"
+                                                            ></p-inputnumber>
+                                                        </td>
+                                                        <td class="px-4 py-2">
+                                                            <input
+                                                                pInputText
+                                                                formControlName="comentario"
+                                                                placeholder="Comentario sobre el componente..."
+                                                                class="w-full h-9 rounded-xl text-xs bg-surface-ground/50 border-surface-border"
+                                                            />
+                                                        </td>
+                                                        <td class="px-4 py-2 text-center">
+                                                            <button type="button" (click)="eliminarJuego($index)" class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
+                                                                <i class="pi pi-trash text-sm"></i>
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                    } @if (articuloJuegos.length === 0) {
+                                                    <tr>
+                                                        <td colspan="4" class="px-4 py-8 text-center">
+                                                            <p class="text-gray-500 text-xs italic">Este artículo no está configurado como un juego (no tiene componentes).</p>
                                                         </td>
                                                     </tr>
                                                     }
