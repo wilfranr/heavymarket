@@ -16,7 +16,14 @@
         <div class="hidden md:block">
             <div class="flex gap-4">
                 <p-button label="Cancelar" variant="text" severity="secondary" styleClass="text-sm font-bold px-6 py-4 rounded-2xl" (onClick)="cancelar()"> </p-button>
-                <p-button label="Guardar Cambios" icon="pi pi-check" styleClass="p-button-warning text-sm font-bold px-8 py-4 rounded-2xl shadow-xl shadow-orange-500/20" (onClick)="onSubmit()" [loading]="loading" [disabled]="!articuloForm || articuloForm.invalid">
+                <p-button
+                    label="Guardar Cambios"
+                    icon="pi pi-check"
+                    styleClass="p-button-warning text-sm font-bold px-8 py-4 rounded-2xl shadow-xl shadow-orange-500/20"
+                    (onClick)="onSubmit()"
+                    [loading]="loading"
+                    [disabled]="!articuloForm || articuloForm.invalid"
+                >
                 </p-button>
             </div>
         </div>
@@ -179,6 +186,9 @@
                                                     @for (ref of referenciasCruzadas.controls; track $index) { @if (shouldShowReference(ref.value.referencia_id)) {
                                                     <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                                         <td class="px-4 py-2">
+                                                            @if (editingReferenciaIndex() === $index) {
+                                                            <input pInputText formControlName="referencia" class="w-full" />
+                                                            } @else {
                                                             <p-inputgroup styleClass="w-full h-9">
                                                                 <p-select
                                                                     formControlName="referencia_id"
@@ -203,12 +213,43 @@
                                                                     <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferencia($index)"></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
+                                                            }
                                                         </td>
-                                                        <td class="px-4 py-2 text-sm text-gray-400">{{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }}</td>
+                                                        <td class="px-4 py-2 text-sm text-gray-400">
+                                                            @if (editingReferenciaIndex() === $index) {
+                                                            <p-select
+                                                                formControlName="marca_id"
+                                                                [options]="marcasReferencias()"
+                                                                optionLabel="nombre"
+                                                                optionValue="id"
+                                                                placeholder="Marca o fabricante"
+                                                                [filter]="true"
+                                                                filterBy="nombre,definicion"
+                                                                [showClear]="true"
+                                                                appendTo="body"
+                                                                styleClass="w-full"
+                                                            />
+                                                            } @else { {{ getReferenciaDetail(ref.value.referencia_id)?.marca?.nombre || '---' }} }
+                                                        </td>
                                                         <td class="px-4 py-2 text-center">
-                                                            <button type="button" (click)="eliminarReferencia($index)" class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
-                                                                <i class="pi pi-trash text-sm"></i>
-                                                            </button>
+                                                            <div class="flex items-center justify-center gap-1">
+                                                                @if (editingReferenciaIndex() === $index) {
+                                                                <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferencia($index)" pTooltip="Guardar" tooltipPosition="top" />
+                                                                <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferencia()" pTooltip="Cancelar" tooltipPosition="top" />
+                                                                } @else {
+                                                                <p-button
+                                                                    icon="pi pi-pencil"
+                                                                    severity="warn"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    [disabled]="!ref.value.referencia_id"
+                                                                    (onClick)="iniciarEdicionReferencia($index)"
+                                                                    pTooltip="Editar"
+                                                                    tooltipPosition="top"
+                                                                />
+                                                                <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarReferencia($index)" pTooltip="Eliminar" tooltipPosition="top" />
+                                                                }
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                     } } @if (referenciasCruzadas.length === 0) {
@@ -294,11 +335,17 @@
                                         </div>
 
                                         <div class="overflow-hidden rounded-2xl border border-surface-border bg-surface-ground/50">
-                                            <table class="w-full text-left border-collapse">
+                                            <table class="w-full table-fixed text-left border-collapse">
+                                                <colgroup>
+                                                    <col class="w-[42%]" />
+                                                    <col class="w-36" />
+                                                    <col />
+                                                    <col class="w-24" />
+                                                </colgroup>
                                                 <thead>
                                                     <tr class="bg-surface-ground">
                                                         <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">Referencia / Código</th>
-                                                        <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase w-32">Cantidad</th>
+                                                        <th class="px-2 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase text-center">Cantidad</th>
                                                         <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase">Nota / Comentario</th>
                                                         <th class="px-4 py-3 text-[10px] font-black text-gray-400 tracking-widest uppercase text-center w-20">Acción</th>
                                                     </tr>
@@ -307,6 +354,23 @@
                                                     @for (juego of articuloJuegos.controls; track $index) {
                                                     <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                                         <td class="px-4 py-2">
+                                                            @if (editingReferenciaJuegoIndex() === $index) {
+                                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                                                                <input pInputText formControlName="referencia" class="w-full" />
+                                                                <p-select
+                                                                    formControlName="marca_id"
+                                                                    [options]="marcasReferencias()"
+                                                                    optionLabel="nombre"
+                                                                    optionValue="id"
+                                                                    placeholder="Marca o fabricante"
+                                                                    [filter]="true"
+                                                                    filterBy="nombre,definicion"
+                                                                    [showClear]="true"
+                                                                    appendTo="body"
+                                                                    styleClass="w-full"
+                                                                />
+                                                            </div>
+                                                            } @else {
                                                             <p-inputgroup styleClass="w-full h-9">
                                                                 <p-select
                                                                     formControlName="referencia_id"
@@ -328,32 +392,52 @@
                                                                     </ng-template>
                                                                 </p-select>
                                                                 <p-inputgroup-addon styleClass="rounded-r-xl border-surface-border bg-surface-ground">
-                                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferenciaJuegos($index)"></p-button>
+                                                                    <p-button
+                                                                        icon="pi pi-plus"
+                                                                        [text]="true"
+                                                                        severity="secondary"
+                                                                        styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
+                                                                        (onClick)="abrirCrearReferenciaJuegos($index)"
+                                                                    ></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
+                                                            }
                                                         </td>
-                                                        <td class="px-4 py-2">
+                                                        <td class="px-2 py-2">
                                                             <p-inputnumber
                                                                 formControlName="cantidad"
                                                                 placeholder="Cant"
                                                                 [showButtons]="true"
                                                                 [min]="1"
-                                                                styleClass="h-9 w-full"
-                                                                inputStyleClass="text-center font-semibold text-sm h-9"
+                                                                buttonLayout="horizontal"
+                                                                incrementButtonIcon="pi pi-plus"
+                                                                decrementButtonIcon="pi pi-minus"
+                                                                styleClass="h-9 w-full max-w-36"
+                                                                inputStyleClass="text-center font-semibold text-sm h-9 min-w-0"
                                                             ></p-inputnumber>
                                                         </td>
                                                         <td class="px-4 py-2">
-                                                            <input
-                                                                pInputText
-                                                                formControlName="comentario"
-                                                                placeholder="Comentario sobre el componente..."
-                                                                class="w-full h-9 rounded-xl text-xs bg-surface-ground/50 border-surface-border"
-                                                            />
+                                                            <input pInputText formControlName="comentario" placeholder="Comentario sobre el componente..." class="w-full h-9 rounded-xl text-xs bg-surface-ground/50 border-surface-border" />
                                                         </td>
                                                         <td class="px-4 py-2 text-center">
-                                                            <button type="button" (click)="eliminarJuego($index)" class="text-gray-500 hover:text-red-500 transition-colors p-2 rounded hover:bg-red-500/10">
-                                                                <i class="pi pi-trash text-sm"></i>
-                                                            </button>
+                                                            <div class="flex items-center justify-center gap-1">
+                                                                @if (editingReferenciaJuegoIndex() === $index) {
+                                                                <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferenciaJuego($index)" pTooltip="Guardar" tooltipPosition="top" />
+                                                                <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferenciaJuego()" pTooltip="Cancelar" tooltipPosition="top" />
+                                                                } @else {
+                                                                <p-button
+                                                                    icon="pi pi-pencil"
+                                                                    severity="warn"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    [disabled]="!juego.value.referencia_id"
+                                                                    (onClick)="iniciarEdicionReferenciaJuego($index)"
+                                                                    pTooltip="Editar"
+                                                                    tooltipPosition="top"
+                                                                />
+                                                                <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarJuego($index)" pTooltip="Eliminar" tooltipPosition="top" />
+                                                                }
+                                                            </div>
                                                         </td>
                                                     </tr>
                                                     } @if (articuloJuegos.length === 0) {

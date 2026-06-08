@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -18,12 +18,13 @@ import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { TabsModule } from 'primeng/tabs';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { createArticulo } from '../../../store/articulos/actions/articulos.actions';
 import { CreateArticuloDto } from '../../../core/models/articulo.model';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
-import { Referencia } from '../../../core/models/referencia.model';
+import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
@@ -56,6 +57,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
         InputGroupAddonModule,
         TabsModule,
         TagModule,
+        TooltipModule,
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
@@ -100,6 +102,9 @@ export class CreateComponent implements OnInit {
     // Variables para el modal de creación de referencia
     showReferenciaModal = false;
     currentReferenciaArrayIndex: number | null = null;
+    marcasReferencias = signal<Lista[]>([]);
+    editingReferenciaIndex = signal<number | null>(null);
+    editingReferenciaJuegoIndex = signal<number | null>(null);
 
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
@@ -130,6 +135,7 @@ export class CreateComponent implements OnInit {
         this.cargarTipos();
         this.cargarReferencias();
         this.cargarReferenciasJuegos();
+        this.cargarMarcasReferencias();
         this.cargarListasMedidas();
     }
 
@@ -204,9 +210,7 @@ export class CreateComponent implements OnInit {
      * @param search Término de búsqueda opcional
      */
     cargarReferencias(search?: string): void {
-        const seleccionadasIds = this.referenciasCruzadas.value
-            .map((r: any) => r.referencia_id)
-            .filter((id: any) => id !== null);
+        const seleccionadasIds = this.referenciasCruzadas.value.map((r: any) => r.referencia_id).filter((id: any) => id !== null);
 
         this.referenciaService.getAll({ search, per_page: 50, disponibles: true }).subscribe({
             next: (res) => {
@@ -322,6 +326,76 @@ export class CreateComponent implements OnInit {
         this.showReferenciaModal = false;
     }
 
+    iniciarEdicionReferencia(index: number): void {
+        const referencia = this.getReferenciaDetail(this.referenciasCruzadas.at(index)?.get('referencia_id')?.value);
+        if (!referencia) {
+            return;
+        }
+
+        this.cancelarEdicionReferencia();
+
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(referencia.marca_id));
+        this.editingReferenciaIndex.set(index);
+    }
+
+    guardarEdicionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        const referenciaId = row.get('referencia_id')?.value;
+
+        if (!referenciaId || row.get('referencia')?.invalid) {
+            row.get('referencia')?.markAsTouched();
+            return;
+        }
+
+        const actual = this.getReferenciaDetail(referenciaId);
+        const data: UpdateReferenciaDto = {
+            referencia: row.get('referencia')?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: actual?.articulo_id ?? null,
+            comentario: actual?.comentario ?? null
+        };
+
+        this.referenciaService.update(referenciaId, data).subscribe({
+            next: ({ data: actualizada }) => {
+                this.referenciasDisponibles = this.actualizarReferenciaEnLista(this.referenciasDisponibles, actualizada);
+                this.referenciasJuegosDisponibles = this.actualizarReferenciaEnLista(this.referenciasJuegosDisponibles, actualizada);
+                this.finalizarEdicionReferencia(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia actualizada',
+                    detail: 'Los cambios se guardaron correctamente.'
+                });
+            }
+        });
+    }
+
+    cancelarEdicionReferencia(): void {
+        const index = this.editingReferenciaIndex();
+        if (index !== null) {
+            this.finalizarEdicionReferencia(index);
+        }
+    }
+
+    private finalizarEdicionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.removeControl('referencia');
+        row.removeControl('marca_id');
+        this.editingReferenciaIndex.set(null);
+    }
+
+    private actualizarReferenciaEnLista(referencias: Referencia[], actualizada: Referencia): Referencia[] {
+        const existe = referencias.some((referencia) => referencia.id === actualizada.id);
+        return existe ? referencias.map((referencia) => (referencia.id === actualizada.id ? actualizada : referencia)) : [...referencias, actualizada];
+    }
+
+    private cargarMarcasReferencias(): void {
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
+            next: (marcas) => this.marcasReferencias.set(marcas)
+        });
+    }
+
     /**
      * Maneja el evento de filtrado de referencias
      */
@@ -433,6 +507,69 @@ export class CreateComponent implements OnInit {
 
     eliminarJuego(index: number): void {
         this.articuloJuegos.removeAt(index);
+    }
+
+    iniciarEdicionReferenciaJuego(index: number): void {
+        const referencia = this.getReferenciaJuegoDetail(this.articuloJuegos.at(index)?.get('referencia_id')?.value);
+        if (!referencia) {
+            return;
+        }
+
+        this.cancelarEdicionReferenciaJuego();
+
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(referencia.marca_id));
+        this.editingReferenciaJuegoIndex.set(index);
+    }
+
+    guardarEdicionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        const referenciaId = row.get('referencia_id')?.value;
+
+        if (!referenciaId || row.get('referencia')?.invalid) {
+            row.get('referencia')?.markAsTouched();
+            return;
+        }
+
+        const actual = this.getReferenciaJuegoDetail(referenciaId);
+        const data: UpdateReferenciaDto = {
+            referencia: row.get('referencia')?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: actual?.articulo_id ?? null,
+            comentario: actual?.comentario ?? null
+        };
+
+        this.referenciaService.update(referenciaId, data).subscribe({
+            next: ({ data: actualizada }) => {
+                this.referenciasDisponibles = this.actualizarReferenciaEnLista(this.referenciasDisponibles, actualizada);
+                this.referenciasJuegosDisponibles = this.actualizarReferenciaEnLista(this.referenciasJuegosDisponibles, actualizada);
+                this.finalizarEdicionReferenciaJuego(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia de juego actualizada',
+                    detail: 'Los cambios se guardaron correctamente.'
+                });
+            }
+        });
+    }
+
+    cancelarEdicionReferenciaJuego(): void {
+        const index = this.editingReferenciaJuegoIndex();
+        if (index !== null) {
+            this.finalizarEdicionReferenciaJuego(index);
+        }
+    }
+
+    private finalizarEdicionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        row.removeControl('referencia');
+        row.removeControl('marca_id');
+        this.editingReferenciaJuegoIndex.set(null);
+    }
+
+    getReferenciaJuegoDetail(id: number): Referencia | undefined {
+        return this.referenciasJuegosDisponibles.find((referencia) => referencia.id === id);
     }
 
     cargarReferenciasJuegos(search?: string): void {
