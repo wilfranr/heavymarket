@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -11,11 +11,13 @@ import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { TextareaModule } from 'primeng/textarea';
 import { InputNumberModule } from 'primeng/inputnumber';
+import { TabsModule } from 'primeng/tabs';
+import { TagModule } from 'primeng/tag';
 
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
-import { Lista } from '../../../core/models/lista.model';
+import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { Referencia } from '../../../core/models/referencia.model';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../referencia-create-modal/referencia-create-modal.component';
@@ -38,6 +40,8 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
         ToastModule,
         TextareaModule,
         InputNumberModule,
+        TabsModule,
+        TagModule,
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
@@ -67,9 +71,28 @@ export class ArticuloCreateModalComponent implements OnInit {
     // Listas para dropdowns
     tipos: Lista[] = [];
     referenciasDisponibles: Referencia[] = [];
+    referenciasJuegosDisponibles: Referencia[] = [];
+    referenciaJuegosIndex: number | null = null;
+
+    // Edición inline de referencias
+    editingReferenciaIndex = signal<number | null>(null);
+    editingReferenciaJuegoIndex = signal<number | null>(null);
+    marcasReferencias = signal<Lista[]>([]);
+
+    // Variables para el CRUD de medidas
+    unidadesMedida: Lista[] = [];
+    tiposMedida: Lista[] = [];
+    nombresMedida: Lista[] = [];
+    medidasLocales: any[] = [];
+    showMedidaDialog = false;
+    isEditingMedida = false;
+    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    editingMedidaIndex: number | null = null;
 
     // Modales anidados
     showTipoModal = false;
+    showListaModal = false;
+    currentListaTipo: ListaTipo = 'Unidad de Medida';
     showReferenciaModal = false;
     currentReferenciaArrayIndex: number | null = null;
 
@@ -92,10 +115,16 @@ export class ArticuloCreateModalComponent implements OnInit {
         { label: 'Toneladas (t)', value: 't' }
     ];
 
+    // Término de búsqueda para referencias cruzadas
+    searchTermReferences = '';
+
     ngOnInit(): void {
         this.initForm();
         this.cargarTipos();
         this.cargarReferencias();
+        this.cargarReferenciasJuegos();
+        this.cargarListasMedidas();
+        this.cargarMarcasReferencias();
     }
 
     private initForm(): void {
@@ -104,12 +133,17 @@ export class ArticuloCreateModalComponent implements OnInit {
             descripcionEspecifica: ['', [Validators.required, Validators.maxLength(500)]],
             peso: [null],
             comentarios: [''],
-            referenciasCruzadas: this.fb.array([])
+            referenciasCruzadas: this.fb.array([]),
+            articuloJuegos: this.fb.array([])
         });
     }
 
     get referenciasCruzadas(): FormArray {
         return this.articuloForm.get('referenciasCruzadas') as FormArray;
+    }
+
+    get articuloJuegos(): FormArray {
+        return this.articuloForm.get('articuloJuegos') as FormArray;
     }
 
     cargarTipos(search?: string): void {
@@ -230,18 +264,124 @@ export class ArticuloCreateModalComponent implements OnInit {
 
     onReferenciaCreada(nuevaRef: any): void {
         // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
-        if (nuevaRef && !this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
-            this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
+        if (nuevaRef) {
+            if (!this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
+                this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
+            }
+            if (!this.referenciasJuegosDisponibles.find((r) => r.id === nuevaRef.id)) {
+                this.referenciasJuegosDisponibles = [...this.referenciasJuegosDisponibles, nuevaRef];
+            }
         }
 
         if (this.currentReferenciaArrayIndex !== null) {
             const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
             control.patchValue({ referencia_id: nuevaRef.id });
+            this.currentReferenciaArrayIndex = null;
+        } else if (this.referenciaJuegosIndex !== null) {
+            const control = this.articuloJuegos.at(this.referenciaJuegosIndex);
+            control.patchValue({ referencia_id: nuevaRef.id });
+            this.referenciaJuegosIndex = null;
         }
 
         this.cargarReferencias(); // Sincronizar con el servidor en segundo plano
+        this.cargarReferenciasJuegos();
         this.showReferenciaModal = false;
-        this.currentReferenciaArrayIndex = null;
+    }
+
+    cargarListasMedidas(): void {
+        this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
+        this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
+        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
+    }
+
+    abrirDialogoMedida(): void {
+        this.isEditingMedida = false;
+        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.showMedidaDialog = true;
+    }
+
+    editarMedida(medida: any, index: number): void {
+        this.isEditingMedida = true;
+        this.editingMedidaIndex = index;
+        this.medidaData = { ...medida };
+        this.showMedidaDialog = true;
+    }
+
+    guardarMedida(): void {
+        if (this.isEditingMedida && this.editingMedidaIndex !== null) {
+            this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
+        } else {
+            this.medidasLocales.push({ ...this.medidaData });
+        }
+        this.showMedidaDialog = false;
+    }
+
+    eliminarMedida(index: number): void {
+        this.medidasLocales.splice(index, 1);
+    }
+
+    shouldShowReference(id: number): boolean {
+        if (!this.searchTermReferences) return true;
+
+        const ref = this.getReferenciaDetail(id);
+        if (!ref) return false;
+
+        const term = this.searchTermReferences.toLowerCase();
+        return ref.referencia.toLowerCase().includes(term) || ref.marca?.nombre?.toLowerCase().includes(term) || false;
+    }
+
+    agregarJuego(): void {
+        const row = this.fb.group({
+            referencia_id: [null, Validators.required],
+            cantidad: [1, [Validators.required, Validators.min(1)]],
+            comentario: ['']
+        });
+        this.articuloJuegos.push(row);
+    }
+
+    eliminarJuego(index: number): void {
+        this.articuloJuegos.removeAt(index);
+    }
+
+    cargarReferenciasJuegos(search?: string): void {
+        this.referenciaService.getAll({ search, per_page: 50 }).subscribe({
+            next: (res) => {
+                this.referenciasJuegosDisponibles = res.data;
+            }
+        });
+    }
+
+    onFilterReferenciasJuegos(event: any): void {
+        const search = event.filter;
+        if (search && search.length >= 3) {
+            this.cargarReferenciasJuegos(search);
+        } else if (!search) {
+            this.cargarReferenciasJuegos();
+        }
+    }
+
+    abrirCrearLista(tipo: ListaTipo): void {
+        this.currentListaTipo = tipo;
+        this.showListaModal = true;
+    }
+
+    onListaGeneralCreated(nueva: any): void {
+        this.cargarListasMedidas();
+
+        if (this.currentListaTipo === 'Unidad de Medida') {
+            this.medidaData.unidad = nueva.nombre;
+        } else if (this.currentListaTipo === 'Tipo de Medida') {
+            this.medidaData.tipo = nueva.nombre;
+        } else if (this.currentListaTipo === 'Nombre de Medida') {
+            this.medidaData.nombre = nueva.nombre;
+        }
+
+        this.showListaModal = false;
+    }
+
+    abrirCrearReferenciaJuegos(index: number): void {
+        this.referenciaJuegosIndex = index;
+        this.showReferenciaModal = true;
     }
 
     abrirConversor(): void {
@@ -278,6 +418,17 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     saveArticulo(): void {
+        const referenciasIds = this.articuloForm.get('referenciasCruzadas')?.value?.map((ref: any) => ref.referencia_id) || [];
+
+        if (referenciasIds.length === 0) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Validación',
+                detail: 'Debe asociar al menos una referencia al artículo'
+            });
+            return;
+        }
+
         if (this.articuloForm.invalid) {
             this.markFormGroupTouched(this.articuloForm);
             this.messageService.add({
@@ -291,42 +442,37 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.loading = true;
         const formValue = this.articuloForm.value;
 
-        const referenciasIds = formValue.referenciasCruzadas?.map((ref: any) => ref.referencia_id) || [];
-
-        if (this.fotoFile || this.planoFile) {
-            const formData = new FormData();
-            formData.append('definicion', formValue.definicion);
-            formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
-            if (formValue.peso !== null && formValue.peso !== undefined) {
-                formData.append('peso', String(formValue.peso));
-            }
-            formData.append('comentarios', formValue.comentarios || '');
-            referenciasIds.forEach((id: number) => formData.append('referencias_ids[]', String(id)));
-            if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
-            if (this.planoFile) formData.append('foto_medida', this.planoFile);
-
-            this.articuloService.create(formData).subscribe({
-                next: (articulo) => this.handleCreateSuccess(articulo),
-                error: (error) => this.handleCreateError(error)
-            });
-        } else {
-            const payload = {
-                definicion: formValue.definicion,
-                descripcionEspecifica: formValue.descripcionEspecifica,
-                peso: formValue.peso || null,
-                comentarios: formValue.comentarios || '',
-                referencias_ids: referenciasIds
-            };
-
-            this.articuloService.create(payload).subscribe({
-                next: (articulo) => this.handleCreateSuccess(articulo),
-                error: (error) => this.handleCreateError(error)
-            });
+        const formData = new FormData();
+        formData.append('definicion', formValue.definicion);
+        formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
+        if (formValue.peso !== null && formValue.peso !== undefined) {
+            formData.append('peso', String(formValue.peso));
         }
+        formData.append('comentarios', formValue.comentarios || '');
+
+        referenciasIds.forEach((id: number) => {
+            formData.append('referencias_ids[]', id.toString());
+        });
+
+        if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);
+        if (this.planoFile) formData.append('foto_medida', this.planoFile);
+
+        if (this.medidasLocales.length > 0) {
+            formData.append('medidas', JSON.stringify(this.medidasLocales));
+        }
+
+        const juegosValores = this.articuloForm.get('articuloJuegos')?.value || [];
+        if (juegosValores.length > 0) {
+            formData.append('juegos', JSON.stringify(juegosValores));
+        }
+
+        this.articuloService.create(formData).subscribe({
+            next: (articulo) => this.handleCreateSuccess(articulo),
+            error: (error) => this.handleCreateError(error)
+        });
     }
 
     private handleCreateSuccess(articulo: any): void {
-        // Si hay una referenciaId, actualizar esa referencia con el artículo recién creado
         if (this.referenciaId) {
             this.referenciaService.update(this.referenciaId, { articulo_id: articulo.id }).subscribe({
                 next: () => {
@@ -341,7 +487,6 @@ export class ArticuloCreateModalComponent implements OnInit {
                 },
                 error: (error) => {
                     console.error('Error asociando referencia al artículo:', error);
-                    // Aún así emitimos el artículo creado
                     this.onArticuloCreated.emit(articulo);
                     this.closeDialog();
                     this.loading = false;
@@ -374,9 +519,145 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.visibleChange.emit(false);
         this.articuloForm.reset();
         this.referenciasCruzadas.clear();
+        this.articuloJuegos.clear();
+        this.medidasLocales = [];
         this.fotoFile = null;
         this.planoFile = null;
         this.fotoMedidaHeredada = null;
+    }
+
+    cargarMarcasReferencias(): void {
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe((res) => this.marcasReferencias.set(res));
+    }
+
+    iniciarEdicionReferencia(index: number): void {
+        const referencia = this.getReferenciaDetail(this.referenciasCruzadas.at(index)?.get('referencia_id')?.value);
+        if (!referencia) {
+            return;
+        }
+
+        this.cancelarEdicionReferencia();
+
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(referencia.marca_id));
+        this.editingReferenciaIndex.set(index);
+    }
+
+    guardarEdicionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        const referenciaId = row.get('referencia_id')?.value;
+
+        if (!referenciaId || row.get('referencia')?.invalid) {
+            row.get('referencia')?.markAsTouched();
+            return;
+        }
+
+        const actual = this.getReferenciaDetail(referenciaId);
+        const data = {
+            referencia: row.get('referencia')?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: actual?.articulo_id ?? null,
+            comentario: actual?.comentario ?? null
+        };
+
+        this.referenciaService.update(referenciaId, data).subscribe({
+            next: ({ data: actualizada }) => {
+                this.referenciasDisponibles = this.actualizarReferenciaEnLista(this.referenciasDisponibles, actualizada);
+                this.referenciasJuegosDisponibles = this.actualizarReferenciaEnLista(this.referenciasJuegosDisponibles, actualizada);
+                this.finalizarEdicionReferencia(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia actualizada',
+                    detail: 'Los cambios se guardaron correctamente.'
+                });
+            }
+        });
+    }
+
+    cancelarEdicionReferencia(): void {
+        const index = this.editingReferenciaIndex();
+        if (index !== null) {
+            this.finalizarEdicionReferencia(index);
+        }
+    }
+
+    private finalizarEdicionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.removeControl('referencia');
+        row.removeControl('marca_id');
+        this.editingReferenciaIndex.set(null);
+    }
+
+    private actualizarReferenciaEnLista(referencias: Referencia[], actualizada: Referencia): Referencia[] {
+        const existe = referencias.some((referencia) => referencia.id === actualizada.id);
+        if (existe) {
+            return referencias.map((referencia) => (referencia.id === actualizada.id ? actualizada : referencia));
+        }
+        return referencias;
+    }
+
+    iniciarEdicionReferenciaJuego(index: number): void {
+        const referencia = this.getReferenciaJuegoDetail(this.articuloJuegos.at(index)?.get('referencia_id')?.value);
+        if (!referencia) {
+            return;
+        }
+
+        this.cancelarEdicionReferenciaJuego();
+
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(referencia.marca_id));
+        this.editingReferenciaJuegoIndex.set(index);
+    }
+
+    guardarEdicionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        const referenciaId = row.get('referencia_id')?.value;
+
+        if (!referenciaId || row.get('referencia')?.invalid) {
+            row.get('referencia')?.markAsTouched();
+            return;
+        }
+
+        const actual = this.getReferenciaJuegoDetail(referenciaId);
+        const data = {
+            referencia: row.get('referencia')?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: actual?.articulo_id ?? null,
+            comentario: actual?.comentario ?? null
+        };
+
+        this.referenciaService.update(referenciaId, data).subscribe({
+            next: ({ data: actualizada }) => {
+                this.referenciasDisponibles = this.actualizarReferenciaEnLista(this.referenciasDisponibles, actualizada);
+                this.referenciasJuegosDisponibles = this.actualizarReferenciaEnLista(this.referenciasJuegosDisponibles, actualizada);
+                this.finalizarEdicionReferenciaJuego(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia de juego actualizada',
+                    detail: 'Los cambios se guardaron correctamente.'
+                });
+            }
+        });
+    }
+
+    cancelarEdicionReferenciaJuego(): void {
+        const index = this.editingReferenciaJuegoIndex();
+        if (index !== null) {
+            this.finalizarEdicionReferenciaJuego(index);
+        }
+    }
+
+    private finalizarEdicionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        row.removeControl('referencia');
+        row.removeControl('marca_id');
+        this.editingReferenciaJuegoIndex.set(null);
+    }
+
+    getReferenciaJuegoDetail(id: number): Referencia | undefined {
+        return this.referenciasJuegosDisponibles.find((r) => r.id === id);
     }
 
     private markFormGroupTouched(formGroup: FormGroup): void {

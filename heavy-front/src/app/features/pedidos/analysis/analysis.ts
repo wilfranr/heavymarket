@@ -1122,11 +1122,10 @@ export class AnalysisComponent implements OnInit {
             this.showArticuloEditModal = true;
             this.showArticuloCreateModal = false;
         } else {
-            // Caso 2: Referencia temporal o sin artículo → Editar referencia para validarla
-            this.editReferenciaId = opt.value;
-            this.showReferenciaEditModal = true;
-            this.showArticuloCreateModal = false;
+            // Caso 2: Referencia sin artículo → Crear artículo desde referencia
+            this.showArticuloCreateModal = true;
             this.showArticuloEditModal = false;
+            this.showReferenciaEditModal = false;
         }
     }
 

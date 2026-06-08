@@ -1,43 +1,89 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-08T18:50:00Z",
-  "issue": "articulos-juegos-creacion-144",
-  "description": "Implementar la gestión de juegos/kits (FormArray reactivo, tabla en línea, selector sin restricción de disponibles) en la vista de creación de artículos",
+  "last_updated": "2026-06-08T23:35:00Z",
+  "issue": "articulos-modales-edicion-inline-referencias",
+  "description": "Implementar la edición inline de referencias (en caliente) en los modales de creación y edición de artículos",
   "nodes": [
     {
-      "id": "frontend-create-ts-juegos",
-      "description": "Implementar lógica de FormArray, referenciasJuegosDisponibles y onSubmit para juegos en create.ts",
+      "id": "inline-create-modal-update",
+      "description": "Modificar articulo-create-modal.component.ts y .html para agregar soporte de edición inline de referencias cruzadas (editingReferenciaIndex signal, iniciarEdicionReferencia, guardarEdicionReferencia, etc.)",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "frontend-create-html-juegos",
-      "description": "Incorporar pestaña de Juegos y tabla de componentes en el control de pestañas de relaciones de create.html",
+      "id": "inline-edit-modal-update",
+      "description": "Modificar articulo-edit-modal.component.ts y .html para agregar soporte de edición inline de referencias cruzadas (editingReferenciaIndex signal, iniciarEdicionReferencia, guardarEdicionReferencia, etc.)",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": ["frontend-create-ts-juegos"],
+      "required_skill": "software_architect",
+      "depends_on": ["inline-create-modal-update"],
       "files": [
         {
-          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "verification-gates-create-juegos",
-      "description": "Compilar la aplicacion frontend para asegurar consistencia tras agregar soporte de juegos en creacion",
+      "id": "inline-verification",
+      "description": "Verificar la compilación del frontend tras la inclusión de la edición inline en los modales",
       "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": ["frontend-create-html-juegos"],
+      "depends_on": ["inline-edit-modal-update"],
       "files": []
+    },
+    {
+      "id": "inline-kits-create-page-update",
+      "description": "Replicar la edición inline de código y marca de referencias en la pestaña Juegos/Kits de crear artículo",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "inline-kits-edit-page-update",
+      "description": "Replicar la edición inline de código y marca de referencias en la pestaña Juegos/Kits de editar artículo",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "implemented"
+        }
+      ]
     }
   ]
 }
