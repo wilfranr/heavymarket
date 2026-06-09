@@ -21,6 +21,24 @@ class StoreMaquinaRequest extends FormRequest
     }
 
     /**
+     * Preparar los datos para la validación.
+     */
+    protected function prepareForValidation(): void
+    {
+        // Convertir strings vacíos a null para campos opcionales
+        if ($this->filled('componentes') && is_array($this->input('componentes'))) {
+            $componentes = $this->input('componentes');
+            foreach ($componentes as $index => $comp) {
+                foreach (['sistema_id', 'marca_id', 'modelo', 'serie', 'comentario'] as $field) {
+                    if (isset($comp[$field]) && $comp[$field] === '') {
+                        $this->merge(["componentes.{$index}.{$field}" => null]);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
      * Reglas de validación que aplican a la petición.
      *
      * @return array<string, ValidationRule|array<mixed>|string>

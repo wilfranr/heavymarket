@@ -11,59 +11,37 @@
             </div>
         </ng-template>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Información Básica -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Información Básica</h3>
-                <div class="space-y-4">
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">ID</label>
-                        <p class="text-base">{{ articulo.id }}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Pieza estándar (Definición)</label>
-                        <p class="text-base">{{ articulo.definicion }}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Descripción Específica</label>
-                        <p class="text-base font-semibold">{{ articulo.descripcionEspecifica }}</p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Peso</label>
-                        <p class="text-base">{{ articulo.peso ? articulo.peso + ' Kg' : '-' }}</p>
-                    </div>
-                    @if (articulo.comentarios) {
-                    <div>
-                        <label class="text-sm font-medium text-gray-600">Comentarios</label>
-                        <p class="text-base whitespace-pre-wrap">{{ articulo.comentarios }}</p>
-                    </div>
-                    }
+        <!-- Información Básica -->
+        <div class="mb-6">
+            <h3 class="text-lg font-semibold mb-4">Información Básica</h3>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">ID</label>
+                    <p class="text-base font-semibold">{{ articulo.id }}</p>
                 </div>
-            </div>
-
-            <!-- Fotos -->
-            <div>
-                <h3 class="text-lg font-semibold mb-4">Fotos</h3>
-                <div class="space-y-4">
-                    @if (articulo.fotoDescriptiva) {
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Foto Descriptiva</label>
-                        <img [src]="articulo.fotoDescriptiva" [alt]="articulo.descripcionEspecifica" class="w-full max-w-xs h-auto rounded-lg shadow-md" />
-                    </div>
-                    } @if (articulo.foto_medida) {
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Foto Medida</label>
-                        <img [src]="articulo.foto_medida" [alt]="articulo.descripcionEspecifica + ' - Medida'" class="w-full max-w-xs h-auto rounded-lg shadow-md" />
-                    </div>
-                    } @if (!articulo.fotoDescriptiva && !articulo.foto_medida) {
-                    <p class="text-gray-400">No hay fotos disponibles</p>
-                    }
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Pieza estándar (Definición)</label>
+                    <p class="text-base font-semibold">{{ articulo.definicion || '-' }}</p>
                 </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Descripción Específica</label>
+                    <p class="text-base font-semibold">{{ articulo.descripcionEspecifica }}</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Peso</label>
+                    <p class="text-base font-semibold">{{ articulo.peso ? articulo.peso + ' Kg' : '-' }}</p>
+                </div>
+                @if (articulo.comentarios) {
+                <div class="col-span-full">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Comentarios</label>
+                    <p class="text-base whitespace-pre-wrap">{{ articulo.comentarios }}</p>
+                </div>
+                }
             </div>
         </div>
 
         <!-- Pestañas de Relaciones -->
-        <div class="mt-6">
+        <div class="mt-6 mb-8">
             <p-tabs [value]="0">
                 <p-tablist>
                     <p-tab [value]="0"> <i class="pi pi-link mr-2"></i> Referencias Cruzadas </p-tab>
@@ -144,7 +122,7 @@
                                     <td class="font-bold text-primary">{{ medida.valor }}</td>
                                     <td>{{ medida.unidad }}</td>
                                     <td>
-                                        <span class="text-xs uppercase bg-gray-100 px-2 py-1 rounded text-gray-600">{{ medida.tipo }}</span>
+                                        <span class="text-xs uppercase bg-gray-100 dark:bg-neutral-800 px-2 py-1 rounded text-gray-600 dark:text-gray-400">{{ medida.tipo }}</span>
                                     </td>
                                 </tr>
                             </ng-template>
@@ -159,16 +137,47 @@
             </p-tabs>
         </div>
 
+        <!-- Fotos -->
+        <div class="mt-8">
+            <h3 class="text-lg font-semibold mb-4">Fotos</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-2">Foto Descriptiva</label>
+                    @if (articulo.fotoDescriptiva) {
+                    <div class="bg-white p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-md flex justify-center items-center">
+                        <img [src]="articulo.fotoDescriptiva" [alt]="articulo.descripcionEspecifica" class="w-full h-auto rounded-lg object-contain max-h-[450px]" />
+                    </div>
+                    } @else {
+                    <div class="bg-neutral-50 dark:bg-neutral-800 p-8 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center text-gray-400">
+                        No hay foto descriptiva disponible
+                    </div>
+                    }
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-2">Foto Medida</label>
+                    @if (articulo.foto_medida) {
+                    <div class="bg-white p-4 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-md flex justify-center items-center">
+                        <img [src]="articulo.foto_medida" [alt]="articulo.descripcionEspecifica + ' - Medida'" class="w-full h-auto rounded-lg object-contain max-h-[450px]" />
+                    </div>
+                    } @else {
+                    <div class="bg-neutral-50 dark:bg-neutral-800 p-8 rounded-xl border border-neutral-200 dark:border-neutral-800 text-center text-gray-400">
+                        No hay foto medida disponible
+                    </div>
+                    }
+                </div>
+            </div>
+        </div>
+
         <p-divider />
 
         <!-- Fechas -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             <div>
-                <label class="text-sm font-medium text-gray-600">Fecha de Creación</label>
+                <label class="text-sm font-medium text-gray-500">Fecha de Creación</label>
                 <p class="text-base">{{ articulo.created_at | date:'medium' }}</p>
             </div>
             <div>
-                <label class="text-sm font-medium text-gray-600">Última Actualización</label>
+                <label class="text-sm font-medium text-gray-500">Última Actualización</label>
                 <p class="text-base">{{ articulo.updated_at | date:'medium' }}</p>
             </div>
         </div>

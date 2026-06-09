@@ -81,7 +81,7 @@
                             <!-- Imagen representativa del Sistema -->
                             <div class="w-full aspect-square mb-3 rounded-[1rem] overflow-hidden bg-white dark:bg-surface-card border border-surface-border relative flex items-center justify-center">
                                 <img
-                                    [src]="comp.sistema?.imagen || 'assets/layout/images/logo.svg'"
+                                    [src]="comp.foto_placa || 'assets/layout/images/logo.svg'"
                                     [alt]="comp.sistema?.nombre"
                                     class="w-full h-full object-contain p-2 transition-transform duration-300 group-hover:scale-110"
                                     onerror="

@@ -41,8 +41,11 @@ export class MaquinaService extends ApiService {
      */
     update(id: number, data: UpdateMaquinaDto | FormData): Observable<ApiResponse<Maquina>> {
         if (data instanceof FormData) {
-            data.append('_method', 'PUT');
-            return this.post<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
+            return this.http.post<ApiResponse<Maquina>>(
+                this.formatUrl(`${this.endpoint}/${id}`),
+                data,
+                { headers: { 'X-HTTP-Method-Override': 'PUT' } }
+            );
         }
         return this.put<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
     }

@@ -8,6 +8,11 @@ use Spatie\Permission\Middleware\PermissionMiddleware;
 use Spatie\Permission\Middleware\RoleMiddleware;
 use Spatie\Permission\Middleware\RoleOrPermissionMiddleware;
 
+// Aumentar límites de subida de archivos para componentes de máquinas
+ini_set('upload_max_filesize', '20M');
+ini_set('post_max_size', '25M');
+ini_set('max_file_uploads', '50');
+
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
