@@ -269,7 +269,7 @@ export class CreateComponent implements OnInit {
             cantidad_lote: [1, [Validators.required, Validators.min(1)]]
         });
 
-        // Suscribirse a cambios globales si es necesario
+        // Suscribirse a cambios de tercero
         this.pedidoForm.get('tercero_id')?.valueChanges.subscribe((id) => {
             this.terceroId.set(id);
             if (id) {

@@ -95,9 +95,9 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                 </div>
                             </th>
                             <th style="min-width: 8rem">Estado</th>
-                            <th style="min-width: 8rem">Dirección</th>
                             <th style="min-width: 8rem">Fecha</th>
-                            <th style="min-width: 6rem" class="text-center">Comentarios</th>
+                            <th style="min-width: 12rem">Máquina</th>
+                            <th style="min-width: 10rem" class="text-center">Comentarios</th>
                             <th>Acciones</th>
                         }
                     </tr>
@@ -158,8 +158,8 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                     <p-tag [value]="pedidoEstadoEtiqueta(pedido.estado)" [styleClass]="pedidoEstadoTagClass(pedido.estado)" [rounded]="true"> </p-tag>
                                 }
                             </td>
-                            <td>{{ pedido.direccion || 'N/A' }}</td>
                             <td>{{ pedido.created_at | date: 'short' }}</td>
+                            <td>{{ pedido.maquina?.modelo || 'Sin máquina' }}</td>
                             <td class="text-center" (click)="$event.stopPropagation()">
                                 @if (comPed.count > 0) {
                                     <span
@@ -416,7 +416,7 @@ export class PedidosListComponent implements OnInit {
     }
 
     globalFilterFields(): string[] {
-        return this.isAnalista ? ['id', 'user.name', 'maquina.tipo', 'maquina.modelo'] : ['tercero.nombre', 'id', 'direccion'];
+        return this.isAnalista ? ['id', 'user.name', 'maquina.tipo', 'maquina.modelo'] : ['tercero.nombre', 'id', 'maquina.modelo'];
     }
 
     contarItemsSolicitados(pedido: Pedido): number {
