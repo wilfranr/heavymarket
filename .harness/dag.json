@@ -1,143 +1,43 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-08T23:35:00Z",
-  "issue": "articulos-modales-edicion-inline-referencias",
-  "description": "Implementar la edición inline de referencias (en caliente) en los modales de creación y edición de artículos",
+  "last_updated": "2026-06-09T13:20:00Z",
+  "issue": "soporte-formato-avif-imagenes",
+  "description": "Incluir el formato .avif dentro de las imágenes permitidas en la validación y carga de imágenes en toda la aplicación",
   "nodes": [
     {
-      "id": "inline-create-modal-update",
-      "description": "Modificar articulo-create-modal.component.ts y .html para agregar soporte de edición inline de referencias cruzadas (editingReferenciaIndex signal, iniciarEdicionReferencia, guardarEdicionReferencia, etc.)",
+      "id": "extend-laravel-image-rule",
+      "description": "Extender la regla de validación 'image' globalmente en AppServiceProvider.php para permitir mime type image/avif y la extensión .avif",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
       "files": [
         {
-          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "path": "heavy-api/app/Providers/AppServiceProvider.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "inline-edit-modal-update",
-      "description": "Modificar articulo-edit-modal.component.ts y .html para agregar soporte de edición inline de referencias cruzadas (editingReferenciaIndex signal, iniciarEdicionReferencia, guardarEdicionReferencia, etc.)",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": ["inline-create-modal-update"],
-      "files": [
-        {
-          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "inline-verification",
-      "description": "Verificar la compilación del frontend tras la inclusión de la edición inline en los modales",
+      "id": "write-unit-test-avif",
+      "description": "Crear un test unitario en Laravel para validar que la regla 'image' extendida acepte archivos .avif correctamente",
       "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": ["inline-edit-modal-update"],
+      "depends_on": ["extend-laravel-image-rule"],
+      "files": [
+        {
+          "path": "heavy-api/tests/Unit/AvifImageValidationTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "verify-system-gates",
+      "description": "Ejecutar pruebas unitarias de backend y linting de frontend para verificar el correcto funcionamiento",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": ["write-unit-test-avif"],
       "files": []
-    },
-    {
-      "id": "inline-kits-create-page-update",
-      "description": "Replicar la edición inline de código y marca de referencias en la pestaña Juegos/Kits de crear artículo",
-      "status": "awaiting_review",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/articulos/create/create.ts",
-          "status": "implemented"
-        },
-        {
-          "path": "heavy-front/src/app/features/articulos/create/create.html",
-          "status": "implemented"
-        }
-      ]
-    },
-    {
-      "id": "inline-kits-edit-page-update",
-      "description": "Replicar la edición inline de código y marca de referencias en la pestaña Juegos/Kits de editar artículo",
-      "status": "awaiting_review",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
-          "status": "implemented"
-        },
-        {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
-          "status": "implemented"
-        },
-        {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
-          "status": "implemented"
-        }
-      ]
-    },
-    {
-      "id": "remove-analysis-edit-button",
-      "description": "Eliminar el botón de edición (lápiz) del banner de análisis de cada ítem, así como el modal de edición de requerimiento y su lógica asociada en analysis.html y analysis.ts",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "remove-api-default-restriction",
-      "description": "Eliminar la restricción de validación en UpdatePedidoRequest.php que impide pasar a costeo si el sistema y tipo de artículo están por defecto (sistema_id 62, lista_id 3425)",
-      "status": "done",
-      "required_skill": null,
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-api/app/Http/Requests/UpdatePedidoRequest.php",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "verify-changes",
-      "description": "Verificar compilación del frontend y del backend",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": ["remove-analysis-edit-button", "remove-api-default-restriction"],
-    },
-    {
-      "id": "fix-articulo-referencia-sync",
-      "description": "Corregir sincronizacion de la relacion articulo_id directa en la tabla referencias al asociar/desasociar desde el ArticuloController, garantizando que una referencia pertenece a un unico articulo",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [],
-      "files": [
-        {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Models/Referencia.php",
-          "status": "validated"
-        }
-      ]
     }
   ]
 }
