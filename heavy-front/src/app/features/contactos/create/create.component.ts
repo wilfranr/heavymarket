@@ -30,7 +30,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
                 <div class="grid">
                     <div class="col-12 md:col-6">
                         <label for="tercero_id" class="block mb-2"> Tercero <span class="text-red-500">*</span> </label>
-                        <p-select formControlName="tercero_id" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Seleccione un tercero" styleClass="w-full"> </p-select>
+                        <p-select formControlName="tercero_id" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Seleccione un tercero" styleClass="w-full" [filter]="true" filterBy="label"> </p-select>
                         @if (contactoForm.get('tercero_id')?.invalid && contactoForm.get('tercero_id')?.touched) {
                             <small class="text-red-500">El tercero es requerido</small>
                         }

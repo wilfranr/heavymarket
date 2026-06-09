@@ -40,7 +40,7 @@ import { Country, State, City } from '../../../core/models/ubicacion.model';
                     <div class="grid">
                         <div class="col-12 md:col-6">
                             <label for="tercero_id" class="block mb-2">Tercero</label>
-                            <p-select formControlName="tercero_id" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Seleccione un tercero" styleClass="w-full"> </p-select>
+                            <p-select formControlName="tercero_id" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Seleccione un tercero" styleClass="w-full" [filter]="true" filterBy="label"> </p-select>
                         </div>
 
                         <div class="col-12">

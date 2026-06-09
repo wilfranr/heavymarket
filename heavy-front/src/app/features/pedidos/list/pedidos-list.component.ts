@@ -89,7 +89,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                             </div>
                                         </ng-template>
                                         <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                            <p-select [ngModel]="selectedTercero" [options]="terceros" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full"> </p-select>
+                                            <p-select [ngModel]="selectedTercero" [options]="terceros" optionLabel="label" optionValue="value" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full" [filter]="true" filterBy="label"> </p-select>
                                         </ng-template>
                                     </p-columnFilter>
                                 </div>
