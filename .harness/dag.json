@@ -121,7 +121,23 @@
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": ["remove-analysis-edit-button", "remove-api-default-restriction"],
-      "files": []
+    },
+    {
+      "id": "fix-articulo-referencia-sync",
+      "description": "Corregir sincronizacion de la relacion articulo_id directa en la tabla referencias al asociar/desasociar desde el ArticuloController, garantizando que una referencia pertenece a un unico articulo",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Referencia.php",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }

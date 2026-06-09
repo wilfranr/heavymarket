@@ -1,11 +1,17 @@
 <?php
 
+use App\Models\Articulo;
+use App\Models\Lista;
+use App\Models\Referencia;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Artículos
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
     $this->user = createUserWithRole('Administrador');
 });
 
@@ -14,7 +20,7 @@ it('requiere autenticación para listar artículos', function () {
 });
 
 it('permite listar artículos', function () {
-    \App\Models\Articulo::factory()->count(3)->create();
+    Articulo::factory()->count(3)->create();
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/articulos');
@@ -29,7 +35,7 @@ it('permite listar artículos', function () {
 });
 
 it('permite ver detalle de artículo', function () {
-    $articulo = \App\Models\Articulo::factory()->create([
+    $articulo = Articulo::factory()->create([
         'definicion' => 'Acople Dentado',
         'descripcionEspecifica' => 'Descripción de prueba',
     ]);
@@ -43,10 +49,10 @@ it('permite ver detalle de artículo', function () {
 });
 
 it('permite crear artículo', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
 
-    $referencias = \App\Models\Referencia::factory()->count(2)->create();
-    $foto = \Illuminate\Http\UploadedFile::fake()->image('articulo.jpg');
+    $referencias = Referencia::factory()->count(2)->create();
+    $foto = UploadedFile::fake()->image('articulo.jpg');
 
     $data = [
         'definicion' => 'Nuevo Articulo Test',
@@ -67,16 +73,16 @@ it('permite crear artículo', function () {
         'peso' => 15.5,
     ]);
 
-    $articulo = \App\Models\Articulo::where('definicion', 'Nuevo Articulo Test')->first();
+    $articulo = Articulo::where('definicion', 'Nuevo Articulo Test')->first();
     expect($articulo->referencias)->toHaveCount(2);
 });
 
 it('permite actualizar artículo', function () {
-    $articulo = \App\Models\Articulo::factory()->create([
+    $articulo = Articulo::factory()->create([
         'definicion' => 'Articulo Original',
         'peso' => 10.0,
     ]);
-    $referencia = \App\Models\Referencia::factory()->create();
+    $referencia = Referencia::factory()->create();
 
     $data = [
         'definicion' => 'Articulo Actualizado',
@@ -107,18 +113,18 @@ it('rechaza crear artículo sin datos requeridos', function () {
 });
 
 it('artículo hereda foto_medida de pieza estándar', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
+    Storage::fake('public');
 
     $fotoMaestra = 'listas/medidas/maestra.jpg';
-    \Illuminate\Support\Facades\Storage::disk('public')->put($fotoMaestra, 'fake content');
+    Storage::disk('public')->put($fotoMaestra, 'fake content');
 
-    \App\Models\Lista::create([
+    Lista::create([
         'tipo' => 'Piezas Estandar',
         'nombre' => 'Abrazadera Maestra',
         'fotoMedida' => $fotoMaestra,
     ]);
 
-    $referencia = \App\Models\Referencia::factory()->create();
+    $referencia = Referencia::factory()->create();
     $data = [
         'definicion' => 'Abrazadera Maestra',
         'descripcionEspecifica' => 'Prueba de herencia',
@@ -130,14 +136,14 @@ it('artículo hereda foto_medida de pieza estándar', function () {
 
     $response->assertStatus(201);
 
-    $articulo = \App\Models\Articulo::where('descripcionEspecifica', 'Prueba de herencia')->first();
+    $articulo = Articulo::where('descripcionEspecifica', 'Prueba de herencia')->first();
     $expectedUrl = rtrim(config('app.url'), '/').'/storage/'.$fotoMaestra;
     expect($articulo->foto_medida)->toBe($expectedUrl);
 
     $fotoMaestra2 = 'listas/medidas/maestra2.jpg';
-    \Illuminate\Support\Facades\Storage::disk('public')->put($fotoMaestra2, 'fake content');
+    Storage::disk('public')->put($fotoMaestra2, 'fake content');
 
-    \App\Models\Lista::create([
+    Lista::create([
         'tipo' => 'Piezas Estandar',
         'nombre' => 'Abrazadera Maestra 2',
         'fotoMedida' => $fotoMaestra2,
@@ -156,5 +162,78 @@ it('artículo hereda foto_medida de pieza estándar', function () {
     $expectedUrl2 = rtrim(config('app.url'), '/').'/storage/'.$fotoMaestra2;
     expect($articulo->foto_medida)->toBe($expectedUrl2);
 
-    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($fotoMaestra);
+    Storage::disk('public')->assertExists($fotoMaestra);
+});
+
+it('sincroniza articulo_id en referencias al crear y actualizar articulo', function () {
+    $referencia1 = Referencia::factory()->create();
+    $referencia2 = Referencia::factory()->create();
+
+    // 1. Validar en store
+    $data = [
+        'definicion' => 'Articulo Sincronizacion',
+        'descripcionEspecifica' => 'Prueba de sincronización',
+        'referencias_ids' => [$referencia1->id, $referencia2->id],
+    ];
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/articulos', $data);
+
+    $response->assertStatus(201);
+
+    $articulo = Articulo::where('definicion', 'Articulo Sincronizacion')->first();
+
+    $referencia1->refresh();
+    $referencia2->refresh();
+
+    expect($referencia1->articulo_id)->toBe($articulo->id)
+        ->and($referencia2->articulo_id)->toBe($articulo->id);
+
+    // 2. Validar en update (cambiar referencias: desasociar 1 y agregar una nueva)
+    $referencia3 = Referencia::factory()->create();
+
+    $updateData = [
+        'definicion' => 'Articulo Sincronizacion Modificado',
+        'referencias_ids' => [$referencia2->id, $referencia3->id],
+    ];
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/articulos/{$articulo->id}", $updateData);
+
+    $response->assertStatus(200);
+
+    $referencia1->refresh();
+    $referencia2->refresh();
+    $referencia3->refresh();
+
+    // Referencia 1 debe estar desasociada
+    expect($referencia1->articulo_id)->toBeNull();
+    // Referencia 2 y 3 deben pertenecer a este artículo
+    expect($referencia2->articulo_id)->toBe($articulo->id)
+        ->and($referencia3->articulo_id)->toBe($articulo->id);
+});
+
+it('sincroniza articulo_id en referencias al agregar y remover referencia individualmente', function () {
+    $articulo = Articulo::factory()->create();
+    $referencia = Referencia::factory()->create();
+
+    // 1. Agregar referencia
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson("/v1/articulos/{$articulo->id}/referencias", [
+            'referencia_id' => $referencia->id,
+        ]);
+
+    $response->assertStatus(200);
+
+    $referencia->refresh();
+    expect($referencia->articulo_id)->toBe($articulo->id);
+
+    // 2. Remover referencia
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->deleteJson("/v1/articulos/{$articulo->id}/referencias/{$referencia->id}");
+
+    $response->assertStatus(200);
+
+    $referencia->refresh();
+    expect($referencia->articulo_id)->toBeNull();
 });

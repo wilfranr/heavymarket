@@ -9,6 +9,8 @@ use App\Http\Requests\StoreCotizacionRequest;
 use App\Http\Requests\UpdateCotizacionRequest;
 use App\Http\Resources\CotizacionResource;
 use App\Models\Cotizacion;
+use App\Models\Pedido;
+use App\Models\PedidoReferenciaProveedor;
 use App\Services\CotizacionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -81,7 +83,7 @@ class CotizacionController extends Controller
     public function store(StoreCotizacionRequest $request): JsonResponse
     {
         try {
-            $pedido = \App\Models\Pedido::findOrFail($request->input('pedido_id'));
+            $pedido = Pedido::findOrFail($request->input('pedido_id'));
 
             $cotizacion = $this->cotizacionService->crearDesdePedido(
                 $pedido,
@@ -192,6 +194,7 @@ class CotizacionController extends Controller
     {
         try {
             $pdf = $this->cotizacionService->generarPDF($cotizacion);
+
             return $pdf->download("COT-{$cotizacion->id}.pdf");
         } catch (\Exception $e) {
             return response()->json([
@@ -214,7 +217,16 @@ class CotizacionController extends Controller
         ]);
 
         try {
-            $pedido = \App\Models\Pedido::findOrFail($validated['pedido_id']);
+            $pedido = Pedido::findOrFail($validated['pedido_id']);
+
+            $erroresCampos = $this->validarCamposItemsSeleccionados($validated['items']);
+            if (! empty($erroresCampos)) {
+                return response()->json([
+                    'message' => 'Campos incompletos en los ítems seleccionados',
+                    'errores' => $erroresCampos,
+                ], 422);
+            }
+
             $cotizacion = $this->cotizacionService->finalizarCosteo(
                 $pedido,
                 $validated['items'],
@@ -289,5 +301,57 @@ class CotizacionController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Validar que los items seleccionados tengan todos los campos requeridos
+     *
+     * @param  array<int, array{id: int, mostrar_referencia: bool}>  $items
+     * @return array<int, string>
+     */
+    private function validarCamposItemsSeleccionados(array $items): array
+    {
+        $errores = [];
+
+        foreach ($items as $item) {
+            $prp = PedidoReferenciaProveedor::with([
+                'pedidoReferencia.referencia.articulo',
+                'tercero',
+                'marca',
+            ])->find($item['id']);
+
+            if (! $prp) {
+                continue;
+            }
+
+            $referenciaCodigo = $prp->pedidoReferencia?->referencia?->referencia ?? "ID {$prp->id}";
+            $proveedorNombre = $prp->tercero?->nombre ?? "Proveedor ID {$prp->proveedor_id}";
+
+            if (empty($prp->proveedor_id)) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Proveedor no seleccionado";
+            }
+
+            if (empty($prp->marca_id)) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Marca no seleccionada";
+            }
+
+            if (empty($prp->dias_entrega) && $prp->dias_entrega !== 0) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Tiempo de entrega no configurado";
+            }
+
+            if (! isset($prp->costo_unidad) || $prp->costo_unidad <= 0) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Costo no configurado";
+            }
+
+            if (! isset($prp->utilidad) || $prp->utilidad < 0) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Utilidad no configurada";
+            }
+
+            if (empty($prp->cantidad) || $prp->cantidad <= 0) {
+                $errores[] = "[Ref: {$referenciaCodigo}, Proveedor: {$proveedorNombre}] Cantidad no válida";
+            }
+        }
+
+        return $errores;
     }
 }

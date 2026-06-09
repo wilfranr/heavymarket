@@ -9,16 +9,17 @@ use App\Http\Requests\StoreArticuloRequest;
 use App\Http\Requests\UpdateArticuloRequest;
 use App\Http\Resources\ArticuloResource;
 use App\Models\Articulo;
+use App\Models\Lista;
 use App\Models\Medida;
 use App\Models\Referencia;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 /**
  * Controlador API para gestión de Artículos
  *
  * Maneja todas las operaciones CRUD de artículos a través del API REST.
  */
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ArticuloController extends Controller
@@ -76,7 +77,7 @@ class ArticuloController extends Controller
      */
     public function store(StoreArticuloRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Articulo::class);
+        $this->authorize('create', Articulo::class);
         $data = $request->validated();
 
         // Manejar carga de archivos
@@ -89,11 +90,11 @@ class ArticuloController extends Controller
         }
 
         // Heredar foto de medida desde Piezas Estándar si no se proporciona una nueva
-        if (!isset($data['foto_medida']) && isset($data['definicion'])) {
-            $lista = \App\Models\Lista::where('tipo', 'Piezas Estandar')
+        if (! isset($data['foto_medida']) && isset($data['definicion'])) {
+            $lista = Lista::where('tipo', 'Piezas Estandar')
                 ->where('nombre', $data['definicion'])
                 ->first();
-            
+
             if ($lista && $lista->fotoMedida) {
                 $data['foto_medida'] = $lista->fotoMedida;
             }
@@ -102,7 +103,18 @@ class ArticuloController extends Controller
         $articulo = Articulo::create($data);
 
         if ($request->has('referencias_ids')) {
-            $articulo->referencias()->sync($request->input('referencias_ids'));
+            $referenciasIds = $request->input('referencias_ids');
+
+            // Garantizar que estas referencias pertenezcan únicamente a este artículo
+            Referencia::whereIn('id', $referenciasIds)->update(['articulo_id' => $articulo->id]);
+
+            // Limpiar relaciones pivote que tengan estas referencias con otros artículos
+            \DB::table('articulos_referencias')
+                ->whereIn('referencia_id', $referenciasIds)
+                ->where('articulo_id', '!=', $articulo->id)
+                ->delete();
+
+            $articulo->referencias()->sync($referenciasIds);
         }
 
         if ($request->has('medidas')) {
@@ -171,11 +183,11 @@ class ArticuloController extends Controller
         }
 
         // Heredar foto de medida desde Piezas Estándar si cambió la definición y no se subió una foto nueva
-        if (!$request->hasFile('foto_medida') && isset($data['definicion']) && $articulo->definicion !== $data['definicion']) {
-            $lista = \App\Models\Lista::where('tipo', 'Piezas Estandar')
+        if (! $request->hasFile('foto_medida') && isset($data['definicion']) && $articulo->definicion !== $data['definicion']) {
+            $lista = Lista::where('tipo', 'Piezas Estandar')
                 ->where('nombre', $data['definicion'])
                 ->first();
-            
+
             if ($lista && $lista->fotoMedida) {
                 // Eliminar anterior si existe y pertenece a articulos (no heredada)
                 if ($articulo->foto_medida && str_starts_with($articulo->foto_medida, 'articulos/')) {
@@ -188,7 +200,31 @@ class ArticuloController extends Controller
         $articulo->update($data);
 
         if ($request->has('referencias_ids')) {
-            $articulo->referencias()->sync($request->input('referencias_ids'));
+            $referenciasIds = $request->input('referencias_ids');
+
+            // Obtener las referencias que estaban asociadas a este artículo antes del update
+            $oldReferenciasIds = $articulo->referencias()->pluck('referencias.id')->toArray();
+
+            // Referencias a desasociar
+            $desasociarIds = array_diff($oldReferenciasIds, $referenciasIds);
+            if (! empty($desasociarIds)) {
+                Referencia::whereIn('id', $desasociarIds)
+                    ->where('articulo_id', $articulo->id)
+                    ->update(['articulo_id' => null]);
+            }
+
+            // Referencias a asociar
+            if (! empty($referenciasIds)) {
+                Referencia::whereIn('id', $referenciasIds)->update(['articulo_id' => $articulo->id]);
+
+                // Limpiar pivot de asociaciones antiguas de estas referencias con otros artículos
+                \DB::table('articulos_referencias')
+                    ->whereIn('referencia_id', $referenciasIds)
+                    ->where('articulo_id', '!=', $articulo->id)
+                    ->delete();
+            }
+
+            $articulo->referencias()->sync($referenciasIds);
         }
 
         if ($request->has('juegos')) {
@@ -234,7 +270,18 @@ class ArticuloController extends Controller
             'referencia_id' => 'required|exists:referencias,id',
         ]);
 
-        $articulo->referencias()->syncWithoutDetaching([$request->referencia_id]);
+        $referenciaId = (int) $request->input('referencia_id');
+
+        // Garantizar que la referencia pertenezca únicamente a este artículo
+        Referencia::where('id', $referenciaId)->update(['articulo_id' => $articulo->id]);
+
+        // Limpiar relaciones pivote que tenga esta referencia con otros artículos
+        \DB::table('articulos_referencias')
+            ->where('referencia_id', $referenciaId)
+            ->where('articulo_id', '!=', $articulo->id)
+            ->delete();
+
+        $articulo->referencias()->syncWithoutDetaching([$referenciaId]);
 
         return response()->json([
             'message' => 'Referencia asociada exitosamente',
@@ -247,6 +294,11 @@ class ArticuloController extends Controller
      */
     public function removeReferencia(Articulo $articulo, Referencia $referencia): JsonResponse
     {
+        // Limpiar el articulo_id si apuntaba a este artículo
+        if ($referencia->articulo_id === $articulo->id) {
+            $referencia->update(['articulo_id' => null]);
+        }
+
         $articulo->referencias()->detach($referencia->id);
 
         return response()->json([

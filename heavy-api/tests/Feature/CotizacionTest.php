@@ -2,24 +2,24 @@
 
 namespace Tests\Feature;
 
+use App\Models\Articulo;
+use App\Models\City;
+use App\Models\Contacto;
 use App\Models\Cotizacion;
+use App\Models\CotizacionReferenciaProveedor;
+use App\Models\Country;
+use App\Models\Lista;
+use App\Models\Maquina;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
-use App\Models\CotizacionReferenciaProveedor;
+use App\Models\Referencia;
+use App\Models\State;
 use App\Models\Tercero;
 use App\Models\User;
-use App\Models\Lista;
-use App\Models\City;
-use App\Models\State;
-use App\Models\Country;
-use App\Models\Maquina;
-use App\Models\Referencia;
-use App\Models\Articulo;
-use App\Models\Contacto;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class CotizacionTest extends TestCase
@@ -40,12 +40,16 @@ class CotizacionTest extends TestCase
         // 1. Crear tablas de localización si faltan
         $tables = ['countries', 'states', 'cities'];
         foreach ($tables as $table) {
-            if (!Schema::hasTable($table)) {
+            if (! Schema::hasTable($table)) {
                 Schema::create($table, function ($t) use ($table) {
                     $t->id();
                     $t->string('name');
-                    if ($table === 'countries') $t->string('code')->nullable();
-                    if ($table === 'states') $t->foreignId('country_id');
+                    if ($table === 'countries') {
+                        $t->string('code')->nullable();
+                    }
+                    if ($table === 'states') {
+                        $t->foreignId('country_id');
+                    }
                     if ($table === 'cities') {
                         $t->foreignId('state_id');
                         $t->foreignId('country_id');
@@ -57,14 +61,14 @@ class CotizacionTest extends TestCase
         }
 
         // 2. Reparar tabla pedido_referencia_proveedor si le falta marca_id
-        if (Schema::hasTable('pedido_referencia_proveedor') && !Schema::hasColumn('pedido_referencia_proveedor', 'marca_id')) {
+        if (Schema::hasTable('pedido_referencia_proveedor') && ! Schema::hasColumn('pedido_referencia_proveedor', 'marca_id')) {
             Schema::table('pedido_referencia_proveedor', function ($t) {
                 $t->unsignedBigInteger('marca_id')->after('proveedor_id')->nullable();
             });
         }
 
         // 3. Reparar tabla cotizacion_referencia_proveedores si le falta mostrar_referencia
-        if (Schema::hasTable('cotizacion_referencia_proveedores') && !Schema::hasColumn('cotizacion_referencia_proveedores', 'mostrar_referencia')) {
+        if (Schema::hasTable('cotizacion_referencia_proveedores') && ! Schema::hasColumn('cotizacion_referencia_proveedores', 'mostrar_referencia')) {
             Schema::table('cotizacion_referencia_proveedores', function ($t) {
                 $t->boolean('mostrar_referencia')->default(true)->after('pedido_referencia_proveedor_id');
             });
@@ -76,48 +80,48 @@ class CotizacionTest extends TestCase
         $user = User::create([
             'name' => 'Admin Test',
             'email' => 'admin@test.com',
-            'password' => Hash::make('password')
+            'password' => Hash::make('password'),
         ]);
 
         $country = Country::create(['name' => 'Colombia', 'code' => 'CO']);
         $state = State::create(['name' => 'Cundinamarca', 'country_id' => $country->id]);
         $city = City::create(['name' => 'BOGOTA', 'state_id' => $state->id, 'country_id' => $country->id]);
-        
+
         $tercero = Tercero::create([
             'nombre' => 'CLIENTE TEST',
             'numero_documento' => '12345678',
             'city_id' => $city->id,
-            'estado' => 'Activo'
+            'estado' => 'Activo',
         ]);
 
         $contacto = Contacto::create([
             'tercero_id' => $tercero->id,
             'nombre' => 'CONTACTO TEST',
-            'email' => 'contacto@test.com'
+            'email' => 'contacto@test.com',
         ]);
 
         $maquina = Maquina::create([
             'modelo' => '120G',
             'serie' => '87V05667',
-            'estado_revision' => 'revisado'
+            'estado_revision' => 'revisado',
         ]);
-        
+
         $pedido = Pedido::create([
             'tercero_id' => $tercero->id,
             'maquina_id' => $maquina->id,
             'user_id' => $user->id,
             'contacto_id' => $contacto->id,
-            'estado' => 'En_Analisis'
+            'estado' => 'En_Analisis',
         ]);
 
         $articulo = Articulo::create(['definicion' => 'REPUESTO TEST']);
-        $referencia = Referencia::create(['articulo_id' => $articulo->id, 'referencia' => 'REF-TEST-' . uniqid()]);
-        
+        $referencia = Referencia::create(['articulo_id' => $articulo->id, 'referencia' => 'REF-TEST-'.uniqid()]);
+
         $pedidoReferencia = PedidoReferencia::create([
             'pedido_id' => $pedido->id,
             'referencia_id' => $referencia->id,
             'cantidad' => 1,
-            'estado' => 'Activo'
+            'estado' => 'Activo',
         ]);
 
         $marca = Lista::create(['tipo' => 'Marcas', 'nombre' => 'CATERPILLAR']);
@@ -128,8 +132,11 @@ class CotizacionTest extends TestCase
             'proveedor_id' => $tercero->id,
             'marca_id' => $marca->id,
             'cantidad' => 1,
+            'costo_unidad' => 100,
+            'utilidad' => 10,
+            'dias_entrega' => 5,
             'valor_total' => 100,
-            'estado' => 'Seleccionado'
+            'estado' => 'Seleccionado',
         ]);
 
         return compact('user', 'pedido', 'prp', 'tercero', 'city', 'marca', 'articulo');
@@ -143,41 +150,41 @@ class CotizacionTest extends TestCase
             ->postJson('/v1/cotizaciones/finalizar-costeo', [
                 'pedido_id' => $data['pedido']->id,
                 'items' => [
-                    ['id' => $data['prp']->id, 'mostrar_referencia' => false]
-                ]
+                    ['id' => $data['prp']->id, 'mostrar_referencia' => false],
+                ],
             ]);
 
         $response->assertStatus(200);
 
         $this->assertDatabaseHas('cotizacion_referencia_proveedores', [
             'pedido_referencia_proveedor_id' => $data['prp']->id,
-            'mostrar_referencia' => false
+            'mostrar_referencia' => false,
         ]);
-        
+
         $this->assertDatabaseHas('cotizaciones', [
-            'pedido_id' => $data['pedido']->id
+            'pedido_id' => $data['pedido']->id,
         ]);
 
         $this->assertDatabaseHas('pedidos', [
             'id' => $data['pedido']->id,
-            'estado' => 'Cotizado'
+            'estado' => 'Cotizado',
         ]);
     }
 
     public function test_quotation_relations_for_pdf_are_correctly_defined(): void
     {
         $data = $this->createFullData();
-        
+
         $cotizacion = Cotizacion::create([
             'pedido_id' => $data['pedido']->id,
             'tercero_id' => $data['tercero']->id,
             'user_id' => $data['user']->id,
-            'estado' => 'Enviada'
+            'estado' => 'Enviada',
         ]);
 
         CotizacionReferenciaProveedor::create([
             'cotizacion_id' => $cotizacion->id,
-            'pedido_referencia_proveedor_id' => $data['prp']->id
+            'pedido_referencia_proveedor_id' => $data['prp']->id,
         ]);
 
         $cotizacion->load([

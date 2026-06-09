@@ -6,14 +6,14 @@
 
 use App\Models\Articulo;
 use App\Models\Country;
-use App\Models\Cotizacion;
 use App\Models\Empresa;
+use App\Models\Lista;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
 use App\Models\Referencia;
 use App\Models\Tercero;
-use App\Models\User;
+use App\Notifications\SystemNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
 
@@ -45,9 +45,12 @@ it('finalizar costeo sin flete deja cotización en Borrador y notifica', functio
         'referencia_id' => $referencia->id,
     ]);
 
+    $marca = Lista::factory()->create(['tipo' => 'Marcas']);
+
     $linea = PedidoReferenciaProveedor::query()->create([
         'pedido_referencia_id' => $pedidoRef->id,
         'proveedor_id' => $proveedor->id,
+        'marca_id' => $marca->id,
         'ubicacion' => 'Internacional',
         'estado' => 1,
         'costo_unidad' => 100,
@@ -75,8 +78,8 @@ it('finalizar costeo sin flete deja cotización en Borrador y notifica', functio
 
     Notification::assertSentTo(
         $this->admin,
-        \App\Notifications\SystemNotification::class,
-        fn (\App\Notifications\SystemNotification $n) => $n->type === 'missing_freight_rate'
+        SystemNotification::class,
+        fn (SystemNotification $n) => $n->type === 'missing_freight_rate'
     );
 });
 
@@ -98,9 +101,12 @@ it('finalizar costeo con flete configurado deja cotización Enviada', function (
         'referencia_id' => $referencia->id,
     ]);
 
+    $marca = Lista::factory()->create(['tipo' => 'Marcas']);
+
     $linea = PedidoReferenciaProveedor::query()->create([
         'pedido_referencia_id' => $pedidoRef->id,
         'proveedor_id' => $proveedor->id,
+        'marca_id' => $marca->id,
         'ubicacion' => 'Internacional',
         'estado' => 1,
         'costo_unidad' => 100,

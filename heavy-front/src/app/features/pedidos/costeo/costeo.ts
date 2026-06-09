@@ -1002,6 +1002,17 @@ export class CosteoComponent implements OnInit {
             return;
         }
 
+        const camposIncompletos = this.validarCamposSeleccionados();
+        if (camposIncompletos.length > 0) {
+            this.messageService.add({
+                severity: 'error',
+                summary: 'Campos incompletos',
+                detail: `Los siguientes campos están vacíos en los ítems seleccionados:\n${camposIncompletos.join('\n')}`,
+                life: 10000
+            });
+            return;
+        }
+
         // 2. Confirmación
         this.confirmationService.confirm({
             message: `¿Está seguro de finalizar el costeo y generar la cotización? Se guardarán los cambios actuales automáticamente.`,
@@ -1011,6 +1022,49 @@ export class CosteoComponent implements OnInit {
                 this.guardarYGenerarCotizacion();
             }
         });
+    }
+
+    private validarCamposSeleccionados(): string[] {
+        const errores: string[] = [];
+        const camposRequeridos = [
+            { key: 'proveedor_id', label: 'Proveedor' },
+            { key: 'marca_id', label: 'Marca' },
+            { key: 'entrega', label: 'Entrega' },
+            { key: 'costo_usd', label: 'Costo USD' },
+            { key: 'costo_cop', label: 'Costo COP' },
+            { key: 'utilidad', label: 'Utilidad' },
+            { key: 'cantidad', label: 'Cantidad' }
+        ];
+
+        this.referenciasFormArray.controls.forEach((ref, refIdx) => {
+            const refGroup = ref as FormGroup;
+            const referenciaCodigo = refGroup.get('referencia_codigo')?.value || `Referencia ${refIdx + 1}`;
+            const proveedores = (refGroup.get('proveedores') as FormArray).controls;
+
+            proveedores.forEach((prov, provIdx) => {
+                const provGroup = prov as FormGroup;
+                if (!provGroup.get('seleccionado')?.value) return;
+
+                const esNacional = provGroup.get('ubicacion')?.value === 'Nacional';
+
+                camposRequeridos.forEach((campo) => {
+                    const control = provGroup.get(campo.key);
+                    if (!control) return;
+
+                    const valor = control.value;
+                    const estaVacio = valor === null || valor === undefined || valor === '' || (typeof valor === 'number' && valor === 0 && campo.key !== 'utilidad');
+
+                    if (campo.key === 'costo_usd' && esNacional) return;
+                    if (campo.key === 'costo_cop' && !esNacional) return;
+
+                    if (estaVacio) {
+                        errores.push(`[Ref: ${referenciaCodigo}, Proveedor #${provIdx + 1}] ${campo.label} está vacío`);
+                    }
+                });
+            });
+        });
+
+        return errores;
     }
 
     private guardarYGenerarCotizacion(): void {

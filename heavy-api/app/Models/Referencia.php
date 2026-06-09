@@ -2,8 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Modelo Referencia - Gestiona las referencias de artículos en el sistema CYH
@@ -16,14 +22,14 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $referencia Código o número de referencia del artículo
  * @property int|null $marca_id ID de la marca asociada a la referencia
  * @property string|null $comentario Comentarios adicionales sobre la referencia
- * @property \Carbon\Carbon $created_at Fecha de creación de la referencia
- * @property \Carbon\Carbon $updated_at Fecha de última actualización
+ * @property Carbon $created_at Fecha de creación de la referencia
+ * @property Carbon $updated_at Fecha de última actualización
  * @property-read Lista $marca Marca asociada a la referencia
  * @property-read Categoria $categoria Categoría de la referencia
- * @property-read \Illuminate\Database\Eloquent\Collection|Articulo[] $articulos Artículos asociados a la referencia
- * @property-read \Illuminate\Database\Eloquent\Collection|ArticuloReferencia[] $articuloReferencia Relación pivot con artículos
- * @property-read \Illuminate\Database\Eloquent\Collection|Pedido[] $pedidos Pedidos que incluyen esta referencia
- * @property-read \Illuminate\Database\Eloquent\Collection|ArticuloJuego[] $articuloJuegos Juegos de artículos asociados
+ * @property-read Collection|Articulo[] $articulos Artículos asociados a la referencia
+ * @property-read Collection|ArticuloReferencia[] $articuloReferencia Relación pivot con artículos
+ * @property-read Collection|Pedido[] $pedidos Pedidos que incluyen esta referencia
+ * @property-read Collection|ArticuloJuego[] $articuloJuegos Juegos de artículos asociados
  *
  * @since 1.0.0
  *
@@ -31,7 +37,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Referencia extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     /**
      * Los atributos que son asignables masivamente.
@@ -55,13 +61,17 @@ class Referencia extends Model
     {
         static::created(function ($referencia) {
             if ($referencia->articulo_id) {
-                $referencia->articulos()->syncWithoutDetaching([$referencia->articulo_id]);
+                $referencia->articulos()->sync([$referencia->articulo_id]);
             }
         });
 
         static::updated(function ($referencia) {
-            if ($referencia->isDirty('articulo_id') && $referencia->articulo_id) {
-                $referencia->articulos()->syncWithoutDetaching([$referencia->articulo_id]);
+            if ($referencia->isDirty('articulo_id')) {
+                if ($referencia->articulo_id) {
+                    $referencia->articulos()->sync([$referencia->articulo_id]);
+                } else {
+                    $referencia->articulos()->detach();
+                }
             }
         });
     }
@@ -74,7 +84,7 @@ class Referencia extends Model
     /**
      * Relación con la tabla pivot de artículos y referencias.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function articuloReferencia()
     {
@@ -84,7 +94,7 @@ class Referencia extends Model
     /**
      * Relación con el artículo principal. (Muchas referencias -> 1 Artículo)
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function articulo()
     {
@@ -94,7 +104,7 @@ class Referencia extends Model
     /**
      * Relación con el tipo de artículo (Lista).
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function lista()
     {
@@ -105,7 +115,7 @@ class Referencia extends Model
      * Relación muchos a muchos con artículos.
      * Una referencia puede estar asociada a múltiples artículos.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function articulos()
     {
@@ -120,7 +130,7 @@ class Referencia extends Model
     /**
      * Relación con la marca de la referencia.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function marca()
     {
@@ -131,7 +141,7 @@ class Referencia extends Model
      * Relación muchos a muchos con pedidos.
      * Una referencia puede estar en múltiples pedidos con cantidades específicas.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     public function pedidos()
     {
@@ -142,7 +152,7 @@ class Referencia extends Model
     /**
      * Relación con juegos de artículos asociados a la referencia.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function articuloJuegos()
     {
@@ -152,7 +162,7 @@ class Referencia extends Model
     /**
      * Relación con la categoría de la referencia.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function categoria()
     {
@@ -163,7 +173,7 @@ class Referencia extends Model
      * Relación con la categoría comercial de la referencia.
      * Apunta a la tabla listas con tipo = 'Categoría Comercial'.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function categoriaComercial()
     {
