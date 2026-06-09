@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo Cotizacion
@@ -18,16 +20,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int $tercero_id
  * @property int $pedido_id
  * @property string $estado
- * @property \Illuminate\Support\Carbon|null $fecha_emision
- * @property \Illuminate\Support\Carbon|null $fecha_vencimiento
+ * @property Carbon|null $fecha_emision
+ * @property Carbon|null $fecha_vencimiento
  * @property string|null $observaciones
  * @property float|null $total
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $user
- * @property-read \App\Models\Tercero $tercero
- * @property-read \App\Models\Pedido $pedido
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\CotizacionReferenciaProveedor[] $referenciasProveedores
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User $user
+ * @property-read Tercero $tercero
+ * @property-read Pedido $pedido
+ * @property-read Collection|CotizacionReferenciaProveedor[] $referenciasProveedores
  */
 class Cotizacion extends Model
 {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Articulo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * Transforma los datos de artículos en una respuesta JSON estructurada.
  *
- * @property \App\Models\Articulo $resource
+ * @property Articulo $resource
  */
 class ArticuloResource extends JsonResource
 {
@@ -46,6 +47,7 @@ class ArticuloResource extends JsonResource
                 function () {
                     $pivot = $this->relationLoaded('referencias') ? $this->referencias : collect();
                     $directas = $this->relationLoaded('referenciasDirectas') ? $this->referenciasDirectas : collect();
+
                     return ReferenciaResource::collection($pivot->merge($directas)->unique('id'));
                 }
             ),

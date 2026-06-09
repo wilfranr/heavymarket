@@ -9,24 +9,24 @@ use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
     Storage::fake('public');
-    
+
     // Seed data needed for landing tests
     $marca = Lista::factory()->create(['tipo' => 'Fabricantes', 'nombre' => 'Marca 1']);
-    
+
     $sistema = Sistema::create(['nombre' => 'Sistema 1', 'descripcion' => 'Desc']);
-    
+
     $tipoArticulo = Lista::factory()->create(['tipo' => 'Tipo de Artículo', 'nombre' => 'Tipo Articulo 1']);
     $tipoArticulo->sistemas()->attach($sistema);
 
     // Categories for quote-data
     $categoria = Lista::factory()->create(['tipo' => 'Categoría de Máquina', 'nombre' => 'Construccion']);
     $sub = Lista::factory()->create([
-        'tipo' => 'Tipo de Máquina', 
-        'nombre' => 'Excavadora', 
+        'tipo' => 'Tipo de Máquina',
+        'nombre' => 'Excavadora',
         'parent_id' => $categoria->id,
-        'foto' => 'listas/excavadora.png'
+        'foto' => 'listas/excavadora.png',
     ]);
-    
+
     Storage::disk('public')->put('listas/excavadora.png', 'content');
 });
 

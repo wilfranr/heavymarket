@@ -6,10 +6,14 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 
+use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -25,10 +29,10 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $password Contraseña hasheada del usuario
  * @property string|null $email_verified_at Fecha de verificación del email
  * @property string|null $remember_token Token para "recordar sesión"
- * @property \Carbon\Carbon $created_at Fecha de creación del usuario
- * @property \Carbon\Carbon $updated_at Fecha de última actualización
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Role[] $roles Roles asignados al usuario
- * @property-read \Illuminate\Database\Eloquent\Collection|\Spatie\Permission\Models\Permission[] $permissions Permisos directos del usuario
+ * @property Carbon $created_at Fecha de creación del usuario
+ * @property Carbon $updated_at Fecha de última actualización
+ * @property-read Collection|Role[] $roles Roles asignados al usuario
+ * @property-read Collection|Permission[] $permissions Permisos directos del usuario
  *
  * @since 1.0.0
  *

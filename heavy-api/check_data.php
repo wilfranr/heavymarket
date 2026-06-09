@@ -1,16 +1,17 @@
 <?php
+
 require __DIR__.'/vendor/autoload.php';
 $app = require_once __DIR__.'/bootstrap/app.php';
-$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel = $app->make(Kernel::class);
 $kernel->bootstrap();
 
 use App\Models\Pedido;
-use App\Models\PedidoReferenciaProveedor;
+use Illuminate\Contracts\Console\Kernel;
 
 // Analizar Pedido #15
 $pedido = Pedido::find(15);
 
-if (!$pedido) {
+if (! $pedido) {
     echo "No hay pedidos en la base de datos.\n";
     exit;
 }

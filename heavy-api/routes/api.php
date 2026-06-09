@@ -75,14 +75,14 @@ Route::prefix('v1')->group(function () {
     Route::post('/landing/submit-quote', [LandingController::class, 'submitQuote'])->middleware('auth:sanctum');
     Route::post('/landing/contact', [LandingController::class, 'submitContactForm']);
 
-        /**
-         * Gestión de Ubicaciones (públicas para formularios)
-         */
-        Route::prefix('ubicaciones')->group(function () {
-            Route::get('paises', [UbicacionController::class, 'countries']);
-            Route::get('departamentos', [UbicacionController::class, 'states']);
-            Route::get('ciudades', [UbicacionController::class, 'cities']);
-        });
+    /**
+     * Gestión de Ubicaciones (públicas para formularios)
+     */
+    Route::prefix('ubicaciones')->group(function () {
+        Route::get('paises', [UbicacionController::class, 'countries']);
+        Route::get('departamentos', [UbicacionController::class, 'states']);
+        Route::get('ciudades', [UbicacionController::class, 'cities']);
+    });
 
     /**
      * Rutas de Autenticación para Clientes (Landing)

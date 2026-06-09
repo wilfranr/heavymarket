@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo Categoria
@@ -15,14 +18,14 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property int $id
  * @property string $nombre
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Tercero[] $terceros
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Referencia[] $referencias
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection|Tercero[] $terceros
+ * @property-read Collection|Referencia[] $referencias
  */
 class Categoria extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     protected $fillable = [
         'nombre',

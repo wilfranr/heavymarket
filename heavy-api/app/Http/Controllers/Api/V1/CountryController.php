@@ -37,7 +37,7 @@ class CountryController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        if (!$user->hasAnyRole(['super_admin', 'Administrador'])) {
+        if (! $user->hasAnyRole(['super_admin', 'Administrador'])) {
             abort(403, 'No autorizado');
         }
 
@@ -75,7 +75,7 @@ class CountryController extends Controller
      */
     public function show(Request $request, Country $country): JsonResponse
     {
-        if (!$request->user()->hasAnyRole(['super_admin', 'Administrador'])) {
+        if (! $request->user()->hasAnyRole(['super_admin', 'Administrador'])) {
             abort(403, 'No autorizado');
         }
 

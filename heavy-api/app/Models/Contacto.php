@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo Contacto
@@ -21,10 +22,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $country_id
  * @property string|null $email
  * @property bool $principal
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Tercero $tercero
- * @property-read \App\Models\Country|null $country
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Tercero $tercero
+ * @property-read Country|null $country
  */
 class Contacto extends Model
 {

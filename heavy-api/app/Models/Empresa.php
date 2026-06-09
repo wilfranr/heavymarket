@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Modelo Empresa - Gestiona la información de las empresas del sistema
@@ -39,7 +41,7 @@ use Illuminate\Database\Eloquent\Model;
  */
 class Empresa extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     /**
      * Los atributos que son asignables masivamente.
@@ -85,7 +87,7 @@ class Empresa extends Model
     /**
      * Relación con el país donde opera la empresa.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function country()
     {
@@ -95,7 +97,7 @@ class Empresa extends Model
     /**
      * Relación con la ciudad donde opera la empresa.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function city()
     {
@@ -105,7 +107,7 @@ class Empresa extends Model
     /**
      * Relación con el estado/provincia donde opera la empresa.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function state()
     {

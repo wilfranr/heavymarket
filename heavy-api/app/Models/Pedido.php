@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Enums\PedidoEstado;
 use App\Enums\PedidoOrigen;
 use App\Traits\TransicionesEstado;
 use Illuminate\Database\Eloquent\Builder;

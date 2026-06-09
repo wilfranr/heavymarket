@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo OrdenTrabajo
@@ -19,8 +21,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $pedido_id
  * @property int|null $cotizacion_id
  * @property string|null $estado
- * @property \Illuminate\Support\Carbon|null $fecha_ingreso
- * @property \Illuminate\Support\Carbon|null $fecha_entrega
+ * @property Carbon|null $fecha_ingreso
+ * @property Carbon|null $fecha_entrega
  * @property int|null $direccion_id
  * @property string|null $telefono
  * @property string|null $observaciones
@@ -28,15 +30,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property int|null $transportadora_id
  * @property string|null $archivo
  * @property string|null $motivo_cancelacion
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User|null $user
- * @property-read \App\Models\Tercero|null $tercero
- * @property-read \App\Models\Pedido|null $pedido
- * @property-read \App\Models\Cotizacion|null $cotizacion
- * @property-read \App\Models\Transportadora|null $transportadora
- * @property-read \App\Models\Direccion|null $direccion
- * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\OrdenTrabajoReferencia[] $referencias
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User|null $user
+ * @property-read Tercero|null $tercero
+ * @property-read Pedido|null $pedido
+ * @property-read Cotizacion|null $cotizacion
+ * @property-read Transportadora|null $transportadora
+ * @property-read Direccion|null $direccion
+ * @property-read Collection|OrdenTrabajoReferencia[] $referencias
  */
 class OrdenTrabajo extends Model
 {

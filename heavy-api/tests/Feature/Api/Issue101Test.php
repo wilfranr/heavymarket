@@ -1,20 +1,26 @@
 <?php
 
+use App\Models\Lista;
+use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\Referencia;
+use App\Models\Sistema;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests para Issue #101 - Items con mismo metadata pero diferente cantidad
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
     $this->analista = createUserWithRole('Analista');
 });
 
 it('API retorna items con mismo metadata pero diferente cantidad', function () {
-    $sistema = \App\Models\Sistema::create(['nombre' => 'SISTEMA TEST']);
-    $lista = \App\Models\Lista::factory()->create(['tipo' => 'Categoría Comercial']);
-    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
+    $sistema = Sistema::create(['nombre' => 'SISTEMA TEST']);
+    $lista = Lista::factory()->create(['tipo' => 'Categoría Comercial']);
+    $pedido = Pedido::factory()->create(['estado' => 'En_Analisis']);
 
-    \App\Models\PedidoReferencia::create([
+    PedidoReferencia::create([
         'pedido_id' => $pedido->id,
         'sistema_id' => $sistema->id,
         'lista_id' => $lista->id,
@@ -23,7 +29,7 @@ it('API retorna items con mismo metadata pero diferente cantidad', function () {
         'estado' => 1,
     ]);
 
-    \App\Models\PedidoReferencia::create([
+    PedidoReferencia::create([
         'pedido_id' => $pedido->id,
         'sistema_id' => $sistema->id,
         'lista_id' => $lista->id,
@@ -42,11 +48,11 @@ it('API retorna items con mismo metadata pero diferente cantidad', function () {
 });
 
 it('permite guardar análisis con items similares separados', function () {
-    $sistema = \App\Models\Sistema::create(['nombre' => 'SISTEMA TEST']);
-    $lista = \App\Models\Lista::factory()->create(['tipo' => 'Categoría Comercial']);
-    $ref1 = \App\Models\Referencia::factory()->create();
-    $ref2 = \App\Models\Referencia::factory()->create();
-    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
+    $sistema = Sistema::create(['nombre' => 'SISTEMA TEST']);
+    $lista = Lista::factory()->create(['tipo' => 'Categoría Comercial']);
+    $ref1 = Referencia::factory()->create();
+    $ref2 = Referencia::factory()->create();
+    $pedido = Pedido::factory()->create(['estado' => 'En_Analisis']);
 
     $payload = [
         'referencias' => [

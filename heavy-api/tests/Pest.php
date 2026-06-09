@@ -1,33 +1,39 @@
 <?php
 
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
 |--------------------------------------------------------------------------
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Feature');
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Http/Resources');
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Traits');
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Policies');
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Services');
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->in('Unit/Seeders');
 
 /*
@@ -52,7 +58,7 @@ function seedRoles(array $roles = []): void
     $roles = array_merge($defaultRoles, $roles);
 
     foreach ($roles as $roleName) {
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
 }
 
@@ -62,13 +68,13 @@ function seedPermissions(array $permissions = []): void
     $permissions = array_merge($defaultPermissions, $permissions);
 
     foreach ($permissions as $permission) {
-        \Spatie\Permission\Models\Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
+        Permission::firstOrCreate(['name' => $permission, 'guard_name' => 'web']);
     }
 }
 
-function createUserWithRole(string $role, array $attributes = []): \App\Models\User
+function createUserWithRole(string $role, array $attributes = []): User
 {
-    $user = \App\Models\User::factory()->create($attributes);
+    $user = User::factory()->create($attributes);
     $user->assignRole($role);
 
     return $user;

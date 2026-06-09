@@ -5,14 +5,15 @@
  */
 
 use App\Models\Sistema;
-use App\Models\User;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
 
     $this->admin = createUserWithRole('Administrador');
     $this->vendedor = createUserWithRole('Vendedor');
@@ -87,7 +88,7 @@ it('permite crear sistema con imagen', function () {
     $imagen = UploadedFile::fake()->image('sistema.jpg');
 
     // Verificar si la columna imagen existe en la tabla sistemas
-    $hasImagenColumn = \Illuminate\Support\Facades\Schema::hasColumn('sistemas', 'imagen');
+    $hasImagenColumn = Schema::hasColumn('sistemas', 'imagen');
 
     if (! $hasImagenColumn) {
         $this->markTestSkipped('La columna imagen no existe en la tabla sistemas para tests SQLite.');

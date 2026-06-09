@@ -1,18 +1,20 @@
 <?php
 
+use App\Models\User;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Usuarios
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
 });
 
 it('super admin puede listar usuarios', function () {
     $admin = createUserWithRole('super_admin');
-    \App\Models\User::factory()->count(3)->create();
+    User::factory()->count(3)->create();
 
     $response = $this->actingAs($admin, 'sanctum')
         ->getJson('/v1/users');
@@ -72,7 +74,7 @@ it('usuario no puede eliminarse a sí mismo', function () {
 
 it('super admin puede eliminar otro usuario', function () {
     $admin = createUserWithRole('super_admin');
-    $otroUser = \App\Models\User::factory()->create();
+    $otroUser = User::factory()->create();
 
     $this->actingAs($admin, 'sanctum')
         ->deleteJson("/v1/users/{$otroUser->id}")->assertStatus(204);

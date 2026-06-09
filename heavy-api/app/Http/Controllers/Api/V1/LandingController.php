@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\PedidoOrigen;
 use App\Http\Controllers\Controller;
 use App\Mail\NewContactLead;
 use App\Mail\QuoteRequestedAdmin;
@@ -267,7 +268,7 @@ class LandingController extends Controller
             $pedido = Pedido::create([
                 'tercero_id' => $tercero?->id,
                 'user_id' => $userId, // null si cliente no registrado
-                'origen' => \App\Enums\PedidoOrigen::Landing,
+                'origen' => PedidoOrigen::Landing,
                 'estado' => 'Nuevo',
                 'comentario' => "Cotización Landing: {$request->input('selectedType')} {$request->input('selectedModel')} ".($request->input('selectedSeries') ? 'Series: '.$request->input('selectedSeries') : ''),
                 'fabricante_id' => $fabricanteId,

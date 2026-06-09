@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class Maquina extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     protected $fillable = [
         'tipo', // 'tipo' is a foreign key to the 'listas' table
@@ -95,8 +97,8 @@ class Maquina extends Model
     public function referenciasVendidas()
     {
         return $this->hasManyThrough(
-            \App\Models\PedidoReferencia::class, // Modelo final
-            \App\Models\Pedido::class,           // Modelo intermedio
+            PedidoReferencia::class, // Modelo final
+            Pedido::class,           // Modelo intermedio
             'maquina_id',                        // Foreign key en Pedido que apunta a Maquina
             'pedido_id',                         // Foreign key en PedidoReferencia que apunta a Pedido
             'id',                                // Local key en Maquina
@@ -109,12 +111,12 @@ class Maquina extends Model
      */
     public function getImagenUrlAttribute()
     {
-        return $this->foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->foto) : null;
+        return $this->foto ? Storage::disk('public')->url($this->foto) : null;
     }
 
     public function getImagenPlacaUrlAttribute()
     {
-        return $this->fotoId ? \Illuminate\Support\Facades\Storage::disk('public')->url($this->fotoId) : null;
+        return $this->fotoId ? Storage::disk('public')->url($this->fotoId) : null;
     }
 
     /**
@@ -143,7 +145,8 @@ class Maquina extends Model
     public function getImagenMotorUrlAttribute()
     {
         $foto = $this->componentes->where('sistema_id', 42)->first()?->foto_placa;
-        return $foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($foto) : null;
+
+        return $foto ? Storage::disk('public')->url($foto) : null;
     }
 
     /**
@@ -172,7 +175,8 @@ class Maquina extends Model
     public function getImagenTransmisionUrlAttribute()
     {
         $foto = $this->componentes->where('sistema_id', 49)->first()?->foto_placa;
-        return $foto ? \Illuminate\Support\Facades\Storage::disk('public')->url($foto) : null;
+
+        return $foto ? Storage::disk('public')->url($foto) : null;
     }
 
     /**

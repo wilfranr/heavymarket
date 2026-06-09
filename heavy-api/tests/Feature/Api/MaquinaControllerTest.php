@@ -1,17 +1,22 @@
 <?php
 
+use App\Models\ComponenteMaquina;
+use App\Models\Lista;
+use App\Models\Maquina;
+use App\Models\Tercero;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Máquinas
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
 
     $this->user = createUserWithRole('Administrador');
-    $this->tipoMaquina = \App\Models\Lista::factory()->tipoMaquina()->create();
-    $this->fabricante = \App\Models\Lista::factory()->fabricante()->create();
+    $this->tipoMaquina = Lista::factory()->tipoMaquina()->create();
+    $this->fabricante = Lista::factory()->fabricante()->create();
 });
 
 it('requiere autenticación para listar máquinas', function () {
@@ -19,7 +24,7 @@ it('requiere autenticación para listar máquinas', function () {
 });
 
 it('permite listar máquinas', function () {
-    \App\Models\Maquina::factory()->count(5)->create([
+    Maquina::factory()->count(5)->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
@@ -58,7 +63,7 @@ it('permite crear máquina', function () {
 });
 
 it('permite actualizar máquina', function () {
-    $maquina = \App\Models\Maquina::factory()->create([
+    $maquina = Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
         'estado_revision' => 'por_revisar',
@@ -88,7 +93,7 @@ it('rechaza crear máquina sin tipo', function () {
 });
 
 it('permite ver detalle de máquina', function () {
-    $maquina = \App\Models\Maquina::factory()->create([
+    $maquina = Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
@@ -106,13 +111,13 @@ it('permite ver detalle de máquina', function () {
 });
 
 it('permite filtrar por tipo', function () {
-    $tipo2 = \App\Models\Lista::factory()->tipoMaquina()->create();
+    $tipo2 = Lista::factory()->tipoMaquina()->create();
 
-    \App\Models\Maquina::factory()->create([
+    Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
-    \App\Models\Maquina::factory()->create([
+    Maquina::factory()->create([
         'tipo' => $tipo2->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
@@ -125,13 +130,13 @@ it('permite filtrar por tipo', function () {
 });
 
 it('permite filtrar por fabricante', function () {
-    $fabricante2 = \App\Models\Lista::factory()->fabricante()->create();
+    $fabricante2 = Lista::factory()->fabricante()->create();
 
-    \App\Models\Maquina::factory()->create([
+    Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
-    \App\Models\Maquina::factory()->create([
+    Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $fabricante2->id,
     ]);
@@ -157,7 +162,7 @@ it('rechaza crear máquina con estado inválido', function () {
 });
 
 it('estado revision se muestra en respuesta', function () {
-    $maquina = \App\Models\Maquina::factory()->revisada()->create([
+    $maquina = Maquina::factory()->revisada()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
@@ -170,8 +175,8 @@ it('estado revision se muestra en respuesta', function () {
 });
 
 it('permite crear máquina con componentes', function () {
-    $sistema = \App\Models\Lista::factory()->create(['tipo' => 'Sistema']);
-    $marca = \App\Models\Lista::factory()->create(['tipo' => 'Marca']);
+    $sistema = Lista::factory()->create(['tipo' => 'Sistema']);
+    $marca = Lista::factory()->create(['tipo' => 'Marca']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->postJson('/v1/maquinas', [
@@ -200,13 +205,13 @@ it('permite crear máquina con componentes', function () {
 });
 
 it('permite actualizar componentes de máquina', function () {
-    $maquina = \App\Models\Maquina::factory()->create([
+    $maquina = Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
 
-    $sistema = \App\Models\Lista::factory()->create(['tipo' => 'Sistema']);
-    $componenteExistente = \App\Models\ComponenteMaquina::create([
+    $sistema = Lista::factory()->create(['tipo' => 'Sistema']);
+    $componenteExistente = ComponenteMaquina::create([
         'maquina_id' => $maquina->id,
         'sistema_id' => $sistema->id,
         'modelo' => 'Modelo Antiguo',
@@ -243,16 +248,16 @@ it('permite actualizar componentes de máquina', function () {
 });
 
 it('permite filtrar por maquinas disponibles', function () {
-    $maquinaAsignada = \App\Models\Maquina::factory()->create([
+    $maquinaAsignada = Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
-    $maquinaLibre = \App\Models\Maquina::factory()->create([
+    $maquinaLibre = Maquina::factory()->create([
         'tipo' => $this->tipoMaquina->id,
         'fabricante_id' => $this->fabricante->id,
     ]);
 
-    $tercero = \App\Models\Tercero::factory()->create();
+    $tercero = Tercero::factory()->create();
     $maquinaAsignada->terceros()->attach($tercero->id);
 
     // Listar disponibles sin excepción

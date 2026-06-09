@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Requests;
 
 use App\Enums\PedidoEstado;
+use App\Models\Pedido;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -21,14 +23,14 @@ class StorePedidoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\Pedido::class)
+        return $this->user()->can('create', Pedido::class)
             || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
     }
 
     /**
      * Reglas de validación que aplican a la petición.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

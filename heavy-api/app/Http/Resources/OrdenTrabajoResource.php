@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\OrdenTrabajo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Transforma los datos de órdenes de trabajo en una respuesta JSON estructurada.
  *
- * @property \App\Models\OrdenTrabajo $resource
+ * @property OrdenTrabajo $resource
  */
 class OrdenTrabajoResource extends JsonResource
 {

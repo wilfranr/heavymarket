@@ -1,13 +1,16 @@
 <?php
 
+use App\Models\Cotizacion;
+use App\Models\Pedido;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Cotizaciones
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Analista', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Vendedor', 'guard_name' => 'web']);
 
     $this->admin = createUserWithRole('Administrador');
     $this->analista = createUserWithRole('Analista');
@@ -19,7 +22,7 @@ it('requiere autenticación para listar cotizaciones', function () {
 });
 
 it('admin puede listar cotizaciones', function () {
-    \App\Models\Cotizacion::factory()->count(3)->create();
+    Cotizacion::factory()->count(3)->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/v1/cotizaciones');
@@ -34,8 +37,8 @@ it('admin puede listar cotizaciones', function () {
 });
 
 it('permite filtrar cotizaciones por estado', function () {
-    \App\Models\Cotizacion::factory()->enviada()->count(2)->create();
-    \App\Models\Cotizacion::factory()->aprobada()->create();
+    Cotizacion::factory()->enviada()->count(2)->create();
+    Cotizacion::factory()->aprobada()->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->getJson('/v1/cotizaciones?estado=Enviada');
@@ -45,7 +48,7 @@ it('permite filtrar cotizaciones por estado', function () {
 });
 
 it('permite ver detalle de cotización', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->create();
+    $cotizacion = Cotizacion::factory()->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->getJson("/v1/cotizaciones/{$cotizacion->id}");
@@ -57,7 +60,7 @@ it('permite ver detalle de cotización', function () {
 });
 
 it('permite crear cotización', function () {
-    $pedido = \App\Models\Pedido::factory()->create();
+    $pedido = Pedido::factory()->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->postJson('/v1/cotizaciones', [
@@ -76,7 +79,7 @@ it('permite crear cotización', function () {
 });
 
 it('permite actualizar cotización', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->pendiente()->create();
+    $cotizacion = Cotizacion::factory()->pendiente()->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->patchJson("/v1/cotizaciones/{$cotizacion->id}", [
@@ -89,21 +92,21 @@ it('permite actualizar cotización', function () {
 });
 
 it('admin puede eliminar cotización', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->create();
+    $cotizacion = Cotizacion::factory()->create();
 
     $this->actingAs($this->admin, 'sanctum')
         ->deleteJson("/v1/cotizaciones/{$cotizacion->id}")->assertStatus(204);
 });
 
 it('analista puede ver cotizaciones', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->create();
+    $cotizacion = Cotizacion::factory()->create();
 
     $this->actingAs($this->analista, 'sanctum')
         ->getJson("/v1/cotizaciones/{$cotizacion->id}")->assertStatus(200);
 });
 
 it('vendedor puede ver sus cotizaciones', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->create(['user_id' => $this->vendedor->id]);
+    $cotizacion = Cotizacion::factory()->create(['user_id' => $this->vendedor->id]);
 
     $this->actingAs($this->vendedor, 'sanctum')
         ->getJson("/v1/cotizaciones/{$cotizacion->id}")->assertStatus(200);
@@ -120,7 +123,7 @@ it('rechaza crear cotización sin pedido', function () {
 });
 
 it('rechaza actualizar con estado inválido', function () {
-    $cotizacion = \App\Models\Cotizacion::factory()->create();
+    $cotizacion = Cotizacion::factory()->create();
 
     $response = $this->actingAs($this->admin, 'sanctum')
         ->patchJson("/v1/cotizaciones/{$cotizacion->id}", [

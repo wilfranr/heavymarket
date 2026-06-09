@@ -3,7 +3,6 @@
 namespace App\Notifications;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\BroadcastMessage;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
@@ -88,8 +87,8 @@ class SystemNotification extends Notification
     public function toMail(object $notifiable): MailMessage
     {
         return (new MailMessage)
-            ->subject('HeavyMarket: ' . $this->title)
-            ->greeting('Hola ' . ($notifiable->name ?? 'Usuario') . '!')
+            ->subject('HeavyMarket: '.$this->title)
+            ->greeting('Hola '.($notifiable->name ?? 'Usuario').'!')
             ->line($this->message)
             ->action('Ver en HeavyMarket', url('/#/dashboard/notifications'))
             ->line('Este es un mensaje automático, por favor no responda a este correo.')

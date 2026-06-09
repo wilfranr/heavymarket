@@ -2,6 +2,7 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
 
 /**
  * Migración para garantizar que el rol 'Cliente' exista en el guard 'web'.
@@ -20,7 +21,7 @@ return new class extends Migration
     public function up(): void
     {
         // Limpiar caché de permisos para evitar conflictos
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[PermissionRegistrar::class]->forgetCachedPermissions();
 
         Role::firstOrCreate(
             ['name' => 'Cliente', 'guard_name' => 'web']

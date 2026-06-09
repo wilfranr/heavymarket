@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Maquina;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Support\Facades\Storage;
@@ -13,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
  *
  * Transforma los datos de máquinas en una respuesta JSON estructurada.
  *
- * @property \App\Models\Maquina $resource
+ * @property Maquina $resource
  */
 class MaquinaResource extends JsonResource
 {

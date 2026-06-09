@@ -4,7 +4,6 @@
  * Tests Feature para CountryController (CRUD de Países)
  */
 
-use App\Models\User;
 use App\Models\Country;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 

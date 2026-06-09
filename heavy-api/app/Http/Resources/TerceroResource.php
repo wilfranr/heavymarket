@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\Tercero;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Transforma los datos de terceros (clientes/proveedores)
  * en una respuesta JSON estructurada.
  *
- * @property \App\Models\Tercero $resource
+ * @property Tercero $resource
  */
 class TerceroResource extends JsonResource
 {

@@ -9,6 +9,7 @@ use App\Models\Country;
 use App\Models\Empresa;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
+use App\Models\Referencia;
 use App\Models\Tercero;
 use App\Models\User;
 use App\Notifications\SystemNotification;
@@ -137,7 +138,7 @@ class PedidoService
 
             // Si se selecciona una referencia de catálogo y no se especifica marca, heredar la del catálogo
             if ($referenciaCatalogoId && empty($marcaId)) {
-                $refCatalogo = \App\Models\Referencia::find($referenciaCatalogoId);
+                $refCatalogo = Referencia::find($referenciaCatalogoId);
                 if ($refCatalogo && $refCatalogo->marca_id) {
                     $marcaId = $refCatalogo->marca_id;
                 }

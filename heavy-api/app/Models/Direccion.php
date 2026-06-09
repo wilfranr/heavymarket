@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo Direccion
@@ -25,13 +26,13 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $forma_pago
  * @property string|null $telefono
  * @property string|null $ciudad_texto
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Tercero $tercero
- * @property-read \App\Models\Country|null $country
- * @property-read \App\Models\City|null $city
- * @property-read \App\Models\State|null $state
- * @property-read \App\Models\Transportadora|null $transportadora
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Tercero $tercero
+ * @property-read Country|null $country
+ * @property-read City|null $city
+ * @property-read State|null $state
+ * @property-read Transportadora|null $transportadora
  */
 class Direccion extends Model
 {

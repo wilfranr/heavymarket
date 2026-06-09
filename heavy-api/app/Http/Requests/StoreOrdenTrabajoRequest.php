@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Models\OrdenTrabajo;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -20,14 +22,14 @@ class StoreOrdenTrabajoRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\OrdenTrabajo::class)
+        return $this->user()->can('create', OrdenTrabajo::class)
             || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
     }
 
     /**
      * Reglas de validación que aplican a la petición.
      *
-     * @return array<string, \Illuminate\Contracts\Validation\ValidationRule|array<mixed>|string>
+     * @return array<string, ValidationRule|array<mixed>|string>
      */
     public function rules(): array
     {

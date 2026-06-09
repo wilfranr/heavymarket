@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 /**
@@ -67,7 +68,7 @@ class UpdateTerceroRequest extends FormRequest
                 'integer',
                 'exists:maquinas,id',
                 function ($attribute, $value, $fail) use ($terceroId) {
-                    $alreadyAssigned = \Illuminate\Support\Facades\DB::table('tercero_maquina')
+                    $alreadyAssigned = DB::table('tercero_maquina')
                         ->where('maquina_id', $value)
                         ->where('tercero_id', '!=', $terceroId)
                         ->exists();
@@ -75,7 +76,7 @@ class UpdateTerceroRequest extends FormRequest
                     if ($alreadyAssigned) {
                         $fail('La máquina seleccionada ya está asignada a otro tercero.');
                     }
-                }
+                },
             ],
             'fabricante_id' => ['nullable', 'array'],
             'sistema_id' => ['nullable', 'array'],

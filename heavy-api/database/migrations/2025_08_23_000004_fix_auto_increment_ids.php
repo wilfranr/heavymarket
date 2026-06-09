@@ -79,7 +79,7 @@ return new class extends Migration
             DB::statement("ALTER TABLE `{$table}` MODIFY `{$column}` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT");
             $this->info("✅ AUTO_INCREMENT agregado a {$table}.{$column}");
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->info("❌ Error al corregir {$table}.{$column}: ".$e->getMessage());
         }
     }
@@ -112,7 +112,7 @@ return new class extends Migration
                 $this->info("✅ Tabla {$table} ya tiene PRIMARY KEY");
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->info("❌ Error al agregar PRIMARY KEY a {$table}.{$column}: ".$e->getMessage());
         }
     }

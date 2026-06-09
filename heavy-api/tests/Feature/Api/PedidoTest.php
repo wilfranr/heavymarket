@@ -1,15 +1,20 @@
 <?php
 
+use App\Enums\PedidoOrigen;
+use App\Http\Requests\StorePedidoRequest;
+use App\Models\Maquina;
+use App\Models\Pedido;
+use App\Models\Tercero;
+
 /**
  * Tests de Feature para Pedidos
  */
-
 beforeEach(function () {
     seedRoles();
     seedPermissions();
 
     $this->user = createUserWithRole('Vendedor');
-    $this->tercero = \App\Models\Tercero::factory()->create();
+    $this->tercero = Tercero::factory()->create();
 });
 
 it('requiere autenticación para listar pedidos', function () {
@@ -17,7 +22,7 @@ it('requiere autenticación para listar pedidos', function () {
 });
 
 it('permite listar pedidos a usuario autenticado', function () {
-    \App\Models\Pedido::factory()->count(5)->create();
+    Pedido::factory()->count(5)->create();
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/pedidos');
@@ -80,7 +85,7 @@ it('rechaza crear pedido sin tercero_id', function () {
 });
 
 it('permite ver detalle de pedido', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
     ]);
@@ -98,7 +103,7 @@ it('permite ver detalle de pedido', function () {
 });
 
 it('permite actualizar pedido', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
         'estado' => 'Nuevo',
@@ -123,7 +128,7 @@ it('permite actualizar pedido', function () {
 });
 
 it('vendedor no puede actualizar pedido en análisis', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
         'estado' => 'En_Analisis',
@@ -136,7 +141,7 @@ it('vendedor no puede actualizar pedido en análisis', function () {
 });
 
 it('vendedor no puede eliminar pedido en análisis', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
         'estado' => 'En_Analisis',
@@ -147,7 +152,7 @@ it('vendedor no puede eliminar pedido en análisis', function () {
 });
 
 it('vendedor no puede pasar pedido a costeo', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
         'estado' => 'Nuevo',
@@ -168,7 +173,7 @@ it('vendedor no puede pasar pedido a costeo', function () {
 });
 
 it('permite eliminar pedido', function () {
-    $pedido = \App\Models\Pedido::factory()->create([
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
     ]);
@@ -180,17 +185,17 @@ it('permite eliminar pedido', function () {
 });
 
 it('permite filtrar pedidos por estado', function () {
-    \App\Models\Pedido::factory()->create([
+    Pedido::factory()->create([
         'estado' => 'Nuevo',
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
     ]);
-    \App\Models\Pedido::factory()->create([
+    Pedido::factory()->create([
         'estado' => 'Enviado',
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
     ]);
-    \App\Models\Pedido::factory()->create([
+    Pedido::factory()->create([
         'estado' => 'Nuevo',
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
@@ -204,7 +209,7 @@ it('permite filtrar pedidos por estado', function () {
 });
 
 it('paginación funciona correctamente', function () {
-    \App\Models\Pedido::factory()->count(20)->create([
+    Pedido::factory()->count(20)->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
     ]);
@@ -218,8 +223,8 @@ it('paginación funciona correctamente', function () {
 });
 
 it('enviar a análisis persiste estado con máquina revisada', function () {
-    $maquina = \App\Models\Maquina::factory()->revisada()->create();
-    $pedido = \App\Models\Pedido::factory()->create([
+    $maquina = Maquina::factory()->revisada()->create();
+    $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,
         'tercero_id' => $this->tercero->id,
         'estado' => 'Nuevo',
@@ -239,7 +244,7 @@ it('enviar a análisis persiste estado con máquina revisada', function () {
 });
 
 it('estado En_Analisis es válido en request', function () {
-    $rules = (new \App\Http\Requests\StorePedidoRequest)->rules();
+    $rules = (new StorePedidoRequest)->rules();
 
     expect($rules)->toHaveKey('estado');
 });
@@ -247,9 +252,9 @@ it('estado En_Analisis es válido en request', function () {
 it('analista solo ve pedidos en análisis', function () {
     $analista = createUserWithRole('Analista');
 
-    \App\Models\Pedido::factory()->create(['estado' => 'En_Analisis']);
-    \App\Models\Pedido::factory()->create(['estado' => 'Nuevo']);
-    \App\Models\Pedido::factory()->create(['estado' => 'Enviado']);
+    Pedido::factory()->create(['estado' => 'En_Analisis']);
+    Pedido::factory()->create(['estado' => 'Nuevo']);
+    Pedido::factory()->create(['estado' => 'Enviado']);
 
     $response = $this->actingAs($analista, 'sanctum')
         ->getJson('/v1/pedidos');
@@ -262,7 +267,7 @@ it('analista solo ve pedidos en análisis', function () {
 
 it('analista no puede ver pedido fuera de análisis', function () {
     $analista = createUserWithRole('Analista');
-    $pedido = \App\Models\Pedido::factory()->create(['estado' => 'Nuevo']);
+    $pedido = Pedido::factory()->create(['estado' => 'Nuevo']);
 
     $this->actingAs($analista, 'sanctum')
         ->getJson("/v1/pedidos/{$pedido->id}")->assertStatus(403);
@@ -271,9 +276,9 @@ it('analista no puede ver pedido fuera de análisis', function () {
 it('vendedor ve pedidos landing y los propios', function () {
     $cliente = createUserWithRole('Cliente');
 
-    $pedidoLanding = \App\Models\Pedido::factory()->landing()->create(['user_id' => $cliente->id]);
-    $pedidoDelVendedor = \App\Models\Pedido::factory()->create(['user_id' => $this->user->id]);
-    \App\Models\Pedido::factory()->create(['user_id' => $cliente->id]);
+    $pedidoLanding = Pedido::factory()->landing()->create(['user_id' => $cliente->id]);
+    $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
+    Pedido::factory()->create(['user_id' => $cliente->id]);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/pedidos');
@@ -288,8 +293,8 @@ it('vendedor ve pedidos landing y los propios', function () {
 it('vendedor no ve pedidos de otros vendedores', function () {
     $otroVendedor = createUserWithRole('Vendedor');
 
-    \App\Models\Pedido::factory()->create(['user_id' => $otroVendedor->id]);
-    $pedidoDelVendedor = \App\Models\Pedido::factory()->create(['user_id' => $this->user->id]);
+    Pedido::factory()->create(['user_id' => $otroVendedor->id]);
+    $pedidoDelVendedor = Pedido::factory()->create(['user_id' => $this->user->id]);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/pedidos');
@@ -305,12 +310,12 @@ it('vendedor user_id 9 ve pedido landing id 5 en listado y detalle', function ()
     $vendedor = createUserWithRole('Vendedor', ['id' => 9]);
     $cliente = createUserWithRole('Cliente', ['id' => 7]);
 
-    \App\Models\Pedido::factory()->landing()->create([
+    Pedido::factory()->landing()->create([
         'id' => 5,
         'user_id' => $cliente->id,
         'comentario' => 'Cotización Landing: Excavadora 320',
     ]);
-    \App\Models\Pedido::factory()->create(['user_id' => createUserWithRole('Vendedor')->id]);
+    Pedido::factory()->create(['user_id' => createUserWithRole('Vendedor')->id]);
 
     $this->actingAs($vendedor, 'sanctum')
         ->getJson('/v1/pedidos/5')
@@ -327,7 +332,7 @@ it('vendedor user_id 9 ve pedido landing id 5 en listado y detalle', function ()
 });
 
 it('auto-asigna pedido landing al editar', function () {
-    $pedido = \App\Models\Pedido::factory()->landing()->create(['user_id' => null]);
+    $pedido = Pedido::factory()->landing()->create(['user_id' => null]);
 
     $this->actingAs($this->user, 'sanctum')
         ->putJson("/v1/pedidos/{$pedido->id}", [
@@ -336,12 +341,12 @@ it('auto-asigna pedido landing al editar', function () {
 
     $pedido->refresh();
     expect($pedido->user_id)->toBe($this->user->id)
-        ->and($pedido->origen)->toBe(\App\Enums\PedidoOrigen::Landing);
+        ->and($pedido->origen)->toBe(PedidoOrigen::Landing);
 });
 
 it('auto-asigna pedido landing id 5 al editar como vendedor user_id 9', function () {
     $vendedor = createUserWithRole('Vendedor', ['id' => 9]);
-    $pedido = \App\Models\Pedido::factory()->landing()->create([
+    $pedido = Pedido::factory()->landing()->create([
         'id' => 5,
         'user_id' => createUserWithRole('Cliente', ['id' => 7])->id,
     ]);
@@ -354,5 +359,5 @@ it('auto-asigna pedido landing id 5 al editar como vendedor user_id 9', function
     $pedido->refresh();
     expect($pedido->user_id)->toBe(9)
         ->and($pedido->id)->toBe(5)
-        ->and($pedido->origen)->toBe(\App\Enums\PedidoOrigen::Landing);
+        ->and($pedido->origen)->toBe(PedidoOrigen::Landing);
 });

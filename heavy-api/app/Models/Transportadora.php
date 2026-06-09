@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
 /**
  * Modelo Transportadora
@@ -25,15 +27,15 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string|null $celular
  * @property string|null $observaciones
  * @property string|null $logo
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\City|null $city
- * @property-read \App\Models\State|null $state
- * @property-read \App\Models\Country|null $country
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read City|null $city
+ * @property-read State|null $state
+ * @property-read Country|null $country
  */
 class Transportadora extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     protected $fillable = [
         'nombre',

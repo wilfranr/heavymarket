@@ -16,11 +16,17 @@ class PedidoMultiCategoryTest extends TestCase
     use RefreshDatabase;
 
     protected $analista;
+
     protected $vendedor;
+
     protected $providerUser;
+
     protected $terceroProvider;
+
     protected $marca;
+
     protected $categoriaA;
+
     protected $categoriaB;
 
     protected function setUp(): void
@@ -75,8 +81,8 @@ class PedidoMultiCategoryTest extends TestCase
                         'referencia_id' => $ref->referencia_id,
                         'cantidad' => 2,
                         'categoria_comercial_ids' => [$this->categoriaA->id, $this->categoriaB->id],
-                    ]
-                ]
+                    ],
+                ],
             ]);
 
         $response->assertStatus(200);

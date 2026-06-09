@@ -1,19 +1,22 @@
 <?php
 
+use App\Models\Maquina;
+use App\Models\Tercero;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Terceros
  */
-
 beforeEach(function () {
     foreach (['Vendedor', 'super_admin', 'Administrador', 'Analista', 'Logistica', 'Cliente'] as $roleName) {
-        \Spatie\Permission\Models\Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
 
     $this->user = createUserWithRole('Vendedor');
 });
 
 it('permite listar terceros', function () {
-    \App\Models\Tercero::factory()->count(5)->create();
+    Tercero::factory()->count(5)->create();
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/terceros');
@@ -43,13 +46,13 @@ it('permite crear tercero', function () {
         'numero_documento' => '900123456-7',
     ]);
 
-    $creado = \App\Models\Tercero::query()->where('numero_documento', '900123456-7')->first();
+    $creado = Tercero::query()->where('numero_documento', '900123456-7')->first();
     expect($creado)->not->toBeNull()
         ->and(strtolower($creado->nombre))->toContain('empresa');
 });
 
 it('rechaza crear tercero con documento duplicado', function () {
-    \App\Models\Tercero::factory()->create(['numero_documento' => '900123456-7']);
+    Tercero::factory()->create(['numero_documento' => '900123456-7']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->postJson('/v1/terceros', [
@@ -64,7 +67,7 @@ it('rechaza crear tercero con documento duplicado', function () {
 });
 
 it('permite ver detalle de tercero', function () {
-    $tercero = \App\Models\Tercero::factory()->create();
+    $tercero = Tercero::factory()->create();
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson("/v1/terceros/{$tercero->id}");
@@ -79,7 +82,7 @@ it('permite ver detalle de tercero', function () {
 });
 
 it('permite actualizar tercero', function () {
-    $tercero = \App\Models\Tercero::factory()->create([
+    $tercero = Tercero::factory()->create([
         'nombre' => 'Nombre Original',
     ]);
 
@@ -101,7 +104,7 @@ it('permite actualizar tercero', function () {
 
 it('permite eliminar tercero', function () {
     $admin = createUserWithRole('Administrador');
-    $tercero = \App\Models\Tercero::factory()->create();
+    $tercero = Tercero::factory()->create();
 
     $this->actingAs($admin, 'sanctum')
         ->deleteJson("/v1/terceros/{$tercero->id}")->assertStatus(204);
@@ -110,8 +113,8 @@ it('permite eliminar tercero', function () {
 });
 
 it('permite filtrar por tipo tercero', function () {
-    \App\Models\Tercero::factory()->create(['tipo' => 'Cliente']);
-    \App\Models\Tercero::factory()->create(['tipo' => 'Proveedor']);
+    Tercero::factory()->create(['tipo' => 'Cliente']);
+    Tercero::factory()->create(['tipo' => 'Proveedor']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/terceros?tipo=Cliente');
@@ -121,8 +124,8 @@ it('permite filtrar por tipo tercero', function () {
 });
 
 it('permite buscar terceros', function () {
-    \App\Models\Tercero::factory()->create(['nombre' => 'ABC Empresa SAS']);
-    \App\Models\Tercero::factory()->create(['nombre' => 'XYZ Compañía']);
+    Tercero::factory()->create(['nombre' => 'ABC Empresa SAS']);
+    Tercero::factory()->create(['nombre' => 'XYZ Compañía']);
 
     $response = $this->actingAs($this->user, 'sanctum')
         ->getJson('/v1/terceros?search=ABC');
@@ -132,8 +135,8 @@ it('permite buscar terceros', function () {
 });
 
 it('rechaza crear tercero con maquina ya asignada a otro tercero', function () {
-    $maquina = \App\Models\Maquina::factory()->create();
-    $otroTercero = \App\Models\Tercero::factory()->create();
+    $maquina = Maquina::factory()->create();
+    $otroTercero = Tercero::factory()->create();
     $maquina->terceros()->attach($otroTercero->id);
 
     $response = $this->actingAs($this->user, 'sanctum')

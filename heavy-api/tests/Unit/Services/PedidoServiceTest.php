@@ -22,7 +22,7 @@ it('calcula valores nacionales exitoso', function () {
         'ubicacion' => 'Nacional',
     ];
 
-    $pedidoReferencia = new PedidoReferencia();
+    $pedidoReferencia = new PedidoReferencia;
     $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);
 
     // 1000 + 20% = 1200. Total 2400.
@@ -53,7 +53,7 @@ it('calcula valores internacionales con peso cero y TRM cero', function () {
     };
     $referenciaObj->articulo = (object) ['peso' => 0];
 
-    $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
+    $pedidoReferencia = Mockery::mock(PedidoReferencia::class)->makePartial();
     $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
 
     $resultado = $this->pedidoService->calcularValores($datos, $pedidoReferencia);
@@ -76,7 +76,7 @@ it('usa flete del país del proveedor internacional', function () {
         public function loadMissing(string|array $relations): void {}
     };
     $referenciaObj->articulo = (object) ['peso' => 453.592];
-    $pedidoReferencia = \Mockery::mock(PedidoReferencia::class)->makePartial();
+    $pedidoReferencia = Mockery::mock(PedidoReferencia::class)->makePartial();
     $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
 
     $resultado = $this->pedidoService->calcularValores([

@@ -24,39 +24,39 @@ class ClearBusinessData extends Command
 
     /**
      * Tables to be truncated in order (from dependent to parent)
-     * 
+     *
      * @var array
      */
     protected $tables = [
         // Ordenes Trabajo
         'orden_trabajo_referencias',
         'orden_trabajos',
-        
+
         // Ordenes Compra
         'orden_compra_referencia',
         'orden_compras',
-        
+
         // Cotizaciones
         'cotizacion_referencia_proveedores',
         'cotizaciones',
-        
+
         // Pedidos
         'pedido_referencia_proveedor',
         'pedido_referencia_imagen',
         'pedido_referencia',
         'pedido_articulos',
         'pedidos',
-        
+
         // Articulos
         'medidas',
         'articulo_juegos',
         'articulos_referencias',
         'articulos',
-        
+
         // Maquinas
         'tercero_maquina',
         'maquinas',
-        
+
         // Terceros
         'direcciones',
         'categoria_tercero',
@@ -66,7 +66,7 @@ class ClearBusinessData extends Command
         'tercero_categoria_comercial',
         'tercero_contacto',
         'terceros',
-        
+
         // Referencias
         'referencias',
     ];
@@ -76,10 +76,11 @@ class ClearBusinessData extends Command
      */
     public function handle()
     {
-        if (app()->environment('production') && !$this->option('force')) {
+        if (app()->environment('production') && ! $this->option('force')) {
             $this->error('¡ADVERTENCIA! El entorno detectado es PRODUCCIÓN.');
-            if (!$this->confirm('¿Deseas continuar? Usa --force para evitar esta advertencia.')) {
+            if (! $this->confirm('¿Deseas continuar? Usa --force para evitar esta advertencia.')) {
                 $this->info('Operación cancelada.');
+
                 return 1;
             }
         }
@@ -87,8 +88,9 @@ class ClearBusinessData extends Command
         $this->warn('ADVERTENCIA: Esta acción ELIMINARÁ PERMANENTEMENTE todos los registros de las siguientes tablas:');
         $this->bulletList($this->tables);
 
-        if (!$this->confirm('¿Estás COMPLETAMENTE SEGURO de que quieres continuar?')) {
+        if (! $this->confirm('¿Estás COMPLETAMENTE SEGURO de que quieres continuar?')) {
             $this->info('Operación cancelada.');
+
             return 0;
         }
 
@@ -109,17 +111,18 @@ class ClearBusinessData extends Command
 
             // Reactivar restricciones
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-            
+
             $this->info('-----------------------------------------');
             $this->info('¡Base de datos limpiada con éxito!');
             $this->info('-----------------------------------------');
-            
+
         } catch (\Exception $e) {
             DB::statement('SET FOREIGN_KEY_CHECKS=1;');
-            $this->error("Error durante la limpieza: " . $e->getMessage());
+            $this->error('Error durante la limpieza: '.$e->getMessage());
+
             return 1;
         }
-        
+
         return 0;
     }
 

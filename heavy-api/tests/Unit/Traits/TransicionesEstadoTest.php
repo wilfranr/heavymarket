@@ -2,7 +2,7 @@
 
 /**
  * Tests para el trait TransicionesEstado
- * 
+ *
  * Valida la lógica de transiciones en modelos que usan el trait
  */
 

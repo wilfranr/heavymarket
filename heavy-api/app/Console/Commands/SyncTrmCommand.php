@@ -2,6 +2,8 @@
 
 namespace App\Console\Commands;
 
+use App\Models\Empresa;
+use App\Services\TrmIntegrationService;
 use Illuminate\Console\Command;
 
 class SyncTrmCommand extends Command
@@ -23,7 +25,7 @@ class SyncTrmCommand extends Command
     /**
      * Execute the console command.
      */
-    public function handle(\App\Services\TrmIntegrationService $trmService)
+    public function handle(TrmIntegrationService $trmService)
     {
         $date = $this->argument('date');
 
@@ -31,24 +33,25 @@ class SyncTrmCommand extends Command
             $this->info("Sincronizando TRM para la fecha: {$date}...");
             $trm = $trmService->syncByDate($date);
         } else {
-            $this->info("Sincronizando la última TRM disponible...");
+            $this->info('Sincronizando la última TRM disponible...');
             $trm = $trmService->syncLatestTrm();
         }
 
         if ($trm) {
             $this->info("✅ TRM sincronizada exitosamente: {$trm->fecha->format('Y-m-d')} = \${$trm->trm}");
-            
+
             // Opcional: Actualizar también el valor en la tabla Empresa si se desea
-            $empresa = \App\Models\Empresa::where('estado', 1)->first();
+            $empresa = Empresa::where('estado', 1)->first();
             if ($empresa) {
                 $empresa->update(['trm' => $trm->trm]);
-                $this->info("✅ TRM de la empresa activa actualizada.");
+                $this->info('✅ TRM de la empresa activa actualizada.');
             }
-            
+
             return 0;
         }
 
-        $this->error("❌ No se pudo sincronizar la TRM.");
+        $this->error('❌ No se pudo sincronizar la TRM.');
+
         return 1;
     }
 }

@@ -17,6 +17,7 @@ use Illuminate\Http\Request;
  *
  * Maneja todas las operaciones CRUD de máquinas a través del API REST.
  */
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
 class MaquinaController extends Controller
@@ -98,7 +99,7 @@ class MaquinaController extends Controller
      */
     public function store(StoreMaquinaRequest $request): JsonResponse
     {
-        $this->authorize('create', \App\Models\Maquina::class);
+        $this->authorize('create', Maquina::class);
         $data = $request->validated();
 
         if ($request->hasFile('foto')) {
@@ -214,10 +215,10 @@ class MaquinaController extends Controller
         foreach ($componentesData as $index => $data) {
             // Limpiar datos nulos o vacíos para evitar errores de BD si se envían strings vacíos en campos opcionales
             $cleanData = array_filter($data, function ($value) {
-                return $value !== null && $value !== '' && !($value instanceof \Illuminate\Http\UploadedFile);
+                return $value !== null && $value !== '' && ! ($value instanceof UploadedFile);
             });
 
-            if (isset($data['id']) && !empty($data['id'])) {
+            if (isset($data['id']) && ! empty($data['id'])) {
                 $componente = $maquina->componentes()->find($data['id']);
                 if ($componente) {
                     $componente->update($cleanData);

@@ -1,17 +1,21 @@
 <?php
 
+use App\Models\Lista;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
+use Spatie\Permission\Models\Role;
+
 /**
  * Tests de Feature para Listas
  */
-
 beforeEach(function () {
-    \Spatie\Permission\Models\Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Administrador', 'guard_name' => 'web']);
     $this->user = createUserWithRole('Administrador');
 });
 
 it('permite crear pieza estándar con foto medida', function () {
-    \Illuminate\Support\Facades\Storage::fake('public');
-    $fotoMedida = \Illuminate\Http\UploadedFile::fake()->image('plano.jpg');
+    Storage::fake('public');
+    $fotoMedida = UploadedFile::fake()->image('plano.jpg');
 
     $data = [
         'tipo' => 'Piezas Estandar',
@@ -29,14 +33,14 @@ it('permite crear pieza estándar con foto medida', function () {
         'tipo' => 'Piezas Estandar',
     ]);
 
-    $lista = \App\Models\Lista::where('nombre', 'Abrazadera Test')->first();
+    $lista = Lista::where('nombre', 'Abrazadera Test')->first();
     expect($lista->fotoMedida)->not->toBeNull();
 
-    \Illuminate\Support\Facades\Storage::disk('public')->assertExists($lista->fotoMedida);
+    Storage::disk('public')->assertExists($lista->fotoMedida);
 });
 
 it('permite actualizar lista', function () {
-    $lista = \App\Models\Lista::create([
+    $lista = Lista::create([
         'tipo' => 'Marca',
         'nombre' => 'Marca Original',
         'definicion' => 'Original',

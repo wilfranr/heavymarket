@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\PedidoReferencia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Transforma los datos de referencias de pedidos en una respuesta JSON estructurada.
  *
- * @property \App\Models\PedidoReferencia $resource
+ * @property PedidoReferencia $resource
  */
 class PedidoReferenciaResource extends JsonResource
 {

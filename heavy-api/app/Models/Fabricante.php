@@ -2,14 +2,16 @@
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Fabricante extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory;
+    use HasFactory, NormalizesResources;
 
     protected $table = 'fabricantes';
 
@@ -38,12 +40,12 @@ class Fabricante extends Model
 
         // 1. Si contiene una ruta explícita (e.g. 'listas/abc.jpg'), usarla directamente
         if (str_contains($value, '/')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+            return Storage::disk('public')->url($value);
         }
 
         // 2. Intentar buscar el valor exacto en la carpeta de fabricantes (legado)
         if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
+            return Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
         }
 
         // 3. Intentar con el patrón de nombre como fallback (legado)
@@ -51,11 +53,11 @@ class Fabricante extends Model
         $patternName = "fab-{$nameSlug}.png";
 
         if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$patternName}"))) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
+            return Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
         }
 
         // 4. Fallback final
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+        return Storage::disk('public')->url($value);
     }
 
     // public function referencias(): HasMany

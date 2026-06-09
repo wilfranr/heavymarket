@@ -2,7 +2,7 @@
 
 /**
  * Tests para el enum PedidoEstado
- * 
+ *
  * Valida todas las transiciones, labels y métodos estáticos
  */
 

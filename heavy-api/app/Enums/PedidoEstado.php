@@ -4,12 +4,9 @@ declare(strict_types=1);
 
 namespace App\Enums;
 
-use BackedEnum;
-use UnitEnum;
-
 /**
  * Enum de Estados de Pedido con transiciones válidas
- * 
+ *
  * Define el ciclo de vida completo de un pedido:
  * Borrador → Nuevo → En_Analisis / En_Costeo → Cotizado → Aprobado | Rechazado
  */
@@ -28,6 +25,7 @@ enum PedidoEstado: string
 
     /**
      * Transiciones válidas desde este estado
+     *
      * @return array<int, PedidoEstado>
      */
     public function transicionesValidas(): array
@@ -67,8 +65,8 @@ enum PedidoEstado: string
                 self::Entregado,
                 self::Cancelado,
             ],
-            self::Entregado, 
-            self::Rechazado, 
+            self::Entregado,
+            self::Rechazado,
             self::Cancelado => [], // Estados finales, sin transiciones
         };
     }
@@ -102,6 +100,7 @@ enum PedidoEstado: string
 
     /**
      * Obtiene todos los estados posibles
+     *
      * @return array<int, PedidoEstado>
      */
     public static function todos(): array
@@ -122,15 +121,17 @@ enum PedidoEstado: string
 
     /**
      * Obtiene los estados como array de strings para validación
+     *
      * @return array<int, string>
      */
     public static function toArray(): array
     {
-        return array_map(fn(PedidoEstado $e) => $e->value, self::todos());
+        return array_map(fn (PedidoEstado $e) => $e->value, self::todos());
     }
 
     /**
      * Estados iniciales (desde los cuales se puede crear un pedido)
+     *
      * @return array<int, PedidoEstado>
      */
     public static function estadosIniciales(): array
@@ -144,6 +145,7 @@ enum PedidoEstado: string
 
     /**
      * Estados que requieren máquina revisada para transitar
+     *
      * @return array<int, PedidoEstado>
      */
     public static function estadosQueRequierenMaquinaRevisada(): array

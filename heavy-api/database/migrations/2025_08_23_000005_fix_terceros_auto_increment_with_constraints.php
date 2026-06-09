@@ -81,7 +81,7 @@ return new class extends Migration
                 try {
                     DB::statement("ALTER TABLE `{$fk->TABLE_NAME}` DROP FOREIGN KEY `{$fk->CONSTRAINT_NAME}`");
                     $this->info("✅ Restricción eliminada: {$fk->TABLE_NAME}.{$fk->CONSTRAINT_NAME}");
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->info("⚠️  No se pudo eliminar restricción {$fk->TABLE_NAME}.{$fk->CONSTRAINT_NAME}: ".$e->getMessage());
                 }
             }
@@ -115,12 +115,12 @@ return new class extends Migration
                         ON DELETE {$deleteRule}
                     ");
                     $this->info("✅ Restricción restaurada: {$fk->TABLE_NAME}.{$fk->CONSTRAINT_NAME}");
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $this->info("❌ Error al restaurar restricción {$fk->TABLE_NAME}.{$fk->CONSTRAINT_NAME}: ".$e->getMessage());
                 }
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->info('❌ Error al corregir tabla terceros: '.$e->getMessage());
         }
     }

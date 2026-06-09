@@ -2,12 +2,12 @@
 
 /**
  * Tests para el trait NormalizesResources
- * 
+ *
  * Valida la normalización de atributos en modelos
  */
 
-use App\Models\Maquina;
 use App\Models\Lista;
+use App\Models\Maquina;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);

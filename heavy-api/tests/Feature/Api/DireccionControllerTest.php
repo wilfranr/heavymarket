@@ -2,8 +2,8 @@
 
 use App\Models\Direccion;
 use App\Models\Tercero;
-use Spatie\Permission\Models\Role;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Spatie\Permission\Models\Role;
 
 uses(RefreshDatabase::class);
 

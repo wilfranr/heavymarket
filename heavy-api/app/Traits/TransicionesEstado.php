@@ -9,7 +9,7 @@ use InvalidArgumentException;
 
 /**
  * Trait para gestionar transiciones de estado en modelos
- * 
+ *
  * Proporciona métodos para validar y ejecutar transiciones de estado
  * según las reglas definidas en el enum PedidoEstado.
  */
@@ -26,7 +26,7 @@ trait TransicionesEstado
     public function getEstadoEnum(): PedidoEstado
     {
         $estado = $this->{$this->columnaEstado};
-        
+
         if ($estado instanceof PedidoEstado) {
             return $estado;
         }
@@ -52,7 +52,7 @@ trait TransicionesEstado
 
     /**
      * Transita el modelo a un nuevo estado
-     * 
+     *
      * @throws InvalidArgumentException Si la transición no es válida
      */
     public function transitarA(PedidoEstado $nuevoEstado, ?string $motivo = null): bool
@@ -66,7 +66,7 @@ trait TransicionesEstado
                     $estadoActual->value,
                     $nuevoEstado->value,
                     implode(', ', array_map(
-                        fn(PedidoEstado $e) => $e->value,
+                        fn (PedidoEstado $e) => $e->value,
                         $estadoActual->transicionesValidas()
                     ))
                 )
@@ -87,6 +87,7 @@ trait TransicionesEstado
 
     /**
      * Obtiene las transiciones válidas desde el estado actual
+     *
      * @return array<int, PedidoEstado>
      */
     public function getTransicionesValidas(): array
@@ -96,6 +97,7 @@ trait TransicionesEstado
 
     /**
      * Obtiene los estados como array para validación de formularios
+     *
      * @return array<int, string>
      */
     public static function getEstadosPermitidos(): array

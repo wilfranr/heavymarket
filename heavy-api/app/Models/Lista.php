@@ -4,15 +4,17 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Traits\NormalizesResources;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Lista extends Model
 {
-    use \App\Traits\NormalizesResources, HasFactory, SoftDeletes;
+    use HasFactory, NormalizesResources, SoftDeletes;
 
     protected $fillable = [
         'tipo',
@@ -97,12 +99,12 @@ class Lista extends Model
         // 1. Si contiene una ruta explícita (e.g. 'listas/abc.jpg'), usarla directamente
         // Esto cubre las imágenes subidas a través del panel administrativo.
         if (str_contains($value, '/')) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+            return Storage::disk('public')->url($value);
         }
 
         // 2. Intentar buscar el valor exacto en la carpeta de fabricantes (legado)
         if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$value}"))) {
-            return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
+            return Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$value}");
         }
 
         // 3. Intentar con el patrón de nombre como fallback (legado)
@@ -112,12 +114,12 @@ class Lista extends Model
             $patternName = "fab-{$nameSlug}.png";
 
             if (file_exists(storage_path("app/public/Aplicativo/01. Fabricantes/{$patternName}"))) {
-                return \Illuminate\Support\Facades\Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
+                return Storage::disk('public')->url("Aplicativo/01. Fabricantes/{$patternName}");
             }
         }
 
         // 4. Fallback final
-        return \Illuminate\Support\Facades\Storage::disk('public')->url($value);
+        return Storage::disk('public')->url($value);
     }
 
     public function getNombreAttribute($value): string

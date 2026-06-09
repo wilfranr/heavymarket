@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\OrdenCompraReferencia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Transforma los datos de referencias en órdenes de compra
  * en una respuesta JSON estructurada.
  *
- * @property \App\Models\OrdenCompraReferencia $resource
+ * @property OrdenCompraReferencia $resource
  */
 class OrdenCompraReferenciaResource extends JsonResource
 {

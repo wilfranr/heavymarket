@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('pedido_referencia', function (Blueprint $table) {
             $table->unsignedBigInteger('categoria_comercial_id')->nullable()->after('lista_id');
-            
+
             // Si quieres integridad referencial:
             // $table->foreign('categoria_comercial_id')->references('id')->on('listas')->onDelete('set null');
         });

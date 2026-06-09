@@ -90,7 +90,7 @@ class ProviderPortalController extends Controller
                     'provider' => [
                         'id' => $tercero->id,
                         'nombre' => $tercero->nombre,
-                        'is_national' => (int) $tercero->country_id === 48
+                        'is_national' => (int) $tercero->country_id === 48,
                     ],
                     'meta' => [
                         'current_page' => $costeos->currentPage(),
@@ -108,10 +108,10 @@ class ProviderPortalController extends Controller
                 })
                 ->where(function ($q) use ($misMarcas, $misCategorias) {
                     $q->whereIn('marca_id', $misMarcas)
-                      ->orWhereIn('categoria_comercial_id', $misCategorias)
-                      ->orWhereHas('categoriasComerciales', function ($sub) use ($misCategorias) {
-                          $sub->whereIn('listas.id', $misCategorias);
-                      });
+                        ->orWhereIn('categoria_comercial_id', $misCategorias)
+                        ->orWhereHas('categoriasComerciales', function ($sub) use ($misCategorias) {
+                            $sub->whereIn('listas.id', $misCategorias);
+                        });
                 })
                 // Excluir si ya fue costeado por este proveedor
                 ->whereDoesntHave('proveedores', function ($q) use ($tercero) {
@@ -131,7 +131,7 @@ class ProviderPortalController extends Controller
                 'provider' => [
                     'id' => $tercero->id,
                     'nombre' => $tercero->nombre,
-                    'is_national' => (int) $tercero->country_id === 48
+                    'is_national' => (int) $tercero->country_id === 48,
                 ],
                 'meta' => [
                     'current_page' => $referencias->currentPage(),
@@ -144,7 +144,7 @@ class ProviderPortalController extends Controller
             return response()->json([
                 'message' => 'Error interno al cargar oportunidades.',
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\TRM;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  *
  * Transforma los datos de TRM en una respuesta JSON estructurada.
  *
- * @property \App\Models\TRM $resource
+ * @property TRM $resource
  */
 class TRMResource extends JsonResource
 {

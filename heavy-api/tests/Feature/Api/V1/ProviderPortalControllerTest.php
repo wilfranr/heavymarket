@@ -283,7 +283,7 @@ class ProviderPortalControllerTest extends TestCase
             'estado' => 0,
             'utilidad' => 0.00,
             'ubicacion' => 'Nacional',
-            'Entrega' => 'Programada'
+            'Entrega' => 'Programada',
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -318,7 +318,7 @@ class ProviderPortalControllerTest extends TestCase
             'estado' => 1,
             'utilidad' => 0.00,
             'ubicacion' => 'Nacional',
-            'Entrega' => 'Inmediata'
+            'Entrega' => 'Inmediata',
         ]);
 
         $response = $this->actingAs($this->provider)

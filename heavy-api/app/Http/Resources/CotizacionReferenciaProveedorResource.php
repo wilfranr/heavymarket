@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Models\CotizacionReferenciaProveedor;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,7 @@ use Illuminate\Http\Resources\Json\JsonResource;
  * Transforma los datos de referencias y proveedores en cotizaciones
  * en una respuesta JSON estructurada.
  *
- * @property \App\Models\CotizacionReferenciaProveedor $resource
+ * @property CotizacionReferenciaProveedor $resource
  */
 class CotizacionReferenciaProveedorResource extends JsonResource
 {

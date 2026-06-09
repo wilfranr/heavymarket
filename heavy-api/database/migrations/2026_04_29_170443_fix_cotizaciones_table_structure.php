@@ -13,7 +13,7 @@ return new class extends Migration
     {
         // Desactivamos restricciones de FK para poder limpiar la tabla
         Schema::disableForeignKeyConstraints();
-        
+
         Schema::dropIfExists('cotizacion_referencia_proveedores');
         Schema::dropIfExists('cotizaciones');
 
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->text('observaciones')->nullable();
             $table->decimal('total', 15, 2)->nullable();
             $table->timestamps();
-            
+
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('tercero_id')->references('id')->on('terceros')->onDelete('cascade');
             $table->foreign('pedido_id')->references('id')->on('pedidos')->onDelete('cascade');

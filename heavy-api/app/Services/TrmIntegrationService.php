@@ -21,8 +21,6 @@ class TrmIntegrationService
 
     /**
      * Sincroniza la TRM más reciente desde la API
-     *
-     * @return TRM|null
      */
     public function syncLatestTrm(): ?TRM
     {
@@ -32,7 +30,7 @@ class TrmIntegrationService
                 '$limit' => 1,
             ]);
 
-            if ($response->successful() && !empty($response->json())) {
+            if ($response->successful() && ! empty($response->json())) {
                 $data = $response->json()[0];
                 $valor = (float) $data['valor'];
                 $fecha = Carbon::parse($data['vigenciadesde'])->format('Y-m-d');
@@ -44,10 +42,12 @@ class TrmIntegrationService
             }
 
             Log::error('Error al sincronizar TRM: Respuesta no exitosa o vacía de la API.');
+
             return null;
 
         } catch (\Exception $e) {
-            Log::error('Excepción al sincronizar TRM: ' . $e->getMessage());
+            Log::error('Excepción al sincronizar TRM: '.$e->getMessage());
+
             return null;
         }
     }
@@ -55,20 +55,19 @@ class TrmIntegrationService
     /**
      * Sincroniza la TRM de una fecha específica
      *
-     * @param string $date Formato Y-m-d
-     * @return TRM|null
+     * @param  string  $date  Formato Y-m-d
      */
     public function syncByDate(string $date): ?TRM
     {
         try {
             // Socrata usa ISO 8601 para fechas
-            $fechaIso = $date . 'T00:00:00.000';
-            
+            $fechaIso = $date.'T00:00:00.000';
+
             $response = Http::get(self::API_URL, [
                 'vigenciadesde' => $fechaIso,
             ]);
 
-            if ($response->successful() && !empty($response->json())) {
+            if ($response->successful() && ! empty($response->json())) {
                 $data = $response->json()[0];
                 $valor = (float) $data['valor'];
 
@@ -81,7 +80,8 @@ class TrmIntegrationService
             return null;
 
         } catch (\Exception $e) {
-            Log::error("Error al sincronizar TRM para la fecha {$date}: " . $e->getMessage());
+            Log::error("Error al sincronizar TRM para la fecha {$date}: ".$e->getMessage());
+
             return null;
         }
     }
