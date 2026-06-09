@@ -263,7 +263,7 @@ export class CosteoComponent implements OnInit {
                     sistema_id: [ref.sistema_id],
                     lista_id: [ref.lista_id],
                     sistema_nombre: [ref.sistema?.nombre || 'Sin Sistema'],
-                    definicion: [ref.definicion || ref.referencia?.articulo?.definicion || 'Sin Definición'],
+                    definicion: [ref.referencia?.articulo?.definicion || ref.definicion || 'Sin Definición'],
                     referencia_codigo: [ref.referencia?.referencia || 'N/A'],
                     cantidad: [ref.cantidad || 1],
                     referencia_id: [ref.referencia_id],
