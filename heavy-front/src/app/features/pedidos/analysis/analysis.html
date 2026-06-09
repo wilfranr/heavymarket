@@ -287,7 +287,6 @@
                             >
                             }
                         </div>
-                        <button type="button" class="icon-btn pi pi-pencil p-2 bg-primary-500 rounded-full text-white border-none cursor-pointer" (click)="editItem(i)"></button>
                         <button type="button" class="icon-btn pi pi-trash p-2 bg-red-500 rounded-full text-white border-none cursor-pointer" (click)="removeItem(i)"></button>
                         <button type="button" class="icon-btn p-3 text-white flex items-center justify-center bg-transparent border-none cursor-pointer" (click)="toggleExpand(i)">
                             <i class="pi" [ngClass]="item.get('expandido')?.value ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
@@ -533,45 +532,6 @@
             <p-button label="Insertar Ítems" icon="pi pi-check" (onClick)="confirmarLote()" [disabled]="loteForm.invalid"></p-button>
         </div>
     </form>
-</p-dialog>
-
-<!-- Diálogo Editar Requerimiento -->
-<p-dialog [(visible)]="displayItemEditDialog" [modal]="true" [style]="{width: '500px'}" header="Editar Requerimiento" appendTo="body" [closable]="true" [dismissableMask]="true" styleClass="p-fluid">
-    @if (itemEditForm) {
-    <form [formGroup]="itemEditForm" class="flex flex-col gap-6 py-4">
-        @if (activeItemIndex >= 0) {
-        <div class="space-y-1 text-xs text-slate-400">
-            @for (p of getPartesFormArray(activeItemIndex).controls; track $index; let pj = $index) {
-            <p class="m-0 leading-snug">
-                <span class="font-mono text-slate-300">{{ getEtiquetaCodigoReferenciaParte(activeItemIndex, pj) }}</span>
-                @if (p.get('descripcion')?.value) {
-                <span class="text-slate-400"> — {{ p.get('descripcion')?.value }}</span>
-                }
-            </p>
-            }
-        </div>
-        }
-        <div class="field flex flex-col gap-2">
-            <label class="font-bold text-sm">Sistema</label>
-            <p-select formControlName="sistema_id" [options]="sistemas" optionLabel="label" optionValue="value" placeholder="Seleccionar sistema..." [filter]="true" appendTo="body" (onChange)="onSistemaEditChange($event.value)"></p-select>
-        </div>
-
-        <div class="field flex flex-col gap-2">
-            <label class="font-bold text-sm">Tipo de Artículo</label>
-            <p-select formControlName="lista_id" [options]="tiposEdit" optionLabel="label" optionValue="value" placeholder="Tipo de artículo" [filter]="true" appendTo="body"></p-select>
-        </div>
-
-        <div class="field flex flex-col gap-2">
-            <label class="font-bold text-sm">Cantidad Solicitada</label>
-            <p-inputNumber formControlName="cantidad" [min]="1" placeholder="Ej: 1"></p-inputNumber>
-        </div>
-
-        <div class="flex justify-end gap-3 mt-4 border-t border-gray-700 pt-4">
-            <p-button label="Cancelar" severity="secondary" [text]="true" (onClick)="displayItemEditDialog = false"></p-button>
-            <p-button label="Guardar Cambios" icon="pi pi-check" (onClick)="confirmarEdicionItem()"></p-button>
-        </div>
-    </form>
-    }
 </p-dialog>
 
 <!-- Modal Galleria de imágenes del ítem (estilo Sakai uikit/media) -->

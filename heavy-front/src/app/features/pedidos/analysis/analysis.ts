@@ -481,24 +481,7 @@ export class AnalysisComponent implements OnInit {
             });
     }
 
-    onSistemaEditChange(sistemaId: number | null): void {
-        this.tiposEdit = [];
-        this.itemEditForm.get('lista_id')?.setValue(null);
 
-        if (!sistemaId) return;
-
-        this.sistemaService
-            .getById(sistemaId)
-            .pipe(take(1))
-            .subscribe({
-                next: (resp) => {
-                    const sistema = resp.data;
-                    if (sistema && sistema.articulos) {
-                        this.tiposEdit = sistema.articulos.map((l: any) => ({ label: l.nombre, value: l.id }));
-                    }
-                }
-            });
-    }
 
     onTipoLoteChange(tipoId: number | null): void {
         this.loteForm.patchValue({ referencias_seleccionadas: [] });
@@ -610,11 +593,6 @@ export class AnalysisComponent implements OnInit {
         });
         this.referenciasFormArray.push(itemForm);
 
-        // Abrir modal automáticamente para definir el nuevo ítem
-        const newIndex = this.referenciasFormArray.length - 1;
-        this.editItem(newIndex);
-
-        this.messageService.add({ severity: 'info', summary: 'Defina el ítem', detail: 'Indique sistema y tipo para el nuevo requerimiento.' });
 
         // Scroll suave al final de la lista para visibilidad
         setTimeout(() => {
@@ -635,12 +613,9 @@ export class AnalysisComponent implements OnInit {
             accept: () => {
                 this.referenciasFormArray.removeAt(index);
 
-                // Si el ítem eliminado era el que se estaba editando, cerrar el diálogo
                 if (this.activeItemIndex === index) {
                     this.activeItemIndex = -1;
-                    this.displayItemEditDialog = false;
                 } else if (this.activeItemIndex > index) {
-                    // Si el ítem eliminado estaba antes que el editado, decrementar el índice activo
                     this.activeItemIndex--;
                 }
 
@@ -649,16 +624,7 @@ export class AnalysisComponent implements OnInit {
         });
     }
 
-    displayItemEditDialog = false;
-    itemEditForm!: FormGroup;
 
-    private initItemEditForm(): void {
-        this.itemEditForm = this.fb.group({
-            sistema_id: [null],
-            lista_id: [null],
-            cantidad: [1]
-        });
-    }
 
     referenciasPorTipo: { [tipoId: number]: any[] } = {};
 
@@ -679,94 +645,6 @@ export class AnalysisComponent implements OnInit {
         });
     }
 
-    editItem(index: number): void {
-        this.activeItemIndex = index;
-        const item = this.referenciasFormArray.at(index);
-
-        if (!this.itemEditForm) this.initItemEditForm();
-
-        const sistemaId = item.get('sistema_id')?.value;
-        this.onSistemaEditChange(sistemaId);
-
-        this.itemEditForm.patchValue({
-            sistema_id: sistemaId,
-            lista_id: item.get('lista_id')?.value,
-            cantidad: item.get('cantidad')?.value
-        });
-
-        this.displayItemEditDialog = true;
-    }
-
-    confirmarEdicionItem(): void {
-        if (this.activeItemIndex === -1) return;
-
-        const values = this.itemEditForm.value;
-        const itemControl = this.referenciasFormArray.at(this.activeItemIndex);
-        const currentSistema = itemControl.get('sistema_id')?.value;
-        const currentLista = itemControl.get('lista_id')?.value;
-
-        // Solo alertar si estamos CAMBIANDO un tipo ya definido y hay partes seleccionadas reales
-        const hasPartesSeleccionadas = this.getPartesFormArray(this.activeItemIndex).controls.some((p) => !!p.get('referencia_id')?.value);
-
-        const isChanging = (currentSistema !== null && currentSistema !== values.sistema_id) || (currentLista !== null && currentLista !== values.lista_id);
-
-        if (isChanging && hasPartesSeleccionadas) {
-            this.confirmationService.confirm({
-                message: 'Cambiar el sistema o tipo de artículo reseteará las referencias seleccionadas en este análisis. ¿Desea continuar?',
-                header: 'Confirmar cambio estructural',
-                icon: 'pi pi-exclamation-triangle',
-                acceptLabel: 'Sí',
-                rejectLabel: 'No',
-                accept: () => {
-                    this.aplicarCambiosRequerimiento(values, itemControl);
-                    this.getPartesFormArray(this.activeItemIndex).clear();
-                    this.messageService.add({ severity: 'warn', summary: 'Reset completo', detail: 'Se borró el análisis previo del ítem.' });
-                }
-            });
-        } else {
-            this.aplicarCambiosRequerimiento(values, itemControl);
-        }
-    }
-
-    private aplicarCambiosRequerimiento(values: any, itemControl: AbstractControl): void {
-        const isNew = !itemControl.get('id')?.value;
-        const selectedTipo = this.tiposEdit.find((t) => t.value === values.lista_id) || this.tiposArticulo.find((t) => t.value === values.lista_id);
-
-        itemControl.patchValue({
-            sistema_id: values.sistema_id,
-            lista_id: values.lista_id,
-            cantidad: values.cantidad,
-            // Actualizar definición para el banner con el nombre real del tipo
-            definicion: selectedTipo?.label || 'Ítem definido'
-        });
-
-        // IMPORTANTE: Sincronizar el sistema y tipo con todas las partes técnicas de este requerimiento
-        // Esto evita que al guardar se usen los valores antiguos que estaban en las filas
-        const partes = itemControl.get('partes') as FormArray;
-        partes.controls.forEach((parte) => {
-            parte.patchValue({
-                categoria: values.lista_id
-            });
-        });
-
-        if (values.lista_id != null && selectedTipo?.label) {
-            this.nombresTipoListaPorId[values.lista_id] = selectedTipo.label;
-        }
-
-        if (values.lista_id) {
-            this.cargarReferenciasParaTipo(values.lista_id);
-        }
-
-        const hasRef = itemControl.get('referencia_id')?.value;
-        itemControl.get('estado_item')?.setValue(hasRef ? 'Analizado' : 'En proceso');
-
-        this.displayItemEditDialog = false;
-
-        const summary = isNew ? 'Ítem agregado' : 'Actualizado';
-        const detail = isNew ? 'El nuevo requerimiento se ha añadido exitosamente.' : 'Los datos del requerimiento han sido actualizados.';
-
-        this.messageService.add({ severity: 'success', summary, detail });
-    }
 
     onReferenciaFilaChange(event: any, itemIndex: number, parteIndex: number): void {
         const refId = event.value;

@@ -116,14 +116,6 @@ class UpdatePedidoRequest extends FormRequest
                             'Cada línea debe tener cantidad mayor o igual a 1 antes de pasar a costeo.'
                         );
                     }
-                    $sistemaId = $row['sistema_id'] ?? null;
-                    $listaId = $row['lista_id'] ?? null;
-                    if ($sistemaId !== null && (int) $sistemaId === 62 && $listaId !== null && (int) $listaId === 3425) {
-                        $v->errors()->add(
-                            'referencias.'.$i.'.sistema_id',
-                            'No se puede enviar a costeo con sistema y tipo de artículo por defecto.'
-                        );
-                    }
                 }
 
                 return;
@@ -145,13 +137,6 @@ class UpdatePedidoRequest extends FormRequest
                 $v->errors()->add(
                     'estado',
                     'No puede pasar a costeo: hay líneas sin referencia asignada. Guarde el análisis con todas las referencias o complételas antes de finalizar.'
-                );
-            }
-
-            if ($pedido->referencias()->where('sistema_id', 62)->where('lista_id', 3425)->exists()) {
-                $v->errors()->add(
-                    'estado',
-                    'No puede pasar a costeo: hay líneas con sistema y tipo de artículo por defecto.'
                 );
             }
 

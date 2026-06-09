@@ -84,6 +84,44 @@
           "status": "implemented"
         }
       ]
+    },
+    {
+      "id": "remove-analysis-edit-button",
+      "description": "Eliminar el botón de edición (lápiz) del banner de análisis de cada ítem, así como el modal de edición de requerimiento y su lógica asociada en analysis.html y analysis.ts",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "remove-api-default-restriction",
+      "description": "Eliminar la restricción de validación en UpdatePedidoRequest.php que impide pasar a costeo si el sistema y tipo de artículo están por defecto (sistema_id 62, lista_id 3425)",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/UpdatePedidoRequest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "verify-changes",
+      "description": "Verificar compilación del frontend y del backend",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": ["remove-analysis-edit-button", "remove-api-default-restriction"],
+      "files": []
     }
   ]
 }
