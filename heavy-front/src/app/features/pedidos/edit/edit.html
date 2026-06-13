@@ -38,26 +38,6 @@
                 }
                 -->
 
-                <!-- Enviar a Costeo Button -->
-                @if (puedeEnviarACosteo) {
-                <button
-                    type="button"
-                    class="btn-pill btn-costeo flex items-center gap-2"
-                    (click)="enviarACosteo()"
-                    [disabled]="enviandoACosteo"
-                    pTooltip="Valida que todos los ítems tengan Sistema, Tipo de artículo, Referencia y Cantidad"
-                    tooltipPosition="bottom"
-                >
-                    @if (enviandoACosteo) {
-                    <i class="pi pi-spin pi-spinner"></i>
-                    <span>Enviando...</span>
-                    } @else {
-                    <i class="pi pi-send"></i>
-                    <span>Enviar a Costeo</span>
-                    }
-                </button>
-                }
-
                 <!-- Devolver al Vendedor Button (Solo Analista) -->
                 @if (puedeDevolver && estadoActual === 'En_Analisis') {
                 <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="devolverAVendedor()" pTooltip="Devolver al vendedor para que faça las correcciones" tooltipPosition="bottom">
