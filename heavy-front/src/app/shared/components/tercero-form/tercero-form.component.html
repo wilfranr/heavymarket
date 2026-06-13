@@ -146,7 +146,7 @@
                                             Correo de acceso
                                             <span class="text-xs text-gray-400 font-normal">(se usa el correo del tercero)</span>
                                         </label>
-                                        <input type="email" pInputText [value]="createTerceroForm.get('email')?.value || ''" class="w-full" [disabled]="true" />
+                                        <input type="email" pInputText [value]="createTerceroForm.get('email')?.value || ''" class="w-full" readonly />
                                     </div>
                                     <div>
                                         <label for="landing_password" class="block mb-2 text-sm font-semibold">
@@ -157,16 +157,7 @@
                                                 <span class="text-xs text-gray-400 font-normal">(dejar en blanco para no cambiar)</span>
                                             }
                                         </label>
-                                        <p-password
-                                            id="landing_password"
-                                            formControlName="landing_password"
-                                            [toggleMask]="true"
-                                            [feedback]="false"
-                                            styleClass="w-full"
-                                            inputStyleClass="w-full"
-                                            placeholder="Mínimo 6 caracteres"
-                                        >
-                                        </p-password>
+                                        <p-password id="landing_password" formControlName="landing_password" [toggleMask]="true" [feedback]="false" styleClass="w-full" inputStyleClass="w-full" placeholder="Mínimo 6 caracteres"> </p-password>
                                         @if (createTerceroForm.get('landing_password')?.invalid && createTerceroForm.get('landing_password')?.touched) {
                                             <small class="text-red-500 block mt-1">La contraseña es obligatoria y debe tener al menos 6 caracteres</small>
                                         }
@@ -255,19 +246,11 @@
                     @if (fletePaisSeleccionado() !== null) {
                         <div>
                             <label class="block mb-2 font-semibold">Tarifa de Flete del País (USD/lb)</label>
-                            <input
-                                pInputText
-                                [value]="fletePaisSeleccionado()"
-                                [disabled]="true"
-                                class="w-full"
-                            />
+                            <input pInputText [value]="fletePaisSeleccionado()" readonly class="w-full" />
                             <small class="text-gray-500">Se aplica en costeo a proveedores internacionales de este país.</small>
                         </div>
                     } @else if (createTerceroForm.get('country_id')?.value && !esPaisColombiaSeleccionado()) {
-                        <div
-                            class="rounded-lg border px-3 py-2 text-sm"
-                            style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 10%, transparent)"
-                        >
+                        <div class="rounded-lg border px-3 py-2 text-sm" style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 10%, transparent)">
                             <span class="font-medium text-slate-700 dark:text-slate-200">Este país no tiene tarifa de flete.</span>
                             <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 ml-1 underline">Configurar en Gestión de Países</a>
                         </div>
@@ -291,19 +274,7 @@
                     </div>
                     <div>
                         <label for="city_id" class="block mb-2 font-semibold">Ciudad</label>
-                        <p-select
-                            id="city_id"
-                            formControlName="city_id"
-                            [options]="ciudades()"
-                            optionLabel="name"
-                            optionValue="id"
-                            [filter]="true"
-                            filterBy="name"
-                            placeholder="Seleccione una opción"
-                            styleClass="w-full"
-                            appendTo="body"
-                        >
-                        </p-select>
+                        <p-select id="city_id" formControlName="city_id" [options]="ciudades()" optionLabel="name" optionValue="id" [filter]="true" filterBy="name" placeholder="Seleccione una opción" styleClass="w-full" appendTo="body"> </p-select>
                     </div>
                 </div>
             </div>

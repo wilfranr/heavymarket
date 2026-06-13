@@ -6,7 +6,7 @@
     [draggable]="false"
     [resizable]="false"
     (onHide)="closeDialog()"
-    styleClass="tercero-wizard-dialog"
+    styleClass="hm-dialog tercero-wizard-dialog"
 >
     <!-- Wrapper for Theme Classes -->
     <div [ngClass]="activeTheme">
@@ -103,7 +103,16 @@
                             <div class="col-span-1 md:col-span-2">
                                 <label for="maquina_id" [class]="fieldLabelClass">Máquina</label>
                                 <div class="flex gap-2">
-                                    <p-select id="maquina_id" formControlName="maquina_id" [options]="maquinas()" [filter]="true" filterBy="label" placeholder="Seleccione una opción" [styleClass]="fieldSelectClass + ' flex-1'" appendTo="body"></p-select>
+                                    <p-select
+                                        id="maquina_id"
+                                        formControlName="maquina_id"
+                                        [options]="maquinas()"
+                                        [filter]="true"
+                                        filterBy="label"
+                                        placeholder="Seleccione una opción"
+                                        [styleClass]="fieldSelectClass + ' flex-1'"
+                                        appendTo="body"
+                                    ></p-select>
                                     <p-button icon="pi pi-plus" (onClick)="openCreateMaquinaDialog()" severity="secondary"></p-button>
                                 </div>
                             </div>
@@ -200,7 +209,6 @@
                                 placeholder="Seleccione una opción"
                                 [styleClass]="fieldSelectClass"
                                 (onChange)="onDepartamentoChange()"
-                                [disabled]="!createTerceroForm.get('country_id')?.value"
                                 appendTo="body"
                             >
                             </p-select>
@@ -217,7 +225,6 @@
                                 filterBy="name"
                                 placeholder="Seleccione una opción"
                                 [styleClass]="fieldSelectClass"
-                                [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value"
                                 appendTo="body"
                             >
                             </p-select>
@@ -320,7 +327,9 @@
                             <label [class]="fieldLabelClass">Adjuntar Certificación Bancaria</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'certificacion_bancaria')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('certificacion_bancaria')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('certificacion_bancaria')?.value">
+                                        Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span>
+                                    </div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
@@ -330,7 +339,9 @@
                             <label [class]="fieldLabelClass">Adjuntar Cámara de Comercio</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'camara_comercio')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('camara_comercio')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('camara_comercio')?.value">
+                                        Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span>
+                                    </div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
@@ -340,7 +351,9 @@
                             <label [class]="fieldLabelClass">Adjuntar Cédula Representante Legal</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'cedula_representante_legal')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('cedula_representante_legal')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('cedula_representante_legal')?.value">
+                                        Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span>
+                                    </div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
@@ -367,10 +380,10 @@
 
                     @if (activeIndex === steps.length - 1) {
                         @if (!terceroToEdit && !isViewMode) {
-                        <p-button label="Crear y crear otro" severity="secondary" (onClick)="saveTercero(true)" [loading]="loadingTercero"></p-button>
+                            <p-button label="Crear y crear otro" severity="secondary" (onClick)="saveTercero(true)" [loading]="loadingTercero"></p-button>
                         }
                         @if (!isViewMode) {
-                        <p-button [label]="terceroToEdit ? 'Guardar cambios' : 'Crear'" (onClick)="saveTercero(false)" [loading]="loadingTercero"></p-button>
+                            <p-button [label]="terceroToEdit ? 'Guardar cambios' : 'Crear'" (onClick)="saveTercero(false)" [loading]="loadingTercero"></p-button>
                         }
                     }
                 </div>

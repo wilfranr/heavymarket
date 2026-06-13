@@ -23,6 +23,7 @@ import { SistemaService } from '../../../core/services/sistema.service';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model'; // Added import
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
+import { HM_FIELD_INPUT_CLASSES, HM_DIALOG_STYLE_CLASS } from '../../../core/theme/form-field-classes';
 
 @Component({
     selector: 'app-tercero-create-modal',
@@ -49,12 +50,9 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
 })
 export class TerceroCreateModalComponent implements OnInit, OnChanges {
     readonly fieldLabelClass = 'block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-100';
-    readonly fieldInputClass =
-        'w-full !bg-gray-100 dark:!bg-[#2A2D36] !border !border-gray-300 dark:!border-slate-600/60 !text-gray-900 dark:!text-white rounded-md';
-    readonly fieldSelectClass =
-        'w-full !bg-gray-100 dark:!bg-[#2A2D36] !border !border-gray-300 dark:!border-slate-600/60 !text-gray-900 dark:!text-white';
-    readonly sectionCardClass =
-        'rounded-lg border border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-white/5';
+    readonly fieldInputClass = HM_FIELD_INPUT_CLASSES;
+    readonly fieldSelectClass = 'w-full';
+    readonly sectionCardClass = 'rounded-lg border border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-white/5';
     readonly footerDividerClass = 'border-t border-gray-200 dark:border-slate-700';
 
     private readonly fb = inject(FormBuilder);
@@ -193,11 +191,17 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
 
         if (data.country_id) {
+            if (!this.isViewMode) {
+                this.createTerceroForm.get('state_id')?.enable({ emitEvent: false });
+            }
             this.ubicacionService.getStates(data.country_id).subscribe((r) => {
                 this.departamentos.set(r.data);
             });
         }
         if (data.state_id) {
+            if (!this.isViewMode) {
+                this.createTerceroForm.get('city_id')?.enable({ emitEvent: false });
+            }
             this.ubicacionService.getCities(data.state_id).subscribe((r) => {
                 this.ciudades.set(r.data);
             });
@@ -253,8 +257,8 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
             direccion: ['', [Validators.required]],
             country_id: [null],
-            state_id: [null],
-            city_id: [null],
+            state_id: [{ value: null, disabled: true }],
+            city_id: [{ value: null, disabled: true }],
 
             rut: [null],
             certificacion_bancaria: [null],
@@ -297,6 +301,8 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 sistema_id: [],
                 contactos: []
             });
+            this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
+            this.createTerceroForm.get('city_id')?.disable({ emitEvent: false });
             this.contactos.clear();
             this.departamentos.set([]);
             this.ciudades.set([]);
@@ -365,20 +371,30 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
     onPaisChange(): void {
         const countryId = this.createTerceroForm.get('country_id')?.value;
+        const stateControl = this.createTerceroForm.get('state_id')!;
+        const cityControl = this.createTerceroForm.get('city_id')!;
         this.departamentos.set([]);
         this.ciudades.set([]);
         this.createTerceroForm.patchValue({ state_id: null, city_id: null });
         if (countryId) {
+            stateControl.enable({ emitEvent: false });
             this.ubicacionService.getStates(countryId).subscribe({ next: (r) => this.departamentos.set(r.data) });
+        } else {
+            stateControl.disable({ emitEvent: false });
+            cityControl.disable({ emitEvent: false });
         }
     }
 
     onDepartamentoChange(): void {
         const stateId = this.createTerceroForm.get('state_id')?.value;
+        const cityControl = this.createTerceroForm.get('city_id')!;
         this.ciudades.set([]);
         this.createTerceroForm.patchValue({ city_id: null });
         if (stateId) {
+            cityControl.enable({ emitEvent: false });
             this.ubicacionService.getCities(stateId).subscribe({ next: (r) => this.ciudades.set(r.data) });
+        } else {
+            cityControl.disable({ emitEvent: false });
         }
     }
 

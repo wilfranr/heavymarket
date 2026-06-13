@@ -567,7 +567,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
 
     private loadPaises(): void {
-        this.ubicacionService.getCountriesAdmin({ per_page: 300 }).subscribe({ next: (r) => this.paises.set(r.data) });
+        this.ubicacionService.getCountries().subscribe({ next: (r) => this.paises.set(r.data) });
     }
     private loadMaquinas(): void {
         const params: any = { per_page: 100, disponibles: true };
