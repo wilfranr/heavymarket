@@ -481,8 +481,6 @@ export class AnalysisComponent implements OnInit {
             });
     }
 
-
-
     onTipoLoteChange(tipoId: number | null): void {
         this.loteForm.patchValue({ referencias_seleccionadas: [] });
         this.loteForm.get('referencias_seleccionadas')?.disable();
@@ -593,7 +591,6 @@ export class AnalysisComponent implements OnInit {
         });
         this.referenciasFormArray.push(itemForm);
 
-
         // Scroll suave al final de la lista para visibilidad
         setTimeout(() => {
             const cardElements = document.querySelectorAll('.figma-card-analysis');
@@ -624,8 +621,6 @@ export class AnalysisComponent implements OnInit {
         });
     }
 
-
-
     referenciasPorTipo: { [tipoId: number]: any[] } = {};
 
     /**
@@ -644,7 +639,6 @@ export class AnalysisComponent implements OnInit {
             }
         });
     }
-
 
     onReferenciaFilaChange(event: any, itemIndex: number, parteIndex: number): void {
         const refId = event.value;
@@ -874,7 +868,7 @@ export class AnalysisComponent implements OnInit {
 
         // 1. Resolver Marca ID (Fabricante del Pedido)
         this.createReferenciaMarcaId = null;
-        this.pedido$.pipe(take(1)).subscribe(pedido => {
+        this.pedido$.pipe(take(1)).subscribe((pedido) => {
             if (pedido?.fabricante_id) {
                 this.createReferenciaMarcaId = pedido.fabricante_id;
             }
@@ -934,9 +928,7 @@ export class AnalysisComponent implements OnInit {
         // Obtener datos de la referencia desde las opciones cargadas
         const listaId = this.referenciasFormArray.at(itemIndex).get('lista_id')?.value;
 
-        let opt = listaId
-            ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId)
-            : this.referencias.find((x) => x.value === refId);
+        let opt = listaId ? this.referenciasPorTipo[listaId]?.find((x) => x.value === refId) : this.referencias.find((x) => x.value === refId);
 
         // Búsqueda exhaustiva en todos los catálogos si no se encontró
         if (!opt) {
@@ -956,29 +948,32 @@ export class AnalysisComponent implements OnInit {
 
         if (!opt) {
             // Fallback: buscar directamente en el API
-            this.referenciaService.getById(refId).pipe(take(1)).subscribe({
-                next: (resp) => {
-                    const refData = resp.data;
-                    if (refData) {
-                        const optFallback = this.opcionReferenciaDesdeApi(refData);
-                        this.procesarEditarReferencia(optFallback, itemIndex, parteIndex);
-                    } else {
+            this.referenciaService
+                .getById(refId)
+                .pipe(take(1))
+                .subscribe({
+                    next: (resp) => {
+                        const refData = resp.data;
+                        if (refData) {
+                            const optFallback = this.opcionReferenciaDesdeApi(refData);
+                            this.procesarEditarReferencia(optFallback, itemIndex, parteIndex);
+                        } else {
+                            this.messageService.add({
+                                severity: 'error',
+                                summary: 'Error',
+                                detail: 'No se encontraron datos de la referencia.'
+                            });
+                        }
+                    },
+                    error: (err) => {
+                        console.error('Error buscando referencia en API:', err);
                         this.messageService.add({
                             severity: 'error',
                             summary: 'Error',
-                            detail: 'No se encontraron datos de la referencia.'
+                            detail: 'No se pudieron cargar los datos de la referencia.'
                         });
                     }
-                },
-                error: (err) => {
-                    console.error('Error buscando referencia en API:', err);
-                    this.messageService.add({
-                        severity: 'error',
-                        summary: 'Error',
-                        detail: 'No se pudieron cargar los datos de la referencia.'
-                    });
-                }
-            });
+                });
             return;
         }
 
@@ -1056,8 +1051,11 @@ export class AnalysisComponent implements OnInit {
         if (i >= 0 && j >= 0 && refId) {
             const parte = this.getPartesFormArray(i).at(j);
             // Actualizar descripción si es pieza estándar
-            const opt = this.referencias.find((x) => x.value === refId) ||
-                Object.values(this.referenciasPorTipo).flat().find((x) => x.value === refId);
+            const opt =
+                this.referencias.find((x) => x.value === refId) ||
+                Object.values(this.referenciasPorTipo)
+                    .flat()
+                    .find((x) => x.value === refId);
             if (opt) {
                 const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
                 if (this.debeSobrescribirDescripcion(currentDesc)) {
@@ -1466,9 +1464,7 @@ export class AnalysisComponent implements OnInit {
                 const parteValue = parteControl.value;
 
                 const comentarioRaw = itemValue.comentario;
-                const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
-                    ? JSON.stringify(comentarioRaw)
-                    : (comentarioRaw || '');
+                const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null ? JSON.stringify(comentarioRaw) : comentarioRaw || '';
 
                 referenciasPayload.push({
                     id: parteValue.id || null,
@@ -1547,7 +1543,7 @@ export class AnalysisComponent implements OnInit {
             this.messageService.add({
                 severity: 'error',
                 summary: 'Incompleto o inválido',
-                detail: 'Para pasar a costeo, cada fila debe tener referencia del catálogo, categoría comercial válida y cantidad mayor a cero. Puede guardar el borrador sin completar todo con el botón Guardar.'
+                detail: 'Para pasar a costeo, cada fila debe tener referencia del catálogo, categoría comercial válida y cantidad mayor a cero.'
             });
             return;
         }

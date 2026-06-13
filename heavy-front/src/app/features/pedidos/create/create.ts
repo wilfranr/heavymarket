@@ -222,7 +222,7 @@ export class CreateComponent implements OnInit {
     // Respaldos para filtrado flexible
     items: MenuItem[] = [{ label: 'Cliente' }, { label: 'Referencias' }];
 
-     ngOnInit(): void {
+    ngOnInit(): void {
         this.registerFlexibleFilter();
         this.initForm();
         this.loadInitialData();
@@ -239,7 +239,6 @@ export class CreateComponent implements OnInit {
             return this.flexibleMatch(String(value), String(filter));
         });
     }
-    
 
     /**
      * Inicializa el formulario con validaciones
@@ -587,7 +586,6 @@ export class CreateComponent implements OnInit {
         }
         this.terceros = this.tercerosOriginal.filter((t) => this.flexibleMatch(t.label, query));
     }
-
 
     /**
      * Muestra el diálogo para crear un nuevo tercero
@@ -1088,8 +1086,7 @@ export class CreateComponent implements OnInit {
         const sistemaInicialId = (data.sistema_id ?? defaultSistemaId) as number | null;
         const sistemaInicial = this.sistemas.find((s) => s.value === sistemaInicialId);
         const esSistemaPorDefecto = this.normalizeLabel(sistemaInicial?.label ?? '') === 'por defecto';
-        const defaultListaId =
-            data.lista_id ?? (esSistemaPorDefecto ? this.resolveDefaultListaIdFromCache() : null);
+        const defaultListaId = data.lista_id ?? (esSistemaPorDefecto ? this.resolveDefaultListaIdFromCache() : null);
 
         const referenciaForm = this.fb.group({
             estado: [true],
@@ -1510,9 +1507,7 @@ export class CreateComponent implements OnInit {
                 referencia_id: refId,
                 cantidad: data.cantidad_lote,
                 definicion: refModel?.definicion || '',
-                tipos: [
-                    ...(this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog)
-                ],
+                tipos: [...(this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog)],
                 referencias: [...this.referenciasLote]
             });
         });
@@ -1742,8 +1737,10 @@ export class CreateComponent implements OnInit {
     }
 
     /**
+     * TODO: Rehabilitar cuando se active el estado Borrador
      * Guarda el pedido como borrador.
      */
+    /*
     onSaveDraft(): void {
         if (this.loading) {
             return;
@@ -1761,6 +1758,7 @@ export class CreateComponent implements OnInit {
         this.pedidoForm.patchValue({ estado: 'Borrador' as PedidoEstado });
         this.crearPedidoPendiente();
     }
+    */
 
     /**
      * Crea el pedido y lo envía a análisis
@@ -1821,9 +1819,7 @@ export class CreateComponent implements OnInit {
                     formData.append(`referencias[${index}][marca_id]`, control.get('marca_id')?.value?.toString() || '');
                     formData.append(`referencias[${index}][cantidad]`, control.get('cantidad')?.value.toString());
                     const comentarioRaw = control.get('comentario')?.value;
-                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
-                        ? JSON.stringify(comentarioRaw)
-                        : (comentarioRaw || '');
+                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null ? JSON.stringify(comentarioRaw) : comentarioRaw || '';
                     formData.append(`referencias[${index}][comentario]`, comentarioStr);
                     formData.append(`referencias[${index}][estado]`, (control.get('estado')?.value ?? true) ? '1' : '0');
                     formData.append(`referencias[${index}][definicion]`, definicion);
@@ -1912,10 +1908,12 @@ export class CreateComponent implements OnInit {
         this.maquinaService.getAll({ tercero_id: terceroId }).subscribe({
             next: (response) => {
                 this.maquinasFull = response.data;
-                this.maquinas.set(response.data.map((m: any) => ({
-                    label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
-                    value: m.id
-                })));
+                this.maquinas.set(
+                    response.data.map((m: any) => ({
+                        label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''} ${m.estado_revision === 'revisado' ? '✓' : '(sin revisar)'}`,
+                        value: m.id
+                    }))
+                );
             }
         });
     }

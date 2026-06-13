@@ -23,7 +23,9 @@
                     <i class="pi pi-search"></i>
                     <span>Enviar a Análisis</span>
                 </button>
-                } @if (estadoActual === 'Borrador') {
+                }
+                <!-- TODO: Rehabilitar cuando se active el estado Borrador
+                @if (estadoActual === 'Borrador') {
                 <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="generarPedidoDesdeBorrador()" [disabled]="submitting">
                     @if (submitting) {
                     <i class="pi pi-spin pi-spinner"></i>
@@ -34,6 +36,7 @@
                     }
                 </button>
                 }
+                -->
 
                 <!-- Enviar a Costeo Button -->
                 @if (puedeEnviarACosteo) {
@@ -64,7 +67,7 @@
                 }
                 <button type="button" class="btn-pill btn-primary" (click)="onSubmit()" [disabled]="submitting">
                     @if (submitting) {
-                    <i class="pi pi-spin pi-spinner mr-2"></i>Guardando borrador... } @else { <i class="pi pi-save mr-2"></i>Guardar Borrador }
+                    <i class="pi pi-spin pi-spinner mr-2"></i>Guardando... } @else { <i class="pi pi-save mr-2"></i>Guardar }
                 </button>
                 <button type="button" class="btn-pill btn-outline" (click)="cancelar()"><i class="pi pi-times mr-2"></i>Cancelar</button>
             </div>
@@ -316,8 +319,7 @@
                                 </p-select>
                                 } @else {
                                 <div class="w-full h-[48px] flex items-center px-3 rounded-lg border border-gray-300 dark:border-slate-600/40 text-xs theme-text-secondary">Cargando...</div>
-                                }
-                                @if (campoTieneErrorCosteo($index, 'lista_id')) {
+                                } @if (campoTieneErrorCosteo($index, 'lista_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
                             </div>

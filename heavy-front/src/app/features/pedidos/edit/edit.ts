@@ -243,7 +243,7 @@ export class EditComponent implements OnInit {
 
     // Estado de revisión de la máquina
     maquinaRevisada: boolean | null = null;
-    
+
     // Estado para la galería de imágenes
     displayGallery = false;
     galleriaImagesArray: any[] = [];
@@ -265,7 +265,8 @@ export class EditComponent implements OnInit {
     editReferenciaIndex: number = -1;
 
     estadosOptions = [
-        { label: PEDIDO_ESTADO_ETIQUETA.Borrador, value: 'Borrador' as PedidoEstado },
+        // TODO: Rehabilitar cuando se active el estado Borrador
+        // { label: PEDIDO_ESTADO_ETIQUETA.Borrador, value: 'Borrador' as PedidoEstado },
         { label: PEDIDO_ESTADO_ETIQUETA.Nuevo, value: 'Nuevo' as PedidoEstado },
         { label: PEDIDO_ESTADO_ETIQUETA.En_Analisis, value: 'En_Analisis' as PedidoEstado },
         { label: PEDIDO_ESTADO_ETIQUETA.Enviado, value: 'Enviado' as PedidoEstado },
@@ -281,9 +282,10 @@ export class EditComponent implements OnInit {
     estadoActual: PedidoEstado = 'Nuevo';
 
     // Mapa de transiciones válidas
+    // TODO: Rehabilitar transiciones de Borrador cuando se active el estado
     transicionesValidas: Record<PedidoEstado, PedidoEstado[]> = {
-        Borrador: ['Nuevo', 'En_Analisis', 'Cancelado'],
-        Nuevo: ['Borrador', 'En_Analisis', 'Enviado', 'En_Costeo', 'Cancelado'],
+        Borrador: [], // TODO: Restaurar ['Nuevo', 'En_Analisis', 'Cancelado'] cuando se active
+        Nuevo: ['En_Analisis', 'Enviado', 'En_Costeo', 'Cancelado'],
         En_Analisis: ['Enviado', 'En_Costeo', 'Cancelado'],
         Enviado: ['En_Costeo', 'Cancelado'],
         En_Costeo: ['Cotizado', 'Rechazado', 'Cancelado'],
@@ -301,7 +303,8 @@ export class EditComponent implements OnInit {
      */
     get puedeEnviarAAnalisis(): boolean {
         const transiciones = this.transicionesValidas[this.estadoActual] || [];
-        return this.estadoActual !== 'Borrador' && (transiciones.includes('En_Analisis') && (this.isVendedor || this.isAdmin));
+        // TODO: Rehabilitar condición de Borrador cuando se active el estado
+        return transiciones.includes('En_Analisis') && (this.isVendedor || this.isAdmin);
     }
 
     /**
@@ -371,8 +374,10 @@ export class EditComponent implements OnInit {
     }
 
     /**
+     * TODO: Rehabilitar cuando se active el estado Borrador
      * Convierte un borrador en pedido operativo (Nuevo o pregunta si enviar a análisis, como en crear pedido).
      */
+    /*
     generarPedidoDesdeBorrador(): void {
         if (this.estadoActual !== 'Borrador' || this.submitting) {
             return;
@@ -434,6 +439,7 @@ export class EditComponent implements OnInit {
             this.onSubmit();
         }
     }
+    */
 
     /**
      * Renvoie le pedido al vendedor para correction
@@ -456,7 +462,7 @@ export class EditComponent implements OnInit {
             return;
         }
 
-        this.pedidoForm.patchValue({ 
+        this.pedidoForm.patchValue({
             estado: 'Nuevo',
             comentario: (this.pedidoForm.get('comentario')?.value || '') + '\n\n[DEVOLUCIÓN]: ' + comentario
         });
@@ -488,14 +494,16 @@ export class EditComponent implements OnInit {
     }
 
     private removeAccents(str: string): string {
-        return str ? str.normalize("NFD").replace(/[\u0300-\u036f]/g, "") : '';
+        return str ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : '';
     }
 
     public flexibleMatch(text: string, search: string): boolean {
         if (!search) return true;
         const normalizedText = this.removeAccents(text.toLowerCase());
-        const searchTerms = this.removeAccents(search.toLowerCase()).split(/\s+/).filter(t => t.length > 0);
-        return searchTerms.every(term => normalizedText.includes(term));
+        const searchTerms = this.removeAccents(search.toLowerCase())
+            .split(/\s+/)
+            .filter((t) => t.length > 0);
+        return searchTerms.every((term) => normalizedText.includes(term));
     }
 
     onFilterSistemas(event: any) {
@@ -504,7 +512,7 @@ export class EditComponent implements OnInit {
             this.sistemas = [...this.sistemasOriginal];
             return;
         }
-        this.sistemas = this.sistemasOriginal.filter(s => this.flexibleMatch(s._search, query));
+        this.sistemas = this.sistemasOriginal.filter((s) => this.flexibleMatch(s._search, query));
     }
 
     private mapListasToOptions(listas: { id: number; nombre: string; definicion?: string | null }[]): TipoListaSelectOption[] {
@@ -804,7 +812,7 @@ export class EditComponent implements OnInit {
             this.terceros = [...this.tercerosOriginal];
             return;
         }
-        this.terceros = this.tercerosOriginal.filter(t => this.flexibleMatch(t.label, query));
+        this.terceros = this.tercerosOriginal.filter((t) => this.flexibleMatch(t.label, query));
     }
 
     ngOnInit(): void {
@@ -882,25 +890,27 @@ export class EditComponent implements OnInit {
         // Cargar sistemas y enriquecer para búsqueda flexible
         this.sistemaService.getAll({ per_page: 100, include: 'listas' }).subscribe({
             next: (response) => {
-                this.sistemas = response.data.map((s: any) => {
-                    // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
-                    const tiposRelacionados = (s.listas || [])
-                        .filter((l: any) => l.tipo === 'Tipo de Artículo')
-                        .map((l: any) => l.nombre)
-                        .join(' ');
-                    
-                    return {
-                        label: s.nombre,
-                        value: s.id,
-                        _search: `${s.nombre} ${tiposRelacionados}`
-                    };
-                }).sort((a, b) => {
-                    const labelA = a.label.toLowerCase();
-                    const labelB = b.label.toLowerCase();
-                    if (labelA === 'por defecto') return -1;
-                    if (labelB === 'por defecto') return 1;
-                    return labelA.localeCompare(labelB);
-                });
+                this.sistemas = response.data
+                    .map((s: any) => {
+                        // Combinar nombre del sistema con todos sus tipos de artículo para permitir buscar tipos dentro del sistema
+                        const tiposRelacionados = (s.listas || [])
+                            .filter((l: any) => l.tipo === 'Tipo de Artículo')
+                            .map((l: any) => l.nombre)
+                            .join(' ');
+
+                        return {
+                            label: s.nombre,
+                            value: s.id,
+                            _search: `${s.nombre} ${tiposRelacionados}`
+                        };
+                    })
+                    .sort((a, b) => {
+                        const labelA = a.label.toLowerCase();
+                        const labelB = b.label.toLowerCase();
+                        if (labelA === 'por defecto') return -1;
+                        if (labelB === 'por defecto') return 1;
+                        return labelA.localeCompare(labelB);
+                    });
                 this.sistemasOriginal = [...this.sistemas];
             }
         });
@@ -1026,7 +1036,7 @@ export class EditComponent implements OnInit {
 
     onMaquinaActualizadaDesdeModal(_m: any): void {
         this.reloadMaquinasParaPedido();
-        
+
         // Actualizar estado revisión
         this.forceReloadMaquinaRevision();
     }
@@ -1035,7 +1045,7 @@ export class EditComponent implements OnInit {
      * Carga los datos del pedido
      */
     private loadPedido(): void {
-        this.route.paramMap.subscribe(params => {
+        this.route.paramMap.subscribe((params) => {
             const id = params.get('id');
 
             if (id) {
@@ -1057,60 +1067,60 @@ export class EditComponent implements OnInit {
                             this.pedidoResponse.set(pedido);
                             this.estadoActual = this.normalizePedidoEstado(pedido.estado);
 
-                        this.pedidoForm.patchValue({
-                            tercero_id: pedido.tercero_id,
-                            direccion: pedido.direccion || '',
-                            comentario: pedido.comentario || '',
-                            estado: pedido.estado,
-                            maquina_id: pedido.maquina_id || null,
-                            fabricante_id: pedido.fabricante_id || null,
-                            contacto_id: pedido.contacto_id || null
-                        });
-
-                        // Cargar comentarios del pedido para visualización
-                        this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
-
-                        // Cargar estado de revisión de la máquina
-                        if (pedido.maquina_id) {
-                            this.maquinaService.getById(pedido.maquina_id).subscribe({
-                                next: (response: any) => {
-                                    const maquinaData = response.data || response;
-                                    this.maquinaRevisada = maquinaData?.estado_revision === 'revisado';
-                                },
-                                error: () => {
-                                    this.maquinaRevisada = null;
-                                }
+                            this.pedidoForm.patchValue({
+                                tercero_id: pedido.tercero_id,
+                                direccion: pedido.direccion || '',
+                                comentario: pedido.comentario || '',
+                                estado: pedido.estado,
+                                maquina_id: pedido.maquina_id || null,
+                                fabricante_id: pedido.fabricante_id || null,
+                                contacto_id: pedido.contacto_id || null
                             });
-                        } else {
-                            this.maquinaRevisada = null;
-                        }
 
-                        // Cargar referencias del pedido
-                        if (pedido.referencias && pedido.referencias.length > 0) {
-                            this.cargarReferenciasAlFormArray(pedido.referencias);
+                            // Cargar comentarios del pedido para visualización
+                            this.comentariosDelPedido = this.parseComentariosRaw(pedido.comentario);
 
-                            // Cargar proveedores de cada referencia
-                            pedido.referencias.forEach((ref) => {
-                                if (ref.proveedores && ref.proveedores.length > 0) {
-                                    this.proveedoresPorReferencia.set(ref.id, ref.proveedores);
-                                }
-                            });
-                        }
+                            // Cargar estado de revisión de la máquina
+                            if (pedido.maquina_id) {
+                                this.maquinaService.getById(pedido.maquina_id).subscribe({
+                                    next: (response: any) => {
+                                        const maquinaData = response.data || response;
+                                        this.maquinaRevisada = maquinaData?.estado_revision === 'revisado';
+                                    },
+                                    error: () => {
+                                        this.maquinaRevisada = null;
+                                    }
+                                });
+                            } else {
+                                this.maquinaRevisada = null;
+                            }
 
-                        // Cargar artículos del pedido
-                        if (pedido.articulos && pedido.articulos.length > 0) {
-                            this.articulosPedido = pedido.articulos;
+                            // Cargar referencias del pedido
+                            if (pedido.referencias && pedido.referencias.length > 0) {
+                                this.cargarReferenciasAlFormArray(pedido.referencias);
+
+                                // Cargar proveedores de cada referencia
+                                pedido.referencias.forEach((ref) => {
+                                    if (ref.proveedores && ref.proveedores.length > 0) {
+                                        this.proveedoresPorReferencia.set(ref.id, ref.proveedores);
+                                    }
+                                });
+                            }
+
+                            // Cargar artículos del pedido
+                            if (pedido.articulos && pedido.articulos.length > 0) {
+                                this.articulosPedido = pedido.articulos;
+                            }
                         }
-                    }
+                    });
+            } else {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'ID de pedido inválido'
                 });
-        } else {
-            this.messageService.add({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'ID de pedido inválido'
-            });
-            this.router.navigate(['/app/pedidos']);
-        }
+                this.router.navigate(['/app/pedidos']);
+            }
         });
     }
 
@@ -1173,8 +1183,7 @@ export class EditComponent implements OnInit {
         const defaultSistemaId = this.getDefaultSistemaId();
         const sistemaInicialId = (data.sistema_id ?? defaultSistemaId) as number | null;
         const esSistemaPorDefecto = this.isSistemaPorDefecto(sistemaInicialId);
-        const defaultListaId =
-            data.lista_id ?? (esSistemaPorDefecto && data.referencia_id == null ? this.resolveDefaultListaIdFromCache() : null);
+        const defaultListaId = data.lista_id ?? (esSistemaPorDefecto && data.referencia_id == null ? this.resolveDefaultListaIdFromCache() : null);
 
         const referenciaForm = this.fb.group({
             id: [data?.id ?? null],
@@ -1254,7 +1263,7 @@ export class EditComponent implements OnInit {
 
                 if (resultados && resultados.length > 0) {
                     resultados.forEach((item: any) => {
-                        const existeEnGlobal = this.referencias.find(r => r.value === item.referencia_id);
+                        const existeEnGlobal = this.referencias.find((r) => r.value === item.referencia_id);
                         if (!existeEnGlobal) {
                             this.referencias.push({
                                 label: item.codigo,
@@ -1335,10 +1344,7 @@ export class EditComponent implements OnInit {
 
         this.articuloService.getAll({ per_page: 500 }).subscribe({
             next: (resArt) => {
-                const articulo = resArt.data.find((a: any) =>
-                    (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
-                    (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
-                );
+                const articulo = resArt.data.find((a: any) => (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) || (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase()));
                 if (articulo) {
                     row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
                     this.cargarReferenciasPorArticulo(articulo.id, index);
@@ -1350,12 +1356,7 @@ export class EditComponent implements OnInit {
     /**
      * Carga los tipos de artículo (Listas) asociados a un sistema
      */
-    private cargarTiposPorSistema(
-        sistemaId: number,
-        index: number,
-        referenciaIdPreseleccionada?: number | null,
-        listaIdPreseleccionado?: number | null
-    ): void {
+    private cargarTiposPorSistema(sistemaId: number, index: number, referenciaIdPreseleccionada?: number | null, listaIdPreseleccionado?: number | null): void {
         const row = this.referenciasFormArray.at(index);
         const systemLabel = this.sistemas.find((s) => s.value === sistemaId)?.label;
         const applyDefault = listaIdPreseleccionado == null;
@@ -1370,10 +1371,7 @@ export class EditComponent implements OnInit {
 
             row.patchValue({ lista_id: listaIdPreseleccionado }, { emitEvent: false });
             const opciones = this.tiposSourceForRow(index);
-            const listaNombre =
-                opciones.find((o) => o.value === listaIdPreseleccionado)?.label ??
-                this.tiposArticuloCatalog.find((o) => o.value === listaIdPreseleccionado)?.label ??
-                '';
+            const listaNombre = opciones.find((o) => o.value === listaIdPreseleccionado)?.label ?? this.tiposArticuloCatalog.find((o) => o.value === listaIdPreseleccionado)?.label ?? '';
 
             if (!listaNombre) {
                 if (referenciaIdPreseleccionada) {
@@ -1384,11 +1382,7 @@ export class EditComponent implements OnInit {
 
             this.articuloService.getAll({ per_page: 500 }).subscribe({
                 next: (resArt) => {
-                    const articulo = resArt.data.find(
-                        (a: any) =>
-                            (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) ||
-                            (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase())
-                    );
+                    const articulo = resArt.data.find((a: any) => (a.definicion && a.definicion.toLowerCase() === listaNombre.toLowerCase()) || (a.descripcionEspecifica && a.descripcionEspecifica.toLowerCase() === listaNombre.toLowerCase()));
                     if (articulo) {
                         row.patchValue({ articulo_id: articulo.id }, { emitEvent: false });
                         this.cargarReferenciasPorArticulo(articulo.id, index);
@@ -1444,7 +1438,7 @@ export class EditComponent implements OnInit {
         const sistemaId = row.get('sistema_id')?.value;
         this.referenciaService.getAll({ per_page: 500 }).subscribe({
             next: (response) => {
-                const ref = response.data.find(r => r.id === referenciaId);
+                const ref = response.data.find((r) => r.id === referenciaId);
                 if (ref && (ref as any).articulo_id) {
                     const articuloId = (ref as any).articulo_id;
                     row.patchValue({ articulo_id: articuloId }, { emitEvent: false });
@@ -1456,9 +1450,7 @@ export class EditComponent implements OnInit {
                                 if (articulo?.definicion) {
                                     this.listaService.getAll({ sistema_id: sistemaId, tipo: 'Tipo de Artículo', per_page: 200 }).subscribe({
                                         next: (listRes) => {
-                                            const lista = listRes.data.find((l: any) =>
-                                                l.nombre && l.nombre.toLowerCase() === articulo.definicion.toLowerCase()
-                                            );
+                                            const lista = listRes.data.find((l: any) => l.nombre && l.nombre.toLowerCase() === articulo.definicion.toLowerCase());
                                             if (lista) {
                                                 row.patchValue({ lista_id: lista.id }, { emitEvent: false });
                                             }
@@ -1541,11 +1533,12 @@ export class EditComponent implements OnInit {
         const option =
             rawValue && typeof rawValue === 'object'
                 ? rawValue
-                : suggestions.find(
-                    (o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()
-                ) ||
+                : suggestions.find((o: any) => (o?.label || '').toString().toLowerCase() === (rawValue || '').toString().toLowerCase()) ||
                   (suggestions.length === 1 &&
-                  (suggestions[0]?.label || '').toString().toLowerCase().startsWith((rawValue || '').toString().toLowerCase())
+                  (suggestions[0]?.label || '')
+                      .toString()
+                      .toLowerCase()
+                      .startsWith((rawValue || '').toString().toLowerCase())
                       ? suggestions[0]
                       : null);
         const referenciaId = option && typeof option === 'object' ? (option.value ?? null) : null;
@@ -1584,11 +1577,7 @@ export class EditComponent implements OnInit {
         // mapear contra sugerencias cargadas antes de crear temporal.
         if (!referenciaId && codigo) {
             const suggestions = this.referenciasPorFila[index] || [];
-            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) ||
-                (suggestions.length === 1 &&
-                (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo)
-                    ? suggestions[0]
-                    : null);
+            const option = suggestions.find((o: any) => (o?.label || '').toString().toUpperCase() === codigo) || (suggestions.length === 1 && (suggestions[0]?.label || '').toString().toUpperCase().startsWith(codigo) ? suggestions[0] : null);
             if (option?.value) {
                 referenciaId = option.value;
                 row.patchValue(
@@ -1615,34 +1604,25 @@ export class EditComponent implements OnInit {
         const esTemporal = !articuloId;
         const comentarioTemporal = esTemporal ? 'Referencia temporal desde pedido interno - Requiere revision' : undefined;
 
-        return this.referenciaService
-            .bulkSearchOrCreate(
-                [{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }],
-                esTemporal,
-                marcaId,
-                comentarioTemporal,
-                articuloId,
-                listaId
-            )
-            .pipe(
-                map((res) => {
-                    const created = res?.data?.[0];
-                    if (created?.referencia_id) {
-                        row.patchValue(
-                            {
-                                referencia_id: created.referencia_id,
-                                definicion: created.codigo || codigo
-                            },
-                            { emitEvent: false }
-                        );
-                        const articuloId = created?.referencia?.articulo_id || row.get('articulo_id')?.value;
-                        if (articuloId) {
-                            this.cargarReferenciasPorArticulo(articuloId, index);
-                        }
+        return this.referenciaService.bulkSearchOrCreate([{ codigo, cantidad: Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1 }], esTemporal, marcaId, comentarioTemporal, articuloId, listaId).pipe(
+            map((res) => {
+                const created = res?.data?.[0];
+                if (created?.referencia_id) {
+                    row.patchValue(
+                        {
+                            referencia_id: created.referencia_id,
+                            definicion: created.codigo || codigo
+                        },
+                        { emitEvent: false }
+                    );
+                    const articuloId = created?.referencia?.articulo_id || row.get('articulo_id')?.value;
+                    if (articuloId) {
+                        this.cargarReferenciasPorArticulo(articuloId, index);
                     }
-                }),
-                catchError(() => of(void 0))
-            );
+                }
+            }),
+            catchError(() => of(void 0))
+        );
     }
 
     private resolverReferenciasAntesDeGuardar(): Observable<void> {
@@ -1660,7 +1640,7 @@ export class EditComponent implements OnInit {
     private cargarReferenciasPorArticulo(articuloId: number, index: number): void {
         this.referenciaService.getAll({ articulo_id: articuloId, per_page: 100 }).subscribe({
             next: (response) => {
-                this.referenciasPorFila[index] = response.data.map(r => ({
+                this.referenciasPorFila[index] = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id
                 }));
@@ -1804,10 +1784,10 @@ export class EditComponent implements OnInit {
         if (!errores) return false;
 
         const mapaCampos: Record<string, string> = {
-            'sistema_id': 'Sistema',
-            'lista_id': 'Tipo de artículo',
-            'referencia_id': 'Referencia',
-            'cantidad': 'Cantidad'
+            sistema_id: 'Sistema',
+            lista_id: 'Tipo de artículo',
+            referencia_id: 'Referencia',
+            cantidad: 'Cantidad'
         };
 
         return errores.includes(mapaCampos[campo] || '');
@@ -1960,9 +1940,7 @@ export class EditComponent implements OnInit {
                 // No es JSON, continuar con formato legacy
             }
 
-            const sinPrefijo = trimmed.startsWith('Comentario del cliente:')
-                ? trimmed.replace('Comentario del cliente:', '').trim()
-                : trimmed;
+            const sinPrefijo = trimmed.startsWith('Comentario del cliente:') ? trimmed.replace('Comentario del cliente:', '').trim() : trimmed;
 
             if (esTextoInvalido(sinPrefijo)) {
                 return [];
@@ -2041,7 +2019,7 @@ export class EditComponent implements OnInit {
             const control = this.referenciasFormArray.at(index).get('files');
             const currentFiles = control?.value || [];
             const existingImages = this.referenciasFormArray.at(index).get('imagenes')?.value || [];
-            
+
             // Límite total de 10 imágenes (existentes + nuevas)
             const remaining = 10 - (currentFiles.length + existingImages.length);
             if (remaining <= 0) {
@@ -2055,7 +2033,7 @@ export class EditComponent implements OnInit {
             if (files.length > remaining) {
                 this.messageService.add({ severity: 'info', summary: 'Límite parcial', detail: 'Solo se agregaron las imágenes permitidas hasta completar 10' });
             }
-            
+
             if (this.displayGallery && this.selectedItemIndex === index) {
                 this.updateGalleriaImages(index);
             }
@@ -2069,11 +2047,11 @@ export class EditComponent implements OnInit {
     removeFile(itemIndex: number, fileIndex: number): void {
         const control = this.referenciasFormArray.at(itemIndex).get('files');
         const currentFiles = [...(control?.value || [])];
-        
+
         if (currentFiles[fileIndex]) {
             currentFiles.splice(fileIndex, 1);
             control?.setValue(currentFiles);
-            
+
             if (this.displayGallery && this.selectedItemIndex === itemIndex) {
                 this.updateGalleriaImages(itemIndex);
             }
@@ -2086,7 +2064,7 @@ export class EditComponent implements OnInit {
     openGallery(index: number): void {
         const files = this.referenciasFormArray.at(index).get('files')?.value || [];
         const existing = this.referenciasFormArray.at(index).get('imagenes')?.value || [];
-        
+
         if (files.length === 0 && existing.length === 0) return;
 
         this.selectedItemIndex = index;
@@ -2104,7 +2082,7 @@ export class EditComponent implements OnInit {
         const existingImages = control.get('imagenes')?.value || [];
 
         // Limpiar blobs previos
-        this.galleriaImagesArray.forEach(img => {
+        this.galleriaImagesArray.forEach((img) => {
             if (img.itemImageSrc.startsWith('blob:')) {
                 URL.revokeObjectURL(img.itemImageSrc);
             }
@@ -2270,7 +2248,7 @@ export class EditComponent implements OnInit {
 
         this.referenciaService.getAll({ articulo_id: articuloId, per_page: 200 }).subscribe({
             next: (response) => {
-                this.referenciasLote = response.data.map(r => ({
+                this.referenciasLote = response.data.map((r) => ({
                     label: r.referencia,
                     value: r.id,
                     definicion: r.referencia
@@ -2303,11 +2281,7 @@ export class EditComponent implements OnInit {
                 referencia_id: refId,
                 cantidad: data.cantidad_lote,
                 definicion: refModel?.definicion || '',
-                tipos: [
-                    ...(this.tiposLoteCatalog().options.length > 0
-                        ? this.tiposLoteCatalog().options
-                        : this.tiposArticuloCatalog)
-                ],
+                tipos: [...(this.tiposLoteCatalog().options.length > 0 ? this.tiposLoteCatalog().options : this.tiposArticuloCatalog)],
                 referencias: [...this.referenciasLote]
             });
         });
@@ -2493,25 +2467,21 @@ export class EditComponent implements OnInit {
                 // Referencias
                 this.referenciasFormArray.controls.forEach((control, index) => {
                     const rawRef = control.value;
-                    const definicionRaw = rawRef.definicion && typeof rawRef.definicion === 'object'
-                        ? (rawRef.definicion.label || '')
-                        : (rawRef.definicion || '');
+                    const definicionRaw = rawRef.definicion && typeof rawRef.definicion === 'object' ? rawRef.definicion.label || '' : rawRef.definicion || '';
                     const definicion = rawRef.referencia_id ? '' : definicionRaw;
                     if (rawRef.id) formData.append(`referencias[${index}][id]`, rawRef.id.toString());
-                    
+
                     formData.append(`referencias[${index}][referencia_id]`, rawRef.referencia_id ? rawRef.referencia_id.toString() : '');
                     formData.append(`referencias[${index}][sistema_id]`, rawRef.sistema_id ? rawRef.sistema_id.toString() : '');
                     formData.append(`referencias[${index}][lista_id]`, rawRef.lista_id ? rawRef.lista_id.toString() : '');
                     formData.append(`referencias[${index}][marca_id]`, rawRef.marca_id ? rawRef.marca_id.toString() : '');
                     formData.append(`referencias[${index}][cantidad]`, rawRef.cantidad.toString());
                     const comentarioRaw = rawRef.comentario;
-                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null
-                        ? JSON.stringify(comentarioRaw)
-                        : (comentarioRaw || '');
+                    const comentarioStr = typeof comentarioRaw === 'object' && comentarioRaw !== null ? JSON.stringify(comentarioRaw) : comentarioRaw || '';
                     formData.append(`referencias[${index}][comentario]`, comentarioStr);
                     formData.append(`referencias[${index}][estado]`, (rawRef.estado ?? true) ? '1' : '0');
                     formData.append(`referencias[${index}][definicion]`, definicion);
-                    
+
                     // Nuevos archivos de imagen
                     const files = rawRef.files || [];
                     files.forEach((file: File, fileIndex: number) => {
@@ -2792,7 +2762,7 @@ export class EditComponent implements OnInit {
         if (!id) return null;
 
         // Buscar en la lista de máquinas cargadas
-        const maquina = this.maquinasList.find(m => m.id === id);
+        const maquina = this.maquinasList.find((m) => m.id === id);
         if (maquina) return maquina;
 
         // Si no está en la lista (caso raro), intentar usar la del pedido si coincide el ID
@@ -2806,7 +2776,7 @@ export class EditComponent implements OnInit {
      */
     viewMaquina(maquina: any): void {
         if (!maquina) return;
-        
+
         // Cargamos la máquina completa para asegurar que tenga los componentes
         this.maquinaService.getById(maquina.id).subscribe({
             next: (response: any) => {
@@ -2978,9 +2948,12 @@ export class EditComponent implements OnInit {
         if (this.editReferenciaIndex >= 0) {
             const row = this.referenciasFormArray.at(this.editReferenciaIndex);
             if (row) {
-                row.patchValue({
-                    definicion: ref.referencia || row.get('definicion')?.value
-                }, { emitEvent: false });
+                row.patchValue(
+                    {
+                        definicion: ref.referencia || row.get('definicion')?.value
+                    },
+                    { emitEvent: false }
+                );
             }
         }
         this.showReferenciaEditModal = false;

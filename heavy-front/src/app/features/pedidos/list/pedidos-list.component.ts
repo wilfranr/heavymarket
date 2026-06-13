@@ -89,7 +89,19 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                             </div>
                                         </ng-template>
                                         <ng-template pTemplate="filter" let-value let-filter="filterCallback">
-                                            <p-select [ngModel]="selectedTercero" [options]="terceros" optionLabel="label" optionValue="value" (onChange)="onTerceroChange($event.value)" placeholder="Seleccionar Cliente" [showClear]="true" styleClass="w-full" [filter]="true" filterBy="label"> </p-select>
+                                            <p-select
+                                                [ngModel]="selectedTercero"
+                                                [options]="terceros"
+                                                optionLabel="label"
+                                                optionValue="value"
+                                                (onChange)="onTerceroChange($event.value)"
+                                                placeholder="Seleccionar Cliente"
+                                                [showClear]="true"
+                                                styleClass="w-full"
+                                                [filter]="true"
+                                                filterBy="label"
+                                            >
+                                            </p-select>
                                         </ng-template>
                                     </p-columnFilter>
                                 </div>
@@ -368,7 +380,8 @@ export class PedidosListComponent implements OnInit {
 
     private initTabs() {
         this.estadosTabs = [
-            { label: 'Borrador', value: 'Borrador', icon: 'pi pi-save' },
+            // TODO: Rehabilitar cuando se active el estado Borrador
+            // { label: 'Borrador', value: 'Borrador', icon: 'pi pi-save' },
             { label: 'Nuevo', value: 'Nuevo', icon: 'pi pi-star' },
             { label: 'Análisis', value: 'En_Analisis', icon: 'pi pi-cog' },
             { label: 'Enviado', value: 'Enviado', icon: 'pi pi-send' },
