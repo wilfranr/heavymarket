@@ -98,6 +98,22 @@ input.p-inputtext {
     }
 }
 
+.theme-text-primary {
+    color: var(--p-text-color) !important;
+}
+
+.theme-text-secondary {
+    color: var(--p-text-muted-color) !important;
+}
+
+.theme-accent-primary {
+    color: var(--p-primary-color);
+
+    &:hover {
+        color: var(--p-primary-600, var(--p-primary-color));
+    }
+}
+
 :host ::ng-deep {
     .p-select {
         background-color: var(--p-content-background) !important;

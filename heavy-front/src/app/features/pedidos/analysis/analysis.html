@@ -244,9 +244,9 @@
 
                     <!-- Name & Category Reactivo (Orden: Sistema → Tipo → Cantidad) - Issue #67 -->
                     <div class="flex gap-8 flex-1 text-sm font-semibold">
-                        <span class="text-primary-400 cursor-help hover:text-white transition-colors" (click)="showInfo($event, 'sistema', item.get('sistema_id')?.value, op)"> {{ getSistemaNombre(item.get('sistema_id')?.value) }} </span>
-                        <span class="text-primary-400 cursor-help hover:text-white transition-colors" (click)="showInfo($event, 'articulo', item.get('lista_id')?.value, op)"> {{ getTipoNombre(item.get('lista_id')?.value) }} </span>
-                        <span class="text-primary-400">Cant. {{ item.get('cantidad')?.value }}</span>
+                        <span class="theme-accent-primary cursor-help transition-colors" (click)="showInfo($event, 'sistema', item.get('sistema_id')?.value, op)"> {{ getSistemaNombre(item.get('sistema_id')?.value) }} </span>
+                        <span class="theme-accent-primary cursor-help transition-colors" (click)="showInfo($event, 'articulo', item.get('lista_id')?.value, op)"> {{ getTipoNombre(item.get('lista_id')?.value) }} </span>
+                        <span class="theme-text-primary">Cant. {{ item.get('cantidad')?.value }}</span>
                     </div>
 
                     <!-- Icons (#68: contadores visibles) -->
@@ -282,7 +282,7 @@
                             }
                         </div>
                         <button type="button" class="icon-btn pi pi-trash p-2 bg-red-500 rounded-full text-white border-none cursor-pointer" (click)="removeItem(i)"></button>
-                        <button type="button" class="icon-btn p-3 text-white flex items-center justify-center bg-transparent border-none cursor-pointer" (click)="toggleExpand(i)">
+                        <button type="button" class="icon-btn p-3 theme-text-primary flex items-center justify-center bg-transparent border-none cursor-pointer" (click)="toggleExpand(i)">
                             <i class="pi" [ngClass]="item.get('expandido')?.value ? 'pi-chevron-up' : 'pi-chevron-down'"></i>
                         </button>
                     </div>
@@ -292,7 +292,7 @@
                 <div class="p-6" [hidden]="!item.get('expandido')?.value">
                     <div class="overflow-x-auto">
                         <table class="w-full text-sm text-left border-separate border-spacing-y-2">
-                            <thead class="text-xs font-bold uppercase text-gray-300">
+                            <thead class="text-xs font-bold uppercase theme-text-secondary">
                                 <tr>
                                     <th class="w-10">Item</th>
                                     <th class="w-20">Cantidad</th>
@@ -357,8 +357,7 @@
                                                 icon="pi pi-pencil"
                                                 [rounded]="true"
                                                 [text]="true"
-                                                severity="secondary"
-                                                styleClass="!text-white hover:!bg-white/10"
+                                                severity="warn"
                                                 pTooltip="Gestionar artículo asociado"
                                                 tooltipPosition="top"
                                                 (onClick)="abrirEditarReferencia(i, j)"
@@ -368,8 +367,7 @@
                                                 icon="pi pi-pencil"
                                                 [rounded]="true"
                                                 [text]="true"
-                                                severity="secondary"
-                                                styleClass="!text-white hover:!bg-white/10"
+                                                severity="warn"
                                                 pTooltip="Crear artículo para esta referencia"
                                                 tooltipPosition="top"
                                                 (onClick)="abrirCrearArticuloDesdeParte(i, j)"
@@ -383,9 +381,9 @@
                                 }
                             </tbody>
                         </table>
-                        <div class="flex justify-end mt-2">
-                            <button type="button" pButton icon="pi pi-plus" label="Agregar referencia" class="p-button-text p-button-sm !text-primary-400" (click)="addParte(i)"></button>
-                            <button type="button" pButton icon="pi pi-list" label="Agregar listado" class="p-button-text p-button-sm !text-yellow-400 ml-2" (click)="abrirCargaMasiva(i)"></button>
+                        <div class="flex justify-end mt-2 gap-2">
+                            <p-button label="Agregar referencia" icon="pi pi-plus" [text]="true" size="small" (onClick)="addParte(i)" />
+                            <p-button label="Agregar listado" icon="pi pi-list" [text]="true" size="small" severity="warn" (onClick)="abrirCargaMasiva(i)" />
                         </div>
                     </div>
                 </div>
