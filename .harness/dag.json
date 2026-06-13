@@ -193,64 +193,64 @@
     {
       "id": "ped-post-cotizado-solo-lectura",
       "description": "Solo lectura total desde Cotizado: bloquear /analysis y /costeo (guards + policy), ocultar iconos/botones editar en listado/detalle/cotizaciones para todos los roles. Utilidad central ESTADOS_SOLO_LECTURA alineada con backend.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": ["ped-post-cotizado-triage-doc", "ped-edit-comercial-cerrar-post-analisis"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/core/utils/pedido-edicion-comercial.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/guards/pedido-solo-lectura-costeo.guard.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/guards/pedido-solo-lectura-analysis.guard.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/pedidos.routes.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-enviar-entregar-permisos-ui",
       "description": "Policy y UI para POST enviar/entregar: solo Logistica, Administrador y super_admin. Botones en detalle pedido (Aprobado->Enviado, Enviado->Entregado). Vendedor y Analista sin acceso.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["ped-post-cotizado-triage-doc"],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/core/services/pedido.service.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/PedidoEnviarEntregarTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
