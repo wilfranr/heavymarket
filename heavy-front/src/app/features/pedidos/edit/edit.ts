@@ -16,7 +16,7 @@ import { MessageService, ConfirmationService, FilterService } from 'primeng/api'
 import { ContactoService } from '../../../core/services/contacto.service';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-create-modal/maquina-create-modal.component';
-import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
+import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TimelineModule } from 'primeng/timeline';
@@ -49,6 +49,7 @@ import { PedidoArticuloService } from '../../../core/services/pedido-articulo.se
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { PedidoReferenciaProveedor, CreatePedidoReferenciaProveedorDto, PedidoArticulo, CreatePedidoArticuloDto } from '../../../core/models/pedido.model';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { Tercero } from '../../../core/models/tercero.model';
 
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
 
@@ -98,7 +99,7 @@ type RowTiposCatalogEntry = {
         TimelineModule,
         ContactoCreateModalComponent,
         MaquinaCreateModalComponent,
-        ReferenciaEditModalComponent,
+        TerceroCreateModalComponent,
         MaquinaDetailComponent
     ],
     providers: [MessageService],
@@ -165,7 +166,10 @@ export class EditComponent implements OnInit {
     fabricantes: any[] = [];
     referencias: any[] = [];
     contactos: any[] = [];
+    private contactosDetalle: Array<{ id: number; telefono?: string | null; email?: string | null }> = [];
     displayCreateContactoDialog = false;
+    displayEditTerceroDialog = false;
+    terceroToEdit: Tercero | null = null;
 
     displayEditMaquinaModal = false;
     maquinaModalEdicionId: number | null = null;
@@ -258,11 +262,6 @@ export class EditComponent implements OnInit {
     comentariosDelPedido: { origen: string; comentario: string; fecha?: string }[] = [];
     displayComentariosPedidoDialog = false;
     imagenControl = new FormControl('');
-
-    // Modal de edición de referencia (inline desde pedido)
-    showReferenciaEditModal = false;
-    editReferenciaId: number | null = null;
-    editReferenciaIndex: number = -1;
 
     estadosOptions = [
         // TODO: Rehabilitar cuando se active el estado Borrador
@@ -799,6 +798,11 @@ export class EditComponent implements OnInit {
     private loadContactos(terceroId: number): void {
         this.contactoService.getAll({ tercero_id: terceroId }).subscribe({
             next: (response) => {
+                this.contactosDetalle = response.data.map((c: { id: number; telefono?: string | null; email?: string | null }) => ({
+                    id: c.id,
+                    telefono: c.telefono,
+                    email: c.email
+                }));
                 this.contactos = response.data.map((c: any) => ({
                     label: `${c.nombre}${c.cargo ? ' - ' + c.cargo : ''}`,
                     value: c.id
@@ -860,6 +864,7 @@ export class EditComponent implements OnInit {
                 this.maquinas = [];
                 this.maquinasList = [];
                 this.contactos = [];
+                this.contactosDetalle = [];
                 this.pedidoForm.patchValue({ maquina_id: null, contacto_id: null }, { emitEvent: false });
             }
         });
@@ -876,17 +881,7 @@ export class EditComponent implements OnInit {
      * Carga datos iniciales para los selects
      */
     private loadInitialData(): void {
-        // Cargar terceros (clientes)
-        this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
-            next: (response) => {
-                this.terceros = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                }));
-                this.tercerosOriginal = [...this.terceros];
-            }
-        });
-
+        this.refreshTercerosOptions();
         // Cargar sistemas y enriquecer para búsqueda flexible
         this.sistemaService.getAll({ per_page: 100, include: 'listas' }).subscribe({
             next: (response) => {
@@ -2908,27 +2903,120 @@ export class EditComponent implements OnInit {
         }
     }
 
-    // ── Modal edición de referencia (inline desde pedido) ──
-
-    abrirEditarReferenciaPedido(index: number): void {
-        const row = this.referenciasFormArray.at(index);
-        const refId = row?.get('referencia_id')?.value;
-        if (!refId) return;
-        this.editReferenciaIndex = index;
-        this.editReferenciaId = typeof refId === 'number' ? refId : parseInt(String(refId), 10);
-        this.showReferenciaEditModal = true;
+    /**
+     * Abre el modal de edición de cliente (mismo wizard de 4 pasos que en creación de pedido).
+     */
+    abrirModalEditarCliente(): void {
+        const terceroId = this.pedidoForm.get('tercero_id')?.value as number | null;
+        if (!terceroId) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Sin cliente',
+                detail: 'Seleccione un cliente antes de editarlo.'
+            });
+            return;
+        }
+        this.terceroToEdit = { id: terceroId } as Tercero;
+        this.displayEditTerceroDialog = true;
     }
 
-    onReferenciaEditVisibleChange(visible: boolean): void {
-        this.showReferenciaEditModal = visible;
+    onTerceroModalVisibleChange(visible: boolean): void {
+        this.displayEditTerceroDialog = visible;
         if (!visible) {
-            this.editReferenciaId = null;
-            this.editReferenciaIndex = -1;
+            this.terceroToEdit = null;
         }
+    }
+
+    onTerceroUpdated(tercero: Tercero): void {
+        this.displayEditTerceroDialog = false;
+        this.terceroToEdit = null;
+        this.refreshTercerosOptions();
+
+        const pedido = this.pedidoResponse();
+        if (pedido && pedido.tercero_id === tercero.id) {
+            this.pedidoResponse.set({
+                ...pedido,
+                tercero: {
+                    ...pedido.tercero,
+                    ...tercero
+                } as Pedido['tercero']
+            });
+        }
+
+        if (this.pedidoForm.get('tercero_id')?.value === tercero.id) {
+            this.loadContactos(tercero.id);
+        }
+    }
+
+    private refreshTercerosOptions(): void {
+        this.terceroService.list({ per_page: 100, tipo: 'Cliente' }).subscribe({
+            next: (response) => {
+                this.terceros = response.data.map((t) => ({
+                    label: t.nombre || `Tercero ${t.id}`,
+                    value: t.id,
+                    telefono: t.telefono ?? '',
+                    email: t.email ?? ''
+                }));
+                this.tercerosOriginal = [...this.terceros];
+            }
+        });
     }
 
     get currentTerceroInfo(): any {
         return this.pedidoResponse()?.tercero || null;
+    }
+
+    /** Teléfono del contacto seleccionado o del cliente, para enlace wa.me */
+    get telefonoClienteWhatsApp(): string | undefined {
+        const contactoId = this.pedidoForm.get('contacto_id')?.value as number | null;
+        if (contactoId) {
+            const contacto = this.contactosDetalle.find((c) => c.id === contactoId);
+            const telefonoContacto = contacto?.telefono?.trim();
+            if (telefonoContacto) {
+                return telefonoContacto;
+            }
+        }
+
+        const pedido = this.pedidoResponse();
+        if (pedido?.contacto?.telefono?.trim() && (!contactoId || pedido.contacto.id === contactoId)) {
+            return pedido.contacto.telefono.trim();
+        }
+
+        const terceroId = this.pedidoForm.get('tercero_id')?.value as number | null;
+        if (terceroId) {
+            const tercero = this.terceros.find((t) => t.value === terceroId) as { telefono?: string } | undefined;
+            if (tercero?.telefono?.trim()) {
+                return tercero.telefono.trim();
+            }
+        }
+
+        return pedido?.tercero?.telefono?.trim() || undefined;
+    }
+
+    get emailCliente(): string | undefined {
+        const contactoId = this.pedidoForm.get('contacto_id')?.value as number | null;
+        if (contactoId) {
+            const contacto = this.contactosDetalle.find((c) => c.id === contactoId);
+            const emailContacto = contacto?.email?.trim();
+            if (emailContacto) {
+                return emailContacto;
+            }
+        }
+
+        const pedido = this.pedidoResponse();
+        if (pedido?.contacto?.email?.trim() && (!contactoId || pedido.contacto.id === contactoId)) {
+            return pedido.contacto.email.trim();
+        }
+
+        const terceroId = this.pedidoForm.get('tercero_id')?.value as number | null;
+        if (terceroId) {
+            const tercero = this.terceros.find((t) => t.value === terceroId) as { email?: string } | undefined;
+            if (tercero?.email?.trim()) {
+                return tercero.email.trim();
+            }
+        }
+
+        return pedido?.tercero?.email?.trim() || undefined;
     }
 
     sendEmail(email: string | undefined): void {
@@ -2941,24 +3029,12 @@ export class EditComponent implements OnInit {
         if (phone) {
             const cleanPhone = phone.replace(/\D/g, '');
             window.open(`https://wa.me/${cleanPhone}`, '_blank');
+            return;
         }
-    }
-
-    onReferenciaActualizada(ref: any): void {
-        if (this.editReferenciaIndex >= 0) {
-            const row = this.referenciasFormArray.at(this.editReferenciaIndex);
-            if (row) {
-                row.patchValue(
-                    {
-                        definicion: ref.referencia || row.get('definicion')?.value
-                    },
-                    { emitEvent: false }
-                );
-            }
-        }
-        this.showReferenciaEditModal = false;
-        this.editReferenciaId = null;
-        this.editReferenciaIndex = -1;
-        this.messageService.add({ severity: 'success', summary: 'Referencia actualizada', detail: `La referencia ${ref.referencia} ha sido actualizada en el catálogo.` });
+        this.messageService.add({
+            severity: 'warn',
+            summary: 'Sin teléfono',
+            detail: 'No hay número de teléfono registrado para el cliente o contacto seleccionado.'
+        });
     }
 }

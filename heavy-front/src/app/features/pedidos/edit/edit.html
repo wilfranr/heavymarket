@@ -164,14 +164,23 @@
                     <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
                         <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del Cliente</span>
                         <div class="flex items-center gap-1">
-                            <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail(currentTerceroInfo?.email)" [disabled]="!currentTerceroInfo?.email" pTooltip="Enviar correo"></p-button>
+                            <p-button
+                                icon="pi pi-pencil"
+                                [rounded]="true"
+                                [text]="true"
+                                severity="warn"
+                                (onClick)="abrirModalEditarCliente()"
+                                [disabled]="!pedidoForm.get('tercero_id')?.value"
+                                pTooltip="Editar cliente"
+                            ></p-button>
+                            <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail(emailCliente)" [disabled]="!emailCliente" pTooltip="Enviar correo"></p-button>
                             <p-button
                                 icon="pi pi-whatsapp"
                                 [rounded]="true"
                                 [text]="true"
                                 severity="success"
-                                (onClick)="sendWhatsApp(pedidoResponse()?.contacto?.telefono || currentTerceroInfo?.telefono)"
-                                [disabled]="!(pedidoResponse()?.contacto?.telefono || currentTerceroInfo?.telefono)"
+                                (onClick)="sendWhatsApp(telefonoClienteWhatsApp)"
+                                [disabled]="!telefonoClienteWhatsApp"
                                 pTooltip="Enviar WhatsApp"
                             ></p-button>
                         </div>
@@ -251,7 +260,7 @@
                         <div class="w-[18%]">Sistema <span class="text-red-400">*</span></div>
                         <div class="w-[18%]">Tipo de artículo <span class="text-red-400">*</span></div>
                         <div class="w-[100px]">Cantidad <span class="text-red-400">*</span></div>
-                        <div class="flex-1">Referencia <span class="text-red-400">*</span></div>
+                        <div class="flex-1">Referencia</div>
                         <div class="w-[180px] text-right pr-4">Acciones</div>
                     </div>
 
@@ -356,21 +365,7 @@
                             </div>
 
                             <!-- Actions -->
-                            <div class="w-[210px] flex gap-3 justify-end pt-1 relative">
-                                <!-- Editar referencia en catálogo -->
-                                <button
-                                    type="button"
-                                    class="action-btn-circle"
-                                    [class.opacity-40]="!referencia.get('referencia_id')?.value"
-                                    [class.cursor-not-allowed]="!referencia.get('referencia_id')?.value"
-                                    [disabled]="!referencia.get('referencia_id')?.value"
-                                    (click)="abrirEditarReferenciaPedido($index)"
-                                    pTooltip="Editar referencia en catálogo"
-                                    tooltipPosition="top"
-                                >
-                                    <i class="pi pi-pencil text-lg"></i>
-                                </button>
-
+                            <div class="w-[160px] flex gap-3 justify-end pt-1 relative">
                                 <button type="button" class="action-btn-circle" pTooltip="Comentar" (click)="abrirDialogoComentario($index)" tooltipPosition="top">
                                     <i class="pi pi-comments text-lg"></i>
                                 </button>
@@ -837,4 +832,13 @@
 </p-dialog>
 
 <!-- Modal Edición de Referencia (inline desde pedido) -->
-<app-referencia-edit-modal [visible]="showReferenciaEditModal" (visibleChange)="onReferenciaEditVisibleChange($event)" [referenciaId]="editReferenciaId" title="Editar referencia" (onReferenciaUpdated)="onReferenciaActualizada($event)" />
+
+@if (displayEditTerceroDialog) {
+<app-tercero-create-modal
+    [visible]="displayEditTerceroDialog"
+    (visibleChange)="onTerceroModalVisibleChange($event)"
+    [terceroToEdit]="terceroToEdit"
+    tipoTercero="Cliente"
+    (onTerceroCreated)="onTerceroUpdated($event)"
+></app-tercero-create-modal>
+}

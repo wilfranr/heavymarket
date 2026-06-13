@@ -1,4 +1,13 @@
-<p-dialog header="Crear Nuevo Tercero" [(visible)]="visible" [modal]="true" [style]="{ width: '80vw', maxWidth: '1000px' }" [draggable]="false" [resizable]="false" (onHide)="closeDialog()">
+<p-dialog
+    [header]="isViewMode ? 'Ver Tercero' : terceroToEdit ? 'Editar Tercero' : 'Crear Nuevo Tercero'"
+    [(visible)]="visible"
+    [modal]="true"
+    [style]="{ width: '80vw', maxWidth: '1000px' }"
+    [draggable]="false"
+    [resizable]="false"
+    (onHide)="closeDialog()"
+    styleClass="tercero-wizard-dialog"
+>
     <!-- Wrapper for Theme Classes -->
     <div [ngClass]="activeTheme">
         <!-- Wizard Steps Indicator -->
@@ -11,8 +20,8 @@
             @if (activeIndex === 0) {
                 <div class="animate-fade-in">
                     <!-- Tipo de Tercero Selector -->
-                    <div class="mb-6 flex justify-center">
-                        <p-selectButton [options]="tiposTerceroOptions" formControlName="tipo" optionLabel="label" optionValue="value">
+                    <div class="mb-6 flex justify-center tercero-tipo-selector">
+                        <p-selectButton [options]="tiposTerceroOptions" formControlName="tipo" optionLabel="label" optionValue="value" styleClass="w-full sm:w-auto">
                             <ng-template let-item pTemplate="item">
                                 <span [class]="item.styleClass">{{ item.label }}</span>
                             </ng-template>
@@ -21,40 +30,40 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="col-span-1 md:col-span-1">
-                            <label for="nombre" class="block mb-2 font-semibold">Nombre<span class="text-red-500">*</span></label>
-                            <input id="nombre" type="text" pInputText formControlName="nombre" class="w-full" />
+                            <label for="nombre" [class]="fieldLabelClass">Nombre<span class="text-red-500">*</span></label>
+                            <input id="nombre" type="text" pInputText formControlName="nombre" [class]="fieldInputClass" />
                         </div>
 
                         <div>
-                            <label for="tipo_documento" class="block mb-2 font-semibold">Tipo de Documento<span class="text-red-500">*</span></label>
-                            <p-select id="tipo_documento" formControlName="tipo_documento" [options]="tiposDocumento" styleClass="w-full" [filter]="true" appendTo="body"></p-select>
+                            <label for="tipo_documento" [class]="fieldLabelClass">Tipo de Documento<span class="text-red-500">*</span></label>
+                            <p-select id="tipo_documento" formControlName="tipo_documento" [options]="tiposDocumento" [styleClass]="fieldSelectClass" [filter]="true" appendTo="body"></p-select>
                         </div>
 
                         <div>
-                            <label for="numero_documento" class="block mb-2 font-semibold">Número de Documento<span class="text-red-500">*</span></label>
-                            <input id="numero_documento" type="text" pInputText formControlName="numero_documento" class="w-full" />
+                            <label for="numero_documento" [class]="fieldLabelClass">Número de Documento<span class="text-red-500">*</span></label>
+                            <input id="numero_documento" type="text" pInputText formControlName="numero_documento" [class]="fieldInputClass" />
                         </div>
 
                         <!-- DV -->
                         @if (isNit) {
                             <div>
-                                <label for="dv" class="block mb-2 font-semibold">Dígito Verificador</label>
-                                <input id="dv" type="text" pInputText formControlName="dv" class="w-full text-center" maxlength="1" />
+                                <label for="dv" [class]="fieldLabelClass">Dígito Verificador</label>
+                                <input id="dv" type="text" pInputText formControlName="dv" [class]="fieldInputClass + ' text-center'" maxlength="1" />
                             </div>
                         }
 
                         <div>
-                            <label for="telefono" class="block mb-2 font-semibold">Teléfono<span class="text-red-500">*</span></label>
-                            <input id="telefono" type="text" pInputText formControlName="telefono" class="w-full" />
+                            <label for="telefono" [class]="fieldLabelClass">Teléfono<span class="text-red-500">*</span></label>
+                            <input id="telefono" type="text" pInputText formControlName="telefono" [class]="fieldInputClass" />
                         </div>
 
                         <div>
-                            <label for="email" class="block mb-2 font-semibold">Correo Electrónico</label>
-                            <input id="email" type="email" pInputText formControlName="email" class="w-full" />
+                            <label for="email" [class]="fieldLabelClass">Correo Electrónico</label>
+                            <input id="email" type="email" pInputText formControlName="email" [class]="fieldInputClass" />
                         </div>
 
                         <div>
-                            <label for="forma_pago" class="block mb-2 font-semibold">Forma de Pago</label>
+                            <label for="forma_pago" [class]="fieldLabelClass">Forma de Pago</label>
                             <p-select
                                 id="forma_pago"
                                 formControlName="forma_pago"
@@ -62,7 +71,7 @@
                                 optionLabel="label"
                                 optionValue="value"
                                 placeholder="Seleccione una opción"
-                                styleClass="w-full"
+                                [styleClass]="fieldSelectClass"
                                 [filter]="true"
                                 filterBy="label"
                                 appendTo="body"
@@ -71,18 +80,18 @@
 
                         @if (isCliente) {
                             <div>
-                                <label for="email_factura_electronica" class="block mb-2 font-semibold">Correo Factura Electrónica</label>
-                                <input id="email_factura_electronica" type="email" pInputText formControlName="email_factura_electronica" class="w-full" />
+                                <label for="email_factura_electronica" [class]="fieldLabelClass">Correo Factura Electrónica</label>
+                                <input id="email_factura_electronica" type="email" pInputText formControlName="email_factura_electronica" [class]="fieldInputClass" />
                             </div>
                         } @else {
                             <div class="hidden md:block"></div>
                         }
 
                         <div>
-                            <label for="sitio_web" class="block mb-2 font-semibold">Sitio Web</label>
-                            <p-inputGroup>
+                            <label for="sitio_web" [class]="fieldLabelClass">Sitio Web</label>
+                            <p-inputGroup class="w-full tercero-sitio-web-group">
                                 <p-inputGroupAddon>https://</p-inputGroupAddon>
-                                <input id="sitio_web" type="text" pInputText formControlName="sitio_web" placeholder="www.sitio.com" />
+                                <input id="sitio_web" type="text" pInputText formControlName="sitio_web" placeholder="www.sitio.com" [class]="fieldInputClass + ' !rounded-none !border-x-0'" />
                                 <p-inputGroupAddon>
                                     <i class="pi pi-globe"></i>
                                 </p-inputGroupAddon>
@@ -92,9 +101,9 @@
                         <!-- Maquina (Solo clientes) -->
                         @if (isCliente) {
                             <div class="col-span-1 md:col-span-2">
-                                <label for="maquina_id" class="block mb-2 font-semibold">Máquina</label>
+                                <label for="maquina_id" [class]="fieldLabelClass">Máquina</label>
                                 <div class="flex gap-2">
-                                    <p-select id="maquina_id" formControlName="maquina_id" [options]="maquinas()" [filter]="true" filterBy="label" placeholder="Seleccione una opción" styleClass="w-full flex-1" appendTo="body"></p-select>
+                                    <p-select id="maquina_id" formControlName="maquina_id" [options]="maquinas()" [filter]="true" filterBy="label" placeholder="Seleccione una opción" [styleClass]="fieldSelectClass + ' flex-1'" appendTo="body"></p-select>
                                     <p-button icon="pi pi-plus" (onClick)="openCreateMaquinaDialog()" severity="secondary"></p-button>
                                 </div>
                             </div>
@@ -103,11 +112,11 @@
 
                     <!-- Fabricantes y Categorías Comerciales (Solo Proveedor) -->
                     @if (isProveedor) {
-                        <div class="mt-6 border border-gray-700 rounded-lg p-4 bg-white/5">
-                            <h3 class="text-sm font-bold mb-4">Fabricantes y Categorías Comerciales</h3>
+                        <div [class]="sectionCardClass + ' mt-6'">
+                            <h3 class="text-sm font-bold mb-4 text-gray-900 dark:text-white">Fabricantes y Categorías Comerciales</h3>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="fabricante_id" class="block mb-2 font-semibold text-sm">Fabricantes</label>
+                                    <label for="fabricante_id" [class]="fieldLabelClass + ' text-sm'">Fabricantes</label>
                                     <div class="flex gap-2">
                                         <p-multiselect
                                             id="fabricante_id"
@@ -116,7 +125,7 @@
                                             optionLabel="label"
                                             optionValue="value"
                                             placeholder="Seleccione una opción"
-                                            styleClass="w-full flex-1"
+                                            [styleClass]="fieldSelectClass + ' flex-1'"
                                             display="chip"
                                             [maxSelectedLabels]="100"
                                             [filter]="true"
@@ -127,7 +136,7 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label for="sistema_id" class="block mb-2 font-semibold text-sm">Sistema</label>
+                                    <label for="sistema_id" [class]="fieldLabelClass + ' text-sm'">Sistema</label>
                                     <div class="flex gap-2">
                                         <p-multiselect
                                             id="sistema_id"
@@ -136,7 +145,7 @@
                                             optionLabel="label"
                                             optionValue="value"
                                             placeholder="Seleccione una opción"
-                                            styleClass="w-full flex-1"
+                                            [styleClass]="fieldSelectClass + ' flex-1'"
                                             display="chip"
                                             [maxSelectedLabels]="100"
                                             [filter]="true"
@@ -157,12 +166,12 @@
                 <div class="animate-fade-in pt-4">
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div class="col-span-1 md:col-span-3">
-                            <label for="direccion" class="block mb-2 font-semibold">Dirección<span class="text-red-500">*</span></label>
-                            <input id="direccion" type="text" pInputText formControlName="direccion" class="w-full" placeholder="Ingrese la dirección completa" />
+                            <label for="direccion" [class]="fieldLabelClass">Dirección<span class="text-red-500">*</span></label>
+                            <input id="direccion" type="text" pInputText formControlName="direccion" [class]="fieldInputClass" placeholder="Ingrese la dirección completa" />
                         </div>
 
                         <div>
-                            <label for="country_id" class="block mb-2 font-semibold">País</label>
+                            <label for="country_id" [class]="fieldLabelClass">País</label>
                             <p-select
                                 id="country_id"
                                 formControlName="country_id"
@@ -172,14 +181,14 @@
                                 [filter]="true"
                                 filterBy="name"
                                 placeholder="Seleccione una opción"
-                                styleClass="w-full"
+                                [styleClass]="fieldSelectClass"
                                 (onChange)="onPaisChange()"
                                 appendTo="body"
                             >
                             </p-select>
                         </div>
                         <div>
-                            <label for="state_id" class="block mb-2 font-semibold">Departamento/Estado</label>
+                            <label for="state_id" [class]="fieldLabelClass">Departamento/Estado</label>
                             <p-select
                                 id="state_id"
                                 formControlName="state_id"
@@ -189,7 +198,7 @@
                                 [filter]="true"
                                 filterBy="name"
                                 placeholder="Seleccione una opción"
-                                styleClass="w-full"
+                                [styleClass]="fieldSelectClass"
                                 (onChange)="onDepartamentoChange()"
                                 [disabled]="!createTerceroForm.get('country_id')?.value"
                                 appendTo="body"
@@ -197,7 +206,7 @@
                             </p-select>
                         </div>
                         <div>
-                            <label for="city_id" class="block mb-2 font-semibold">Ciudad</label>
+                            <label for="city_id" [class]="fieldLabelClass">Ciudad</label>
                             <p-select
                                 id="city_id"
                                 formControlName="city_id"
@@ -207,7 +216,7 @@
                                 [filter]="true"
                                 filterBy="name"
                                 placeholder="Seleccione una opción"
-                                styleClass="w-full"
+                                [styleClass]="fieldSelectClass"
                                 [disabled]="!createTerceroForm.get('state_id')?.value && !createTerceroForm.get('country_id')?.value"
                                 appendTo="body"
                             >
@@ -221,17 +230,17 @@
             @if (activeIndex === 2) {
                 <div class="animate-fade-in pt-4">
                     <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold">Contactos del Tercero</h3>
+                        <h3 class="text-lg font-bold text-gray-900 dark:text-white">Contactos del Tercero</h3>
                         <p-button label="Agregar Contacto" icon="pi pi-plus" size="small" (onClick)="addContacto()" [disabled]="isViewMode"></p-button>
                     </div>
 
                     <div formArrayName="contactos" class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
                         @for (contacto of contactos.controls; track contacto; let i = $index) {
-                            <div [formGroupName]="i" class="border border-gray-700 rounded-lg p-4 bg-white/5 relative group">
+                            <div [formGroupName]="i" [class]="sectionCardClass + ' relative group'">
                                 <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
                                     <!-- Principal Toggle -->
                                     <div class="md:col-span-1 flex flex-col items-center justify-center">
-                                        <label class="text-xs mb-1 text-gray-400">Principal</label>
+                                        <label class="text-xs mb-1 text-gray-500 dark:text-slate-400">Principal</label>
                                         <p-button
                                             [icon]="contacto.get('principal')?.value ? 'pi pi-star-fill' : 'pi pi-star'"
                                             [severity]="contacto.get('principal')?.value ? 'warn' : 'secondary'"
@@ -243,23 +252,23 @@
                                     </div>
 
                                     <div class="md:col-span-3">
-                                        <label class="block mb-1 text-xs font-semibold">Nombre<span class="text-red-500">*</span></label>
-                                        <input pInputText formControlName="nombre" class="w-full p-filled p-inputtext-sm" placeholder="Nombre completo" />
+                                        <label [class]="fieldLabelClass + ' !mb-1 !text-xs'">Nombre<span class="text-red-500">*</span></label>
+                                        <input pInputText formControlName="nombre" [class]="fieldInputClass + ' !text-sm'" placeholder="Nombre completo" />
                                     </div>
 
                                     <div class="md:col-span-2">
-                                        <label class="block mb-1 text-xs font-semibold">Cargo</label>
-                                        <input pInputText formControlName="cargo" class="w-full p-filled p-inputtext-sm" placeholder="Ej: Gerente" />
+                                        <label [class]="fieldLabelClass + ' !mb-1 !text-xs'">Cargo</label>
+                                        <input pInputText formControlName="cargo" [class]="fieldInputClass + ' !text-sm'" placeholder="Ej: Gerente" />
                                     </div>
 
                                     <div class="md:col-span-3">
-                                        <label class="block mb-1 text-xs font-semibold">Email</label>
-                                        <input pInputText formControlName="email" class="w-full p-filled p-inputtext-sm" placeholder="correo@ejemplo.com" />
+                                        <label [class]="fieldLabelClass + ' !mb-1 !text-xs'">Email</label>
+                                        <input pInputText formControlName="email" [class]="fieldInputClass + ' !text-sm'" placeholder="correo@ejemplo.com" />
                                     </div>
 
                                     <div class="md:col-span-2">
-                                        <label class="block mb-1 text-xs font-semibold">Teléfono</label>
-                                        <input pInputText formControlName="telefono" class="w-full p-filled p-inputtext-sm" placeholder="Número" />
+                                        <label [class]="fieldLabelClass + ' !mb-1 !text-xs'">Teléfono</label>
+                                        <input pInputText formControlName="telefono" [class]="fieldInputClass + ' !text-sm'" placeholder="Número" />
                                     </div>
 
                                     <!-- Remove Button -->
@@ -273,9 +282,9 @@
                                 }
                             </div>
                         } @empty {
-                            <div class="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg bg-white/5">
-                                <i class="pi pi-users text-4xl text-gray-500 mb-2"></i>
-                                <p class="text-gray-400">No hay contactos agregados.</p>
+                            <div class="text-center py-8 border-2 border-dashed border-gray-300 dark:border-slate-700 rounded-lg bg-gray-50 dark:bg-white/5">
+                                <i class="pi pi-users text-4xl text-gray-400 dark:text-slate-500 mb-2"></i>
+                                <p class="text-gray-500 dark:text-slate-400">No hay contactos agregados.</p>
                                 <p-button label="Agregar el primer contacto" [text]="true" (onClick)="addContacto()" [disabled]="isViewMode"></p-button>
                             </div>
                         }
@@ -288,8 +297,8 @@
                 <div class="animate-fade-in pt-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- RUT -->
-                        <div class="border border-gray-700 rounded p-4 bg-white/5">
-                            <label class="block mb-3 font-semibold">Adjuntar RUT</label>
+                        <div [class]="sectionCardClass">
+                            <label [class]="fieldLabelClass">Adjuntar RUT</label>
                             <p-fileUpload
                                 mode="advanced"
                                 [showUploadButton]="false"
@@ -301,37 +310,37 @@
                                 invalidFileSizeMessageDetail="Máximo 5MB"
                             >
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('rut')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('rut')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
 
                         <!-- Certificacion Bancaria -->
-                        <div class="border border-gray-700 rounded p-4 bg-white/5">
-                            <label class="block mb-3 font-semibold">Adjuntar Certificación Bancaria</label>
+                        <div [class]="sectionCardClass">
+                            <label [class]="fieldLabelClass">Adjuntar Certificación Bancaria</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'certificacion_bancaria')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('certificacion_bancaria')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('certificacion_bancaria')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
 
                         <!-- Camara Comercio -->
-                        <div class="border border-gray-700 rounded p-4 bg-white/5">
-                            <label class="block mb-3 font-semibold">Adjuntar Cámara de Comercio</label>
+                        <div [class]="sectionCardClass">
+                            <label [class]="fieldLabelClass">Adjuntar Cámara de Comercio</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'camara_comercio')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('camara_comercio')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('camara_comercio')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
 
                         <!-- Cedula Rep Legal -->
-                        <div class="border border-gray-700 rounded p-4 bg-white/5">
-                            <label class="block mb-3 font-semibold">Adjuntar Cédula Representante Legal</label>
+                        <div [class]="sectionCardClass">
+                            <label [class]="fieldLabelClass">Adjuntar Cédula Representante Legal</label>
                             <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'cedula_representante_legal')">
                                 <ng-template pTemplate="content">
-                                    <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('cedula_representante_legal')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
+                                    <div class="text-center text-sm text-gray-500 dark:text-slate-400 py-4" *ngIf="!createTerceroForm.get('cedula_representante_legal')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
                                 </ng-template>
                             </p-fileUpload>
                         </div>
@@ -340,7 +349,7 @@
             }
 
             <!-- Footer Actions -->
-            <div class="flex justify-between items-center mt-8 border-t border-gray-700 pt-4">
+            <div class="flex justify-between items-center mt-8 pt-4" [class]="footerDividerClass">
                 <!-- Left Button (Previous) -->
                 <div>
                     @if (activeIndex > 0) {
@@ -357,8 +366,12 @@
                     }
 
                     @if (activeIndex === steps.length - 1) {
+                        @if (!terceroToEdit && !isViewMode) {
                         <p-button label="Crear y crear otro" severity="secondary" (onClick)="saveTercero(true)" [loading]="loadingTercero"></p-button>
-                        <p-button label="Crear" (onClick)="saveTercero(false)" [loading]="loadingTercero"></p-button>
+                        }
+                        @if (!isViewMode) {
+                        <p-button [label]="terceroToEdit ? 'Guardar cambios' : 'Crear'" (onClick)="saveTercero(false)" [loading]="loadingTercero"></p-button>
+                        }
                     }
                 </div>
             </div>

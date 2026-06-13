@@ -45,110 +45,18 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
         MaquinaCreateModalComponent
     ],
     templateUrl: './tercero-create-modal.component.html',
-    styles: [
-        `
-            :host ::ng-deep .p-panel .p-panel-header {
-                padding: 0.75rem 1rem;
-                background: rgba(255, 255, 255, 0.05);
-                border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            }
-            :host ::ng-deep .p-panel .p-panel-content {
-                padding: 1rem;
-                background: transparent;
-            }
-            :host ::ng-deep .p-steps .p-steps-item .p-menuitem-link {
-                background: transparent;
-            }
-
-            /* --- WIZARD STEPS OVERRIDES --- */
-
-            /* CLIENTE (Amarillo) */
-            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-number {
-                background: #eab308 !important;
-                color: #000 !important;
-            }
-            :host ::ng-deep .theme-cliente .p-steps .p-steps-item.p-highlight .p-steps-title {
-                color: #eab308 !important;
-                font-weight: bold;
-            }
-
-            /* PROVEEDOR (Azul) */
-            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-number {
-                background: #3b82f6 !important;
-                color: #fff !important;
-            }
-            :host ::ng-deep .theme-proveedor .p-steps .p-steps-item.p-highlight .p-steps-title {
-                color: #3b82f6 !important;
-                font-weight: bold;
-            }
-
-            /* AMBOS (Verde) */
-            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-number {
-                background: #22c55e !important;
-                color: #fff !important;
-            }
-            :host ::ng-deep .theme-ambos .p-steps .p-steps-item.p-highlight .p-steps-title {
-                color: #22c55e !important;
-                font-weight: bold;
-            }
-
-            /* --- BUTTON OVERRIDES --- */
-            /* Only target primary buttons (not secondary, text, etc) */
-
-            /* CLIENTE */
-            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-                background: #eab308 !important;
-                border-color: #eab308 !important;
-                color: #000 !important;
-            }
-            /* Focus ring for accessibility/aesthetics match */
-            :host ::ng-deep .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
-                box-shadow:
-                    0 0 0 2px #18181b,
-                    0 0 0 4px #eab308 !important;
-            }
-
-            /* PROVEEDOR */
-            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-                background: #3b82f6 !important;
-                border-color: #3b82f6 !important;
-                color: #fff !important;
-            }
-            :host ::ng-deep .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
-                box-shadow:
-                    0 0 0 2px #18181b,
-                    0 0 0 4px #3b82f6 !important;
-            }
-
-            /* AMBOS */
-            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
-                background: #22c55e !important;
-                border-color: #22c55e !important;
-                color: #fff !important;
-            }
-            :host ::ng-deep .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus {
-                box-shadow:
-                    0 0 0 2px #18181b,
-                    0 0 0 4px #22c55e !important;
-            }
-
-            /* SelectButton Text Colors - Helper classes */
-            .text-cliente {
-                color: #eab308;
-                font-weight: bold;
-            }
-            .text-proveedor {
-                color: #3b82f6;
-                font-weight: bold;
-            }
-            .text-ambos {
-                color: #22c55e;
-                font-weight: bold;
-            }
-        `
-    ]
+    styleUrl: './tercero-create-modal.component.scss'
 })
 export class TerceroCreateModalComponent implements OnInit, OnChanges {
+    readonly fieldLabelClass = 'block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-100';
+    readonly fieldInputClass =
+        'w-full !bg-gray-100 dark:!bg-[#2A2D36] !border !border-gray-300 dark:!border-slate-600/60 !text-gray-900 dark:!text-white rounded-md';
+    readonly fieldSelectClass =
+        'w-full !bg-gray-100 dark:!bg-[#2A2D36] !border !border-gray-300 dark:!border-slate-600/60 !text-gray-900 dark:!text-white';
+    readonly sectionCardClass =
+        'rounded-lg border border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-white/5';
+    readonly footerDividerClass = 'border-t border-gray-200 dark:border-slate-700';
+
     private readonly fb = inject(FormBuilder);
     private readonly terceroService = inject(TerceroService);
     private readonly ubicacionService = inject(UbicacionService);

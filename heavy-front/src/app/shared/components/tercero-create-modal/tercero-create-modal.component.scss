@@ -1,0 +1,176 @@
+/* PrimeNG Dialog se teleporta fuera del :host; usar ::ng-deep con styleClass del dialog. */
+
+::ng-deep .tercero-wizard-dialog {
+    /* --- Steps (PrimeNG 21) --- */
+    .p-steps-item::before {
+        border-top-color: var(--p-content-border-color) !important;
+    }
+
+    .p-steps-item-number {
+        background: var(--p-content-background) !important;
+        border-color: var(--p-content-border-color) !important;
+        color: var(--p-text-muted-color) !important;
+    }
+
+    .p-steps-item-label {
+        color: var(--p-text-muted-color) !important;
+    }
+
+    .theme-cliente .p-steps-item.p-steps-item-active .p-steps-item-number {
+        background: #eab308 !important;
+        border-color: #eab308 !important;
+        color: #000 !important;
+    }
+
+    .theme-cliente .p-steps-item.p-steps-item-active .p-steps-item-label {
+        color: #eab308 !important;
+        font-weight: 700;
+    }
+
+    .theme-proveedor .p-steps-item.p-steps-item-active .p-steps-item-number {
+        background: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: #fff !important;
+    }
+
+    .theme-proveedor .p-steps-item.p-steps-item-active .p-steps-item-label {
+        color: #3b82f6 !important;
+        font-weight: 700;
+    }
+
+    .theme-ambos .p-steps-item.p-steps-item-active .p-steps-item-number {
+        background: #22c55e !important;
+        border-color: #22c55e !important;
+        color: #fff !important;
+    }
+
+    .theme-ambos .p-steps-item.p-steps-item-active .p-steps-item-label {
+        color: #22c55e !important;
+        font-weight: 700;
+    }
+
+    /* --- SelectButton tipo tercero --- */
+    .p-selectbutton .p-togglebutton {
+        background: var(--p-content-background) !important;
+        border-color: var(--p-content-border-color) !important;
+        color: var(--p-text-muted-color) !important;
+    }
+
+    .p-selectbutton .p-togglebutton .p-togglebutton-content {
+        background: transparent !important;
+        box-shadow: none !important;
+    }
+
+    .p-selectbutton .p-togglebutton:not(.p-togglebutton-checked):hover {
+        background: color-mix(in srgb, var(--p-content-border-color) 30%, var(--p-content-background)) !important;
+    }
+
+    .theme-cliente .p-selectbutton .p-togglebutton.p-togglebutton-checked {
+        background: color-mix(in srgb, #eab308 22%, var(--p-content-background)) !important;
+        border-color: #eab308 !important;
+    }
+
+    .theme-proveedor .p-selectbutton .p-togglebutton.p-togglebutton-checked {
+        background: color-mix(in srgb, #3b82f6 22%, var(--p-content-background)) !important;
+        border-color: #3b82f6 !important;
+    }
+
+    .theme-ambos .p-selectbutton .p-togglebutton.p-togglebutton-checked {
+        background: color-mix(in srgb, #22c55e 22%, var(--p-content-background)) !important;
+        border-color: #22c55e !important;
+    }
+
+    /* --- Campos de formulario --- */
+    .p-inputtext {
+        background: var(--p-content-background) !important;
+        border: 1px solid var(--p-content-border-color) !important;
+        color: var(--p-text-color) !important;
+    }
+
+    .p-select,
+    .p-multiselect {
+        background: var(--p-content-background) !important;
+        border: 1px solid var(--p-content-border-color) !important;
+        color: var(--p-text-color) !important;
+    }
+
+    .p-select-label,
+    .p-multiselect-label {
+        color: var(--p-text-color) !important;
+    }
+
+    .p-inputgroup .p-inputgroupaddon {
+        background: var(--p-content-background) !important;
+        border-color: var(--p-content-border-color) !important;
+        color: var(--p-text-muted-color) !important;
+    }
+
+    .p-inputgroup .p-inputtext {
+        background: var(--p-content-background) !important;
+        border-color: var(--p-content-border-color) !important;
+        color: var(--p-text-color) !important;
+    }
+
+    .p-fileupload {
+        background: transparent;
+        border-color: var(--p-content-border-color);
+    }
+
+    .p-fileupload-content {
+        background: var(--p-content-background);
+        border-color: var(--p-content-border-color);
+        color: var(--p-text-muted-color);
+    }
+
+    /* --- Botones primarios del wizard --- */
+    .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+        background: #eab308 !important;
+        border-color: #eab308 !important;
+        color: #000 !important;
+    }
+
+    .theme-cliente button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus-visible {
+        box-shadow:
+            0 0 0 2px var(--p-surface-ground),
+            0 0 0 4px #eab308 !important;
+    }
+
+    .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+        background: #3b82f6 !important;
+        border-color: #3b82f6 !important;
+        color: #fff !important;
+    }
+
+    .theme-proveedor button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus-visible {
+        box-shadow:
+            0 0 0 2px var(--p-surface-ground),
+            0 0 0 4px #3b82f6 !important;
+    }
+
+    .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined) {
+        background: #22c55e !important;
+        border-color: #22c55e !important;
+        color: #fff !important;
+    }
+
+    .theme-ambos button.p-button:not(.p-button-secondary):not(.p-button-text):not(.p-button-outlined):focus-visible {
+        box-shadow:
+            0 0 0 2px var(--p-surface-ground),
+            0 0 0 4px #22c55e !important;
+    }
+
+    .text-cliente {
+        color: #eab308;
+        font-weight: bold;
+    }
+
+    .text-proveedor {
+        color: #3b82f6;
+        font-weight: bold;
+    }
+
+    .text-ambos {
+        color: #22c55e;
+        font-weight: bold;
+    }
+}
