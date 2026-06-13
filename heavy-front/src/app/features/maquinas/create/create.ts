@@ -18,6 +18,8 @@ import { TextareaModule } from 'primeng/textarea';
 import { PopoverModule } from 'primeng/popover';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
+
 import { createMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { CreateMaquinaDto } from '../../../core/models/maquina.model';
 import { ListaService } from '../../../core/services/lista.service';
@@ -48,7 +50,8 @@ import { Fabricante } from '../../../core/models/fabricante.model';
         PopoverModule,
         TooltipModule,
         ImageUploadComponent,
-        ListaCreateModalComponent
+        ListaCreateModalComponent,
+        AutoFocusDirective
     ],
     providers: [MessageService],
     templateUrl: './create.html'

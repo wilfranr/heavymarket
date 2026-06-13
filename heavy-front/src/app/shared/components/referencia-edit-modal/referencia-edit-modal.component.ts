@@ -19,11 +19,12 @@ import { ArticuloService } from '../../../core/services/articulo.service';
 import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
 import { ArticuloCreateModalComponent } from '../articulo-create-modal/articulo-create-modal.component';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-referencia-edit-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TooltipModule, ArticuloCreateModalComponent],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TooltipModule, ArticuloCreateModalComponent, AutoFocusDirective],
     templateUrl: './referencia-edit-modal.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     providers: [MessageService]

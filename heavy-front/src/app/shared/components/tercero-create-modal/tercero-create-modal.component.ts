@@ -24,6 +24,7 @@ import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model'; // Added import
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
 import { HM_FIELD_INPUT_CLASSES, HM_DIALOG_STYLE_CLASS } from '../../../core/theme/form-field-classes';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-tercero-create-modal',
@@ -43,7 +44,8 @@ import { HM_FIELD_INPUT_CLASSES, HM_DIALOG_STYLE_CLASS } from '../../../core/the
         PanelModule,
         StepsModule,
         FileUploadModule,
-        MaquinaCreateModalComponent
+        MaquinaCreateModalComponent,
+        AutoFocusDirective
     ],
     templateUrl: './tercero-create-modal.component.html',
     styleUrl: './tercero-create-modal.component.scss'

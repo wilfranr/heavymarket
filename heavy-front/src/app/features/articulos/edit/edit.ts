@@ -31,6 +31,7 @@ import { Referencia, UpdateReferenciaDto } from '../../../core/models/referencia
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista, ListaTipo } from '../../../core/models/lista.model';
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
@@ -64,7 +65,8 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
         InputGroupAddonModule,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
-        ImageUploadComponent
+        ImageUploadComponent,
+        AutoFocusDirective
     ],
     providers: [MessageService],
     templateUrl: './edit.html'

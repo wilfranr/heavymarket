@@ -5,6 +5,7 @@
     [style]="{ width: '80vw', maxWidth: '1000px' }"
     [draggable]="false"
     [resizable]="false"
+    [focusOnShow]="false"
     (onHide)="closeDialog()"
     styleClass="hm-dialog tercero-wizard-dialog"
 >
@@ -31,7 +32,7 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div class="col-span-1 md:col-span-1">
                             <label for="nombre" [class]="fieldLabelClass">Nombre<span class="text-red-500">*</span></label>
-                            <input id="nombre" type="text" pInputText formControlName="nombre" [class]="fieldInputClass" />
+                            <input appAutoFocus id="nombre" type="text" pInputText formControlName="nombre" [class]="fieldInputClass" />
                         </div>
 
                         <div>

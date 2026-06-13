@@ -17,6 +17,7 @@ import { TagModule } from 'primeng/tag';
 import { TextareaModule } from 'primeng/textarea';
 import { PopoverModule } from 'primeng/popover';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 import { loadMaquinaById, updateMaquina } from '../../../store/maquinas/actions/maquinas.actions';
 import { selectMaquinaById } from '../../../store/maquinas/selectors/maquinas.selectors';
@@ -33,7 +34,7 @@ import { Fabricante } from '../../../core/models/fabricante.model';
 @Component({
     selector: 'app-maquina-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, TooltipModule, DividerModule, TagModule, TextareaModule, PopoverModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, ToastModule, TooltipModule, DividerModule, TagModule, TextareaModule, PopoverModule, ImageUploadComponent, AutoFocusDirective],
     providers: [MessageService],
     templateUrl: './edit.html'
 })

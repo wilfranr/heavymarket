@@ -52,6 +52,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { Tercero } from '../../../core/models/tercero.model';
 
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 type TipoListaSelectOption = {
     label: string;
@@ -100,7 +101,8 @@ type RowTiposCatalogEntry = {
         ContactoCreateModalComponent,
         MaquinaCreateModalComponent,
         TerceroCreateModalComponent,
-        MaquinaDetailComponent
+        MaquinaDetailComponent,
+        AutoFocusDirective
     ],
     providers: [MessageService],
     templateUrl: './edit.html',

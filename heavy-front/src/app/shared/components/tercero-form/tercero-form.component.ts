@@ -29,6 +29,7 @@ import { ListaService } from '../../../core/services/lista.service';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model';
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-tercero-form',
@@ -51,7 +52,8 @@ import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-cre
         TooltipModule,
         MaquinaCreateModalComponent,
         ToggleSwitchModule,
-        PasswordModule
+        PasswordModule,
+        AutoFocusDirective
     ],
     templateUrl: './tercero-form.component.html',
     styles: [

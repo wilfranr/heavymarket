@@ -20,6 +20,7 @@ import { selectSistemaById } from '../../../store/sistemas/selectors/sistemas.se
 import { Sistema } from '../../../core/models/sistema.model';
 import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaService } from '../../../core/services/lista.service';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de edición de sistema
@@ -27,7 +28,7 @@ import { ListaService } from '../../../core/services/lista.service';
 @Component({
     selector: 'app-sistema-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, MultiSelectModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, MultiSelectModule, ToastModule, DividerModule, ImageUploadComponent, AutoFocusDirective],
     providers: [MessageService],
     templateUrl: './edit.html'
 })

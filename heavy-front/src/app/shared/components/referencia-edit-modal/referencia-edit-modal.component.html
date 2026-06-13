@@ -10,7 +10,7 @@
         <form [formGroup]="referenciaForm" (ngSubmit)="guardar()" class="grid grid-cols-1 gap-4">
             <div class="field">
                 <label for="edit-referencia" class="block text-sm font-medium mb-2">Código / referencia <span class="text-red-500">*</span></label>
-                <input id="edit-referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749" class="w-full" />
+                <input appAutoFocus id="edit-referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749" class="w-full" />
                 @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
                     <small class="text-red-500">El código es obligatorio</small>
                 }

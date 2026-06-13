@@ -15,6 +15,7 @@ import { ImageUploadComponent } from '../../../shared/components/image-upload/im
 
 import { createSistema } from '../../../store/sistemas/actions/sistemas.actions';
 import { CreateSistemaDto } from '../../../core/models/sistema.model';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de creación de sistema
@@ -22,7 +23,7 @@ import { CreateSistemaDto } from '../../../core/models/sistema.model';
 @Component({
     selector: 'app-sistema-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, ToastModule, DividerModule, ImageUploadComponent, AutoFocusDirective],
     providers: [MessageService],
     templateUrl: './create.html'
 })

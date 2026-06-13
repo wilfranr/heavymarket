@@ -32,6 +32,7 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de creación de artículo
@@ -58,6 +59,7 @@ import { FallbackImageDirective } from '../../../core/directives/fallback-image.
         TabsModule,
         TagModule,
         TooltipModule,
+        AutoFocusDirective,
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,

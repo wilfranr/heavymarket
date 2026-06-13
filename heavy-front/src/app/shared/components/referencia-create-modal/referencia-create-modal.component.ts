@@ -19,11 +19,12 @@ import { Lista } from '../../../core/models/lista.model';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { CreateReferenciaDto } from '../../../core/models/referencia.model';
 import { Articulo } from '../../../core/models/articulo.model';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-referencia-create-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TagModule, TooltipModule],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, InputGroupModule, InputGroupAddonModule, TagModule, TooltipModule, AutoFocusDirective],
     templateUrl: './referencia-create-modal.component.html',
     styles: [],
     providers: [MessageService]

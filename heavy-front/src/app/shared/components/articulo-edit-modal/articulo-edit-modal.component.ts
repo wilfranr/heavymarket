@@ -23,6 +23,7 @@ import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-mo
 import { ReferenciaCreateModalComponent } from '../referencia-create-modal/referencia-create-modal.component';
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
 import { ImageUploadComponent } from '../image-upload/image-upload.component';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-articulo-edit-modal',
@@ -45,7 +46,8 @@ import { ImageUploadComponent } from '../image-upload/image-upload.component';
         FallbackImageDirective,
         ListaCreateModalComponent,
         ReferenciaCreateModalComponent,
-        ImageUploadComponent
+        ImageUploadComponent,
+        AutoFocusDirective
     ],
     providers: [MessageService],
     templateUrl: './articulo-edit-modal.component.html'

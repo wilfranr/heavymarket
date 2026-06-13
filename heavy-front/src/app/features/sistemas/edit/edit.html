@@ -14,7 +14,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="field">
                     <label for="nombre" class="block text-sm font-medium mb-2"> Nombre <span class="text-red-500">*</span> </label>
-                    <input pInputText id="nombre" formControlName="nombre" placeholder="Nombre del sistema" class="w-full" [class.ng-invalid]="sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched" />
+                    <input appAutoFocus pInputText id="nombre" formControlName="nombre" placeholder="Nombre del sistema" class="w-full" [class.ng-invalid]="sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched" />
                     @if (sistemaForm.get('nombre')?.invalid && sistemaForm.get('nombre')?.touched) {
                     <small class="p-error"> @if (sistemaForm.get('nombre')?.errors?.['required']) { El nombre es requerido } @else if (sistemaForm.get('nombre')?.errors?.['maxlength']) { El nombre no puede exceder 255 caracteres } </small>
                     }

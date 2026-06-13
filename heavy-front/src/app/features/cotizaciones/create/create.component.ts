@@ -14,6 +14,7 @@ import { createCotizacion } from '../../../store/cotizaciones/actions/cotizacion
 import { CreateCotizacionDto, CotizacionEstado } from '../../../core/models/cotizacion.model';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { PedidoService } from '../../../core/services/pedido.service';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de creación de cotización
@@ -21,7 +22,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
 @Component({
     selector: 'app-cotizacion-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, AutoFocusDirective],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -31,7 +32,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
                 <div class="grid">
                     <div class="col-12 md:col-6">
                         <label for="pedido_id" class="block mb-2"> Pedido <span class="text-red-500">*</span> </label>
-                        <p-select formControlName="pedido_id" [options]="pedidos" placeholder="Seleccione un pedido" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
+                        <p-select appAutoFocus formControlName="pedido_id" [options]="pedidos" placeholder="Seleccione un pedido" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
                         @if (cotizacionForm.get('pedido_id')?.invalid && cotizacionForm.get('pedido_id')?.touched) {
                             <small class="text-red-500">El pedido es requerido</small>
                         }

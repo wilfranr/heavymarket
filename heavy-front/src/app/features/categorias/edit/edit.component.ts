@@ -14,6 +14,7 @@ import { updateCategoria, loadCategoriaById } from '../../../store/categorias/ac
 import * as CategoriasSelectors from '../../../store/categorias/selectors/categorias.selectors';
 import { UpdateCategoriaDto } from '../../../core/models/categoria.model';
 import { TerceroService } from '../../../core/services/tercero.service';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de edición de categoría
@@ -21,7 +22,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
 @Component({
     selector: 'app-categoria-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, ToastModule, AutoFocusDirective],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -37,7 +38,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
                     <div class="grid">
                         <div class="col-12">
                             <label for="nombre" class="block mb-2">Nombre</label>
-                            <input type="text" formControlName="nombre" pInputText placeholder="Nombre de la categoría" styleClass="w-full" />
+                            <input appAutoFocus type="text" formControlName="nombre" pInputText placeholder="Nombre de la categoría" styleClass="w-full" />
                         </div>
 
                         <div class="col-12">

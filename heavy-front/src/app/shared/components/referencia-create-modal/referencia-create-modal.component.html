@@ -7,7 +7,7 @@
             <!-- Referencia -->
             <div>
                 <label for="referencia" class="block mb-2 font-semibold">Código / Referencia<span class="text-red-500">*</span></label>
-                <input id="referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
+                <input appAutoFocus id="referencia" pInputText formControlName="referencia" placeholder="Ej: 1R-0749, 320/04133..." class="w-full" />
                 @if (referenciaForm.get('referencia')?.touched && referenciaForm.get('referencia')?.invalid) {
                     <small class="text-red-500">El código es requerido</small>
                 }

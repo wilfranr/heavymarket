@@ -47,6 +47,7 @@ import { MaquinaCreateModalComponent } from '../../../shared/components/maquina-
 import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
 import { ContactoCreateModalComponent } from '../../../shared/components/contacto-create-modal/contacto-create-modal.component';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 import { Observable, forkJoin, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -95,9 +96,9 @@ type RowTiposCatalogEntry = {
         ReferenciaEditModalComponent,
         ImageModule,
         GalleriaModule,
-        BadgeModule,
         ConfirmDialogModule,
-        AutoCompleteModule
+        AutoCompleteModule,
+        AutoFocusDirective
     ],
     providers: [MessageService],
     templateUrl: './create.html',

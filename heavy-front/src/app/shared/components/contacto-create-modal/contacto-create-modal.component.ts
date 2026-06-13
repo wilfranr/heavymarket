@@ -11,11 +11,12 @@ import { MessageService } from 'primeng/api';
 import { ContactoService } from '../../../core/services/contacto.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { CreateContactoDto } from '../../../core/models/contacto.model';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 
 @Component({
     selector: 'app-contacto-create-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, ToggleSwitchModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, SelectModule, ToggleSwitchModule, ToastModule, AutoFocusDirective],
     template: `
         <p-dialog [(visible)]="visible" [modal]="true" [style]="{ width: '600px' }" header="Crear contacto" (onHide)="closeDialog()" styleClass="hm-dialog p-fluid">
             <form [formGroup]="createContactoForm" (ngSubmit)="saveContacto(false)">
@@ -23,7 +24,7 @@ import { CreateContactoDto } from '../../../core/models/contacto.model';
                 <div class="grid grid-cols-2 gap-4 mb-5">
                     <div class="field">
                         <label for="nombre" class="text-sm font-medium text-slate-500 dark:text-slate-400 mb-1.5 block">Nombre <span class="text-red-500">*</span></label>
-                        <input type="text" pInputText id="nombre" formControlName="nombre" placeholder="Nombre completo" class="w-full" />
+                        <input appAutoFocus type="text" pInputText id="nombre" formControlName="nombre" placeholder="Nombre completo" class="w-full" />
                         <small *ngIf="createContactoForm.get('nombre')?.invalid && createContactoForm.get('nombre')?.touched" class="text-red-400 text-xs block mt-1"> Requerido </small>
                     </div>
 

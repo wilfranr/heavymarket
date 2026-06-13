@@ -17,6 +17,7 @@ import { MessageService } from 'primeng/api';
 import { DividerModule } from 'primeng/divider';
 import { SkeletonModule } from 'primeng/skeleton';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 import { createLista } from '../../../store/listas/actions/listas.actions';
 import { ListaTipo } from '../../../core/models/lista.model';
@@ -31,7 +32,7 @@ import { appendSistemaIdsToFormData } from '../../../core/utils/lista-form-data.
 @Component({
     selector: 'app-lista-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, MultiSelectModule, ToastModule, DividerModule, SkeletonModule, ImageUploadComponent],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, MultiSelectModule, ToastModule, DividerModule, SkeletonModule, ImageUploadComponent, AutoFocusDirective],
     providers: [MessageService],
     templateUrl: './create.html'
 })

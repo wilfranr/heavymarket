@@ -21,10 +21,11 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
+import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 @Component({
     selector: 'app-maquina-create-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, ProgressSpinnerModule, InputTextModule, SelectModule, ToastModule, FileUploadModule, DividerModule, TextareaModule, PopoverModule, TooltipModule, ListaCreateModalComponent],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, ProgressSpinnerModule, InputTextModule, SelectModule, ToastModule, FileUploadModule, DividerModule, TextareaModule, PopoverModule, TooltipModule, ListaCreateModalComponent, AutoFocusDirective],
     templateUrl: './maquina-create-modal.component.html',
     styles: []
 })

@@ -14,6 +14,7 @@ import { MessageService } from 'primeng/api';
 import { updateCotizacion, loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
 import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/cotizacion.model';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de edición de cotización
@@ -21,7 +22,7 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
 @Component({
     selector: 'app-cotizacion-edit',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DatePickerModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, DatePickerModule, AutoFocusDirective],
     providers: [MessageService],
     template: `
         <div class="container mx-auto p-4">
@@ -29,7 +30,7 @@ import { UpdateCotizacionDto, CotizacionEstado } from '../../../core/models/coti
                 <ng-template pTemplate="header">
                     <div class="flex justify-between items-center p-4 border-b border-surface-border">
                         <h2 class="text-2xl font-bold">Editar Cotización #{{ cotizacionId() }}</h2>
-                        <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="onCancel()"> </p-button>
+                        <p-button appAutoFocus label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="onCancel()"> </p-button>
                     </div>
                 </ng-template>
 

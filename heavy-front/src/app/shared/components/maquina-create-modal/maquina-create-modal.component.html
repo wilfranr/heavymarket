@@ -16,6 +16,7 @@
                     <label for="tipo" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-2">Tipo<span class="text-red-500">*</span></label>
                     <div class="flex gap-2">
                         <p-select
+                            appAutoFocus
                             id="tipo"
                             formControlName="tipo"
                             [options]="tiposMaquina()"

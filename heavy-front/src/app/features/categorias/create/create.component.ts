@@ -13,6 +13,7 @@ import { MessageService } from 'primeng/api';
 import { createCategoria } from '../../../store/categorias/actions/categorias.actions';
 import { CreateCategoriaDto } from '../../../core/models/categoria.model';
 import { TerceroService } from '../../../core/services/tercero.service';
+import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 /**
  * Componente de creación de categoría
@@ -20,7 +21,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
 @Component({
     selector: 'app-categoria-create',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, ToastModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, CardModule, ButtonModule, InputTextModule, SelectModule, MultiSelectModule, ToastModule, AutoFocusDirective],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -30,7 +31,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
                 <div class="grid">
                     <div class="col-12">
                         <label for="nombre" class="block mb-2"> Nombre <span class="text-red-500">*</span> </label>
-                        <input type="text" formControlName="nombre" pInputText placeholder="Nombre de la categoría" styleClass="w-full" />
+                        <input appAutoFocus type="text" formControlName="nombre" pInputText placeholder="Nombre de la categoría" styleClass="w-full" />
                         @if (categoriaForm.get('nombre')?.invalid && categoriaForm.get('nombre')?.touched) {
                             <small class="text-red-500">El nombre es requerido</small>
                         }
