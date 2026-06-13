@@ -23,6 +23,21 @@ class UpdateTerceroRequest extends FormRequest
     }
 
     /**
+     * Prepara los datos para la validación.
+     */
+    protected function prepareForValidation(): void
+    {
+        if ($this->has('maquina_id')) {
+            $maquinaId = $this->input('maquina_id');
+            if ($maquinaId === null || $maquinaId === '' || $maquinaId === 'null' || $maquinaId === 'undefined') {
+                $this->merge(['maquina_id' => []]);
+            } elseif (is_string($maquinaId) || is_numeric($maquinaId)) {
+                $this->merge(['maquina_id' => [intval($maquinaId)]]);
+            }
+        }
+    }
+
+    /**
      * Reglas de validación que aplican a la petición.
      *
      * @return array<string, ValidationRule|array<mixed>|string>

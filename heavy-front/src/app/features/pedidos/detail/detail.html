@@ -26,7 +26,7 @@
         </div>
         <div class="flex gap-2">
             <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volver()"></p-button>
-            @if (pedido.estado !== 'Nuevo') {
+            @if (puedeImprimirPedido(pedido)) {
             <p-button label="Imprimir" icon="pi pi-print" severity="secondary" [outlined]="true" (onClick)="imprimirPedido()"></p-button>
             } @if (puedeAnalizarPedido(pedido)) {
             <p-button label="Analizar Pedido" icon="pi pi-search" severity="warn" (onClick)="analizarPedido()"></p-button>
@@ -254,7 +254,7 @@
                 </ul>
 
                 <div class="mt-6 pt-4 border-t border-primary-200/50">
-                    @if (pedido.estado !== 'Nuevo') {
+                    @if (puedeGenerarCotizacionEnDetalle(pedido)) {
                     <p-button label="Generar Cotización" icon="pi pi-file-export" styleClass="w-full" severity="primary" [outlined]="true"></p-button>
                     }
                 </div>

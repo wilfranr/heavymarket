@@ -1,228 +1,52 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-13T12:40:00Z",
-  "issue": "theme-unification-light-dark",
-  "description": "Unificación de sistema de temas claro/oscuro en el frontend sin aplanar colores por rol de usuario. Se establecen tokens hm-field-* y hm-dialog y se migran los componentes con overrides hardcodeados.",
+  "last_updated": "2026-06-13T13:09:00Z",
+  "issue": "bugfix-tercero-maquina-validation",
+  "description": "Corregir el error de validación 'The maquina id field must be an array' al crear o editar un tercero sin máquina o con una sola seleccionada.",
   "workflow": "triage-incremental",
   "nodes": [
     {
-      "id": "theme-f0-inventario",
-      "description": "Fase 0: Inventariar archivos con overrides manuales de estilos (::ng-deep, !important, hex hardcodeados, landing-dark-theme).",
+      "id": "bugfix-backend-validation",
+      "description": "Preprocesar maquina_id en StoreTerceroRequest y UpdateTerceroRequest usando prepareForValidation para convertir strings/números o vacíos a arrays correctos.",
       "status": "done",
-      "required_skill": "tech_doc_expert",
+      "required_skill": null,
       "depends_on": [],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Inventario de deuda técnica y documentación de los 3 ejes de theming validados en AGENTS.md.",
+      "topic_key": "arch/heavy-api-logic",
       "files": [
         {
-          "path": "heavy-front/AGENTS.md",
+          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "theme-f1-foundation",
-      "description": "Fase 1: Crear archivo hm-theme-utilities.scss con clases globales hm-field-* e hm-dialog basándose en tokens semánticos de PrimeNG, e importarlo en styles.scss.",
+      "id": "bugfix-frontend-submission",
+      "description": "Modificar tercero-create-modal.component.ts para enviar siempre maquina_id (ID o cadena vacía) en el FormData.",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
+      "required_skill": null,
       "depends_on": [
-        "theme-f0-inventario"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Compilación exitosa tras importar utilidades de tematización. Estilos globales hm-field-input, hm-field-addon y hm-dialog integrados correctamente.",
-      "files": [
-        {
-          "path": "heavy-front/src/assets/css/hm-theme-utilities.scss",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/assets/styles.scss",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f1-form-field-classes",
-      "description": "Fase 1: Crear o migrar constantes form-field-classes.ts para que usen tokens semánticos CSS en lugar de clases custom inline o hex hardcodeados.",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [
-        "theme-f1-foundation"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Constantes de estilo y diálogos validadas y creadas en form-field-classes.ts sin valores hardcodeados.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/core/theme/form-field-classes.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f1-doc-agents",
-      "description": "Fase 1: Documentar los tres ejes de theming (modo, rol y tipo de tercero) en heavy-front/AGENTS.md.",
-      "status": "done",
-      "required_skill": "tech_doc_expert",
-      "depends_on": [
-        "theme-f1-form-field-classes"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Documentación validada en AGENTS.md detallando el modelo de 3 ejes y la estrategia de unificación.",
-      "files": [
-        {
-          "path": "heavy-front/AGENTS.md",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f2-migrar-terceros",
-      "description": "Fase 2: Migrar tercero-create-modal y tercero-form para utilizar hm-field-* y hm-dialog. Mantener estilos de wizard para acento de tipo de tercero.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [
-        "theme-f1-doc-agents"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Archivos migrados correctamente, compilación del frontend en verde. Modificados estilos hardcodeados e integrado la clase hm-dialog.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.scss",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f2-migrar-contacto",
-      "description": "Fase 2: Migrar contacto-create-modal utilizando las clases unificadas hm-dialog y hm-field-*.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [
-        "theme-f1-doc-agents"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Modificaciones validadas. Se removieron clases hardcodeadas del template inline y los overrides del metadata. Build del frontend en verde.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/shared/components/contacto-create-modal/contacto-create-modal.component.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f3-migrar-pedidos",
-      "description": "Fase 3: Migrar pantallas de pedidos (edit, create, analysis) eliminando overrides de colores redundantes y unificando su diseño claro/oscuro.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [
-        "theme-f2-migrar-terceros",
-        "theme-f2-migrar-contacto"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Archivos migrados y validados con build exitoso en verde. Se eliminaron overrides e importantes fijos redundantes de modo oscuro.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.scss",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/create/create.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/create/create.scss",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.scss",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f4-limpieza",
-      "description": "Fase 4: Deprecar/eliminar ThemeService, reduciendo theme-variables.css y asegurando que LayoutService maneje únicamente el toggle con .app-dark.",
-      "status": "done",
-      "required_skill": "software_architect",
-      "depends_on": [
-        "theme-f3-migrar-pedidos"
+        "bugfix-backend-validation"
       ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
-          "path": "heavy-front/src/app/core/services/theme.service.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/assets/css/theme-variables.css",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/layout/service/layout.service.ts",
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "theme-f5-tests",
-      "description": "Fase 5: Diseñar e implementar suite de pruebas (unitarias en layout.service.spec.ts y E2E Playwright en e2e/) para validar dark mode y primary por rol.",
+      "id": "bugfix-verification-gates",
+      "description": "Ejecutar y validar las pruebas de backend y frontend para asegurar la resolución del problema y la estabilidad de la app.",
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "theme-f4-limpieza"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "files": [
-        {
-          "path": "heavy-front/src/app/layout/service/layout.service.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/e2e/theme-light-dark.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/e2e/theme-role-primary.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/e2e/theme-visual.spec.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/e2e/helpers/theme.helpers.ts",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "theme-f5-gates",
-      "description": "Fase 5: Validar que todos los gates del CI pasen exitosamente (lint, unit tests, build, y e2e tests).",
-      "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": [
-        "theme-f5-tests"
+        "bugfix-frontend-submission"
       ],
       "topic_key": "arch/heavy-audit-history",
       "files": []

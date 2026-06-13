@@ -179,7 +179,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/articulos', [PedidoController::class, 'addArticulo'])->name('pedidos.articulos.store');
         Route::put('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'updateArticulo'])->name('pedidos.articulos.update');
         Route::delete('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'deleteArticulo'])->name('pedidos.articulos.destroy');
-        Route::apiResource('terceros', TerceroController::class);
+        Route::apiResource('terceros', TerceroController::class)->middleware('role:Vendedor|super_admin|Administrador|Logistica');
         Route::post('cotizaciones/finalizar-costeo', [CotizacionController::class, 'finalizarCosteo'])->name('cotizaciones.finalizar-costeo');
         Route::get('cotizaciones/{cotizacion}/download-pdf', [CotizacionController::class, 'downloadPDF'])->name('cotizaciones.download-pdf');
         Route::post('cotizaciones/{cotizacion}/approve', [CotizacionController::class, 'approve'])->name('cotizaciones.approve');

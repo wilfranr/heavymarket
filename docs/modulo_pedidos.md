@@ -81,4 +81,31 @@ Para dominar el flujo de Pedidos y Cotizaciones, consulte estos archivos:
 
 ---
 
+### Estado: En_Analisis
+
+**Descripcion**: Pedido asignado al analista para limpieza y validacion de referencias. El vendedor consulta en detalle (solo lectura); el analista trabaja en la ruta `/analysis`.
+
+#### Vista Detalle (`detail.html` / `detail.ts`) — consulta durante analisis
+
+| Elemento | Comportamiento | Justificacion |
+|----------|---------------|---------------|
+| Boton Imprimir | Oculto | Aun no hay cotizacion; el pedido esta en revision |
+| Boton Generar Cotizacion (sidebar) | Oculto | Decorativo sin handler; cotizacion se genera tras costeo |
+| Boton Analizar Pedido | Visible para Analista/Admin | Acceso a la vista de trabajo `/analysis` |
+| Boton Editar Pedido | Segun `puedeEditarPedido()` | Vendedor bloqueado; admin/logistica pueden mutar |
+
+#### Vista Analisis (`analysis.html`)
+
+| Elemento | Comportamiento | Justificacion |
+|----------|---------------|---------------|
+| Boton Imprimir | No existe en plantilla | N/A |
+| Boton Generar Cotizacion | No existe en plantilla | N/A |
+| Guardar / Pasar a costeo / Devolver | Segun rol y completitud de items | Flujo operativo del analista |
+
+#### Archivos Afectados
+- `heavy-front/src/app/features/pedidos/detail/detail.html`
+- `heavy-front/src/app/features/pedidos/detail/detail.ts`
+
+---
+
 **Última actualización:** 13 de Junio, 2026

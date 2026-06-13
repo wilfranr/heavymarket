@@ -1,10 +1,11 @@
 <?php
 
+use Tests\TestCase;
+
 uses(TestCase::class);
 
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Validator;
-use Tests\TestCase;
 
 test('la regla de validacion image acepta archivos avif', function () {
     $file = UploadedFile::fake()->create('test-image.avif', 100, 'image/avif');

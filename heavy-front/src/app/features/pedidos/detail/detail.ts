@@ -130,6 +130,20 @@ export class DetailComponent implements OnInit {
     }
 
     /**
+     * Imprimir es prematuro mientras el pedido no ha superado el análisis comercial.
+     */
+    puedeImprimirPedido(pedido: Pedido): boolean {
+        return pedido.estado !== 'Nuevo' && pedido.estado !== 'En_Analisis';
+    }
+
+    /**
+     * Generar cotización desde detalle: decorativo; la cotización real se crea tras el costeo.
+     */
+    puedeGenerarCotizacionEnDetalle(pedido: Pedido): boolean {
+        return pedido.estado !== 'Nuevo' && pedido.estado !== 'En_Analisis';
+    }
+
+    /**
      * Navega a la página de edición
      */
     editarPedido(): void {

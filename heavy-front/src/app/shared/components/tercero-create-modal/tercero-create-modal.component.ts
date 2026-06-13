@@ -457,7 +457,11 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         if (formValue.email_factura_electronica) formData.append('email_factura_electronica', formValue.email_factura_electronica);
         if (formValue.dv) formData.append('dv', formValue.dv);
 
-        if (formValue.maquina_id) formData.append('maquina_id', formValue.maquina_id);
+        if (formValue.maquina_id !== undefined && formValue.maquina_id !== null) {
+            formData.append('maquina_id', formValue.maquina_id.toString());
+        } else {
+            formData.append('maquina_id', '');
+        }
 
         if (formValue.fabricante_id && Array.isArray(formValue.fabricante_id)) {
             formValue.fabricante_id.forEach((id: any) => formData.append('fabricante_id[]', id));

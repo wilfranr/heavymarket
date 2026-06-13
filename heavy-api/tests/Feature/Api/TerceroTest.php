@@ -151,3 +151,62 @@ it('rechaza crear tercero con maquina ya asignada a otro tercero', function () {
     $response->assertStatus(422)
         ->assertJsonValidationErrors(['maquina_id.0']);
 });
+
+it('analista no puede acceder a terceros', function () {
+    $analista = createUserWithRole('Analista');
+
+    $this->actingAs($analista, 'sanctum')
+        ->getJson('/v1/terceros')
+        ->assertStatus(403);
+});
+
+it('cliente no puede acceder a terceros', function () {
+    $cliente = createUserWithRole('Cliente');
+
+    $this->actingAs($cliente, 'sanctum')
+        ->getJson('/v1/terceros')
+        ->assertStatus(403);
+});
+
+it('permite crear un tercero con maquina_id como un entero unico', function () {
+    $maquina = Maquina::factory()->create();
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '900777666-2',
+            'nombre' => 'Tercero Con Maquina Entero',
+            'tipo' => 'Cliente',
+            'telefono' => '12345',
+            'direccion' => 'Calle Falsa 123',
+            'maquina_id' => $maquina->id, // Enviado como entero
+        ]);
+
+    $response->assertStatus(201);
+    
+    $terceroId = $response->json('data.id');
+    $this->assertDatabaseHas('tercero_maquina', [
+        'tercero_id' => $terceroId,
+        'maquina_id' => $maquina->id,
+    ]);
+});
+
+it('permite limpiar la maquina de un tercero enviando maquina_id vacio', function () {
+    $maquina = Maquina::factory()->create();
+    $tercero = Tercero::factory()->create();
+    $maquina->terceros()->attach($tercero->id);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/terceros/{$tercero->id}", [
+            'nombre' => $tercero->nombre,
+            'tipo' => $tercero->tipo,
+            'maquina_id' => '', // Enviado como vacio para desasociar
+        ]);
+
+    $response->assertStatus(200);
+
+    $this->assertDatabaseMissing('tercero_maquina', [
+        'tercero_id' => $tercero->id,
+        'maquina_id' => $maquina->id,
+    ]);
+});
