@@ -124,10 +124,11 @@ export class DetailComponent implements OnInit {
     }
 
     /**
-     * Determina si el usuario puede ver el botón de analizar (Analistas o Admins)
+     * Determina si el usuario puede ver el botón de analizar (Analistas o Admins).
+     * Solo visible cuando el pedido está en estado En_Analisis.
      */
     puedeAnalizarPedido(pedido: Pedido): boolean {
-        if (pedido.estado === 'Cancelado') return false;
+        if (pedido.estado !== 'En_Analisis') return false;
         return this.authService.hasAnyRole(['Analista', 'Administrador', 'super_admin']);
     }
 
