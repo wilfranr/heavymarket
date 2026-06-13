@@ -479,6 +479,19 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         }
     }
 
+    onStepChange(index: number): void {
+        if (index > this.activeIndex) {
+            for (let i = this.activeIndex; i < index; i++) {
+                if (!this.isStepValid(i)) {
+                    this.messageService.add({ severity: 'warn', summary: 'Atención', detail: 'Complete los campos obligatorios para continuar' });
+                    this.markStepAsTouched(i);
+                    return;
+                }
+            }
+        }
+        this.activeIndex = index;
+    }
+
     private isStepValid(step: number): boolean {
         if (this.isViewMode) return true;
 

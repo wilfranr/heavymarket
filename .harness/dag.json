@@ -1,55 +1,300 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-13T13:09:00Z",
-  "issue": "bugfix-tercero-maquina-validation",
-  "description": "Corregir el error de validación 'The maquina id field must be an array' al crear o editar un tercero sin máquina o con una sola seleccionada.",
+  "last_updated": "2026-06-13T18:00:00Z",
+  "issue": "pedidos-cotizado-devoluciones",
+  "description": "Transiciones desde Cotizado, anulacion de cotizacion vigente, cierre de edicion post-analisis y flujo post-Cotizado (Opcion A: Aprobado=comercial, Enviado=despacho, solo lectura total, Rechazado final).",
   "workflow": "triage-incremental",
   "nodes": [
     {
-      "id": "bugfix-backend-validation",
-      "description": "Preprocesar maquina_id en StoreTerceroRequest y UpdateTerceroRequest usando prepareForValidation para convertir strings/números o vacíos a arrays correctos.",
+      "id": "ped-cotizado-triage-doc",
+      "description": "Triage: documentar flujos, matriz estado x rol, reglas de cotizacion anulada y grafo de dependencias en docs/modulo_pedidos.md y dag.json.",
       "status": "done",
-      "required_skill": null,
+      "required_skill": "software_architect",
       "depends_on": [],
-      "topic_key": "arch/heavy-api-logic",
+      "topic_key": "decision/pedidos-cotizado-devoluciones",
       "files": [
         {
-          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "path": "docs/modulo_pedidos.md",
           "status": "validated"
         },
         {
-          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "path": ".harness/dag.json",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "bugfix-frontend-submission",
-      "description": "Modificar tercero-create-modal.component.ts para enviar siempre maquina_id (ID o cadena vacía) en el FormData.",
-      "status": "done",
+      "id": "ped-edit-comercial-cerrar-post-analisis",
+      "description": "Cerrar edicion comercial (/edit, PUT pedido) desde Cotizado en adelante para todos los roles. Extender pedido-edicion-comercial.ts y PedidoPolicy::editComercial; ocultar Editar/Generar cotizacion decorativo en detalle.",
+      "status": "awaiting_review",
       "required_skill": null,
-      "depends_on": [
-        "bugfix-backend-validation"
-      ],
+      "depends_on": ["ped-cotizado-triage-doc"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
-          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.ts",
+          "path": "heavy-front/src/app/core/utils/pedido-edicion-comercial.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Policies/PedidoPolicy.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-backend-enum-anulada",
+      "description": "Backend fundamentos: agregar transiciones Cotizado->En_Costeo y Cotizado->En_Analisis en PedidoEstado; estado Anulada en cotizaciones; metodo anularCotizacionActiva(pedido) en CotizacionService con regla una cotizacion activa por pedido.",
+      "status": "awaiting_review",
+      "required_skill": "sql_query_analyst",
+      "depends_on": ["ped-cotizado-triage-doc"],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/PedidoEstado.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/database/migrations/",
+          "status": "implemented",
+          "note": "No requiere migracion: Anulada es valor string en columna estado existente"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Enums/PedidoEstadoTest.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-backend-devolver-endpoints",
+      "description": "Endpoints POST devolver-a-costeo y devolver-analista-desde-cotizado (o unificar devolver-analista con origen Cotizado). Transaccion: anular cotizacion activa + transitar pedido + comentario obligatorio + notificaciones.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": ["ped-cotizado-backend-enum-anulada"],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoDevolverDesdeCotizadoTest.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-frontend-service-guard",
+      "description": "PedidoService: metodos devolverACosteo y devolverAAnalistaDesdeCotizado. Guard /edit: redirigir Cotizado a detalle o cotizaciones. Constantes alineadas con backend.",
+      "status": "awaiting_review",
+      "required_skill": "software_architect",
+      "depends_on": ["ped-cotizado-backend-devolver-endpoints"],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/services/pedido.service.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
+          "status": "implemented",
+          "note": "Guard ya bloquea Cotizado via pedidoPermiteEdicionComercial() actualizada en nodo anterior"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-ui-botones-devolver",
+      "description": "UI: botones Devolver a costeo y Devolver al analista en detalle pedido (Cotizado) y/o detalle cotizacion. Dialogo comentario obligatorio. Ocultar acciones sobre cotizacion Anulada.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["ped-cotizado-frontend-service-guard", "ped-edit-comercial-cerrar-post-analisis"],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-tests-automatizados",
+      "description": "Tests: PHPUnit devoluciones + anulacion; frontend specs si aplica; E2E flujo Cotizado->analista->costeo->nueva cotizacion y Cotizado->costeo->recotizar.",
+      "status": "awaiting_review",
+      "required_skill": "automated_tester",
+      "depends_on": ["ped-cotizado-ui-botones-devolver"],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoDevolverDesdeCotizadoTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/e2e/pedido-devolver-desde-cotizado.spec.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "ped-cotizado-doc-cierre",
+      "description": "Actualizar docs/modulo_pedidos.md con estado implementado y marcar nodos cerrados. Decision diferida: versionado/oportunidades comerciales.",
+      "status": "awaiting_review",
+      "required_skill": "tech_doc_expert",
+      "depends_on": ["ped-cotizado-tests-automatizados"],
+      "topic_key": "decision/pedidos-cotizado-devoluciones",
+      "files": [
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "implemented"
+        }
+      ]
+    }
+      ]
+    },
+    {
+      "id": "ped-post-cotizado-triage-doc",
+      "description": "Triage: documentar flujo post-Cotizado Opcion A, Enviado=despacho (legacy deprecado), Rechazado final, solo lectura total todos roles, aprobar/rechazar Vendedor+Admin+super_admin.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/pedidos-post-cotizado",
+      "files": [
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "bugfix-verification-gates",
-      "description": "Ejecutar y validar las pruebas de backend y frontend para asegurar la resolución del problema y la estabilidad de la app.",
+      "id": "ped-post-cotizado-solo-lectura",
+      "description": "Solo lectura total desde Cotizado: bloquear /analysis y /costeo (guards + policy), ocultar iconos/botones editar en listado/detalle/cotizaciones para todos los roles. Utilidad central ESTADOS_SOLO_LECTURA alineada con backend.",
+      "status": "pending",
+      "required_skill": "software_architect",
+      "depends_on": ["ped-post-cotizado-triage-doc", "ped-edit-comercial-cerrar-post-analisis"],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/utils/pedido-edicion-comercial.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/app/Policies/PedidoPolicy.php",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-enviar-entregar-permisos-ui",
+      "description": "Policy y UI para POST enviar/entregar: solo Logistica, Administrador y super_admin. Botones en detalle pedido (Aprobado->Enviado, Enviado->Entregado). Vendedor y Analista sin acceso.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": ["ped-post-cotizado-triage-doc"],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-api/app/Policies/PedidoPolicy.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoEnviarEntregarTest.php",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-aprobacion-flujo-unificado",
+      "description": "Unificar aprobacion: POST responder aprobar transita pedido a Aprobado, marca cotizacion Aprobada y crea OT/OC en una transaccion. Rechazar transita a Rechazado y cotizacion a Rechazada. Deprecar approve suelto en cotizaciones o redirigir al mismo servicio.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": ["ped-post-cotizado-triage-doc"],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "terceros-tabs-clicables",
+      "description": "Habilitar navegacion por clics en las pestañas del formulario de creación y edición de terceros",
       "status": "done",
-      "required_skill": "automated_tester",
-      "depends_on": [
-        "bugfix-frontend-submission"
-      ],
-      "topic_key": "arch/heavy-audit-history",
-      "files": []
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }

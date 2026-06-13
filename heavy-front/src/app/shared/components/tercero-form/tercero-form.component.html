@@ -4,7 +4,7 @@
     <div class="mb-6">
         <div class="flex justify-between items-center gap-4">
             <div class="flex-1">
-                <p-steps [model]="steps" [(activeIndex)]="activeIndex" [readonly]="true"></p-steps>
+                <p-steps [model]="steps" [activeIndex]="activeIndex" (activeIndexChange)="onStepChange($event)" [readonly]="false"></p-steps>
             </div>
             @if (terceroId && !isViewMode) {
                 <div class="flex-shrink-0">
