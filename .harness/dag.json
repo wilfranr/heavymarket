@@ -257,26 +257,30 @@
     {
       "id": "ped-aprobacion-flujo-unificado",
       "description": "Unificar aprobacion: POST responder aprobar transita pedido a Aprobado, marca cotizacion Aprobada y crea OT/OC en una transaccion. Rechazar transita a Rechazado y cotizacion a Rechazada. Deprecar approve suelto en cotizaciones o redirigir al mismo servicio.",
-      "status": "pending",
+      "status": "awaiting_review",
       "required_skill": null,
       "depends_on": ["ped-post-cotizado-triage-doc"],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-api/app/Services/CotizacionService.php",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
-          "status": "pending"
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/pedido.service.ts",
+          "status": "implemented"
         }
       ]
     },

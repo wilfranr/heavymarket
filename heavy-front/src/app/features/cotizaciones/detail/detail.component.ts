@@ -19,6 +19,7 @@ import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/co
 import { Cotizacion } from '../../../core/models/cotizacion.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
+import { PedidoService } from '../../../core/services/pedido.service';
 
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
@@ -408,6 +409,7 @@ export class DetailComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly cotizacionService = inject(CotizacionService);
+    private readonly pedidoService = inject(PedidoService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
@@ -528,21 +530,21 @@ export class DetailComponent implements OnInit {
     }
 
     onApprove(): void {
-        const id = this.cotizacionId();
-        if (!id) return;
+        const cot = this.cotizacion();
+        if (!cot || !cot.pedido?.id) return;
 
         this.confirmationService.confirm({
-            message: '¿Está seguro de aprobar esta cotización?',
-            header: 'Aprobar Cotización',
+            message: '¿Está seguro de aprobar esta cotizacion? Se generaran la Orden de Trabajo y Orden de Compra automaticamente.',
+            header: 'Aprobar Cotizacion',
             icon: 'pi pi-check-circle',
             accept: () => {
-                this.cotizacionService.approve(id).subscribe({
-                    next: (response) => {
-                        this.cotizacion.set(response.data);
-                        this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada exitosamente' });
+                this.pedidoService.responderPedido(cot.pedido.id, 'aprobar').subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotizacion aprobada. OT y OC generadas.' });
+                        this.loadCotizacion(this.cotizacionId());
                     },
                     error: () => {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotización' });
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotizacion' });
                     }
                 });
             }
@@ -550,21 +552,21 @@ export class DetailComponent implements OnInit {
     }
 
     onReject(): void {
-        const id = this.cotizacionId();
-        if (!id) return;
+        const cot = this.cotizacion();
+        if (!cot || !cot.pedido?.id) return;
 
         this.confirmationService.confirm({
-            message: '¿Está seguro de rechazar esta cotización?',
-            header: 'Rechazar Cotización',
+            message: '¿Está seguro de rechazar esta cotizacion?',
+            header: 'Rechazar Cotizacion',
             icon: 'pi pi-times-circle',
             accept: () => {
-                this.cotizacionService.reject(id).subscribe({
-                    next: (response) => {
-                        this.cotizacion.set(response.data);
-                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotización rechazada exitosamente' });
+                this.pedidoService.responderPedido(cot.pedido.id, 'rechazar').subscribe({
+                    next: () => {
+                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotizacion rechazada' });
+                        this.loadCotizacion(this.cotizacionId());
                     },
                     error: () => {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo rechazar la cotización' });
+                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo rechazar la cotizacion' });
                     }
                 });
             }

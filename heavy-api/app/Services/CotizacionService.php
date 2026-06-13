@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\PedidoEstado;
 use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
 use App\Models\Empresa;
@@ -118,9 +119,86 @@ class CotizacionService
     }
 
     /**
-     * Aprobar cotización
+     * Aprobar cotizacion desde el flujo de respuesta del pedido.
      *
-     * Al aprobar se crean automáticamente:
+     * Transaccion atomica que:
+     * 1. Transita pedido a Aprobado
+     * 2. Marca cotizacion activa como Aprobada
+     * 3. Crea Orden de Trabajo
+     * 4. Crea Orden de Compra
+     */
+    public function aprobarDesdePedido(Pedido $pedido, string $comentario = ''): void
+    {
+        DB::transaction(function () use ($pedido, $comentario) {
+            // 1. Transitar pedido a Aprobado
+            $pedido->transitarA(PedidoEstado::Aprobado);
+            $pedido->save();
+
+            // 2. Buscar y aprobar cotizacion activa
+            $cotizacionActiva = Cotizacion::query()
+                ->where('pedido_id', $pedido->id)
+                ->whereIn('estado', ['Enviada', 'Borrador'])
+                ->latest('created_at')
+                ->first();
+
+            if ($cotizacionActiva) {
+                $observaciones = $cotizacionActiva->observaciones ?? '';
+                if ($comentario !== '') {
+                    $observaciones = trim($observaciones."\nAprobada: ".$comentario);
+                }
+                $cotizacionActiva->update([
+                    'estado' => 'Aprobada',
+                    'observaciones' => $observaciones,
+                ]);
+
+                // 3. Crear Orden de Trabajo
+                $this->crearOrdenTrabajo($cotizacionActiva);
+
+                // 4. Crear Orden de Compra
+                $this->crearOrdenCompra($cotizacionActiva);
+            }
+        });
+    }
+
+    /**
+     * Rechazar cotizacion desde el flujo de respuesta del pedido.
+     *
+     * Transaccion atomica que:
+     * 1. Transita pedido a Rechazado
+     * 2. Marca cotizacion activa como Rechazada
+     */
+    public function rechazarDesdePedido(Pedido $pedido, string $comentario = ''): void
+    {
+        DB::transaction(function () use ($pedido, $comentario) {
+            // 1. Transitar pedido a Rechazado
+            $pedido->transitarA(PedidoEstado::Rechazado, $comentario);
+            $pedido->comentarios_rechazo = $comentario;
+            $pedido->save();
+
+            // 2. Buscar y rechazar cotizacion activa
+            $cotizacionActiva = Cotizacion::query()
+                ->where('pedido_id', $pedido->id)
+                ->whereIn('estado', ['Enviada', 'Borrador'])
+                ->latest('created_at')
+                ->first();
+
+            if ($cotizacionActiva) {
+                $observaciones = $cotizacionActiva->observaciones ?? '';
+                if ($comentario !== '') {
+                    $observaciones = trim($observaciones."\nRechazada: ".$comentario);
+                }
+                $cotizacionActiva->update([
+                    'estado' => 'Rechazada',
+                    'observaciones' => $observaciones,
+                ]);
+            }
+        });
+    }
+
+    /**
+     * Aprobar cotizacion
+     *
+     * Al aprobar se crean automaticamente:
      * - Orden de Trabajo
      * - Orden de Compra (con referencias de proveedores)
      */

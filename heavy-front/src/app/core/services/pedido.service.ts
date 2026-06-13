@@ -144,6 +144,13 @@ export class PedidoService extends ApiService {
     }
 
     /**
+     * Responder pedido (aprobar/rechazar) desde Cotizado
+     */
+    responderPedido(id: number, respuesta: 'aprobar' | 'rechazar', comentario?: string): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/responder`, { respuesta, comentario });
+    }
+
+    /**
      * Guardar datos de costeo de forma masiva
      */
     guardarCosteo(id: number, data: any): Observable<ApiResponse<any>> {

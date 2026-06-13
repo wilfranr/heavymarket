@@ -734,7 +734,16 @@ class PedidoController extends Controller
     }
 
     /**
-     * Aprobar o rechazar un pedido cotizado
+     * Aprobar o rechazar un pedido cotizado.
+     *
+     * Al aprobar:
+     * - Transita pedido a Aprobado
+     * - Marca cotizacion activa como Aprobada
+     * - Crea Orden de Trabajo y Orden de Compra en transaccion
+     *
+     * Al rechazar:
+     * - Transita pedido a Rechazado
+     * - Marca cotizacion activa como Rechazada
      */
     public function responder(Request $request, Pedido $pedido): JsonResponse
     {
@@ -745,39 +754,43 @@ class PedidoController extends Controller
 
         $this->authorize('update', $pedido);
 
+        if ($pedido->estado !== PedidoEstado::Cotizado->value) {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Cotizado pueden responderse.',
+            ], 422);
+        }
+
         try {
+            $cotizacionService = app(CotizacionService::class);
+
             if ($validated['respuesta'] === 'aprobar') {
-                $pedido->transitarA(PedidoEstado::Aprobado);
+                $cotizacionService->aprobarDesdePedido($pedido, $validated['comentario'] ?? '');
 
                 // Notificar al vendedor
                 if ($vendedor = $pedido->user) {
                     $vendedor->notify(new SystemNotification(
                         'pedido_aprobado',
                         'Pedido #'.$pedido->id.' aprobado',
-                        'El cliente ha aprobado la cotización. Puedes generar la orden de trabajo.',
+                        'El cliente ha aprobado la cotizacion. Se han generado la Orden de Trabajo y Orden de Compra.',
                         'pi-check-circle',
                         'green',
                         ['id' => $pedido->id]
                     ));
                 }
 
-                $pedido->save();
-
                 return response()->json([
                     'data' => new PedidoResource($pedido->fresh()),
-                    'message' => 'Pedido aprobado',
+                    'message' => 'Pedido aprobado. OT y OC generadas.',
                 ]);
             } else {
-                $pedido->transitarA(PedidoEstado::Rechazado, $validated['comentario'] ?? null);
-                $pedido->comentarios_rechazo = $validated['comentario'] ?? null;
-                $pedido->save();
+                $cotizacionService->rechazarDesdePedido($pedido, $validated['comentario'] ?? '');
 
                 // Notificar al vendedor
                 if ($vendedor = $pedido->user) {
                     $vendedor->notify(new SystemNotification(
                         'pedido_rechazado',
                         'Pedido #'.$pedido->id.' rechazado',
-                        'El cliente ha rechazado la cotización: '.($validated['comentario'] ?? 'Sin comentario'),
+                        'El cliente ha rechazado la cotizacion: '.($validated['comentario'] ?? 'Sin comentario'),
                         'pi-times-circle',
                         'red',
                         ['id' => $pedido->id]
@@ -791,6 +804,17 @@ class PedidoController extends Controller
             }
         } catch (\InvalidArgumentException $e) {
             return response()->json(['message' => $e->getMessage()], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error al responder pedido', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'pedido_id' => $pedido->id,
+            ]);
+
+            return response()->json([
+                'message' => 'Error al procesar la respuesta del pedido',
+                'error' => $e->getMessage(),
+            ], 500);
         }
     }
 
