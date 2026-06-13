@@ -348,62 +348,74 @@
 
         <!-- STEP 3: Documentos -->
         @if (activeIndex === 3) {
-            <div class="animate-fade-in pt-4">
+            <div class="animate-fade-in pt-4 hm-document-upload-panel">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <!-- RUT -->
-                    <div class="border border-gray-700 rounded p-4 bg-white/5">
-                        <label class="block mb-3 font-semibold">Adjuntar RUT</label>
-                        <p-fileUpload
-                            mode="advanced"
-                            [showUploadButton]="false"
-                            [showCancelButton]="false"
-                            chooseLabel="Examinar"
-                            [auto]="true"
-                            (onSelect)="onFileSelect($event, 'rut')"
-                            invalidFileSizeMessageSummary="Tamaño excedido"
-                            invalidFileSizeMessageDetail="Máximo 5MB"
-                        >
-                            <ng-template pTemplate="content">
-                                <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('rut')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
-                            </ng-template>
-                        </p-fileUpload>
-                    </div>
-
-                    <!-- Certificacion Bancaria -->
-                    <div class="border border-gray-700 rounded p-4 bg-white/5">
-                        <label class="block mb-3 font-semibold">Adjuntar Certificación Bancaria</label>
-                        <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'certificacion_bancaria')">
-                            <ng-template pTemplate="content">
-                                <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('certificacion_bancaria')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
-                            </ng-template>
-                        </p-fileUpload>
-                    </div>
-
-                    <!-- Camara Comercio -->
-                    <div class="border border-gray-700 rounded p-4 bg-white/5">
-                        <label class="block mb-3 font-semibold">Adjuntar Cámara de Comercio</label>
-                        <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'camara_comercio')">
-                            <ng-template pTemplate="content">
-                                <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('camara_comercio')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
-                            </ng-template>
-                        </p-fileUpload>
-                    </div>
-
-                    <!-- Cedula Rep Legal -->
-                    <div class="border border-gray-700 rounded p-4 bg-white/5">
-                        <label class="block mb-3 font-semibold">Adjuntar Cédula Representante Legal</label>
-                        <p-fileUpload mode="advanced" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Examinar" [auto]="true" (onSelect)="onFileSelect($event, 'cedula_representante_legal')">
-                            <ng-template pTemplate="content">
-                                <div class="text-center text-sm text-gray-400 py-4" *ngIf="!createTerceroForm.get('cedula_representante_legal')?.value">Arrastra y suelta tus archivos o <span class="text-primary font-bold">Examina</span></div>
-                            </ng-template>
-                        </p-fileUpload>
-                    </div>
+                    @for (doc of documentFieldsConfig; track doc.key) {
+                        <div [class]="sectionCardClass">
+                            <label [class]="fieldLabelClass">{{ doc.label }}</label>
+                            <p-fileUpload
+                                mode="advanced"
+                                [url]="uploadUrl"
+                                [headers]="uploadHeaders"
+                                name="file"
+                                accept="image/*,application/pdf"
+                                maxFileSize="5242880"
+                                [showUploadButton]="false"
+                                [showCancelButton]="false"
+                                chooseLabel="Examinar"
+                                [auto]="true"
+                                (onSelect)="onFileSelect($event, doc.key)"
+                                (onProgress)="onUploadProgress($event, doc.key)"
+                                (onUpload)="onUploadSuccess($event, doc.key)"
+                                (onError)="onUploadError($event, doc.key)"
+                                invalidFileSizeMessageSummary="Tamaño excedido"
+                                invalidFileSizeMessageDetail="Máximo 5MB"
+                            >
+                                <ng-template pTemplate="content">
+                                    @if (getDocumentFileSignal(doc.key)(); as fileVal) {
+                                        <div [class]="documentUploadFileClass + ' animate-fade-in'">
+                                            @if (fileVal.status === 'uploading' || fileVal.status === 'pending') {
+                                                <p-progressBar [value]="fileVal.progress ?? 0" [showValue]="false" styleClass="h-1.5" />
+                                            }
+                                            <div class="flex items-center justify-between gap-3">
+                                                <div class="flex items-center gap-3 min-w-0">
+                                                    @if (isImage(fileVal)) {
+                                                        <img [src]="getFileUrl(fileVal)" [alt]="fileVal.name" [class]="documentUploadThumbClass" />
+                                                    } @else if (isPdf(fileVal)) {
+                                                        <i class="pi pi-file-pdf" [class]="documentIconPdfClass"></i>
+                                                    } @else {
+                                                        <i class="pi pi-file" [class]="documentIconFileClass"></i>
+                                                    }
+                                                    <div class="flex flex-col min-w-0">
+                                                        <span [class]="documentUploadNameClass" [title]="fileVal.name">{{ fileVal.name }}</span>
+                                                        <span [class]="documentUploadSizeClass">{{ formatFileSize(fileVal.size) }}</span>
+                                                    </div>
+                                                </div>
+                                                <div class="flex items-center gap-2 shrink-0">
+                                                    @if (fileVal.status === 'done') {
+                                                        <p-badge value="Done" severity="success" />
+                                                    } @else {
+                                                        <p-badge value="Pending" severity="warn" />
+                                                    }
+                                                    <p-button icon="pi pi-trash" [text]="true" severity="danger" (onClick)="onUploadRemove(doc.key)" [disabled]="isViewMode" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    } @else {
+                                        <div [class]="documentUploadEmptyClass">
+                                            Arrastra y suelta tus archivos o <span [class]="textPrimaryEmphasisClass">Examina</span>
+                                        </div>
+                                    }
+                                </ng-template>
+                            </p-fileUpload>
+                        </div>
+                    }
                 </div>
             </div>
         }
 
         <!-- Footer Actions -->
-        <div class="flex justify-between items-center mt-8 border-t border-gray-700 pt-4">
+        <div class="flex justify-between items-center mt-8 pt-4" [class]="footerDividerClass">
             <!-- Left Button (Previous) -->
             <div>
                 @if (activeIndex > 0) {

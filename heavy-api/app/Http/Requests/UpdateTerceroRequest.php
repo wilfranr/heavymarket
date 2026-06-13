@@ -71,11 +71,27 @@ class UpdateTerceroRequest extends FormRequest
             'dv' => ['nullable', 'string', 'max:1'],
             'estado' => ['nullable', Rule::in(['Activo', 'Inactivo'])],
 
-            // Files (allowed to be updated, not required)
-            'rut' => ['nullable', 'file', 'max:5120'],
-            'certificacion_bancaria' => ['nullable', 'file', 'max:5120'],
-            'camara_comercio' => ['nullable', 'file', 'max:5120'],
-            'cedula_representante_legal' => ['nullable', 'file', 'max:5120'],
+            // Files (pueden ser archivos binarios o strings con el path ya subido asíncronamente)
+            'rut' => ['nullable', function ($attribute, $value, $fail) {
+                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                    $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
+                }
+            }],
+            'certificacion_bancaria' => ['nullable', function ($attribute, $value, $fail) {
+                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                    $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
+                }
+            }],
+            'camara_comercio' => ['nullable', function ($attribute, $value, $fail) {
+                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                    $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
+                }
+            }],
+            'cedula_representante_legal' => ['nullable', function ($attribute, $value, $fail) {
+                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                    $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
+                }
+            }],
 
             // Relations
             'maquina_id' => ['nullable', 'array'],

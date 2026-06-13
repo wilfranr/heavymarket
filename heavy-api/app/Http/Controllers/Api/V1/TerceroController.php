@@ -309,4 +309,36 @@ class TerceroController extends Controller
             $tercero->updateQuietly(['user_id' => $user->id]);
         }
     }
+
+    /**
+     * Cargar un documento de tercero de forma asíncrona.
+     */
+    public function uploadDocumento(Request $request): JsonResponse
+    {
+        $request->validate([
+            'file' => ['required', 'file', 'max:5120', 'mimes:pdf,png,jpeg,jpg'],
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $path = $file->store('terceros/documentos', 'public');
+
+            return response()->json([
+                'success' => true,
+                'file_url' => Storage::url($path),
+                'file_name' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error uploading documento tercero: '.$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir el archivo',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
 }
+

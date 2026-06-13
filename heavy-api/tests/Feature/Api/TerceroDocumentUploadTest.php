@@ -64,3 +64,28 @@ it('permite cargar documentos al actualizar un tercero', function () {
     expect($tercero->certificacion_bancaria)->not->toBeNull();
     Storage::disk('public')->assertExists($tercero->certificacion_bancaria);
 });
+
+it('permite subir un documento de forma asincrona y retorna su path y url', function () {
+    Storage::fake('public');
+
+    $file = UploadedFile::fake()->create('documento.pdf', 100, 'application/pdf');
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros/upload', [
+            'file' => $file,
+        ]);
+
+    $response->assertStatus(200);
+    $response->assertJson([
+        'success' => true,
+    ]);
+
+    $data = $response->json();
+    expect($data)->toHaveKey('file_url');
+    expect($data)->toHaveKey('file_name');
+    expect($data['original_name'])->toBe('documento.pdf');
+    expect($data['size'])->toBeGreaterThan(0);
+
+    Storage::disk('public')->assertExists($data['file_name']);
+});
+

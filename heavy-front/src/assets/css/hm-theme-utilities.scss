@@ -94,12 +94,34 @@
 
   .p-fileupload {
     background: transparent !important;
-    border-color: var(--p-content-border-color) !important;
+    border: 1px solid var(--p-content-border-color) !important;
+    border-radius: var(--p-border-radius-md, 6px) !important;
+
+    .p-fileupload-header {
+      background: var(--p-content-background) !important;
+      border-color: var(--p-content-border-color) !important;
+      color: var(--p-text-color) !important;
+    }
 
     .p-fileupload-content {
       background: var(--p-content-background) !important;
       border-color: var(--p-content-border-color) !important;
       color: var(--p-text-muted-color) !important;
+    }
+
+    .p-fileupload-choose-button .p-button {
+      background: var(--p-primary-color) !important;
+      border-color: var(--p-primary-color) !important;
+      color: var(--p-primary-contrast-color) !important;
+    }
+
+    .p-progressbar {
+      background: color-mix(in srgb, var(--p-content-border-color) 35%, var(--p-content-background)) !important;
+      border-radius: var(--p-border-radius-sm, 4px) !important;
+
+      .p-progressbar-value {
+        background: var(--p-primary-color) !important;
+      }
     }
   }
 
@@ -116,6 +138,123 @@
 
       &:not(.p-togglebutton-checked):hover {
         background: color-mix(in srgb, var(--p-content-border-color) 30%, var(--p-content-background)) !important;
+      }
+    }
+  }
+}
+
+/* 3. Etiquetas, secciones y utilidades de texto (Light/Dark via tokens PrimeNG) */
+.hm-field-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--p-text-color);
+}
+
+.hm-section-card {
+  border-radius: var(--p-border-radius-md, 8px);
+  border: 1px solid var(--p-content-border-color);
+  padding: 1rem;
+  background: color-mix(in srgb, var(--p-content-border-color) 12%, var(--p-content-background));
+}
+
+.hm-footer-divider {
+  border-top: 1px solid var(--p-content-border-color);
+}
+
+.hm-text-muted {
+  color: var(--p-text-muted-color);
+}
+
+.hm-text-primary-emphasis {
+  color: var(--p-primary-color);
+  font-weight: 700;
+}
+
+/* 4. Document upload — preview y estados */
+.hm-document-upload-file {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border-radius: var(--p-border-radius-md, 6px);
+  border: 1px solid var(--p-content-border-color);
+  background: color-mix(in srgb, var(--p-content-border-color) 15%, var(--p-content-background));
+}
+
+.hm-document-upload-thumb {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: var(--p-border-radius-sm, 4px);
+  border: 1px solid var(--p-content-border-color);
+  flex-shrink: 0;
+}
+
+.hm-document-upload-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--p-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hm-document-upload-size {
+  font-size: 0.75rem;
+  color: var(--p-text-muted-color);
+}
+
+.hm-document-icon-pdf {
+  font-size: 1.5rem;
+  color: var(--p-button-text-danger-color);
+  flex-shrink: 0;
+}
+
+.hm-document-icon-file {
+  font-size: 1.5rem;
+  color: var(--p-button-text-info-color);
+  flex-shrink: 0;
+}
+
+.hm-document-upload-empty {
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--p-text-muted-color);
+  padding: 1rem 0;
+}
+
+/* FileUpload fuera de dialog (p. ej. tercero-form en página) */
+.hm-document-upload-panel {
+  .p-fileupload {
+    background: transparent !important;
+    border: 1px solid var(--p-content-border-color) !important;
+    border-radius: var(--p-border-radius-md, 6px) !important;
+
+    .p-fileupload-header {
+      background: var(--p-content-background) !important;
+      border-color: var(--p-content-border-color) !important;
+      color: var(--p-text-color) !important;
+    }
+
+    .p-fileupload-content {
+      background: var(--p-content-background) !important;
+      border-color: var(--p-content-border-color) !important;
+      color: var(--p-text-muted-color) !important;
+    }
+
+    .p-fileupload-choose-button .p-button {
+      background: var(--p-primary-color) !important;
+      border-color: var(--p-primary-color) !important;
+      color: var(--p-primary-contrast-color) !important;
+    }
+
+    .p-progressbar {
+      background: color-mix(in srgb, var(--p-content-border-color) 35%, var(--p-content-background)) !important;
+
+      .p-progressbar-value {
+        background: var(--p-primary-color) !important;
       }
     }
   }

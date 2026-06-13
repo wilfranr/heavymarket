@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -14,6 +14,22 @@ import { MultiSelectModule } from 'primeng/multiselect';
 import { PanelModule } from 'primeng/panel';
 import { StepsModule } from 'primeng/steps';
 import { FileUploadModule } from 'primeng/fileupload';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { BadgeModule } from 'primeng/badge';
+import { FileUploadEvent, FileProgressEvent, FileSelectEvent } from 'primeng/fileupload';
+import {
+    TERCERO_DOCUMENT_FIELDS,
+    TerceroDocumentFieldKey,
+    TerceroDocumentFileValue,
+    buildExistingDocumentValue,
+    buildPendingDocumentValue,
+    buildUploadedDocumentValue,
+    formatDocumentFileSize,
+    getDocumentFileUrl,
+    isDocumentImage,
+    isDocumentPdf,
+    parseTerceroUploadResponse
+} from '../../../core/utils/tercero-document-upload.util';
 
 import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
@@ -23,8 +39,24 @@ import { SistemaService } from '../../../core/services/sistema.service';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model'; // Added import
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
-import { HM_FIELD_INPUT_CLASSES, HM_DIALOG_STYLE_CLASS } from '../../../core/theme/form-field-classes';
+import {
+    HM_FIELD_INPUT_CLASSES,
+    HM_DIALOG_STYLE_CLASS,
+    HM_FIELD_LABEL_CLASSES,
+    HM_SECTION_CARD_CLASSES,
+    HM_FOOTER_DIVIDER_CLASSES,
+    HM_DOCUMENT_UPLOAD_FILE_CLASSES,
+    HM_DOCUMENT_UPLOAD_EMPTY_CLASSES,
+    HM_DOCUMENT_UPLOAD_NAME_CLASSES,
+    HM_DOCUMENT_UPLOAD_SIZE_CLASSES,
+    HM_DOCUMENT_UPLOAD_THUMB_CLASSES,
+    HM_DOCUMENT_ICON_PDF_CLASSES,
+    HM_DOCUMENT_ICON_FILE_CLASSES,
+    HM_TEXT_PRIMARY_EMPHASIS_CLASSES
+} from '../../../core/theme/form-field-classes';
 import { AutoFocusDirective } from '../../directives/auto-focus.directive';
+import { AuthService } from '../../../core/auth/services/auth.service';
+import { environment } from '../../../../environments/environment';
 
 @Component({
     selector: 'app-tercero-create-modal',
@@ -44,6 +76,8 @@ import { AutoFocusDirective } from '../../directives/auto-focus.directive';
         PanelModule,
         StepsModule,
         FileUploadModule,
+        ProgressBarModule,
+        BadgeModule,
         MaquinaCreateModalComponent,
         AutoFocusDirective
     ],
@@ -51,11 +85,19 @@ import { AutoFocusDirective } from '../../directives/auto-focus.directive';
     styleUrl: './tercero-create-modal.component.scss'
 })
 export class TerceroCreateModalComponent implements OnInit, OnChanges {
-    readonly fieldLabelClass = 'block mb-2 text-sm font-semibold text-gray-800 dark:text-slate-100';
+    readonly fieldLabelClass = HM_FIELD_LABEL_CLASSES;
     readonly fieldInputClass = HM_FIELD_INPUT_CLASSES;
     readonly fieldSelectClass = 'w-full';
-    readonly sectionCardClass = 'rounded-lg border border-gray-200 dark:border-slate-700 p-4 bg-gray-50 dark:bg-white/5';
-    readonly footerDividerClass = 'border-t border-gray-200 dark:border-slate-700';
+    readonly sectionCardClass = HM_SECTION_CARD_CLASSES;
+    readonly footerDividerClass = HM_FOOTER_DIVIDER_CLASSES;
+    readonly documentUploadFileClass = HM_DOCUMENT_UPLOAD_FILE_CLASSES;
+    readonly documentUploadEmptyClass = HM_DOCUMENT_UPLOAD_EMPTY_CLASSES;
+    readonly documentUploadNameClass = HM_DOCUMENT_UPLOAD_NAME_CLASSES;
+    readonly documentUploadSizeClass = HM_DOCUMENT_UPLOAD_SIZE_CLASSES;
+    readonly documentUploadThumbClass = HM_DOCUMENT_UPLOAD_THUMB_CLASSES;
+    readonly documentIconPdfClass = HM_DOCUMENT_ICON_PDF_CLASSES;
+    readonly documentIconFileClass = HM_DOCUMENT_ICON_FILE_CLASSES;
+    readonly textPrimaryEmphasisClass = HM_TEXT_PRIMARY_EMPHASIS_CLASSES;
 
     private readonly fb = inject(FormBuilder);
     private readonly terceroService = inject(TerceroService);
@@ -64,6 +106,15 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     private readonly fabricanteService = inject(FabricanteService);
     private readonly sistemaService = inject(SistemaService);
     private readonly messageService = inject(MessageService);
+    private readonly authService = inject(AuthService);
+    private readonly cdr = inject(ChangeDetectorRef);
+
+    readonly uploadUrl = `${environment.apiUrl}/terceros/upload`;
+
+    get uploadHeaders(): any {
+        const token = this.authService.getToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+    }
 
     @Input() visible: boolean = false;
     @Output() visibleChange = new EventEmitter<boolean>();
@@ -76,6 +127,14 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
     createTerceroForm!: FormGroup;
     loadingTercero = false;
+
+    readonly documentFieldsConfig = TERCERO_DOCUMENT_FIELDS;
+
+    // Signals para archivos reactivos en Zoneless
+    rutFile = signal<TerceroDocumentFileValue | null>(null);
+    certificacionBancariaFile = signal<TerceroDocumentFileValue | null>(null);
+    camaraComercioFile = signal<TerceroDocumentFileValue | null>(null);
+    cedulaRepresentanteLegalFile = signal<TerceroDocumentFileValue | null>(null);
 
     // Sub-modals visibility
     displayCreateMaquinaDialog = false;
@@ -208,6 +267,37 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 this.ciudades.set(r.data);
             });
         }
+
+        this.loadExistingDocuments(data);
+    }
+
+    private loadExistingDocuments(data: Record<string, unknown>): void {
+        TERCERO_DOCUMENT_FIELDS.forEach(({ key }) => {
+            const path = data[key];
+            if (typeof path === 'string' && path.length > 0) {
+                this.setDocumentField(key, buildExistingDocumentValue(path));
+            }
+        });
+    }
+
+    getDocumentFileSignal(key: TerceroDocumentFieldKey) {
+        const map = {
+            rut: this.rutFile,
+            certificacion_bancaria: this.certificacionBancariaFile,
+            camara_comercio: this.camaraComercioFile,
+            cedula_representante_legal: this.cedulaRepresentanteLegalFile
+        } as const;
+        return map[key];
+    }
+
+    private setDocumentField(fieldName: TerceroDocumentFieldKey, value: TerceroDocumentFileValue | null): void {
+        const fileSignal = this.getDocumentFileSignal(fieldName);
+        const previous = fileSignal();
+        if (previous?.objectURL) {
+            URL.revokeObjectURL(previous.objectURL);
+        }
+        this.createTerceroForm.patchValue({ [fieldName]: value });
+        fileSignal.set(value);
     }
 
     private initSteps(): void {
@@ -269,6 +359,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             contactos: this.fb.array([]),
             estado: ['activo']
         });
+
     }
 
     get isNit(): boolean {
@@ -308,6 +399,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             this.contactos.clear();
             this.departamentos.set([]);
             this.ciudades.set([]);
+            TERCERO_DOCUMENT_FIELDS.forEach(({ key }) => this.setDocumentField(key, null));
         }
     }
 
@@ -400,11 +492,49 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         }
     }
 
-    onFileSelect(event: any, fieldName: string): void {
-        if (event.files && event.files.length > 0) {
-            this.createTerceroForm.patchValue({ [fieldName]: event.files[0] });
+    onFileSelect(event: FileSelectEvent, fieldName: TerceroDocumentFieldKey): void {
+        const file = event.files?.[0];
+        if (file) {
+            this.setDocumentField(fieldName, buildPendingDocumentValue(file));
         }
     }
+
+    onUploadProgress(event: FileProgressEvent, fieldName: TerceroDocumentFieldKey): void {
+        const current = this.getDocumentFileSignal(fieldName)();
+        if (!current) return;
+        this.getDocumentFileSignal(fieldName).set({
+            ...current,
+            status: 'uploading',
+            progress: event.progress ?? current.progress ?? 0
+        });
+    }
+
+    onUploadSuccess(event: FileUploadEvent, fieldName: TerceroDocumentFieldKey): void {
+        const response = parseTerceroUploadResponse(event);
+        if (response?.success) {
+            this.setDocumentField(fieldName, buildUploadedDocumentValue(response));
+            this.messageService.add({ severity: 'success', summary: 'Archivo cargado', detail: 'El documento se subió con éxito' });
+        } else {
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'La respuesta del servidor no indica éxito' });
+        }
+        this.cdr.markForCheck();
+    }
+
+    onUploadError(_event: unknown, fieldName: TerceroDocumentFieldKey): void {
+        this.setDocumentField(fieldName, null);
+        this.messageService.add({ severity: 'error', summary: 'Error de carga', detail: 'Hubo un problema al subir el archivo' });
+        this.cdr.markForCheck();
+    }
+
+    onUploadRemove(fieldName: TerceroDocumentFieldKey): void {
+        this.setDocumentField(fieldName, null);
+        this.cdr.markForCheck();
+    }
+
+    isImage = isDocumentImage;
+    isPdf = isDocumentPdf;
+    getFileUrl = getDocumentFileUrl;
+    formatFileSize = formatDocumentFileSize;
 
     closeDialog(): void {
         this.visible = false;
@@ -489,8 +619,13 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
         const fileFields = ['rut', 'certificacion_bancaria', 'camara_comercio', 'cedula_representante_legal'];
         fileFields.forEach((field) => {
-            if (formValue[field] instanceof File) {
-                formData.append(field, formValue[field]);
+            const val = formValue[field];
+            if (val instanceof File) {
+                formData.append(field, val);
+            } else if (val && typeof val === 'object' && val.path) {
+                formData.append(field, val.path);
+            } else if (val && typeof val === 'string') {
+                formData.append(field, val);
             }
         });
 
