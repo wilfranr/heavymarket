@@ -21,6 +21,7 @@ import * as PedidosActions from '../../../store/pedidos/actions/pedidos.actions'
 import * as PedidosSelectors from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { pedidoPermiteEdicionComercial } from '../../../core/utils/pedido-edicion-comercial';
 
 /**
  * Componente de Lista de Pedidos
@@ -190,7 +191,7 @@ import { AuthService } from '../../../core/auth/services/auth.service';
                                 }
                             </td>
                             <td>
-                                <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
+                                <p-button *ngIf="puedeEditarPedidoEnListado(pedido)" icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditPedido(pedido.id); $event.stopPropagation()"> </p-button>
                                 <p-button *ngIf="vendedorPuedeMutarPedido(pedido)" icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeletePedido(pedido); $event.stopPropagation()"> </p-button>
                             </td>
                         }
@@ -239,6 +240,14 @@ export class PedidosListComponent implements OnInit {
             return true;
         }
         return this.authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica']);
+    }
+
+    /** Edición desde listado: solo pedidos en estado Nuevo y con permiso de mutación. */
+    puedeEditarPedidoEnListado(pedido: Pedido): boolean {
+        if (!pedidoPermiteEdicionComercial(pedido.estado) || pedido.estado !== 'Nuevo') {
+            return false;
+        }
+        return this.vendedorPuedeMutarPedido(pedido);
     }
 
     onRowClick(pedido: Pedido): void {

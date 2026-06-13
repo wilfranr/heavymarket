@@ -6,10 +6,11 @@ import { catchError, map } from 'rxjs/operators';
 
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { PedidoService } from '../../../core/services/pedido.service';
+import { pedidoPermiteEdicionComercial } from '../../../core/utils/pedido-edicion-comercial';
 
 /**
- * Bloquea la ruta de edición para vendedores cuando el pedido está en análisis.
- * El estado se obtiene del API antes de instanciar el componente (evita depender del store).
+ * Protege la ruta /edit: bloquea edición comercial en estados restringidos (p. ej. En_Costeo)
+ * y reglas por rol (vendedor en análisis, analista redirigido a /analysis).
  */
 export const pedidoVendedorSoloLecturaEnAnalisisGuard: CanActivateFn = (route) => {
     const authService = inject(AuthService);
@@ -26,35 +27,36 @@ export const pedidoVendedorSoloLecturaEnAnalisisGuard: CanActivateFn = (route) =
         return true;
     }
 
-    if (!authService.hasRole('Vendedor') && !authService.hasRole('Analista')) {
-        return true;
-    }
-
-    if (authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica'])) {
-        return true;
-    }
-
     return pedidoService.getById(id).pipe(
         map((res) => {
             const pedido = res.data;
             if (!pedido) return true;
 
-            // Bloqueo universal para pedidos cancelados
-            if (pedido.estado === 'Cancelado') {
+            if (!pedidoPermiteEdicionComercial(pedido.estado)) {
+                const destino = pedido.estado === 'En_Costeo' ? ['costeo'] : [];
                 messageService.add({
-                    severity: 'warn',
-                    summary: 'Acceso Denegado',
-                    detail: 'No se puede editar un pedido que ha sido cancelado.'
+                    severity: 'info',
+                    summary: pedido.estado === 'En_Costeo' ? 'Pedido en costeo' : 'Edición no permitida',
+                    detail:
+                        pedido.estado === 'En_Costeo'
+                            ? 'Use la vista de costeo para gestionar precios y proveedores.'
+                            : 'Este pedido no admite edición comercial.'
                 });
-                return router.createUrlTree(['/app/pedidos', id]);
+                return router.createUrlTree(['/app/pedidos', id, ...destino]);
             }
 
-            // Analistas: Siempre redirigir a su vista de análisis si intentan entrar a edición
+            if (authService.hasAnyRole(['Administrador', 'super_admin', 'Logistica'])) {
+                return true;
+            }
+
+            if (!authService.hasRole('Vendedor') && !authService.hasRole('Analista')) {
+                return true;
+            }
+
             if (authService.hasRole('Analista') && !authService.hasAnyRole(['Administrador', 'super_admin'])) {
                 return router.createUrlTree(['/app/pedidos', id, 'analysis']);
             }
 
-            // Bloqueo específico para vendedores en análisis
             if (pedido.estado === 'En_Analisis' && authService.hasRole('Vendedor')) {
                 messageService.add({
                     severity: 'info',
@@ -63,6 +65,7 @@ export const pedidoVendedorSoloLecturaEnAnalisisGuard: CanActivateFn = (route) =
                 });
                 return router.createUrlTree(['/app/pedidos', id]);
             }
+
             return true;
         }),
         catchError(() => of(true))

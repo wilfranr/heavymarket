@@ -140,6 +140,32 @@ it('vendedor no puede actualizar pedido en análisis', function () {
         ])->assertForbidden();
 });
 
+it('admin no puede actualizar comercialmente pedido en costeo', function () {
+    $admin = createUserWithRole('Administrador');
+    $pedido = Pedido::factory()->create([
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'En_Costeo',
+    ]);
+
+    $this->actingAs($admin, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
+            'comentario' => 'Intento admin en costeo',
+        ])->assertForbidden();
+});
+
+it('super_admin no puede actualizar comercialmente pedido en costeo', function () {
+    $superAdmin = createUserWithRole('super_admin');
+    $pedido = Pedido::factory()->create([
+        'tercero_id' => $this->tercero->id,
+        'estado' => 'En_Costeo',
+    ]);
+
+    $this->actingAs($superAdmin, 'sanctum')
+        ->putJson("/v1/pedidos/{$pedido->id}", [
+            'comentario' => 'Intento super_admin en costeo',
+        ])->assertForbidden();
+});
+
 it('vendedor no puede eliminar pedido en análisis', function () {
     $pedido = Pedido::factory()->create([
         'user_id' => $this->user->id,

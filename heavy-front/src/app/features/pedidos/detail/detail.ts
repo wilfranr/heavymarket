@@ -18,6 +18,7 @@ import { PanelModule } from 'primeng/panel';
 import { Pedido, PedidoReferencia } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { pedidoOrigenEtiqueta, pedidoOrigenTagClass } from '../../../core/utils/pedido-origen-tag';
+import { pedidoPermiteEdicionComercial } from '../../../core/utils/pedido-edicion-comercial';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { AuthService } from '../../../core/auth/services/auth.service';
@@ -87,13 +88,7 @@ export class DetailComponent implements OnInit {
      * Analista: siempre debe usar su vista de análisis, no la de edición.
      */
     puedeEditarPedido(pedido: Pedido): boolean {
-        // Pedido cancelado no se puede editar nunca
-        if (pedido.estado === 'Cancelado') {
-            return false;
-        }
-
-        // Pedidos en costeo no se editan desde esta vista (se costean)
-        if (pedido.estado === 'En_Costeo') {
+        if (!pedidoPermiteEdicionComercial(pedido.estado)) {
             return false;
         }
 

@@ -24,7 +24,7 @@ class UpdatePedidoRequest extends FormRequest
         /** @var Pedido $pedido */
         $pedido = $this->route('pedido');
 
-        return $this->user()->can('update', $pedido);
+        return $this->user()->can('editComercial', $pedido);
     }
 
     /**

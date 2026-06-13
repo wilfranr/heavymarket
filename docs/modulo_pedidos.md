@@ -108,4 +108,41 @@ Para dominar el flujo de Pedidos y Cotizaciones, consulte estos archivos:
 
 ---
 
+### Estado: En_Costeo
+
+**Descripcion**: Pedido con referencias analizadas; el vendedor/asesor asigna proveedores y precios. La edición comercial (`/edit`) está cerrada para **todos los roles**, incluidos Administrador y super_admin.
+
+#### Vista Detalle (`detail.html` / `detail.ts`)
+
+| Elemento | Comportamiento | Justificacion |
+|----------|---------------|---------------|
+| Boton Imprimir | Oculto | Sin cotización formal aún |
+| Boton Generar Cotizacion (sidebar) | Oculto | Se genera desde `/costeo` |
+| Boton Editar Pedido | Oculto (todos los roles) | Usar `/costeo`; cambios estructurales vía devolver al analista |
+| Boton Costear Pedido | Visible para Vendedor/Admin | Acceso a `/costeo` |
+
+#### Vista Listado (`pedidos-list.component.ts`)
+
+| Elemento | Comportamiento |
+|----------|---------------|
+| Icono lapiz (editar) | Oculto (solo aplica en `Nuevo`) |
+| Clic en fila | Redirige a `/costeo` |
+
+#### Rutas y API
+
+| Capa | Regla |
+|------|-------|
+| Guard `/edit` | Redirige a `/costeo` si estado = `En_Costeo` (sin excepción admin) |
+| `PedidoPolicy::editComercial` | Deniega PUT comercial en `En_Costeo` |
+| `PedidoPolicy::update` | Permite `guardar-costeo`, devoluciones, etc. |
+| Policy method | `editComercial` en `UpdatePedidoRequest` |
+
+#### Archivos Afectados
+- `heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts`
+- `heavy-front/src/app/core/utils/pedido-edicion-comercial.ts`
+- `heavy-api/app/Policies/PedidoPolicy.php`
+- `heavy-api/app/Http/Requests/UpdatePedidoRequest.php`
+
+---
+
 **Última actualización:** 13 de Junio, 2026

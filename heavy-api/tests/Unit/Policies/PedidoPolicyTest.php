@@ -192,6 +192,36 @@ it('vendedor puede actualizar pedidos landing', function () {
     expect($vendedor->can('update', $pedido))->toBeTrue();
 });
 
+it('nadie puede editar comercialmente un pedido en costeo', function () {
+    $admin = createUserWithRole('Administrador');
+    $super = createUserWithRole('super_admin');
+    $vendedor = createUserWithRole('Vendedor');
+    $pedido = Pedido::factory()->create([
+        'user_id' => $vendedor->id,
+        'estado' => 'En_Costeo',
+    ]);
+
+    expect($admin->can('editComercial', $pedido))->toBeFalse()
+        ->and($super->can('editComercial', $pedido))->toBeFalse()
+        ->and($vendedor->can('editComercial', $pedido))->toBeFalse();
+});
+
+it('admin puede operar costeo en pedido en costeo via policy update', function () {
+    $admin = createUserWithRole('Administrador');
+    $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+
+    expect($admin->can('update', $pedido))->toBeTrue();
+});
+
+it('analista puede editar comercialmente solo pedidos en analisis', function () {
+    $analista = createUserWithRole('Analista');
+    $pedidoAnalisis = Pedido::factory()->create(['estado' => 'En_Analisis']);
+    $pedidoCosteo = Pedido::factory()->create(['estado' => 'En_Costeo']);
+
+    expect($analista->can('editComercial', $pedidoAnalisis))->toBeTrue()
+        ->and($analista->can('editComercial', $pedidoCosteo))->toBeFalse();
+});
+
 // === delete ===
 
 it('super_admin puede eliminar cualquier pedido', function () {

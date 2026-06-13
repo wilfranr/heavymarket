@@ -50,7 +50,30 @@ class PedidoPolicy
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Edición comercial del pedido (formulario /edit, PUT /pedidos/{id}).
+     * En costeo nadie modifica ítems desde aquí: usar guardar-costeo o devolver al analista.
+     */
+    public function editComercial(User $user, Pedido $pedido): bool
+    {
+        if (in_array($pedido->estado, ['Cancelado', 'En_Costeo'], true)) {
+            return false;
+        }
+
+        if ($user->hasRole('Analista')) {
+            return $pedido->estado === 'En_Analisis';
+        }
+
+        if ($user->hasRole('Vendedor') && $pedido->estado === 'En_Analisis') {
+            return false;
+        }
+
+        return $user->hasAnyRole(['super_admin', 'Administrador'])
+            || $user->id === $pedido->user_id
+            || $pedido->esDeLanding();
+    }
+
+    /**
+     * Operaciones de mutación del pedido (costeo, devoluciones, transiciones vía endpoints dedicados).
      */
     public function update(User $user, Pedido $pedido): bool
     {
