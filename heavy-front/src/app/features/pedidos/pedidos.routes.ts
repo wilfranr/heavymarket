@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/auth/guards/auth.guard';
 import { pedidoVendedorSoloLecturaEnAnalisisGuard } from './guards/pedido-vendedor-solo-lectura-en-analisis.guard';
+import { pedidoSoloLecturaCosteoGuard } from './guards/pedido-solo-lectura-costeo.guard';
+import { pedidoSoloLecturaAnalysisGuard } from './guards/pedido-solo-lectura-analysis.guard';
 
 /**
  * Rutas del módulo de Pedidos
@@ -35,11 +37,13 @@ export const pedidosRoutes: Routes = [
             {
                 path: ':id/costeo',
                 loadComponent: () => import('./costeo/costeo').then((m) => m.CosteoComponent),
+                canActivate: [pedidoSoloLecturaCosteoGuard],
                 title: 'Costeo'
             },
             {
                 path: ':id/analysis',
                 loadComponent: () => import('./analysis/analysis').then((m) => m.AnalysisComponent),
+                canActivate: [pedidoSoloLecturaAnalysisGuard],
                 title: 'Análisis de Pedido'
             }
         ]

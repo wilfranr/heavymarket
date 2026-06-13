@@ -109,4 +109,32 @@ class PedidoPolicy
 
         return false;
     }
+
+    /**
+     * Marcar pedido como enviado (Aprobado -> Enviado).
+     * Solo Logistica, Administrador y super_admin.
+     */
+    public function enviar(User $user, Pedido $pedido): bool
+    {
+        $user->load('roles');
+        $roleNames = $user->roles->pluck('name')->all();
+
+        return in_array('super_admin', $roleNames, true)
+            || in_array('Administrador', $roleNames, true)
+            || in_array('Logistica', $roleNames, true);
+    }
+
+    /**
+     * Marcar pedido como entregado (Enviado -> Entregado).
+     * Solo Logistica, Administrador y super_admin.
+     */
+    public function entregar(User $user, Pedido $pedido): bool
+    {
+        $user->load('roles');
+        $roleNames = $user->roles->pluck('name')->all();
+
+        return in_array('super_admin', $roleNames, true)
+            || in_array('Administrador', $roleNames, true)
+            || in_array('Logistica', $roleNames, true);
+    }
 }

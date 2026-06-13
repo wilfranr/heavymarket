@@ -193,60 +193,64 @@
     {
       "id": "ped-post-cotizado-solo-lectura",
       "description": "Solo lectura total desde Cotizado: bloquear /analysis y /costeo (guards + policy), ocultar iconos/botones editar en listado/detalle/cotizaciones para todos los roles. Utilidad central ESTADOS_SOLO_LECTURA alineada con backend.",
-      "status": "pending",
+      "status": "awaiting_review",
       "required_skill": "software_architect",
       "depends_on": ["ped-post-cotizado-triage-doc", "ped-edit-comercial-cerrar-post-analisis"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/core/utils/pedido-edicion-comercial.ts",
-          "status": "pending"
+          "status": "implemented"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
-          "status": "pending"
+          "path": "heavy-front/src/app/features/pedidos/guards/pedido-solo-lectura-costeo.guard.ts",
+          "status": "implemented"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
-          "status": "pending"
+          "path": "heavy-front/src/app/features/pedidos/guards/pedido-solo-lectura-analysis.guard.ts",
+          "status": "implemented"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "pending"
+          "path": "heavy-front/src/app/features/pedidos/pedidos.routes.ts",
+          "status": "implemented"
         },
         {
           "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "pending"
+          "status": "implemented"
         }
       ]
     },
     {
       "id": "ped-enviar-entregar-permisos-ui",
       "description": "Policy y UI para POST enviar/entregar: solo Logistica, Administrador y super_admin. Botones en detalle pedido (Aprobado->Enviado, Enviado->Entregado). Vendedor y Analista sin acceso.",
-      "status": "pending",
+      "status": "awaiting_review",
       "required_skill": null,
       "depends_on": ["ped-post-cotizado-triage-doc"],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "pending"
+          "status": "implemented"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "pending"
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/pedido.service.ts",
+          "status": "implemented"
         },
         {
           "path": "heavy-api/tests/Feature/Api/PedidoEnviarEntregarTest.php",
-          "status": "pending"
+          "status": "implemented"
         }
       ]
     },
@@ -367,14 +371,14 @@
     {
       "id": "terceros-upload-tests",
       "description": "Tests: Escribir pruebas unitarias/integración en Laravel para la subida de documentos individuales y validaciones duales. Validar el funcionamiento en frontend.",
-      "status": "in_progress",
+      "status": "awaiting_review",
       "required_skill": "automated_tester",
       "depends_on": ["terceros-upload-frontend"],
       "topic_key": "arch/heavy-audit-history",
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/TerceroDocumentUploadTest.php",
-          "status": "writing"
+          "status": "implemented"
         }
       ]
     }

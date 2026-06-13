@@ -148,7 +148,7 @@ export class AppMenu implements OnInit {
         if (!hasVendedorRole || hasAdminRole) {
             crmItems.push({ label: 'Empresas', icon: 'pi pi-fw pi-building', routerLink: ['/app/empresas'] });
         }
-        crmItems.push({ label: 'Contactos', icon: 'pi pi-fw pi-address-book', routerLink: ['/app/contactos'] }, { label: 'Direcciones', icon: 'pi pi-fw pi-map-marker', routerLink: ['/app/direcciones'] });
+        // Contactos y Direcciones: ocultos hasta tener funcionalidad completa
 
         this.model.push({
             label: 'CRM & Terceros',

@@ -130,6 +130,20 @@ export class PedidoService extends ApiService {
     }
 
     /**
+     * Marcar pedido como enviado (Aprobado -> Enviado)
+     */
+    enviarPedido(id: number): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/enviar`, {});
+    }
+
+    /**
+     * Marcar pedido como entregado (Enviado -> Entregado)
+     */
+    entregarPedido(id: number): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/entregar`, {});
+    }
+
+    /**
      * Guardar datos de costeo de forma masiva
      */
     guardarCosteo(id: number, data: any): Observable<ApiResponse<any>> {

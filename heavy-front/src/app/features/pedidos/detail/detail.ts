@@ -140,6 +140,24 @@ export class DetailComponent implements OnInit {
     }
 
     /**
+     * Determina si el usuario puede marcar como enviado (Aprobado -> Enviado).
+     * Solo Logistica, Administrador y super_admin.
+     */
+    puedeEnviarPedido(pedido: Pedido): boolean {
+        if (pedido.estado !== 'Aprobado') return false;
+        return this.authService.hasAnyRole(['Logistica', 'Administrador', 'super_admin']);
+    }
+
+    /**
+     * Determina si el usuario puede marcar como entregado (Enviado -> Entregado).
+     * Solo Logistica, Administrador y super_admin.
+     */
+    puedeEntregarPedido(pedido: Pedido): boolean {
+        if (pedido.estado !== 'Enviado') return false;
+        return this.authService.hasAnyRole(['Logistica', 'Administrador', 'super_admin']);
+    }
+
+    /**
      * Imprimir es prematuro mientras el pedido no ha superado el análisis comercial.
      */
     puedeImprimirPedido(pedido: Pedido): boolean {
@@ -252,6 +270,66 @@ export class DetailComponent implements OnInit {
      */
     imprimirPedido(): void {
         window.print();
+    }
+
+    /**
+     * Marcar pedido como enviado (Aprobado -> Enviado)
+     */
+    enviarPedido(): void {
+        this.confirmationService.confirm({
+            message: '¿Confirmar despacho del pedido?',
+            header: 'Marcar como Enviado',
+            icon: 'pi pi-send',
+            accept: () => {
+                this.pedidoService.enviarPedido(this.pedidoId()).subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Enviado',
+                            detail: 'Pedido marcado como enviado'
+                        });
+                        this.store.dispatch(loadPedido({ id: this.pedidoId() }));
+                    },
+                    error: () => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'No se pudo marcar como enviado'
+                        });
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Marcar pedido como entregado (Enviado -> Entregado)
+     */
+    entregarPedido(): void {
+        this.confirmationService.confirm({
+            message: '¿Confirmar entrega del pedido?',
+            header: 'Marcar como Entregado',
+            icon: 'pi pi-box',
+            accept: () => {
+                this.pedidoService.entregarPedido(this.pedidoId()).subscribe({
+                    next: () => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Entregado',
+                            detail: 'Pedido marcado como entregado'
+                        });
+                        this.store.dispatch(loadPedido({ id: this.pedidoId() }));
+                    },
+                    error: () => {
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: 'No se pudo marcar como entregado'
+                        });
+                    }
+                });
+            }
+        });
     }
 
     /** Comentarios de un ítem requerido para vista (parsea JSON o texto plano). */

@@ -795,11 +795,18 @@ class PedidoController extends Controller
     }
 
     /**
-     * Marcar como enviado
+     * Marcar como enviado (Aprobado -> Enviado).
+     * Solo Logistica, Administrador y super_admin.
      */
     public function enviar(Request $request, Pedido $pedido): JsonResponse
     {
-        $this->authorize('update', $pedido);
+        $this->authorize('enviar', $pedido);
+
+        if ($pedido->estado !== PedidoEstado::Aprobado->value) {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Aprobado pueden marcarse como enviados.',
+            ], 422);
+        }
 
         try {
             $pedido->transitarA(PedidoEstado::Enviado);
@@ -815,11 +822,18 @@ class PedidoController extends Controller
     }
 
     /**
-     * Marcar como entregado
+     * Marcar como entregado (Enviado -> Entregado).
+     * Solo Logistica, Administrador y super_admin.
      */
     public function entregar(Request $request, Pedido $pedido): JsonResponse
     {
-        $this->authorize('update', $pedido);
+        $this->authorize('entregar', $pedido);
+
+        if ($pedido->estado !== PedidoEstado::Enviado->value) {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Enviado pueden marcarse como entregados.',
+            ], 422);
+        }
 
         try {
             $pedido->transitarA(PedidoEstado::Entregado);

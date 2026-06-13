@@ -76,6 +76,7 @@ function createUserWithRole(string $role, array $attributes = []): User
 {
     $user = User::factory()->create($attributes);
     $user->assignRole($role);
+    $user->load('roles'); // Ensure roles are loaded for Gate
 
     return $user;
 }

@@ -37,6 +37,10 @@
             } @if (puedeDevolverDesdeCotizado(pedido)) {
             <p-button label="Devolver a costeo" icon="pi pi-calculator" severity="warn" [outlined]="true" (onClick)="abrirDevolverACosteo()"></p-button>
             <p-button label="Devolver al analista" icon="pi pi-search" severity="warn" [outlined]="true" (onClick)="abrirDevolverAAnalista()"></p-button>
+            } @if (puedeEnviarPedido(pedido)) {
+            <p-button label="Marcar Enviado" icon="pi pi-send" severity="success" (onClick)="enviarPedido()"></p-button>
+            } @if (puedeEntregarPedido(pedido)) {
+            <p-button label="Marcar Entregado" icon="pi pi-box" severity="success" (onClick)="entregarPedido()"></p-button>
             }
         </div>
     </div>
