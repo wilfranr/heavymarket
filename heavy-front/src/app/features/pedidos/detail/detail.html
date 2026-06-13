@@ -30,7 +30,9 @@
         </div>
         <div class="flex gap-2">
             <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volver()"></p-button>
+            @if (pedido.estado !== 'Nuevo') {
             <p-button label="Imprimir" icon="pi pi-print" severity="secondary" [outlined]="true" (onClick)="imprimirPedido()"></p-button>
+            }
             @if (puedeAnalizarPedido(pedido)) {
             <p-button label="Analizar Pedido" icon="pi pi-search" severity="warn" (onClick)="analizarPedido()"></p-button>
             } @if (puedeCostearPedido(pedido)) {
@@ -67,7 +69,7 @@
                                 <div class="surface-card border border-surface-200 dark:border-surface-700 rounded-lg p-4 transition-colors hover:border-primary">
                                     <div class="flex justify-between items-start mb-3 border-b border-surface-200 dark:border-surface-700 pb-3">
                                         <div>
-                                            <h3 class="text-xl font-bold m-0 text-color">@if (item.referencia?.referencia) { {{ item.referencia?.referencia }} } @else { Ítem Requerido #{{ item.id }} }</h3>
+                                            <h3 class="text-xl font-bold m-0 text-color">@if (item.referencia?.referencia) { {{ item.referencia?.referencia }} } @else { Ítem Requerido #{{ $index + 1 }} }</h3>
                                             <span class="text-sm text-muted-color">Cant: <strong class="text-color">{{ item.cantidad || 1 }}</strong></span>
                                         </div>
                                         <p-tag [value]="item.estado ? 'Activo' : 'Inactivo'" [severity]="item.estado ? 'success' : 'danger'"></p-tag>
@@ -256,7 +258,9 @@
                 </ul>
 
                 <div class="mt-6 pt-4 border-t border-primary-200/50">
+                    @if (pedido.estado !== 'Nuevo') {
                     <p-button label="Generar Cotización" icon="pi pi-file-export" styleClass="w-full" severity="primary" [outlined]="true"></p-button>
+                    }
                 </div>
             </div>
         </div>

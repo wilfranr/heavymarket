@@ -1,92 +1,345 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-09T20:35:00Z",
-  "issue": "busqueda-dropdowns-p-select",
-  "description": "Incluir la opción de búsqueda en los dropdowns (p-select) del proyecto que manejan datos variables o extensos",
+  "last_updated": "2026-06-13T12:00:00Z",
+  "issue": "pedidos-restricciones-estado-rol",
+  "description": "Matriz de restricciones de botones y acciones del módulo pedidos según estado del pedido y rol del usuario. Validación incremental estado por estado; implementación nodo a nodo bajo petición del usuario.",
+  "workflow": "triage-incremental",
   "nodes": [
     {
-      "id": "refactor-contactos",
-      "description": "Agregar [filter]=\"true\" en los selectores de terceros en los componentes de contactos (crear, editar y listar)",
+      "id": "ped-fundamentos-arquitectura",
+      "description": "Diseñar PedidoPermisosService (frontend) que centralice visibilidad y habilitación de acciones por estado×rol, alineado con PedidoPolicy y PedidoEstado (backend).",
+      "status": "pending",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/pedidos-permisos-service",
+      "files": [
+        "heavy-front/src/app/features/pedidos/services/pedido-permisos.service.ts"
+      ]
+    },
+    {
+      "id": "ped-fundamentos-matriz-doc",
+      "description": "Crear sección Matriz estado×rol (documento vivo) en docs/modulo_pedidos.md con índice de estados y convenciones de nomenclatura.",
+      "status": "pending",
+      "required_skill": "tech_doc_expert",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        "docs/modulo_pedidos.md"
+      ]
+    },
+    {
+      "id": "ped-nuevo-detail-limpiar-ui",
+      "description": "Estado Nuevo — Vista detalle: eliminar botón Imprimir del header y botón Generar Cotización del sidebar (decorativo / prematuro en este estado).",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Validado por usuario: restricciones vendedor en Nuevo están correctas; solo limpieza UI en detalle. Review: build OK, templates OK, dark mode compatible.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/contactos/create/create.component.ts",
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
           "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/features/contactos/edit/edit.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/contactos/list/list.component.ts",
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "refactor-direcciones",
-      "description": "Agregar [filter]=\"true\" en los selectores de tercero, departamento/estado y ciudad en direcciones (crear, editar y listar)",
+      "id": "ped-nuevo-detail-item-index",
+      "description": "Estado Nuevo — Vista detalle: corregir fallback 'Ítem Requerido #N' usando posición en el pedido ($index + 1) en lugar del PK pedido_referencia.id.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [],
+      "topic_key": "bugfix/pedido-item-label",
+      "review_notes": "Review: build OK, $index + 1 correcto para numeracion secuencial.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/direcciones/create/create.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/direcciones/edit/edit.component.ts",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/direcciones/list/list.component.ts",
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "refactor-articulos",
-      "description": "Agregar [filter]=\"true\" en los selectores de fabricante, marca y tipo en los templates de creación y edición de artículos",
+      "id": "ped-nuevo-doc-cerrar",
+      "description": "Documentar en matriz viva las decisiones cerradas para estado Nuevo (detalle, listado, edición, backend).",
       "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
+      "required_skill": "tech_doc_expert",
+      "depends_on": [
+        "ped-nuevo-detail-limpiar-ui",
+        "ped-nuevo-detail-item-index"
+      ],
+      "topic_key": "biz/roles",
+      "review_notes": "Review: documentacion completa con tabla de elementos, roles y archivos afectados.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/articulos/create/create.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "path": "docs/modulo_pedidos.md",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "refactor-pedidos",
-      "description": "Agregar [filter]=\"true\" en el selector de marca en costeo y el de cliente en pedidos-list",
-      "status": "done",
+      "id": "ped-borrador-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Borrador: matriz de botones en detalle, edición, listado y transiciones.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-nuevo-doc-cerrar"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-en-analisis-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado En_Analisis: analizar, devolver, editar, guardar; reglas vendedor vs analista vs admin.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-borrador-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-enviado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Enviado: acciones permitidas y transiciones.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-en-analisis-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-en-costeo-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado En_Costeo: costeo, guardar, generar cotización, devolver al analista; roles en UI.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-enviado-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-cotizado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Cotizado: aprobar, rechazar, editar, cotizaciones.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-en-costeo-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-aprobado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Aprobado: orden de trabajo, entrega, edición.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-cotizado-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-entregado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Entregado: solo lectura y acciones históricas.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-aprobado-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-rechazado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Rechazado: solo lectura, re-apertura o cierre.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-entregado-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-cancelado-definir",
+      "description": "TRIAGE PENDIENTE — Usuario validará estado Cancelado: bloqueo total de mutación en UI y rutas.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-rechazado-definir"
+      ],
+      "topic_key": "biz/roles",
+      "files": []
+    },
+    {
+      "id": "ped-cross-list-ownership",
+      "description": "Listado: ocultar Editar/Anular cuando el vendedor no es dueño del pedido (alinear UI con PedidoPolicy update/delete).",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-fundamentos-arquitectura",
+        "ped-cancelado-definir"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-cross-edit-guardar-estado",
+      "description": "Edición: restringir botón Guardar Borrador según estado (no permitir mutación en estados finales o post-costeo según matriz).",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "ped-fundamentos-arquitectura",
+        "ped-cancelado-definir"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-cross-costeo-roles",
+      "description": "Costeo: aplicar restricciones de rol en botones Guardar, Generar Cotización y Devolver al analista.",
+      "status": "pending",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
+      "depends_on": [
+        "ped-fundamentos-arquitectura",
+        "ped-en-costeo-definir"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
-          "status": "validated"
+          "status": "pending"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
-          "status": "validated"
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "pending"
         }
       ]
     },
     {
-      "id": "verificar-cambios",
-      "description": "Ejecutar validaciones de frontend (ng lint, npm test, ng build) para asegurar que todo compila y funciona correctamente",
+      "id": "ped-cross-transiciones-alinear",
+      "description": "Alinear transicionesValidas (edit.ts) con enum PedidoEstado (backend); eliminar botones cuya transición el API rechazaría.",
+      "status": "pending",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ped-fundamentos-arquitectura",
+        "ped-cancelado-definir"
+      ],
+      "topic_key": "decision/pedidos-transiciones",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-api/app/Enums/PedidoEstado.php",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-cross-logistica-policy",
+      "description": "Resolver inconsistencia rol Logistica: referenciado en guards/detalle/listado pero excluido de PedidoPolicy y menú pedidos.",
+      "status": "pending",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ped-cancelado-definir"
+      ],
+      "topic_key": "decision/pedidos-logistica",
+      "files": [
+        {
+          "path": "heavy-api/app/Policies/PedidoPolicy.php",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-cross-refactor-permisos",
+      "description": "Migrar puedeEditarPedido, vendedorPuedeMutarPedido, puedeEnviarACosteo, etc. al PedidoPermisosService unificado.",
+      "status": "pending",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ped-fundamentos-arquitectura",
+        "ped-cross-list-ownership",
+        "ped-cross-edit-guardar-estado",
+        "ped-cross-costeo-roles"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/services/pedido-permisos.service.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "pending"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "ped-gates-sprint-nuevo",
+      "description": "Gates Reviewer tras implementar nodos de estado Nuevo: ng lint, npm test, ng build.",
       "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": ["refactor-contactos", "refactor-direcciones", "refactor-articulos", "refactor-pedidos"],
+      "depends_on": [
+        "ped-nuevo-detail-limpiar-ui",
+        "ped-nuevo-detail-item-index"
+      ],
+      "review_notes": "Build: OK (0 errores). npm test: fallan por configuracion pendiente de vitest (pre-existente, no relacionado con cambios). Lint: script no configurado en proyecto.",
+      "files": []
+    },
+    {
+      "id": "ped-gates-cierre-global",
+      "description": "Gates Reviewer finales: frontend completo + php artisan test tras ped-cross-refactor-permisos y ped-cross-transiciones-alinear.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ped-cross-refactor-permisos",
+        "ped-cross-transiciones-alinear",
+        "ped-cross-logistica-policy"
+      ],
       "files": []
     }
   ]
