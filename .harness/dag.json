@@ -27,93 +27,93 @@
     {
       "id": "ped-edit-comercial-cerrar-post-analisis",
       "description": "Cerrar edicion comercial (/edit, PUT pedido) desde Cotizado en adelante para todos los roles. Extender pedido-edicion-comercial.ts y PedidoPolicy::editComercial; ocultar Editar/Generar cotizacion decorativo en detalle.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["ped-cotizado-triage-doc"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/core/utils/pedido-edicion-comercial.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-cotizado-backend-enum-anulada",
       "description": "Backend fundamentos: agregar transiciones Cotizado->En_Costeo y Cotizado->En_Analisis en PedidoEstado; estado Anulada en cotizaciones; metodo anularCotizacionActiva(pedido) en CotizacionService con regla una cotizacion activa por pedido.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": ["ped-cotizado-triage-doc"],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
           "path": "heavy-api/app/Enums/PedidoEstado.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/database/migrations/",
-          "status": "implemented",
+          "status": "validated",
           "note": "No requiere migracion: Anulada es valor string en columna estado existente"
         },
         {
           "path": "heavy-api/app/Services/CotizacionService.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Unit/Enums/PedidoEstadoTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-cotizado-backend-devolver-endpoints",
       "description": "Endpoints POST devolver-a-costeo y devolver-analista-desde-cotizado (o unificar devolver-analista con origen Cotizado). Transaccion: anular cotizacion activa + transitar pedido + comentario obligatorio + notificaciones.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["ped-cotizado-backend-enum-anulada"],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/routes/api.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/PedidoDevolverDesdeCotizadoTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-cotizado-frontend-service-guard",
       "description": "PedidoService: metodos devolverACosteo y devolverAAnalistaDesdeCotizado. Guard /edit: redirigir Cotizado a detalle o cotizaciones. Constantes alineadas con backend.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": ["ped-cotizado-backend-devolver-endpoints"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/core/services/pedido.service.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
-          "status": "implemented",
+          "status": "validated",
           "note": "Guard ya bloquea Cotizado via pedidoPermiteEdicionComercial() actualizada en nodo anterior"
         }
       ]
@@ -121,57 +121,55 @@
     {
       "id": "ped-cotizado-ui-botones-devolver",
       "description": "UI: botones Devolver a costeo y Devolver al analista en detalle pedido (Cotizado) y/o detalle cotizacion. Dialogo comentario obligatorio. Ocultar acciones sobre cotizacion Anulada.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["ped-cotizado-frontend-service-guard", "ped-edit-comercial-cerrar-post-analisis"],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-cotizado-tests-automatizados",
       "description": "Tests: PHPUnit devoluciones + anulacion; frontend specs si aplica; E2E flujo Cotizado->analista->costeo->nueva cotizacion y Cotizado->costeo->recotizar.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": ["ped-cotizado-ui-botones-devolver"],
       "topic_key": "arch/heavy-audit-history",
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/PedidoDevolverDesdeCotizadoTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/e2e/pedido-devolver-desde-cotizado.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "ped-cotizado-doc-cierre",
       "description": "Actualizar docs/modulo_pedidos.md con estado implementado y marcar nodos cerrados. Decision diferida: versionado/oportunidades comerciales.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "tech_doc_expert",
       "depends_on": ["ped-cotizado-tests-automatizados"],
       "topic_key": "decision/pedidos-cotizado-devoluciones",
       "files": [
         {
           "path": "docs/modulo_pedidos.md",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
-    }
       ]
     },
     {
@@ -295,6 +293,91 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "terceros-upload-triage-doc",
+      "description": "Triage: documentar diseño de la API para carga de archivos, flujos de datos y diseño del componente PrimeNG FileUpload en docs/terceros_upload.md.",
+      "status": "awaiting_review",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/terceros-upload",
+      "files": [
+        {
+          "path": "docs/terceros_upload.md",
+          "status": "writing"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "terceros-upload-backend",
+      "description": "Backend: crear endpoint POST /v1/terceros/upload en TerceroController para la subida de documentos individuales. Modificar las reglas de validación en StoreTerceroRequest y UpdateTerceroRequest para admitir strings (paths de archivos ya subidos) además de archivos binarios.",
+      "status": "awaiting_review",
+      "required_skill": "sql_query_analyst",
+      "depends_on": ["terceros-upload-triage-doc"],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "terceros-upload-frontend",
+      "description": "Frontend: actualizar tercero-create-modal y tercero-form para utilizar PrimeNG p-fileUpload en modo avanzado enviando los archivos al endpoint asíncrono. Mostrar preview, progress bar, badge de estado, info de tamaño y botón de remover, enlazando el path devuelto con el Form Control.",
+      "status": "in_progress",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["terceros-upload-backend"],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.html",
+          "status": "writing"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.ts",
+          "status": "writing"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "writing"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "writing"
+        }
+      ]
+    },
+    {
+      "id": "terceros-upload-tests",
+      "description": "Tests: Escribir pruebas unitarias/integración en Laravel para la subida de documentos individuales y validaciones duales. Validar el funcionamiento en frontend.",
+      "status": "in_progress",
+      "required_skill": "automated_tester",
+      "depends_on": ["terceros-upload-frontend"],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/TerceroDocumentUploadTest.php",
+          "status": "writing"
+        }
+      ]
     }
   ]
 }
+

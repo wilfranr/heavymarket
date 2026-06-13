@@ -54,13 +54,15 @@ it('En_Costeo puede transitar a Cotizado, En_Analisis o Cancelado', function () 
         ->toContain(PedidoEstado::Cancelado);
 });
 
-it('Cotizado puede transitar a Aprobado, Rechazado o Cancelado', function () {
+it('Cotizado puede transitar a Aprobado, Rechazado, Cancelado, En_Costeo o En_Analisis', function () {
     $estado = PedidoEstado::Cotizado;
     $validas = $estado->transicionesValidas();
 
     expect($validas)->toContain(PedidoEstado::Aprobado)
         ->toContain(PedidoEstado::Rechazado)
-        ->toContain(PedidoEstado::Cancelado);
+        ->toContain(PedidoEstado::Cancelado)
+        ->toContain(PedidoEstado::En_Costeo)
+        ->toContain(PedidoEstado::En_Analisis);
 });
 
 it('Aprobado puede transitar a Enviado o Cancelado', function () {

@@ -161,6 +161,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/cancelar', [PedidoController::class, 'cancelar'])->name('pedidos.cancelar');
         Route::post('pedidos/{pedido}/devolver-vendedor', [PedidoController::class, 'devolverAVendedor'])->name('pedidos.devolver-vendedor');
         Route::post('pedidos/{pedido}/devolver-analista', [PedidoController::class, 'devolverAAnalista'])->name('pedidos.devolver-analista');
+        Route::post('pedidos/{pedido}/devolver-a-costeo', [PedidoController::class, 'devolverACosteo'])->name('pedidos.devolver-a-costeo');
         Route::post('pedidos/{pedido}/guardar-costeo', [PedidoController::class, 'guardarCosteo'])->name('pedidos.guardar-costeo');
 
         Route::apiResource('pedidos', PedidoController::class);
@@ -179,6 +180,7 @@ Route::prefix('v1')->group(function () {
         Route::post('pedidos/{pedido}/articulos', [PedidoController::class, 'addArticulo'])->name('pedidos.articulos.store');
         Route::put('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'updateArticulo'])->name('pedidos.articulos.update');
         Route::delete('pedidos/{pedido}/articulos/{articulo}', [PedidoController::class, 'deleteArticulo'])->name('pedidos.articulos.destroy');
+        Route::post('terceros/upload', [TerceroController::class, 'uploadDocumento'])->name('terceros.upload')->middleware('role:Vendedor|super_admin|Administrador');
         Route::apiResource('terceros', TerceroController::class)->middleware('role:Vendedor|super_admin|Administrador|Logistica');
         Route::post('cotizaciones/finalizar-costeo', [CotizacionController::class, 'finalizarCosteo'])->name('cotizaciones.finalizar-costeo');
         Route::get('cotizaciones/{cotizacion}/download-pdf', [CotizacionController::class, 'downloadPDF'])->name('cotizaciones.download-pdf');

@@ -56,6 +56,8 @@ enum PedidoEstado: string
                 self::Aprobado,
                 self::Rechazado,
                 self::Cancelado,
+                self::En_Costeo,   // Devolver a costeo (recosteo sin items nuevos)
+                self::En_Analisis, // Devolver al analista (referencia olvidada / cambio alcance)
             ],
             self::Aprobado => [
                 self::Enviado,

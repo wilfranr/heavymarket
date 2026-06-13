@@ -272,7 +272,40 @@ class CotizacionService
     }
 
     /**
-     * Generar PDF de la cotización
+     * Anular la cotizacion activa de un pedido.
+     *
+     * Regla: maximo una cotizacion activa (Enviada o Borrador) por pedido.
+     * Al devolver desde Cotizado, la cotizacion vigente pasa a Anulada.
+     *
+     * @return Cotizacion|null La cotizacion anulada o null si no habia activa
+     */
+    public function anularCotizacionActiva(Pedido $pedido, string $motivo = ''): ?Cotizacion
+    {
+        $cotizacionActiva = Cotizacion::query()
+            ->where('pedido_id', $pedido->id)
+            ->whereIn('estado', ['Enviada', 'Borrador'])
+            ->latest('created_at')
+            ->first();
+
+        if (! $cotizacionActiva) {
+            return null;
+        }
+
+        $observaciones = $cotizacionActiva->observaciones ?? '';
+        if ($motivo !== '') {
+            $observaciones = trim($observaciones."\nAnulada: ".$motivo);
+        }
+
+        $cotizacionActiva->update([
+            'estado' => 'Anulada',
+            'observaciones' => $observaciones,
+        ]);
+
+        return $cotizacionActiva->fresh();
+    }
+
+    /**
+     * Generar PDF de la cotizacion
      */
     public function generarPDF(Cotizacion $cotizacion)
     {

@@ -19,6 +19,7 @@ use App\Models\Tercero;
 use App\Models\User;
 use App\Notifications\ProviderNewReferencesNotification;
 use App\Notifications\SystemNotification;
+use App\Services\CotizacionService;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -541,8 +542,69 @@ class PedidoController extends Controller
     }
 
     /**
-     * Devolver pedido al analista (desde En_Costeo a En_Analisis)
-     * El vendedor/asesor devuelve el pedido porque necesita cambios en las referencias
+     * Devolver pedido a costeo desde Cotizado (recosteo sin items nuevos).
+     * Transaccion: anular cotizacion activa + transitar a En_Costeo + comentario obligatorio.
+     */
+    public function devolverACosteo(Request $request, Pedido $pedido): JsonResponse
+    {
+        $validated = $request->validate([
+            'comentario' => ['required', 'string', 'min:10', 'max:500'],
+        ]);
+
+        $this->authorize('update', $pedido);
+
+        if ($pedido->estado !== PedidoEstado::Cotizado->value) {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Cotizado pueden devolverse a costeo.',
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($pedido, $validated) {
+                // 1. Anular cotizacion activa
+                $cotizacionService = app(CotizacionService::class);
+                $cotizacionService->anularCotizacionActiva($pedido, $validated['comentario']);
+
+                // 2. Registrar comentario
+                $comentariosExistentes = is_array($pedido->comentario) ? $pedido->comentario : [];
+                $comentariosExistentes[] = [
+                    'origen' => 'Asesor',
+                    'comentario' => $validated['comentario'],
+                    'tipo' => 'devolucion_costeo_desde_cotizado',
+                    'fecha' => now()->toISOString(),
+                ];
+                $pedido->comentario = $comentariosExistentes;
+
+                // 3. Transitar
+                $pedido->transitarA(PedidoEstado::En_Costeo);
+                $pedido->save();
+
+                // 4. Notificar al vendedor
+                if ($vendedor = $pedido->user) {
+                    $vendedor->notify(new SystemNotification(
+                        'pedido_devuelto_costeo',
+                        'Pedido #'.$pedido->id.' devuelto a Costeo',
+                        'El pedido ha sido devuelto a costeo para recotizar: '.$validated['comentario'],
+                        'pi-calculator',
+                        'orange',
+                        ['id' => $pedido->id]
+                    ));
+                }
+            });
+
+            return response()->json([
+                'data' => new PedidoResource($pedido->fresh()),
+                'message' => 'Pedido devuelto a costeo',
+            ]);
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    /**
+     * Devolver pedido al analista (desde En_Costeo o Cotizado a En_Analisis).
+     * El vendedor/asesor devuelve el pedido porque necesita cambios en las referencias.
+     * Si viene de Cotizado, anula la cotizacion activa primero.
      */
     public function devolverAAnalista(Request $request, Pedido $pedido): JsonResponse
     {
@@ -552,24 +614,39 @@ class PedidoController extends Controller
 
         $this->authorize('update', $pedido);
 
+        $estadoActual = $pedido->estado;
+        $desdeCotizado = $estadoActual === PedidoEstado::Cotizado->value;
+        $desdeCosteo = $estadoActual === PedidoEstado::En_Costeo->value;
+
+        if (! $desdeCotizado && ! $desdeCosteo) {
+            return response()->json([
+                'message' => 'Solo los pedidos en estado Cotizado o En_Costeo pueden devolverse al analista.',
+            ], 422);
+        }
+
         try {
-            // Guardar comentario en campo comentario como JSON estructurado
-            $comentariosExistentes = is_array($pedido->comentario) ? $pedido->comentario : [];
+            DB::transaction(function () use ($pedido, $validated, $request, $desdeCotizado) {
+                // Si viene de Cotizado, anular cotizacion activa
+                if ($desdeCotizado) {
+                    $cotizacionService = app(CotizacionService::class);
+                    $cotizacionService->anularCotizacionActiva($pedido, $validated['comentario']);
+                }
 
-            // Agregar nuevo comentario de devolución
-            $comentariosExistentes[] = [
-                'origen' => 'Asesor',
-                'comentario' => $validated['comentario'],
-                'tipo' => 'devolucion_analista',
-                'fecha' => now()->toISOString(),
-            ];
+                // Registrar comentario
+                $comentariosExistentes = is_array($pedido->comentario) ? $pedido->comentario : [];
+                $comentariosExistentes[] = [
+                    'origen' => 'Asesor',
+                    'comentario' => $validated['comentario'],
+                    'tipo' => $desdeCotizado ? 'devolucion_analista_desde_cotizado' : 'devolucion_analista',
+                    'fecha' => now()->toISOString(),
+                ];
+                $pedido->comentario = $comentariosExistentes;
 
-            $pedido->comentario = $comentariosExistentes;
-            $pedido->transitarA(PedidoEstado::En_Analisis);
-            $pedido->save();
+                // Transitar
+                $pedido->transitarA(PedidoEstado::En_Analisis);
+                $pedido->save();
 
-            // Notificar a los analistas
-            try {
+                // Notificar a los analistas
                 $analistas = User::whereHas('roles', function ($q) {
                     $q->where('name', 'Analista');
                 })->get();
@@ -584,9 +661,7 @@ class PedidoController extends Controller
                         ['id' => $pedido->id]
                     ));
                 }
-            } catch (\Exception $e) {
-                // Silenciar errores de notificación
-            }
+            });
 
             return response()->json([
                 'data' => new PedidoResource($pedido->fresh()),

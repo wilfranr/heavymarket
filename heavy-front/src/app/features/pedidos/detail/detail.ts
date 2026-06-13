@@ -1,5 +1,6 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { Observable } from 'rxjs';
@@ -14,6 +15,11 @@ import { MessageService } from 'primeng/api';
 import { TabsModule } from 'primeng/tabs';
 import { DataViewModule } from 'primeng/dataview';
 import { PanelModule } from 'primeng/panel';
+import { DialogModule } from 'primeng/dialog';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { ConfirmationService } from 'primeng/api';
 
 import { Pedido, PedidoReferencia } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
@@ -22,6 +28,7 @@ import { pedidoPermiteEdicionComercial } from '../../../core/utils/pedido-edicio
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { AuthService } from '../../../core/auth/services/auth.service';
+import { PedidoService } from '../../../core/services/pedido.service';
 
 /** Entrada de historial de comentario de ítem (JSON en API o texto legacy). */
 export interface ComentarioReferenciaVista {
@@ -37,8 +44,8 @@ export interface ComentarioReferenciaVista {
 @Component({
     selector: 'app-pedido-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, SkeletonModule, ToastModule, TabsModule, DataViewModule, PanelModule],
-    providers: [MessageService],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, SkeletonModule, ToastModule, TabsModule, DataViewModule, PanelModule, DialogModule, InputTextModule, TextareaModule, ConfirmDialogModule],
+    providers: [MessageService, ConfirmationService],
     templateUrl: './detail.html',
     styleUrl: './detail.scss'
 })
@@ -53,11 +60,19 @@ export class DetailComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
     private readonly authService = inject(AuthService);
+    private readonly pedidoService = inject(PedidoService);
+    private readonly confirmationService = inject(ConfirmationService);
 
     pedido$!: Observable<Pedido | undefined>;
     loading$!: Observable<boolean>;
 
     pedidoId = signal<number>(0);
+
+    // Dialog de devolucion
+    devolverDialog = signal(false);
+    devolverTipo = signal<'costeo' | 'analista'>('costeo');
+    devolverComentario = signal('');
+    devolverComentarioError = signal<string | null>(null);
 
     ngOnInit(): void {
         this.route.paramMap.subscribe((params) => {
@@ -132,10 +147,11 @@ export class DetailComponent implements OnInit {
     }
 
     /**
-     * Generar cotización desde detalle: decorativo; la cotización real se crea tras el costeo.
+     * Generar cotizacion desde detalle: decorativo; la cotizacion real se crea tras el costeo.
+     * Oculto desde Cotizado en adelante (ya existe cotizacion o el flujo esta cerrado).
      */
     puedeGenerarCotizacionEnDetalle(pedido: Pedido): boolean {
-        return pedido.estado !== 'Nuevo' && pedido.estado !== 'En_Analisis';
+        return pedido.estado === 'En_Costeo';
     }
 
     /**
@@ -157,6 +173,71 @@ export class DetailComponent implements OnInit {
      */
     analizarPedido(): void {
         this.router.navigate(['/app/pedidos', this.pedidoId(), 'analysis']);
+    }
+
+    /**
+     * Determina si se pueden mostrar botones de devolucion (solo Cotizado)
+     */
+    puedeDevolverDesdeCotizado(pedido: Pedido): boolean {
+        if (pedido.estado !== 'Cotizado') return false;
+        return this.authService.hasAnyRole(['Vendedor', 'Administrador', 'super_admin']);
+    }
+
+    /**
+     * Abre dialog para devolver a costeo
+     */
+    abrirDevolverACosteo(): void {
+        this.devolverTipo.set('costeo');
+        this.devolverComentario.set('');
+        this.devolverComentarioError.set(null);
+        this.devolverDialog.set(true);
+    }
+
+    /**
+     * Abre dialog para devolver al analista
+     */
+    abrirDevolverAAnalista(): void {
+        this.devolverTipo.set('analista');
+        this.devolverComentario.set('');
+        this.devolverComentarioError.set(null);
+        this.devolverDialog.set(true);
+    }
+
+    /**
+     * Ejecuta la devolucion seleccionada
+     */
+    confirmarDevolucion(): void {
+        const comentario = this.devolverComentario().trim();
+        if (comentario.length < 10) {
+            this.devolverComentarioError.set('El comentario debe tener al menos 10 caracteres');
+            return;
+        }
+
+        const id = this.pedidoId();
+        const tipo = this.devolverTipo();
+
+        const obs = tipo === 'costeo'
+            ? this.pedidoService.devolverACosteo(id, comentario)
+            : this.pedidoService.devolverAAnalista(id, comentario);
+
+        obs.subscribe({
+            next: (response) => {
+                this.devolverDialog.set(false);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Devolucion exitosa',
+                    detail: tipo === 'costeo' ? 'Pedido devuelto a costeo' : 'Pedido devuelto al analista'
+                });
+                this.store.dispatch(loadPedido({ id }));
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'No se pudo completar la devolucion'
+                });
+            }
+        });
     }
 
     /**

@@ -71,16 +71,26 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                     </div>
                 </div>
 
-                @if (cot.estado === 'Borrador') {
-                    <div class="mx-8 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)">
-                        <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
-                        <div class="text-slate-700 dark:text-slate-200">
-                            <span class="font-semibold">Cotización en Borrador.</span>
-                            Falta configurar la tarifa de flete (USD/lb) del país de uno o más proveedores internacionales del costeo.
-                            <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 font-medium ml-1 underline">Gestión de Países</a>
-                        </div>
-                    </div>
-                }
+                        @if (cot.estado === 'Borrador') {
+                            <div class="mx-8 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)">
+                                <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
+                                <div class="text-slate-700 dark:text-slate-200">
+                                    <span class="font-semibold">Cotizacion en Borrador.</span>
+                                    Falta configurar la tarifa de flete (USD/lb) del pais de uno o mas proveedores internacionales del costeo.
+                                    <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 font-medium ml-1 underline">Gestion de Paises</a>
+                                </div>
+                            </div>
+                        }
+
+                        @if (cot.estado === 'Anulada') {
+                            <div class="mx-8 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" style="border-color: var(--p-red-500); background: color-mix(in srgb, var(--p-red-500) 12%, transparent)">
+                                <i class="pi pi-ban text-red-500 mt-0.5"></i>
+                                <div class="text-slate-700 dark:text-slate-200">
+                                    <span class="font-semibold">Cotizacion Anulada.</span>
+                                    Esta cotizacion fue anulada durante una devolucion del pedido. Consulte el historial del pedido para mas detalles.
+                                </div>
+                            </div>
+                        }
 
                 <div class="flex flex-col gap-10">
                     <!-- Top Info Cards Grid -->
@@ -259,12 +269,14 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                     <!-- Acciones Finales -->
                     <div class="flex flex-wrap justify-end gap-4 mt-4 mb-20 px-8">
                         <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="onBack()"><i class="pi pi-arrow-left"></i> Volver al listado</button>
-                        <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"><i class="pi pi-pencil"></i> Editar</button>
-                        @if (cot.estado === 'En_Proceso' || cot.estado === 'Pendiente') {
-                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;"><i class="pi pi-times"></i> Rechazar</button>
-                            <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"><i class="pi pi-check"></i> Aprobar</button>
+                        @if (cot.estado !== 'Anulada') {
+                            <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"><i class="pi pi-pencil"></i> Editar</button>
+                            @if (cot.estado === 'En_Proceso' || cot.estado === 'Pendiente') {
+                                <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;"><i class="pi pi-times"></i> Rechazar</button>
+                                <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"><i class="pi pi-check"></i> Aprobar</button>
+                            }
+                            <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="onDownloadPDF()"><i class="pi pi-send"></i> Enviar / Descargar PDF</button>
                         }
-                        <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="onDownloadPDF()"><i class="pi pi-send"></i> Enviar / Descargar PDF</button>
                     </div>
                 </div>
 
@@ -567,12 +579,12 @@ export class DetailComponent implements OnInit {
             case 'En_Proceso':
                 return 'info';
             case 'Pendiente':
+            case 'Borrador':
                 return 'warn';
             case 'Rechazada':
             case 'Vencida':
+            case 'Anulada':
                 return 'danger';
-            case 'Borrador':
-                return 'warn';
             default:
                 return 'secondary';
         }

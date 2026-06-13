@@ -121,6 +121,14 @@ export class PedidoService extends ApiService {
     devolverAAnalista(id: number, comentario: string): Observable<ApiResponse<Pedido>> {
         return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/devolver-analista`, { comentario });
     }
+
+    /**
+     * Devolver pedido a costeo desde Cotizado (recosteo sin items nuevos)
+     */
+    devolverACosteo(id: number, comentario: string): Observable<ApiResponse<Pedido>> {
+        return this.post<ApiResponse<Pedido>>(`${this.endpoint}/${id}/devolver-a-costeo`, { comentario });
+    }
+
     /**
      * Guardar datos de costeo de forma masiva
      */

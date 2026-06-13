@@ -72,7 +72,9 @@ it('getTransicionesValidas retorna transiciones correctas', function () {
     expect($transiciones)->toContain(PedidoEstado::Aprobado)
         ->toContain(PedidoEstado::Rechazado)
         ->toContain(PedidoEstado::Cancelado)
-        ->toHaveCount(3);
+        ->toContain(PedidoEstado::En_Costeo)
+        ->toContain(PedidoEstado::En_Analisis)
+        ->toHaveCount(5);
 });
 
 it('getEstadosPermitidos retorna array de strings', function () {

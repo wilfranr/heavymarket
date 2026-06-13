@@ -34,6 +34,9 @@
             <p-button label="Costear Pedido" icon="pi pi-dollar" (onClick)="costearPedido()"></p-button>
             } @if (puedeEditarPedido(pedido)) {
             <p-button label="Editar Pedido" icon="pi pi-pencil" (onClick)="editarPedido()"></p-button>
+            } @if (puedeDevolverDesdeCotizado(pedido)) {
+            <p-button label="Devolver a costeo" icon="pi pi-calculator" severity="warn" [outlined]="true" (onClick)="abrirDevolverACosteo()"></p-button>
+            <p-button label="Devolver al analista" icon="pi pi-search" severity="warn" [outlined]="true" (onClick)="abrirDevolverAAnalista()"></p-button>
             }
         </div>
     </div>
@@ -261,6 +264,37 @@
             </div>
         </div>
     </div>
+
+    <!-- Dialog de devolucion -->
+    <p-dialog [(visible)]="devolverDialog" [modal]="true" [closable]="true" [dismissableMask]="true" [style]="{ width: '450px' }" appendTo="body">
+        <ng-template pTemplate="header">
+            <div class="flex items-center gap-2">
+                <i class="pi pi-arrow-circle-left text-warn text-xl"></i>
+                <span class="text-lg font-semibold">{{ devolverTipo() === 'costeo' ? 'Devolver a Costeo' : 'Devolver al Analista' }}</span>
+            </div>
+        </ng-template>
+        <div class="flex flex-col gap-4">
+            <p class="text-sm text-muted-color m-0">
+                {{ devolverTipo() === 'costeo'
+                    ? 'El pedido volvera a la fase de costeo para recotizar. La cotizacion vigente sera anulada.'
+                    : 'El pedido volvera al analista para agregar o corregir referencias. La cotizacion vigente sera anulada.' }}
+            </p>
+            <div class="field">
+                <label for="devolver-comentario" class="block text-sm font-medium mb-2">Comentario <span class="text-red-500">*</span></label>
+                <textarea pTextarea id="devolver-comentario" [(ngModel)]="devolverComentario" [rows]="4" class="w-full" placeholder="Explique el motivo de la devolucion..." [ngClass]="{ 'ng-dirty ng-invalid': devolverComentarioError() }"></textarea>
+                @if (devolverComentarioError()) {
+                <small class="text-red-500">{{ devolverComentarioError() }}</small>
+                }
+            </div>
+        </div>
+        <ng-template pTemplate="footer">
+            <p-divider />
+            <div class="flex justify-end gap-2">
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="devolverDialog.set(false)" />
+                <p-button label="Confirmar devolucion" icon="pi pi-check" severity="warn" (onClick)="confirmarDevolucion()" />
+            </div>
+        </ng-template>
+    </p-dialog>
 
     } @else {
     <div class="flex flex-col items-center justify-center min-h-[50vh] bg-surface-0 dark:bg-surface-900 rounded-2xl border border-surface-200 dark:border-surface-700 shadow-sm p-8 text-center">

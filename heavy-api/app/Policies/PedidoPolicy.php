@@ -50,12 +50,12 @@ class PedidoPolicy
     }
 
     /**
-     * Edición comercial del pedido (formulario /edit, PUT /pedidos/{id}).
-     * En costeo nadie modifica ítems desde aquí: usar guardar-costeo o devolver al analista.
+     * Edicion comercial del pedido (formulario /edit, PUT /pedidos/{id}).
+     * Desde En_Costeo en adelante nadie modifica items desde aqui: usar guardar-costeo o devolver al analista.
      */
     public function editComercial(User $user, Pedido $pedido): bool
     {
-        if (in_array($pedido->estado, ['Cancelado', 'En_Costeo'], true)) {
+        if (in_array($pedido->estado, ['Cancelado', 'En_Costeo', 'Cotizado', 'Aprobado', 'Rechazado', 'Enviado', 'Entregado'], true)) {
             return false;
         }
 
