@@ -93,7 +93,17 @@
                     <td>
                         <p-cellEditor>
                             <ng-template pTemplate="input">
-                                <p-select [(ngModel)]="editingReferencias[referencia.id].marca_id" [options]="marcas" optionLabel="nombre" optionValue="id" placeholder="Marca o fabricante" styleClass="w-full" appendTo="body" [filter]="true" filterBy="nombre,definicion">
+                                <p-select
+                                    [(ngModel)]="editingReferencias[referencia.id].marca_id"
+                                    [options]="marcas"
+                                    optionLabel="nombre"
+                                    optionValue="id"
+                                    placeholder="Marca o fabricante"
+                                    styleClass="w-full"
+                                    appendTo="body"
+                                    [filter]="true"
+                                    filterBy="nombre,definicion"
+                                >
                                 </p-select>
                             </ng-template>
                             <ng-template pTemplate="output">

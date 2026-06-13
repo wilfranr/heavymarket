@@ -87,7 +87,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             // - 422: validación
             // - 404 en /trms/latest: caso esperado cuando no hay TRM registrada
             const silent404Routes = ['/trms/latest'];
-            const isSilent404 = error.status === 404 && silent404Routes.some(route => req.url.includes(route));
+            const isSilent404 = error.status === 404 && silent404Routes.some((route) => req.url.includes(route));
 
             if (error.status !== 422 && !isSilent404) {
                 console.error('Error HTTP:', error.status, error.message);

@@ -20,12 +20,7 @@ import { ToastModule } from 'primeng/toast';
             <p-toast />
 
             <div class="mb-4">
-                <p-button
-                    icon="pi pi-arrow-left"
-                    label="Volver"
-                                [routerLink]="['/app/countries']"
-                    [text]="true"
-                />
+                <p-button icon="pi pi-arrow-left" label="Volver" [routerLink]="['/app/countries']" [text]="true" />
             </div>
 
             <p-card header="Editar Tarifa de Flete" [style]="{ width: '100%', maxWidth: '600px' }">
@@ -37,45 +32,18 @@ import { ToastModule } from 'primeng/toast';
                     <div class="flex flex-col gap-4">
                         <div>
                             <label class="block font-semibold mb-2">País</label>
-                            <input
-                                pInputText
-                                [value]="country()?.name"
-                                [disabled]="true"
-                                class="w-full"
-                            />
+                            <input pInputText [value]="country()?.name" [disabled]="true" class="w-full" />
                         </div>
 
                         <div>
                             <label class="block font-semibold mb-2">Tarifa de Flete (USD/lb)</label>
-                            <input
-                                pInputText
-                                type="number"
-                                [(ngModel)]="flete"
-                                placeholder="Ej: 2.5"
-                                class="w-full"
-                                min="0"
-                                max="100"
-                                step="0.1"
-                            />
-                            <small class="text-gray-500">
-                                Tarifa en dólares por libra para proveedores internacionales de este país.
-                                Dejar vacío si no aplica.
-                            </small>
+                            <input pInputText type="number" [(ngModel)]="flete" placeholder="Ej: 2.5" class="w-full" min="0" max="100" step="0.1" />
+                            <small class="text-gray-500"> Tarifa en dólares por libra para proveedores internacionales de este país. Dejar vacío si no aplica. </small>
                         </div>
 
                         <div class="flex gap-2">
-                            <p-button
-                                label="Guardar"
-                                icon="pi pi-check"
-                                [loading]="saving()"
-                                (onClick)="save()"
-                            />
-                            <p-button
-                                label="Cancelar"
-                                icon="pi pi-times"
-                                severity="secondary"
-                    [routerLink]="['/app/countries']"
-                            />
+                            <p-button label="Guardar" icon="pi pi-check" [loading]="saving()" (onClick)="save()" />
+                            <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [routerLink]="['/app/countries']" />
                         </div>
                     </div>
                 }

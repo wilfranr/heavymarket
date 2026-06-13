@@ -50,21 +50,6 @@
     }
 
     /* --- SelectButton tipo tercero --- */
-    .p-selectbutton .p-togglebutton {
-        background: var(--p-content-background) !important;
-        border-color: var(--p-content-border-color) !important;
-        color: var(--p-text-muted-color) !important;
-    }
-
-    .p-selectbutton .p-togglebutton .p-togglebutton-content {
-        background: transparent !important;
-        box-shadow: none !important;
-    }
-
-    .p-selectbutton .p-togglebutton:not(.p-togglebutton-checked):hover {
-        background: color-mix(in srgb, var(--p-content-border-color) 30%, var(--p-content-background)) !important;
-    }
-
     .theme-cliente .p-selectbutton .p-togglebutton.p-togglebutton-checked {
         background: color-mix(in srgb, #eab308 22%, var(--p-content-background)) !important;
         border-color: #eab308 !important;
@@ -78,48 +63,6 @@
     .theme-ambos .p-selectbutton .p-togglebutton.p-togglebutton-checked {
         background: color-mix(in srgb, #22c55e 22%, var(--p-content-background)) !important;
         border-color: #22c55e !important;
-    }
-
-    /* --- Campos de formulario --- */
-    .p-inputtext {
-        background: var(--p-content-background) !important;
-        border: 1px solid var(--p-content-border-color) !important;
-        color: var(--p-text-color) !important;
-    }
-
-    .p-select,
-    .p-multiselect {
-        background: var(--p-content-background) !important;
-        border: 1px solid var(--p-content-border-color) !important;
-        color: var(--p-text-color) !important;
-    }
-
-    .p-select-label,
-    .p-multiselect-label {
-        color: var(--p-text-color) !important;
-    }
-
-    .p-inputgroup .p-inputgroupaddon {
-        background: var(--p-content-background) !important;
-        border-color: var(--p-content-border-color) !important;
-        color: var(--p-text-muted-color) !important;
-    }
-
-    .p-inputgroup .p-inputtext {
-        background: var(--p-content-background) !important;
-        border-color: var(--p-content-border-color) !important;
-        color: var(--p-text-color) !important;
-    }
-
-    .p-fileupload {
-        background: transparent;
-        border-color: var(--p-content-border-color);
-    }
-
-    .p-fileupload-content {
-        background: var(--p-content-background);
-        border-color: var(--p-content-border-color);
-        color: var(--p-text-muted-color);
     }
 
     /* --- Botones primarios del wizard --- */

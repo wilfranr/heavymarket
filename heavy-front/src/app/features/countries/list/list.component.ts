@@ -23,24 +23,10 @@ import { ToastModule } from 'primeng/toast';
             <p-toast />
 
             <div class="mb-4">
-                <input
-                    pInputText
-                    type="text"
-                    (input)="applyFilter($event)"
-                    placeholder="Buscar país..."
-                    class="w-full md:w-80"
-                />
+                <input pInputText type="text" (input)="applyFilter($event)" placeholder="Buscar país..." class="w-full md:w-80" />
             </div>
 
-            <p-table
-                [value]="countries()"
-                [paginator]="true"
-                [rows]="20"
-                [rowsPerPageOptions]="[10, 20, 50]"
-                [loading]="loading()"
-                responsiveLayout="scroll"
-                [tableStyle]="{ 'min-width': '50rem' }"
-            >
+            <p-table [value]="countries()" [paginator]="true" [rows]="20" [rowsPerPageOptions]="[10, 20, 50]" [loading]="loading()" responsiveLayout="scroll" [tableStyle]="{ 'min-width': '50rem' }">
                 <ng-template #header>
                     <tr>
                         <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
@@ -61,16 +47,9 @@ import { ToastModule } from 'primeng/toast';
                                 {{ country.flete ? country.flete + ' USD/lb' : 'Sin configurar' }}
                             </span>
                         </td>
-                        <td>{{ country.updated_at | date:'short' }}</td>
+                        <td>{{ country.updated_at | date: 'short' }}</td>
                         <td>
-                            <p-button
-                                icon="pi pi-pencil"
-                                [rounded]="true"
-                                [outlined]="true"
-                                severity="success"
-                                [routerLink]="[country.id, 'edit']"
-                                pTooltip="Editar flete"
-                            />
+                            <p-button icon="pi pi-pencil" [rounded]="true" [outlined]="true" severity="success" [routerLink]="[country.id, 'edit']" pTooltip="Editar flete" />
                         </td>
                     </tr>
                 </ng-template>

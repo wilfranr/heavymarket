@@ -77,14 +77,14 @@
             <!-- Top Info Cards Grid -->
             <div class="flex gap-6 mb-10 px-8">
                 <!-- Order Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                    <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
+                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
                         <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del pedido</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
                             <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
                         </div>
                     </div>
-                    <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[#343743]">
+                    <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)]">
                         <div class="flex justify-between">
                             <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Documento: Pedido</span>
                         </div>
@@ -115,26 +115,17 @@
                 </div>
 
                 <!-- Machine Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                    <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
+                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
                         <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la máquina</span>
                         <div class="w-[47px] h-[44px] flex items-center justify-center">
                             <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
                         </div>
                     </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743] relative">
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] relative">
                         <!-- Machine Selector -->
                         <div class="mb-2">
-                            <p-select
-                                formControlName="maquina_id"
-                                [options]="maquinas"
-                                [filter]="true"
-                                [showClear]="true"
-                                placeholder="Seleccionar Máquina"
-                                appendTo="body"
-                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
-                            >
-                            </p-select>
+                            <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true" [showClear]="true" placeholder="Seleccionar Máquina" appendTo="body" styleClass="w-full"> </p-select>
                         </div>
 
                         @if (pedidoForm.get('maquina_id')?.value) { @let maquina = currentMaquinaInfo; @if (maquina) {
@@ -160,32 +151,16 @@
                 </div>
 
                 <!-- Client Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                    <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
+                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
                         <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del Cliente</span>
                         <div class="flex items-center gap-1">
-                            <p-button
-                                icon="pi pi-pencil"
-                                [rounded]="true"
-                                [text]="true"
-                                severity="warn"
-                                (onClick)="abrirModalEditarCliente()"
-                                [disabled]="!pedidoForm.get('tercero_id')?.value"
-                                pTooltip="Editar cliente"
-                            ></p-button>
+                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="abrirModalEditarCliente()" [disabled]="!pedidoForm.get('tercero_id')?.value" pTooltip="Editar cliente"></p-button>
                             <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail(emailCliente)" [disabled]="!emailCliente" pTooltip="Enviar correo"></p-button>
-                            <p-button
-                                icon="pi pi-whatsapp"
-                                [rounded]="true"
-                                [text]="true"
-                                severity="success"
-                                (onClick)="sendWhatsApp(telefonoClienteWhatsApp)"
-                                [disabled]="!telefonoClienteWhatsApp"
-                                pTooltip="Enviar WhatsApp"
-                            ></p-button>
+                            <p-button icon="pi pi-whatsapp" [rounded]="true" [text]="true" severity="success" (onClick)="sendWhatsApp(telefonoClienteWhatsApp)" [disabled]="!telefonoClienteWhatsApp" pTooltip="Enviar WhatsApp"></p-button>
                         </div>
                     </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743] relative">
+                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] relative">
                         <!-- Client Selector -->
                         <div class="mb-2">
                             <p-select
@@ -232,7 +207,7 @@
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-semibold text-yellow-600 dark:text-brand-yellow">Tus ítems</h3>
                     <div class="flex items-center gap-4">
-                        <div class="bg-gray-100 dark:bg-[#343743] border border-gray-200 dark:border-none rounded-lg px-4 py-2">
+                        <div class="bg-gray-100 dark:bg-[var(--p-content-background)] border border-gray-200 dark:border-[var(--p-content-border-color)] rounded-lg px-4 py-2">
                             <span class="text-gray-500 dark:text-slate-400 text-sm">Total:</span>
                             <span class="text-yellow-600 dark:text-brand-yellow font-bold text-lg ml-2">{{ referenciasFormArray.length }}</span>
                         </div>
@@ -341,7 +316,7 @@
                                     formControlName="cantidad"
                                     placeholder="Ej: 1"
                                     min="1"
-                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-center text-gray-800 dark:text-white"
+                                    class="w-full h-[48px] text-center text-gray-800 dark:text-white"
                                     [class.border-red-500]="campoTieneErrorCosteo($index, 'cantidad')"
                                     [class.dark:border-red-500]="campoTieneErrorCosteo($index, 'cantidad')"
                                 />
@@ -352,13 +327,7 @@
 
                             <!-- Referencia -->
                             <div class="flex-1">
-                                <input
-                                    pInputText
-                                    formControlName="definicion"
-                                    placeholder="Escribir código de referencia..."
-                                    class="w-full !bg-gray-100 dark:!bg-[#343743] border border-gray-300 dark:border-none h-[48px] text-gray-800 dark:text-white uppercase"
-                                    (blur)="resolverReferenciaFila($index)"
-                                />
+                                <input pInputText formControlName="definicion" placeholder="Escribir código de referencia..." class="w-full h-[48px] text-gray-800 dark:text-white uppercase" (blur)="resolverReferenciaFila($index)" />
                                 @if (campoTieneErrorCosteo($index, 'referencia_id')) {
                                 <small class="text-red-400 text-xs mt-1 block"><i class="pi pi-exclamation-circle mr-1"></i>Campo obligatorio</small>
                                 }
@@ -834,11 +803,5 @@
 <!-- Modal Edición de Referencia (inline desde pedido) -->
 
 @if (displayEditTerceroDialog) {
-<app-tercero-create-modal
-    [visible]="displayEditTerceroDialog"
-    (visibleChange)="onTerceroModalVisibleChange($event)"
-    [terceroToEdit]="terceroToEdit"
-    tipoTercero="Cliente"
-    (onTerceroCreated)="onTerceroUpdated($event)"
-></app-tercero-create-modal>
+<app-tercero-create-modal [visible]="displayEditTerceroDialog" (visibleChange)="onTerceroModalVisibleChange($event)" [terceroToEdit]="terceroToEdit" tipoTercero="Cliente" (onTerceroCreated)="onTerceroUpdated($event)"></app-tercero-create-modal>
 }

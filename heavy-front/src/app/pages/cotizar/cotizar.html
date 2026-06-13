@@ -65,14 +65,7 @@
                             </button>
                             <div class="cotizador-dropdown cotizador-dropdown--brands" *ngIf="openBrand()">
                                 <div class="cotizador-dropdown-search">
-                                    <input
-                                        type="text"
-                                        [ngModel]="brandSearch()"
-                                        (ngModelChange)="brandSearch.set($event)"
-                                        placeholder="Buscar marca..."
-                                        (click)="$event.stopPropagation()"
-                                        class="cotizador-dropdown-input"
-                                    />
+                                    <input type="text" [ngModel]="brandSearch()" (ngModelChange)="brandSearch.set($event)" placeholder="Buscar marca..." (click)="$event.stopPropagation()" class="cotizador-dropdown-input" />
                                     <i class="pi pi-search"></i>
                                 </div>
                                 <div class="cotizador-dropdown-item" *ngFor="let brand of filteredBrands()" (click)="selectBrand(brand)" style="display: flex; align-items: center; gap: 12px; padding: 10px 15px">

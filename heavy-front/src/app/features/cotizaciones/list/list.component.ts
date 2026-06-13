@@ -79,7 +79,7 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
                         <td>
                             <p-tag [value]="cotizacion.estado" [severity]="getEstadoSeverity(cotizacion.estado)"> </p-tag>
                             @if (cotizacion.estado === 'Borrador') {
-                            <small class="block mt-1 text-orange-600 dark:text-orange-400">Falta tarifa de flete</small>
+                                <small class="block mt-1 text-orange-600 dark:text-orange-400">Falta tarifa de flete</small>
                             }
                         </td>
                         <td>{{ cotizacion.fecha_emision | date: 'short' }}</td>
@@ -162,20 +162,24 @@ export class ListComponent implements OnInit {
         // Cargar terceros (clientes)
         this.terceroService.list({ per_page: 200, es_cliente: true }).subscribe({
             next: (response) => {
-                this.terceros.set(response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                })));
+                this.terceros.set(
+                    response.data.map((t) => ({
+                        label: t.nombre || `Tercero ${t.id}`,
+                        value: t.id
+                    }))
+                );
             }
         });
 
         // Cargar pedidos
         this.pedidoService.list({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.pedidos.set(response.data.map((p: any) => ({
-                    label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
-                    value: p.id
-                })));
+                this.pedidos.set(
+                    response.data.map((p: any) => ({
+                        label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
+                        value: p.id
+                    }))
+                );
             }
         });
     }

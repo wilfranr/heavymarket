@@ -15,7 +15,7 @@ describe('ReferenciaService', () => {
         es_temporal: false,
         comentario: 'Test comment',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
 
     const mockPaginatedResponse = {
@@ -43,7 +43,7 @@ describe('ReferenciaService', () => {
 
     describe('getAll', () => {
         it('deberia obtener lista paginada de referencias', () => {
-            service.getAll().subscribe(response => {
+            service.getAll().subscribe((response) => {
                 expect(response.data.length).toBe(1);
                 expect(response.data[0].referencia).toBe('TEST-REF-001');
             });
@@ -56,12 +56,7 @@ describe('ReferenciaService', () => {
         it('deberia enviar parametros de filtro', () => {
             service.getAll({ search: 'test', marca_id: 10, es_temporal: true }).subscribe();
 
-            const req = httpMock.expectOne(req =>
-                req.url === '/v1/referencias' &&
-                req.params.get('search') === 'test' &&
-                req.params.get('marca_id') === '10' &&
-                req.params.get('es_temporal') === 'true'
-            );
+            const req = httpMock.expectOne((req) => req.url === '/v1/referencias' && req.params.get('search') === 'test' && req.params.get('marca_id') === '10' && req.params.get('es_temporal') === 'true');
             expect(req.request.method).toBe('GET');
             req.flush(mockPaginatedResponse);
         });
@@ -69,10 +64,7 @@ describe('ReferenciaService', () => {
         it('deberia soportar paginacion', () => {
             service.getAll({ page: 2, per_page: 50 }).subscribe();
 
-            const req = httpMock.expectOne(req =>
-                req.params.get('page') === '2' &&
-                req.params.get('per_page') === '50'
-            );
+            const req = httpMock.expectOne((req) => req.params.get('page') === '2' && req.params.get('per_page') === '50');
             expect(req.request.method).toBe('GET');
             req.flush(mockPaginatedResponse);
         });
@@ -82,7 +74,7 @@ describe('ReferenciaService', () => {
         it('deberia obtener una referencia por ID', () => {
             const mockResponse = { data: mockReferencia };
 
-            service.getById(1).subscribe(response => {
+            service.getById(1).subscribe((response) => {
                 expect(response.data.id).toBe(1);
                 expect(response.data.referencia).toBe('TEST-REF-001');
             });
@@ -104,7 +96,7 @@ describe('ReferenciaService', () => {
 
             const mockResponse = { data: mockReferencia, message: 'Referencia creada exitosamente' };
 
-            service.create(createData).subscribe(response => {
+            service.create(createData).subscribe((response) => {
                 expect(response.message).toBe('Referencia creada exitosamente');
             });
 
@@ -124,7 +116,7 @@ describe('ReferenciaService', () => {
 
             const mockResponse = { data: { ...mockReferencia, ...updateData }, message: 'Referencia actualizada exitosamente' };
 
-            service.update(1, updateData).subscribe(response => {
+            service.update(1, updateData).subscribe((response) => {
                 expect(response.message).toBe('Referencia actualizada exitosamente');
             });
 
@@ -139,7 +131,7 @@ describe('ReferenciaService', () => {
         it('deberia eliminar una referencia', () => {
             const mockResponse = { message: 'Referencia eliminada exitosamente' };
 
-            service.deleteReferencia(1).subscribe(response => {
+            service.deleteReferencia(1).subscribe((response) => {
                 expect(response.message).toBe('Referencia eliminada exitosamente');
             });
 
@@ -151,14 +143,17 @@ describe('ReferenciaService', () => {
 
     describe('bulkSearch', () => {
         it('deberia buscar referencias existentes por codigos', () => {
-            const items = [{ codigo: 'REF-001', cantidad: 2 }, { codigo: 'REF-002', cantidad: 1 }];
+            const items = [
+                { codigo: 'REF-001', cantidad: 2 },
+                { codigo: 'REF-002', cantidad: 1 }
+            ];
             const mockResponse = {
                 data: [mockReferencia],
                 no_encontrados: ['REF-002'],
                 message: '1 referencia(s) encontrada(s)'
             };
 
-            service.bulkSearch(items).subscribe(response => {
+            service.bulkSearch(items).subscribe((response) => {
                 expect(response.data.length).toBe(1);
                 expect(response.no_encontrados).toContain('REF-002');
             });
@@ -175,7 +170,7 @@ describe('ReferenciaService', () => {
             const items = [{ codigo: 'NEW-REF', cantidad: 1 }];
             const mockResponse = { data: [mockReferencia], message: '1 referencia(s) procesada(s) exitosamente' };
 
-            service.bulkSearchOrCreate(items, true, 10, 'Comment', 5, 2).subscribe(response => {
+            service.bulkSearchOrCreate(items, true, 10, 'Comment', 5, 2).subscribe((response) => {
                 expect(response.data.length).toBe(1);
             });
 

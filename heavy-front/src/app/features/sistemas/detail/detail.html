@@ -100,9 +100,7 @@
                     <p class="text-xs italic" style="color: var(--p-text-muted-color)">Nota: Al guardar, se sincronizará la relación y se actualizarán los registros legados en el backend.</p>
                 </div>
             </div>
-            }
-
-            @if (sistema.articulos && sistema.articulos.length > 0) {
+            } @if (sistema.articulos && sistema.articulos.length > 0) {
             <p-table
                 [value]="sistema.articulos"
                 [paginator]="true"

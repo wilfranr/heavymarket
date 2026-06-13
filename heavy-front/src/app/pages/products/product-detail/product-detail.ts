@@ -53,8 +53,8 @@ export class ProductDetail implements OnInit {
         this.landingService.getAllCategories().subscribe({
             next: (categories) => {
                 clearTimeout(safetyTimeout);
-                
-                // Usamos setTimeout(0) para asegurar que el renderizado ocurra en un tick diferente, 
+
+                // Usamos setTimeout(0) para asegurar que el renderizado ocurra en un tick diferente,
                 // resolviendo problemas de detección de cambios en modo Zoneless.
                 setTimeout(() => {
                     const cat = categories.find((c) => c.slug === this.categorySlug());
@@ -63,9 +63,7 @@ export class ProductDetail implements OnInit {
                         const sub = (cat.subcategorias || []).find((s) => s.slug === this.subCategorySlug());
                         if (sub) {
                             this.subCategory.set(sub);
-                            this.categoryDescription.set(
-                                `Explore nuestra gama completa de ${cat.nombre} diseñados para el máximo rendimiento y durabilidad en condiciones exigentes.`
-                            );
+                            this.categoryDescription.set(`Explore nuestra gama completa de ${cat.nombre} diseñados para el máximo rendimiento y durabilidad en condiciones exigentes.`);
                         } else {
                             this.error.set(true);
                         }

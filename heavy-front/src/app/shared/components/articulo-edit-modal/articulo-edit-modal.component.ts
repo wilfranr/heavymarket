@@ -181,9 +181,11 @@ export class ArticuloEditModalComponent implements OnInit, OnChanges {
                         if (!exists) {
                             this.referenciasDisponibles = [...this.referenciasDisponibles, ref];
                         }
-                        this.referenciasCruzadas.push(this.fb.group({
-                            referencia_id: [ref.id || ref.referencia_id, Validators.required]
-                        }));
+                        this.referenciasCruzadas.push(
+                            this.fb.group({
+                                referencia_id: [ref.id || ref.referencia_id, Validators.required]
+                            })
+                        );
                     });
                 }
 
@@ -722,7 +724,7 @@ export class ArticuloEditModalComponent implements OnInit, OnChanges {
             next: ({ data: actualizada }) => {
                 this.referenciasDisponibles = this.actualizarReferenciaEnLista(this.referenciasDisponibles, actualizada);
                 this.referenciasJuegosDisponibles = this.actualizarReferenciaEnLista(this.referenciasJuegosDisponibles, actualizada);
-                
+
                 if (this.articuloActual?.referencias) {
                     this.articuloActual = {
                         ...this.articuloActual,

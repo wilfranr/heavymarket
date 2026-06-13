@@ -13,10 +13,7 @@ describe('AuthService', () => {
         routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [
-                AuthService,
-                { provide: Router, useValue: routerSpy }
-            ]
+            providers: [AuthService, { provide: Router, useValue: routerSpy }]
         });
 
         service = TestBed.inject(AuthService);
@@ -57,7 +54,7 @@ describe('AuthService', () => {
                 password: 'password123'
             };
 
-            const loginPromise = new Promise(resolve => {
+            const loginPromise = new Promise((resolve) => {
                 service.login(credentials).subscribe((response) => {
                     expect(response).toEqual(mockResponse);
                     expect(localStorage.getItem('access_token')).toBe('test-token-123');
@@ -72,7 +69,7 @@ describe('AuthService', () => {
             // JSDOM user agent
             expect(req.request.body.device_name).toContain('Mozilla/5.0');
             req.flush(mockResponse);
-            
+
             await loginPromise;
         });
 
@@ -82,7 +79,7 @@ describe('AuthService', () => {
                 password: 'wrong-password'
             };
 
-            const errorPromise = new Promise(resolve => {
+            const errorPromise = new Promise((resolve) => {
                 service.login(credentials).subscribe({
                     error: (error) => {
                         expect(error).toBeTruthy();
@@ -95,7 +92,7 @@ describe('AuthService', () => {
 
             const req = httpMock.expectOne(`${apiUrl}/login`);
             req.error(new ProgressEvent('error'), { status: 401, statusText: 'Unauthorized' });
-            
+
             await errorPromise;
         });
     });
@@ -106,7 +103,7 @@ describe('AuthService', () => {
             localStorage.setItem('access_token', 'test-token');
             localStorage.setItem('current_user', JSON.stringify({ id: 1, name: 'Test', email: 'test@test.com', roles: [] }));
 
-            const logoutPromise = new Promise(resolve => {
+            const logoutPromise = new Promise((resolve) => {
                 service.logout().subscribe(() => {
                     expect(localStorage.getItem('access_token')).toBeNull();
                     expect(localStorage.getItem('current_user')).toBeNull();
@@ -118,7 +115,7 @@ describe('AuthService', () => {
 
             const req = httpMock.expectOne(`${apiUrl}/logout`);
             req.flush({});
-            
+
             await logoutPromise;
         });
     });
@@ -128,10 +125,10 @@ describe('AuthService', () => {
             // Simular carga desde storage (reinstanciar o forzar carga)
             localStorage.setItem('access_token', 'test-token');
             localStorage.setItem('current_user', JSON.stringify({ id: 1, name: 'Test', email: 'test@test.com', roles: [] }));
-            
+
             // Forzar recarga de storage
             (service as any).loadUserFromStorage();
-            
+
             expect(service.isAuthenticated()).toBe(true);
         });
 
@@ -162,7 +159,7 @@ describe('AuthService', () => {
                 password_confirmation: 'password123'
             };
 
-            const registerPromise = new Promise(resolve => {
+            const registerPromise = new Promise((resolve) => {
                 service.register(registerData).subscribe((response) => {
                     expect(response).toEqual(mockResponse);
                     expect(localStorage.getItem('access_token')).toBe('new-token-123');
@@ -174,7 +171,7 @@ describe('AuthService', () => {
             const req = httpMock.expectOne(`${apiUrl}/register`);
             expect(req.request.method).toBe('POST');
             req.flush(mockResponse);
-            
+
             await registerPromise;
         });
     });

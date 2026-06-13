@@ -1,7 +1,20 @@
 /**
  * Tipos de notificación
  */
-export type NotificationType = 'pedido_creado' | 'pedido_en_analisis' | 'pedido_actualizado' | 'pedido_cotizado' | 'pedido_devuelto_analista' | 'pedido_devuelto' | 'cotizacion_nueva' | 'orden_confirmada' | 'tercero_nuevo' | 'sistema' | 'info' | 'missing_freight_rate' | 'freight_rate_request';
+export type NotificationType =
+    | 'pedido_creado'
+    | 'pedido_en_analisis'
+    | 'pedido_actualizado'
+    | 'pedido_cotizado'
+    | 'pedido_devuelto_analista'
+    | 'pedido_devuelto'
+    | 'cotizacion_nueva'
+    | 'orden_confirmada'
+    | 'tercero_nuevo'
+    | 'sistema'
+    | 'info'
+    | 'missing_freight_rate'
+    | 'freight_rate_request';
 
 /**
  * Modelo de Notificación

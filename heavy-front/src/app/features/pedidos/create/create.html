@@ -697,7 +697,7 @@
             @if (comentariosItemActual.length > 0) {
             <div class="space-y-2 max-h-64 overflow-auto">
                 @for (c of comentariosItemActual; track $index) {
-                <div class="bg-gray-900/40 dark:bg-[#1f2933] border border-gray-700/70 rounded-lg px-3 py-2 text-sm">
+                <div class="bg-gray-100 dark:bg-[var(--p-content-background)] border border-gray-200 dark:border-[var(--p-content-border-color)] rounded-lg px-3 py-2 text-sm">
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-[11px] font-semibold text-yellow-400 uppercase tracking-wide"> {{ c.origen }} </span>
                         @if (c.fecha) {
@@ -752,7 +752,7 @@
         </div>
     </ng-template>
 
-    <div class="p-6 rounded-lg dark:bg-[#1a1a1a]" *ngIf="selectedMaquinaDetail">
+    <div class="p-6 rounded-lg dark:bg-[var(--p-content-background)]" *ngIf="selectedMaquinaDetail">
         <!-- Photos Section -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <!-- Machine Photo -->
@@ -783,7 +783,7 @@
                     <div class="col-span-1">Comentario</div>
                     <div class="col-span-1">Foto</div>
                 </div>
-                <div class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[#262626] text-gray-800 dark:text-[#e5e5e5]">
+                <div class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[var(--p-content-background)] text-gray-800 dark:text-[var(--p-text-color)]">
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.marca_motor || 'N/A' }}</div>
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.modelo_motor || 'N/A' }}</div>
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.serie_motor || 'N/A' }}</div>
@@ -808,7 +808,7 @@
                     <div class="col-span-1">Comentario</div>
                     <div class="col-span-1">Foto</div>
                 </div>
-                <div class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[#262626] text-gray-800 dark:text-[#e5e5e5]">
+                <div class="grid grid-cols-5 machine-table-row items-center text-sm bg-white dark:bg-[var(--p-content-background)] text-gray-800 dark:text-[var(--p-text-color)]">
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.marca_transmision || 'N/A' }}</div>
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.modelo_transmision || 'N/A' }}</div>
                     <div class="col-span-1 machine-table-cell">{{ selectedMaquinaDetail.serie_transmision || 'N/A' }}</div>

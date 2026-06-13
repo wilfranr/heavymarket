@@ -69,7 +69,13 @@
                 <!-- Comentarios -->
                 <div class="flex flex-col gap-2">
                     <label class="text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase">Comentarios</label>
-                    <textarea pTextarea formControlName="comentarios" placeholder="Notas adicionales..." [rows]="1" class="w-full bg-surface-card border-surface-border rounded-lg resize-none min-h-[40px] focus:ring-1 focus:ring-[#fdb831]/50 text-color"></textarea>
+                    <textarea
+                        pTextarea
+                        formControlName="comentarios"
+                        placeholder="Notas adicionales..."
+                        [rows]="1"
+                        class="w-full bg-surface-card border-surface-border rounded-lg resize-none min-h-[40px] focus:ring-1 focus:ring-[#fdb831]/50 text-color"
+                    ></textarea>
                 </div>
             </div>
 
@@ -114,7 +120,7 @@
                                             pInputText
                                             placeholder="Buscar referencia..."
                                             [(ngModel)]="searchTermReferences"
-                                            [ngModelOptions]="{standalone: true}"
+                                            [ngModelOptions]="{ standalone: true }"
                                             class="w-48 h-9 pl-10 rounded-xl text-xs bg-surface-ground/50 border-surface-border focus:ring-1 focus:ring-[#fdb831]/30 text-color"
                                         />
                                     </div>
@@ -166,7 +172,13 @@
                                                                         </ng-template>
                                                                     </p-select>
                                                                     <p-inputgroup-addon class="bg-transparent border-none">
-                                                                        <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-surface-400 dark:text-surface-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferencia($index)"></p-button>
+                                                                        <p-button
+                                                                            icon="pi pi-plus"
+                                                                            [text]="true"
+                                                                            severity="secondary"
+                                                                            styleClass="h-full w-full p-0 text-surface-400 dark:text-surface-500 hover:text-[#fdb831]"
+                                                                            (onClick)="abrirCrearReferencia($index)"
+                                                                        ></p-button>
                                                                     </p-inputgroup-addon>
                                                                 </p-inputgroup>
                                                             }
@@ -192,11 +204,48 @@
                                                         <td class="px-4 py-2 text-center">
                                                             <div class="flex justify-center gap-1">
                                                                 @if (editingReferenciaIndex() === $index) {
-                                                                    <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferencia($index)" pTooltip="Guardar" tooltipPosition="top" styleClass="p-0 h-8 w-8" />
-                                                                    <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferencia()" pTooltip="Cancelar" tooltipPosition="top" styleClass="p-0 h-8 w-8" />
+                                                                    <p-button
+                                                                        icon="pi pi-check"
+                                                                        severity="success"
+                                                                        [text]="true"
+                                                                        [rounded]="true"
+                                                                        (onClick)="guardarEdicionReferencia($index)"
+                                                                        pTooltip="Guardar"
+                                                                        tooltipPosition="top"
+                                                                        styleClass="p-0 h-8 w-8"
+                                                                    />
+                                                                    <p-button
+                                                                        icon="pi pi-times"
+                                                                        severity="danger"
+                                                                        [text]="true"
+                                                                        [rounded]="true"
+                                                                        (onClick)="cancelarEdicionReferencia()"
+                                                                        pTooltip="Cancelar"
+                                                                        tooltipPosition="top"
+                                                                        styleClass="p-0 h-8 w-8"
+                                                                    />
                                                                 } @else {
-                                                                    <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true" [disabled]="!ref.value.referencia_id" (onClick)="iniciarEdicionReferencia($index)" pTooltip="Editar" tooltipPosition="top" styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-[#fdb831]" />
-                                                                    <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarReferencia($index)" pTooltip="Eliminar" tooltipPosition="top" styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-red-500" />
+                                                                    <p-button
+                                                                        icon="pi pi-pencil"
+                                                                        severity="secondary"
+                                                                        [text]="true"
+                                                                        [rounded]="true"
+                                                                        [disabled]="!ref.value.referencia_id"
+                                                                        (onClick)="iniciarEdicionReferencia($index)"
+                                                                        pTooltip="Editar"
+                                                                        tooltipPosition="top"
+                                                                        styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-[#fdb831]"
+                                                                    />
+                                                                    <p-button
+                                                                        icon="pi pi-trash"
+                                                                        severity="danger"
+                                                                        [text]="true"
+                                                                        [rounded]="true"
+                                                                        (onClick)="eliminarReferencia($index)"
+                                                                        pTooltip="Eliminar"
+                                                                        tooltipPosition="top"
+                                                                        styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-red-500"
+                                                                    />
                                                                 }
                                                             </div>
                                                         </td>
@@ -245,7 +294,9 @@
                                                 <tr class="border-t border-surface-border hover:bg-white/5 transition-colors">
                                                     <td class="px-4 py-3 text-sm font-bold text-[#fdb831]">{{ medida.identificador }}</td>
                                                     <td class="px-4 py-3 text-sm text-color">{{ medida.nombre }}</td>
-                                                    <td class="px-4 py-3 text-sm font-medium">{{ medida.valor }} <span class="text-surface-400 dark:text-surface-500 text-[10px] ml-1 uppercase">{{ medida.unidad }}</span></td>
+                                                    <td class="px-4 py-3 text-sm font-medium">
+                                                        {{ medida.valor }} <span class="text-surface-400 dark:text-surface-500 text-[10px] ml-1 uppercase">{{ medida.unidad }}</span>
+                                                    </td>
                                                     <td class="px-4 py-3 text-center">
                                                         <div class="flex justify-center gap-1">
                                                             <button type="button" (click)="editarMedida(medida)" class="text-surface-400 dark:text-surface-500 hover:text-[#fdb831] transition-colors p-2 rounded hover:bg-[#fdb831]/10">
@@ -302,12 +353,7 @@
                                                     <td class="px-4 py-2">
                                                         @if (editingReferenciaJuegoIndex() === $index) {
                                                             <div class="flex flex-col gap-2 py-1">
-                                                                <input
-                                                                    pInputText
-                                                                    formControlName="referencia"
-                                                                    placeholder="Código..."
-                                                                    class="w-full bg-surface-card border-surface-border text-color h-9 rounded-lg px-2"
-                                                                />
+                                                                <input pInputText formControlName="referencia" placeholder="Código..." class="w-full bg-surface-card border-surface-border text-color h-9 rounded-lg px-2" />
                                                                 <p-select
                                                                     formControlName="marca_id"
                                                                     [options]="marcasReferencias()"
@@ -336,14 +382,20 @@
                                                                     styleClass="w-full border-none h-9 text-sm focus:ring-0"
                                                                 >
                                                                     <ng-template let-item pTemplate="item">
-                                                                            <div class="flex flex-col">
-                                                                                <span class="font-bold text-sm">{{ item.referencia }}</span>
-                                                                                <span class="text-[10px] text-surface-400 dark:text-surface-500">{{ item.marca?.nombre }}</span>
-                                                                            </div>
+                                                                        <div class="flex flex-col">
+                                                                            <span class="font-bold text-sm">{{ item.referencia }}</span>
+                                                                            <span class="text-[10px] text-surface-400 dark:text-surface-500">{{ item.marca?.nombre }}</span>
+                                                                        </div>
                                                                     </ng-template>
                                                                 </p-select>
                                                                 <p-inputgroup-addon class="bg-transparent border-none">
-                                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-surface-400 dark:text-surface-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferenciaJuegos($index)"></p-button>
+                                                                    <p-button
+                                                                        icon="pi pi-plus"
+                                                                        [text]="true"
+                                                                        severity="secondary"
+                                                                        styleClass="h-full w-full p-0 text-surface-400 dark:text-surface-500 hover:text-[#fdb831]"
+                                                                        (onClick)="abrirCrearReferenciaJuegos($index)"
+                                                                    ></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
                                                         }
@@ -359,21 +411,53 @@
                                                         ></p-inputnumber>
                                                     </td>
                                                     <td class="px-4 py-2">
-                                                        <input
-                                                            pInputText
-                                                            formControlName="comentario"
-                                                            placeholder="Comentario sobre el componente..."
-                                                            class="w-full h-9 rounded-xl text-xs bg-surface-ground/50 border-surface-border text-color"
-                                                        />
+                                                        <input pInputText formControlName="comentario" placeholder="Comentario sobre el componente..." class="w-full h-9 rounded-xl text-xs bg-surface-ground/50 border-surface-border text-color" />
                                                     </td>
                                                     <td class="px-4 py-2 text-center">
                                                         <div class="flex justify-center gap-1">
                                                             @if (editingReferenciaJuegoIndex() === $index) {
-                                                                <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferenciaJuego($index)" pTooltip="Guardar" tooltipPosition="top" styleClass="p-0 h-8 w-8" />
-                                                                <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferenciaJuego()" pTooltip="Cancelar" tooltipPosition="top" styleClass="p-0 h-8 w-8" />
+                                                                <p-button
+                                                                    icon="pi pi-check"
+                                                                    severity="success"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    (onClick)="guardarEdicionReferenciaJuego($index)"
+                                                                    pTooltip="Guardar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8"
+                                                                />
+                                                                <p-button
+                                                                    icon="pi pi-times"
+                                                                    severity="danger"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    (onClick)="cancelarEdicionReferenciaJuego()"
+                                                                    pTooltip="Cancelar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8"
+                                                                />
                                                             } @else {
-                                                                <p-button icon="pi pi-pencil" severity="secondary" [text]="true" [rounded]="true" [disabled]="!juego.value.referencia_id" (onClick)="iniciarEdicionReferenciaJuego($index)" pTooltip="Editar" tooltipPosition="top" styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-[#fdb831]" />
-                                                                <p-button icon="pi pi-trash" severity="danger" [text]="true" [rounded]="true" (onClick)="eliminarJuego($index)" pTooltip="Eliminar" tooltipPosition="top" styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-red-500" />
+                                                                <p-button
+                                                                    icon="pi pi-pencil"
+                                                                    severity="secondary"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    [disabled]="!juego.value.referencia_id"
+                                                                    (onClick)="iniciarEdicionReferenciaJuego($index)"
+                                                                    pTooltip="Editar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-[#fdb831]"
+                                                                />
+                                                                <p-button
+                                                                    icon="pi pi-trash"
+                                                                    severity="danger"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    (onClick)="eliminarJuego($index)"
+                                                                    pTooltip="Eliminar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8 text-surface-500 dark:text-surface-400 hover:text-red-500"
+                                                                />
                                                             }
                                                         </div>
                                                     </td>
@@ -439,7 +523,7 @@
 <app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [hideArticuloField]="true" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>
 
 <!-- Diálogo para Medida Técnica -->
-<p-dialog [(visible)]="showMedidaDialog" [header]="isEditingMedida ? 'Editar Medida' : 'Nueva Medida'" [modal]="true" [style]="{ width: '950px' }" styleClass="p-fluid overflow-hidden" [breakpoints]="{'960px': '75vw', '640px': '95vw'}">
+<p-dialog [(visible)]="showMedidaDialog" [header]="isEditingMedida ? 'Editar Medida' : 'Nueva Medida'" [modal]="true" [style]="{ width: '950px' }" styleClass="p-fluid overflow-hidden" [breakpoints]="{ '960px': '75vw', '640px': '95vw' }">
     <div class="flex flex-col lg:flex-row gap-8 py-2">
         <!-- Columna Izquierda: Referencia Visual del Plano -->
         <div class="w-full lg:w-1/2 flex flex-col gap-3">
@@ -475,7 +559,7 @@
             <div class="grid grid-cols-2 gap-5 p-2">
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">ID en Plano</label>
-                    <input pInputText [(ngModel)]="medidaData.identificador" [ngModelOptions]="{standalone: true}" placeholder="Ej: D1, L, A" class="rounded-xl border-surface-border bg-surface-ground/50 text-color" />
+                    <input pInputText [(ngModel)]="medidaData.identificador" [ngModelOptions]="{ standalone: true }" placeholder="Ej: D1, L, A" class="rounded-xl border-surface-border bg-surface-ground/50 text-color" />
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Tipo de Medida</label>
@@ -483,7 +567,7 @@
                         <p-select
                             [options]="tiposMedida()"
                             [(ngModel)]="medidaData.tipo"
-                            [ngModelOptions]="{standalone: true}"
+                            [ngModelOptions]="{ standalone: true }"
                             optionLabel="nombre"
                             optionValue="nombre"
                             placeholder="Seleccione..."
@@ -503,7 +587,7 @@
                         <p-select
                             [options]="nombresMedida()"
                             [(ngModel)]="medidaData.nombre"
-                            [ngModelOptions]="{standalone: true}"
+                            [ngModelOptions]="{ standalone: true }"
                             optionLabel="nombre"
                             optionValue="nombre"
                             placeholder="Seleccione dimensión..."
@@ -520,7 +604,7 @@
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Valor</label>
-                    <input pInputText [(ngModel)]="medidaData.valor" [ngModelOptions]="{standalone: true}" placeholder="0.00" class="rounded-xl border-surface-border bg-surface-ground/50 text-color" />
+                    <input pInputText [(ngModel)]="medidaData.valor" [ngModelOptions]="{ standalone: true }" placeholder="0.00" class="rounded-xl border-surface-border bg-surface-ground/50 text-color" />
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Unidad</label>
@@ -528,7 +612,7 @@
                         <p-select
                             [options]="unidadesMedida()"
                             [(ngModel)]="medidaData.unidad"
-                            [ngModelOptions]="{standalone: true}"
+                            [ngModelOptions]="{ standalone: true }"
                             optionLabel="nombre"
                             optionValue="nombre"
                             placeholder="Pulg, mm..."

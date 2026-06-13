@@ -167,3 +167,40 @@ Antes de marcar una tarea como completada ("done"), el agente Reviewer (Auditor 
 - **Linting**: `npm run lint` — Verificación de sintaxis de Signals y arquitectura Zoneless.
 - **Build**: `npm run build` — Verificación de compilación.
 - **Testing (E2E/Integration)**: `npx playwright test` — Pruebas de integración usando Playwright.
+
+---
+
+## 🎨 Arquitectura de Theming (Claro/Oscuro, Roles y Terceros)
+
+La aplicación implementa tres ejes independientes de tematización que deben coexistir sin colisionar:
+
+1. **Modo (Claro/Oscuro)**:
+   - **Mecanismo**: Presencia de la clase `.app-dark` en la etiqueta HTML.
+   - **Controlador**: `LayoutService.toggleDarkMode()`.
+   - **Tokens de superficie**: Usar variables CSS de PrimeNG (e.g. `--p-content-background`, `--p-text-color`). NUNCA hardcodear colores hexadecimales sueltos en elementos del layout.
+
+2. **Rol (Primary global)**:
+   - **Mecanismo**: Inyección dinámica en el CSS global.
+   - **Controlador**: `LayoutService.applyPrimaryColor()`.
+   - **Colores**:
+     - Analista: emerald.
+     - Vendedor/Asesor: blue.
+     - Admin: heavy (amarillo marca `#FDB831`).
+   - **Ámbito**: Botones primarios, enlaces activos y elementos destacados globales.
+
+3. **Tipo de Tercero (Acentos de wizard)**:
+   - **Mecanismo**: Clases contenedoras `.theme-cliente`, `.theme-proveedor`, `.theme-ambos`.
+   - **Ámbito**: Exclusivo del formulario/wizard de creación o edición de Terceros. Colores fijos de negocio independientes del rol actual del usuario.
+
+### Decisión de Arquitectura: ThemeService
+Se ha determinado que `ThemeService` y sus dependencias en `theme-variables.css` están duplicados con `LayoutService` y la configuración canónica de temas de PrimeNG. Por tanto, se deprecara `ThemeService` y se retirará en la Fase 4 para dejar una única fuente de verdad: `.app-dark` manejado por `LayoutService`.
+
+### Inventario de Deuda Técnica (Fase 0)
+Archivos con overrides manuales que se migrarán a tokens semánticos:
+- `heavy-front/src/app/shared/components/tercero-create-modal/` (overrides manuales con `::ng-deep`).
+- `heavy-front/src/app/shared/components/tercero-form/` (uso de `:host ::ng-deep` para acentos de tercero).
+- `heavy-front/src/app/shared/components/contacto-create-modal/` (estilos inline y dropdown overrides).
+- `heavy-front/src/app/features/pedidos/edit/` (overrides en edit.scss con `::ng-deep` y colores hardcodeados).
+- `heavy-front/src/app/features/pedidos/create/` (overrides de inputs en create.scss).
+- `heavy-front/src/app/features/pedidos/analysis/` (estilos custom en analysis.scss).
+

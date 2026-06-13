@@ -35,7 +35,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                 <div class="relative overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 mb-8 shadow-sm">
                     <!-- Degradado del banner -->
                     <div class="h-32 bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 dark:from-slate-950 dark:via-indigo-950 dark:to-purple-950"></div>
-                    
+
                     <!-- Información de la cabecera del perfil -->
                     <div class="px-6 pb-6 relative flex flex-col md:flex-row items-center md:items-end gap-6 -mt-16 md:-mt-10">
                         <!-- Avatar / Logo -->
@@ -44,7 +44,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                 <img [src]="empresa()?.logo_light" [alt]="empresa()?.nombre" class="w-full h-full object-contain p-2" />
                             } @else {
                                 <div class="w-full h-full flex items-center justify-center bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 font-bold text-4xl">
-                                    {{ (empresa()?.nombre || '') | slice:0:1 | uppercase }}
+                                    {{ empresa()?.nombre || '' | slice: 0 : 1 | uppercase }}
                                 </div>
                             }
                         </div>
@@ -76,11 +76,7 @@ import { Empresa } from '../../../core/models/empresa.model';
 
                         <!-- Tag de Estado -->
                         <div class="mt-4 md:mt-0 self-center md:self-end">
-                            <p-tag 
-                                [value]="empresa()?.estado ? 'Activa' : 'Inactiva'" 
-                                [severity]="empresa()?.estado ? 'success' : 'secondary'"
-                                styleClass="text-sm px-4 py-1.5 font-semibold rounded-full shadow-sm">
-                            </p-tag>
+                            <p-tag [value]="empresa()?.estado ? 'Activa' : 'Inactiva'" [severity]="empresa()?.estado ? 'success' : 'secondary'" styleClass="text-sm px-4 py-1.5 font-semibold rounded-full shadow-sm"> </p-tag>
                         </div>
                     </div>
                 </div>
@@ -95,7 +91,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                 <i class="pi pi-envelope text-indigo-500"></i>
                                 Información de Contacto
                             </h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="space-y-1">
                                     <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Email Corporativo</span>
@@ -131,7 +127,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                 <i class="pi pi-map-marker text-indigo-500"></i>
                                 Ubicación y Dirección
                             </h2>
-                            
+
                             <div class="space-y-6">
                                 <div class="space-y-1">
                                     <span class="text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase tracking-wider block">Dirección Principal</span>
@@ -178,7 +174,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                 <i class="pi pi-truck text-indigo-500"></i>
                                 Configuración Comercial
                             </h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div class="p-4 rounded-xl bg-slate-50 dark:bg-slate-950/50 border border-slate-100 dark:border-slate-800/65 flex items-center gap-4">
                                     <div class="w-12 h-12 rounded-lg bg-indigo-50 dark:bg-indigo-950/50 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-xl">
@@ -187,7 +183,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                     <div class="space-y-0.5">
                                         <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">Costo de Flete (por kg)</span>
                                         <span class="text-lg font-bold text-slate-800 dark:text-white">
-                                            {{ (empresa()?.flete | currency:'USD':'symbol':'1.2-2') || 'N/A' }}
+                                            {{ (empresa()?.flete | currency: 'USD' : 'symbol' : '1.2-2') || 'N/A' }}
                                         </span>
                                     </div>
                                 </div>
@@ -199,7 +195,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                     <div class="space-y-0.5">
                                         <span class="text-xs text-slate-400 dark:text-slate-500 font-medium">TRM Establecida</span>
                                         <span class="text-lg font-bold text-slate-800 dark:text-white">
-                                            {{ (empresa()?.trm | number:'1.2-2') || 'N/A' }}
+                                            {{ (empresa()?.trm | number: '1.2-2') || 'N/A' }}
                                         </span>
                                     </div>
                                 </div>
@@ -212,7 +208,7 @@ import { Empresa } from '../../../core/models/empresa.model';
                                 <i class="pi pi-image text-indigo-500"></i>
                                 Logos de Identidad
                             </h2>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <!-- Logo Light -->
                                 <div class="rounded-xl border border-slate-200 dark:border-slate-800 overflow-hidden bg-white">
@@ -260,11 +256,11 @@ import { Empresa } from '../../../core/models/empresa.model';
                 <div class="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 text-xs text-slate-400 dark:text-slate-500">
                     <span class="flex items-center gap-1.5">
                         <i class="pi pi-calendar-plus"></i>
-                        Creado: {{ empresa()?.created_at | date:'medium' }}
+                        Creado: {{ empresa()?.created_at | date: 'medium' }}
                     </span>
                     <span class="flex items-center gap-1.5">
                         <i class="pi pi-history"></i>
-                        Última Actualización: {{ empresa()?.updated_at | date:'medium' }}
+                        Última Actualización: {{ empresa()?.updated_at | date: 'medium' }}
                     </span>
                 </div>
             } @else {
@@ -315,4 +311,3 @@ export class DetailComponent implements OnInit {
         this.router.navigate(['/app/empresas']);
     }
 }
-

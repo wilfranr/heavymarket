@@ -20,11 +20,7 @@ describe('NotificationService', () => {
 
         TestBed.configureTestingModule({
             imports: [HttpClientTestingModule],
-            providers: [
-                NotificationService,
-                { provide: AuthService, useValue: authServiceSpy },
-                { provide: ToastService, useValue: toastServiceSpy }
-            ]
+            providers: [NotificationService, { provide: AuthService, useValue: authServiceSpy }, { provide: ToastService, useValue: toastServiceSpy }]
         });
         service = TestBed.inject(NotificationService);
         httpMock = TestBed.inject(HttpTestingController);

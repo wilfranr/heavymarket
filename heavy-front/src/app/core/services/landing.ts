@@ -62,10 +62,14 @@ export class LandingService {
         // Si ya tenemos todas las categorías, las filtramos para el navbar
         if (this.allCategoriesCache$) {
             return this.allCategoriesCache$.pipe(
-                map(categories => categories.filter(c => c.mostrar_en_navbar).map(c => ({
-                    ...c,
-                    subcategorias: c.subcategorias.filter(s => s.mostrar_en_navbar)
-                })))
+                map((categories) =>
+                    categories
+                        .filter((c) => c.mostrar_en_navbar)
+                        .map((c) => ({
+                            ...c,
+                            subcategorias: c.subcategorias.filter((s) => s.mostrar_en_navbar)
+                        }))
+                )
             );
         }
 

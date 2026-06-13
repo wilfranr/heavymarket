@@ -42,9 +42,7 @@ export class AppMenu implements OnInit {
                 },
                 {
                     label: 'Perfil',
-                    items: [
-                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => hasProveedorRole ? this.authService.logout().subscribe() : this.providerAuthService.logout() }
-                    ]
+                    items: [{ label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => (hasProveedorRole ? this.authService.logout().subscribe() : this.providerAuthService.logout()) }]
                 }
             ];
             return;
@@ -61,9 +59,7 @@ export class AppMenu implements OnInit {
                 },
                 {
                     label: 'Perfil',
-                    items: [
-                        { label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }
-                    ]
+                    items: [{ label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }]
                 }
             ];
             return;

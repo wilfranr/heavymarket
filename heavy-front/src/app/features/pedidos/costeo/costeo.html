@@ -38,28 +38,17 @@
         </div>
 
         @if (missingFreightEnSeleccion()) {
-        <div
-            class="mx-8 mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm"
-            style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)"
-        >
+        <div class="mx-8 mb-4 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)">
             <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
             <div class="flex flex-1 flex-col gap-3 text-slate-700 dark:text-slate-200 sm:flex-row sm:items-center sm:justify-between">
                 <p class="m-0">
                     <span class="font-semibold">Falta tarifa de flete.</span>
                     La fila marcada para cotizar incluye un proveedor internacional cuyo país no tiene tarifa USD/lb configurada.
                 </p>
-                <p-button
-                    label="Notificar a Administración"
-                    icon="pi pi-send"
-                    severity="warn"
-                    [outlined]="true"
-                    (onClick)="abrirDialogoSolicitudFlete()"
-                />
+                <p-button label="Notificar a Administración" icon="pi pi-send" severity="warn" [outlined]="true" (onClick)="abrirDialogoSolicitudFlete()" />
             </div>
         </div>
-        }
-
-        @if (pedido(); as pedido) {
+        } @if (pedido(); as pedido) {
         <!-- Top Info Cards Grid -->
         <div class="flex gap-6 mb-10 px-8">
             <!-- Order Info -->
@@ -136,26 +125,30 @@
             <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 mb-6 shadow-sm border border-gray-200 dark:border-none" [formGroup]="$any(refGroup)">
                 <!-- Item Header -->
                 <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
-                   <div class="flex items-center gap-6 text-blue-500 font-semibold">
-                       <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider"> {{ refGroup.get('estado_str')?.value }} </span>
+                    <div class="flex items-center gap-6 text-blue-500 font-semibold">
+                        <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider"> {{ refGroup.get('estado_str')?.value }} </span>
                         <!-- 1. Categoria Comercial -->
                         @if (pedido.referencias?.[refIndex]?.categorias_comerciales && (pedido.referencias?.[refIndex]?.categorias_comerciales?.length ?? 0) > 1) {
-                            <span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors" (click)="showInfo($event, 'categorias_comerciales', refIndex, op)">
-                                {{ (pedido.referencias?.[refIndex]?.categorias_comerciales?.length ?? 0) }} Cat. Comerciales <i class="pi pi-info-circle text-[9px] ml-1"></i>
-                            </span>
+                        <span
+                            class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[10px] font-bold cursor-pointer hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
+                            (click)="showInfo($event, 'categorias_comerciales', refIndex, op)"
+                        >
+                            {{ (pedido.referencias?.[refIndex]?.categorias_comerciales?.length ?? 0) }} Cat. Comerciales <i class="pi pi-info-circle text-[9px] ml-1"></i>
+                        </span>
                         } @else {
-                            <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold"> {{ refGroup.get('categoria_comercial_nombre')?.value || 'Sin Cat. Comercial' }} </span>
+                        <span class="px-2 py-0.5 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-bold"> {{ refGroup.get('categoria_comercial_nombre')?.value || 'Sin Cat. Comercial' }} </span>
                         }
-                       <!-- 2. Cantidad -->
-                       <span class="text-slate-400 font-normal">Cant. {{ refGroup.get('cantidad')?.value }}</span>
-                       <!-- 3. Referencia -->
-                       <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-mono" (click)="showInfo($event, 'referencia', refIndex, op)"> {{ refGroup.get('referencia_codigo')?.value }} </span>
-                       <!-- 4. Descripción -->
-                       <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors" (click)="showInfo($event, 'articulo', refIndex, op)"> {{ refGroup.get('definicion')?.value }} </span>
-                       </div>                    <div class="flex gap-2 items-center">
-                       <p-toggleSwitch formControlName="mostrar_referencia" [pTooltip]="'Mostrar/Ocultar Nombre de Referencia en Cotización'"></p-toggleSwitch>
-                       <!-- Botón de imagen oculto por solicitud del usuario (Issue #123) -->
-                       <!-- <button
+                        <!-- 2. Cantidad -->
+                        <span class="text-slate-400 font-normal">Cant. {{ refGroup.get('cantidad')?.value }}</span>
+                        <!-- 3. Referencia -->
+                        <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors font-mono" (click)="showInfo($event, 'referencia', refIndex, op)"> {{ refGroup.get('referencia_codigo')?.value }} </span>
+                        <!-- 4. Descripción -->
+                        <span class="cursor-pointer hover:text-blue-700 dark:hover:text-blue-400 transition-colors" (click)="showInfo($event, 'articulo', refIndex, op)"> {{ refGroup.get('definicion')?.value }} </span>
+                    </div>
+                    <div class="flex gap-2 items-center">
+                        <p-toggleSwitch formControlName="mostrar_referencia" [pTooltip]="'Mostrar/Ocultar Nombre de Referencia en Cotización'"></p-toggleSwitch>
+                        <!-- Botón de imagen oculto por solicitud del usuario (Issue #123) -->
+                        <!-- <button
                            type="button"
                            class="w-8 h-8 rounded-full bg-blue-600 flex items-center justify-center text-white hover:bg-blue-700 relative"
                            (click)="openGallery(refIndex)"
@@ -167,9 +160,10 @@
                            <span class="absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-green-500 text-white text-[9px] flex items-center justify-center border border-white"> {{ getImagenesCount(refIndex) }} </span>
                            }
                        </button> -->
-                       <button
-                           type="button"
-                           class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white hover:bg-amber-700 relative ml-1"                            (click)="abrirDialogoComentario(refIndex)"
+                        <button
+                            type="button"
+                            class="w-8 h-8 rounded-full bg-amber-600 flex items-center justify-center text-white hover:bg-amber-700 relative ml-1"
+                            (click)="abrirDialogoComentario(refIndex)"
                             [pTooltip]="getComentariosCount(refIndex) > 0 ? 'Ver comentarios' : 'Sin comentarios'"
                             [disabled]="getComentariosCount(refIndex) === 0"
                         >
@@ -243,7 +237,16 @@
                         <!-- Marca -->
                         <div class="w-[200px]">
                             <div class="flex items-center w-full bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-[40px]">
-                                <p-select formControlName="marca_id" [options]="marcas()" optionLabel="label" optionValue="value" [filter]="true" filterBy="label" placeholder="Marca" styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"></p-select>
+                                <p-select
+                                    formControlName="marca_id"
+                                    [options]="marcas()"
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [filter]="true"
+                                    filterBy="label"
+                                    placeholder="Marca"
+                                    styleClass="w-full bg-transparent border-none shadow-none h-full flex items-center text-gray-800 dark:text-white"
+                                ></p-select>
                                 <div class="h-[24px] w-[1px] bg-gray-300 dark:bg-gray-600"></div>
                                 <button
                                     type="button"
@@ -364,12 +367,7 @@
                 </div>
                 <div class="mt-6 flex gap-3">
                     <button type="button" class="flex-1 btn-pill bg-slate-200 text-slate-700 hover:bg-slate-300 dark:bg-slate-700 dark:text-white border-none py-3" (click)="volver()">Cerrar</button>
-                    <button
-                        type="button"
-                        class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold disabled:opacity-50"
-                        (click)="finalizarCosteo()"
-                        [disabled]="submitting() || missingFreightEnSeleccion()"
-                    >
+                    <button type="button" class="flex-2 btn-pill bg-blue-600 text-white hover:bg-blue-700 border-none py-3 font-bold disabled:opacity-50" (click)="finalizarCosteo()" [disabled]="submitting() || missingFreightEnSeleccion()">
                         Generar Cotización
                     </button>
                 </div>
@@ -386,9 +384,7 @@
 <p-dialog [(visible)]="showSolicitudFleteDialog" [modal]="true" [style]="{ width: '480px', 'max-width': '95vw' }" header="Solicitar tarifa de flete" appendTo="body">
     @if (solicitudFleteContext(); as ctx) {
     <div class="flex flex-col gap-4 pt-2">
-        <p class="text-sm text-slate-600 dark:text-slate-300 m-0">
-            Indique la tarifa sugerida (USD/lb) para que administración la configure en el país del proveedor.
-        </p>
+        <p class="text-sm text-slate-600 dark:text-slate-300 m-0">Indique la tarifa sugerida (USD/lb) para que administración la configure en el país del proveedor.</p>
         <div class="rounded-lg border px-3 py-2 text-sm" style="border-color: var(--p-surface-border)">
             <div><span class="font-semibold">País:</span> {{ ctx.countryName }}</div>
             <div><span class="font-semibold">Proveedor:</span> {{ ctx.proveedorName }}</div>
@@ -396,17 +392,7 @@
         </div>
         <div class="field">
             <label for="fleteSolicitado" class="block text-sm font-medium mb-2">Tarifa sugerida (USD/lb) <span class="text-red-500">*</span></label>
-            <p-inputNumber
-                inputId="fleteSolicitado"
-                [(ngModel)]="fleteSolicitado"
-                [min]="0"
-                [max]="100"
-                [minFractionDigits]="1"
-                [maxFractionDigits]="2"
-                mode="decimal"
-                styleClass="w-full"
-                placeholder="Ej: 2.5"
-            />
+            <p-inputNumber inputId="fleteSolicitado" [(ngModel)]="fleteSolicitado" [min]="0" [max]="100" [minFractionDigits]="1" [maxFractionDigits]="2" mode="decimal" styleClass="w-full" placeholder="Ej: 2.5" />
         </div>
     </div>
     }
@@ -503,226 +489,208 @@
 <!-- Popover Info -->
 <p-popover #op appendTo="body" styleClass="popover-technical-info shadow-2xl border-none">
     @if (popoverData) {
-    <div class="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-gray-800"
-         [class.w-[600px]]="popoverData.title === 'Artículo'"
-         [class.w-[400px]]="popoverData.title !== 'Artículo'">
-        
+    <div class="overflow-hidden rounded-xl bg-white dark:bg-slate-900 shadow-2xl border border-gray-100 dark:border-gray-800" [class.w-[600px]]="popoverData.title === 'Artículo'" [class.w-[400px]]="popoverData.title !== 'Artículo'">
         @if (popoverData.title === 'Artículo') {
-            <!-- Cabecera Premium de Artículo -->
-            <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 text-xs font-bold text-gray-700 dark:text-gray-300">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-blue-500">REF:</span>
-                    <span class="font-mono text-gray-900 dark:text-white">{{ popoverData.referencia_codigo }}</span>
-                </div>
-                <div class="flex-1 min-w-[200px]">
-                    <span class="text-blue-500">DESCRIP:</span>
-                    <span class="text-gray-900 dark:text-white uppercase ml-1">{{ popoverData.subtitle }}</span>
-                </div>
-                <div>
-                    <span class="text-blue-500">PESO:</span>
-                    <span class="text-gray-900 dark:text-white ml-1">{{ popoverData.peso || '0.00' }} Kg</span>
-                </div>
+        <!-- Cabecera Premium de Artículo -->
+        <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 text-xs font-bold text-gray-700 dark:text-gray-300">
+            <div class="flex items-center gap-1.5">
+                <span class="text-blue-500">REF:</span>
+                <span class="font-mono text-gray-900 dark:text-white">{{ popoverData.referencia_codigo }}</span>
             </div>
-
-            <!-- Contenido del Artículo (Plano y Medidas) -->
-            <div class="p-4 flex flex-col gap-4">
-                <!-- Plano Esquema -->
-                @if (popoverData.foto_medida) {
-                <div class="flex justify-center border border-gray-100 dark:border-gray-800 rounded-lg p-3 bg-white dark:bg-slate-950">
-                    <img [src]="formatImageUrl(popoverData.foto_medida)" [alt]="popoverData.subtitle" class="max-h-[220px] max-w-full object-contain" />
-                </div>
-                } @else {
-                <div class="flex flex-col items-center justify-center border border-dashed border-gray-200 dark:border-gray-850 rounded-lg py-8 text-gray-400 dark:text-gray-600 bg-gray-50/30 dark:bg-slate-950/20">
-                    <i class="pi pi-image text-3xl mb-2"></i>
-                    <span class="text-xs">Sin plano esquemático disponible</span>
-                </div>
-                }
-
-                <!-- Tabla de Medidas en Rejilla de 4 Columnas -->
-                @if (popoverData.medidas && popoverData.medidas.length > 0) {
-                <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
-                        Details / Dimensiones
-                    </div>
-                    <div class="grid grid-cols-4 bg-white dark:bg-slate-900 text-xs">
-                        @for (medida of popoverData.medidas; track $index) {
-                        <div class="flex items-center justify-between p-2.5 border-r border-b border-gray-100 dark:border-gray-800 last:border-r-0">
-                            <span class="font-bold text-blue-600 dark:text-blue-400">{{ medida.nombre }}</span>
-                            <span class="text-gray-900 dark:text-white font-mono text-[11px]">{{ medida.valor }}{{ medida.unidad || ' mm' }}</span>
-                        </div>
-                        }
-                    </div>
-                </div>
-                } @else {
-                <div class="text-center text-xs text-gray-400 dark:text-gray-500 py-4 border border-dashed border-gray-100 dark:border-gray-850 rounded-lg">
-                    No se han registrado cotas/dimensiones para este artículo
-                </div>
-                }
+            <div class="flex-1 min-w-[200px]">
+                <span class="text-blue-500">DESCRIP:</span>
+                <span class="text-gray-900 dark:text-white uppercase ml-1">{{ popoverData.subtitle }}</span>
             </div>
-        } @else if (popoverData.title === 'Referencia') {
-            <!-- Cabecera Premium de Referencia / Juego -->
-            <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 text-xs font-bold text-gray-700 dark:text-gray-300">
-                <div class="flex items-center gap-1.5">
-                    <span class="text-blue-500">REF:</span>
-                    <span class="font-mono text-gray-900 dark:text-white">{{ popoverData.subtitle }}</span>
-                </div>
-                <div class="flex-1 min-w-[200px]">
-                    <span class="text-blue-500">DESCRIP:</span>
-                    <span class="text-gray-900 dark:text-white uppercase ml-1">{{ popoverData.articulo_definicion || 'Sin Definición' }}</span>
-                </div>
-                <div class="flex items-center gap-2">
-                    @if (popoverData.marca_nombre) {
-                    <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800 shrink-0"> {{ popoverData.marca_nombre }} </span>
-                    }
-                    @if (popoverData.es_juego) {
-                    <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
-                    }
-                </div>
+            <div>
+                <span class="text-blue-500">PESO:</span>
+                <span class="text-gray-900 dark:text-white ml-1">{{ popoverData.peso || '0.00' }} Kg</span>
             </div>
+        </div>
 
-            <!-- Fila Superior: Foto e Imagen + Referencias Cruzadas -->
-            <div class="p-4 flex flex-col gap-4">
-                <div class="grid grid-cols-2 gap-4">
-                    <!-- Foto de Producto -->
-                    <div class="flex flex-col justify-between border border-gray-105 dark:border-gray-800 rounded-lg p-2.5 bg-white dark:bg-slate-950">
-                        <span class="text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">Imagen del artículo</span>
-                        <div class="flex-1 flex items-center justify-center min-h-[140px]">
-                            @if (popoverData.foto_articulo) {
-                            <img [src]="formatImageUrl(popoverData.foto_articulo)" [alt]="popoverData.subtitle" class="max-h-[130px] max-w-full object-contain rounded" />
-                            } @else {
-                            <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 py-6">
-                                <i class="pi pi-image text-2xl mb-1"></i>
-                                <span class="text-[10px]">Sin imagen de referencia</span>
-                            </div>
-                            }
-                        </div>
-                    </div>
-
-                    <!-- Tabla de Referencias Cruzadas -->
-                    <div class="flex flex-col border border-gray-105 dark:border-gray-800 rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
-                        <span class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-105 dark:border-gray-850">Referencias Cruzadas</span>
-                        <div class="flex-1 max-h-[140px] overflow-y-auto">
-                            @if (popoverData.referencias_cruzadas?.length > 0) {
-                            <table class="w-full text-[10px] border-collapse bg-white dark:bg-slate-900">
-                                <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[8px]">
-                                    <tr>
-                                        <th class="p-1.5 text-left pl-3">Referencia</th>
-                                        <th class="p-1.5 text-left pl-2">Marca</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (ref of popoverData.referencias_cruzadas; track $index) {
-                                    <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                                        <td class="p-1.5 pl-3 font-bold text-blue-600 dark:text-blue-400">{{ ref.label || ref.referencia }}</td>
-                                        <td class="p-1.5 pl-2 text-gray-500 dark:text-gray-400">{{ ref.marca?.nombre || (ref.marca_nombre || 'N/A') }}</td>
-                                    </tr>
-                                    }
-                                </tbody>
-                            </table>
-                            } @else {
-                            <div class="text-center text-[10px] text-gray-400 dark:text-gray-500 py-8">
-                                Sin referencias cruzadas
-                            </div>
-                            }
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sección: Este juego contiene -->
-                @if (popoverData.componentes_juego && popoverData.componentes_juego.length > 0) {
-                <div class="border border-gray-250 dark:border-gray-800 rounded-lg overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
-                        Este juego contiene:
-                    </div>
-                    <div class="max-h-[160px] overflow-y-auto">
-                        <table class="w-full text-[11px] border-collapse bg-white dark:bg-slate-900">
-                            <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[9px]">
-                                <tr>
-                                    <th class="p-2 text-center w-[60px]">Cant</th>
-                                    <th class="p-2 text-left">Referencia</th>
-                                    <th class="p-2 text-left">Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (comp of popoverData.componentes_juego; track $index) {
-                                <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                                    <td class="p-2 text-center font-bold text-gray-700 dark:text-gray-300">{{ comp.cantidad }}</td>
-                                    <td class="p-2 font-mono font-bold text-blue-600 dark:text-blue-400">{{ comp.referencia }}</td>
-                                    <td class="p-2 text-gray-600 dark:text-gray-300">{{ comp.descripcion || comp.comentario || 'Sin descripción' }}</td>
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                }
-
-                <!-- Sección: Hace parte de -->
-                @if (popoverData.pertenece_a_juegos && popoverData.pertenece_a_juegos.length > 0) {
-                <div class="border border-gray-250 dark:border-gray-800 rounded-lg overflow-hidden">
-                    <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">
-                        Hace parte de:
-                    </div>
-                    <div class="max-h-[160px] overflow-y-auto">
-                        <table class="w-full text-[11px] border-collapse bg-white dark:bg-slate-900">
-                            <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[9px]">
-                                <tr>
-                                    <th class="p-2 text-left pl-3">Referencia</th>
-                                    <th class="p-2 text-left">Descripción</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @for (juego of popoverData.pertenece_a_juegos; track $index) {
-                                <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
-                                    <td class="p-2 pl-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ juego.referencia }}</td>
-                                    <td class="p-2 text-gray-600 dark:text-gray-300">{{ juego.descripcion }}</td>
-                                </tr>
-                                }
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-                }
+        <!-- Contenido del Artículo (Plano y Medidas) -->
+        <div class="p-4 flex flex-col gap-4">
+            <!-- Plano Esquema -->
+            @if (popoverData.foto_medida) {
+            <div class="flex justify-center border border-gray-100 dark:border-gray-800 rounded-lg p-3 bg-white dark:bg-slate-950">
+                <img [src]="formatImageUrl(popoverData.foto_medida)" [alt]="popoverData.subtitle" class="max-h-[220px] max-w-full object-contain" />
             </div>
-        } @else {
-            <!-- Cabecera por Defecto (Categorías Comerciales, Sistemas, etc.) -->
-            <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50">
-                <div class="flex flex-col gap-1">
-                    <span class="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">{{ popoverData.title }}</span>
-                    <h3 class="m-0 text-base font-bold text-gray-900 dark:text-white leading-tight">{{ popoverData.subtitle }}</h3>
-                </div>
-                <div class="flex flex-col gap-1 items-end">
-                    @if (popoverData.marca_nombre) {
-                    <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800 shrink-0"> {{ popoverData.marca_nombre }} </span>
-                    }
-                    @if (popoverData.es_juego) {
-                    <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
-                    }
-                </div>
+            } @else {
+            <div class="flex flex-col items-center justify-center border border-dashed border-gray-200 dark:border-gray-850 rounded-lg py-8 text-gray-400 dark:text-gray-600 bg-gray-50/30 dark:bg-slate-950/20">
+                <i class="pi pi-image text-3xl mb-2"></i>
+                <span class="text-xs">Sin plano esquemático disponible</span>
             </div>
+            }
 
-            <!-- Contenido: Múltiples Categorías Comerciales -->
-            @if (popoverData.categorias && popoverData.categorias.length > 0) {
-            <div class="p-4">
-                <div class="flex items-center gap-2 mb-3">
-                    <i class="pi pi-tags text-gray-400 text-xs"></i>
-                    <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Categorías Asociadas</span>
-                </div>
-                <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
-                    @for (cat of popoverData.categorias; track $index) {
-                    <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200">
-                        <i class="pi pi-tag text-blue-500 text-[10px]"></i>
-                        {{ cat }}
+            <!-- Tabla de Medidas en Rejilla de 4 Columnas -->
+            @if (popoverData.medidas && popoverData.medidas.length > 0) {
+            <div class="border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[10px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">Details / Dimensiones</div>
+                <div class="grid grid-cols-4 bg-white dark:bg-slate-900 text-xs">
+                    @for (medida of popoverData.medidas; track $index) {
+                    <div class="flex items-center justify-between p-2.5 border-r border-b border-gray-100 dark:border-gray-800 last:border-r-0">
+                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ medida.nombre }}</span>
+                        <span class="text-gray-900 dark:text-white font-mono text-[11px]">{{ medida.valor }}{{ medida.unidad || ' mm' }}</span>
                     </div>
                     }
                 </div>
             </div>
             } @else {
-            <div class="p-4 text-center text-xs text-gray-400 dark:text-gray-500">
-                No hay información técnica disponible
+            <div class="text-center text-xs text-gray-400 dark:text-gray-500 py-4 border border-dashed border-gray-100 dark:border-gray-850 rounded-lg">No se han registrado cotas/dimensiones para este artículo</div>
+            }
+        </div>
+        } @else if (popoverData.title === 'Referencia') {
+        <!-- Cabecera Premium de Referencia / Juego -->
+        <div class="flex flex-wrap items-center justify-between gap-4 px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50 text-xs font-bold text-gray-700 dark:text-gray-300">
+            <div class="flex items-center gap-1.5">
+                <span class="text-blue-500">REF:</span>
+                <span class="font-mono text-gray-900 dark:text-white">{{ popoverData.subtitle }}</span>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <span class="text-blue-500">DESCRIP:</span>
+                <span class="text-gray-900 dark:text-white uppercase ml-1">{{ popoverData.articulo_definicion || 'Sin Definición' }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                @if (popoverData.marca_nombre) {
+                <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800 shrink-0"> {{ popoverData.marca_nombre }} </span>
+                } @if (popoverData.es_juego) {
+                <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
+                }
+            </div>
+        </div>
+
+        <!-- Fila Superior: Foto e Imagen + Referencias Cruzadas -->
+        <div class="p-4 flex flex-col gap-4">
+            <div class="grid grid-cols-2 gap-4">
+                <!-- Foto de Producto -->
+                <div class="flex flex-col justify-between border border-gray-105 dark:border-gray-800 rounded-lg p-2.5 bg-white dark:bg-slate-950">
+                    <span class="text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider mb-2">Imagen del artículo</span>
+                    <div class="flex-1 flex items-center justify-center min-h-[140px]">
+                        @if (popoverData.foto_articulo) {
+                        <img [src]="formatImageUrl(popoverData.foto_articulo)" [alt]="popoverData.subtitle" class="max-h-[130px] max-w-full object-contain rounded" />
+                        } @else {
+                        <div class="flex flex-col items-center justify-center text-gray-400 dark:text-gray-600 py-6">
+                            <i class="pi pi-image text-2xl mb-1"></i>
+                            <span class="text-[10px]">Sin imagen de referencia</span>
+                        </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Tabla de Referencias Cruzadas -->
+                <div class="flex flex-col border border-gray-105 dark:border-gray-800 rounded-lg bg-white dark:bg-slate-900 overflow-hidden">
+                    <span class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-105 dark:border-gray-850">Referencias Cruzadas</span>
+                    <div class="flex-1 max-h-[140px] overflow-y-auto">
+                        @if (popoverData.referencias_cruzadas?.length > 0) {
+                        <table class="w-full text-[10px] border-collapse bg-white dark:bg-slate-900">
+                            <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[8px]">
+                                <tr>
+                                    <th class="p-1.5 text-left pl-3">Referencia</th>
+                                    <th class="p-1.5 text-left pl-2">Marca</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @for (ref of popoverData.referencias_cruzadas; track $index) {
+                                <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+                                    <td class="p-1.5 pl-3 font-bold text-blue-600 dark:text-blue-400">{{ ref.label || ref.referencia }}</td>
+                                    <td class="p-1.5 pl-2 text-gray-500 dark:text-gray-400">{{ ref.marca?.nombre || (ref.marca_nombre || 'N/A') }}</td>
+                                </tr>
+                                }
+                            </tbody>
+                        </table>
+                        } @else {
+                        <div class="text-center text-[10px] text-gray-400 dark:text-gray-500 py-8">Sin referencias cruzadas</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección: Este juego contiene -->
+            @if (popoverData.componentes_juego && popoverData.componentes_juego.length > 0) {
+            <div class="border border-gray-250 dark:border-gray-800 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">Este juego contiene:</div>
+                <div class="max-h-[160px] overflow-y-auto">
+                    <table class="w-full text-[11px] border-collapse bg-white dark:bg-slate-900">
+                        <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[9px]">
+                            <tr>
+                                <th class="p-2 text-center w-[60px]">Cant</th>
+                                <th class="p-2 text-left">Referencia</th>
+                                <th class="p-2 text-left">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (comp of popoverData.componentes_juego; track $index) {
+                            <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+                                <td class="p-2 text-center font-bold text-gray-700 dark:text-gray-300">{{ comp.cantidad }}</td>
+                                <td class="p-2 font-mono font-bold text-blue-600 dark:text-blue-400">{{ comp.referencia }}</td>
+                                <td class="p-2 text-gray-600 dark:text-gray-300">{{ comp.descripcion || comp.comentario || 'Sin descripción' }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
             </div>
             }
-        }
+
+            <!-- Sección: Hace parte de -->
+            @if (popoverData.pertenece_a_juegos && popoverData.pertenece_a_juegos.length > 0) {
+            <div class="border border-gray-250 dark:border-gray-800 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 dark:bg-slate-800/80 px-3 py-1.5 text-[9px] font-bold text-gray-400 dark:text-gray-300 uppercase tracking-wider border-b border-gray-200 dark:border-gray-800">Hace parte de:</div>
+                <div class="max-h-[160px] overflow-y-auto">
+                    <table class="w-full text-[11px] border-collapse bg-white dark:bg-slate-900">
+                        <thead class="sticky top-0 bg-gray-50 dark:bg-slate-800 text-gray-500 dark:text-gray-400 font-bold uppercase text-[9px]">
+                            <tr>
+                                <th class="p-2 text-left pl-3">Referencia</th>
+                                <th class="p-2 text-left">Descripción</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (juego of popoverData.pertenece_a_juegos; track $index) {
+                            <tr class="border-t border-gray-50 dark:border-gray-800 hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
+                                <td class="p-2 pl-3 font-mono font-bold text-blue-600 dark:text-blue-400">{{ juego.referencia }}</td>
+                                <td class="p-2 text-gray-600 dark:text-gray-300">{{ juego.descripcion }}</td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            }
+        </div>
+        } @else {
+        <!-- Cabecera por Defecto (Categorías Comerciales, Sistemas, etc.) -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-slate-800/50">
+            <div class="flex flex-col gap-1">
+                <span class="text-[10px] font-bold text-blue-500 dark:text-blue-400 uppercase tracking-widest">{{ popoverData.title }}</span>
+                <h3 class="m-0 text-base font-bold text-gray-900 dark:text-white leading-tight">{{ popoverData.subtitle }}</h3>
+            </div>
+            <div class="flex flex-col gap-1 items-end">
+                @if (popoverData.marca_nombre) {
+                <span class="bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-purple-200 dark:border-purple-800 shrink-0"> {{ popoverData.marca_nombre }} </span>
+                } @if (popoverData.es_juego) {
+                <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
+                }
+            </div>
+        </div>
+
+        <!-- Contenido: Múltiples Categorías Comerciales -->
+        @if (popoverData.categorias && popoverData.categorias.length > 0) {
+        <div class="p-4">
+            <div class="flex items-center gap-2 mb-3">
+                <i class="pi pi-tags text-gray-400 text-xs"></i>
+                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Categorías Asociadas</span>
+            </div>
+            <div class="flex flex-col gap-2 max-h-[200px] overflow-y-auto pr-1">
+                @for (cat of popoverData.categorias; track $index) {
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50 dark:bg-slate-800 border border-gray-100 dark:border-gray-700 text-xs font-semibold text-gray-700 dark:text-gray-200">
+                    <i class="pi pi-tag text-blue-500 text-[10px]"></i>
+                    {{ cat }}
+                </div>
+                }
+            </div>
+        </div>
+        } @else {
+        <div class="p-4 text-center text-xs text-gray-400 dark:text-gray-500">No hay información técnica disponible</div>
+        } }
     </div>
     }
 </p-popover>

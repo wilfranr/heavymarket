@@ -480,7 +480,7 @@ export class CosteoComponent implements OnInit {
                 const ccNombre = refGroup.get('categoria_comercial_nombre')?.value || 'Sin Categoría';
                 const refObj = this.pedido()?.referencias?.[refIndex];
                 const catsList = refObj?.categorias_comerciales || (refObj?.categoria_comercial ? [refObj.categoria_comercial] : []);
-                
+
                 this.popoverData = {
                     title: 'Categorías Comerciales',
                     subtitle: catsList.length > 1 ? `${catsList.length} Categorías` : ccNombre,
@@ -824,12 +824,7 @@ export class CosteoComponent implements OnInit {
         if (!proveedor) {
             return true;
         }
-        return (
-            proveedor.country?.iso2 === 'CO' ||
-            proveedor.country?.name?.toLowerCase().includes('colombia') ||
-            proveedor.country_id === 48 ||
-            proveedor.country?.id === 48
-        );
+        return proveedor.country?.iso2 === 'CO' || proveedor.country?.name?.toLowerCase().includes('colombia') || proveedor.country_id === 48 || proveedor.country?.id === 48;
     }
 
     obtenerFleteProveedor(proveedorId: number | null): number {
@@ -1124,9 +1119,7 @@ export class CosteoComponent implements OnInit {
                         this.messageService.add({
                             severity: 'warn',
                             summary: 'Cotización en Borrador',
-                            detail:
-                                resp.message ||
-                                'Falta tarifa de flete del país del proveedor. Un administrador fue notificado. Configure el valor en Gestión de Países.',
+                            detail: resp.message || 'Falta tarifa de flete del país del proveedor. Un administrador fue notificado. Configure el valor en Gestión de Países.',
                             life: 10000
                         });
                     } else {

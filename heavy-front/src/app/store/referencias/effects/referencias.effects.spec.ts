@@ -20,22 +20,15 @@ describe('ReferenciasEffects', () => {
         es_temporal: false,
         comentario: 'Test comment',
         created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
     };
 
     beforeEach(() => {
-        const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', [
-            'getAll', 'getById', 'create', 'update', 'deleteReferencia'
-        ]);
+        const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', ['getAll', 'getById', 'create', 'update', 'deleteReferencia']);
         const toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error']);
 
         TestBed.configureTestingModule({
-            providers: [
-                provideMockActions(() => actions$),
-                ReferenciasEffects,
-                { provide: ReferenciaService, useValue: referenciaServiceSpy },
-                { provide: ToastService, useValue: toastServiceSpy }
-            ]
+            providers: [provideMockActions(() => actions$), ReferenciasEffects, { provide: ReferenciaService, useValue: referenciaServiceSpy }, { provide: ToastService, useValue: toastServiceSpy }]
         });
 
         effects = TestBed.inject(ReferenciasEffects);
@@ -53,14 +46,16 @@ describe('ReferenciasEffects', () => {
                 lastPage: 1
             });
 
-            referenciaService.getAll.and.returnValue(of({
-                data: [mockReferencia],
-                meta: { total: 1, current_page: 1, last_page: 1, per_page: 15 }
-            }));
+            referenciaService.getAll.and.returnValue(
+                of({
+                    data: [mockReferencia],
+                    meta: { total: 1, current_page: 1, last_page: 1, per_page: 15 }
+                })
+            );
 
             actions$ = of(action);
 
-            effects.loadReferencias$.subscribe(result => {
+            effects.loadReferencias$.subscribe((result) => {
                 expect(result).toEqual(outcome);
             });
         });
@@ -73,7 +68,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.loadReferencias$.subscribe(result => {
+            effects.loadReferencias$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.error).toHaveBeenCalledWith('Error de red');
             });
@@ -89,7 +84,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.loadReferenciaById$.subscribe(result => {
+            effects.loadReferenciaById$.subscribe((result) => {
                 expect(result).toEqual(outcome);
             });
         });
@@ -102,7 +97,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.loadReferenciaById$.subscribe(result => {
+            effects.loadReferenciaById$.subscribe((result) => {
                 expect(result).toEqual(outcome);
             });
         });
@@ -118,7 +113,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.createReferencia$.subscribe(result => {
+            effects.createReferencia$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.success).toHaveBeenCalledWith('Referencia creada exitosamente');
             });
@@ -129,14 +124,16 @@ describe('ReferenciasEffects', () => {
             const action = ReferenciasActions.createReferencia({ data: createData });
             const outcome = ReferenciasActions.createReferenciaFailure({ error: 'La referencia ya existe' });
 
-            referenciaService.create.and.returnValue(throwError(() => ({
-                status: 422,
-                error: { errors: { referencia: ['La referencia ya existe'] } }
-            })));
+            referenciaService.create.and.returnValue(
+                throwError(() => ({
+                    status: 422,
+                    error: { errors: { referencia: ['La referencia ya existe'] } }
+                }))
+            );
 
             actions$ = of(action);
 
-            effects.createReferencia$.subscribe(result => {
+            effects.createReferencia$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.error).toHaveBeenCalledWith('La referencia ya existe');
             });
@@ -153,7 +150,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.updateReferencia$.subscribe(result => {
+            effects.updateReferencia$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.success).toHaveBeenCalledWith('Referencia actualizada exitosamente');
             });
@@ -169,7 +166,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.deleteReferencia$.subscribe(result => {
+            effects.deleteReferencia$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.success).toHaveBeenCalledWith('Referencia eliminada exitosamente');
             });
@@ -183,7 +180,7 @@ describe('ReferenciasEffects', () => {
 
             actions$ = of(action);
 
-            effects.deleteReferencia$.subscribe(result => {
+            effects.deleteReferencia$.subscribe((result) => {
                 expect(result).toEqual(outcome);
                 expect(toastService.error).toHaveBeenCalledWith('Error');
             });

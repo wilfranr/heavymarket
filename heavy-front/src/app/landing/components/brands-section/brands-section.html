@@ -4,15 +4,7 @@
             @for (brand of marqueeBrands(); track $index) {
             <div class="hm-brands-card">
                 <div class="hm-brands-img-wrap">
-                    <img
-                        [ngSrc]="brand.logo"
-                        [width]="brand.width"
-                        [height]="brand.height"
-                        [alt]="brand.nombre"
-                        loading="lazy"
-                        decoding="async"
-                        class="hm-brands-img"
-                    />
+                    <img [ngSrc]="brand.logo" [width]="brand.width" [height]="brand.height" [alt]="brand.nombre" loading="lazy" decoding="async" class="hm-brands-img" />
                 </div>
             </div>
             }

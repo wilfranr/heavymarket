@@ -3,10 +3,10 @@
 namespace App\Providers;
 
 use App\Models\Cotizacion;
+use App\Validation\CustomValidator;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\ServiceProvider;
-use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -26,7 +26,7 @@ class AppServiceProvider extends ServiceProvider
         Route::model('cotizacione', Cotizacion::class);
 
         Validator::resolver(function ($translator, $data, $rules, $messages, $customAttributes) {
-            return new \App\Validation\CustomValidator($translator, $data, $rules, $messages, $customAttributes);
+            return new CustomValidator($translator, $data, $rules, $messages, $customAttributes);
         });
     }
 }

@@ -55,12 +55,11 @@ import { Lista } from '../../../core/models/lista.model';
             <!-- List of Opportunities -->
             <div *ngIf="opportunities().length > 0; else emptyState" class="flex flex-col gap-4">
                 <div *ngFor="let ref of opportunities()" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700 overflow-hidden transition-all hover:shadow-md">
-                    
                     <!-- Header Row (Piece Info) -->
                     <div class="bg-surface-50 dark:bg-surface-800 px-4 py-3 flex flex-wrap items-center gap-4 border-b border-surface-200 dark:border-surface-700">
                         <p-tag value="DISPONIBLE" severity="success" [rounded]="true" class="text-xs"></p-tag>
                         <p-tag [value]="ref.categoria_comercial?.nombre || 'General'" [rounded]="true" class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none text-xs font-semibold px-3"></p-tag>
-                        
+
                         <div class="flex items-center gap-2">
                             <span class="text-surface-500 text-sm">Cant.</span>
                             <span class="font-bold text-surface-900 dark:text-surface-0">{{ ref.cantidad }}</span>
@@ -80,7 +79,6 @@ import { Lista } from '../../../core/models/lista.model';
                     <!-- Input Row (Form) -->
                     <div class="p-5">
                         <div class="grid grid-cols-12 gap-4 items-end">
-                            
                             <!-- Item ID -->
                             <div class="col-span-12 md:col-span-1 flex flex-col gap-1.5">
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Ítem</label>
@@ -98,34 +96,36 @@ import { Lista } from '../../../core/models/lista.model';
                             <!-- Marca Select -->
                             <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Marca Ofrecida</label>
-                                <p-select 
-                                    [options]="marcas" 
+                                <p-select
+                                    [options]="marcas"
                                     [(ngModel)]="ref.form_marca_id"
-                                    optionLabel="label" 
-                                    optionValue="value" 
-                                    [filter]="true" 
-                                    [placeholder]="ref.marca?.nombre || 'Seleccionar'" 
+                                    optionLabel="label"
+                                    optionValue="value"
+                                    [filter]="true"
+                                    [placeholder]="ref.marca?.nombre || 'Seleccionar'"
                                     class="w-full h-[46px]"
                                     styleClass="w-full border-surface-300 rounded-lg"
                                     [showClear]="true"
                                     appendTo="body"
-                                    [disabled]="ref.already_costed">
+                                    [disabled]="ref.already_costed"
+                                >
                                 </p-select>
                             </div>
 
                             <!-- Entrega Select -->
                             <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Entrega</label>
-                                <p-select 
-                                    [options]="tiemposEntrega" 
+                                <p-select
+                                    [options]="tiemposEntrega"
                                     [(ngModel)]="ref.form_dias_entrega"
-                                    optionLabel="label" 
-                                    optionValue="value" 
+                                    optionLabel="label"
+                                    optionValue="value"
                                     placeholder="Seleccionar"
                                     class="w-full h-[46px]"
                                     styleClass="w-full border-surface-300 rounded-lg"
                                     appendTo="body"
-                                    [disabled]="ref.already_costed">
+                                    [disabled]="ref.already_costed"
+                                >
                                 </p-select>
                             </div>
 
@@ -134,15 +134,16 @@ import { Lista } from '../../../core/models/lista.model';
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">
                                     {{ providerInfo().is_national ? 'Costo COP' : 'Costo USD' }}
                                 </label>
-                                <p-inputNumber 
+                                <p-inputNumber
                                     [(ngModel)]="ref.form_costo"
-                                    [mode]="'currency'" 
-                                    [currency]="providerInfo().is_national ? 'COP' : 'USD'" 
-                                    [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'" 
+                                    [mode]="'currency'"
+                                    [currency]="providerInfo().is_national ? 'COP' : 'USD'"
+                                    [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'"
                                     inputStyleClass="w-full font-bold text-lg h-[46px] border-surface-300 rounded-lg"
                                     styleClass="w-full"
                                     [min]="0"
-                                    [disabled]="ref.already_costed">
+                                    [disabled]="ref.already_costed"
+                                >
                                 </p-inputNumber>
                             </div>
 
@@ -154,23 +155,25 @@ import { Lista } from '../../../core/models/lista.model';
 
                             <!-- Submit Button -->
                             <div class="col-span-12 md:col-span-2 flex justify-end">
-                                <p-button 
+                                <p-button
                                     *ngIf="!ref.already_costed; else alreadyCostedState"
-                                    label="Agregar" 
-                                    icon="pi pi-plus" 
+                                    label="Agregar"
+                                    icon="pi pi-plus"
                                     [loading]="ref.submitting"
                                     [disabled]="!ref.form_costo || ref.form_dias_entrega === undefined"
                                     (onClick)="submitCost(ref)"
-                                    styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold">
+                                    styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold"
+                                >
                                 </p-button>
                                 <ng-template #alreadyCostedState>
-                                    <p-button 
-                                        [label]="activeStatus() === 'sent' ? 'Enviado' : 'Aprobado'" 
-                                        [icon]="activeStatus() === 'sent' ? 'pi pi-send' : 'pi pi-check'" 
+                                    <p-button
+                                        [label]="activeStatus() === 'sent' ? 'Enviado' : 'Aprobado'"
+                                        [icon]="activeStatus() === 'sent' ? 'pi pi-send' : 'pi pi-check'"
                                         [disabled]="true"
                                         [outlined]="true"
                                         [severity]="activeStatus() === 'sent' ? 'secondary' : 'success'"
-                                        styleClass="w-full py-3 rounded-lg font-bold">
+                                        styleClass="w-full py-3 rounded-lg font-bold"
+                                    >
                                     </p-button>
                                 </ng-template>
                             </div>
@@ -196,17 +199,19 @@ import { Lista } from '../../../core/models/lista.model';
 
         <p-toast></p-toast>
     `,
-    styles: [`
-        :host ::ng-deep .p-select {
-            border-radius: 0.5rem;
-        }
-        :host ::ng-deep .p-inputnumber-input {
-            border-radius: 0.5rem;
-        }
-        :host ::ng-deep .p-button {
-            border-radius: 0.5rem;
-        }
-    `]
+    styles: [
+        `
+            :host ::ng-deep .p-select {
+                border-radius: 0.5rem;
+            }
+            :host ::ng-deep .p-inputnumber-input {
+                border-radius: 0.5rem;
+            }
+            :host ::ng-deep .p-button {
+                border-radius: 0.5rem;
+            }
+        `
+    ]
 })
 export class CostingOpportunitiesComponent implements OnInit {
     private providerPortalService = inject(ProviderPortalService);
@@ -214,7 +219,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     private messageService = inject(MessageService);
 
     opportunities = signal<any[]>([]);
-    providerInfo = signal<{id?: number, nombre?: string, is_national: boolean}>({ is_national: true });
+    providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean }>({ is_national: true });
     loading = signal(false);
     activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
     marcas: any[] = [];
@@ -245,7 +250,7 @@ export class CostingOpportunitiesComponent implements OnInit {
                     already_costed: item.already_costed || false
                 }));
                 this.opportunities.set(items);
-                
+
                 if (response.provider) {
                     this.providerInfo.set(response.provider);
                 }
@@ -281,7 +286,7 @@ export class CostingOpportunitiesComponent implements OnInit {
         this.providerPortalService.submitCost(payload).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Oferta enviada correctamente.' });
-                this.opportunities.set(this.opportunities().filter(o => o.id !== ref.id));
+                this.opportunities.set(this.opportunities().filter((o) => o.id !== ref.id));
             },
             error: (error: any) => {
                 const errorMsg = error.error?.message || 'Error al enviar la oferta.';

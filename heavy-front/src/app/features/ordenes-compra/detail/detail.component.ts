@@ -175,7 +175,8 @@ export class DetailComponent implements OnInit, OnDestroy {
             this.ordenCompraId.set(+id);
             this.store.dispatch(loadOrdenCompraById({ id: +id }));
 
-            this.store.select(OrdenesCompraSelectors.selectOrdenCompraById(+id))
+            this.store
+                .select(OrdenesCompraSelectors.selectOrdenCompraById(+id))
                 .pipe(takeUntil(this.destroy$))
                 .subscribe((val) => {
                     if (val) this.ordenCompra.set(val);

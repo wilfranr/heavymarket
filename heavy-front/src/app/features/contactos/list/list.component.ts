@@ -37,7 +37,18 @@ import { TerceroService } from '../../../core/services/tercero.service';
                             <p-inputicon styleClass="pi pi-search"></p-inputicon>
                             <input pInputText type="text" (input)="onSearch($event)" placeholder="Buscar..." />
                         </p-iconfield>
-                        <p-select [(ngModel)]="selectedTercero" [options]="terceros" optionLabel="label" optionValue="value" placeholder="Filtrar por tercero" [showClear]="true" (ngModelChange)="onTerceroChange()" styleClass="w-full md:w-14rem" [filter]="true" filterBy="label">
+                        <p-select
+                            [(ngModel)]="selectedTercero"
+                            [options]="terceros"
+                            optionLabel="label"
+                            optionValue="value"
+                            placeholder="Filtrar por tercero"
+                            [showClear]="true"
+                            (ngModelChange)="onTerceroChange()"
+                            styleClass="w-full md:w-14rem"
+                            [filter]="true"
+                            filterBy="label"
+                        >
                         </p-select>
                     </div>
 

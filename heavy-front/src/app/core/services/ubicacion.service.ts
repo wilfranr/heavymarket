@@ -29,10 +29,7 @@ export class UbicacionService extends ApiService {
         return this.put<{ message: string; data: Country }>(`countries/${id}`, data);
     }
 
-    solicitarFlete(
-        countryId: number,
-        data: { flete: number; proveedor_id: number; pedido_id: number }
-    ): Observable<{ message: string; notificaciones_enviadas: number }> {
+    solicitarFlete(countryId: number, data: { flete: number; proveedor_id: number; pedido_id: number }): Observable<{ message: string; notificaciones_enviadas: number }> {
         return this.post<{ message: string; notificaciones_enviadas: number }>(`countries/${countryId}/solicitar-flete`, data);
     }
 

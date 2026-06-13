@@ -233,10 +233,7 @@ export class ListComponent implements OnInit {
             delete this.dt.editingRowKeys[referencia.id];
         }
 
-        merge(
-            this.actions$.pipe(ofType(updateReferenciaSuccess), take(1)),
-            this.actions$.pipe(ofType(updateReferenciaFailure), take(1))
-        )
+        merge(this.actions$.pipe(ofType(updateReferenciaSuccess), take(1)), this.actions$.pipe(ofType(updateReferenciaFailure), take(1)))
             .pipe(take(1))
             .subscribe((action) => {
                 if (action.type === updateReferenciaSuccess.type) {

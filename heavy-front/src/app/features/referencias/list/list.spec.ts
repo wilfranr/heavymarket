@@ -68,17 +68,19 @@ describe('ReferenciasListComponent', () => {
                 { provide: MessageService, useValue: messageServiceSpy },
                 { provide: ConfirmationService, useValue: confirmationServiceSpy }
             ]
-        }).overrideComponent(ListComponent, {
-            set: { 
-                template: '<div></div>', 
-                styleUrls: [],
-                imports: [],
-                providers: [
-                    { provide: MessageService, useValue: messageServiceSpy },
-                    { provide: ConfirmationService, useValue: confirmationServiceSpy }
-                ]
-            }
-        }).compileComponents();
+        })
+            .overrideComponent(ListComponent, {
+                set: {
+                    template: '<div></div>',
+                    styleUrls: [],
+                    imports: [],
+                    providers: [
+                        { provide: MessageService, useValue: messageServiceSpy },
+                        { provide: ConfirmationService, useValue: confirmationServiceSpy }
+                    ]
+                }
+            })
+            .compileComponents();
 
         fixture = TestBed.createComponent(ListComponent);
         component = fixture.componentInstance;

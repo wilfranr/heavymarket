@@ -114,9 +114,7 @@ export class Cotizar implements OnInit {
             return [];
         }
 
-        let types = categories
-            .flatMap((c) => c.subcategorias || [])
-            .sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
+        let types = categories.flatMap((c) => c.subcategorias || []).sort((a, b) => (a.nombre || '').localeCompare(b.nombre || ''));
 
         const search = this.typeSearch;
         if (search) {

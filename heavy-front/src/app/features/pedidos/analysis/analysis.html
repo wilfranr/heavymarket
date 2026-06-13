@@ -31,12 +31,12 @@
         @let pedido = (pedido$ | async);
         <div class="flex gap-6 mb-10 px-8">
             <!-- Order Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
-                <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-700">
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] rounded-lg shadow-md">
+                <div class="p-3 flex justify-between items-center border-b border-[var(--p-content-border-color)]">
                     <span class="font-bold text-base pl-2">Información del pedido</span>
                     <i class="pi pi-shopping-bag text-xl pr-2"></i>
                 </div>
-                <div class="p-4 space-y-1 flex-1 text-sm bg-[#334155]">
+                <div class="p-4 space-y-1 flex-1 text-sm bg-transparent">
                     <div class="flex gap-2">
                         <span class="text-green-400 font-semibold">Documento:</span>
                         <span>Análisis</span>
@@ -76,13 +76,13 @@
             </div>
 
             <!-- Machine Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] bg-[#1E293B] text-white rounded-lg shadow-md border-none">
+            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] rounded-lg shadow-md">
                 @let maquina = pedido?.maquina;
-                <div class="p-3 bg-[#1E293B] flex justify-between items-center border-b border-gray-200 dark:border-none">
+                <div class="p-3 flex justify-between items-center border-b border-[var(--p-content-border-color)]">
                     <span class="font-bold text-base pl-2">Información de la máquina</span>
                     <button type="button" pButton icon="pi pi-eye" [text]="true" [rounded]="true" styleClass="!text-white" (click)="viewMaquina(maquina)"></button>
                 </div>
-                <div class="p-4 space-y-1 flex-1 text-sm bg-[#334155] overflow-y-auto min-h-0">
+                <div class="p-4 space-y-1 flex-1 text-sm bg-transparent overflow-y-auto min-h-0">
                     <div class="flex gap-2">
                         <span class="text-primary-400 font-semibold">Máquina:</span>
                         <span>{{ maquina?.tipo || 'N/A' }}</span>
@@ -200,9 +200,9 @@
             </div>
 
             @if (itemsLoading) {
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; background: transparent;">
-                <span class="loader" style="--base-color: #1e293b;"></span>
-                <p class="loader-text" style="color: #fdb831; font-size: 1.1rem; font-weight: 500; margin-top: 1.5rem; animation: pulse 2s infinite;">Cargando requerimientos...</p>
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 300px; background: transparent">
+                <span class="loader" style="--base-color: #1e293b"></span>
+                <p class="loader-text" style="color: #fdb831; font-size: 1.1rem; font-weight: 500; margin-top: 1.5rem; animation: pulse 2s infinite">Cargando requerimientos...</p>
             </div>
             } @else {
 
@@ -228,13 +228,7 @@
                     </div>
                     <button type="button" (click)="openHelpDialog()" class="text-brand-yellow text-sm hover:underline font-medium"><i class="pi pi-question-circle mr-1"></i>Ver guía</button>
                 </div>
-                <textarea
-                    pTextarea
-                    [(ngModel)]="bulkText"
-                    [rows]="8"
-                    placeholder="Ej:&#10;10 REF-123&#10;5 REF-456"
-                    class="w-full font-mono text-sm rounded-lg mb-4 !bg-white dark:!bg-[#0f172a] border border-slate-200 dark:border-slate-600 text-slate-900 dark:text-slate-100"
-                ></textarea>
+                <textarea pTextarea [(ngModel)]="bulkText" [rows]="8" placeholder="Ej:&#10;10 REF-123&#10;5 REF-456" class="w-full font-mono text-sm rounded-lg mb-4"></textarea>
                 <div class="flex flex-wrap justify-end gap-3">
                     <button type="button" class="btn-pill btn-secondary-green text-xs px-4 py-2" (click)="cerrarCargaMasiva()">Cancelar</button>
                     <button type="button" class="btn-pill btn-primary-green text-xs px-6 py-2 flex items-center gap-1.5 disabled:opacity-60" [disabled]="processingBulk" (click)="procesarCargaMasiva()">
@@ -243,9 +237,9 @@
                 </div>
             </div>
             } @for (item of referenciasFormArray.controls; track $index; let i = $index) {
-            <div class="item-card overflow-hidden rounded-xl bg-[#334155] text-white mb-6">
+            <div class="item-card overflow-hidden rounded-xl mb-6">
                 <!-- Item Header Bar -->
-                <div class="flex items-center gap-6 p-4 bg-[#334155] border-b border-gray-600">
+                <div class="flex items-center gap-6 p-4 border-b border-[var(--p-content-border-color)]">
                     <div class="px-4 py-1.5 rounded-full font-medium text-xs font-bold" [ngClass]="isItemCompleto(i) ? 'bg-green-500 text-white' : 'bg-yellow-500 text-black'">{{ isItemCompleto(i) ? 'Analizado' : 'Pendiente' }}</div>
 
                     <!-- Name & Category Reactivo (Orden: Sistema → Tipo → Cantidad) - Issue #67 -->
@@ -315,7 +309,7 @@
                                         <p-checkbox [binary]="true"></p-checkbox>
                                     </td>
                                     <td class="p-2">
-                                        <input type="number" pInputText formControlName="cantidad" min="1" step="1" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
+                                        <input type="number" pInputText formControlName="cantidad" min="1" step="1" class="w-full h-10 px-3 rounded-md" />
                                     </td>
                                     <td class="p-2">
                                         <div class="flex items-center gap-1.5">
@@ -328,11 +322,11 @@
                                                     [filter]="true"
                                                     placeholder="Seleccionar"
                                                     appendTo="body"
-                                                    styleClass="flex-1 !bg-[#334155] border-none !text-white h-full"
+                                                    styleClass="flex-1 h-full"
                                                     (onChange)="onReferenciaFilaChange($event, i, j)"
                                                 ></p-select>
                                                 @if (false) {
-                                                <p-button icon="pi pi-plus" [text]="true" (click)="abrirCrearReferencia(i, j)" styleClass="!bg-[#1e293b] border-none !text-primary-400 !rounded-none !h-full px-3"> </p-button>
+                                                <p-button icon="pi pi-plus" [text]="true" (click)="abrirCrearReferencia(i, j)" styleClass="border-none !text-primary-400 !rounded-none !h-full px-3"> </p-button>
                                                 }
                                             </div>
                                             @if (isReferenciaTemporal(i, j)) {
@@ -341,7 +335,7 @@
                                         </div>
                                     </td>
                                     <td class="p-2">
-                                        <input type="text" pInputText formControlName="descripcion" placeholder="Descripción del artículo" class="w-full !bg-[#334155] border-none text-white h-10 px-3 rounded-md" />
+                                        <input type="text" pInputText formControlName="descripcion" placeholder="Descripción del artículo" class="w-full h-10 px-3 rounded-md" />
                                     </td>
                                     <td class="p-2">
                                         <p-multiSelect
@@ -352,7 +346,7 @@
                                             [filter]="true"
                                             placeholder="Seleccionar"
                                             appendTo="body"
-                                            styleClass="w-full !bg-[#334155] border-none text-white h-10"
+                                            styleClass="w-full h-10"
                                             display="chip"
                                         ></p-multiSelect>
                                     </td>
@@ -396,8 +390,7 @@
                     </div>
                 </div>
             </div>
-            }
-            }
+            } }
 
             <!-- Global Item Actions (Add more requirements) -->
             <div class="flex flex-wrap justify-center gap-6 mt-8 p-6 bg-white/5 rounded-2xl border border-white/10">
@@ -656,8 +649,7 @@
             <div class="flex flex-col gap-1 items-end">
                 @if (popoverData.type === 'articulo' && popoverData.es_estandar) {
                 <span class="bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-green-200 dark:border-green-800 shrink-0"> ESTÁNDAR </span>
-                }
-                @if (popoverData.es_juego) {
+                } @if (popoverData.es_juego) {
                 <span class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400 text-[9px] px-2 py-0.5 rounded-full font-bold border border-blue-200 dark:border-blue-800 shrink-0"> KIT / JUEGO </span>
                 }
             </div>

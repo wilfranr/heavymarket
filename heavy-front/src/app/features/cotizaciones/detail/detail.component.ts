@@ -72,17 +72,14 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                 </div>
 
                 @if (cot.estado === 'Borrador') {
-                <div
-                    class="mx-8 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm"
-                    style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)"
-                >
-                    <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
-                    <div class="text-slate-700 dark:text-slate-200">
-                        <span class="font-semibold">Cotización en Borrador.</span>
-                        Falta configurar la tarifa de flete (USD/lb) del país de uno o más proveedores internacionales del costeo.
-                        <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 font-medium ml-1 underline">Gestión de Países</a>
+                    <div class="mx-8 flex items-start gap-3 rounded-lg border px-4 py-3 text-sm" style="border-color: var(--p-orange-500); background: color-mix(in srgb, var(--p-orange-500) 12%, transparent)">
+                        <i class="pi pi-exclamation-triangle text-orange-500 mt-0.5"></i>
+                        <div class="text-slate-700 dark:text-slate-200">
+                            <span class="font-semibold">Cotización en Borrador.</span>
+                            Falta configurar la tarifa de flete (USD/lb) del país de uno o más proveedores internacionales del costeo.
+                            <a routerLink="/app/countries" class="text-blue-600 dark:text-blue-400 font-medium ml-1 underline">Gestión de Países</a>
+                        </div>
                     </div>
-                </div>
                 }
 
                 <div class="flex flex-col gap-10">

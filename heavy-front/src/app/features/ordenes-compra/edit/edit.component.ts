@@ -196,7 +196,8 @@ export class EditComponent implements OnInit, OnDestroy {
     private loadOrdenCompra(id: number): void {
         this.store.dispatch(loadOrdenCompraById({ id }));
 
-        this.store.select(OrdenesCompraSelectors.selectOrdenCompraById(id))
+        this.store
+            .select(OrdenesCompraSelectors.selectOrdenCompraById(id))
             .pipe(takeUntil(this.destroy$))
             .subscribe((orden) => {
                 if (orden) {
@@ -313,7 +314,8 @@ export class EditComponent implements OnInit, OnDestroy {
 
         this.store.dispatch(updateOrdenCompra({ id: this.ordenCompraId(), data }));
 
-        this.store.select(OrdenesCompraSelectors.selectOrdenesCompraError)
+        this.store
+            .select(OrdenesCompraSelectors.selectOrdenesCompraError)
             .pipe(takeUntil(this.destroy$))
             .subscribe((error) => {
                 if (!error && !this.loading()) {

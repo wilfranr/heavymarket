@@ -278,7 +278,8 @@ export class CreateComponent implements OnInit, OnDestroy {
 
         this.store.dispatch(createOrdenCompra({ data }));
 
-        this.store.select(OrdenesCompraSelectors.selectOrdenesCompraError)
+        this.store
+            .select(OrdenesCompraSelectors.selectOrdenesCompraError)
             .pipe(takeUntil(this.destroy$))
             .subscribe((error) => {
                 if (!error && !this.loading()) {

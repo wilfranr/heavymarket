@@ -18,7 +18,18 @@ export class MaquinaService extends ApiService {
     /**
      * Obtener todas las máquinas con filtros
      */
-    getAll(params?: { search?: string; fabricante_id?: number; tercero_id?: number; tipo?: number; disponibles?: boolean; except_tercero_id?: number; sort_by?: string; sort_order?: 'asc' | 'desc'; per_page?: number; page?: number }): Observable<PaginatedResponse<Maquina>> {
+    getAll(params?: {
+        search?: string;
+        fabricante_id?: number;
+        tercero_id?: number;
+        tipo?: number;
+        disponibles?: boolean;
+        except_tercero_id?: number;
+        sort_by?: string;
+        sort_order?: 'asc' | 'desc';
+        per_page?: number;
+        page?: number;
+    }): Observable<PaginatedResponse<Maquina>> {
         return this.get<PaginatedResponse<Maquina>>(this.endpoint, params);
     }
 
@@ -41,11 +52,7 @@ export class MaquinaService extends ApiService {
      */
     update(id: number, data: UpdateMaquinaDto | FormData): Observable<ApiResponse<Maquina>> {
         if (data instanceof FormData) {
-            return this.http.post<ApiResponse<Maquina>>(
-                this.formatUrl(`${this.endpoint}/${id}`),
-                data,
-                { headers: { 'X-HTTP-Method-Override': 'PUT' } }
-            );
+            return this.http.post<ApiResponse<Maquina>>(this.formatUrl(`${this.endpoint}/${id}`), data, { headers: { 'X-HTTP-Method-Override': 'PUT' } });
         }
         return this.put<ApiResponse<Maquina>>(`${this.endpoint}/${id}`, data);
     }

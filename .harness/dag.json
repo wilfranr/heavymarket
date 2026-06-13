@@ -1,345 +1,230 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-13T12:00:00Z",
-  "issue": "pedidos-restricciones-estado-rol",
-  "description": "Matriz de restricciones de botones y acciones del módulo pedidos según estado del pedido y rol del usuario. Validación incremental estado por estado; implementación nodo a nodo bajo petición del usuario.",
+  "last_updated": "2026-06-13T12:40:00Z",
+  "issue": "theme-unification-light-dark",
+  "description": "Unificación de sistema de temas claro/oscuro en el frontend sin aplanar colores por rol de usuario. Se establecen tokens hm-field-* y hm-dialog y se migran los componentes con overrides hardcodeados.",
   "workflow": "triage-incremental",
   "nodes": [
     {
-      "id": "ped-fundamentos-arquitectura",
-      "description": "Diseñar PedidoPermisosService (frontend) que centralice visibilidad y habilitación de acciones por estado×rol, alineado con PedidoPolicy y PedidoEstado (backend).",
-      "status": "pending",
+      "id": "theme-f0-inventario",
+      "description": "Fase 0: Inventariar archivos con overrides manuales de estilos (::ng-deep, !important, hex hardcodeados, landing-dark-theme).",
+      "status": "done",
+      "required_skill": "tech_doc_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Inventario de deuda técnica y documentación de los 3 ejes de theming validados en AGENTS.md.",
+      "files": [
+        {
+          "path": "heavy-front/AGENTS.md",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "theme-f1-foundation",
+      "description": "Fase 1: Crear archivo hm-theme-utilities.scss con clases globales hm-field-* e hm-dialog basándose en tokens semánticos de PrimeNG, e importarlo en styles.scss.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "theme-f0-inventario"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Compilación exitosa tras importar utilidades de tematización. Estilos globales hm-field-input, hm-field-addon y hm-dialog integrados correctamente.",
+      "files": [
+        {
+          "path": "heavy-front/src/assets/css/hm-theme-utilities.scss",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/assets/styles.scss",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "theme-f1-form-field-classes",
+      "description": "Fase 1: Crear o migrar constantes form-field-classes.ts para que usen tokens semánticos CSS en lugar de clases custom inline o hex hardcodeados.",
+      "status": "done",
       "required_skill": "software_architect",
-      "depends_on": [],
-      "topic_key": "decision/pedidos-permisos-service",
-      "files": [
-        "heavy-front/src/app/features/pedidos/services/pedido-permisos.service.ts"
-      ]
-    },
-    {
-      "id": "ped-fundamentos-matriz-doc",
-      "description": "Crear sección Matriz estado×rol (documento vivo) en docs/modulo_pedidos.md con índice de estados y convenciones de nomenclatura.",
-      "status": "pending",
-      "required_skill": "tech_doc_expert",
-      "depends_on": [],
-      "topic_key": "biz/roles",
-      "files": [
-        "docs/modulo_pedidos.md"
-      ]
-    },
-    {
-      "id": "ped-nuevo-detail-limpiar-ui",
-      "description": "Estado Nuevo — Vista detalle: eliminar botón Imprimir del header y botón Generar Cotización del sidebar (decorativo / prematuro en este estado).",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
+      "depends_on": [
+        "theme-f1-foundation"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
-      "review_notes": "Validado por usuario: restricciones vendedor en Nuevo están correctas; solo limpieza UI en detalle. Review: build OK, templates OK, dark mode compatible.",
+      "review_notes": "Constantes de estilo y diálogos validadas y creadas en form-field-classes.ts sin valores hardcodeados.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "path": "heavy-front/src/app/core/theme/form-field-classes.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ped-nuevo-detail-item-index",
-      "description": "Estado Nuevo — Vista detalle: corregir fallback 'Ítem Requerido #N' usando posición en el pedido ($index + 1) en lugar del PK pedido_referencia.id.",
-      "status": "done",
-      "required_skill": "ui_ux_design_expert",
-      "depends_on": [],
-      "topic_key": "bugfix/pedido-item-label",
-      "review_notes": "Review: build OK, $index + 1 correcto para numeracion secuencial.",
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
-          "status": "validated"
-        }
-      ]
-    },
-    {
-      "id": "ped-nuevo-doc-cerrar",
-      "description": "Documentar en matriz viva las decisiones cerradas para estado Nuevo (detalle, listado, edición, backend).",
+      "id": "theme-f1-doc-agents",
+      "description": "Fase 1: Documentar los tres ejes de theming (modo, rol y tipo de tercero) en heavy-front/AGENTS.md.",
       "status": "done",
       "required_skill": "tech_doc_expert",
       "depends_on": [
-        "ped-nuevo-detail-limpiar-ui",
-        "ped-nuevo-detail-item-index"
+        "theme-f1-form-field-classes"
       ],
-      "topic_key": "biz/roles",
-      "review_notes": "Review: documentacion completa con tabla de elementos, roles y archivos afectados.",
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Documentación validada en AGENTS.md detallando el modelo de 3 ejes y la estrategia de unificación.",
       "files": [
         {
-          "path": "docs/modulo_pedidos.md",
+          "path": "heavy-front/AGENTS.md",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ped-borrador-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Borrador: matriz de botones en detalle, edición, listado y transiciones.",
-      "status": "pending",
-      "required_skill": null,
+      "id": "theme-f2-migrar-terceros",
+      "description": "Fase 2: Migrar tercero-create-modal y tercero-form para utilizar hm-field-* y hm-dialog. Mantener estilos de wizard para acento de tipo de tercero.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "ped-nuevo-doc-cerrar"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-en-analisis-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado En_Analisis: analizar, devolver, editar, guardar; reglas vendedor vs analista vs admin.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-borrador-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-enviado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Enviado: acciones permitidas y transiciones.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-en-analisis-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-en-costeo-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado En_Costeo: costeo, guardar, generar cotización, devolver al analista; roles en UI.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-enviado-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-cotizado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Cotizado: aprobar, rechazar, editar, cotizaciones.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-en-costeo-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-aprobado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Aprobado: orden de trabajo, entrega, edición.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-cotizado-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-entregado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Entregado: solo lectura y acciones históricas.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-aprobado-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-rechazado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Rechazado: solo lectura, re-apertura o cierre.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-entregado-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-cancelado-definir",
-      "description": "TRIAGE PENDIENTE — Usuario validará estado Cancelado: bloqueo total de mutación en UI y rutas.",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-rechazado-definir"
-      ],
-      "topic_key": "biz/roles",
-      "files": []
-    },
-    {
-      "id": "ped-cross-list-ownership",
-      "description": "Listado: ocultar Editar/Anular cuando el vendedor no es dueño del pedido (alinear UI con PedidoPolicy update/delete).",
-      "status": "pending",
-      "required_skill": null,
-      "depends_on": [
-        "ped-fundamentos-arquitectura",
-        "ped-cancelado-definir"
+        "theme-f1-doc-agents"
       ],
       "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Archivos migrados correctamente, compilación del frontend en verde. Modificados estilos hardcodeados e integrado la clase hm-dialog.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
-          "status": "pending"
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-create-modal/tercero-create-modal.component.scss",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
         }
       ]
     },
     {
-      "id": "ped-cross-edit-guardar-estado",
-      "description": "Edición: restringir botón Guardar Borrador según estado (no permitir mutación en estados finales o post-costeo según matriz).",
-      "status": "pending",
-      "required_skill": null,
+      "id": "theme-f2-migrar-contacto",
+      "description": "Fase 2: Migrar contacto-create-modal utilizando las clases unificadas hm-dialog y hm-field-*.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "ped-fundamentos-arquitectura",
-        "ped-cancelado-definir"
+        "theme-f1-doc-agents"
       ],
       "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Modificaciones validadas. Se removieron clases hardcodeadas del template inline y los overrides del metadata. Build del frontend en verde.",
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
-          "status": "pending"
-        },
+          "path": "heavy-front/src/app/shared/components/contacto-create-modal/contacto-create-modal.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "theme-f3-migrar-pedidos",
+      "description": "Fase 3: Migrar pantallas de pedidos (edit, create, analysis) eliminando overrides de colores redundantes y unificando su diseño claro/oscuro.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "theme-f2-migrar-terceros",
+        "theme-f2-migrar-contacto"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Archivos migrados y validados con build exitoso en verde. Se eliminaron overrides e importantes fijos redundantes de modo oscuro.",
+      "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
-          "status": "pending"
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.scss",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.scss",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.scss",
+          "status": "validated"
         }
       ]
     },
     {
-      "id": "ped-cross-costeo-roles",
-      "description": "Costeo: aplicar restricciones de rol en botones Guardar, Generar Cotización y Devolver al analista.",
-      "status": "pending",
-      "required_skill": "ui_ux_design_expert",
+      "id": "theme-f4-limpieza",
+      "description": "Fase 4: Deprecar/eliminar ThemeService, reduciendo theme-variables.css y asegurando que LayoutService maneje únicamente el toggle con .app-dark.",
+      "status": "done",
+      "required_skill": "software_architect",
       "depends_on": [
-        "ped-fundamentos-arquitectura",
-        "ped-en-costeo-definir"
+        "theme-f3-migrar-pedidos"
       ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
-          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
-          "status": "pending"
+          "path": "heavy-front/src/app/core/services/theme.service.ts",
+          "status": "validated"
         },
         {
-          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
-          "status": "pending"
+          "path": "heavy-front/src/assets/css/theme-variables.css",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/layout/service/layout.service.ts",
+          "status": "validated"
         }
       ]
     },
     {
-      "id": "ped-cross-transiciones-alinear",
-      "description": "Alinear transicionesValidas (edit.ts) con enum PedidoEstado (backend); eliminar botones cuya transición el API rechazaría.",
-      "status": "pending",
-      "required_skill": "software_architect",
-      "depends_on": [
-        "ped-fundamentos-arquitectura",
-        "ped-cancelado-definir"
-      ],
-      "topic_key": "decision/pedidos-transiciones",
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-api/app/Enums/PedidoEstado.php",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": "ped-cross-logistica-policy",
-      "description": "Resolver inconsistencia rol Logistica: referenciado en guards/detalle/listado pero excluido de PedidoPolicy y menú pedidos.",
-      "status": "pending",
-      "required_skill": "software_architect",
-      "depends_on": [
-        "ped-cancelado-definir"
-      ],
-      "topic_key": "decision/pedidos-logistica",
-      "files": [
-        {
-          "path": "heavy-api/app/Policies/PedidoPolicy.php",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/guards/pedido-vendedor-solo-lectura-en-analisis.guard.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": "ped-cross-refactor-permisos",
-      "description": "Migrar puedeEditarPedido, vendedorPuedeMutarPedido, puedeEnviarACosteo, etc. al PedidoPermisosService unificado.",
-      "status": "pending",
-      "required_skill": "software_architect",
-      "depends_on": [
-        "ped-fundamentos-arquitectura",
-        "ped-cross-list-ownership",
-        "ped-cross-edit-guardar-estado",
-        "ped-cross-costeo-roles"
-      ],
-      "topic_key": "arch/heavy-ui-patterns",
-      "files": [
-        {
-          "path": "heavy-front/src/app/features/pedidos/services/pedido-permisos.service.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/list/pedidos-list.component.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
-          "status": "pending"
-        },
-        {
-          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
-          "status": "pending"
-        }
-      ]
-    },
-    {
-      "id": "ped-gates-sprint-nuevo",
-      "description": "Gates Reviewer tras implementar nodos de estado Nuevo: ng lint, npm test, ng build.",
+      "id": "theme-f5-tests",
+      "description": "Fase 5: Diseñar e implementar suite de pruebas (unitarias en layout.service.spec.ts y E2E Playwright en e2e/) para validar dark mode y primary por rol.",
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "ped-nuevo-detail-limpiar-ui",
-        "ped-nuevo-detail-item-index"
+        "theme-f4-limpieza"
       ],
-      "review_notes": "Build: OK (0 errores). npm test: fallan por configuracion pendiente de vitest (pre-existente, no relacionado con cambios). Lint: script no configurado en proyecto.",
-      "files": []
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/layout/service/layout.service.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/e2e/theme-light-dark.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/e2e/theme-role-primary.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/e2e/theme-visual.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/e2e/helpers/theme.helpers.ts",
+          "status": "validated"
+        }
+      ]
     },
     {
-      "id": "ped-gates-cierre-global",
-      "description": "Gates Reviewer finales: frontend completo + php artisan test tras ped-cross-refactor-permisos y ped-cross-transiciones-alinear.",
-      "status": "pending",
+      "id": "theme-f5-gates",
+      "description": "Fase 5: Validar que todos los gates del CI pasen exitosamente (lint, unit tests, build, y e2e tests).",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "ped-cross-refactor-permisos",
-        "ped-cross-transiciones-alinear",
-        "ped-cross-logistica-policy"
+        "theme-f5-tests"
       ],
+      "topic_key": "arch/heavy-audit-history",
       "files": []
     }
   ]

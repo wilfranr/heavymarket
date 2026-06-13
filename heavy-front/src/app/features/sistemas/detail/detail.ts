@@ -48,12 +48,9 @@ export class DetailComponent implements OnInit {
     selectedListaIds: number[] = [];
 
     // Catálogo de tipos de artículo para el MultiSelect
-    readonly tiposArticuloCatalog = toSignal(
-        this.listaService.getAll({ tipo: 'Tipo de Artículo', per_page: 500, sort_by: 'nombre', sort_order: 'asc' }).pipe(
-            map((response) => response.data.map((l) => ({ label: l.nombre, value: l.id })))
-        ),
-        { initialValue: [] as { label: string; value: number }[] }
-    );
+    readonly tiposArticuloCatalog = toSignal(this.listaService.getAll({ tipo: 'Tipo de Artículo', per_page: 500, sort_by: 'nombre', sort_order: 'asc' }).pipe(map((response) => response.data.map((l) => ({ label: l.nombre, value: l.id })))), {
+        initialValue: [] as { label: string; value: number }[]
+    });
 
     ngOnInit(): void {
         this.route.params.subscribe((params) => {

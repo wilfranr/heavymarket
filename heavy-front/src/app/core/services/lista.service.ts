@@ -34,7 +34,7 @@ export class ListaService extends ApiService {
      */
     getByTipo(tipo: ListaTipo, search?: string, limit = 500): Observable<Lista[]> {
         const cacheKey = `getByTipo:${tipo}:${search || ''}:${limit}`;
-        
+
         if (!this.cache$.has(cacheKey)) {
             const params: Record<string, string | number> = { limit };
             if (search) {
@@ -140,7 +140,7 @@ export class ListaService extends ApiService {
 
     create(data: CreateListaDto | FormData): Observable<ApiResponse<Lista>> {
         this.clearCache();
-        return this.post<ApiResponse<ApiResponse<Lista>>>(this.endpoint, data).pipe(map(r => r.data)) as any;
+        return this.post<ApiResponse<ApiResponse<Lista>>>(this.endpoint, data).pipe(map((r) => r.data)) as any;
     }
 
     /**

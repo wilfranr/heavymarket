@@ -31,22 +31,19 @@ describe('ArticulosListComponent', () => {
 
         await TestBed.configureTestingModule({
             imports: [StoreModule.forRoot({})],
-            providers: [
-                provideMockStore({ initialState }), 
-                { provide: Router, useValue: routerSpy },
-                { provide: MessageService, useValue: messageServiceSpy },
-                { provide: ConfirmationService, useValue: confirmationServiceSpy }
-            ]
-        }).overrideComponent(ListComponent, {
-            set: { 
-                template: '<div></div>', 
-                styleUrls: [],
-                providers: [
-                    { provide: MessageService, useValue: messageServiceSpy },
-                    { provide: ConfirmationService, useValue: confirmationServiceSpy }
-                ]
-            }
-        }).compileComponents();
+            providers: [provideMockStore({ initialState }), { provide: Router, useValue: routerSpy }, { provide: MessageService, useValue: messageServiceSpy }, { provide: ConfirmationService, useValue: confirmationServiceSpy }]
+        })
+            .overrideComponent(ListComponent, {
+                set: {
+                    template: '<div></div>',
+                    styleUrls: [],
+                    providers: [
+                        { provide: MessageService, useValue: messageServiceSpy },
+                        { provide: ConfirmationService, useValue: confirmationServiceSpy }
+                    ]
+                }
+            })
+            .compileComponents();
 
         fixture = TestBed.createComponent(ListComponent);
         component = fixture.componentInstance;
@@ -92,10 +89,10 @@ describe('ArticulosListComponent', () => {
 
     it('should update search term and trigger load', async () => {
         const spy = spyOn(store, 'dispatch');
-        
+
         // Mock debounceTime by calling cargarArticulos directly or waiting
         component.onSearch('motor');
-        
+
         // Manual trigger for search subject since we can't easily use tick() in this environment
         component.searchTerm = 'motor';
         component.cargarArticulos();

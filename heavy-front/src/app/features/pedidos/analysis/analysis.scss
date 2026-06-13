@@ -48,13 +48,15 @@
 }
 
 .figma-card-analysis {
-    border: none !important;
-    background-color: #1E293B !important; // Slate 800
+    border: 1px solid var(--p-content-border-color) !important;
+    background-color: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
 }
 
 .item-card {
-    background-color: #334155 !important; // Slate 700
-    border: 1px solid #475569;
+    background-color: var(--p-content-background) !important;
+    border: 1px solid var(--p-content-border-color) !important;
+    color: var(--p-text-color) !important;
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
 }
 
@@ -81,42 +83,42 @@ table {
 }
 
 tr.item-row-bg {
-    background-color: #1e293b !important;
+    background-color: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
 }
 
 input.p-inputtext {
-    background-color: #334155 !important;
-    color: white !important;
-    border: none !important;
+    background-color: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
+    border: 1px solid var(--p-content-border-color) !important;
     
     &:focus {
-        box-shadow: 0 0 0 2px var(--p-primary-500) !important;
+        border-color: var(--p-primary-color) !important;
+        box-shadow: 0 0 0 1px var(--p-primary-color) !important;
     }
 }
 
 :host ::ng-deep {
     .p-select {
-        background-color: #334155 !important;
-        border: none !important;
-        --p-select-color: white !important;
-        --p-select-placeholder-color: rgba(255, 255, 255, 0.5) !important;
+        background-color: var(--p-content-background) !important;
+        border: 1px solid var(--p-content-border-color) !important;
         
         .p-select-label {
-            color: white !important;
+            color: var(--p-text-color) !important;
         }
         
         .p-select-trigger {
-            color: white !important;
+            color: var(--p-text-color) !important;
         }
     }
 
     .p-checkbox .p-checkbox-box {
-        background-color: #334155 !important;
-        border: 2px solid white !important;
+        background-color: var(--p-content-background) !important;
+        border: 2px solid var(--p-content-border-color) !important;
         
         &.p-highlight {
-            background-color: var(--p-primary-500) !important;
-            border-color: var(--p-primary-500) !important;
+            background-color: var(--p-primary-color) !important;
+            border-color: var(--p-primary-color) !important;
         }
     }
 }

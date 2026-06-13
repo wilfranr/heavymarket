@@ -1,0 +1,122 @@
+/* ==========================================================================
+   HeavyMarket - Unified Theme Utilities
+   Shared design tokens and global layout rules for forms and dialogs.
+   ========================================================================== */
+
+/* 1. Global Form Field Classes (Light/Dark Mode compatible using PrimeNG tokens) */
+.hm-field-input {
+  background: var(--p-content-background) !important;
+  border: 1px solid var(--p-content-border-color) !important;
+  color: var(--p-text-color) !important;
+
+  &:enabled:focus {
+    border-color: var(--p-primary-color) !important;
+    box-shadow: 0 0 0 1px var(--p-primary-color) !important;
+  }
+
+  &:disabled {
+    background: var(--p-content-border-color) !important;
+    opacity: 0.6;
+  }
+}
+
+.hm-field-addon {
+  background: var(--p-content-background) !important;
+  border: 1px solid var(--p-content-border-color) !important;
+  color: var(--p-text-muted-color) !important;
+}
+
+/* 2. Global Dialog Class (HM-DIALOG styleClass) */
+.hm-dialog {
+  /* Dialog wrapper overrides */
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 12px !important;
+  overflow: hidden;
+
+  /* Dialog Sections */
+  .p-dialog-header {
+    background: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
+    border-bottom: 1px solid var(--p-content-border-color) !important;
+    padding: 1.25rem 1.5rem !important;
+  }
+
+  .p-dialog-content {
+    background: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
+    padding: 1.5rem !important;
+  }
+
+  .p-dialog-footer {
+    background: var(--p-content-background) !important;
+    color: var(--p-text-color) !important;
+    border-top: 1px solid var(--p-content-border-color) !important;
+    padding: 1rem 1.5rem !important;
+  }
+
+  /* Close and Maximize Icons */
+  .p-dialog-header-actions {
+    .p-dialog-header-icon {
+      color: var(--p-text-muted-color) !important;
+      transition: background-color 0.2s, color 0.2s;
+      border-radius: 50% !important;
+
+      &:hover {
+        background: var(--p-content-border-color) !important;
+        color: var(--p-text-color) !important;
+      }
+    }
+  }
+
+  /* PrimeNG components inside dialog */
+  .p-inputtext:not(.p-inputgroupaddon) {
+    @extend .hm-field-input;
+  }
+
+  .p-select, .p-multiselect {
+    background: var(--p-content-background) !important;
+    border: 1px solid var(--p-content-border-color) !important;
+    color: var(--p-text-color) !important;
+
+    .p-select-label, .p-multiselect-label {
+      color: var(--p-text-color) !important;
+    }
+  }
+
+  .p-inputgroup {
+    .p-inputgroupaddon {
+      @extend .hm-field-addon;
+    }
+    .p-inputtext {
+      @extend .hm-field-input;
+    }
+  }
+
+  .p-fileupload {
+    background: transparent !important;
+    border-color: var(--p-content-border-color) !important;
+
+    .p-fileupload-content {
+      background: var(--p-content-background) !important;
+      border-color: var(--p-content-border-color) !important;
+      color: var(--p-text-muted-color) !important;
+    }
+  }
+
+  .p-selectbutton {
+    .p-togglebutton {
+      background: var(--p-content-background) !important;
+      border-color: var(--p-content-border-color) !important;
+      color: var(--p-text-muted-color) !important;
+
+      .p-togglebutton-content {
+        background: transparent !important;
+        box-shadow: none !important;
+      }
+
+      &:not(.p-togglebutton-checked):hover {
+        background: color-mix(in srgb, var(--p-content-border-color) 30%, var(--p-content-background)) !important;
+      }
+    }
+  }
+}

@@ -59,7 +59,7 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
         </div>
 
         <!-- Diálogo de Detalles -->
-        <p-dialog [(visible)]="displayDetails" [header]="'Detalle de Orden OC-' + (selectedOrder?.id)" [modal]="true" [style]="{ width: '700px' }">
+        <p-dialog [(visible)]="displayDetails" [header]="'Detalle de Orden OC-' + selectedOrder?.id" [modal]="true" [style]="{ width: '700px' }">
             @if (selectedOrder) {
                 <div class="grid">
                     <div class="col-6 mb-3">
@@ -109,7 +109,7 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
         </p-dialog>
 
         <!-- Diálogo de Despacho -->
-        <p-dialog [(visible)]="displayDispatch" [header]="'Registrar Despacho OC-' + (selectedOrder?.id)" [modal]="true" [style]="{ width: '450px' }">
+        <p-dialog [(visible)]="displayDispatch" [header]="'Registrar Despacho OC-' + selectedOrder?.id" [modal]="true" [style]="{ width: '450px' }">
             <form [formGroup]="dispatchForm" (ngSubmit)="onDispatchSubmit()">
                 <div class="field mb-4">
                     <label for="transp" class="block font-bold mb-2">Transportadora <span class="text-red-500">*</span></label>
@@ -228,14 +228,20 @@ export class OrdenesCompraListComponent implements OnInit {
         });
     }
 
-    getStatusSeverity(status: string): "info" | "success" | "warn" | "danger" | "secondary" | "contrast" | undefined {
+    getStatusSeverity(status: string): 'info' | 'success' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
         switch (status) {
-            case 'Pendiente': return 'warn';
-            case 'En Proceso': return 'info';
-            case 'Despachado': return 'success';
-            case 'Entregado': return 'success';
-            case 'Cancelado': return 'danger';
-            default: return 'secondary';
+            case 'Pendiente':
+                return 'warn';
+            case 'En Proceso':
+                return 'info';
+            case 'Despachado':
+                return 'success';
+            case 'Entregado':
+                return 'success';
+            case 'Cancelado':
+                return 'danger';
+            default:
+                return 'secondary';
         }
     }
 }
