@@ -1040,34 +1040,63 @@ export class AnalysisComponent implements OnInit {
     }
 
     // Handlers para modales de artículo
-    onArticuloCreated(articulo: any): void {
+    onArticuloCreated(payload: any): void {
         const i = this.articuloContextItemIndex;
         const j = this.articuloContextParteIndex;
         const refId = this.articuloContextReferenciaId;
+        const referenciaActualizada = payload?.referencia;
 
         // Recargar referencias para obtener el artículo recién creado
         this.loadReferencias();
 
         if (i >= 0 && j >= 0 && refId) {
             const parte = this.getPartesFormArray(i).at(j);
-            // Actualizar descripción si es pieza estándar
+            const optActualizada = referenciaActualizada ? this.opcionReferenciaDesdeApi(referenciaActualizada) : null;
+            if (referenciaActualizada) {
+                this.actualizarReferenciaLocal(referenciaActualizada, i);
+            }
+
+            // Actualizar descripción con los datos del artículo recién creado sin esperar recargas.
             const opt =
+                optActualizada ||
                 this.referencias.find((x) => x.value === refId) ||
                 Object.values(this.referenciasPorTipo)
                     .flat()
                     .find((x) => x.value === refId);
             if (opt) {
                 const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
-                if (this.debeSobrescribirDescripcion(currentDesc)) {
+                if (referenciaActualizada || this.debeSobrescribirDescripcion(currentDesc)) {
                     parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
                 }
             }
+            this.actualizarEstadoItem(i);
+            this.cdr.detectChanges();
         }
 
         // Reset context
         this.articuloContextItemIndex = -1;
         this.articuloContextParteIndex = -1;
         this.articuloContextReferenciaId = null;
+    }
+
+    private actualizarReferenciaLocal(ref: Referencia, itemIndex: number): void {
+        const entry = this.opcionReferenciaDesdeApi(ref);
+        const upsert = (items: any[]): any[] => {
+            const index = items.findIndex((item) => item.value === entry.value);
+            if (index >= 0) {
+                const next = [...items];
+                next[index] = entry;
+                return next;
+            }
+            return [entry, ...items];
+        };
+
+        this.referencias = upsert(this.referencias || []);
+
+        const listaId = this.referenciasFormArray.at(itemIndex)?.get('lista_id')?.value;
+        if (listaId) {
+            this.referenciasPorTipo[listaId] = upsert(this.referenciasPorTipo[listaId] || []);
+        }
     }
 
     onArticuloEditClosed(): void {
@@ -1136,8 +1165,8 @@ export class AnalysisComponent implements OnInit {
     /**
      * Si el artículo es pieza estándar, prellenar con definición + descripción específica (#69).
      */
-    private descripcionAnalisisDesdeOpcion(opt: { es_pieza_estandar?: boolean; definicion_articulo?: string; descripcion_especifica_articulo?: string; articulo_nombre?: string; descripcion?: string }): string {
-        if (opt.es_pieza_estandar) {
+    private descripcionAnalisisDesdeOpcion(opt: { articulo_id?: number | null; es_temporal?: boolean; es_pieza_estandar?: boolean; definicion_articulo?: string; descripcion_especifica_articulo?: string; articulo_nombre?: string; descripcion?: string }): string {
+        if (opt.es_pieza_estandar || (opt.articulo_id && !opt.es_temporal)) {
             const texto = [opt.definicion_articulo, opt.descripcion_especifica_articulo].filter((x) => x && String(x).trim()).join(' — ');
             return texto || String(opt.articulo_nombre || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
         }
@@ -1151,7 +1180,8 @@ export class AnalysisComponent implements OnInit {
     private debeSobrescribirDescripcion(currentDesc: string): boolean {
         const trimmed = currentDesc.trim();
         if (!trimmed) return true;
-        return trimmed.includes('Referencia manual desde Landing') || trimmed.includes('Requiere revisión');
+        const normalized = trimmed.toLowerCase();
+        return normalized.includes('referencia manual desde landing') || normalized.includes('referencia temporal') || normalized.includes('pedido interno') || normalized.includes('requiere revisión');
     }
 
     /** Misma lógica desde una línea `PedidoReferencia` con `referencia.articulo` cargado. */

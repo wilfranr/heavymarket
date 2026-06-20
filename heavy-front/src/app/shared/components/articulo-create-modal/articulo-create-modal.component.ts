@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -52,7 +52,7 @@ import { AutoFocusDirective } from '../../directives/auto-focus.directive';
     providers: [MessageService],
     templateUrl: './articulo-create-modal.component.html'
 })
-export class ArticuloCreateModalComponent implements OnInit {
+export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     @Input() visible = false;
     @Input() title = 'Crear Artículo';
     @Input() articuloId?: number | null;
@@ -127,6 +127,13 @@ export class ArticuloCreateModalComponent implements OnInit {
         this.cargarReferenciasJuegos();
         this.cargarListasMedidas();
         this.cargarMarcasReferencias();
+        this.prediligenciarReferenciaInicial();
+    }
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if ((changes['visible'] || changes['referenciaId']) && this.visible) {
+            this.prediligenciarReferenciaInicial();
+        }
     }
 
     private initForm(): void {
@@ -253,6 +260,33 @@ export class ArticuloCreateModalComponent implements OnInit {
             referencia_id: [null, Validators.required]
         });
         this.referenciasCruzadas.push(row);
+    }
+
+    private prediligenciarReferenciaInicial(): void {
+        if (!this.articuloForm || !this.referenciaId) {
+            return;
+        }
+
+        const yaExiste = this.referenciasCruzadas.controls.some((control) => control.get('referencia_id')?.value === this.referenciaId);
+        if (!yaExiste) {
+            const row = this.fb.group({
+                referencia_id: [this.referenciaId, Validators.required]
+            });
+            this.referenciasCruzadas.insert(0, row);
+        }
+
+        if (!this.referenciasDisponibles.some((referencia) => referencia.id === this.referenciaId)) {
+            this.referenciaService.getById(this.referenciaId).subscribe({
+                next: ({ data }) => {
+                    if (data && !this.referenciasDisponibles.some((referencia) => referencia.id === data.id)) {
+                        this.referenciasDisponibles = [data, ...this.referenciasDisponibles];
+                    }
+                },
+                error: (error) => {
+                    console.error('Error al cargar referencia inicial:', error);
+                }
+            });
+        }
     }
 
     eliminarReferencia(index: number): void {
@@ -475,25 +509,10 @@ export class ArticuloCreateModalComponent implements OnInit {
     }
 
     private handleCreateSuccess(articulo: any): void {
-        if (this.referenciaId) {
-            this.referenciaService.update(this.referenciaId, { articulo_id: articulo.id }).subscribe({
-                next: () => {
-                    this.messageService.add({
-                        severity: 'success',
-                        summary: 'Éxito',
-                        detail: 'Artículo creado y asociado a la referencia correctamente.'
-                    });
-                    this.onArticuloCreated.emit(articulo);
-                    this.closeDialog();
-                    this.loading = false;
-                },
-                error: (error) => {
-                    console.error('Error asociando referencia al artículo:', error);
-                    this.onArticuloCreated.emit(articulo);
-                    this.closeDialog();
-                    this.loading = false;
-                }
-            });
+        const articuloCreado = articulo?.data ?? articulo;
+
+        if (this.referenciaId && articuloCreado?.id) {
+            this.oficializarReferenciaInicial(this.referenciaId, articuloCreado.id, articuloCreado);
         } else {
             this.messageService.add({
                 severity: 'success',
@@ -504,6 +523,54 @@ export class ArticuloCreateModalComponent implements OnInit {
             this.closeDialog();
             this.loading = false;
         }
+    }
+
+    private oficializarReferenciaInicial(referenciaId: number, articuloId: number, articuloCreado: any): void {
+        const referenciaLocal = this.getReferenciaDetail(referenciaId);
+
+        const actualizar = (referencia: Referencia): void => {
+            this.referenciaService.update(referenciaId, {
+                referencia: referencia.referencia,
+                marca_id: referencia.marca_id ?? null,
+                articulo_id: articuloId,
+                comentario: referencia.comentario ?? null
+            }).subscribe({
+                next: ({ data: referenciaActualizada }) => {
+                    this.messageService.add({
+                        severity: 'success',
+                        summary: 'Éxito',
+                        detail: 'Artículo creado y asociado a la referencia correctamente.'
+                    });
+                    this.onArticuloCreated.emit({
+                        articulo: articuloCreado,
+                        referencia: referenciaActualizada
+                    });
+                    this.closeDialog();
+                    this.loading = false;
+                },
+                error: (error) => {
+                    console.error('Error asociando referencia al artículo:', error);
+                    this.onArticuloCreated.emit(articuloCreado);
+                    this.closeDialog();
+                    this.loading = false;
+                }
+            });
+        };
+
+        if (referenciaLocal) {
+            actualizar(referenciaLocal);
+            return;
+        }
+
+        this.referenciaService.getById(referenciaId).subscribe({
+            next: ({ data }) => actualizar(data),
+            error: (error) => {
+                console.error('Error cargando referencia para asociar:', error);
+                this.onArticuloCreated.emit(articuloCreado);
+                this.closeDialog();
+                this.loading = false;
+            }
+        });
     }
 
     private handleCreateError(error: any): void {

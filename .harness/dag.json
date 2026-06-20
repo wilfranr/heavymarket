@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-13T18:00:00Z",
+  "last_updated": "2026-06-20T15:18:30-05:00",
   "issue": "pedidos-cotizado-devoluciones",
   "description": "Transiciones desde Cotizado, anulacion de cotizacion vigente, cierre de edicion post-analisis y flujo post-Cotizado (Opcion A: Aprobado=comercial, Enviado=despacho, solo lectura total, Rechazado final).",
   "workflow": "triage-incremental",
@@ -29,7 +29,9 @@
       "description": "Cerrar edicion comercial (/edit, PUT pedido) desde Cotizado en adelante para todos los roles. Extender pedido-edicion-comercial.ts y PedidoPolicy::editComercial; ocultar Editar/Generar cotizacion decorativo en detalle.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["ped-cotizado-triage-doc"],
+      "depends_on": [
+        "ped-cotizado-triage-doc"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
@@ -55,7 +57,9 @@
       "description": "Backend fundamentos: agregar transiciones Cotizado->En_Costeo y Cotizado->En_Analisis en PedidoEstado; estado Anulada en cotizaciones; metodo anularCotizacionActiva(pedido) en CotizacionService con regla una cotizacion activa por pedido.",
       "status": "done",
       "required_skill": "sql_query_analyst",
-      "depends_on": ["ped-cotizado-triage-doc"],
+      "depends_on": [
+        "ped-cotizado-triage-doc"
+      ],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
@@ -82,7 +86,9 @@
       "description": "Endpoints POST devolver-a-costeo y devolver-analista-desde-cotizado (o unificar devolver-analista con origen Cotizado). Transaccion: anular cotizacion activa + transitar pedido + comentario obligatorio + notificaciones.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["ped-cotizado-backend-enum-anulada"],
+      "depends_on": [
+        "ped-cotizado-backend-enum-anulada"
+      ],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
@@ -104,7 +110,9 @@
       "description": "PedidoService: metodos devolverACosteo y devolverAAnalistaDesdeCotizado. Guard /edit: redirigir Cotizado a detalle o cotizaciones. Constantes alineadas con backend.",
       "status": "done",
       "required_skill": "software_architect",
-      "depends_on": ["ped-cotizado-backend-devolver-endpoints"],
+      "depends_on": [
+        "ped-cotizado-backend-devolver-endpoints"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
@@ -123,7 +131,10 @@
       "description": "UI: botones Devolver a costeo y Devolver al analista en detalle pedido (Cotizado) y/o detalle cotizacion. Dialogo comentario obligatorio. Ocultar acciones sobre cotizacion Anulada.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["ped-cotizado-frontend-service-guard", "ped-edit-comercial-cerrar-post-analisis"],
+      "depends_on": [
+        "ped-cotizado-frontend-service-guard",
+        "ped-edit-comercial-cerrar-post-analisis"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
@@ -145,7 +156,9 @@
       "description": "Tests: PHPUnit devoluciones + anulacion; frontend specs si aplica; E2E flujo Cotizado->analista->costeo->nueva cotizacion y Cotizado->costeo->recotizar.",
       "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": ["ped-cotizado-ui-botones-devolver"],
+      "depends_on": [
+        "ped-cotizado-ui-botones-devolver"
+      ],
       "topic_key": "arch/heavy-audit-history",
       "files": [
         {
@@ -163,7 +176,9 @@
       "description": "Actualizar docs/modulo_pedidos.md con estado implementado y marcar nodos cerrados. Decision diferida: versionado/oportunidades comerciales.",
       "status": "done",
       "required_skill": "tech_doc_expert",
-      "depends_on": ["ped-cotizado-tests-automatizados"],
+      "depends_on": [
+        "ped-cotizado-tests-automatizados"
+      ],
       "topic_key": "decision/pedidos-cotizado-devoluciones",
       "files": [
         {
@@ -195,7 +210,10 @@
       "description": "Solo lectura total desde Cotizado: bloquear /analysis y /costeo (guards + policy), ocultar iconos/botones editar en listado/detalle/cotizaciones para todos los roles. Utilidad central ESTADOS_SOLO_LECTURA alineada con backend.",
       "status": "done",
       "required_skill": "software_architect",
-      "depends_on": ["ped-post-cotizado-triage-doc", "ped-edit-comercial-cerrar-post-analisis"],
+      "depends_on": [
+        "ped-post-cotizado-triage-doc",
+        "ped-edit-comercial-cerrar-post-analisis"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
@@ -225,7 +243,9 @@
       "description": "Policy y UI para POST enviar/entregar: solo Logistica, Administrador y super_admin. Botones en detalle pedido (Aprobado->Enviado, Enviado->Entregado). Vendedor y Analista sin acceso.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["ped-post-cotizado-triage-doc"],
+      "depends_on": [
+        "ped-post-cotizado-triage-doc"
+      ],
       "topic_key": "biz/roles",
       "files": [
         {
@@ -259,7 +279,9 @@
       "description": "Unificar aprobacion: POST responder aprobar transita pedido a Aprobado, marca cotizacion Aprobada y crea OT/OC en una transaccion. Rechazar transita a Rechazado y cotizacion a Rechazada. Deprecar approve suelto en cotizaciones o redirigir al mismo servicio.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["ped-post-cotizado-triage-doc"],
+      "depends_on": [
+        "ped-post-cotizado-triage-doc"
+      ],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
@@ -325,7 +347,9 @@
       "description": "Backend: crear endpoint POST /v1/terceros/upload en TerceroController para la subida de documentos individuales. Modificar las reglas de validación en StoreTerceroRequest y UpdateTerceroRequest para admitir strings (paths de archivos ya subidos) además de archivos binarios.",
       "status": "awaiting_review",
       "required_skill": "sql_query_analyst",
-      "depends_on": ["terceros-upload-triage-doc"],
+      "depends_on": [
+        "terceros-upload-triage-doc"
+      ],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
@@ -351,7 +375,9 @@
       "description": "Frontend: actualizar tercero-create-modal y tercero-form para utilizar PrimeNG p-fileUpload en modo avanzado enviando los archivos al endpoint asíncrono. Mostrar preview, progress bar, badge de estado, info de tamaño y botón de remover, enlazando el path devuelto con el Form Control.",
       "status": "in_progress",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["terceros-upload-backend"],
+      "depends_on": [
+        "terceros-upload-backend"
+      ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
@@ -377,7 +403,9 @@
       "description": "Tests: Escribir pruebas unitarias/integración en Laravel para la subida de documentos individuales y validaciones duales. Validar el funcionamiento en frontend.",
       "status": "awaiting_review",
       "required_skill": "automated_tester",
-      "depends_on": ["terceros-upload-frontend"],
+      "depends_on": [
+        "terceros-upload-frontend"
+      ],
       "topic_key": "arch/heavy-audit-history",
       "files": [
         {
@@ -385,7 +413,35 @@
           "status": "implemented"
         }
       ]
+    },
+    {
+      "id": "analysis-articulo-referencia-cruzada-prefill",
+      "description": "Frontend análisis: al abrir Crear Artículo desde una referencia sin artículo, prediligenciar esa referencia en Referencias Cruzadas para que al guardar quede asociada al artículo creado y se refresque la fila sin recargar la página.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/analysis-articulo-referencia-cruzada-prefill",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 files, 94 tests",
+        "lint": "npx ng lint no ejecutable: proyecto sin target lint configurado",
+        "ng_test": "npm test -- --watch=false --browsers=ChromeHeadless no ejecutable: builder @angular-devkit/build-angular:vitest no disponible; se validó con test:ci/vitest"
+      },
+      "review_notes": "Reviewer: cambios aprobados. La referencia se prediligencia, se oficializa al guardar, actualiza catálogos locales y fuerza descripción desde payload fresco sin recargar la página."
     }
   ]
 }
-
