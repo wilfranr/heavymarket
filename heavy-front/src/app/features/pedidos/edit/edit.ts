@@ -2055,15 +2055,40 @@ export class EditComponent implements OnInit {
         }
     }
 
+    isDragging = false;
+
+    onDragOver(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = true;
+    }
+
+    onDragLeave(event: DragEvent): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+    }
+
+    onDrop(event: DragEvent, index: number): void {
+        event.preventDefault();
+        event.stopPropagation();
+        this.isDragging = false;
+
+        const files = event.dataTransfer?.files;
+        if (files && files.length > 0) {
+            const mockEvent = {
+                target: {
+                    files: files
+                }
+            };
+            this.onFilesSelected(mockEvent, index);
+        }
+    }
+
     /**
      * Abre la galería unificada
      */
     openGallery(index: number): void {
-        const files = this.referenciasFormArray.at(index).get('files')?.value || [];
-        const existing = this.referenciasFormArray.at(index).get('imagenes')?.value || [];
-
-        if (files.length === 0 && existing.length === 0) return;
-
         this.selectedItemIndex = index;
         this.activeIndexGallery = 0;
         this.updateGalleriaImages(index);

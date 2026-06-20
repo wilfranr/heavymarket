@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-20T16:02:10-05:00",
+  "last_updated": "2026-06-20T17:53:00-05:00",
   "issue": "articulos-list-referencias-cruce",
   "description": "Listado de artículos: mostrar referencias de cruce concatenadas en lugar de pieza estándar y permitir búsqueda por ese campo.",
   "workflow": "triage-incremental",
@@ -619,6 +619,54 @@
         "tests": "npm run test:ci (heavy-front) OK: 10 passed, 96 tests"
       },
       "review_notes": "Reviewer: aprobado. Se corrigió el contraste en modo claro alineando las clases CSS del modal con las de editar pedido."
+    },
+    {
+      "id": "pedido-create-drag-drop-imagenes",
+      "description": "Habilitar la carga de imágenes por Drag & Drop en el modal de referencias en crear pedido, permitiendo abrir el modal vacío.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests"
+      },
+      "review_notes": "Reviewer: aprobado. Apertura de modal vacío y carga interactiva mediante Drag & Drop y clics en crear pedido verificados con build y pruebas unitarias exitosas."
+    },
+    {
+      "id": "pedido-edit-drag-drop-imagenes",
+      "description": "Habilitar la carga de imágenes por Drag & Drop en el modal de referencias en editar pedido, permitiendo abrir el modal vacío.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "pedido-create-drag-drop-imagenes"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests"
+      },
+      "review_notes": "Reviewer: aprobado. Apertura de modal vacío y carga interactiva mediante Drag & Drop y clics en editar pedido verificados con build y pruebas unitarias exitosas."
     }
   ]
 }
