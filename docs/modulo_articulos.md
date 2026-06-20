@@ -61,6 +61,24 @@ La interfaz de usuario incluye un componente especializado que permite ingresar 
 
 ---
 
+
+## Issue: listado de artículos con referencias de cruce
+
+### Objetivo funcional
+En el listado de artículos se debe dejar de mostrar la columna **Pieza estándar** y, en su lugar, mostrar un campo calculado con la concatenación de las referencias de cruce asociadas al artículo. El buscador del listado también debe filtrar por ese nuevo campo.
+
+### Decisión técnica de Triage
+- **Campo visual**: calcular en frontend una cadena a partir de `articulo.referencias[].referencia`, eliminando duplicados y separando por `, `.
+- **Contrato API**: reutilizar la relación `referencias` que ya expone `ArticuloResource` cuando el listado carga `referencias` y `referenciasDirectas`. No se requiere migración ni un nuevo campo persistido.
+- **Búsqueda backend**: extender `ArticuloController@index` para que `search` incluya `whereHas` sobre `referencias` y `referenciasDirectas` por el campo `referencia`, manteniendo la búsqueda existente por `definicion` y `descripcionEspecifica`.
+- **UI**: reemplazar encabezado y celda de `Pieza estándar` por `Referencias de cruce`, conservando layout responsive y tema claro/oscuro sin colores hardcodeados nuevos.
+
+### Nodos planificados en Harness
+- `art-list-refcruce-triage`: documentar alcance y dependencias.
+- `art-list-refcruce-backend-search`: ampliar filtro `search` de artículos para referencias directas y por pivote.
+- `art-list-refcruce-frontend-column`: reemplazar columna visible y helper de concatenación en el listado Angular.
+- `art-list-refcruce-tests`: cubrir backend y frontend.
+
 ## 🛠️ Mapa de Implementación (Anclas Técnicas)
 
 Para entender este flujo de manera quirúrgica, el agente debe consultar estos archivos en orden:

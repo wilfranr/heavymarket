@@ -113,6 +113,16 @@ export class ListComponent implements OnInit {
     }
 
     /**
+     * Concatena las referencias de cruce asociadas al artículo.
+     */
+    referenciasCruce(articulo: Articulo): string {
+        const referencias = articulo.referencias ?? [];
+        const codigos = referencias.map((referencia) => referencia.referencia).filter((referencia): referencia is string => Boolean(referencia?.trim()));
+
+        return Array.from(new Set(codigos)).join(', ');
+    }
+
+    /**
      * Navega a crear nuevo artículo
      */
     crearArticulo(): void {

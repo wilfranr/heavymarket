@@ -22,18 +22,18 @@
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} artículos"
             [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['definicion', 'descripcionEspecifica']"
+            [globalFilterFields]="['descripcionEspecifica', 'referencias.referencia']"
             (onPage)="onPageChange($event)"
             (onSort)="onSort($event)"
             responsiveLayout="scroll"
             styleClass="p-datatable-sm"
         >
             <ng-template pTemplate="caption">
-                <div class="flex justify-between items-center flex-column sm:flex-row">
+                <div class="flex justify-between items-center flex-col sm:flex-row">
                     <p-button label="Limpiar" class="mb-2" icon="pi pi-filter-slash" (onClick)="limpiarBusqueda()" severity="secondary" [outlined]="true"></p-button>
                     <p-iconfield iconPosition="left" class="ml-auto">
                         <p-inputicon styleClass="pi pi-search"></p-inputicon>
-                        <input pInputText type="text" (input)="onSearch($any($event.target).value)" placeholder="Buscar artículos..." class="w-full" />
+                        <input pInputText type="text" (input)="onSearch($any($event.target).value)" placeholder="Buscar por descripción o referencias..." class="w-full" />
                     </p-iconfield>
                 </div>
             </ng-template>
@@ -42,7 +42,7 @@
                 <tr>
                     <th pSortableColumn="id">ID <p-sortIcon field="id"></p-sortIcon></th>
                     <th>Foto</th>
-                    <th pSortableColumn="definicion">Pieza estándar <p-sortIcon field="definicion"></p-sortIcon></th>
+                    <th>Referencias de cruce</th>
                     <th pSortableColumn="descripcionEspecifica">Descripción <p-sortIcon field="descripcionEspecifica"></p-sortIcon></th>
                     <th>Peso (Kg)</th>
                     <th>Acciones</th>
@@ -62,7 +62,7 @@
                         }
                     </td>
                     <td>
-                        <span class="text-sm">{{ articulo.definicion }}</span>
+                        <span class="text-sm">{{ referenciasCruce(articulo) || '-' }}</span>
                     </td>
                     <td>
                         <span class="font-semibold">{{ articulo.descripcionEspecifica }}</span>

@@ -38,12 +38,18 @@ class ArticuloController extends Controller
     {
         $query = Articulo::query()->with(['referencias.marca', 'referenciasDirectas.marca']);
 
-        // Búsqueda en definición o descripción específica
+        // Búsqueda en definición, descripción específica o referencias de cruce
         if ($request->filled('search')) {
             $search = $request->input('search');
             $query->where(function ($q) use ($search) {
                 $q->where('definicion', 'like', "%{$search}%")
-                    ->orWhere('descripcionEspecifica', 'like', "%{$search}%");
+                    ->orWhere('descripcionEspecifica', 'like', "%{$search}%")
+                    ->orWhereHas('referencias', function ($referenciaQuery) use ($search) {
+                        $referenciaQuery->where('referencia', 'like', "%{$search}%");
+                    })
+                    ->orWhereHas('referenciasDirectas', function ($referenciaQuery) use ($search) {
+                        $referenciaQuery->where('referencia', 'like', "%{$search}%");
+                    });
             });
         }
 

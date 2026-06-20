@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-20T15:40:15-05:00",
-  "issue": "pedidos-cotizado-devoluciones",
-  "description": "Transiciones desde Cotizado, anulacion de cotizacion vigente, cierre de edicion post-analisis y flujo post-Cotizado (Opcion A: Aprobado=comercial, Enviado=despacho, solo lectura total, Rechazado final).",
+  "last_updated": "2026-06-20T15:59:53-05:00",
+  "issue": "articulos-list-referencias-cruce",
+  "description": "Listado de artículos: mostrar referencias de cruce concatenadas en lugar de pieza estándar y permitir búsqueda por ese campo.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -496,6 +496,110 @@
         "tests": "npm run test:ci (heavy-front) OK: 10 files, 94 tests"
       },
       "review_notes": "Reviewer: aprobado. El campo descripción de análisis usa descripcionEspecifica del artículo sin concatenar la Pieza Estándar; conserva fallbacks si falta el dato."
+    },
+    {
+      "id": "art-list-refcruce-triage",
+      "description": "Triage: documentar alcance para reemplazar Pieza estándar por referencias de cruce concatenadas en el listado de artículos y filtrar por ese nuevo campo.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/articulos-list-referencias-cruce",
+      "files": [
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: triage aprobado. Alcance, dependencias, required_skill y archivos objetivo son coherentes con el mapa de implementación de artículos."
+    },
+    {
+      "id": "art-list-refcruce-backend-search",
+      "description": "Backend: extender ArticuloController@index para que search filtre también por referencias de cruce, tanto pivot referencias como referenciasDirectas, manteniendo eager loading existente.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "art-list-refcruce-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_artisan_test": "php artisan test (heavy-api) OK: 387 passed, 4 skipped, 1176 assertions",
+        "phpstan": "vendor/bin/phpstan no instalado; gate no ejecutable en entorno actual",
+        "scramble": "php artisan scramble:generate no disponible; gate no ejecutable en entorno actual",
+        "checklist": "Aprobado: search usa Eloquent whereHas con relaciones existentes, sin SQL crudo ni riesgo de injection; no hay migraciones"
+      },
+      "review_notes": "Reviewer: aprobado. Backend cumple checklist y suite PHPUnit completa pasa. Gates phpstan/scramble no están disponibles en el entorno."
+    },
+    {
+      "id": "art-list-refcruce-frontend-column",
+      "description": "Frontend UI: reemplazar columna Pieza estándar del listado de artículos por Referencias de cruce, mostrando referencias concatenadas sin duplicados y ajustando globalFilterFields/placeholder si aplica.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "art-list-refcruce-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/list/list.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/list/list.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "unit_tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests",
+        "build": "npm run build (heavy-front) OK con red habilitada; warning existente por pusher-js CommonJS",
+        "lint": "npm run lint no ejecutable: package.json no define script lint",
+        "e2e": "timeout 120s npx playwright test --project=chromium ejecutado con permisos: 17 failed, 9 passed, 5 skipped. Fallos en specs existentes no relacionados con articulos/listado (cotizar, maquinas, pedidos, theme). Gate global no pasa.",
+        "checklist": "Código UI aprobado: reemplaza Pieza estándar por Referencias de cruce, usa Tailwind válido flex-col, sin colores hardcodeados y sin PrimeFlex nuevo",
+        "exception": "Cierre autorizado por el usuario con excepción documentada por fallos E2E globales no relacionados."
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. El gate global Playwright falla en specs existentes no relacionadas (cotizar, maquinas, pedidos, theme), sin evidencia de fallo directo en listado de artículos. Unit tests, backend full test y build pasan; lint/phpstan/scramble no ejecutables por falta de scripts/binarios."
+    },
+    {
+      "id": "art-list-refcruce-tests",
+      "description": "Tests: agregar cobertura para búsqueda de artículos por referencia de cruce en Laravel y helper/dispatch del listado Angular si aplica.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "art-list-refcruce-backend-search",
+        "art-list-refcruce-frontend-column"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/ArticuloControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/list/list.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_artisan_test": "php artisan test (heavy-api) OK: 387 passed, 4 skipped, 1176 assertions",
+        "phpstan": "vendor/bin/phpstan no instalado; gate no ejecutable en entorno actual",
+        "scramble": "php artisan scramble:generate no disponible; gate no ejecutable en entorno actual",
+        "checklist": "Código UI aprobado: reemplaza Pieza estándar por Referencias de cruce, usa Tailwind válido flex-col, sin colores hardcodeados y sin PrimeFlex nuevo",
+        "unit_tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests",
+        "build": "npm run build (heavy-front) OK con red habilitada; warning existente por pusher-js CommonJS",
+        "lint": "npm run lint no ejecutable: package.json no define script lint",
+        "e2e": "timeout 120s npx playwright test --project=chromium ejecutado con permisos: 17 failed, 9 passed, 5 skipped. Fallos en specs existentes no relacionados con articulos/listado (cotizar, maquinas, pedidos, theme). Gate global no pasa.",
+        "exception": "Cierre autorizado por el usuario con excepción documentada por fallos E2E globales no relacionados."
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. El gate global Playwright falla en specs existentes no relacionadas (cotizar, maquinas, pedidos, theme), sin evidencia de fallo directo en listado de artículos. Unit tests, backend full test y build pasan; lint/phpstan/scramble no ejecutables por falta de scripts/binarios."
     }
   ]
 }

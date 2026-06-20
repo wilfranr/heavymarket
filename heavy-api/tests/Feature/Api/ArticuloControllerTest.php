@@ -34,6 +34,42 @@ it('permite listar artículos', function () {
         ]);
 });
 
+it('permite buscar artículos por referencias de cruce', function () {
+    $articuloPivot = Articulo::factory()->create([
+        'definicion' => 'Filtro Pivot',
+        'descripcionEspecifica' => 'Artículo con referencia pivot',
+    ]);
+    $articuloDirecto = Articulo::factory()->create([
+        'definicion' => 'Filtro Directo',
+        'descripcionEspecifica' => 'Artículo con referencia directa',
+    ]);
+    Articulo::factory()->create([
+        'definicion' => 'No coincide',
+        'descripcionEspecifica' => 'Artículo fuera del filtro',
+    ]);
+
+    $referenciaPivot = Referencia::factory()->create(['referencia' => 'CRUCE-PIVOT-001']);
+    Referencia::factory()->create([
+        'referencia' => 'CRUCE-DIRECTA-002',
+        'articulo_id' => $articuloDirecto->id,
+    ]);
+    $articuloPivot->referencias()->attach($referenciaPivot->id);
+
+    $responsePivot = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/articulos?search=CRUCE-PIVOT-001');
+
+    $responsePivot->assertStatus(200)
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('data.0.id', $articuloPivot->id);
+
+    $responseDirecta = $this->actingAs($this->user, 'sanctum')
+        ->getJson('/v1/articulos?search=CRUCE-DIRECTA-002');
+
+    $responseDirecta->assertStatus(200)
+        ->assertJsonPath('meta.total', 1)
+        ->assertJsonPath('data.0.id', $articuloDirecto->id);
+});
+
 it('permite ver detalle de artículo', function () {
     $articulo = Articulo::factory()->create([
         'definicion' => 'Acople Dentado',

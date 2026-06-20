@@ -100,4 +100,17 @@ describe('ArticulosListComponent', () => {
         expect(component.searchTerm).toBe('motor');
         expect(spy).toHaveBeenCalled();
     });
+
+    it('should concatenate unique cross references', () => {
+        const mockArticulo = {
+            referencias: [{ referencia: 'REF-001' }, { referencia: 'REF-002' }, { referencia: 'REF-001' }]
+        } as any;
+
+        expect(component.referenciasCruce(mockArticulo)).toBe('REF-001, REF-002');
+    });
+
+    it('should return empty string when article has no cross references', () => {
+        expect(component.referenciasCruce({ referencias: [] } as any)).toBe('');
+        expect(component.referenciasCruce({} as any)).toBe('');
+    });
 });
