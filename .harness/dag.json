@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-20T15:59:53-05:00",
+  "last_updated": "2026-06-20T16:02:10-05:00",
   "issue": "articulos-list-referencias-cruce",
   "description": "Listado de artículos: mostrar referencias de cruce concatenadas en lugar de pieza estándar y permitir búsqueda por ese campo.",
   "workflow": "triage-incremental",
@@ -600,6 +600,25 @@
         "exception": "Cierre autorizado por el usuario con excepción documentada por fallos E2E globales no relacionados."
       },
       "review_notes": "Reviewer: aprobado con excepción explícita del usuario. El gate global Playwright falla en specs existentes no relacionadas (cotizar, maquinas, pedidos, theme), sin evidencia de fallo directo en listado de artículos. Unit tests, backend full test y build pasan; lint/phpstan/scramble no ejecutables por falta de scripts/binarios."
+    },
+    {
+      "id": "pedido-create-comentario-contraste-claro",
+      "description": "Corregir el contraste del historial de comentarios en el modal de crear pedido en modo claro, aplicando las mismas clases que en la edición de pedido.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/create/create.html",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 passed, 96 tests"
+      },
+      "review_notes": "Reviewer: aprobado. Se corrigió el contraste en modo claro alineando las clases CSS del modal con las de editar pedido."
     }
   ]
 }

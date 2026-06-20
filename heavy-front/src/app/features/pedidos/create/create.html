@@ -697,7 +697,7 @@
             @if (comentariosItemActual.length > 0) {
             <div class="space-y-2 max-h-64 overflow-auto">
                 @for (c of comentariosItemActual; track $index) {
-                <div class="bg-gray-100 dark:bg-[var(--p-content-background)] border border-gray-200 dark:border-[var(--p-content-border-color)] rounded-lg px-3 py-2 text-sm">
+                <div class="bg-gray-900/40 dark:bg-[#1f2933] border border-gray-700/70 rounded-lg px-3 py-2 text-sm">
                     <div class="flex items-center justify-between mb-1">
                         <span class="text-[11px] font-semibold text-yellow-400 uppercase tracking-wide"> {{ c.origen }} </span>
                         @if (c.fecha) {
