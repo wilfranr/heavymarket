@@ -1099,7 +1099,58 @@ export class AnalysisComponent implements OnInit {
         }
     }
 
-    onArticuloEditClosed(): void {
+    onArticuloUpdated(articulo: any): void {
+        const i = this.articuloContextItemIndex;
+        const j = this.articuloContextParteIndex;
+        const refId = this.articuloContextReferenciaId;
+
+        if (i >= 0 && j >= 0 && refId && articulo) {
+            const parte = this.getPartesFormArray(i).at(j);
+            const referenciaActualizada = this.referenciaDesdeArticuloActualizado(articulo, refId);
+            const optActualizada = this.opcionReferenciaDesdeApi(referenciaActualizada);
+
+            this.actualizarReferenciaLocal(referenciaActualizada, i);
+            parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(optActualizada) });
+            this.actualizarEstadoItem(i);
+            this.cdr.detectChanges();
+        }
+    }
+
+    onArticuloEditVisibleChange(visible: boolean): void {
+        if (!visible) {
+            this.onArticuloEditClosed();
+        }
+    }
+
+    private referenciaDesdeArticuloActualizado(articulo: any, refId: number): Referencia {
+        const referenciasArticulo = Array.isArray(articulo?.referencias) ? articulo.referencias : [];
+        const referenciaArticulo = referenciasArticulo.find((ref: any) => (ref.id ?? ref.referencia_id) === refId);
+        const referenciaLocal =
+            this.referencias.find((ref: any) => ref.value === refId) ||
+            Object.values(this.referenciasPorTipo)
+                .flat()
+                .find((ref: any) => ref.value === refId);
+
+        return {
+            ...(referenciaArticulo || {}),
+            id: refId,
+            referencia: referenciaArticulo?.referencia ?? referenciaLocal?.label ?? String(refId),
+            marca_id: referenciaArticulo?.marca_id ?? referenciaLocal?.marca_id ?? null,
+            articulo_id: articulo.id,
+            es_temporal: false,
+            comentario: referenciaArticulo?.comentario ?? referenciaLocal?.descripcion ?? null,
+            created_at: referenciaArticulo?.created_at ?? '',
+            updated_at: referenciaArticulo?.updated_at ?? '',
+            marca: referenciaArticulo?.marca,
+            lista_id: referenciaArticulo?.lista_id ?? referenciaLocal?.lista_id ?? null,
+            articulo,
+            articulo_es_pieza_estandar: articulo.es_pieza_estandar,
+            articulo_definicion: articulo.definicion,
+            articulo_descripcion_especifica: articulo.descripcionEspecifica
+        } as Referencia;
+    }
+
+    private onArticuloEditClosed(): void {
         this.editArticuloId = null;
         this.articuloContextItemIndex = -1;
         this.articuloContextParteIndex = -1;
@@ -1162,13 +1213,10 @@ export class AnalysisComponent implements OnInit {
         };
     }
 
-    /**
-     * Si el artículo es pieza estándar, prellenar con definición + descripción específica (#69).
-     */
+    /** En análisis, la descripción de la fila corresponde a descripcionEspecifica del artículo. */
     private descripcionAnalisisDesdeOpcion(opt: { articulo_id?: number | null; es_temporal?: boolean; es_pieza_estandar?: boolean; definicion_articulo?: string; descripcion_especifica_articulo?: string; articulo_nombre?: string; descripcion?: string }): string {
-        if (opt.es_pieza_estandar || (opt.articulo_id && !opt.es_temporal)) {
-            const texto = [opt.definicion_articulo, opt.descripcion_especifica_articulo].filter((x) => x && String(x).trim()).join(' — ');
-            return texto || String(opt.articulo_nombre || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
+        if (opt.articulo_id && !opt.es_temporal) {
+            return String(opt.descripcion_especifica_articulo || '').trim() || String(opt.articulo_nombre || '').trim() || String(opt.definicion_articulo || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
         }
         return opt.descripcion || opt.articulo_nombre || 'Sin descripción';
     }

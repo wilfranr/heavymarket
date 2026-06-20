@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-20T15:18:30-05:00",
+  "last_updated": "2026-06-20T15:40:15-05:00",
   "issue": "pedidos-cotizado-devoluciones",
   "description": "Transiciones desde Cotizado, anulacion de cotizacion vigente, cierre de edicion post-analisis y flujo post-Cotizado (Opcion A: Aprobado=comercial, Enviado=despacho, solo lectura total, Rechazado final).",
   "workflow": "triage-incremental",
@@ -442,6 +442,60 @@
         "ng_test": "npm test -- --watch=false --browsers=ChromeHeadless no ejecutable: builder @angular-devkit/build-angular:vitest no disponible; se validó con test:ci/vitest"
       },
       "review_notes": "Reviewer: cambios aprobados. La referencia se prediligencia, se oficializa al guardar, actualiza catálogos locales y fuerza descripción desde payload fresco sin recargar la página."
+    },
+    {
+      "id": "analysis-articulo-edit-refresh",
+      "description": "Frontend análisis: al guardar edición de artículo desde el modal, refrescar la descripción de la fila asociada sin recargar la página.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "analysis-articulo-referencia-cruzada-prefill"
+      ],
+      "topic_key": "bugfix/analysis-articulo-edit-refresh",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 files, 94 tests"
+      },
+      "review_notes": "Reviewer: cambios aprobados. El modal de edición emite el artículo actualizado y análisis refresca la descripción de la fila desde payload local sin recargar."
+    },
+    {
+      "id": "analysis-descripcion-especifica-only",
+      "description": "Frontend análisis: el campo descripción de cada fila debe usar solo descripcionEspecifica del artículo, sin concatenar la Pieza Estándar.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "analysis-articulo-edit-refresh"
+      ],
+      "topic_key": "bugfix/analysis-descripcion-especifica-only",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "tests": "npm run test:ci (heavy-front) OK: 10 files, 94 tests"
+      },
+      "review_notes": "Reviewer: aprobado. El campo descripción de análisis usa descripcionEspecifica del artículo sin concatenar la Pieza Estándar; conserva fallbacks si falta el dato."
     }
   ]
 }

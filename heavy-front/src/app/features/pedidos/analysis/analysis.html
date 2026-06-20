@@ -427,7 +427,7 @@
 <!-- Modales de Artículo -->
 <app-articulo-create-modal [(visible)]="showArticuloCreateModal" title="Crear Artículo desde Referencia" [referenciaId]="articuloContextReferenciaId" (onArticuloCreated)="onArticuloCreated($event)" />
 
-<app-articulo-edit-modal [(visible)]="showArticuloEditModal" [articuloId]="editArticuloId" title="Editar Artículo" (onArticuloUpdated)="onArticuloEditClosed()" (visibleChange)="onArticuloEditClosed()" />
+<app-articulo-edit-modal [(visible)]="showArticuloEditModal" [articuloId]="editArticuloId" title="Editar Artículo" (onArticuloUpdated)="onArticuloUpdated($event)" (visibleChange)="onArticuloEditVisibleChange($event)" />
 
 <!-- Help Dialog -->
 <p-dialog header="Guía de Importación Masiva" [(visible)]="displayHelpDialog" [modal]="true" [style]="{width: '70vw'}" [draggable]="false" [resizable]="false">
