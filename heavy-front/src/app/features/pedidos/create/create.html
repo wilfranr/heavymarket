@@ -815,39 +815,39 @@
     <div class="gallery-container p-4 flex flex-col gap-6" *ngIf="selectedItemIndex !== -1">
         <!-- Carrusel / Galería si existen imágenes -->
         @if (galleriaImages.length > 0) {
-            <p-galleria
-                [value]="galleriaImages"
-                [(activeIndex)]="activeIndexGallery"
-                [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]"
-                [containerStyle]="{'width': '100%'}"
-                [numVisible]="5"
-                [circular]="true"
-                [showItemNavigators]="true"
-                [showThumbnails]="true"
-            >
-                <ng-template #item let-item>
-                    <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
-                        <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
+        <p-galleria
+            [value]="galleriaImages"
+            [(activeIndex)]="activeIndexGallery"
+            [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]"
+            [containerStyle]="{'width': '100%'}"
+            [numVisible]="5"
+            [circular]="true"
+            [showItemNavigators]="true"
+            [showThumbnails]="true"
+        >
+            <ng-template #item let-item>
+                <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
+                    <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
 
-                        <!-- Info overlay -->
-                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                            <p class="text-white text-xs truncate">{{ item.alt }}</p>
-                        </div>
+                    <!-- Info overlay -->
+                    <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                        <p class="text-white text-xs truncate">{{ item.alt }}</p>
                     </div>
-                </ng-template>
+                </div>
+            </ng-template>
 
-                <ng-template #thumbnail let-item>
-                    <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800">
-                        <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
-                    </div>
-                </ng-template>
-            </p-galleria>
+            <ng-template #thumbnail let-item>
+                <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800">
+                    <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                </div>
+            </ng-template>
+        </p-galleria>
         } @else {
-            <!-- Empty state si no hay imágenes -->
-            <div class="text-center py-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-800/10">
-                <i class="pi pi-images text-slate-500 text-3xl mb-2"></i>
-                <p class="theme-text-secondary text-xs italic">Este ítem no tiene imágenes asociadas aún.</p>
-            </div>
+        <!-- Empty state si no hay imágenes -->
+        <div class="text-center py-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-800/10">
+            <i class="pi pi-images text-slate-500 text-3xl mb-2"></i>
+            <p class="theme-text-secondary text-xs italic">Este ítem no tiene imágenes asociadas aún.</p>
+        </div>
         }
 
         <!-- Drag & Drop Zone -->
@@ -871,34 +871,34 @@
 
         <!-- Listado de archivos con opción de eliminar -->
         @if (galleriaImages.length > 0) {
-            <div>
-                <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
-                    <i class="pi pi-images text-purple-400"></i>
-                    Archivos cargados ({{ galleriaImages.length }}/10)
-                </h5>
-                <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                    <div *ngFor="let img of galleriaImages; let i = index" class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
-                        <div class="flex items-center gap-3">
-                            <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
-                            <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.title }}</span>
-                        </div>
-                        <button
-                            pButton
-                            type="button"
-                            icon="pi pi-times"
-                            class="p-button-rounded p-button-text p-button-danger p-button-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                            (click)="removeFile(selectedItemIndex, i)"
-                            pTooltip="Eliminar imagen"
-                        ></button>
+        <div>
+            <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
+                <i class="pi pi-images text-purple-400"></i>
+                Archivos cargados ({{ galleriaImages.length }}/10)
+            </h5>
+            <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                <div *ngFor="let img of galleriaImages; let i = index" class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
+                    <div class="flex items-center gap-3">
+                        <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
+                        <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.title }}</span>
                     </div>
+                    <button
+                        pButton
+                        type="button"
+                        icon="pi pi-times"
+                        class="p-button-rounded p-button-text p-button-danger p-button-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        (click)="removeFile(selectedItemIndex, i)"
+                        pTooltip="Eliminar imagen"
+                    ></button>
                 </div>
             </div>
+        </div>
         }
     </div>
 
     <ng-template pTemplate="footer">
         <div class="flex justify-between items-center w-full">
-            <span class="text-[10px] text-slate-500 italic">Formatos permitidos: JPG, PNG, WEBP. Máx 5MB por archivo.</span>
+            <span class="text-[10px] text-slate-500 italic">Formatos permitidos: JPG, PNG, WEBP, AVIF. Máx 10MB por archivo.</span>
             <p-button label="Cerrar" icon="pi pi-check" (onClick)="displayGallery = false" styleClass="btn-pill btn-primary"></p-button>
         </div>
     </ng-template>
