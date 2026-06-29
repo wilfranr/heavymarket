@@ -174,7 +174,10 @@
                                         <p-select
                                             formControlName="maquina_id"
                                             [options]="maquinas()"
+                                            optionLabel="label"
+                                            optionValue="value"
                                             [filter]="true"
+                                            filterBy="label"
                                             [showClear]="true"
                                             placeholder="Seleccionar máquina..."
                                             [disabled]="!pedidoForm.get('tercero_id')?.value"

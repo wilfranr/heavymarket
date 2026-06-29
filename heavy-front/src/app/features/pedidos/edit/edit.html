@@ -105,7 +105,8 @@
                     <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] relative">
                         <!-- Machine Selector -->
                         <div class="mb-2">
-                            <p-select formControlName="maquina_id" [options]="maquinas" [filter]="true" [showClear]="true" placeholder="Seleccionar Máquina" appendTo="body" styleClass="w-full"> </p-select>
+                            <p-select formControlName="maquina_id" [options]="maquinas" optionLabel="label" optionValue="value" [filter]="true" filterBy="label" [showClear]="true" placeholder="Seleccionar Máquina" appendTo="body" styleClass="w-full">
+                            </p-select>
                         </div>
 
                         @if (pedidoForm.get('maquina_id')?.value) { @let maquina = currentMaquinaInfo; @if (maquina) {
