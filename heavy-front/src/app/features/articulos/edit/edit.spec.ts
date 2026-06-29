@@ -221,7 +221,7 @@ describe('ArticuloEditComponent', () => {
 
     describe('guardarMedida', () => {
         it('should return and do nothing if identificador or valor are missing', () => {
-            component.medidaData = { identificador: '', unidad: 'mm', valor: '', tipo: 'Ancho' };
+            component.medidaData = { identificador: '', unidad: 'mm', valor: null, tipo: 'Ancho' };
             component.isEditingMedida = false;
 
             component.guardarMedida();
@@ -232,7 +232,7 @@ describe('ArticuloEditComponent', () => {
         it('should call addMedida when isEditingMedida is false and prevent concurrent calls', () => {
             component.articuloId = 1;
             component.isEditingMedida = false;
-            component.medidaData = { identificador: 'A', unidad: 'mm', valor: '15.5', tipo: 'Ancho' };
+            component.medidaData = { identificador: 'A', unidad: 'mm', valor: 15.5, tipo: 'Ancho' };
             
             articuloService.addMedida.and.returnValue(of({ data: mockArticulo } as any));
             spyOn(component as any, 'reloadArticulo');
@@ -243,14 +243,14 @@ describe('ArticuloEditComponent', () => {
             component.guardarMedida();
 
             expect(articuloService.addMedida).toHaveBeenCalledTimes(1);
-            expect(articuloService.addMedida).toHaveBeenCalledWith(1, { identificador: 'A', unidad: 'mm', valor: '15.5', tipo: 'Ancho' });
+            expect(articuloService.addMedida).toHaveBeenCalledWith(1, { identificador: 'A', unidad: 'mm', valor: 15.5, tipo: 'Ancho' });
         });
 
         it('should call updateMedida when isEditingMedida is true', () => {
             component.articuloId = 1;
             component.isEditingMedida = true;
             component.editingMedidaId = 5;
-            component.medidaData = { identificador: 'B', unidad: 'mm', valor: '20.0', tipo: 'Largo' };
+            component.medidaData = { identificador: 'B', unidad: 'mm', valor: 20.0, tipo: 'Largo' };
             
             articuloService.updateMedida.and.returnValue(of({ data: mockArticulo } as any));
             spyOn(component as any, 'reloadArticulo');
@@ -258,7 +258,7 @@ describe('ArticuloEditComponent', () => {
             component.guardarMedida();
 
             expect(articuloService.updateMedida).toHaveBeenCalledTimes(1);
-            expect(articuloService.updateMedida).toHaveBeenCalledWith(1, 5, { identificador: 'B', unidad: 'mm', valor: '20.0', tipo: 'Largo' });
+            expect(articuloService.updateMedida).toHaveBeenCalledWith(1, 5, { identificador: 'B', unidad: 'mm', valor: 20.0, tipo: 'Largo' });
         });
     });
 });

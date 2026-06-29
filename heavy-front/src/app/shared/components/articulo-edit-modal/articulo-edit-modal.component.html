@@ -285,7 +285,6 @@
                                         <thead>
                                             <tr class="bg-surface-card">
                                                 <th class="px-4 py-3 text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase w-16">ID</th>
-                                                <th class="px-4 py-3 text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase">Dimensión</th>
                                                 <th class="px-4 py-3 text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase">Valor</th>
                                                 <th class="px-4 py-3 text-[10px] font-black text-surface-400 dark:text-surface-500 tracking-widest uppercase text-center w-24">Acciones</th>
                                             </tr>
@@ -294,7 +293,6 @@
                                             @for (medida of medidasLocales; track $index) {
                                                 <tr class="border-t border-surface-border hover:bg-white/5 transition-colors">
                                                     <td class="px-4 py-3 text-sm font-bold text-[#fdb831]">{{ medida.identificador }}</td>
-                                                    <td class="px-4 py-3 text-sm text-color">{{ medida.nombre }}</td>
                                                     <td class="px-4 py-3 text-sm font-medium">
                                                         {{ medida.valor }} <span class="text-surface-400 dark:text-surface-500 text-[10px] ml-1 uppercase">{{ medida.unidad }}</span>
                                                     </td>
@@ -312,7 +310,7 @@
                                             }
                                             @if (medidasLocales.length === 0) {
                                                 <tr>
-                                                    <td colspan="4" class="px-4 py-8 text-center">
+                                                    <td colspan="3" class="px-4 py-8 text-center">
                                                         <p class="text-surface-400 dark:text-surface-500 text-xs italic">No hay medidas técnicas configuradas.</p>
                                                     </td>
                                                 </tr>
@@ -582,30 +580,9 @@
                         </p-inputgroup-addon>
                     </p-inputgroup>
                 </div>
-                <div class="field col-span-2">
-                    <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Nombre / Dimensión</label>
-                    <p-inputgroup>
-                        <p-select
-                            [options]="nombresMedida()"
-                            [(ngModel)]="medidaData.nombre"
-                            [ngModelOptions]="{ standalone: true }"
-                            optionLabel="nombre"
-                            optionValue="nombre"
-                            placeholder="Seleccione dimensión..."
-                            [filter]="true"
-                            [editable]="true"
-                            appendTo="body"
-                            styleClass="w-full border-none text-color focus:ring-0 rounded-l-xl"
-                        >
-                        </p-select>
-                        <p-inputgroup-addon class="bg-transparent border-none">
-                            <p-button icon="pi pi-plus" [text]="true" severity="secondary" (onClick)="abrirCrearLista('Nombre de Medida')"></p-button>
-                        </p-inputgroup-addon>
-                    </p-inputgroup>
-                </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Valor</label>
-                    <input pInputText [(ngModel)]="medidaData.valor" [ngModelOptions]="{ standalone: true }" placeholder="0.00" class="rounded-xl border-surface-border bg-surface-ground/50 text-color" />
+                    <p-inputNumber [(ngModel)]="medidaData.valor" [ngModelOptions]="{ standalone: true }" placeholder="0.00" [min]="0" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="4" styleClass="w-full" inputStyleClass="w-full rounded-xl border-surface-border bg-surface-ground/50 text-color" />
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-surface-500 dark:text-surface-400 uppercase tracking-widest mb-3 ml-1">Unidad</label>
@@ -632,6 +609,6 @@
     </div>
     <ng-template pTemplate="footer">
         <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="showMedidaDialog = false"></p-button>
-        <p-button [label]="isEditingMedida ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="guardarMedida()" [disabled]="!medidaData.identificador || !medidaData.nombre || !medidaData.valor"></p-button>
+        <p-button [label]="isEditingMedida ? 'Actualizar' : 'Guardar'" icon="pi pi-check" (onClick)="guardarMedida()" [disabled]="!medidaData.identificador || !medidaData.valor"></p-button>
     </ng-template>
 </p-dialog>

@@ -114,7 +114,7 @@ export class EditComponent implements OnInit {
 
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: null, tipo: '' };
     editingMedidaId: number | null = null;
     guardandoMedida = false;
 
@@ -739,7 +739,7 @@ export class EditComponent implements OnInit {
      */
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -762,7 +762,7 @@ export class EditComponent implements OnInit {
                 next: () => {
                     this.reloadArticulo();
                     this.showMedidaDialog = false;
-                    this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+                    this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
                     this.guardandoMedida = false;
                 },
                 error: () => {
@@ -774,7 +774,7 @@ export class EditComponent implements OnInit {
                 next: () => {
                     this.reloadArticulo();
                     this.showMedidaDialog = false;
-                    this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+                    this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
                     this.guardandoMedida = false;
                 },
                 error: () => {

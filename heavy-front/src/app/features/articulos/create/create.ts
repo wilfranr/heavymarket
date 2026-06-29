@@ -90,7 +90,7 @@ export class CreateComponent implements OnInit {
     medidasLocales: any[] = [];
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: null, tipo: '' };
     editingMedidaIndex: number | null = null;
 
     // Variables para el modal de creación de tipo
@@ -160,7 +160,7 @@ export class CreateComponent implements OnInit {
      */
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -182,7 +182,7 @@ export class CreateComponent implements OnInit {
             this.medidasLocales.push({ ...this.medidaData });
         }
         
-        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = false;
     }
 

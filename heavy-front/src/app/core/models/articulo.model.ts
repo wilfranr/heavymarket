@@ -29,9 +29,8 @@ export interface Medida {
     id: number;
     articulo_id: number;
     identificador: string;
-    nombre: string;
     unidad: string;
-    valor: string;
+    valor: number;
     tipo: string;
     imagen?: string;
     created_at?: string;

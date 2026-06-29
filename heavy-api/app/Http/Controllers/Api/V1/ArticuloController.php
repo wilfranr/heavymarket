@@ -358,7 +358,7 @@ class ArticuloController extends Controller
             'identificador' => 'required|string',
             'nombre' => 'required|string',
             'unidad' => 'required|string',
-            'valor' => 'required|string',
+            'valor' => 'required|numeric',
             'tipo' => 'required|string',
             'imagen' => 'nullable|string',
         ]);
@@ -380,7 +380,7 @@ class ArticuloController extends Controller
             'identificador' => 'sometimes|string',
             'nombre' => 'sometimes|string',
             'unidad' => 'sometimes|string',
-            'valor' => 'sometimes|string',
+            'valor' => 'sometimes|numeric',
             'tipo' => 'sometimes|string',
             'imagen' => 'nullable|string',
         ]);

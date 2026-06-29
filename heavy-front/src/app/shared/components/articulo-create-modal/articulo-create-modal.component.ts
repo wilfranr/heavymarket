@@ -87,7 +87,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     medidasLocales: any[] = [];
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: null, tipo: '' };
     editingMedidaIndex: number | null = null;
 
     // Modales anidados
@@ -330,7 +330,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
 
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -352,7 +352,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
             this.medidasLocales.push({ ...this.medidaData });
         }
         
-        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = false;
     }
 

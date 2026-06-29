@@ -546,7 +546,7 @@
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Valor</label>
-                    <input pInputText [(ngModel)]="medidaData.valor" [ngModelOptions]="{standalone: true}" placeholder="0.00" class="rounded-xl border-surface-border" />
+                    <p-inputNumber [(ngModel)]="medidaData.valor" [ngModelOptions]="{standalone: true}" placeholder="0.00" [min]="0" mode="decimal" [minFractionDigits]="2" [maxFractionDigits]="4" styleClass="w-full" inputStyleClass="w-full rounded-xl border-surface-border" />
                 </div>
                 <div class="field col-span-1">
                     <label class="block text-xs font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Unidad</label>

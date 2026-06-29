@@ -83,11 +83,10 @@ export class ArticuloEditModalComponent implements OnInit, OnChanges {
     // Variables para el CRUD de medidas
     unidadesMedida = signal<Lista[]>([]);
     tiposMedida = signal<Lista[]>([]);
-    nombresMedida = signal<Lista[]>([]);
     medidasLocales: any[] = [];
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: null, tipo: '' };
     editingMedidaId: number | null = null;
 
     // Modales anidados
@@ -386,12 +385,11 @@ export class ArticuloEditModalComponent implements OnInit, OnChanges {
     cargarListasMedidas(): void {
         this.listaService.getByTipo('Unidad de Medida').subscribe((res) => this.unidadesMedida.set(res));
         this.listaService.getByTipo('Tipo de Medida').subscribe((res) => this.tiposMedida.set(res));
-        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => this.nombresMedida.set(res));
     }
 
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -485,8 +483,6 @@ export class ArticuloEditModalComponent implements OnInit, OnChanges {
             this.medidaData.unidad = nueva.nombre;
         } else if (this.currentListaTipo === 'Tipo de Medida') {
             this.medidaData.tipo = nueva.nombre;
-        } else if (this.currentListaTipo === 'Nombre de Medida') {
-            this.medidaData.nombre = nueva.nombre;
         }
 
         this.showListaModal = false;

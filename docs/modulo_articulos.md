@@ -88,3 +88,33 @@ Para entender este flujo de manera quirúrgica, el agente debe consultar estos a
 3. **El Transporte (Frontend DTO)**: `heavy-front/src/app/core/models/articulo.model.ts` (Estructura de datos en TypeScript).
 4. **La Fachada (Frontend Service)**: `heavy-front/src/app/core/services/articulo.service.ts` (Comunicación mediante Signals).
 5. **La Interacción (Feature UI)**: `heavy-front/src/app/features/listas/` (Utilizado como CRUD de referencia para la gestión de definiciones técnicas).
+
+---
+
+## Issue: medidas técnicas con valor numérico
+
+### Objetivo funcional
+El campo `valor` en las medidas técnicas de los artículos debe ser numérico estricto. Actualmente es tratado como string en base de datos, backend y frontend. Dado que este valor se renderiza y gestiona en múltiples modales y componentes, se debe garantizar consistencia de tipo para evitar errores de cálculo o inconsistencias visuales en el monorepo.
+
+### Decisión técnica de Triage
+- **Base de Datos**: Crear una migración en Laravel que altere la columna `valor` en la tabla `medidas` para cambiar su tipo de `string` a `decimal(10, 4)`. Se mantendrá nullable.
+- **Backend (API)**:
+  - Modificar las reglas de validación en `ArticuloController@addMedida` y `ArticuloController@updateMedida` para que `valor` pase de ser `string` a `numeric`.
+  - Asegurar la compatibilidad con el JSON string recibido en `store` de `ArticuloController`.
+- **Frontend (DTO)**:
+  - Cambiar el tipo de `valor` de `string` a `number` en la interfaz `Medida` de `heavy-front/src/app/core/models/articulo.model.ts`.
+- **Frontend (UI Components)**:
+  - Modificar la inicialización del objeto `medidaData` en `create.ts`, `edit.ts`, `articulo-create-modal.component.ts` y `articulo-edit-modal.component.ts` para que `valor` no sea un string vacío `''` sino `null`.
+  - Reemplazar el elemento `<input pInputText>` por `<p-inputNumber>` para capturar la medida en `create.html`, `edit.html`, `articulo-create-modal.component.html` y `articulo-edit-modal.component.html`.
+  - Utilizar parámetros de PrimeNG como `[showButtons]="false"`, `[min]="0"`, `mode="decimal"` y limitar los decimales con `[minFractionDigits]="2"` y `[maxFractionDigits]="4"` para dar flexibilidad técnica según el tipo de medida.
+- **Validación / Tests**:
+  - Ajustar las pruebas unitarias existentes (como `edit.spec.ts`) para proveer valores numéricos reales en lugar de strings de prueba.
+  - Asegurar que todos los gates locales de backend y frontend sigan pasando (PHPUnit y Vitest/Karma).
+
+### Nodos planificados en Harness
+- `medidas-numeric-triage-doc`: Documentar alcance y grafo de dependencias para el valor numérico en medidas técnicas.
+- `medidas-numeric-backend-migration`: Crear y ejecutar la migración Laravel que modifica la columna `valor` en la tabla `medidas`.
+- `medidas-numeric-backend-validation`: Modificar las reglas de validación en los endpoints de medidas del controlador de artículos.
+- `medidas-numeric-frontend-interface`: Cambiar el tipo de dato de `valor` a `number` en la interfaz TypeScript `Medida`.
+- `medidas-numeric-frontend-components`: Implementar el control de entrada `p-inputNumber` en todos los formularios y modales correspondientes y adaptar su lógica.
+- `medidas-numeric-tests`: Adaptar los tests unitarios en frontend y backend para contemplar la tipificación numérica.

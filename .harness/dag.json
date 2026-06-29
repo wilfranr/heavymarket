@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-06-20T17:53:00-05:00",
-  "issue": "articulos-list-referencias-cruce",
-  "description": "Listado de artículos: mostrar referencias de cruce concatenadas en lugar de pieza estándar y permitir búsqueda por ese campo.",
+  "last_updated": "2026-06-29T15:12:41-05:00",
+  "issue": "marcas-filtro-solo-nombre",
+  "description": "Corregir los selectores que concatenan listas Marca y Fabricantes para que el texto digitado filtre exclusivamente por nombre y no por definiciones o descripciones relacionadas.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -665,7 +665,7 @@
       "validation": {
         "build": "npm run build (heavy-front) OK",
         "tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests"
-      },
+      }
     },
     {
       "id": "infra-deploy-plan",
@@ -1035,6 +1035,191 @@
         }
       ],
       "review_notes": "Reviewer: aprobado. Se agregaron y ejecutaron de forma exitosa los tests unitarios en edit.spec.ts para verificar la atomicidad de guardarMedida y la prevencion de llamadas duplicadas concurrentes."
+    },
+    {
+      "id": "medidas-numeric-triage-doc",
+      "description": "Triage: documentar alcance y grafo de dependencias para el valor numérico en medidas técnicas en docs/modulo_articulos.md and dag.json.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/medidas-numeric",
+      "files": [
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "medidas-numeric-backend-migration",
+      "description": "Backend: crear y ejecutar la migración Laravel que modifica la columna valor en la tabla medidas a tipo decimal.",
+      "status": "awaiting_review",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "medidas-numeric-triage-doc"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_06_29_200727_change_valor_to_decimal_in_medidas_table.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "medidas-numeric-backend-validation",
+      "description": "Backend: modificar reglas de validación en ArticuloController@addMedida y updateMedida para que valor sea numeric, y adaptar store si es necesario.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "medidas-numeric-backend-migration"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "medidas-numeric-frontend-interface",
+      "description": "Frontend: modificar la interfaz TypeScript Medida en articulo.model.ts para cambiar el tipo de valor a number.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "medidas-numeric-triage-doc"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/articulo.model.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "medidas-numeric-frontend-components",
+      "description": "Frontend: implementar el control de entrada p-inputNumber para capturar medidas en formularios y modales (create, edit y modales compartidos), y actualizar lógica TS (inicializar valor en null).",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "medidas-numeric-frontend-interface"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "medidas-numeric-tests",
+      "description": "Tests: adaptar los tests unitarios en frontend (edit.spec.ts, etc.) y backend (ArticuloControllerTest) para contemplar la tipificación numérica de las medidas.",
+      "status": "awaiting_review",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "medidas-numeric-backend-validation",
+        "medidas-numeric-frontend-components"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/ArticuloControllerTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "marcas-filter-referencias-crud",
+      "description": "Frontend Referencias: limitar a nombre el filtro local de los selectores Marca o fabricante en listado, creación y edición; conservar la lista unificada, el orden y la deduplicación existentes.",
+      "status": "pending",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/marcas-filtro-solo-nombre",
+      "files": [
+        "heavy-front/src/app/features/referencias/list/list.html",
+        "heavy-front/src/app/features/referencias/create/create.html",
+        "heavy-front/src/app/features/referencias/edit/edit.html"
+      ]
+    },
+    {
+      "id": "marcas-filter-referencias-modales",
+      "description": "Frontend modales compartidos de Referencias: limitar a nombre el filtro local de Marca o fabricante al crear o editar una referencia desde otros flujos.",
+      "status": "pending",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/marcas-filtro-solo-nombre",
+      "files": [
+        "heavy-front/src/app/shared/components/referencia-create-modal/referencia-create-modal.component.html",
+        "heavy-front/src/app/shared/components/referencia-edit-modal/referencia-edit-modal.component.html"
+      ]
+    },
+    {
+      "id": "marcas-filter-articulos",
+      "description": "Frontend Artículos: limitar a nombre el filtro local de Marca o fabricante en las secciones de referencias cruzadas de creación y edición, sin alterar los filtros de otros catálogos.",
+      "status": "pending",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "medidas-numeric-frontend-components"
+      ],
+      "topic_key": "bugfix/marcas-filtro-solo-nombre",
+      "files": [
+        "heavy-front/src/app/features/articulos/create/create.html",
+        "heavy-front/src/app/features/articulos/edit/edit.html"
+      ]
+    },
+    {
+      "id": "marcas-filter-tests",
+      "description": "Pruebas de regresión frontend: verificar con marcas relacionadas por definición que una búsqueda completa como Hyundai solo muestre opciones cuyo nombre coincide, cubriendo al menos Referencias y Artículos; ejecutar test:ci, build y Playwright.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "marcas-filter-referencias-crud",
+        "marcas-filter-referencias-modales",
+        "marcas-filter-articulos"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        "heavy-front/e2e/marcas-filtro-nombre.spec.ts"
+      ]
     }
   ]
 }
