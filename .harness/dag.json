@@ -666,7 +666,375 @@
         "build": "npm run build (heavy-front) OK",
         "tests": "npm run test:ci (heavy-front) OK: 10 files, 96 tests"
       },
-      "review_notes": "Reviewer: aprobado. Apertura de modal vacío y carga interactiva mediante Drag & Drop y clics en editar pedido verificados con build y pruebas unitarias exitosas."
+    },
+    {
+      "id": "infra-deploy-plan",
+      "description": "Elaborar plan de despliegue para servidor limpio y crear script setup_server.sh para automatizar la instalacion de dependencias.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [],
+      "topic_key": "decision/infra-deploy",
+      "files": [
+        {
+          "path": "scripts/setup_server.sh",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "syntax_check": "bash -n scripts/setup_server.sh OK"
+      },
+      "review_notes": "Reviewer: aprobado. El plan de despliegue y el script de aprovisionamiento setup_server.sh han sido creados, validados sintacticamente y son consistentes con la arquitectura Laravel 13 y Angular 21 del proyecto."
+    },
+    {
+      "id": "infra-server-provision",
+      "description": "Ejecutar el script setup_server.sh para instalar dependencias de sistema y configurar la BD en el servidor.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-deploy-plan"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": []
+    },
+    {
+      "id": "infra-deploy-exec",
+      "description": "Configurar .env, Nginx, Supervisor y ejecutar ./scripts/deploy.sh para completar el despliegue.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-server-provision"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "deploy_script": "./scripts/deploy.sh OK, compilacion Angular OK, Laravel migraciones y dependencias OK"
+      },
+      "review_notes": "Reviewer: aprobado. La ejecucion del despliegue del monorepo se completo correctamente. Angular 21 ha sido compilado e integrado en el public de Laravel 13, y las dependencias composer se instalaron ignorando el limite superior de version de PHP para posibilitar el desarrollo local en Arch Linux con PHP 8.5.7."
+    },
+    {
+      "id": "infra-nginx-config",
+      "description": "Configurar Nginx para servir el monorepo HeavyMarket localmente.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-deploy-exec"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "nginx_test": "nginx -t OK, configuracion importada y reinicio exitoso"
+      },
+      "review_notes": "Reviewer: aprobado. Se ha configurado el host virtual heavymarket.local que incluye FastCGI para php-fpm en el socket /run/php-fpm/php-fpm.sock y el tunel proxy pass para los websockets de Reverb."
+    },
+    {
+      "id": "infra-supervisor-config",
+      "description": "Configurar Supervisor para mantener activos queue workers y servidor Reverb localmente.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-nginx-config"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "supervisor_status": "supervisorctl status OK, workers y reverb RUNNING"
+      },
+      "review_notes": "Reviewer: aprobado. Se han creado e inicializado las configuraciones ini de Supervisor para los workers y Reverb. El estado de ambos grupos es RUNNING."
+    },
+    {
+      "id": "infra-install-pnpm",
+      "description": "Instalar pnpm globalmente en el sistema usando pacman en Arch Linux.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-supervisor-config"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "pnpm_version": "pnpm --version OK, responde 11.3.0"
+      },
+      "review_notes": "Reviewer: aprobado. Se ha instalado exitosamente el gestor de paquetes pnpm (version 11.3.0) de forma global en Arch Linux usando pacman."
+    },
+    {
+      "id": "infra-install-dbeaver",
+      "description": "Instalar la herramienta de base de datos DBeaver usando pacman en Arch Linux.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-install-pnpm"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "dbeaver_install": "pacman -S dbeaver completado con codigo 0"
+      },
+      "review_notes": "Reviewer: aprobado. Se ha instalado la herramienta grafica de base de datos DBeaver de forma global en Arch Linux usando pacman."
+    },
+    {
+      "id": "infra-nginx-cycle-fix",
+      "description": "Corregir redireccion ciclica interna en el bloque root de Nginx para Angular.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-install-dbeaver"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [
+        {
+          "path": "scripts/heavymarket.conf",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "nginx_curl": "curl -I http://heavymarket.local/app OK (HTTP 200)"
+      },
+      "review_notes": "Reviewer: aprobado. Se ha solucionado la redireccion ciclica de Nginx al reemplazar alias por root y redirigir el fallback al index.html del root local de Angular en el Virtual Host."
+    },
+    {
+      "id": "infra-angular-env-build-fix",
+      "description": "Modificar deploy.sh para compilar Angular en modo desarrollo cuando APP_ENV=local, resolviendo error de CORS en peticiones a la API.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-nginx-cycle-fix"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [
+        {
+          "path": "scripts/deploy.sh",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "angular_build_dev": "npm run build -- --configuration=development OK"
+      },
+      "review_notes": "Reviewer: aprobado. Se ha verificado que la compilacion de Angular se realizo en modo development, enlazando la API de forma relativa con /v1 y resolviendo de forma definitiva los errores de politicas CORS."
+    },
+    {
+      "id": "dashboard-revenuestream-expression-fix",
+      "description": "Corregir error ExpressionChangedAfterItHasBeenCheckedError en RevenueStreamWidget refactorizando a Signals.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "infra-angular-env-build-fix"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/pages/dashboard/components/revenuestreamwidget.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK, error NG0100 resuelto en local"
+      },
+      "review_notes": "Reviewer: aprobado. Se refactorizo a Signals y se agrego condicional de renderizado @if en el template, cumpliendo con la regla critica de reactividad primaria en arquitectura Zoneless."
+    },
+    {
+      "id": "infra-install-codex-cli",
+      "description": "Instalar la herramienta OpenAI Codex CLI de forma global en el sistema usando npm y verificar su version.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "dashboard-revenuestream-expression-fix"
+      ],
+      "topic_key": "decision/infra-deploy",
+      "files": [],
+      "validation": {
+        "codex_version": "codex --version responde exitosamente"
+      },
+      "review_notes": "Reviewer: aprobado. Se instalo con éxito el paquete global @openai/codex (version 0.142.3) mediante npm. El comando codex se encuentra disponible y responde correctamente en la terminal."
+    },
+    {
+      "id": "infra-mcp-engram-user-config",
+      "description": "Corregir la ruta del binario Engram en las configuraciones MCP de usuario de Codex y Gemini tras la migracion de sistema operativo.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [],
+      "topic_key": "bugfix/mcp-engram-config",
+      "files": [
+        {
+          "path": "/home/yoseth/.codex/config.toml",
+          "status": "validated"
+        },
+        {
+          "path": "/home/yoseth/.gemini/config/mcp_config.json",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "codex_toml": "tomllib parse OK",
+        "gemini_json": "json.load parse OK",
+        "mcp_handshake": "initialize OK con /usr/local/bin/engram"
+      },
+      "review_notes": "Reviewer: aprobado. Las rutas, argumentos y formatos TOML/JSON son validos; el handshake MCP responde correctamente."
+    },
+    {
+      "id": "infra-mcp-engram-project-config",
+      "description": "Alinear las configuraciones MCP de Gemini y OpenCode del proyecto con la ruta funcional de Engram.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-mcp-engram-user-config"
+      ],
+      "topic_key": "bugfix/mcp-engram-config",
+      "files": [
+        {
+          "path": ".gemini/settings.json",
+          "status": "validated"
+        },
+        {
+          "path": "opencode.json",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "json_parse": "Ambos archivos parsean correctamente",
+        "opencode_alignment": "El comando MCP coincide con /home/yoseth/.config/opencode/opencode.jsonc",
+        "stale_path": "No quedan rutas antiguas en las configuraciones del proyecto"
+      },
+      "review_notes": "Reviewer: aprobado. Ambos JSON son validos y OpenCode del proyecto coincide con la configuracion global funcional."
+    },
+    {
+      "id": "infra-mcp-engram-doc",
+      "description": "Actualizar el protocolo interno para documentar la ruta vigente de Engram despues de la migracion de sistema operativo.",
+      "status": "done",
+      "required_skill": "tech_doc_expert",
+      "depends_on": [
+        "infra-mcp-engram-project-config",
+        "infra-mcp-engram-codex-rule"
+      ],
+      "topic_key": "bugfix/mcp-engram-config",
+      "files": [
+        {
+          "path": ".agents/PROTOCOLO_STARK.md",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "documented_path": "La ruta /usr/local/bin/engram aparece en la guía y la ruta antigua no aparece",
+        "active_stale_references": "No quedan referencias activas a la ruta antigua",
+        "mcp_tools": "El handshake final publica mem_context y el catalogo de herramientas"
+      },
+      "review_notes": "Reviewer: aprobado. La documentacion explica la migracion, no conserva la ruta antigua y la validacion MCP consolidada fue exitosa."
+    },
+    {
+      "id": "infra-mcp-engram-codex-rule",
+      "description": "Alinear la regla de permisos de Codex para engram setup con la ruta vigente del binario.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [
+        "infra-mcp-engram-user-config"
+      ],
+      "topic_key": "bugfix/mcp-engram-config",
+      "files": [
+        {
+          "path": "/home/yoseth/.codex/rules/default.rules",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "prefix_rule": "La regla permite /usr/local/bin/engram setup y no contiene la ruta antigua"
+      },
+      "review_notes": "Reviewer: aprobado. La regla conserva la sintaxis esperada y apunta al binario vigente."
+    },
+    {
+      "id": "bugfix-medidas-duplicadas-triage",
+      "description": "Triage: Analizar y definir el plan para corregir el bug por el cual cuando se crea una medida esta se duplica en la base de datos o en la interfaz local.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/medidas-duplicadas",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage completado. Se identifico que el evento de click se propaga de forma duplicada o se ejecuta doblemente debido al uso de (onClick) en PrimeNG v21, o por falta de deshabilitacion temporal del boton. Se define la refactorizacion a (click) nativo en Angular y control local de estado."
+    },
+    {
+      "id": "bugfix-medidas-duplicadas-frontend-create",
+      "description": "Frontend: Cambiar (onClick) por (click) y agregar control de rebote/loading en el dialogo de medidas del modulo de creacion de articulos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "bugfix-medidas-duplicadas-triage"
+      ],
+      "topic_key": "bugfix/medidas-duplicadas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. Se reemplazo (onClick) por (click) nativo de Angular y se introdujo la validacion preventiva de campos e inmediata limpieza de datos al finalizar guardarMedida en create.ts."
+    },
+    {
+      "id": "bugfix-medidas-duplicadas-frontend-edit",
+      "description": "Frontend: Cambiar (onClick) por (click) y agregar control de rebote/loading en el dialogo de medidas del modulo de edicion de articulos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "bugfix-medidas-duplicadas-triage"
+      ],
+      "topic_key": "bugfix/medidas-duplicadas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. Se corrigieron los eventos del dialogo en edit.html y se protegio guardarMedida en edit.ts con una bandera booleana asincrona local y limpieza de datos."
+    },
+    {
+      "id": "bugfix-medidas-duplicadas-frontend-modal",
+      "description": "Frontend: Cambiar (onClick) por (click) y agregar control de rebote/loading en el dialogo de medidas del modal compartido de creacion de articulos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "bugfix-medidas-duplicadas-triage"
+      ],
+      "topic_key": "bugfix/medidas-duplicadas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. Se refactorizo el modal compartido para usar (click) en lugar de (onClick) y limpiar medidaData al guardar de forma analoga a create.ts."
+    },
+    {
+      "id": "bugfix-medidas-duplicadas-tests",
+      "description": "Tests: Verificar y adaptar las pruebas unitarias y de integracion en el frontend para asegurar que el guardado de medidas no registre elementos duplicados en el array local ni realice llamadas redundantes al servicio.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "bugfix-medidas-duplicadas-frontend-create",
+        "bugfix-medidas-duplicadas-frontend-edit",
+        "bugfix-medidas-duplicadas-frontend-modal"
+      ],
+      "topic_key": "bugfix/medidas-duplicadas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. Se agregaron y ejecutaron de forma exitosa los tests unitarios en edit.spec.ts para verificar la atomicidad de guardarMedida y la prevencion de llamadas duplicadas concurrentes."
     }
   ]
 }

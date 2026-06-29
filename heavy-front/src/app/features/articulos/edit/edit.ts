@@ -114,8 +114,9 @@ export class EditComponent implements OnInit {
 
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
     editingMedidaId: number | null = null;
+    guardandoMedida = false;
 
     // Variables para el conversor de peso
     showWeightConverter = false;
@@ -131,7 +132,6 @@ export class EditComponent implements OnInit {
     // Variables para el CRUD de medidas
     unidadesMedida = signal<Lista[]>([]);
     tiposMedida = signal<Lista[]>([]);
-    nombresMedida = signal<Lista[]>([]);
 
     // Archivos seleccionados
     fotoFile: File | null = null;
@@ -188,7 +188,6 @@ export class EditComponent implements OnInit {
     cargarListasMedidas(): void {
         this.listaService.getByTipo('Unidad de Medida').subscribe((res) => this.unidadesMedida.set(res));
         this.listaService.getByTipo('Tipo de Medida').subscribe((res) => this.tiposMedida.set(res));
-        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => this.nombresMedida.set(res));
     }
 
     /**
@@ -244,8 +243,6 @@ export class EditComponent implements OnInit {
             this.medidaData.unidad = nueva.nombre;
         } else if (this.currentListaTipo === 'Tipo de Medida') {
             this.medidaData.tipo = nueva.nombre;
-        } else if (this.currentListaTipo === 'Nombre de Medida') {
-            this.medidaData.nombre = nueva.nombre;
         }
 
         this.showListaModal = false;
@@ -742,7 +739,7 @@ export class EditComponent implements OnInit {
      */
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -754,15 +751,35 @@ export class EditComponent implements OnInit {
     }
 
     guardarMedida(): void {
+        if (this.guardandoMedida || !this.medidaData.identificador || !this.medidaData.valor) {
+            return;
+        }
+
+        this.guardandoMedida = true;
+
         if (this.isEditingMedida && this.editingMedidaId) {
-            this.articuloService.updateMedida(this.articuloId, this.editingMedidaId, this.medidaData).subscribe(() => {
-                this.reloadArticulo();
-                this.showMedidaDialog = false;
+            this.articuloService.updateMedida(this.articuloId, this.editingMedidaId, this.medidaData).subscribe({
+                next: () => {
+                    this.reloadArticulo();
+                    this.showMedidaDialog = false;
+                    this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+                    this.guardandoMedida = false;
+                },
+                error: () => {
+                    this.guardandoMedida = false;
+                }
             });
         } else {
-            this.articuloService.addMedida(this.articuloId, this.medidaData).subscribe(() => {
-                this.reloadArticulo();
-                this.showMedidaDialog = false;
+            this.articuloService.addMedida(this.articuloId, this.medidaData).subscribe({
+                next: () => {
+                    this.reloadArticulo();
+                    this.showMedidaDialog = false;
+                    this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
+                    this.guardandoMedida = false;
+                },
+                error: () => {
+                    this.guardandoMedida = false;
+                }
             });
         }
     }

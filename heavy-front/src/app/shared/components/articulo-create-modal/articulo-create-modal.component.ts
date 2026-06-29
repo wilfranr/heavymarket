@@ -84,11 +84,10 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     // Variables para el CRUD de medidas
     unidadesMedida: Lista[] = [];
     tiposMedida: Lista[] = [];
-    nombresMedida: Lista[] = [];
     medidasLocales: any[] = [];
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
     editingMedidaIndex: number | null = null;
 
     // Modales anidados
@@ -327,12 +326,11 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     cargarListasMedidas(): void {
         this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
         this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
-        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
     }
 
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -344,11 +342,17 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     }
 
     guardarMedida(): void {
+        if (!this.medidaData.identificador || !this.medidaData.valor) {
+            return;
+        }
+
         if (this.isEditingMedida && this.editingMedidaIndex !== null) {
             this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
         } else {
             this.medidasLocales.push({ ...this.medidaData });
         }
+        
+        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
         this.showMedidaDialog = false;
     }
 
@@ -408,8 +412,6 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
             this.medidaData.unidad = nueva.nombre;
         } else if (this.currentListaTipo === 'Tipo de Medida') {
             this.medidaData.tipo = nueva.nombre;
-        } else if (this.currentListaTipo === 'Nombre de Medida') {
-            this.medidaData.nombre = nueva.nombre;
         }
 
         this.showListaModal = false;

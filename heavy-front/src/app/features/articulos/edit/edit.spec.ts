@@ -18,6 +18,7 @@ describe('ArticuloEditComponent', () => {
     let store: MockStore;
     let router: Router;
     let referenciaService: jasmine.SpyObj<ReferenciaService>;
+    let articuloService: jasmine.SpyObj<ArticuloService>;
 
     const mockArticulo = {
         id: 1,
@@ -38,7 +39,7 @@ describe('ArticuloEditComponent', () => {
     beforeEach(async () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         const messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
-        const articuloServiceSpy = jasmine.createSpyObj('ArticuloService', ['getById']);
+        const articuloServiceSpy = jasmine.createSpyObj('ArticuloService', ['getById', 'addMedida', 'updateMedida']);
         const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', ['getAll', 'update']);
         referenciaServiceSpy.getAll.and.returnValue(of({ data: [], meta: {} }));
         const listaServiceSpy = jasmine.createSpyObj('ListaService', ['getAll', 'getByTipo', 'getMarcasYFabricantesParaReferencia']);
@@ -80,6 +81,7 @@ describe('ArticuloEditComponent', () => {
         store = TestBed.inject(MockStore);
         router = TestBed.inject(Router);
         referenciaService = TestBed.inject(ReferenciaService) as jasmine.SpyObj<ReferenciaService>;
+        articuloService = TestBed.inject(ArticuloService) as jasmine.SpyObj<ArticuloService>;
 
         store.overrideSelector(selectArticuloById(1), mockArticulo);
 
@@ -215,5 +217,48 @@ describe('ArticuloEditComponent', () => {
 
         expect(component.articuloActual?.foto_medida).toBe('inherited.jpg');
         expect(component.planoFile).toBeNull();
+    });
+
+    describe('guardarMedida', () => {
+        it('should return and do nothing if identificador or valor are missing', () => {
+            component.medidaData = { identificador: '', unidad: 'mm', valor: '', tipo: 'Ancho' };
+            component.isEditingMedida = false;
+
+            component.guardarMedida();
+
+            expect(articuloService.addMedida).not.toHaveBeenCalled();
+        });
+
+        it('should call addMedida when isEditingMedida is false and prevent concurrent calls', () => {
+            component.articuloId = 1;
+            component.isEditingMedida = false;
+            component.medidaData = { identificador: 'A', unidad: 'mm', valor: '15.5', tipo: 'Ancho' };
+            
+            articuloService.addMedida.and.returnValue(of({ data: mockArticulo } as any));
+            spyOn(component as any, 'reloadArticulo');
+
+            // Primera llamada
+            component.guardarMedida();
+            // Intentar llamada duplicada concurrente
+            component.guardarMedida();
+
+            expect(articuloService.addMedida).toHaveBeenCalledTimes(1);
+            expect(articuloService.addMedida).toHaveBeenCalledWith(1, { identificador: 'A', unidad: 'mm', valor: '15.5', tipo: 'Ancho' });
+        });
+
+        it('should call updateMedida when isEditingMedida is true', () => {
+            component.articuloId = 1;
+            component.isEditingMedida = true;
+            component.editingMedidaId = 5;
+            component.medidaData = { identificador: 'B', unidad: 'mm', valor: '20.0', tipo: 'Largo' };
+            
+            articuloService.updateMedida.and.returnValue(of({ data: mockArticulo } as any));
+            spyOn(component as any, 'reloadArticulo');
+
+            component.guardarMedida();
+
+            expect(articuloService.updateMedida).toHaveBeenCalledTimes(1);
+            expect(articuloService.updateMedida).toHaveBeenCalledWith(1, 5, { identificador: 'B', unidad: 'mm', valor: '20.0', tipo: 'Largo' });
+        });
     });
 });

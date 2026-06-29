@@ -87,11 +87,10 @@ export class CreateComponent implements OnInit {
     // Variables para el CRUD de medidas
     unidadesMedida: Lista[] = [];
     tiposMedida: Lista[] = [];
-    nombresMedida: Lista[] = [];
     medidasLocales: any[] = [];
     showMedidaDialog = false;
     isEditingMedida = false;
-    medidaData: any = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+    medidaData: any = { identificador: '', unidad: '', valor: '', tipo: '' };
     editingMedidaIndex: number | null = null;
 
     // Variables para el modal de creación de tipo
@@ -132,7 +131,14 @@ export class CreateComponent implements OnInit {
     // Término de búsqueda para referencias cruzadas
     searchTermReferences = '';
 
+    constructor() {
+        console.log('=== CREATE COMPONENT CARGADO ===');
+        console.log('Archivo: features/articulos/create/create.ts');
+        console.log('medidaData inicial:', this.medidaData);
+    }
+
     ngOnInit(): void {
+        console.log('=== CREATE COMPONENT ngOnInit ===');
         this.initForm();
         this.cargarTipos();
         this.cargarReferencias();
@@ -147,7 +153,6 @@ export class CreateComponent implements OnInit {
     cargarListasMedidas(): void {
         this.listaService.getByTipo('Unidad de Medida').subscribe((res) => (this.unidadesMedida = res));
         this.listaService.getByTipo('Tipo de Medida').subscribe((res) => (this.tiposMedida = res));
-        this.listaService.getByTipo('Nombre de Medida').subscribe((res) => (this.nombresMedida = res));
     }
 
     /**
@@ -155,7 +160,7 @@ export class CreateComponent implements OnInit {
      */
     abrirDialogoMedida(): void {
         this.isEditingMedida = false;
-        this.medidaData = { identificador: '', nombre: '', unidad: '', valor: '', tipo: '' };
+        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
         this.showMedidaDialog = true;
     }
 
@@ -167,11 +172,17 @@ export class CreateComponent implements OnInit {
     }
 
     guardarMedida(): void {
+        if (!this.medidaData.identificador || !this.medidaData.valor) {
+            return;
+        }
+
         if (this.isEditingMedida && this.editingMedidaIndex !== null) {
             this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
         } else {
             this.medidasLocales.push({ ...this.medidaData });
         }
+        
+        this.medidaData = { identificador: '', unidad: '', valor: '', tipo: '' };
         this.showMedidaDialog = false;
     }
 
@@ -274,8 +285,6 @@ export class CreateComponent implements OnInit {
             this.medidaData.unidad = nueva.nombre;
         } else if (this.currentListaTipo === 'Tipo de Medida') {
             this.medidaData.tipo = nueva.nombre;
-        } else if (this.currentListaTipo === 'Nombre de Medida') {
-            this.medidaData.nombre = nueva.nombre;
         }
 
         this.showListaModal = false;
