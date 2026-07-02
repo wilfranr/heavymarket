@@ -1,0 +1,1 @@
+import{p as s}from"./chunk-ST3BJDS4.js";import{o as t,p as o}from"./chunk-CZB2IAEE.js";var r=o("ordenesCompra"),{selectAll:n,selectEntities:c,selectIds:O,selectTotal:l}=s.getSelectors(r),i=n,p=c;var x=l,g=t(r,e=>e.loading),S=t(r,e=>e.error),u=t(r,e=>({total:e.total,currentPage:e.currentPage,lastPage:e.lastPage})),P=e=>t(p,a=>a[e]||null);export{i as a,x as b,g as c,S as d,P as e};

@@ -528,7 +528,7 @@
                 <div class="grid grid-cols-4 bg-white dark:bg-slate-900 text-xs">
                     @for (medida of popoverData.medidas; track $index) {
                     <div class="flex items-center justify-between p-2.5 border-r border-b border-gray-100 dark:border-gray-800 last:border-r-0">
-                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ medida.nombre }}</span>
+                        <span class="font-bold text-blue-600 dark:text-blue-400">{{ medida.identificador }}</span>
                         <span class="text-gray-900 dark:text-white font-mono text-[11px]">{{ medida.valor }}{{ medida.unidad || ' mm' }}</span>
                     </div>
                     }

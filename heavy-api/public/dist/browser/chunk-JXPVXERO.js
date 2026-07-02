@@ -1,0 +1,1 @@
+import"./chunk-C6Q5SG76.js";var o=[{path:"",loadComponent:()=>import("./chunk-YI3DCX5E.js").then(t=>t.CategoryListComponent)},{path:"machine-types",loadComponent:()=>import("./chunk-F6SWP4QU.js").then(t=>t.MachineTypeListComponent)},{path:"contact-leads",loadComponent:()=>import("./chunk-PGF2LJBX.js").then(t=>t.ContactLeadsComponent)}];export{o as landingManageRoutes};

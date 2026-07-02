@@ -1,0 +1,1 @@
+import{a as c}from"./chunk-NPES3DSX.js";import{o as e,p as r}from"./chunk-CZB2IAEE.js";var o=r("articulos"),{selectAll:s,selectEntities:i,selectIds:p,selectTotal:x}=c.getSelectors(o),S=s,a=i;var g=e(o,t=>t.loading),d=e(o,t=>t.error),m=e(o,t=>({total:t.total,currentPage:t.currentPage,lastPage:t.lastPage})),P=t=>e(a,l=>l[t]||null);export{S as a,g as b,m as c,P as d};

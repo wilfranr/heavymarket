@@ -1,0 +1,1 @@
+import{a as s}from"./chunk-EEXRPPAZ.js";import{o as e,p as c}from"./chunk-CZB2IAEE.js";var o=c("cotizaciones"),{selectAll:a,selectEntities:n,selectIds:x,selectTotal:r}=s.getSelectors(o),g=a,l=n;var S=r,d=e(o,t=>t.loading),m=e(o,t=>t.error),u=e(o,t=>({total:t.total,currentPage:t.currentPage,lastPage:t.lastPage})),P=t=>e(l,i=>i[t]||null);export{g as a,S as b,d as c,m as d,P as e};

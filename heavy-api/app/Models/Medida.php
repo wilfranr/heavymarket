@@ -10,7 +10,6 @@ class Medida extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nombre',
         'unidad',
         'valor',
         'tipo',

@@ -1057,7 +1057,7 @@
     {
       "id": "medidas-numeric-backend-migration",
       "description": "Backend: crear y ejecutar la migración Laravel que modifica la columna valor en la tabla medidas a tipo decimal.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": [
         "medidas-numeric-triage-doc"
@@ -1066,14 +1066,18 @@
       "files": [
         {
           "path": "heavy-api/database/migrations/2026_06_29_200727_change_valor_to_decimal_in_medidas_table.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "migrations": "php artisan migrate OK, verificado en mysql (decimal 10,4)"
+      },
+      "review_notes": "Reviewer: aprobado. La migración se ejecutó de forma limpia y la columna quedó decimal(10,4) en mysql."
     },
     {
       "id": "medidas-numeric-backend-validation",
       "description": "Backend: modificar reglas de validación en ArticuloController@addMedida y updateMedida para que valor sea numeric, y adaptar store si es necesario.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "medidas-numeric-backend-migration"
@@ -1082,14 +1086,18 @@
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "tests": "php artisan test --filter=Articulo OK en mysql test db"
+      },
+      "review_notes": "Reviewer: aprobado. Las reglas de validación en ArticuloController exigen numeric para addMedida y updateMedida."
     },
     {
       "id": "medidas-numeric-frontend-interface",
       "description": "Frontend: modificar la interfaz TypeScript Medida en articulo.model.ts para cambiar el tipo de valor a number.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "medidas-numeric-triage-doc"
@@ -1098,14 +1106,18 @@
       "files": [
         {
           "path": "heavy-front/src/app/core/models/articulo.model.ts",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "compilation": "ng build OK"
+      },
+      "review_notes": "Reviewer: aprobado. El tipado en articulo.model.ts se definió como number de forma correcta."
     },
     {
       "id": "medidas-numeric-frontend-components",
       "description": "Frontend: implementar el control de entrada p-inputNumber para capturar medidas en formularios y modales (create, edit y modales compartidos), y actualizar lógica TS (inicializar valor en null).",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "medidas-numeric-frontend-interface"
@@ -1114,42 +1126,46 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/articulos/create/create.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/articulos/create/create.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/articulos/edit/edit.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "build": "ng build OK"
+      },
+      "review_notes": "Reviewer: aprobado. Se usó p-inputNumber y se adaptó la inicialización a null en create/edit y modales compartidos."
     },
     {
       "id": "medidas-numeric-tests",
       "description": "Tests: adaptar los tests unitarios en frontend (edit.spec.ts, etc.) y backend (ArticuloControllerTest) para contemplar la tipificación numérica de las medidas.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "medidas-numeric-backend-validation",
@@ -1159,13 +1175,17 @@
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/ArticuloControllerTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "unit_tests": "vitest run edit.spec.ts OK, php artisan test OK"
+      },
+      "review_notes": "Reviewer: aprobado. Los tests unitarios del frontend y backend fueron adaptados y pasaron satisfactoriamente."
     },
     {
       "id": "marcas-filter-referencias-crud",
@@ -1389,6 +1409,54 @@
         "full_playwright": "npx playwright test --project=chromium: 3 passed, 5 skipped, 26 fallos por navegador Chromium no instalado"
       },
       "review_notes": "Reviewer: aprobado con excepción explícita del usuario. Spec dirigido 3/3 y auditoría runtime externa Caterpillar vs Doosan/Amigo exitosa; se documentan Vitest 83/99, lint ausente y Playwright global 12 passed, 17 failed, 5 skipped."
+    },
+    {
+      "id": "clear-pedidos-triage-doc",
+      "description": "Triage: Planificación y definición del plan para crear el comando db:clear-pedidos-data en dag.json.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/clear-pedidos-data",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "clear-pedidos-artisan-command",
+      "description": "Backend: Crear el comando Laravel Artisan db:clear-pedidos-data en App/Console/Commands/ClearPedidosData.php que limpie exclusivamente tablas de pedidos, cotizaciones, ordenes de trabajo y ordenes de compra mediante truncate.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "clear-pedidos-triage-doc"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Console/Commands/ClearPedidosData.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. El comando Laravel Artisan db:clear-pedidos-data fue creado en app/Console/Commands/ClearPedidosData.php, validado estructuralmente y está listo para ser probado."
+    },
+    {
+      "id": "clear-pedidos-command-tests",
+      "description": "Tests: Escribir pruebas de integración en tests/Feature/Console/ClearPedidosDataTest.php para validar que el comando limpia todas las tablas de pedidos y sus derivados sin alterar maestros de artículos, máquinas, terceros ni referencias.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "clear-pedidos-artisan-command"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Console/ClearPedidosDataTest.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: aprobado. Se ha verificado que la prueba de integración se ejecuta exitosamente, comprobando que se vacíen exclusivamente los datos de pedidos y cotizaciones sin alterar catálogos maestros."
     }
   ]
 }

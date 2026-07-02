@@ -10,7 +10,7 @@
   "mcp": {
     "engram": {
       "type": "local",
-      "command": ["/home/yoseth/.linuxbrew/bin/engram", "mcp"],
+      "command": ["/usr/local/bin/engram", "mcp"],
       "enabled": true
     }
   },

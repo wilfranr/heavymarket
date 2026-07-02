@@ -78,7 +78,6 @@ export class ListComponent implements OnInit {
         { label: 'Categorías Comerciales', value: 'Categoría Comercial', tipoValue: 'Categoría Comercial', icon: 'pi pi-tag' },
         { label: 'Unidades Medida', value: 'Unidad de Medida', tipoValue: 'Unidad de Medida', icon: 'pi pi-ruler-combined' },
         { label: 'Tipos de Medida', value: 'Tipo de Medida', tipoValue: 'Tipo de Medida', icon: 'pi pi-sliders-h' },
-        { label: 'Nombres de Medida', value: 'Nombre de Medida', tipoValue: 'Nombre de Medida', icon: 'pi pi-tag' },
         { label: 'Piezas Estandar', value: 'Piezas Estandar', tipoValue: 'Piezas Estandar', icon: 'pi pi-objects-column' }
     ];
 
@@ -203,7 +202,6 @@ export class ListComponent implements OnInit {
             'Categoría Comercial': 'success',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
-            'Nombre de Medida': 'contrast',
             'Piezas Estandar': 'warn'
         };
         return severityMap[tipo] || 'secondary';

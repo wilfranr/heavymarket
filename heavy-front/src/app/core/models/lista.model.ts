@@ -38,7 +38,7 @@ export interface ListaFabricanteResumen {
 /**
  * Tipos de lista disponibles
  */
-export type ListaTipo = 'Marca' | 'Fabricantes' | 'Tipo de Máquina' | 'Tipo de Artículo' | 'Piezas Estandar' | 'Unidad de Medida' | 'Tipo de Medida' | 'Nombre de Medida' | 'Categoría Comercial';
+export type ListaTipo = 'Marca' | 'Fabricantes' | 'Tipo de Máquina' | 'Tipo de Artículo' | 'Piezas Estandar' | 'Unidad de Medida' | 'Tipo de Medida' | 'Categoría Comercial';
 
 /**
  * Datos para crear una lista

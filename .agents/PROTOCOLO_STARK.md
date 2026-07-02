@@ -20,7 +20,10 @@ El sistema se divide en tres capas para asegurar que la "verdad" técnica sea un
 
 Rutas críticas para corregir errores de conexión (ENOENT):
 
-- **Binario Engram**: `/home/yoseth/.linuxbrew/bin/engram`
+- **Binario Engram**: `/usr/local/bin/engram`
+
+Esta ruta corresponde a la instalación vigente después de la migración de sistema
+operativo y debe mantenerse alineada con la configuración global de OpenCode.
 
 ### Configuración Universal (mcp.json en raíz)
 
@@ -29,7 +32,7 @@ Rutas críticas para corregir errores de conexión (ENOENT):
   "mcp": {
     "servers": {
       "engram": {
-        "command": "/home/yoseth/.linuxbrew/bin/engram",
+        "command": "/usr/local/bin/engram",
         "args": ["mcp"]
       }
     }

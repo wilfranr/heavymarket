@@ -109,7 +109,6 @@
                             <ng-template pTemplate="header">
                                 <tr>
                                     <th>ID</th>
-                                    <th>Nombre</th>
                                     <th>Valor</th>
                                     <th>Unidad</th>
                                     <th>Tipo</th>
@@ -118,7 +117,6 @@
                             <ng-template pTemplate="body" let-medida>
                                 <tr>
                                     <td>{{ medida.identificador }}</td>
-                                    <td>{{ medida.nombre }}</td>
                                     <td class="font-bold text-primary">{{ medida.valor }}</td>
                                     <td>{{ medida.unidad }}</td>
                                     <td>
@@ -128,7 +126,7 @@
                             </ng-template>
                             <ng-template pTemplate="emptymessage">
                                 <tr>
-                                    <td colspan="5" class="text-center py-4 text-gray-500">No hay medidas técnicas registradas</td>
+                                    <td colspan="4" class="text-center py-4 text-gray-500">No hay medidas técnicas registradas</td>
                                 </tr>
                             </ng-template>
                         </p-table>

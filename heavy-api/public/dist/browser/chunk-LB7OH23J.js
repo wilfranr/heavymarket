@@ -1,0 +1,1 @@
+import{a as s}from"./chunk-7266GPKE.js";import{o,p as c}from"./chunk-CZB2IAEE.js";var e=c("contactos"),{selectAll:n,selectEntities:r,selectIds:S,selectTotal:l}=s.getSelectors(e),g=n,C=r;var d=l,m=o(e,t=>t.loading),u=o(e,t=>t.error),P=o(e,t=>({total:t.total,currentPage:t.currentPage,lastPage:t.lastPage})),E=t=>o(C,a=>a[t]||null);export{g as a,d as b,m as c,u as d,E as e};

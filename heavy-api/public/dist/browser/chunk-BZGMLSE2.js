@@ -1,0 +1,1 @@
+import{a as o}from"./chunk-T2ORJQRE.js";import{o as e,p as a}from"./chunk-CZB2IAEE.js";var s=a("sistemas"),{selectAll:c,selectEntities:l,selectIds:p,selectTotal:x}=o.getSelectors(s),g=c,i=l;var d=e(s,t=>t.loading),u=e(s,t=>t.error),P=e(s,t=>({total:t.total,currentPage:t.currentPage,lastPage:t.lastPage})),E=t=>e(i,r=>r[t]||null);export{g as a,d as b,P as c,E as d};

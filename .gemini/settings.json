@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "engram": {
-      "command": "/home/yoseth/.linuxbrew/bin/engram",
+      "command": "/usr/local/bin/engram",
       "args": ["mcp"],
       "trust": true
     }

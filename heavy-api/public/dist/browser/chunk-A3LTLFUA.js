@@ -1,0 +1,1 @@
+import{a as o}from"./chunk-NGHAMY5A.js";import{g as a}from"./chunk-HQVQYQH7.js";import{i as t}from"./chunk-5FPXF5CH.js";var g=(i,s)=>{let r=t(o),n=t(a),e=i.data?.roles;return r.isLoggedIn()?e&&e.length>0?r.hasAnyRole(e)?!0:(n.navigate(["/access-denied"]),!1):!0:(n.navigate(["/auth/login"]),!1)};export{g as a};

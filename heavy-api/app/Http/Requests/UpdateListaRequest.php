@@ -104,7 +104,6 @@ class UpdateListaRequest extends FormRequest
                     'Tipo de Artículo',
                     'Unidad de Medida',
                     'Tipo de Medida',
-                    'Nombre de Medida',
                     'Categoría de Máquina',
                     'Piezas Estandar',
                     'Fabricantes',

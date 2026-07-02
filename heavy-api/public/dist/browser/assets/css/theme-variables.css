@@ -1,0 +1,9 @@
+/* ============================================
+   THEME VARIABLES - Brand and Custom Variables
+   ============================================ */
+
+:root {
+    /* Brand Colors */
+    --color-brand-yellow: #FDB831;
+    --color-brand-yellow-dark: #E5A52D;
+}

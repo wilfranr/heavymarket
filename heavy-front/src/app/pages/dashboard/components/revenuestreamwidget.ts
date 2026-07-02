@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { ChartModule } from 'primeng/chart';
 import { debounceTime, Subscription } from 'rxjs';
 import { LayoutService } from '../../../layout/service/layout.service';
@@ -10,15 +10,17 @@ import { DashboardService } from '../../../core/services/dashboard.service';
     imports: [ChartModule],
     template: `<div class="card mb-8!">
         <div class="font-semibold text-xl mb-4">Flujo de Ingresos</div>
-        <p-chart type="bar" [data]="chartData" [options]="chartOptions" class="h-100" />
+        @if (chartData() && chartOptions()) {
+            <p-chart type="bar" [data]="chartData()" [options]="chartOptions()" class="h-100" />
+        }
     </div>`
 })
 export class RevenueStreamWidget implements OnInit {
     private readonly dashboardService = inject(DashboardService);
 
-    chartData: any;
+    chartData = signal<any>(undefined);
 
-    chartOptions: any;
+    chartOptions = signal<any>(undefined);
 
     subscription!: Subscription;
 
@@ -40,7 +42,7 @@ export class RevenueStreamWidget implements OnInit {
             const borderColor = documentStyle.getPropertyValue('--surface-border');
             const textMutedColor = documentStyle.getPropertyValue('--text-color-secondary');
 
-            this.chartData = {
+            this.chartData.set({
                 labels: data.labels,
                 datasets: [
                     {
@@ -51,9 +53,9 @@ export class RevenueStreamWidget implements OnInit {
                         barThickness: 32
                     }
                 ]
-            };
+            });
 
-            this.chartOptions = {
+            this.chartOptions.set({
                 maintainAspectRatio: false,
                 aspectRatio: 0.8,
                 plugins: {
@@ -84,7 +86,7 @@ export class RevenueStreamWidget implements OnInit {
                         }
                     }
                 }
-            };
+            });
         });
     }
 

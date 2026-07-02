@@ -1,0 +1,1 @@
+import{a as r}from"./chunk-I62XZ2N2.js";import{o as t,p as o}from"./chunk-CZB2IAEE.js";var c=o("direcciones"),{selectAll:i,selectEntities:n,selectIds:S,selectTotal:l}=r.getSelectors(c),g=i,a=n;var d=l,m=t(c,e=>e.loading),u=t(c,e=>e.error),P=t(c,e=>({total:e.total,currentPage:e.currentPage,lastPage:e.lastPage})),E=e=>t(a,s=>s[e]||null);export{g as a,d as b,m as c,u as d,E as e};

@@ -66,7 +66,6 @@ export class DetailComponent implements OnInit {
             'Tipo de Artículo': 'warn',
             'Unidad de Medida': 'secondary',
             'Tipo de Medida': 'info',
-            'Nombre de Medida': 'contrast',
             'Piezas Estandar': 'warn'
         };
         return severityMap[tipo] || 'secondary';

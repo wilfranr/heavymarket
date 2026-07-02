@@ -1,0 +1,1 @@
+var d=["Cancelado","En_Costeo","Cotizado","Aprobado","Rechazado","Enviado","Entregado"],e=["Cotizado","Aprobado","Rechazado","Enviado","Entregado"];function n(o){return o?!d.includes(o):!1}function a(o){return o?e.includes(o):!1}export{n as a,a as b};

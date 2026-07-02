@@ -1,0 +1,1 @@
+var e={production:!0,apiUrl:"https://heavymarket.net/api/v1",apiBaseUrl:"https://heavymarket.net",reverbKey:"efwwsue7nfzam7jjst6r",reverbHost:"heavymarket.net",reverbPort:443,reverbScheme:"https",pusherEnabled:!1,appName:"HeavyMarket",version:"1.0.0"};export{e as a};

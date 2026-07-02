@@ -75,7 +75,6 @@ export class EditComponent implements OnInit {
         { label: 'Categoría Comercial', value: 'Categoría Comercial' as ListaTipo },
         { label: 'Unidad de Medida', value: 'Unidad de Medida' as ListaTipo },
         { label: 'Tipo de Medida', value: 'Tipo de Medida' as ListaTipo },
-        { label: 'Nombre de Medida', value: 'Nombre de Medida' as ListaTipo },
         { label: 'Piezas Estandar', value: 'Piezas Estandar' as ListaTipo }
     ];
 
