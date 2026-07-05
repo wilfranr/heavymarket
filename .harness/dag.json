@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-05T12:10:00-05:00",
+  "last_updated": "2026-07-05T12:35:00-05:00",
   "issue": "costeo-opciones-entrega",
   "description": "Actualizar el selector Entrega de la vista de costeo con los nueve plazos solicitados y representar Backorder sin confundirlo con una entrega inmediata.",
   "workflow": "triage-incremental",
@@ -1461,30 +1461,31 @@
     {
       "id": "costeo-entrega-backorder-storage",
       "description": "Persistencia: representar Backorder explícitamente mediante es_backorder, mantener dias_entrega como entero nullable para los plazos cuantificables y agregar una migración compatible con registros existentes.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": [],
       "topic_key": "decision/costeo-opciones-entrega",
       "files": [
         {
           "path": "heavy-api/database/migrations/2026_07_05_000001_add_es_backorder_to_pedido_referencia_proveedor_table.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Models/PedidoReferenciaProveedor.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
         "php_syntax": "php -l OK en migración y modelo",
         "style": "Pint --test OK en migración y modelo",
         "model_behavior": "Accessor validado directamente: rangos y Backorder OK"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. Migración y modelo validados; cierre con excepción explícita del usuario para deudas globales ajenas al issue."
     },
     {
       "id": "costeo-entrega-backorder-contract",
       "description": "Contrato API y DTO: validar la exclusividad entre dias_entrega y es_backorder, exponer ambos campos en el recurso y tiparlos estrictamente en Angular para impedir que Backorder se persista o interprete como 0 días.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": [
         "costeo-entrega-backorder-storage"
@@ -1493,15 +1494,15 @@
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Resources/PedidoReferenciaProveedorResource.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/core/models/pedido.model.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
@@ -1509,12 +1510,13 @@
         "style": "Pint --test OK en Controller y Resource",
         "typescript": "npm run build OK",
         "conditional_validation": "Validator Laravel OK: exige días para plazo regular y acepta null para Backorder"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. Contrato seguro, omisión conjunta rechazada y compatibilidad histórica conservada."
     },
     {
       "id": "costeo-entrega-selector",
       "description": "Frontend Costeo: sustituir las opciones del selector Entrega por Inmediata, 1 día hábil, 2 a 3 días hábiles, 4 a 7 días hábiles, 8 a 15 días hábiles, 15 a 30 días hábiles, 45 días hábiles, 60 días hábiles y Backorder. Mapear los rangos cuantificables a su límite superior (0, 1, 3, 7, 15, 30, 45 y 60) y enviar Backorder mediante es_backorder, sin coerción con parseInt ni uso de any para el nuevo catálogo.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "costeo-entrega-backorder-contract"
@@ -1523,25 +1525,26 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/core/utils/entrega-plazo.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
         "build": "npm run build OK; warning CommonJS preexistente de pusher-js"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. Las nueve opciones, orden, serialización y temas claro/oscuro fueron validados."
     },
     {
       "id": "costeo-entrega-presentacion",
       "description": "Presentación de cotización: mostrar los mismos textos comerciales de entrega en el detalle web y en el PDF; mostrar Backorder cuando es_backorder sea verdadero y evitar salidas ambiguas como 0 días o null días.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "costeo-entrega-backorder-contract"
@@ -1550,26 +1553,27 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
         "build": "npm run build OK; Backorder se trata como infinito al comparar tiempos",
         "blade": "php artisan view:cache OK"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. Presentación web/PDF y comparación de tiempos con Backorder validadas."
     },
     {
       "id": "costeo-entrega-tests",
       "description": "Pruebas de regresión: verificar las nueve opciones y su orden, la serialización de cada rango, la persistencia diferenciada de Backorder y la presentación correcta en detalle y PDF. Ejecutar los gates frontend y los tests backend dirigidos.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "costeo-entrega-selector",
@@ -1579,15 +1583,15 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/CotizacionFinalizarCosteoTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
@@ -1597,12 +1601,13 @@
         "frontend_lint": "npm run lint no disponible: package.json no define script lint",
         "backend_syntax_style": "php -l y Pint --test OK",
         "backend_targeted": "No ejecutable en este entorno: PDO SQLite no está instalado; 5 pruebas abortaron antes de aserciones"
-      }
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. Suite dirigida: backend 20/20 y 72 aserciones; frontend 5/5. Deudas globales documentadas fuera del alcance."
     },
     {
       "id": "provider-opportunities-entrega-backend",
       "description": "Portal de Proveedores backend: aceptar la misma semántica de entrega del costeo, validando dias_entrega nullable cuando es_backorder es verdadero, persistiendo ambos campos y devolviendo el estado Backorder en oportunidades ya enviadas.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "costeo-entrega-backorder-storage"
@@ -1611,22 +1616,23 @@
       "files": [
         {
           "path": "heavy-api/app/Http/Requests/StoreProviderCosteoRequest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
         "php_syntax": "php -l OK",
         "style": "Pint --test OK"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. Contrato, persistencia y consulta de Backorder en el Portal validados."
     },
     {
       "id": "provider-opportunities-entrega-frontend",
       "description": "Portal de Proveedores frontend: reutilizar las nueve opciones compartidas de entrega, normalizar ofertas históricas, enviar dias_entrega y es_backorder sin coerciones y conservar la compatibilidad claro/oscuro del p-select existente.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "provider-opportunities-entrega-backend",
@@ -1636,21 +1642,22 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/provider-portal/services/provider-portal.service.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
         "build": "npm run build OK; warning CommonJS preexistente de pusher-js"
-      }
+      },
+      "review_notes": "Reviewer: aprobado. El Portal reutiliza el catálogo y contrato compartidos sin duplicación."
     },
     {
       "id": "provider-opportunities-entrega-tests",
       "description": "Pruebas de regresión del Portal de Proveedores: comprobar envío y persistencia de Backorder, exposición en oportunidades enviadas y rechazo de ofertas regulares sin dias_entrega.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "provider-opportunities-entrega-backend",
@@ -1660,7 +1667,7 @@
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "validation": {
@@ -1668,7 +1675,8 @@
         "style": "Pint --test OK",
         "frontend_shared_catalog": "Vitest OK: 5 pruebas del catálogo compartido",
         "backend_targeted": "No ejecutable en este entorno: PDO SQLite no está instalado; 2 pruebas abortaron antes de aserciones"
-      }
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. ProviderPortalControllerTest pasa completo y cubre Backorder, omisión y filtros."
     },
     {
       "id": "cotizacion-pdf-condiciones-comerciales",

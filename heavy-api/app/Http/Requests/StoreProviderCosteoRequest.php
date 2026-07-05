@@ -59,7 +59,8 @@ class StoreProviderCosteoRequest extends FormRequest
                 },
             ],
             'costo_unidad' => ['required', 'numeric', 'min:0'],
-            'dias_entrega' => ['required', 'integer', 'min:0'],
+            'dias_entrega' => ['nullable', 'integer', 'min:0', 'required_if:es_backorder,false'],
+            'es_backorder' => ['required_without:dias_entrega', 'boolean'],
             'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];
@@ -74,6 +75,7 @@ class StoreProviderCosteoRequest extends FormRequest
             'pedido_referencia_id.required' => 'Debe especificar la referencia a costear.',
             'costo_unidad.required' => 'El precio de costo es obligatorio.',
             'dias_entrega.required' => 'El tiempo de entrega es obligatorio.',
+            'dias_entrega.required_if' => 'El tiempo de entrega es obligatorio cuando la oferta no está en Backorder.',
             'pedido_referencia_id.exists' => 'La referencia seleccionada no es válida.',
         ];
     }

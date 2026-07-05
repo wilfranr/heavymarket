@@ -27,6 +27,13 @@ beforeEach(function () {
     Empresa::create(['nombre' => 'HM Test', 'trm' => 4000, 'flete' => 2.2, 'estado' => 1]);
 });
 
+it('formatea los plazos comerciales y Backorder para la cotización', function () {
+    expect(PedidoReferenciaProveedor::make(['dias_entrega' => 15, 'es_backorder' => false])->entrega_label)
+        ->toBe('8 a 15 días hábiles')
+        ->and(PedidoReferenciaProveedor::make(['dias_entrega' => null, 'es_backorder' => true])->entrega_label)
+        ->toBe('Backorder');
+});
+
 it('finalizar costeo sin flete deja cotización en Borrador y notifica', function () {
     $usa = Country::factory()->create(['name' => 'Estados Unidos', 'iso2' => 'US', 'flete' => null]);
     $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor', 'country_id' => $usa->id]);

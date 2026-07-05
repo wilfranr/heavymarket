@@ -2904,7 +2904,10 @@ export class EditComponent implements OnInit {
         if (this.proveedoresComparacion.length === 0) return null;
 
         return this.proveedoresComparacion.reduce((mejor, actual) => {
-            return actual.dias_entrega < mejor.dias_entrega ? actual : mejor;
+            const diasActual = actual.es_backorder ? Number.POSITIVE_INFINITY : (actual.dias_entrega ?? Number.POSITIVE_INFINITY);
+            const diasMejor = mejor.es_backorder ? Number.POSITIVE_INFINITY : (mejor.dias_entrega ?? Number.POSITIVE_INFINITY);
+
+            return diasActual < diasMejor ? actual : mejor;
         });
     }
 

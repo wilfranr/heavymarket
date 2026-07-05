@@ -78,6 +78,7 @@ class ProviderPortalController extends Controller
                         ],
                         'form_costo' => $costeo->costo_unidad,
                         'form_dias_entrega' => $costeo->dias_entrega,
+                        'form_es_backorder' => $costeo->es_backorder,
                         'form_comentario' => $costeo->comentario,
                         'form_marca_id' => $costeo->marca_id,
                         'submitting' => false,
@@ -166,6 +167,7 @@ class ProviderPortalController extends Controller
 
             $pedidoReferencia = PedidoReferencia::findOrFail($validated['pedido_referencia_id']);
             $marcaId = $validated['marca_id'] ?? $pedidoReferencia->marca_id;
+            $esBackorder = $validated['es_backorder'] ?? false;
 
             // Asociar automáticamente la marca al proveedor si no la tiene asociada
             if ($marcaId && ! $tercero->fabricantes()->where('lista_id', $marcaId)->exists()) {
@@ -179,13 +181,14 @@ class ProviderPortalController extends Controller
                 'proveedor_id' => $tercero->id,
                 'marca_id' => $marcaId,
                 'costo_unidad' => $validated['costo_unidad'],
-                'dias_entrega' => $validated['dias_entrega'],
+                'dias_entrega' => $esBackorder ? null : $validated['dias_entrega'],
+                'es_backorder' => $esBackorder,
                 'comentario' => $validated['comentario'] ?? null,
                 'cantidad' => $pedidoReferencia->cantidad,
                 'estado' => 0, // 0 = Pendiente de selección, 1 = Seleccionado por el asesor
                 'utilidad' => 0.00, // Requerido en MySQL real, inicializado en cero
                 'ubicacion' => (int) $tercero->country_id === 48 ? 'Nacional' : 'Internacional',
-                'Entrega' => (int) $validated['dias_entrega'] === 0 ? 'Inmediata' : 'Programada',
+                'Entrega' => $esBackorder ? 'Backorder' : ((int) $validated['dias_entrega'] === 0 ? 'Inmediata' : 'Programada'),
             ]);
 
             DB::commit();

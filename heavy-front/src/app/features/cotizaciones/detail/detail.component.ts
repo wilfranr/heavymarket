@@ -20,6 +20,7 @@ import { Cotizacion } from '../../../core/models/cotizacion.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
 import { PedidoService } from '../../../core/services/pedido.service';
+import { formatearEntrega } from '../../../core/utils/entrega-plazo';
 
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
@@ -232,7 +233,9 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                                         </td>
                                         <td class="text-center font-semibold">{{ item.pedido_referencia_proveedor?.cantidad || 0 }}</td>
                                         <td class="text-slate-700 dark:text-slate-300">{{ item.pedido_referencia_proveedor?.marca?.nombre || item.pedido_referencia_proveedor?.marca?.valor || 'N/A' }}</td>
-                                        <td class="text-slate-700 dark:text-slate-300">{{ item.pedido_referencia_proveedor?.dias_entrega || 0 }} días</td>
+                                        <td class="text-slate-700 dark:text-slate-300">
+                                            {{ formatearEntrega(item.pedido_referencia_proveedor?.dias_entrega, item.pedido_referencia_proveedor?.es_backorder) }}
+                                        </td>
                                         <td class="text-right">{{ item.pedido_referencia_proveedor?.valor_unitario || item.pedido_referencia_proveedor?.valor_unidad | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
                                         <td class="text-right font-bold text-color">{{ item.pedido_referencia_proveedor?.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
                                     </tr>
@@ -413,6 +416,8 @@ export class DetailComponent implements OnInit {
     private readonly maquinaService = inject(MaquinaService);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
+
+    readonly formatearEntrega = formatearEntrega;
 
     cotizacion = signal<any | null>(null);
     cotizacionId = signal<number>(0);

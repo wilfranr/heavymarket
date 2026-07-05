@@ -18,6 +18,7 @@ class PedidoReferenciaProveedor extends Model
         'proveedor_id',
         'marca_id',
         'dias_entrega',
+        'es_backorder',
         'costo_unidad',
         'utilidad',
         'valor_unidad',
@@ -27,6 +28,34 @@ class PedidoReferenciaProveedor extends Model
         'cantidad',
         'Entrega',
     ];
+
+    protected function casts(): array
+    {
+        return [
+            'dias_entrega' => 'integer',
+            'es_backorder' => 'boolean',
+        ];
+    }
+
+    public function getEntregaLabelAttribute(): string
+    {
+        if ($this->es_backorder) {
+            return 'Backorder';
+        }
+
+        return match ($this->dias_entrega) {
+            0 => 'Inmediata',
+            1 => '1 día hábil',
+            3 => '2 a 3 días hábiles',
+            7 => '4 a 7 días hábiles',
+            15 => '8 a 15 días hábiles',
+            30 => '15 a 30 días hábiles',
+            45 => '45 días hábiles',
+            60 => '60 días hábiles',
+            null => 'Sin definir',
+            default => "{$this->dias_entrega} días hábiles",
+        };
+    }
 
     public function pedidoReferencia()
     {

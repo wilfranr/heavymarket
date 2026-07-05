@@ -130,7 +130,9 @@ export interface PedidoReferenciaProveedor {
     referencia_id: number;
     proveedor_id: number;
     marca_id: number | null;
-    dias_entrega: number;
+    dias_entrega: number | null;
+    es_backorder: boolean;
+    entrega_label: string;
     costo_unidad: number;
     utilidad: number;
     valor_unidad: number;
@@ -211,7 +213,8 @@ export interface CreatePedidoReferenciaDto {
 export interface CreatePedidoReferenciaProveedorDto {
     tercero_id: number;
     marca_id?: number;
-    dias_entrega: number;
+    dias_entrega: number | null;
+    es_backorder: boolean;
     costo_unidad: number;
     utilidad: number;
     cantidad: number;
@@ -224,7 +227,8 @@ export interface CreatePedidoReferenciaProveedorDto {
  */
 export interface UpdatePedidoReferenciaProveedorDto {
     marca_id?: number;
-    dias_entrega?: number;
+    dias_entrega?: number | null;
+    es_backorder?: boolean;
     costo_unidad?: number;
     utilidad?: number;
     cantidad?: number;

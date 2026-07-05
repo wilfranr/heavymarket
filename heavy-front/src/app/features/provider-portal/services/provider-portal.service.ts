@@ -21,7 +21,7 @@ export class ProviderPortalService extends ApiService {
     /**
      * Enviar oferta de costeo para una referencia
      */
-    submitCost(data: { pedido_referencia_id: number; costo_unidad: number; dias_entrega: number; marca_id?: number; comentario?: string }): Observable<ApiResponse<any>> {
+    submitCost(data: { pedido_referencia_id: number; costo_unidad: number; dias_entrega: number | null; es_backorder: boolean; marca_id?: number; comentario?: string }): Observable<ApiResponse<any>> {
         return this.post<ApiResponse<any>>(`${this.endpoint}/submit-cost`, data);
     }
 

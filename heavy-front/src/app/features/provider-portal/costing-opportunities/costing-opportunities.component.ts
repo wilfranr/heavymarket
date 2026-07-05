@@ -12,6 +12,7 @@ import { TabsModule } from 'primeng/tabs';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
+import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
 
 @Component({
     selector: 'app-costing-opportunities',
@@ -117,7 +118,7 @@ import { Lista } from '../../../core/models/lista.model';
                                 <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Entrega</label>
                                 <p-select
                                     [options]="tiemposEntrega"
-                                    [(ngModel)]="ref.form_dias_entrega"
+                                    [(ngModel)]="ref.form_entrega"
                                     optionLabel="label"
                                     optionValue="value"
                                     placeholder="Seleccionar"
@@ -160,7 +161,7 @@ import { Lista } from '../../../core/models/lista.model';
                                     label="Agregar"
                                     icon="pi pi-plus"
                                     [loading]="ref.submitting"
-                                    [disabled]="!ref.form_costo || ref.form_dias_entrega === undefined"
+                                    [disabled]="!ref.form_costo || ref.form_entrega === undefined"
                                     (onClick)="submitCost(ref)"
                                     styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold"
                                 >
@@ -223,13 +224,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     loading = signal(false);
     activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
     marcas: any[] = [];
-    tiemposEntrega = [
-        { label: 'Inmediato', value: 0 },
-        { label: '1-3 días', value: 3 },
-        { label: '4-7 días', value: 7 },
-        { label: '8-15 días', value: 15 },
-        { label: 'Más de 15 días', value: 20 }
-    ];
+    tiemposEntrega = ENTREGA_OPTIONS;
 
     ngOnInit(): void {
         this.loadOpportunities();
@@ -243,7 +238,7 @@ export class CostingOpportunitiesComponent implements OnInit {
                 const items = (response.data || []).map((item: any) => ({
                     ...item,
                     form_costo: item.form_costo || null,
-                    form_dias_entrega: item.form_dias_entrega !== undefined ? item.form_dias_entrega : 0,
+                    form_entrega: entregaValueDesdePersistencia(item.form_dias_entrega, item.form_es_backorder),
                     form_marca_id: item.form_marca_id || item.marca_id,
                     form_comentario: item.form_comentario || '',
                     submitting: false,
@@ -274,11 +269,12 @@ export class CostingOpportunitiesComponent implements OnInit {
 
     submitCost(ref: any): void {
         ref.submitting = true;
+        const entrega = entregaPayload(ref.form_entrega as EntregaValue);
 
         const payload = {
             pedido_referencia_id: ref.id,
             costo_unidad: ref.form_costo,
-            dias_entrega: ref.form_dias_entrega,
+            ...entrega,
             marca_id: ref.form_marca_id,
             comentario: ref.form_comentario
         };

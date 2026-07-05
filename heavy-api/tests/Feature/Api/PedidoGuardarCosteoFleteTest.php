@@ -96,3 +96,121 @@ it('guardar costeo con proveedor internacional con flete no marca missing_freigh
     $response->assertOk()
         ->assertJsonPath('missing_freight_rate', false);
 });
+
+it('guardar costeo persiste Backorder sin convertirlo en entrega inmediata', function () {
+    $colombia = Country::factory()->create(['iso2' => 'CO']);
+    $proveedor = Tercero::factory()->create(['country_id' => $colombia->id]);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'user_id' => $this->admin->id,
+    ]);
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
+    $pedidoRef = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/guardar-costeo", [
+            'referencias' => [
+                [
+                    'id' => $pedidoRef->id,
+                    'proveedores' => [
+                        [
+                            'proveedor_id' => $proveedor->id,
+                            'dias_entrega' => null,
+                            'es_backorder' => true,
+                            'costo_unidad' => 100,
+                            'utilidad' => 10,
+                            'cantidad' => 1,
+                            'seleccionado' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.referencias.0.proveedores.0.dias_entrega', null)
+        ->assertJsonPath('data.referencias.0.proveedores.0.es_backorder', true)
+        ->assertJsonPath('data.referencias.0.proveedores.0.entrega_label', 'Backorder');
+
+    $this->assertDatabaseHas('pedido_referencia_proveedor', [
+        'pedido_referencia_id' => $pedidoRef->id,
+        'dias_entrega' => null,
+        'es_backorder' => true,
+    ]);
+});
+
+it('guardar costeo exige días cuando la entrega no es Backorder', function () {
+    $colombia = Country::factory()->create(['iso2' => 'CO']);
+    $proveedor = Tercero::factory()->create(['country_id' => $colombia->id]);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'user_id' => $this->admin->id,
+    ]);
+    $referencia = Referencia::factory()->create();
+    $pedidoRef = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/guardar-costeo", [
+            'referencias' => [
+                [
+                    'id' => $pedidoRef->id,
+                    'proveedores' => [
+                        [
+                            'proveedor_id' => $proveedor->id,
+                            'dias_entrega' => null,
+                            'es_backorder' => false,
+                            'costo_unidad' => 100,
+                            'utilidad' => 10,
+                            'cantidad' => 1,
+                            'seleccionado' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('referencias.0.proveedores.0.dias_entrega');
+});
+
+it('guardar costeo rechaza omitir días y estado Backorder simultáneamente', function () {
+    $colombia = Country::factory()->create(['iso2' => 'CO']);
+    $proveedor = Tercero::factory()->create(['country_id' => $colombia->id]);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'user_id' => $this->admin->id,
+    ]);
+    $referencia = Referencia::factory()->create();
+    $pedidoRef = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/guardar-costeo", [
+            'referencias' => [
+                [
+                    'id' => $pedidoRef->id,
+                    'proveedores' => [
+                        [
+                            'proveedor_id' => $proveedor->id,
+                            'costo_unidad' => 100,
+                            'utilidad' => 10,
+                            'cantidad' => 1,
+                            'seleccionado' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors('referencias.0.proveedores.0.es_backorder');
+});

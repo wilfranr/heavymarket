@@ -31,6 +31,8 @@ class PedidoReferenciaProveedorResource extends JsonResource
             'proveedor_id' => $this->proveedor_id,
             'marca_id' => $this->marca_id,
             'dias_entrega' => $this->dias_entrega,
+            'es_backorder' => $this->es_backorder,
+            'entrega_label' => $this->entrega_label,
             'costo_unidad' => $this->costo_unidad,
             'utilidad' => $this->utilidad,
             'valor_unidad' => $this->valor_unidad,

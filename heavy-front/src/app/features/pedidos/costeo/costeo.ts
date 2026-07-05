@@ -39,6 +39,7 @@ import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
 
 @Component({
     selector: 'app-pedido-costeo',
@@ -149,13 +150,7 @@ export class CosteoComponent implements OnInit {
     proveedores = signal<any[]>([]);
     proveedoresCompletos = signal<Tercero[]>([]);
     marcas = signal<any[]>([]);
-    entregas = signal<any[]>([
-        { label: 'Inmediato', value: '0' },
-        { label: '1 - 3 días', value: '3' },
-        { label: '5 - 7 días', value: '7' },
-        { label: '15 días', value: '15' },
-        { label: '30+ días', value: '30' }
-    ]);
+    entregas = signal(ENTREGA_OPTIONS);
 
     ngOnInit(): void {
         this.initForm();
@@ -520,8 +515,7 @@ export class CosteoComponent implements OnInit {
             seleccionado: [data?.seleccionado || data?.estado === 1 || data?.estado === true || false],
             proveedor_id: [proveedorId],
             marca_id: [data?.marca_id || null],
-            // PrimeNG Select requiere string si los valores en las opciones son strings
-            entrega: [data?.dias_entrega !== undefined ? String(data.dias_entrega) : '0'],
+            entrega: [entregaValueDesdePersistencia(data?.dias_entrega, data?.es_backorder)],
             costo_usd: [{ value: !esNacional ? data?.costo_unidad || 0 : 0, disabled: esNacional }],
             costo_cop: [{ value: esNacional ? data?.costo_unidad || 0 : 0, disabled: !esNacional }],
             ubicacion: [esNacional ? 'Nacional' : 'Internacional'],
@@ -786,16 +780,20 @@ export class CosteoComponent implements OnInit {
                 id: ref.id,
                 proveedores: (ref.proveedores || [])
                     .filter((prov: any) => prov.proveedor_id)
-                    .map((prov: any) => ({
-                        id: prov.id,
-                        proveedor_id: prov.proveedor_id,
-                        marca_id: prov.marca_id,
-                        dias_entrega: parseInt(prov.entrega, 10) || 0,
-                        costo_unidad: prov.ubicacion === 'Nacional' ? prov.costo_cop || 0 : prov.costo_usd || 0,
-                        utilidad: prov.utilidad || 0,
-                        cantidad: prov.cantidad || 1,
-                        seleccionado: !!prov.seleccionado
-                    }))
+                    .map((prov: any) => {
+                        const entrega = entregaPayload(prov.entrega as EntregaValue);
+
+                        return {
+                            id: prov.id,
+                            proveedor_id: prov.proveedor_id,
+                            marca_id: prov.marca_id,
+                            ...entrega,
+                            costo_unidad: prov.ubicacion === 'Nacional' ? prov.costo_cop || 0 : prov.costo_usd || 0,
+                            utilidad: prov.utilidad || 0,
+                            cantidad: prov.cantidad || 1,
+                            seleccionado: !!prov.seleccionado
+                        };
+                    })
             }))
         };
     }

@@ -151,6 +151,82 @@ class ProviderPortalControllerTest extends TestCase
     }
 
     /** @test */
+    public function test_provider_can_submit_backorder_and_see_it_in_sent_opportunities()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $response = $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 150.50,
+                'dias_entrega' => null,
+                'es_backorder' => true,
+            ]);
+
+        $response->assertCreated()
+            ->assertJsonPath('data.dias_entrega', null)
+            ->assertJsonPath('data.es_backorder', true);
+
+        $this->assertDatabaseHas('pedido_referencia_proveedor', [
+            'pedido_referencia_id' => $ref->id,
+            'proveedor_id' => $this->tercero->id,
+            'dias_entrega' => null,
+            'es_backorder' => true,
+        ]);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities?status=sent')
+            ->assertOk()
+            ->assertJsonPath('data.0.form_dias_entrega', null)
+            ->assertJsonPath('data.0.form_es_backorder', true);
+    }
+
+    /** @test */
+    public function test_provider_must_send_delivery_days_for_non_backorder_offer()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 150.50,
+                'dias_entrega' => null,
+                'es_backorder' => false,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('dias_entrega');
+    }
+
+    /** @test */
+    public function test_provider_cannot_omit_delivery_days_and_backorder_status()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 150.50,
+            ])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('es_backorder');
+    }
+
+    /** @test */
     public function test_provider_cannot_submit_cost_twice_for_same_reference()
     {
         $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
@@ -293,7 +369,7 @@ class ProviderPortalControllerTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $ref->id)
             ->assertJsonPath('data.0.already_costed', true)
-            ->assertJsonPath('data.0.form_costo', 120);
+            ->assertJsonPath('data.0.form_costo', '120.00');
     }
 
     /** @test */
@@ -328,6 +404,6 @@ class ProviderPortalControllerTest extends TestCase
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.id', $ref->id)
             ->assertJsonPath('data.0.already_costed', true)
-            ->assertJsonPath('data.0.form_costo', 180);
+            ->assertJsonPath('data.0.form_costo', '180.00');
     }
 }
