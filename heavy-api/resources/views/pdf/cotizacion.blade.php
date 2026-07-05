@@ -414,11 +414,7 @@
                         {{ strtoupper($prp?->marca?->nombre ?? 'N/A') }}
                     </td>
                     <td class="text-center">
-                        @if(($prp?->dias_entrega ?? 0) == 0)
-                            INMEDIATA
-                        @else
-                            {{ $prp?->dias_entrega }} días hábiles
-                        @endif
+                        {{ strtoupper($prp?->entrega_label ?? 'SIN DEFINIR') }}
                     </td>
                     <td class="text-right">
                         {{ number_format($prp?->valor_unidad ?? 0, 0, ',', '.') }}
@@ -489,7 +485,13 @@
 
         <!-- Texto Legal -->
         <div class="legal-text">
-            Cotización valida hasta la fecha establecida en el campo "validez". Esta cotización está sujeta a venta previa. La garantía del producto ofrecido aquí es la misma garantía ofrecida por el fabricante. HEAVYMARKET S.A.S. no se hace responsable por problemas consecuentes por materiales de fabricación y/o instalación deficiente del producto, esto será responsabilidad del cliente o el fabricante según corresponda el caso. El tiempo de entrega estipulado en la cotización presente es una estimación según condiciones normales de transporte o importación, no cuenta con retrasos en vuelos, aduanas o casos fortuitos. En caso de cualquier anormalidad en la entrega del producto, HEAVYMARKET S.A.S. informará al cliente. Al comprar el cliente acepta que entiende a cabalidad lo establecido en las anteriores líneas, cualquier información adicional, favor consultarla en nuestra línea WHATSAPP 320 840 0279 o escríbenos un correo a comercial@heavymarket.net
+            <div style="font-weight: bold; font-size: 8.5px; margin-bottom: 6px; text-transform: uppercase; color: #1e293b;">Condiciones Comerciales</div>
+            <strong>Validez y Disponibilidad:</strong> Esta cotización es válida hasta la fecha indicada en el campo "Validez" y está sujeta a venta previa. Los precios corresponden a entrega en la ciudad de Bogotá.<br><br>
+            <strong>Envíos Nacionales:</strong> Para entregas en otras ciudades, la mercancía se enviará por transportadora con flete a cargo del comprador, bajo la modalidad y empresa que este disponga.<br><br>
+            <strong>Garantías y Responsabilidad:</strong> La garantía del producto es la otorgada directamente por el fabricante. HEAVYMARKET S.A.S. no se hace responsable por daños consecuentes derivados de defectos de fabricación o de una instalación deficiente; dicha responsabilidad recaerá sobre el fabricante o el cliente, según corresponda.<br><br>
+            <strong>Tiempos de Entrega:</strong> El tiempo estipulado es una estimación basada en condiciones normales. No contempla retrasos por vuelos, procesos aduaneros o casos fortuitos. En caso de cualquier novedad, se informará oportunamente al cliente.<br><br>
+            <strong>Protocolo de Recepción, Reclamaciones y Devoluciones:</strong> Al momento de recibir el producto, el cliente debe verificar el estado y contenido del paquete, y manipular los empaques con cuidado. Es requisito indispensable conservar los empaques originales en buen estado para el trámite de cualquier solicitud. Las reclamaciones y devoluciones solo serán aceptadas hasta en un plazo máximo de ocho (8) días calendario, contados a partir de la fecha en que la mercancía es recibida por el cliente. Así mismo, se solicita obligatoriamente registrar en video la apertura del empaque (unboxing) como prueba en caso de mercancía faltante o daños durante el transporte. Sin el cumplimiento de estos lineamientos, cualquier reclamación posterior será difícil de procesar.<br><br>
+            <strong>Aceptación:</strong> El pago de la mercancía implica la aceptación total de estas condiciones. Para asistencia adicional, contáctenos vía WhatsApp al 320 840 0279 o al correo comercial@heavymarket.net.
         </div>
     </div>
 
