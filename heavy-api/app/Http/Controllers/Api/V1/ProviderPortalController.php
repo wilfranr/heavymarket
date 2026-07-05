@@ -55,32 +55,60 @@ class ProviderPortalController extends Controller
                 $query = PedidoReferenciaProveedor::query()
                     ->where('proveedor_id', $tercero->id)
                     ->where('estado', $dbStatus)
-                    ->with(['pedidoReferencia.referencia.marca', 'pedidoReferencia.categoriaComercial', 'marca', 'pedidoReferencia.pedido'])
+                    ->with([
+                        'pedidoReferencia.referencia.marca',
+                        'pedidoReferencia.referencia.articulo',
+                        'pedidoReferencia.categoriaComercial',
+                        'marca',
+                        'pedidoReferencia.pedido.user',
+                        'pedidoReferencia.pedido.maquina',
+                    ])
                     ->orderBy('created_at', 'desc');
 
                 $perPage = (int) $request->input('per_page', 15);
                 $costeos = $query->paginate($perPage);
 
                 $data = collect($costeos->items())->map(function ($costeo) {
+                    $pedidoReferencia = $costeo->pedidoReferencia;
+                    $pedido = $pedidoReferencia?->pedido;
+
                     return [
                         'id' => $costeo->pedido_referencia_id,
+                        'pedido_id' => $pedidoReferencia?->pedido_id,
                         'costeo_proveedor_id' => $costeo->id,
                         'cantidad' => $costeo->cantidad,
-                        'definicion' => $costeo->pedidoReferencia?->definicion ?? 'N/A',
+                        'definicion' => $pedidoReferencia?->definicion ?? 'N/A',
+                        'peso' => $pedidoReferencia?->referencia?->articulo?->peso ?? 0,
                         'referencia' => [
-                            'referencia' => $costeo->pedidoReferencia?->referencia?->referencia ?? 'N/A',
+                            'referencia' => $pedidoReferencia?->referencia?->referencia ?? 'N/A',
                         ],
                         'categoria_comercial' => [
-                            'nombre' => $costeo->pedidoReferencia?->categoriaComercial?->nombre ?? 'General',
+                            'nombre' => $pedidoReferencia?->categoriaComercial?->nombre ?? 'General',
                         ],
                         'marca' => [
                             'nombre' => $costeo->marca?->nombre ?? 'N/A',
                         ],
+                        'pedido' => $pedido ? [
+                            'id' => $pedido->id,
+                            'estado' => $pedido->estado,
+                            'created_at' => $pedido->created_at?->toISOString(),
+                            'updated_at' => $pedido->updated_at?->toISOString(),
+                            'user' => $pedido->user ? ['name' => $pedido->user->name] : null,
+                            'maquina' => $pedido->maquina ? [
+                                'tipo' => $pedido->maquina->tipo,
+                                'marca' => $pedido->maquina->marca,
+                                'modelo' => $pedido->maquina->modelo,
+                                'serie' => $pedido->maquina->serie,
+                                'id_interno' => $pedido->maquina->id_interno,
+                            ] : null,
+                        ] : null,
                         'form_costo' => $costeo->costo_unidad,
                         'form_dias_entrega' => $costeo->dias_entrega,
                         'form_es_backorder' => $costeo->es_backorder,
                         'form_comentario' => $costeo->comentario,
                         'form_marca_id' => $costeo->marca_id,
+                        'form_cantidad_cotizada' => $costeo->cantidad,
+                        'form_seleccionado' => true,
                         'submitting' => false,
                         'already_costed' => true,
                     ];
@@ -120,7 +148,7 @@ class ProviderPortalController extends Controller
                 });
 
             // Ordenamiento y Carga de relaciones
-            $query->with(['referencia.marca', 'categoriaComercial', 'marca', 'pedido'])
+            $query->with(['referencia.marca', 'referencia.articulo', 'categoriaComercial', 'marca', 'pedido.user', 'pedido.maquina'])
                 ->orderBy('created_at', 'desc');
 
             // Paginación

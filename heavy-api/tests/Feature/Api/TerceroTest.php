@@ -8,7 +8,7 @@ use Spatie\Permission\Models\Role;
  * Tests de Feature para Terceros
  */
 beforeEach(function () {
-    foreach (['Vendedor', 'super_admin', 'Administrador', 'Analista', 'Logistica', 'Cliente'] as $roleName) {
+    foreach (['Vendedor', 'super_admin', 'Administrador', 'Analista', 'Logistica', 'Cliente', 'Proveedor'] as $roleName) {
         Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
 
@@ -183,7 +183,7 @@ it('permite crear un tercero con maquina_id como un entero unico', function () {
         ]);
 
     $response->assertStatus(201);
-    
+
     $terceroId = $response->json('data.id');
     $this->assertDatabaseHas('tercero_maquina', [
         'tercero_id' => $terceroId,
@@ -209,4 +209,109 @@ it('permite limpiar la maquina de un tercero enviando maquina_id vacio', functio
         'tercero_id' => $tercero->id,
         'maquina_id' => $maquina->id,
     ]);
+});
+
+it('asigna rol Proveedor al crear tercero proveedor con provider_access', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '901111222-3',
+            'nombre' => 'Proveedor Portal SAS',
+            'tipo' => 'Proveedor',
+            'telefono' => '3001112233',
+            'direccion' => 'Calle Proveedor 1',
+            'email' => 'proveedor-portal@example.com',
+            'provider_access' => true,
+            'landing_password' => 'secret123',
+        ]);
+
+    $response->assertStatus(201);
+
+    $tercero = Tercero::query()->where('email', 'proveedor-portal@example.com')->first();
+    expect($tercero)->not->toBeNull()
+        ->and($tercero->provider_access)->toBeTrue()
+        ->and($tercero->landing_access)->toBeFalse()
+        ->and($tercero->user_id)->not->toBeNull();
+
+    $linkedUser = $tercero->user;
+    expect($linkedUser)->not->toBeNull()
+        ->and($linkedUser->hasRole('Proveedor'))->toBeTrue()
+        ->and($linkedUser->hasRole('Cliente'))->toBeFalse();
+});
+
+it('asigna rol Cliente al crear tercero cliente con landing_access', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '902222333-4',
+            'nombre' => 'Cliente Landing SAS',
+            'tipo' => 'Cliente',
+            'telefono' => '3002223344',
+            'direccion' => 'Calle Cliente 1',
+            'email' => 'cliente-landing@example.com',
+            'landing_access' => true,
+            'landing_password' => 'secret123',
+        ]);
+
+    $response->assertStatus(201);
+
+    $tercero = Tercero::query()->where('email', 'cliente-landing@example.com')->first();
+    expect($tercero)->not->toBeNull()
+        ->and($tercero->landing_access)->toBeTrue()
+        ->and($tercero->provider_access)->toBeFalse();
+
+    $linkedUser = $tercero->user;
+    expect($linkedUser)->not->toBeNull()
+        ->and($linkedUser->hasRole('Cliente'))->toBeTrue()
+        ->and($linkedUser->hasRole('Proveedor'))->toBeFalse();
+});
+
+it('ignora landing_access en terceros tipo proveedor', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '903333444-5',
+            'nombre' => 'Proveedor Sin Landing',
+            'tipo' => 'Proveedor',
+            'telefono' => '3003334455',
+            'direccion' => 'Calle Proveedor 2',
+            'email' => 'proveedor-sin-landing@example.com',
+            'landing_access' => true,
+            'provider_access' => true,
+            'landing_password' => 'secret123',
+        ]);
+
+    $response->assertStatus(201);
+
+    $tercero = Tercero::query()->where('email', 'proveedor-sin-landing@example.com')->first();
+    expect($tercero->landing_access)->toBeFalse()
+        ->and($tercero->provider_access)->toBeTrue()
+        ->and($tercero->user?->hasRole('Cliente'))->toBeFalse()
+        ->and($tercero->user?->hasRole('Proveedor'))->toBeTrue();
+});
+
+it('permite ambos roles cuando el tercero es tipo ambos', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '904444555-6',
+            'nombre' => 'Tercero Mixto SAS',
+            'tipo' => 'Ambos',
+            'telefono' => '3004445566',
+            'direccion' => 'Calle Mixta 1',
+            'email' => 'tercero-ambos@example.com',
+            'landing_access' => true,
+            'provider_access' => true,
+            'landing_password' => 'secret123',
+        ]);
+
+    $response->assertStatus(201);
+
+    $tercero = Tercero::query()->where('email', 'tercero-ambos@example.com')->first();
+    expect($tercero->landing_access)->toBeTrue()
+        ->and($tercero->provider_access)->toBeTrue();
+
+    $linkedUser = $tercero->user;
+    expect($linkedUser?->hasRole('Cliente'))->toBeTrue()
+        ->and($linkedUser?->hasRole('Proveedor'))->toBeTrue();
 });

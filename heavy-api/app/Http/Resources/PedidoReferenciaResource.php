@@ -62,6 +62,28 @@ class PedidoReferenciaResource extends JsonResource
             'proveedores' => $this->whenLoaded('proveedores', function () {
                 return PedidoReferenciaProveedorResource::collection($this->proveedores);
             }),
+            'pedido' => $this->whenLoaded('pedido', function () {
+                $pedido = $this->pedido;
+
+                return [
+                    'id' => $pedido->id,
+                    'estado' => $pedido->estado,
+                    'created_at' => $pedido->created_at?->toISOString(),
+                    'updated_at' => $pedido->updated_at?->toISOString(),
+                    'user' => $pedido->relationLoaded('user') && $pedido->user
+                        ? ['name' => $pedido->user->name]
+                        : null,
+                    'maquina' => $pedido->relationLoaded('maquina') && $pedido->maquina
+                        ? [
+                            'tipo' => $pedido->maquina->tipo,
+                            'marca' => $pedido->maquina->marca,
+                            'modelo' => $pedido->maquina->modelo,
+                            'serie' => $pedido->maquina->serie,
+                            'id_interno' => $pedido->maquina->id_interno,
+                        ]
+                        : null,
+                ];
+            }),
         ];
     }
 }

@@ -336,6 +336,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             categoria_comercial_id: data.categorias_comerciales ? data.categorias_comerciales.map((c: any) => c.id) : [],
             contactos: [],
             landing_access: data.landing_access ?? false,
+            provider_access: data.provider_access ?? false,
             landing_password: ''
         });
 
@@ -457,8 +458,9 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             contactos: this.fb.array([]),
             estado: ['activo'],
 
-            // Acceso Landing
+            // Acceso a portales
             landing_access: [false],
+            provider_access: [false],
             landing_password: ['']
         });
 
@@ -475,19 +477,27 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             .get('landing_access')!
             .valueChanges.pipe(startWith(this.createTerceroForm.get('landing_access')?.value || false))
             .subscribe((val) => this.landingAccessEnabled.set(val));
+        this.createTerceroForm
+            .get('provider_access')!
+            .valueChanges.pipe(startWith(this.createTerceroForm.get('provider_access')?.value || false))
+            .subscribe((val) => this.providerAccessEnabled.set(val));
 
-
-        // Controlar obligatoriedad de la contraseña al activar el toggle
-        this.createTerceroForm.get('landing_access')!.valueChanges.subscribe((enabled: boolean) => {
+        const updatePortalPasswordValidators = (): void => {
             const pwControl = this.createTerceroForm.get('landing_password')!;
-            if (enabled && !this.terceroId) {
-                // En creación es obligatoria
+            const needsPassword =
+                (this.createTerceroForm.get('landing_access')?.value || this.createTerceroForm.get('provider_access')?.value) && !this.terceroId;
+            if (needsPassword) {
                 pwControl.setValidators([Validators.required, Validators.minLength(6)]);
             } else {
                 pwControl.clearValidators();
             }
             pwControl.updateValueAndValidity();
-        });
+        };
+
+        // Controlar obligatoriedad de la contraseña al activar cualquier acceso
+        this.createTerceroForm.get('landing_access')!.valueChanges.subscribe(() => updatePortalPasswordValidators());
+        this.createTerceroForm.get('provider_access')!.valueChanges.subscribe(() => updatePortalPasswordValidators());
+        updatePortalPasswordValidators();
 
         // Escuchar cambios de país para habilitar/deshabilitar departamento/estado
         this.createTerceroForm.get('country_id')!.valueChanges.subscribe((countryId) => {
@@ -534,6 +544,8 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         return val === 'nit' || val === 'NIT';
     });
     landingAccessEnabled = signal(false);
+    providerAccessEnabled = signal(false);
+    portalAccessEnabled = computed(() => this.landingAccessEnabled() || this.providerAccessEnabled());
 
     resetForm(): void {
         this.activeIndex = 0;
@@ -548,6 +560,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 categoria_comercial_id: [],
                 contactos: [],
                 landing_access: false,
+                provider_access: false,
                 landing_password: ''
             });
             this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
@@ -805,9 +818,10 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             }
         });
 
-        // Acceso Landing
+        // Acceso a portales
         formData.append('landing_access', formValue.landing_access ? '1' : '0');
-        if (formValue.landing_access && formValue.landing_password) {
+        formData.append('provider_access', formValue.provider_access ? '1' : '0');
+        if ((formValue.landing_access || formValue.provider_access) && formValue.landing_password) {
             formData.append('landing_password', formValue.landing_password);
         }
 

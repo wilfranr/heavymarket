@@ -23,8 +23,8 @@ use Illuminate\Support\Str;
  * Controlador API para gestión de Terceros
  *
  * Maneja operaciones CRUD para clientes y proveedores.
- * Cuando landing_access=true, crea/actualiza un User vinculado con rol 'Cliente'
- * para permitir el inicio de sesión en la landing page.
+ * Sincroniza usuarios vinculados según landing_access (rol Cliente) y
+ * provider_access (rol Proveedor) según el tipo comercial del tercero.
  */
 use Spatie\Permission\Models\Role;
 
@@ -101,10 +101,15 @@ class TerceroController extends Controller
                     }
                 }
 
-                // Extraer el campo landing_password (no va a la tabla terceros)
-                $landingPassword = $request->input('landing_password');
-                $landingAccess = filter_var($data['landing_access'] ?? false, FILTER_VALIDATE_BOOLEAN);
+                // Extraer contraseña de portal (no persiste en terceros)
+                $portalPassword = $request->input('landing_password');
+                [$landingAccess, $providerAccess] = $this->normalizePortalAccessFlags(
+                    $data['tipo'],
+                    filter_var($data['landing_access'] ?? false, FILTER_VALIDATE_BOOLEAN),
+                    filter_var($data['provider_access'] ?? false, FILTER_VALIDATE_BOOLEAN)
+                );
                 $data['landing_access'] = $landingAccess;
+                $data['provider_access'] = $providerAccess;
 
                 $tercero = Tercero::create($data);
 
@@ -127,6 +132,10 @@ class TerceroController extends Controller
                 }
                 if (! empty($categoriaComercialIds)) {
                     $tercero->categoriasComerciales()->sync($categoriaComercialIds);
+                }
+
+                if ($tercero->email && ($landingAccess || $providerAccess)) {
+                    $this->syncTerceroPortalAccess($tercero->fresh(), $portalPassword ?: null);
                 }
 
                 return response()->json([
@@ -179,12 +188,19 @@ class TerceroController extends Controller
                     }
                 }
 
-                // Extraer campos de acceso landing
-                $landingAccess = isset($data['landing_access'])
-                    ? filter_var($data['landing_access'], FILTER_VALIDATE_BOOLEAN)
-                    : $tercero->landing_access;
-                $landingPassword = $request->input('landing_password');
+                // Extraer campos de acceso a portales
+                $portalPassword = $request->input('landing_password');
+                [$landingAccess, $providerAccess] = $this->normalizePortalAccessFlags(
+                    $data['tipo'],
+                    isset($data['landing_access'])
+                        ? filter_var($data['landing_access'], FILTER_VALIDATE_BOOLEAN)
+                        : (bool) $tercero->landing_access,
+                    isset($data['provider_access'])
+                        ? filter_var($data['provider_access'], FILTER_VALIDATE_BOOLEAN)
+                        : (bool) $tercero->provider_access
+                );
                 $data['landing_access'] = $landingAccess;
+                $data['provider_access'] = $providerAccess;
 
                 $tercero->update($data);
 
@@ -218,13 +234,8 @@ class TerceroController extends Controller
                     $tercero->categoriasComerciales()->sync($request->input('categoria_comercial_id', []));
                 }
 
-                // Gestionar acceso a la landing
-                if ($landingAccess && $tercero->email) {
-                    $this->syncLandingUser($tercero, $landingPassword ?: null);
-                } elseif (! $landingAccess && $tercero->user_id) {
-                    // Desactivar acceso: desvincular el user sin borrarlo
-                    $tercero->updateQuietly(['user_id' => null]);
-                }
+                // Gestionar accesos a landing y portal de proveedores
+                $this->syncTerceroPortalAccess($tercero->fresh(), $portalPassword ?: null);
 
                 return response()->json([
                     'data' => new TerceroResource($tercero->load(['contactos', 'maquinas', 'fabricantes', 'sistemas', 'categoriasComerciales'])),
@@ -269,15 +280,58 @@ class TerceroController extends Controller
     }
 
     /**
-     * Sincronizar (crear o actualizar) el User de landing vinculado al tercero.
+     * Normaliza flags de acceso según el tipo comercial del tercero.
      *
-     * - Si el tercero ya tiene user_id, actualiza ese User.
-     * - Si no, busca por email o crea uno nuevo.
-     * - Siempre asegura que el User tenga el rol 'Cliente'.
-     * - Vincula user_id al tercero si no estaba vinculado.
+     * @return array{0: bool, 1: bool}
      */
-    private function syncLandingUser(Tercero $tercero, ?string $password): void
+    private function normalizePortalAccessFlags(string $tipo, bool $landingAccess, bool $providerAccess): array
     {
+        return match ($tipo) {
+            'Cliente' => [$landingAccess, false],
+            'Proveedor' => [false, $providerAccess],
+            default => [$landingAccess, $providerAccess],
+        };
+    }
+
+    /**
+     * Sincroniza el usuario vinculado y los roles según los accesos habilitados.
+     */
+    private function syncTerceroPortalAccess(Tercero $tercero, ?string $password): void
+    {
+        [$wantsLanding, $wantsProvider] = $this->normalizePortalAccessFlags(
+            $tercero->tipo,
+            (bool) $tercero->landing_access,
+            (bool) $tercero->provider_access
+        );
+
+        if ($tercero->landing_access !== $wantsLanding || $tercero->provider_access !== $wantsProvider) {
+            $tercero->updateQuietly([
+                'landing_access' => $wantsLanding,
+                'provider_access' => $wantsProvider,
+            ]);
+        }
+
+        if (! $wantsLanding && ! $wantsProvider) {
+            if ($tercero->user_id) {
+                $user = User::find($tercero->user_id);
+                if ($user) {
+                    if ($user->hasRole('Cliente')) {
+                        $user->removeRole('Cliente');
+                    }
+                    if ($user->hasRole('Proveedor')) {
+                        $user->removeRole('Proveedor');
+                    }
+                }
+                $tercero->updateQuietly(['user_id' => null]);
+            }
+
+            return;
+        }
+
+        if (! $tercero->email) {
+            return;
+        }
+
         $user = $tercero->user_id
             ? User::find($tercero->user_id)
             : User::where('email', $tercero->email)->first();
@@ -297,12 +351,23 @@ class TerceroController extends Controller
             ]);
         }
 
-        // Garantizar que el rol 'Cliente' existe antes de asignarlo
-        // (protección defensiva por si la migración no se corrió aún en el entorno)
         Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
+        Role::firstOrCreate(['name' => 'Proveedor', 'guard_name' => 'web']);
 
-        if (! $user->hasRole('Cliente')) {
-            $user->assignRole('Cliente');
+        if ($wantsLanding) {
+            if (! $user->hasRole('Cliente')) {
+                $user->assignRole('Cliente');
+            }
+        } elseif ($user->hasRole('Cliente')) {
+            $user->removeRole('Cliente');
+        }
+
+        if ($wantsProvider) {
+            if (! $user->hasRole('Proveedor')) {
+                $user->assignRole('Proveedor');
+            }
+        } elseif ($user->hasRole('Proveedor')) {
+            $user->removeRole('Proveedor');
         }
 
         if ($tercero->user_id !== $user->id) {
@@ -341,4 +406,3 @@ class TerceroController extends Controller
         }
     }
 }
-

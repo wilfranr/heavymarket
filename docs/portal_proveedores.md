@@ -7,10 +7,36 @@ El Portal de Proveedores transforma a los proveedores de registros pasivos a col
 
 ## 2. Autenticación y Perfil
 *   **Mecanismo**: Acceso vía `ProviderAuthController` (API) con un flag `provider_access` en la tabla `terceros`.
-*   **Rol (Spatie)**: `Proveedor`.
+*   **Rol (Spatie)**: `Proveedor` (obligatorio para login en el portal).
 *   **Especialización**: Un proveedor solo ve referencias que coincidan con sus:
     *   **Marcas** (`tercero_fabricantes` -> `lista_id` tipo 'Fabricantes').
     *   **Categorías Comerciales** (`tercero_categoria_comercial` -> `lista_id` tipo 'Categoría Comercial').
+
+### Alta administrativa vs. registro self-service
+
+| Concepto | Campo / rol | Cuándo aplica |
+|----------|-------------|---------------|
+| Tipo comercial | `terceros.tipo` = `Proveedor` | Clasificación en inventario y pedidos |
+| Acceso landing clientes | `landing_access` + rol `Cliente` | Solo terceros `Cliente` o `Ambos` |
+| Acceso portal proveedor | `provider_access` + rol `Proveedor` | Solo terceros `Proveedor` o `Ambos` |
+
+**Regla de oro**: `tipo = Proveedor` **no** implica automáticamente rol Spatie `Proveedor`. El administrador debe activar explícitamente `provider_access` en el CRUD de terceros.
+
+**Bug conocido (corrección en curso)**: `TerceroController::syncLandingUser` asignaba siempre rol `Cliente` al habilitar acceso, incluso en terceros tipo `Proveedor`. La corrección separa los flujos y expone `provider_access` en el formulario administrativo.
+
+```mermaid
+flowchart TD
+    A[Admin crea/edita Tercero] --> B{tipo}
+    B -->|Cliente| C{landing_access?}
+    B -->|Proveedor| D{provider_access?}
+    B -->|Ambos| E{landing_access / provider_access}
+    C -->|si| F[Crear User + rol Cliente]
+    D -->|si| G[Crear User + rol Proveedor + provider_access=true]
+    E --> F
+    E --> G
+    G --> H[Login ProviderAuthController]
+    F --> I[Login ClientAuthController]
+```
 
 ## 3. Flujo de Costeo (Preventa)
 Cuando un pedido interno pasa al estado `En_Costeo`, se activa el motor de emparejamiento.
@@ -64,6 +90,8 @@ Para entender la lógica del Portal de Proveedores y el Costeo Colaborativo, con
 3. **El Transporte (Frontend DTO)**: `heavy-front/src/app/core/models/pedido.model.ts` (Contiene las interfaces para costeo nacional/internacional).
 4. **La Fachada (Frontend Service)**: `heavy-front/src/app/core/services/pedido.service.ts` (Gestión de comparativa de proveedores).
 5. **Tiempo Real (Event/Socket)**: `heavy-api/app/Events/NewReferencesAvailable.php` (Dispara avisos vía Laravel Reverb).
+6. **Alta administrativa (Terceros)**: `heavy-api/app/Http/Controllers/Api/V1/TerceroController.php` (`syncTerceroPortalUser` / flags `provider_access` y `landing_access`).
+7. **Formulario admin (Frontend)**: `heavy-front/src/app/shared/components/tercero-form/` (toggles de acceso separados por tipo).
 
 ---
 *Última actualización: 17 de Mayo, 2026*

@@ -1,230 +1,112 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
-import { TagModule } from 'primeng/tag';
-import { TabsModule } from 'primeng/tabs';
+import { CheckboxModule } from 'primeng/checkbox';
+import { SkeletonModule } from 'primeng/skeleton';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
+import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
+import { PedidoEstado } from '../../../core/models/pedido.model';
+
+interface ProviderPedidoSummary {
+    id: number;
+    estado: PedidoEstado | string;
+    created_at?: string;
+    updated_at?: string;
+    user?: { name?: string };
+    maquina?: {
+        tipo?: string;
+        marca?: string;
+        modelo?: string;
+        serie?: string;
+        id_interno?: string;
+    };
+}
+
+interface ProviderCosteoRow {
+    id: number;
+    pedido_id?: number;
+    cantidad: number;
+    definicion?: string;
+    peso?: number;
+    referencia?: { referencia?: string; articulo?: { peso?: number } };
+    pedido?: ProviderPedidoSummary | null;
+    form_costo: number | null;
+    form_entrega?: EntregaValue;
+    form_marca_id?: number | null;
+    form_comentario?: string;
+    form_cantidad_cotizada: number;
+    form_seleccionado: boolean;
+    submitting: boolean;
+    already_costed: boolean;
+}
 
 @Component({
     selector: 'app-costing-opportunities',
     standalone: true,
-    imports: [CommonModule, ButtonModule, ReactiveFormsModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, TagModule, TabsModule],
+    imports: [CommonModule, ButtonModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, CheckboxModule, SkeletonModule],
     providers: [MessageService],
-    template: `
-        <div class="flex flex-col gap-6 p-4">
-            <!-- Header Section -->
-            <div class="flex justify-between items-center bg-surface-0 dark:bg-surface-900 p-4 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
-                <div>
-                    <h1 class="text-2xl font-bold m-0 flex items-center gap-3">
-                        <i class="pi pi-bolt text-emerald-500 text-3xl"></i>
-                        Oportunidades de Costeo
-                    </h1>
-                    <p class="text-surface-500 mt-1 m-0">Oferte sus mejores precios para las piezas solicitadas.</p>
-                </div>
-                <p-button icon="pi pi-refresh" [loading]="loading()" (onClick)="loadOpportunities()" [outlined]="true" label="Sincronizar" severity="secondary"></p-button>
-            </div>
-
-            <!-- Filtros de Estado -->
-            <div class="bg-surface-0 dark:bg-surface-900 p-2 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700">
-                <p-tabs [value]="activeStatus()" (valueChange)="onStatusChange($event)">
-                    <p-tablist styleClass="border-none bg-transparent">
-                        <p-tab value="pending" class="font-bold flex items-center gap-2">
-                            <i class="pi pi-clock text-blue-500"></i>
-                            Pendientes
-                        </p-tab>
-                        <p-tab value="sent" class="font-bold flex items-center gap-2">
-                            <i class="pi pi-send text-orange-500"></i>
-                            Enviados
-                        </p-tab>
-                        <p-tab value="approved" class="font-bold flex items-center gap-2">
-                            <i class="pi pi-check-circle text-emerald-500"></i>
-                            Aprobados
-                        </p-tab>
-                    </p-tablist>
-                </p-tabs>
-            </div>
-
-            <!-- List of Opportunities -->
-            <div *ngIf="opportunities().length > 0; else emptyState" class="flex flex-col gap-4">
-                <div *ngFor="let ref of opportunities()" class="bg-surface-0 dark:bg-surface-900 rounded-xl shadow-sm border border-surface-200 dark:border-surface-700 overflow-hidden transition-all hover:shadow-md">
-                    <!-- Header Row (Piece Info) -->
-                    <div class="bg-surface-50 dark:bg-surface-800 px-4 py-3 flex flex-wrap items-center gap-4 border-b border-surface-200 dark:border-surface-700">
-                        <p-tag value="DISPONIBLE" severity="success" [rounded]="true" class="text-xs"></p-tag>
-                        <p-tag [value]="ref.categoria_comercial?.nombre || 'General'" [rounded]="true" class="bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 border-none text-xs font-semibold px-3"></p-tag>
-
-                        <div class="flex items-center gap-2">
-                            <span class="text-surface-500 text-sm">Cant.</span>
-                            <span class="font-bold text-surface-900 dark:text-surface-0">{{ ref.cantidad }}</span>
-                        </div>
-
-                        <div class="h-4 w-px bg-surface-300 dark:bg-surface-600 hidden md:block"></div>
-
-                        <span class="font-bold text-blue-600 dark:text-blue-400 text-lg tracking-tight">{{ ref.referencia?.referencia || 'N/A' }}</span>
-                        <span class="text-surface-600 dark:text-surface-400 font-medium">{{ ref.definicion || 'Sin definición' }}</span>
-
-                        <div class="ml-auto flex items-center gap-2">
-                            <p-button icon="pi pi-comments" [rounded]="true" [text]="true" severity="secondary" size="small" pTooltip="Comentarios del analista"></p-button>
-                            <i class="pi pi-chevron-up text-surface-400"></i>
-                        </div>
-                    </div>
-
-                    <!-- Input Row (Form) -->
-                    <div class="p-5">
-                        <div class="grid grid-cols-12 gap-4 items-end">
-                            <!-- Item ID -->
-                            <div class="col-span-12 md:col-span-1 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Ítem</label>
-                                <div class="bg-surface-100 dark:bg-surface-800 text-surface-500 rounded-lg p-2.5 text-center font-medium border border-surface-200 dark:border-surface-700">
-                                    {{ ref.id }}
-                                </div>
-                            </div>
-
-                            <!-- Cantidad -->
-                            <div class="col-span-12 md:col-span-1 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Cant.</label>
-                                <p-inputNumber [(ngModel)]="ref.cantidad" [disabled]="true" inputStyleClass="w-full text-center font-bold bg-surface-50 dark:bg-surface-800" styleClass="w-full"></p-inputNumber>
-                            </div>
-
-                            <!-- Marca Select -->
-                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Marca Ofrecida</label>
-                                <p-select
-                                    [options]="marcas"
-                                    [(ngModel)]="ref.form_marca_id"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    [filter]="true"
-                                    [placeholder]="ref.marca?.nombre || 'Seleccionar'"
-                                    class="w-full h-[46px]"
-                                    styleClass="w-full border-surface-300 rounded-lg"
-                                    [showClear]="true"
-                                    appendTo="body"
-                                    [disabled]="ref.already_costed"
-                                >
-                                </p-select>
-                            </div>
-
-                            <!-- Entrega Select -->
-                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Entrega</label>
-                                <p-select
-                                    [options]="tiemposEntrega"
-                                    [(ngModel)]="ref.form_entrega"
-                                    optionLabel="label"
-                                    optionValue="value"
-                                    placeholder="Seleccionar"
-                                    class="w-full h-[46px]"
-                                    styleClass="w-full border-surface-300 rounded-lg"
-                                    appendTo="body"
-                                    [disabled]="ref.already_costed"
-                                >
-                                </p-select>
-                            </div>
-
-                            <!-- Costo Input -->
-                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">
-                                    {{ providerInfo().is_national ? 'Costo COP' : 'Costo USD' }}
-                                </label>
-                                <p-inputNumber
-                                    [(ngModel)]="ref.form_costo"
-                                    [mode]="'currency'"
-                                    [currency]="providerInfo().is_national ? 'COP' : 'USD'"
-                                    [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'"
-                                    inputStyleClass="w-full font-bold text-lg h-[46px] border-surface-300 rounded-lg"
-                                    styleClass="w-full"
-                                    [min]="0"
-                                    [disabled]="ref.already_costed"
-                                >
-                                </p-inputNumber>
-                            </div>
-
-                            <!-- Observaciones -->
-                            <div class="col-span-12 md:col-span-2 flex flex-col gap-1.5">
-                                <label class="text-[10px] font-bold uppercase text-surface-400 ml-1 tracking-wider">Observaciones</label>
-                                <input pInputText [(ngModel)]="ref.form_comentario" class="w-full h-[46px] border-surface-300 rounded-lg" placeholder="Stock, origen..." [disabled]="ref.already_costed" />
-                            </div>
-
-                            <!-- Submit Button -->
-                            <div class="col-span-12 md:col-span-2 flex justify-end">
-                                <p-button
-                                    *ngIf="!ref.already_costed; else alreadyCostedState"
-                                    label="Agregar"
-                                    icon="pi pi-plus"
-                                    [loading]="ref.submitting"
-                                    [disabled]="!ref.form_costo || ref.form_entrega === undefined"
-                                    (onClick)="submitCost(ref)"
-                                    styleClass="w-full bg-blue-600 border-none hover:bg-blue-700 py-3 rounded-lg font-bold"
-                                >
-                                </p-button>
-                                <ng-template #alreadyCostedState>
-                                    <p-button
-                                        [label]="activeStatus() === 'sent' ? 'Enviado' : 'Aprobado'"
-                                        [icon]="activeStatus() === 'sent' ? 'pi pi-send' : 'pi pi-check'"
-                                        [disabled]="true"
-                                        [outlined]="true"
-                                        [severity]="activeStatus() === 'sent' ? 'secondary' : 'success'"
-                                        styleClass="w-full py-3 rounded-lg font-bold"
-                                    >
-                                    </p-button>
-                                </ng-template>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Empty State -->
-            <ng-template #emptyState>
-                <div class="bg-surface-0 dark:bg-surface-900 rounded-2xl p-12 text-center border-2 border-dashed border-surface-200 dark:border-surface-700 flex flex-col items-center gap-4">
-                    <div class="w-20 h-20 bg-surface-100 dark:bg-surface-800 rounded-full flex items-center justify-center">
-                        <i class="pi pi-inbox text-4xl text-surface-400"></i>
-                    </div>
-                    <div>
-                        <h3 class="text-xl font-bold text-surface-900 dark:text-surface-0 m-0">Sin oportunidades pendientes</h3>
-                        <p class="text-surface-500 mt-2 max-w-md mx-auto">No hay piezas que coincidan con su especialidad en este momento. Le notificaremos cuando los analistas publiquen nuevos requerimientos.</p>
-                    </div>
-                    <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
-                </div>
-            </ng-template>
-        </div>
-
-        <p-toast></p-toast>
-    `,
-    styles: [
-        `
-            :host ::ng-deep .p-select {
-                border-radius: 0.5rem;
-            }
-            :host ::ng-deep .p-inputnumber-input {
-                border-radius: 0.5rem;
-            }
-            :host ::ng-deep .p-button {
-                border-radius: 0.5rem;
-            }
-        `
-    ]
+    templateUrl: './costing-opportunities.component.html',
+    styleUrl: '../../pedidos/edit/edit.scss'
 })
 export class CostingOpportunitiesComponent implements OnInit {
-    private providerPortalService = inject(ProviderPortalService);
-    private listaService = inject(ListaService);
-    private messageService = inject(MessageService);
+    private readonly providerPortalService = inject(ProviderPortalService);
+    private readonly listaService = inject(ListaService);
+    private readonly messageService = inject(MessageService);
 
-    opportunities = signal<any[]>([]);
+    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
+
+    opportunities = signal<ProviderCosteoRow[]>([]);
     providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean }>({ is_national: true });
     loading = signal(false);
+    submitting = signal(false);
     activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
-    marcas: any[] = [];
+    activePedidoId = signal<number | null>(null);
+    modoEdicion = signal(false);
+
+    marcas: { label: string; value: number }[] = [];
     tiemposEntrega = ENTREGA_OPTIONS;
+    estadoOptions = [
+        { label: 'Pendientes', value: 'pending' as const },
+        { label: 'Enviados', value: 'sent' as const },
+        { label: 'Aprobados', value: 'approved' as const }
+    ];
+
+    pedidosDisponibles = computed(() => {
+        const pedidos = new Map<number, string>();
+        for (const row of this.opportunities()) {
+            const pedidoId = row.pedido_id ?? row.pedido?.id;
+            if (pedidoId) {
+                pedidos.set(pedidoId, `Pedido #${pedidoId}`);
+            }
+        }
+        return Array.from(pedidos.entries()).map(([value, label]) => ({ value, label }));
+    });
+
+    pedidoActivo = computed<ProviderPedidoSummary | null>(() => {
+        const pedidoId = this.activePedidoId();
+        if (!pedidoId) {
+            return null;
+        }
+        const row = this.opportunities().find((item) => (item.pedido_id ?? item.pedido?.id) === pedidoId);
+        return row?.pedido ?? null;
+    });
+
+    filasPedidoActivo = computed(() => {
+        const pedidoId = this.activePedidoId();
+        if (!pedidoId) {
+            return [];
+        }
+        return this.opportunities().filter((item) => (item.pedido_id ?? item.pedido?.id) === pedidoId);
+    });
 
     ngOnInit(): void {
         this.loadOpportunities();
@@ -234,21 +116,25 @@ export class CostingOpportunitiesComponent implements OnInit {
     loadOpportunities(): void {
         this.loading.set(true);
         this.providerPortalService.getOpportunities({ status: this.activeStatus() }).subscribe({
-            next: (response: any) => {
-                const items = (response.data || []).map((item: any) => ({
-                    ...item,
-                    form_costo: item.form_costo || null,
-                    form_entrega: entregaValueDesdePersistencia(item.form_dias_entrega, item.form_es_backorder),
-                    form_marca_id: item.form_marca_id || item.marca_id,
-                    form_comentario: item.form_comentario || '',
-                    submitting: false,
-                    already_costed: item.already_costed || false
-                }));
+            next: (response: { data?: ProviderCosteoRow[]; provider?: { id?: number; nombre?: string; is_national: boolean } }) => {
+                const items = (response.data || []).map((item) => this.normalizarFila(item));
                 this.opportunities.set(items);
 
                 if (response.provider) {
                     this.providerInfo.set(response.provider);
                 }
+
+                const pedidoIds = items
+                    .map((item) => item.pedido_id ?? item.pedido?.id)
+                    .filter((id): id is number => typeof id === 'number');
+
+                if (pedidoIds.length === 0) {
+                    this.activePedidoId.set(null);
+                } else if (!this.activePedidoId() || !pedidoIds.includes(this.activePedidoId()!)) {
+                    this.activePedidoId.set(pedidoIds[0]);
+                }
+
+                this.modoEdicion.set(false);
                 this.loading.set(false);
             },
             error: (error) => {
@@ -259,6 +145,24 @@ export class CostingOpportunitiesComponent implements OnInit {
         });
     }
 
+    private normalizarFila(item: ProviderCosteoRow): ProviderCosteoRow {
+        const peso = item.peso ?? item.referencia?.articulo?.peso ?? 0;
+
+        return {
+            ...item,
+            pedido_id: item.pedido_id ?? item.pedido?.id,
+            peso,
+            form_costo: item.form_costo ?? null,
+            form_entrega: entregaValueDesdePersistencia((item as { form_dias_entrega?: number | null }).form_dias_entrega, (item as { form_es_backorder?: boolean }).form_es_backorder),
+            form_marca_id: item.form_marca_id ?? null,
+            form_comentario: item.form_comentario || '',
+            form_cantidad_cotizada: item.form_cantidad_cotizada ?? item.cantidad ?? 1,
+            form_seleccionado: item.form_seleccionado ?? true,
+            submitting: false,
+            already_costed: item.already_costed || false
+        };
+    }
+
     private loadMarcas(): void {
         this.listaService.getByTipo('Fabricantes').subscribe({
             next: (marcas: Lista[]) => {
@@ -267,35 +171,167 @@ export class CostingOpportunitiesComponent implements OnInit {
         });
     }
 
-    submitCost(ref: any): void {
-        ref.submitting = true;
-        const entrega = entregaPayload(ref.form_entrega as EntregaValue);
-
-        const payload = {
-            pedido_referencia_id: ref.id,
-            costo_unidad: ref.form_costo,
-            ...entrega,
-            marca_id: ref.form_marca_id,
-            comentario: ref.form_comentario
-        };
-
-        this.providerPortalService.submitCost(payload).subscribe({
-            next: () => {
-                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Oferta enviada correctamente.' });
-                this.opportunities.set(this.opportunities().filter((o) => o.id !== ref.id));
-            },
-            error: (error: any) => {
-                const errorMsg = error.error?.message || 'Error al enviar la oferta.';
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
-                ref.submitting = false;
-            }
-        });
-    }
-
-    onStatusChange(status: any): void {
+    onStatusChange(status: 'pending' | 'sent' | 'approved' | null): void {
         if (status) {
             this.activeStatus.set(status);
             this.loadOpportunities();
+        }
+    }
+
+    onPedidoChange(pedidoId: number | null): void {
+        this.activePedidoId.set(pedidoId);
+    }
+
+    getEstadoClase(estado: string): string {
+        return pedidoEstadoTagClass(estado);
+    }
+
+    filaEditable(ref: ProviderCosteoRow): boolean {
+        if (this.activeStatus() !== 'pending') {
+            return this.modoEdicion() && !ref.already_costed;
+        }
+        return !ref.already_costed;
+    }
+
+    hayFilasEditables(): boolean {
+        return this.filasPedidoActivo().some((row) => this.filaEditable(row));
+    }
+
+    toggleModoEdicion(): void {
+        this.modoEdicion.update((value) => !value);
+    }
+
+    calcularCostoTotal(ref: ProviderCosteoRow): number {
+        const cantidad = Number(ref.form_cantidad_cotizada) || 0;
+        const costo = Number(ref.form_costo) || 0;
+        return cantidad * costo;
+    }
+
+    formatearCostoTotal(ref: ProviderCosteoRow): string {
+        return this.formatearMoneda(this.calcularCostoTotal(ref));
+    }
+
+    private filasSeleccionadas(): ProviderCosteoRow[] {
+        return this.filasPedidoActivo().filter((row) => row.form_seleccionado);
+    }
+
+    calcularSubtotal(): number {
+        return this.filasSeleccionadas().reduce((total, row) => total + this.calcularCostoTotal(row), 0);
+    }
+
+    calcularImpuestos(): number {
+        if (this.providerInfo().is_national) {
+            return this.calcularSubtotal() * 0.19;
+        }
+        return 0;
+    }
+
+    calcularFletes(): number {
+        return 0;
+    }
+
+    calcularTotal(): number {
+        return this.calcularSubtotal() + this.calcularImpuestos() + this.calcularFletes();
+    }
+
+    formatearMoneda(valor: number): string {
+        const moneda = this.providerInfo().is_national ? 'COP' : 'USD';
+        const locale = this.providerInfo().is_national ? 'es-CO' : 'en-US';
+        return new Intl.NumberFormat(locale, {
+            style: 'currency',
+            currency: moneda,
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        }).format(valor || 0);
+    }
+
+    guardarSeleccion(): void {
+        const filas = this.filasSeleccionadas().filter((row) => this.filaEditable(row) && this.filaValida(row));
+        if (filas.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Sin cambios',
+                detail: 'Seleccione al menos una fila válida para guardar.'
+            });
+            return;
+        }
+        this.enviarFilas(filas, 'Oferta guardada correctamente.');
+    }
+
+    finalizarCosteo(): void {
+        const filas = this.filasSeleccionadas().filter((row) => this.filaEditable(row) && this.filaValida(row));
+        if (filas.length === 0) {
+            this.messageService.add({
+                severity: 'warn',
+                summary: 'Atención',
+                detail: 'Debe seleccionar al menos una fila con costo, marca y entrega completos.'
+            });
+            return;
+        }
+        this.enviarFilas(filas, 'Costeo finalizado correctamente.');
+    }
+
+    private filaValida(ref: ProviderCosteoRow): boolean {
+        return !!ref.form_costo && ref.form_entrega !== undefined && !!ref.form_cantidad_cotizada;
+    }
+
+    private enviarFilas(filas: ProviderCosteoRow[], successMessage: string): void {
+        this.submitting.set(true);
+        let completadas = 0;
+        let errores = 0;
+
+        filas.forEach((ref) => {
+            ref.submitting = true;
+            const entrega = entregaPayload(ref.form_entrega as EntregaValue);
+            const payload = {
+                pedido_referencia_id: ref.id,
+                costo_unidad: ref.form_costo as number,
+                ...entrega,
+                marca_id: ref.form_marca_id ?? undefined,
+                comentario: ref.form_comentario
+            };
+
+            this.providerPortalService.submitCost(payload).subscribe({
+                next: () => {
+                    ref.submitting = false;
+                    completadas += 1;
+                    this.opportunities.update((rows) => rows.filter((row) => row.id !== ref.id));
+                    this.finalizarEnvio(filas.length, completadas, errores, successMessage);
+                },
+                error: (error: { error?: { message?: string } }) => {
+                    ref.submitting = false;
+                    errores += 1;
+                    const errorMsg = error.error?.message || 'Error al enviar la oferta.';
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
+                    this.finalizarEnvio(filas.length, completadas, errores, successMessage);
+                }
+            });
+        });
+    }
+
+    private finalizarEnvio(total: number, completadas: number, errores: number, successMessage: string): void {
+        if (completadas + errores < total) {
+            return;
+        }
+
+        this.submitting.set(false);
+
+        if (completadas > 0 && errores === 0) {
+            this.messageService.add({ severity: 'success', summary: 'Éxito', detail: successMessage });
+        }
+
+        if (this.opportunities().length === 0) {
+            this.activePedidoId.set(null);
+            this.loadOpportunities();
+            return;
+        }
+
+        const pedidoIds = this.opportunities()
+            .map((item) => item.pedido_id ?? item.pedido?.id)
+            .filter((id): id is number => typeof id === 'number');
+
+        if (this.activePedidoId() && !pedidoIds.includes(this.activePedidoId()!)) {
+            this.activePedidoId.set(pedidoIds[0] ?? null);
         }
     }
 }

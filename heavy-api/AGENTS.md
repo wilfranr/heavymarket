@@ -53,6 +53,7 @@ El backend utiliza patrones de diseño para mantener los controladores limpios y
 - Tests Unitarios para traits, enums, policies y services.
 - Usar helpers definidos en `tests/Pest.php`: `seedRoles()`, `createUserWithRole()`, `expectDatabaseHas()`, etc.
 - Los tests Feature usan `RefreshDatabase` automáticamente vía configuración en `tests/Pest.php`.
+- **CRÍTICO**: Los tests usan `.env.testing` con `DB_DATABASE=heavymarket_test`. Nunca sobrescribir `DB_DATABASE=heavymarket` en la línea de comandos: `RefreshDatabase` borra y recrea todas las tablas de la base activa. Ejecutar solo `./vendor/bin/pest` (sin `DB_*` en el shell). Plantilla: `.env.testing.example`.
 
 ## Comandos de Ayuda
 - `php artisan serve`: Servidor local.

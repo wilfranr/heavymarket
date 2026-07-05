@@ -56,6 +56,7 @@ class TerceroResource extends JsonResource
             'dv' => $this->dv,
             'estado' => $this->estado,
             'landing_access' => (bool) $this->landing_access,
+            'provider_access' => (bool) $this->provider_access,
 
             // Files mapping if needed, or return full urls
             'rut' => $this->rut ? \Storage::url($this->rut) : null,

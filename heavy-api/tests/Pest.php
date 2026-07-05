@@ -1,5 +1,19 @@
 <?php
 
+$cliDatabase = getenv('DB_DATABASE') ?: '';
+
+if ($cliDatabase === 'heavymarket') {
+    fwrite(STDERR, "BLOQUEADO: DB_DATABASE=heavymarket en la línea de comandos.\n");
+    fwrite(STDERR, "Los tests deben usar .env.testing (DB_DATABASE=heavymarket_test).\n");
+    exit(1);
+}
+
+if ($cliDatabase !== '' && $cliDatabase !== 'heavymarket_test') {
+    fwrite(STDERR, "BLOQUEADO: DB_DATABASE={$cliDatabase} no está permitido para tests.\n");
+    fwrite(STDERR, "Use DB_DATABASE=heavymarket_test o ejecute ./vendor/bin/pest sin sobrescribir DB_*.\n");
+    exit(1);
+}
+
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Permission;

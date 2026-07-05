@@ -6,6 +6,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
@@ -73,22 +74,22 @@ class UpdateTerceroRequest extends FormRequest
 
             // Files (pueden ser archivos binarios o strings con el path ya subido asíncronamente)
             'rut' => ['nullable', function ($attribute, $value, $fail) {
-                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                if (! is_string($value) && ! ($value instanceof UploadedFile)) {
                     $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
                 }
             }],
             'certificacion_bancaria' => ['nullable', function ($attribute, $value, $fail) {
-                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                if (! is_string($value) && ! ($value instanceof UploadedFile)) {
                     $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
                 }
             }],
             'camara_comercio' => ['nullable', function ($attribute, $value, $fail) {
-                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                if (! is_string($value) && ! ($value instanceof UploadedFile)) {
                     $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
                 }
             }],
             'cedula_representante_legal' => ['nullable', function ($attribute, $value, $fail) {
-                if (!is_string($value) && !($value instanceof \Illuminate\Http\UploadedFile)) {
+                if (! is_string($value) && ! ($value instanceof UploadedFile)) {
                     $fail("El campo $attribute debe ser un archivo o un path de archivo válido.");
                 }
             }],
@@ -125,6 +126,7 @@ class UpdateTerceroRequest extends FormRequest
 
             // Acceso Landing
             'landing_access' => ['nullable', 'boolean'],
+            'provider_access' => ['nullable', 'boolean'],
             'landing_password' => ['nullable', 'string', 'min:6'],
         ];
     }

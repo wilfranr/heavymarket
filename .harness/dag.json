@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-05T12:35:00-05:00",
-  "issue": "costeo-opciones-entrega",
-  "description": "Actualizar el selector Entrega de la vista de costeo con los nueve plazos solicitados y representar Backorder sin confundirlo con una entrega inmediata.",
+  "last_updated": "2026-07-05T12:56:00-05:00",
+  "issue": "tercero-proveedor-portal-access",
+  "description": "Corregir el alta/edición administrativa de terceros tipo Proveedor: separar acceso landing (Cliente) de acceso portal proveedor (rol Proveedor + provider_access) y evitar que syncLandingUser asigne rol Cliente a proveedores.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -1696,6 +1696,109 @@
         "tests": "php artisan test falló por falta de driver SQLite (PDO SQLite no instalado)"
       },
       "review_notes": "Reviewer: Aprobado. Las condiciones comerciales en el PDF de cotizaciones se han actualizado con éxito estructurando el nuevo texto legal en párrafos legibles con formato bold para sus títulos, manteniendo la información de cuenta bancaria y verificando la compilación de la vista Blade."
+    },
+    {
+      "id": "tercero-portal-access-triage",
+      "description": "Triage: documentar la confusión tipo Proveedor vs rol Spatie, matriz de accesos (landing_access / provider_access) y grafo de dependencias para la corrección del alta administrativa de proveedores.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/tercero-portal-access",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/portal_proveedores.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: causa raíz en TerceroController::syncLandingUser que siempre asigna rol Cliente; provider_access no expuesto en CRUD ni FormRequests; store() no sincroniza usuario en creación."
+    },
+    {
+      "id": "tercero-portal-access-backend",
+      "description": "Backend: refactorizar sincronización de usuario vinculado al tercero. Extraer syncTerceroPortalUser que asigne rol Proveedor + provider_access=true cuando tipo es Proveedor o Ambos y provider_access está activo; mantener rol Cliente solo para landing_access en Cliente/Ambos; invocar en store() y update(); exponer provider_access en FormRequests y TerceroResource; asegurar Role::firstOrCreate Proveedor.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "tercero-portal-access-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/TerceroResource.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_syntax": "php -l OK",
+        "style": "Pint --test OK",
+        "targeted_tests": "4/4 casos nuevos PASS con DB_CONNECTION=mysql"
+      },
+      "review_notes": "Reviewer: Aprobado. syncTerceroPortalAccess separa roles por tipo; normalizePortalAccessFlags impide landing en Proveedor puro; store/update sincronizan usuario."
+    },
+    {
+      "id": "tercero-portal-access-frontend",
+      "description": "Frontend: separar toggles de acceso en tercero-form. Mostrar landing_access solo para Cliente/Ambos; agregar provider_access + contraseña solo para Proveedor/Ambos; mapear campos al payload; actualizar tercero.model.ts; reutilizar landing_password como contraseña de creación de usuario para cualquier acceso habilitado.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "tercero-portal-access-backend"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/tercero.model.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK"
+      },
+      "review_notes": "Reviewer: Aprobado. Toggles segregados por tipo; portalAccessEnabled unifica bloque de contraseña; payload envía provider_access."
+    },
+    {
+      "id": "tercero-portal-access-tests",
+      "description": "Pruebas: crear/actualizar tercero Proveedor con provider_access asigna rol Proveedor y no Cliente; Cliente con landing_access conserva rol Cliente; Ambos puede tener ambos roles; login portal rechaza sin provider_access; regresión store() sincroniza usuario en creación.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "tercero-portal-access-backend",
+        "tercero-portal-access-frontend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/TerceroTest.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_syntax": "php -l OK",
+        "targeted_tests": "4/4 PASS (Proveedor, Cliente, ignora landing, Ambos) con MySQL"
+      },
+      "review_notes": "Reviewer: Aprobado. Cobertura de regresión del bug original; ProviderAuthControllerTest no requerido porque el contrato de login ya existía."
     }
   ]
 }

@@ -22,6 +22,7 @@ export interface Tercero {
 
     // Acceso Landing
     landing_access?: boolean;
+    provider_access?: boolean;
 
     // Documentos
     rut?: string | null;
@@ -94,6 +95,7 @@ export interface CreateTerceroDto {
     state_id?: number;
     country_id?: number;
     landing_access?: boolean;
+    provider_access?: boolean;
     landing_password?: string;
 }
 
