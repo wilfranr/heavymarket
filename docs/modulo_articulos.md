@@ -118,3 +118,42 @@ El campo `valor` en las medidas técnicas de los artículos debe ser numérico e
 - `medidas-numeric-frontend-interface`: Cambiar el tipo de dato de `valor` a `number` en la interfaz TypeScript `Medida`.
 - `medidas-numeric-frontend-components`: Implementar el control de entrada `p-inputNumber` en todos los formularios y modales correspondientes y adaptar su lógica.
 - `medidas-numeric-tests`: Adaptar los tests unitarios en frontend y backend para contemplar la tipificación numérica.
+
+---
+
+## Issue: edición en línea para medidas técnicas (Inline Editing)
+
+### Objetivo funcional
+En la pantalla de creación e inicio de edición de artículos, se debe reemplazar el diálogo modal de medidas por una edición en línea en la propia tabla, utilizando el mismo patrón visual y funcional que las referencias cruzadas. El botón "Añadir Medida" debe insertar una nueva fila editable en la tabla. Un icono de lápiz debe permitir editar filas existentes directamente en la tabla sin modales ni salir de la vista.
+
+### Decisión técnica de Triage
+- **UI/UX**: Reemplazar `<p-dialog>` por inputs interactivos directamente en las celdas de la tabla de medidas. Esto aplica para `create.html` y `edit.html`.
+- **Estructura temporal en Creación**: En `create.ts`, utilizar el array plano `medidasLocales` con variables auxiliares `editingMedidaIndex: number | null` y `medidaData: any` para rastrear qué elemento se está editando en línea.
+- **Estructura temporal en Edición**: En `edit.ts`, usar `articuloActual.medidas` y agregar nuevos elementos locales con IDs temporales negativos (ej: `-1`, `-2`). Esto permite diferenciar registros de BD (ID > 0) de nuevos registros (ID < 0) al pulsar el botón "Guardar" de la fila, que llamará a `articuloService.addMedida` (nuevos) o `articuloService.updateMedida` (existentes).
+- **Mapeo de inputs**: Usar `<input pInputText>` para `identificador`, `<p-dropdown>` para `tipo` y `unidad` (enlazados a sus respectivos catálogos de listas), y `<p-inputNumber>` para `valor` con precisión decimal.
+- **Acciones Rápidas**: El botón `+` en las filas editables para agregar un nuevo Tipo o Unidad de Medida se conserva para abrir el modal genérico de creación rápida de listas.
+
+### Nodos planificados en Harness
+- `art-medidas-inline-triage`: Documentar alcance de la edición en línea para medidas y el plan de dependencias.
+- `art-medidas-inline-create`: Frontend: Implementar la edición en línea de medidas en creación de artículos.
+- `art-medidas-inline-edit`: Frontend: Implementar la edición en línea de medidas en edición de artículos.
+- `art-medidas-inline-tests`: QA/Pruebas: Cobertura de regresión de los componentes y suite de pruebas unitarias.
+
+---
+
+## Issue: Mejorar la UX del select de Tipo y Unidad de Medida en edición en línea (Filtro emptyfilter)
+
+### Objetivo funcional
+Para optimizar el espacio de las columnas en la tabla de medidas técnicas y mejorar la UX de los catálogos rápidos (Tipo de Medida y Unidad de Medida), se eliminará el botón "+" externo de la fila. En su lugar, cuando el usuario busque un término en el filtro de búsqueda del select (`p-select`) y este no exista en el catálogo actual, se presentará una opción especial dentro del panel desplegable (emptyfilter) que permitirá crear el término buscado. Al pulsar dicha opción, se abrirá el modal de creación rápida con el nombre del término ya pre-diligenciado.
+
+### Decisión técnica de Triage
+- **Parámetro nombreDefault**: Habilitar en `app-lista-create-modal` (en [lista-create-modal.component.ts](file:///home/yoseth/dev/heavymarket/heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.ts)) el input `@Input() nombreDefault: string = '';` y usarlo para inicializar el formulario de creación rápida.
+- **Captura del término filtrado**: En [create.ts](file:///home/yoseth/dev/heavymarket/heavy-front/src/app/features/articulos/create/create.ts) y [edit.ts](file:///home/yoseth/dev/heavymarket/heavy-front/src/app/features/articulos/edit/edit.ts), implementar métodos para almacenar el término actual ingresado por el usuario en el filtro de búsqueda del select (ej: `currentSearchTipoMedida` y `currentSearchUnidadMedida`).
+- **Template de emptyfilter**: En [create.html](file:///home/yoseth/dev/heavymarket/heavy-front/src/app/features/articulos/create/create.html) y [edit.html](file:///home/yoseth/dev/heavymarket/heavy-front/src/app/features/articulos/edit/edit.html), agregar el `<ng-template pTemplate="emptyfilter">` a cada uno de los selectores desplegables `p-select` de la fila editable de medidas. Dicho template mostrará un botón para crear la opción no encontrada.
+- **Limpieza de UI**: Remover la columna o elementos que contienen el botón `+` externo en las celdas de la tabla para las columnas de Tipo y Unidad de Medida.
+
+### Nodos planificados en Harness
+- `art-medidas-select-ux-triage`: Planificar la integración de la creación rápida de catálogos dentro del select y pre-diligenciado en el modal.
+- `art-medidas-select-ux-impl`: Implementar el parámetro `nombreDefault` en el modal y la integración de `emptyfilter` en las pantallas de creación y edición.
+- `art-medidas-select-ux-tests`: Pruebas de integración visual, unitarias y compilación del frontend.
+

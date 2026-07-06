@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-05T12:56:00-05:00",
-  "issue": "tercero-proveedor-portal-access",
-  "description": "Corregir el alta/edición administrativa de terceros tipo Proveedor: separar acceso landing (Cliente) de acceso portal proveedor (rol Proveedor + provider_access) y evitar que syncLandingUser asigne rol Cliente a proveedores.",
+  "last_updated": "2026-07-05T22:15:00-05:00",
+  "issue": "articulo-medidas-select-ux",
+  "description": "Mejorar la UX del select de Tipo y Unidad de Medida en la edicion en linea: permitir crear la opcion directamente desde el dropdown cuando no es encontrada mediante busqueda (emptyfilter) y eliminar los botones + externos.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -1799,6 +1799,169 @@
         "targeted_tests": "4/4 PASS (Proveedor, Cliente, ignora landing, Ambos) con MySQL"
       },
       "review_notes": "Reviewer: Aprobado. Cobertura de regresión del bug original; ProviderAuthControllerTest no requerido porque el contrato de login ya existía."
+    },
+    {
+      "id": "art-medidas-inline-triage",
+      "description": "Triage: documentar el alcance de la edicion en linea para medidas tecnicas y el plan de dependencias en docs/modulo_articulos.md y dag.json.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/articulo-medidas-inline",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: Plan de implementacion validado para la edicion de medidas tecnicas directamente en la fila de la tabla sin utilizar el modal de edicion."
+    },
+    {
+      "id": "art-medidas-inline-create",
+      "description": "Frontend: Implementar la edicion de medidas en linea (inline table editing) en el formulario de creacion de articulo (create.ts / create.html), eliminando el dialogo modal de medidas y manejando las validaciones locales y la adicion temporal de filas.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "art-medidas-inline-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK"
+      },
+      "review_notes": "Reviewer: Aprobado. Implementada la edición en línea en creación. Se removió el modal y se ajustó la tabla a 4 columnas con inputs reactivos y control de estados locales."
+    },
+    {
+      "id": "art-medidas-inline-edit",
+      "description": "Frontend: Implementar la edicion de medidas en linea (inline table editing) en el formulario de edicion de articulo (edit.ts / edit.html), eliminando el dialogo modal de medidas y utilizando los servicios correspondientes (addMedida, updateMedida) con identificadores temporales de fila para nuevos registros.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "art-medidas-inline-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK"
+      },
+      "review_notes": "Reviewer: Aprobado. Implementada la edición en línea en la vista de edición. Se controla la persistencia mediante IDs temporales negativos y llamadas a addMedida/updateMedida."
+    },
+    {
+      "id": "art-medidas-inline-tests",
+      "description": "QA/Pruebas: Validar que el flujo de agregar, editar y eliminar medidas funcione tanto en creacion como en edicion en el frontend y adaptar los tests unitarios en edit.spec.ts para evitar regresiones.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "art-medidas-inline-create",
+        "art-medidas-inline-edit"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "tests": "npx vitest run src/app/features/articulos/edit/edit.spec.ts OK (16/16 PASS)"
+      },
+      "review_notes": "Reviewer: Aprobado. Se adaptaron los tests unitarios para la nueva lógica y se agregaron escenarios de prueba para el flujo completo de edición, adición y cancelación en línea."
+    },
+    {
+      "id": "art-medidas-select-ux-triage",
+      "description": "Triage: Planificar la integracion de la creacion rapida de catalogos dentro del template emptyfilter de p-select, habilitando nombreDefault en lista-create-modal y eliminando los botones + externos.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/articulo-medidas-select-ux",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: Planificacion del flujo de emptyfilter para p-select validada. Se agregara soporte para nombreDefault en el modal general."
+    },
+    {
+      "id": "art-medidas-select-ux-impl",
+      "description": "Implementacion: Agregar el parametro nombreDefault a lista-create-modal.component.ts y utilizarlo al abrir el modal desde el dropdown. Integrar pTemplate='emptyfilter' con el boton de creacion rapida en p-select para Tipo y Unidad de Medida en create.html y edit.html, capturando los terminos de busqueda filtrados en create.ts y edit.ts y removiendo los botones + externos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "art-medidas-select-ux-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK"
+      },
+      "review_notes": "Reviewer: Aprobado. Implementada la creación en caliente dentro del emptyfilter tanto para el Tipo de Medida como para la Unidad de Medida. Se eliminaron los botones + laterales externos."
+    },
+    {
+      "id": "art-medidas-select-ux-tests",
+      "description": "Pruebas: Validar que el flujo de filtrado y creacion rapida funcione sin regresiones mediante vitest y compilacion (npm run build).",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "art-medidas-select-ux-impl"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "tests": "npx vitest run src/app/features/articulos/edit/edit.spec.ts OK (18/18 PASS)"
+      },
+      "review_notes": "Reviewer: Aprobado. Se agregaron tests para validar onFilter y la creación en caliente para Tipo y Unidad de Medida, todos pasan correctamente."
     }
   ]
 }

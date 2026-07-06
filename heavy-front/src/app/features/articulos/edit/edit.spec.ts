@@ -19,6 +19,7 @@ describe('ArticuloEditComponent', () => {
     let router: Router;
     let referenciaService: jasmine.SpyObj<ReferenciaService>;
     let articuloService: jasmine.SpyObj<ArticuloService>;
+    let listaService: jasmine.SpyObj<ListaService>;
 
     const mockArticulo = {
         id: 1,
@@ -39,10 +40,10 @@ describe('ArticuloEditComponent', () => {
     beforeEach(async () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         const messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
-        const articuloServiceSpy = jasmine.createSpyObj('ArticuloService', ['getById', 'addMedida', 'updateMedida']);
+        const articuloServiceSpy = jasmine.createSpyObj('ArticuloService', ['getById', 'addMedida', 'updateMedida', 'removeMedida']);
         const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', ['getAll', 'update']);
         referenciaServiceSpy.getAll.and.returnValue(of({ data: [], meta: {} }));
-        const listaServiceSpy = jasmine.createSpyObj('ListaService', ['getAll', 'getByTipo', 'getMarcasYFabricantesParaReferencia']);
+        const listaServiceSpy = jasmine.createSpyObj('ListaService', ['getAll', 'getByTipo', 'getMarcasYFabricantesParaReferencia', 'create']);
         listaServiceSpy.getByTipo.and.returnValue(of([]));
         listaServiceSpy.getMarcasYFabricantesParaReferencia.and.returnValue(of([]));
 
@@ -82,6 +83,7 @@ describe('ArticuloEditComponent', () => {
         router = TestBed.inject(Router);
         referenciaService = TestBed.inject(ReferenciaService) as jasmine.SpyObj<ReferenciaService>;
         articuloService = TestBed.inject(ArticuloService) as jasmine.SpyObj<ArticuloService>;
+        listaService = TestBed.inject(ListaService) as jasmine.SpyObj<ListaService>;
 
         store.overrideSelector(selectArticuloById(1), mockArticulo);
 
@@ -220,18 +222,18 @@ describe('ArticuloEditComponent', () => {
     });
 
     describe('guardarMedida', () => {
-        it('should return and do nothing if identificador or valor are missing', () => {
+        it('should return and do nothing if identificador or valor are missing or editingMedidaId is null', () => {
             component.medidaData = { identificador: '', unidad: 'mm', valor: null, tipo: 'Ancho' };
-            component.isEditingMedida = false;
+            component.editingMedidaId = -1;
 
             component.guardarMedida();
 
             expect(articuloService.addMedida).not.toHaveBeenCalled();
         });
 
-        it('should call addMedida when isEditingMedida is false and prevent concurrent calls', () => {
+        it('should call addMedida when editingMedidaId is negative (new local measure) and prevent concurrent calls', () => {
             component.articuloId = 1;
-            component.isEditingMedida = false;
+            component.editingMedidaId = -1;
             component.medidaData = { identificador: 'A', unidad: 'mm', valor: 15.5, tipo: 'Ancho' };
             
             articuloService.addMedida.and.returnValue(of({ data: mockArticulo } as any));
@@ -246,9 +248,8 @@ describe('ArticuloEditComponent', () => {
             expect(articuloService.addMedida).toHaveBeenCalledWith(1, { identificador: 'A', unidad: 'mm', valor: 15.5, tipo: 'Ancho' });
         });
 
-        it('should call updateMedida when isEditingMedida is true', () => {
+        it('should call updateMedida when editingMedidaId is positive (existing measure)', () => {
             component.articuloId = 1;
-            component.isEditingMedida = true;
             component.editingMedidaId = 5;
             component.medidaData = { identificador: 'B', unidad: 'mm', valor: 20.0, tipo: 'Largo' };
             
@@ -259,6 +260,76 @@ describe('ArticuloEditComponent', () => {
 
             expect(articuloService.updateMedida).toHaveBeenCalledTimes(1);
             expect(articuloService.updateMedida).toHaveBeenCalledWith(1, 5, { identificador: 'B', unidad: 'mm', valor: 20.0, tipo: 'Largo' });
+        });
+    });
+
+    describe('medidas inline editing UI flow', () => {
+        it('should add a new local measure row and start editing', () => {
+            component.articuloActual = { id: 1, medidas: [] } as any;
+            component.agregarMedida();
+            expect(component.articuloActual.medidas.length).toBe(1);
+            expect(component.editingMedidaId).toBeLessThan(0);
+            expect(component.medidaData.identificador).toBe('');
+        });
+
+        it('should remove a local measure row if negative ID or call removeMedida if positive ID', () => {
+            component.articuloId = 1;
+            component.articuloActual = { id: 1, medidas: [{ id: -1, identificador: 'A', valor: 10 }] } as any;
+            
+            // Eliminar local (id < 0)
+            component.eliminarMedida(component.articuloActual.medidas[0]);
+            expect(component.articuloActual.medidas.length).toBe(0);
+            expect(articuloService.removeMedida).not.toHaveBeenCalled();
+
+            // Eliminar persistida (id > 0)
+            const medidaPersistida = { id: 10, identificador: 'B', valor: 20 };
+            component.articuloActual.medidas = [medidaPersistida];
+            articuloService.removeMedida.and.returnValue(of({} as any));
+            spyOn(component as any, 'reloadArticulo');
+
+            component.eliminarMedida(medidaPersistida);
+            expect(articuloService.removeMedida).toHaveBeenCalledWith(1, 10);
+        });
+
+        it('should cancel inline measure editing and restore state', () => {
+            component.articuloActual = { id: 1, medidas: [] } as any;
+            component.agregarMedida(); // agrega ID -1
+            
+            expect(component.articuloActual.medidas.length).toBe(1);
+            
+            component.cancelarEdicionMedida();
+            expect(component.articuloActual.medidas.length).toBe(0);
+            expect(component.editingMedidaId).toBeNull();
+        });
+
+        it('should handle onFilter for Tipo and Unidad of Medida', () => {
+            component.onFilterTipoMedida({ filter: 'Ancho' });
+            expect(component.currentSearchTipoMedida).toBe('Ancho');
+
+            component.onFilterUnidadMedida({ filter: 'pulgadas' });
+            expect(component.currentSearchUnidadMedida).toBe('pulgadas');
+        });
+
+        it('should create new list item via API in caliente and set it locally for Tipo and Unidad of Medida', () => {
+            const mockItem: any = { id: 100, tipo: 'Tipo de Medida', nombre: 'Espesor' };
+            listaService.create.and.returnValue(of(mockItem));
+            
+            component.medidaData = { identificador: 'D1', valor: 10, tipo: '', unidad: '' };
+            component.crearTipoMedidaEnCaliente('Espesor');
+            
+            expect(listaService.create).toHaveBeenCalledWith({ tipo: 'Tipo de Medida', nombre: 'Espesor' });
+            expect(component.tiposMedida()).toContain(mockItem);
+            expect(component.medidaData.tipo).toBe('Espesor');
+            expect(component.currentSearchTipoMedida).toBe('');
+
+            const mockUnidad: any = { id: 200, tipo: 'Unidad de Medida', nombre: 'mm' };
+            listaService.create.and.returnValue(of(mockUnidad));
+            
+            component.crearUnidadMedidaEnCaliente('mm');
+            expect(listaService.create).toHaveBeenCalledWith({ tipo: 'Unidad de Medida', nombre: 'mm' });
+            expect(component.unidadesMedida()).toContain(mockUnidad);
+            expect(component.medidaData.unidad).toBe('mm');
+            expect(component.currentSearchUnidadMedida).toBe('');
         });
     });
 });

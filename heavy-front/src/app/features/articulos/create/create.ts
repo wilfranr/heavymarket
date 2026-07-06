@@ -92,6 +92,8 @@ export class CreateComponent implements OnInit {
     isEditingMedida = false;
     medidaData: any = { identificador: '', unidad: '', valor: null, tipo: '' };
     editingMedidaIndex: number | null = null;
+    currentSearchTipoMedida = '';
+    currentSearchUnidadMedida = '';
 
     // Variables para el modal de creación de tipo
     showTipoModal = false;
@@ -158,36 +160,112 @@ export class CreateComponent implements OnInit {
     /**
      * Gestión de Medidas Técnicas Locales
      */
-    abrirDialogoMedida(): void {
-        this.isEditingMedida = false;
-        this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
-        this.showMedidaDialog = true;
+    agregarMedida(): void {
+        if (this.editingMedidaIndex !== null) {
+            return;
+        }
+        const nuevaMedida = { identificador: '', unidad: '', valor: null, tipo: '' };
+        this.medidasLocales.push(nuevaMedida);
+        this.iniciarEdicionMedida(nuevaMedida, this.medidasLocales.length - 1);
     }
 
-    editarMedida(medida: any, index: number): void {
+    iniciarEdicionMedida(medida: any, index: number): void {
         this.isEditingMedida = true;
         this.editingMedidaIndex = index;
         this.medidaData = { ...medida };
-        this.showMedidaDialog = true;
+    }
+
+    cancelarEdicionMedida(): void {
+        if (this.editingMedidaIndex !== null) {
+            const medida = this.medidasLocales[this.editingMedidaIndex];
+            if (!medida.identificador && medida.valor === null) {
+                this.medidasLocales.splice(this.editingMedidaIndex, 1);
+            }
+            this.editingMedidaIndex = null;
+            this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
+        }
     }
 
     guardarMedida(): void {
-        if (!this.medidaData.identificador || !this.medidaData.valor) {
+        if (!this.medidaData.identificador || this.medidaData.valor === null || this.editingMedidaIndex === null) {
             return;
         }
 
-        if (this.isEditingMedida && this.editingMedidaIndex !== null) {
-            this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
-        } else {
-            this.medidasLocales.push({ ...this.medidaData });
-        }
-        
+        this.medidasLocales[this.editingMedidaIndex] = { ...this.medidaData };
+        this.editingMedidaIndex = null;
         this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
-        this.showMedidaDialog = false;
     }
 
     eliminarMedida(index: number): void {
         this.medidasLocales.splice(index, 1);
+        if (this.editingMedidaIndex === index) {
+            this.editingMedidaIndex = null;
+            this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
+        } else if (this.editingMedidaIndex !== null && this.editingMedidaIndex > index) {
+            this.editingMedidaIndex--;
+        }
+    }
+
+    onFilterTipoMedida(event: any): void {
+        this.currentSearchTipoMedida = event.filter || '';
+    }
+
+    onFilterUnidadMedida(event: any): void {
+        this.currentSearchUnidadMedida = event.filter || '';
+    }
+
+    crearTipoMedidaEnCaliente(nombre: string): void {
+        if (!nombre || !nombre.trim()) {
+            return;
+        }
+        const nombreLimpio = nombre.trim();
+        this.listaService.create({ tipo: 'Tipo de Medida', nombre: nombreLimpio }).subscribe({
+            next: (res: any) => {
+                const nuevoItem = res;
+                this.tiposMedida = [...this.tiposMedida, nuevoItem];
+                this.medidaData.tipo = nuevoItem.nombre;
+                this.currentSearchTipoMedida = '';
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Creado',
+                    detail: `Tipo de medida "${nombreLimpio}" creado correctamente`
+                });
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `No se pudo crear el tipo de medida "${nombreLimpio}"`
+                });
+            }
+        });
+    }
+
+    crearUnidadMedidaEnCaliente(nombre: string): void {
+        if (!nombre || !nombre.trim()) {
+            return;
+        }
+        const nombreLimpio = nombre.trim();
+        this.listaService.create({ tipo: 'Unidad de Medida', nombre: nombreLimpio }).subscribe({
+            next: (res: any) => {
+                const nuevoItem = res;
+                this.unidadesMedida = [...this.unidadesMedida, nuevoItem];
+                this.medidaData.unidad = nuevoItem.nombre;
+                this.currentSearchUnidadMedida = '';
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Creado',
+                    detail: `Unidad de medida "${nombreLimpio}" creada correctamente`
+                });
+            },
+            error: () => {
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: `No se pudo crear la unidad de medida "${nombreLimpio}"`
+                });
+            }
+        });
     }
 
     /**
