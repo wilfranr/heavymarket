@@ -214,3 +214,57 @@ it('guardar costeo rechaza omitir días y estado Backorder simultáneamente', fu
     $response->assertUnprocessable()
         ->assertJsonValidationErrors('referencias.0.proveedores.0.es_backorder');
 });
+
+it('guardar costeo para proveedor internacional utiliza la TRM de la tabla trms y calcula correctamente', function () {
+    // Arrange
+    $trmReal = 4500.0;
+    \App\Models\TRM::create([
+        'trm' => $trmReal,
+        'fecha' => now(),
+    ]);
+
+    $usa = Country::factory()->create(['iso2' => 'US', 'flete' => 2.0]);
+    $proveedor = Tercero::factory()->create(['country_id' => $usa->id]);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'user_id' => $this->admin->id,
+    ]);
+    $articulo = Articulo::factory()->create(['peso' => 453.592]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
+    $pedidoRef = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+    ]);
+
+    // Act
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/guardar-costeo", [
+            'referencias' => [
+                [
+                    'id' => $pedidoRef->id,
+                    'proveedores' => [
+                        [
+                            'proveedor_id' => $proveedor->id,
+                            'dias_entrega' => 5,
+                            'costo_unidad' => 10.00,
+                            'utilidad' => 20.0,
+                            'cantidad' => 2,
+                            'seleccionado' => true,
+                        ],
+                    ],
+                ],
+            ],
+        ]);
+
+    // Assert
+    $response->assertOk();
+    
+    $this->assertDatabaseHas('pedido_referencia_proveedor', [
+        'pedido_referencia_id' => $pedidoRef->id,
+        'proveedor_id' => $proveedor->id,
+        'costo_unidad' => 10.00,
+        'utilidad' => 20.0,
+        'valor_unidad' => 64800.00,
+        'valor_total' => 129600.00,
+    ]);
+});

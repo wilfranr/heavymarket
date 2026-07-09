@@ -1962,6 +1962,60 @@
         "tests": "npx vitest run src/app/features/articulos/edit/edit.spec.ts OK (18/18 PASS)"
       },
       "review_notes": "Reviewer: Aprobado. Se agregaron tests para validar onFilter y la creación en caliente para Tipo y Unidad de Medida, todos pasan correctamente."
+    },
+    {
+      "id": "costeo-internacional-triage-doc",
+      "description": "Triage: documentar diagnostico del bug de cotizacion internacional en 0 y el plan de dependencias en docs/modulo_pedidos.md y dag.json.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/costeo-internacional-cero",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "costeo-internacional-trm-fix",
+      "description": "Backend: modificar calcularValores en PedidoService.php para obtener la TRM directamente de la tabla trms (TRM::orderBy('fecha', 'desc')->first()) en lugar del campo trm de la tabla empresas, con fallback a 1.0.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-internacional-triage-doc"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "costeo-internacional-backend-tests",
+      "description": "Pruebas: agregar cobertura en PedidoGuardarCosteoFleteTest.php para validar que el costeo internacional utiliza la TRM de la tabla trms and no da 0 pesos.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "costeo-internacional-trm-fix"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_artisan_test": "php artisan test tests/Feature/Api/PedidoGuardarCosteoFleteTest.php OK (6/6 PASS)"
+      },
+      "review_notes": "Reviewer: Aprobado. El nuevo test unitario verifica que el cálculo de valores para proveedores internacionales obtenga la TRM real desde la tabla trms y calcule y persista de forma correcta los valores en COP, evitando el redondeo a 0."
     }
   ]
 }

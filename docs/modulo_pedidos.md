@@ -440,4 +440,20 @@ Al rechazar via `POST responder`, la cotizacion activa debe quedar en estado **`
 
 ---
 
-**Ultima actualizacion:** 13 de Junio, 2026 — Devoluciones desde Cotizado implementadas (endpoints, UI, tests, documentacion).
+### Corrección de Costeo y Cotización de Proveedores Internacionales en Cero (Julio 2026)
+
+**Descripción del Bug**: Al costear items de proveedores internacionales, se guardaban con 0 pesos en la base de datos y por ende las cotizaciones se generaban con 0 pesos. Además, al recargar la vista, el valor de venta se mostraba en 0.
+
+**Causa Raíz**: 
+1. En `PedidoService.php` (backend), la lógica para obtener la TRM en proveedores internacionales leía desde `$empresa?->trm` (tabla `empresas`). Al ser null o 0, usaba un fallback de `1` como valor de TRM.
+2. Al multiplicar por la TRM de `1`, el costo base en COP resultaba ser muy pequeño (igual al costo en USD).
+3. Luego, al aplicar el redondeo a centenas en pesos (`round($valor_unidad, -2)`), cualquier valor total en COP menor a 50 se redondeaba automáticamente a `0`.
+4. El frontend utiliza un servicio de TRM dinámico (`/trms/latest`) que sí carga la TRM real (ej. 4000) permitiendo recalcular temporalmente al escribir en la UI, pero al persistir los datos, el backend volvía a calcularlos en `0` debido al bug.
+
+**Solución**:
+- Modificar `PedidoService::calcularValores()` para que consulte la TRM desde la tabla `trms` con `TRM::orderBy('fecha', 'desc')->first()`.
+- Agregar tests unitarios para verificar el comportamiento correcto del costeo y validar la persistencia adecuada de los valores COP.
+
+---
+
+**Ultima actualizacion:** 8 de Julio, 2026 — Documentado diagnóstico del bug de costeo internacional en cero.

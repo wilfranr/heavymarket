@@ -11,6 +11,7 @@ use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\Referencia;
 use App\Models\Tercero;
+use App\Models\TRM;
 use App\Models\User;
 use App\Notifications\SystemNotification;
 use Illuminate\Support\Arr;
@@ -198,10 +199,10 @@ class PedidoService
         $fleteUsado = null;
 
         if ($ubicacion === 'Internacional') {
-            $empresa = Empresa::where('estado', 1)->first();
-            $trm = (float) ($empresa?->trm ?? 1);
+            $trmRegistro = TRM::orderBy('fecha', 'desc')->first();
+            $trm = $trmRegistro ? (float) $trmRegistro->trm : 1.0;
             if ($trm <= 0) {
-                $trm = 1;
+                $trm = 1.0;
             }
 
             $flete = $this->obtenerFleteDesdeProveedor($proveedorId);
