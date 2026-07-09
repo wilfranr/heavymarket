@@ -2056,6 +2056,26 @@
         "php_artisan_test": "php artisan test OK (todos los tests pasan localmente)"
       },
       "review_notes": "Reviewer: Aprobado. Se añadió lógica de fallback para usar la TRM de la empresa si la tabla de TRMs está vacía, lo cual permite que los tests existentes de PHPUnit/Pest que configuran la TRM en Empresa pasen sin problemas."
+    },
+    {
+      "id": "ci-sqlite-provider-tests-fix",
+      "description": "Backend: modificar ProviderPortalControllerTest.php para que las aserciones de form_costo toleren diferencias de formato numérico entre MySQL y SQLite en la CI.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-internacional-fallback-trm-fix"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "sqlite_trm_tests": "vendor/bin/pest corriendo con sqlite en memoria en local (100% PASS)"
+      },
+      "review_notes": "Reviewer: Aprobado. Se cambiaron las aserciones assertJsonPath del campo decimal form_costo por una validación con expect casted a float, evitando fallos causados por las diferencias de formateo de campos decimales entre MySQL (devuelve strings con decimales) y SQLite (devuelve números flotantes)."
     }
   ]
 }
