@@ -2036,6 +2036,26 @@
         "local_trm_tests": "Pruebas locales exitosas con MySQL; sintaxis de Pest validada."
       },
       "review_notes": "Reviewer: Aprobado. Se modificó el condicional de base de datos en Pest.php para permitir :memory: como base de datos de pruebas válida, solucionando el bloqueo en GitHub Actions que utiliza SQLite en memoria."
+    },
+    {
+      "id": "costeo-internacional-fallback-trm-fix",
+      "description": "Backend: modificar PedidoService.php para obtener la TRM desde la tabla empresas como fallback si la tabla trms está vacía, garantizando la compatibilidad con los tests de CI existentes.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ci-memory-database-fix"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_artisan_test": "php artisan test OK (todos los tests pasan localmente)"
+      },
+      "review_notes": "Reviewer: Aprobado. Se añadió lógica de fallback para usar la TRM de la empresa si la tabla de TRMs está vacía, lo cual permite que los tests existentes de PHPUnit/Pest que configuran la TRM en Empresa pasen sin problemas."
     }
   ]
 }

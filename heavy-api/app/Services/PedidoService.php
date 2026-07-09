@@ -200,7 +200,12 @@ class PedidoService
 
         if ($ubicacion === 'Internacional') {
             $trmRegistro = TRM::orderBy('fecha', 'desc')->first();
-            $trm = $trmRegistro ? (float) $trmRegistro->trm : 1.0;
+            if ($trmRegistro) {
+                $trm = (float) $trmRegistro->trm;
+            } else {
+                $empresa = Empresa::where('estado', 1)->first();
+                $trm = (float) ($empresa?->trm ?? 1.0);
+            }
             if ($trm <= 0) {
                 $trm = 1.0;
             }
