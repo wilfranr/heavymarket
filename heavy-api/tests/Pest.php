@@ -8,7 +8,7 @@ if ($cliDatabase === 'heavymarket') {
     exit(1);
 }
 
-if ($cliDatabase !== '' && $cliDatabase !== 'heavymarket_test') {
+if ($cliDatabase !== '' && $cliDatabase !== 'heavymarket_test' && $cliDatabase !== ':memory:') {
     fwrite(STDERR, "BLOQUEADO: DB_DATABASE={$cliDatabase} no está permitido para tests.\n");
     fwrite(STDERR, "Use DB_DATABASE=heavymarket_test o ejecute ./vendor/bin/pest sin sobrescribir DB_*.\n");
     exit(1);
