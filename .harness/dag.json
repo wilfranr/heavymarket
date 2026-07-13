@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-12T21:09:13-05:00",
-  "issue": "cotizacion-multiple-en-costeo",
-  "description": "Permitir multiples cotizaciones durante En_Costeo, mantener el pedido en costeo al generar cotizaciones, aprobar/rechazar cotizaciones especificas y congelar snapshot de items.",
+  "last_updated": "2026-07-12T21:27:05-05:00",
+  "issue": "cotizacion-estados-enviadas",
+  "description": "Ajustar estados de multiples cotizaciones: generar nuevas cotizaciones no anula anteriores; todas permanecen Enviada hasta aprobacion/rechazo, y al aprobar una las demas quedan Rechazada.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -2787,32 +2787,235 @@
     {
       "id": "terceros-proveedor-ocultar-sistemas-ui",
       "description": "Frontend/UI: ocultar la sección heredada Sistemas en el detalle de terceros para Proveedor y Ambos, conservando Fabricantes y Categorías Comerciales como información comercial vigente.",
-      "status": "in_progress",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [],
       "topic_key": "bugfix/terceros-proveedor-sistemas",
       "files": [
         {
           "path": "heavy-front/src/app/features/terceros/detail/detail.html",
-          "status": "writing"
+          "status": "validated"
         }
-      ]
+      ],
+      "validation": {
+        "format": "npx prettier@3.6.2 --check src/app/features/terceros/detail/detail.html src/app/features/terceros/detail/detail.component.spec.ts passed",
+        "build": "npm run build passed"
+      },
+      "review_validation": {
+        "diff_check": "git diff --check passed",
+        "targeted_vitest": "npx vitest run src/app/features/terceros/detail/detail.component.spec.ts passed (2 tests)",
+        "build": "npm run build passed",
+        "manual": "Usuario verificó visualmente Proveedor y Ambos"
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. La prueba focalizada, el build y la verificación manual pasan. Se exceptúan los 16 fallos globales existentes de AuthService/LayoutService por localStorage y la ausencia del script npm run lint, ambos mapeados como deuda técnica en Engram."
     },
     {
       "id": "terceros-proveedor-ocultar-sistemas-tests",
       "description": "Pruebas frontend: verificar que el detalle no renderiza Sistemas para Proveedor ni Ambos aun con datos legacy, y conserva Categorías Comerciales.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "automated_tester",
-      "depends_on": [
-        "terceros-proveedor-ocultar-sistemas-ui"
-      ],
+      "depends_on": [],
       "topic_key": "bugfix/terceros-proveedor-sistemas",
       "files": [
         {
           "path": "heavy-front/src/app/features/terceros/detail/detail.component.spec.ts",
-          "status": "writing"
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "vitest": "npx vitest run src/app/features/terceros/detail/detail.component.spec.ts passed (2 tests)",
+        "build": "npm run build passed",
+        "eslint": "npx eslint src/app/features/terceros/detail/detail.component.spec.ts exited 0 but ignored the file because no matching configuration was supplied"
+      },
+      "review_validation": {
+        "targeted_vitest": "npx vitest run src/app/features/terceros/detail/detail.component.spec.ts passed (2 tests)",
+        "build": "npm run build passed",
+        "manual": "Usuario verificó visualmente Proveedor y Ambos"
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. La prueba focalizada pasa (2/2), el build y la verificación manual pasan. Se exceptúan los 16 fallos globales existentes de AuthService/LayoutService por localStorage, la ausencia del script npm run lint y la configuración ESLint que ignora el spec; son deudas técnicas conocidas en Engram."
+    },
+    {
+      "id": "cotizacion-estados-enviadas-triage",
+      "description": "Triage: documentar regla actualizada. Al generar varias cotizaciones para un pedido, ninguna cotizacion previa debe pasar a Anulada; todas permanecen Enviada/Borrador hasta aprobacion o rechazo final. Al aprobar una cotizacion, la seleccionada queda Aprobada y las demas activas quedan Rechazada, no No_Seleccionada.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/cotizacion-estados-enviadas",
+      "files": [
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
         }
       ]
+    },
+    {
+      "id": "cotizacion-estados-enviadas-backend-generacion",
+      "description": "Backend: asegurar que finalizarCosteo/crear cotizacion no anule cotizaciones previas del pedido. Revisar cualquier llamada a anularCotizacionActiva o update a Anulada durante generacion y conservar cotizaciones previas Enviada/Borrador.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-estados-enviadas-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated",
+          "note": "Inspeccionado; sin cambio funcional requerido para generacion"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated",
+          "note": "Inspeccionado; sin cambio funcional requerido para generacion"
+        }
+      ],
+      "validation": {
+        "inspection": "finalizarCosteo no invoca anularCotizacionActiva ni marca cotizaciones previas como Anulada",
+        "phpunit_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "phpunit_global": "DB_HOST=localhost php artisan test"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "code_review": "Aprobado para los archivos del issue; no se encontraron defectos funcionales en la regla de estados.",
+        "targeted_backend": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "backend_global": "PASS: DB_HOST=localhost php artisan test (394 deprecated preexistentes, 17 passed)",
+        "frontend_targeted": "PASS: npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check",
+        "phpstan": "SKIPPED: vendor/bin/phpstan no está instalado"
+      }
+    },
+    {
+      "id": "cotizacion-estados-enviadas-backend-aprobacion",
+      "description": "Backend: cambiar aprobacion especifica para que al aprobar una cotizacion del pedido la seleccionada quede Aprobada y las demas cotizaciones activas del mismo pedido queden Rechazada. Eliminar uso de No_Seleccionada en la regla de cierre.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-estados-enviadas-backend-generacion"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated",
+          "note": "Inspeccionado; sin cambio requerido en controller para aprobacion"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l heavy-api/app/Services/CotizacionService.php",
+        "phpunit_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "phpunit_global": "DB_HOST=localhost php artisan test",
+        "result": "0 fallos; deprecations preexistentes por rtrim(null)"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "code_review": "Aprobado para los archivos del issue; no se encontraron defectos funcionales en la regla de estados.",
+        "targeted_backend": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "backend_global": "PASS: DB_HOST=localhost php artisan test (394 deprecated preexistentes, 17 passed)",
+        "frontend_targeted": "PASS: npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check",
+        "phpstan": "SKIPPED: vendor/bin/phpstan no está instalado"
+      }
+    },
+    {
+      "id": "cotizacion-estados-enviadas-frontend",
+      "description": "Frontend/UI: ajustar gestor/detalle/modelo de cotizaciones para no depender de No_Seleccionada y mostrar las cotizaciones no aprobadas como Rechazada. Verificar que una cotizacion anterior no se muestre Anulada al generar una nueva.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-estados-enviadas-backend-aprobacion"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "grep": "No quedan referencias a No_Seleccionada en heavy-front/src/app",
+        "vitest": "npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "build": "npm run build",
+        "result": "Build exitoso con warning preexistente CommonJS pusher-js"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "code_review": "Aprobado para los archivos del issue; no se encontraron defectos funcionales en la regla de estados.",
+        "targeted_backend": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "backend_global": "PASS: DB_HOST=localhost php artisan test (394 deprecated preexistentes, 17 passed)",
+        "frontend_targeted": "PASS: npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check",
+        "phpstan": "SKIPPED: vendor/bin/phpstan no está instalado",
+        "frontend_global_ng_test": "FAIL: npm test -- --watch=false --progress=false --browsers=ChromeHeadless falla por builder @angular-devkit/build-angular:vitest no encontrado",
+        "frontend_global_vitest": "FAIL: npm run test:ci falla en specs preexistentes no tocados: auth.service.spec.ts y layout.service.spec.ts por localStorage/httpMock undefined",
+        "decision": "No se marca done por política de gates globales; requiere corrección de gate frontend o autorización explícita de excepción.",
+        "exception_authorized_by_user": "Autorización explícita del usuario: Te autorizo",
+        "exception_scope": "Se acepta excepción solo para fallos globales frontend ajenos al issue; pruebas dirigidas y build del issue pasaron."
+      }
+    },
+    {
+      "id": "cotizacion-estados-enviadas-tests",
+      "description": "Tests: cubrir que dos cotizaciones generadas para el mismo pedido permanecen Enviada/Borrador y que aprobar una marca la aprobada como Aprobada y las demas activas como Rechazada. Actualizar tests que esperen No_Seleccionada o Anulada.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-estados-enviadas-frontend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionSnapshotTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionFinalizarCosteoTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l heavy-api/tests/Feature/Api/CotizacionSnapshotTest.php && php -l heavy-api/tests/Feature/Api/CotizacionFinalizarCosteoTest.php",
+        "phpunit_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "phpunit_global": "DB_HOST=localhost php artisan test",
+        "vitest": "npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "build": "npm run build"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "code_review": "Aprobado para los archivos del issue; no se encontraron defectos funcionales en la regla de estados.",
+        "targeted_backend": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/CotizacionSnapshotTest.php",
+        "backend_global": "PASS: DB_HOST=localhost php artisan test (394 deprecated preexistentes, 17 passed)",
+        "frontend_targeted": "PASS: npx vitest run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check",
+        "phpstan": "SKIPPED: vendor/bin/phpstan no está instalado",
+        "frontend_global_ng_test": "FAIL: npm test -- --watch=false --progress=false --browsers=ChromeHeadless falla por builder @angular-devkit/build-angular:vitest no encontrado",
+        "frontend_global_vitest": "FAIL: npm run test:ci falla en specs preexistentes no tocados: auth.service.spec.ts y layout.service.spec.ts por localStorage/httpMock undefined",
+        "decision": "No se marca done por política de gates globales; requiere corrección de gate frontend o autorización explícita de excepción.",
+        "exception_authorized_by_user": "Autorización explícita del usuario: Te autorizo",
+        "exception_scope": "Se acepta excepción solo para fallos globales frontend ajenos al issue; pruebas dirigidas y build del issue pasaron."
+      }
     }
   ]
 }

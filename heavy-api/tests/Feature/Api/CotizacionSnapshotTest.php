@@ -102,7 +102,7 @@ it('usa el snapshot comercial de la cotizacion en el PDF aunque cambie el costeo
         ->not->toContain('DESCRIPCION VIVA CAMBIADA');
 });
 
-it('aprobar una cotizacion activa marca las otras como no seleccionada y aprueba el pedido', function () {
+it('aprobar una cotizacion activa marca las otras como rechazadas y aprueba el pedido', function () {
     seedRoles();
     seedPermissions();
 
@@ -137,5 +137,5 @@ it('aprobar una cotizacion activa marca las otras como no seleccionada y aprueba
 
     expect($pedido->fresh()->estado)->toBe('Aprobado')
         ->and($seleccionada->fresh()->estado)->toBe('Aprobada')
-        ->and($otra->fresh()->estado)->toBe('No_Seleccionada');
+        ->and($otra->fresh()->estado)->toBe('Rechazada');
 });

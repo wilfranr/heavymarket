@@ -182,7 +182,7 @@ class CotizacionService
                 ->where('pedido_id', $cotizacion->pedido_id)
                 ->where('id', '!=', $cotizacion->id)
                 ->whereIn('estado', ['Enviada', 'Borrador'])
-                ->update(['estado' => 'No_Seleccionada']);
+                ->update(['estado' => 'Rechazada']);
 
             $observaciones = $cotizacion->observaciones ?? '';
             if ($comentario !== '') {
@@ -347,8 +347,8 @@ Rechazo: ".$motivo) : $cotizacion->observaciones,
     /**
      * Anular la cotizacion activa de un pedido.
      *
-     * Regla: maximo una cotizacion activa (Enviada o Borrador) por pedido.
-     * Al devolver desde Cotizado, la cotizacion vigente pasa a Anulada.
+     * Regla legacy: al devolver desde Cotizado, solo la cotizacion vigente pasa a Anulada.
+     * Durante En_Costeo pueden coexistir multiples cotizaciones activas.
      *
      * @return Cotizacion|null La cotizacion anulada o null si no habia activa
      */

@@ -12,6 +12,5 @@ describe('Detalle de cotización', () => {
         expect(cotizacionPermiteRespuesta('Aprobada')).toBe(false);
         expect(cotizacionPermiteRespuesta('Rechazada')).toBe(false);
         expect(cotizacionPermiteRespuesta('Anulada')).toBe(false);
-        expect(cotizacionPermiteRespuesta('No_Seleccionada')).toBe(false);
     });
 });

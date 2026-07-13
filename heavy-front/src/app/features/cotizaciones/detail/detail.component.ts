@@ -598,8 +598,6 @@ export class DetailComponent implements OnInit {
             case 'Vencida':
             case 'Anulada':
                 return 'danger';
-            case 'No_Seleccionada':
-                return 'secondary';
             default:
                 return 'secondary';
         }

@@ -191,3 +191,65 @@ it('finalizar costeo persiste observaciones comerciales de cotización', functio
     expect($cotizacion?->observaciones)
         ->toBe('Observación comercial desde costeo');
 });
+
+
+it('permite generar multiples cotizaciones enviadas sin anular las previas', function () {
+    $colombia = Country::factory()->create(['name' => 'Colombia', 'iso2' => 'CO', 'flete' => 0]);
+    $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor', 'country_id' => $colombia->id]);
+    $cliente = Tercero::factory()->create(['tipo' => 'Cliente']);
+
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'tercero_id' => $cliente->id,
+        'user_id' => $this->admin->id,
+    ]);
+
+    $articulo = Articulo::factory()->create(['peso' => 500]);
+    $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
+    $pedidoRef = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+    ]);
+
+    $marca = Lista::factory()->create(['tipo' => 'Marcas']);
+
+    $linea = PedidoReferenciaProveedor::query()->create([
+        'pedido_referencia_id' => $pedidoRef->id,
+        'proveedor_id' => $proveedor->id,
+        'marca_id' => $marca->id,
+        'ubicacion' => 'Nacional',
+        'estado' => 1,
+        'costo_unidad' => 100,
+        'utilidad' => 10,
+        'cantidad' => 1,
+        'dias_entrega' => 5,
+        'valor_unidad' => 1000,
+        'valor_total' => 1000,
+    ]);
+
+    $payload = [
+        'pedido_id' => $pedido->id,
+        'items' => [
+            ['id' => $linea->id, 'mostrar_referencia' => true],
+        ],
+    ];
+
+    $this->actingAs($this->admin, 'sanctum')
+        ->postJson('/v1/cotizaciones/finalizar-costeo', $payload)
+        ->assertOk()
+        ->assertJsonPath('data.estado', 'Enviada');
+
+    $this->actingAs($this->admin, 'sanctum')
+        ->postJson('/v1/cotizaciones/finalizar-costeo', $payload)
+        ->assertOk()
+        ->assertJsonPath('data.estado', 'Enviada');
+
+    $estados = Cotizacion::query()
+        ->where('pedido_id', $pedido->id)
+        ->orderBy('id')
+        ->pluck('estado')
+        ->all();
+
+    expect($estados)->toBe(['Enviada', 'Enviada'])
+        ->and($pedido->fresh()->estado)->toBe('En_Costeo');
+});

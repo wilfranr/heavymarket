@@ -95,8 +95,9 @@ Las unicas mutaciones permitidas en estos estados son **transiciones de flujo** 
 
 **Decisiones confirmadas**:
 - El pedido solo sale de `En_Costeo` cuando se aprueba una cotización específica.
-- Aprobar una cotización transita el pedido a `Aprobado`, marca esa cotización como `Aprobada`, genera OT/OC y marca las demás cotizaciones activas del pedido como `No_Seleccionada`.
-- Rechazar una cotización marca solo esa cotización como `Rechazada`; el pedido permanece en `En_Costeo`.
+- Generar una nueva cotización **no anula** cotizaciones previas del mismo pedido; todas las cotizaciones generadas y enviadas deben permanecer en estado `Enviada` hasta una decisión final del pedido.
+- Aprobar una cotización transita el pedido a `Aprobado`, marca esa cotización como `Aprobada`, genera OT/OC y marca las demás cotizaciones activas del pedido como `Rechazada` para dejar trazabilidad visible de cuáles no fueron aprobadas.
+- Rechazar una cotización individual marca solo esa cotización como `Rechazada`; el pedido permanece en `En_Costeo`. Si el rechazo es una decisión final del pedido, todas las cotizaciones activas del pedido deben quedar `Rechazada`.
 - Pueden existir múltiples cotizaciones en estado `Enviada`/`Borrador` para un mismo pedido mientras está en costeo.
 - La acción `Devolver a costeo` debe ocultarse cuando el pedido ya está en `En_Costeo`.
 - Tras generar una cotización desde Costeo, la UI debe permanecer en Costeo y no navegar automáticamente al listado de cotizaciones.
