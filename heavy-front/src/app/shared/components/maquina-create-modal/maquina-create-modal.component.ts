@@ -10,7 +10,6 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { FileUploadModule } from 'primeng/fileupload';
 import { DividerModule } from 'primeng/divider';
 import { TextareaModule } from 'primeng/textarea';
 import { PopoverModule } from 'primeng/popover';
@@ -21,11 +20,12 @@ import { FabricanteService } from '../../../core/services/fabricante.service';
 import { ListaService } from '../../../core/services/lista.service';
 import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaCreateModalComponent } from '../lista-create-modal/lista-create-modal.component';
+import { ImageUploadComponent } from '../image-upload/image-upload.component';
 import { AutoFocusDirective } from '../../directives/auto-focus.directive';
 @Component({
     selector: 'app-maquina-create-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, ProgressSpinnerModule, InputTextModule, SelectModule, ToastModule, FileUploadModule, DividerModule, TextareaModule, PopoverModule, TooltipModule, ListaCreateModalComponent, AutoFocusDirective],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, ProgressSpinnerModule, InputTextModule, SelectModule, ToastModule, DividerModule, TextareaModule, PopoverModule, TooltipModule, ListaCreateModalComponent, ImageUploadComponent, AutoFocusDirective],
     templateUrl: './maquina-create-modal.component.html',
     styles: []
 })
@@ -234,10 +234,8 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
         this.createMaquinaForm.patchValue({ tipo: tipo.id });
     }
 
-    onFileSelect(event: any, fieldName: string): void {
-        if (event.files && event.files.length > 0) {
-            this.createMaquinaForm.patchValue({ [fieldName]: event.files[0] });
-        }
+    onFileSelected(file: File, fieldName: string): void {
+        this.createMaquinaForm.patchValue({ [fieldName]: file });
     }
 
     closeDialog(): void {

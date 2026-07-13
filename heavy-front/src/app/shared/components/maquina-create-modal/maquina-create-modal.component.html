@@ -183,31 +183,17 @@
                     <!-- Foto -->
                     <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
                         <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Máquina</label>
-                        <p-fileUpload mode="basic" [showUploadButton]="false" [showCancelButton]="false" chooseLabel="Elegir Foto" chooseIcon="pi pi-image" styleClass="p-button-secondary p-button-sm w-full" (onSelect)="onFileSelect($event, 'foto')">
-                        </p-fileUpload>
-                        <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('foto')?.value">
-                            <i class="pi pi-check-circle text-green-500"></i>
-                            Archivo seleccionado
-                        </div>
+                        @if (visible) {
+                            <app-image-upload height="10rem" (fileSelected)="onFileSelected($event, 'foto')"></app-image-upload>
+                        }
                     </div>
 
                     <!-- FotoId -->
                     <div class="p-4 border border-surface-border rounded-2xl bg-surface-ground/20">
                         <label class="block mb-3 text-[11px] font-black text-gray-400 uppercase tracking-widest">Foto Placa ID</label>
-                        <p-fileUpload
-                            mode="basic"
-                            [showUploadButton]="false"
-                            [showCancelButton]="false"
-                            chooseLabel="Elegir Placa"
-                            chooseIcon="pi pi-id-card"
-                            styleClass="p-button-secondary p-button-sm w-full"
-                            (onSelect)="onFileSelect($event, 'fotoId')"
-                        >
-                        </p-fileUpload>
-                        <div class="mt-2 text-[10px] text-gray-500 flex items-center gap-2" *ngIf="createMaquinaForm.get('fotoId')?.value">
-                            <i class="pi pi-check-circle text-green-500"></i>
-                            Archivo seleccionado
-                        </div>
+                        @if (visible) {
+                            <app-image-upload height="10rem" (fileSelected)="onFileSelected($event, 'fotoId')"></app-image-upload>
+                        }
                     </div>
                 </div>
             </div>
