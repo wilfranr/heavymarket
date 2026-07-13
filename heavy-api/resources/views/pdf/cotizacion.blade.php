@@ -332,7 +332,7 @@
             <td class="info-label">Vendedor</td>
             <td class="info-value">: {{ $cotizacion->user?->name ?? 'N/A' }}</td>
             <td class="info-label">Máquina</td>
-            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->tipo ?? 'N/A') }}</td>
+            <td class="info-value">: {{ strtoupper($cotizacion->pedido?->maquina?->listas?->nombre ?? 'N/A') }}</td>
         </tr>
         <tr>
             <td class="info-label">Teléfono Vendedor</td>
@@ -452,23 +452,7 @@
     <!-- Sección Inferior -->
     <div class="bottom-section">
         @php
-            $obsText = '';
-            if (!empty($cotizacion->observaciones)) {
-                $obsText = $cotizacion->observaciones;
-            } elseif (!empty($cotizacion->pedido?->comentario)) {
-                $comentarioRaw = $cotizacion->pedido->comentario;
-                if (is_array($comentarioRaw)) {
-                    $comentariosArr = [];
-                    foreach ($comentarioRaw as $c) {
-                        if (isset($c['comentario'])) {
-                            $comentariosArr[] = $c['comentario'];
-                        }
-                    }
-                    $obsText = implode(', ', $comentariosArr);
-                } else {
-                    $obsText = $comentarioRaw;
-                }
-            }
+            $obsText = trim((string) ($cotizacion->observaciones ?? ''));
         @endphp
 
         @if(!empty($obsText))

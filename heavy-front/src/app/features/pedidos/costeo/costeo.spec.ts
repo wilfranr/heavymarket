@@ -1,4 +1,5 @@
 import { ENTREGA_OPTIONS, entregaPayload, entregaValueDesdePersistencia, formatearEntrega } from '../../../core/utils/entrega-plazo';
+import { observacionesCotizacionPayload } from './costeo';
 
 describe('Opciones de entrega de costeo', () => {
     it('expone las nueve opciones en el orden comercial requerido', () => {
@@ -34,5 +35,10 @@ describe('Opciones de entrega de costeo', () => {
     it('formatea rangos y Backorder para las vistas de cotización', () => {
         expect(formatearEntrega(15, false)).toBe('8 a 15 días hábiles');
         expect(formatearEntrega(null, true)).toBe('Backorder');
+    });
+
+    it('normaliza observaciones de cotización antes de enviarlas al backend', () => {
+        expect(observacionesCotizacionPayload('  Observación comercial  ')).toBe('Observación comercial');
+        expect(observacionesCotizacionPayload('   ')).toBeUndefined();
     });
 });

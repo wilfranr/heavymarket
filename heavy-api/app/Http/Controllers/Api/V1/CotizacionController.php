@@ -214,6 +214,7 @@ class CotizacionController extends Controller
             'items' => ['required', 'array'],
             'items.*.id' => ['required', 'exists:pedido_referencia_proveedor,id'],
             'items.*.mostrar_referencia' => ['required', 'boolean'],
+            'observaciones' => ['nullable', 'string', 'max:1000'],
         ]);
 
         try {
@@ -230,7 +231,8 @@ class CotizacionController extends Controller
             $cotizacion = $this->cotizacionService->finalizarCosteo(
                 $pedido,
                 $validated['items'],
-                $request->user()->id
+                $request->user()->id,
+                $validated['observaciones'] ?? null
             );
 
             $esBorrador = $cotizacion->estado === 'Borrador';

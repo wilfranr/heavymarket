@@ -12,7 +12,7 @@ import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { CheckboxModule } from 'primeng/checkbox';
 import { TooltipModule } from 'primeng/tooltip';
-import { MessageService, ConfirmationService } from 'primeng/api';
+import { MessageService } from 'primeng/api';
 import { MultiSelectModule } from 'primeng/multiselect';
 import { SkeletonModule } from 'primeng/skeleton';
 import { InputGroupModule } from 'primeng/inputgroup';
@@ -20,7 +20,6 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { DialogModule } from 'primeng/dialog';
 import { GalleriaModule } from 'primeng/galleria';
 import { TextareaModule } from 'primeng/textarea';
-import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { PopoverModule, Popover } from 'primeng/popover';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { PedidoService } from '../../../core/services/pedido.service';
@@ -40,6 +39,11 @@ import { Lista } from '../../../core/models/lista.model';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
 import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
+
+export function observacionesCotizacionPayload(observaciones: string): string | undefined {
+    const normalizadas = observaciones.trim();
+    return normalizadas || undefined;
+}
 
 @Component({
     selector: 'app-pedido-costeo',
@@ -63,7 +67,6 @@ import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersist
         DialogModule,
         GalleriaModule,
         TextareaModule,
-        ConfirmDialogModule,
         PopoverModule,
         ToggleSwitchModule,
         InputNumberModule,
@@ -80,7 +83,6 @@ export class CosteoComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly messageService = inject(MessageService);
-    private readonly confirmationService = inject(ConfirmationService);
     private readonly pedidoService = inject(PedidoService);
     private readonly terceroService = inject(TerceroService);
     private readonly trmService = inject(TRMService);
@@ -112,6 +114,8 @@ export class CosteoComponent implements OnInit {
     // Devolución
     displayDevolucionDialog = signal<boolean>(false);
     devolucionComentario = signal<string>('');
+    displayGenerarCotizacionDialog = signal<boolean>(false);
+    cotizacionObservaciones = signal<string>('');
     submitting = signal<boolean>(false);
 
     // Formulario principal
@@ -1006,15 +1010,19 @@ export class CosteoComponent implements OnInit {
             return;
         }
 
-        // 2. Confirmación
-        this.confirmationService.confirm({
-            message: `¿Está seguro de finalizar el costeo y generar la cotización? Se guardarán los cambios actuales automáticamente.`,
-            header: 'Confirmar Finalización',
-            icon: 'pi pi-exclamation-triangle',
-            accept: () => {
-                this.guardarYGenerarCotizacion();
-            }
-        });
+        this.cotizacionObservaciones.set('');
+        this.displayGenerarCotizacionDialog.set(true);
+    }
+
+    confirmarGeneracionCotizacion(): void {
+        const observaciones = this.cotizacionObservaciones().trim();
+        this.displayGenerarCotizacionDialog.set(false);
+        this.guardarYGenerarCotizacion(observaciones);
+    }
+
+    cancelarGeneracionCotizacion(): void {
+        this.displayGenerarCotizacionDialog.set(false);
+        this.cotizacionObservaciones.set('');
     }
 
     private validarCamposSeleccionados(): string[] {
@@ -1060,7 +1068,7 @@ export class CosteoComponent implements OnInit {
         return errores;
     }
 
-    private guardarYGenerarCotizacion(): void {
+    private guardarYGenerarCotizacion(observaciones: string): void {
         this.submitting.set(true);
         const payload = this.getCosteoPayload();
 
@@ -1092,7 +1100,7 @@ export class CosteoComponent implements OnInit {
                 }
 
                 // Paso 3: Proceder con la generación de la cotización
-                this.ejecutarFinalizacion(selectedItems);
+                this.ejecutarFinalizacion(selectedItems, observaciones);
             },
             error: (err: any) => {
                 this.submitting.set(false);
@@ -1101,12 +1109,13 @@ export class CosteoComponent implements OnInit {
         });
     }
 
-    private ejecutarFinalizacion(selectedItems: { id: number; mostrar_referencia: boolean }[]): void {
+    private ejecutarFinalizacion(selectedItems: { id: number; mostrar_referencia: boolean }[], observaciones: string): void {
         this.submitting.set(true);
         this.cotizacionService
             .finalizarCosteo({
                 pedido_id: this.pedidoId(),
-                items: selectedItems
+                items: selectedItems,
+                observaciones: observacionesCotizacionPayload(observaciones)
             })
             .subscribe({
                 next: (resp: any) => {

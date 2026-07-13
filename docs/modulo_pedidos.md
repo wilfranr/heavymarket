@@ -440,6 +440,31 @@ Al rechazar via `POST responder`, la cotizacion activa debe quedar en estado **`
 
 ---
 
+
+### Observaciones al Generar Cotización desde Costeo (Julio 2026)
+
+**Regla UX/Negocio**: Al generar una cotización desde la vista de Costeo, el modal de confirmación debe permitir capturar las observaciones comerciales de la cotización antes de crearla. El valor ingresado se persiste en `cotizaciones.observaciones`, igual que el formulario de Editar Cotización.
+
+**Regla UI**: El campo debe ser opcional, usar placeholder `Observaciones de Cotización`, mantener compatibilidad claro/oscuro y mostrar acciones en español: `Sí` para confirmar y `No` como acción secundaria.
+
+**Anclas técnicas del issue**:
+- `heavy-front/src/app/features/pedidos/costeo/costeo.ts` y `.html` — modal de confirmación y envío del payload.
+- `heavy-front/src/app/core/services/cotizacion.service.ts` — contrato frontend de `finalizarCosteo`.
+- `heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php` — validación de `observaciones`.
+- `heavy-api/app/Services/CotizacionService.php` — persistencia inicial de `cotizaciones.observaciones`.
+
+### Corrección de Observaciones en PDF de Cotización (Julio 2026)
+
+**Descripción del Bug**: El campo **Observaciones** del PDF de cotización está usando un fallback a `pedido.comentario` cuando `cotizacion.observaciones` está vacío. Como `pedido.comentario` puede contener comentarios internos del pedido o de los ítems, el documento formal termina exponiendo información interna concatenada al cliente.
+
+**Regla esperada**: El PDF de cotización debe mostrar exclusivamente el valor guardado en `cotizaciones.observaciones`, proveniente del formulario de **Editar Cotización**. Si ese campo está vacío, la sección Observaciones no debe renderizar contenido alternativo desde comentarios internos del pedido, análisis, costeo o ítems.
+
+**Anclas técnicas del issue**:
+- `heavy-api/resources/views/pdf/cotizacion.blade.php` — fuente de texto de la sección Observaciones en el PDF.
+- `heavy-api/app/Http/Requests/UpdateCotizacionRequest.php` — validación del campo editable `observaciones`.
+- `heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php` — actualización y generación de PDF.
+- `heavy-front/src/app/features/cotizaciones/edit/edit.component.ts` — formulario que captura el valor comercial esperado.
+
 ### Corrección de Costeo y Cotización de Proveedores Internacionales en Cero (Julio 2026)
 
 **Descripción del Bug**: Al costear items de proveedores internacionales, se guardaban con 0 pesos en la base de datos y por ende las cotizaciones se generaban con 0 pesos. Además, al recargar la vista, el valor de venta se mostraba en 0.

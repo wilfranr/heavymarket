@@ -391,6 +391,8 @@ class CotizacionService
             'pedido.tercero.city',
             'pedido.contacto',
             'pedido.maquina',
+            'pedido.maquina.listas',
+            'pedido.maquina.fabricante',
             'user',
             'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo.articuloJuegos.referencia.articulo',
             'referenciasProveedores.pedidoReferenciaProveedor.pedidoReferencia.referencia.articulo.articuloJuegos.referencia.lista',
@@ -443,11 +445,12 @@ class CotizacionService
      *
      * @param  array  $items  Seleccionados (IDs de pedido_referencia_proveedor)
      */
-    public function finalizarCosteo(Pedido $pedido, array $items, int $userId): Cotizacion
+    public function finalizarCosteo(Pedido $pedido, array $items, int $userId, ?string $observaciones = null): Cotizacion
     {
-        return DB::transaction(function () use ($pedido, $items, $userId) {
+        return DB::transaction(function () use ($pedido, $items, $userId, $observaciones) {
             $fleteConfigurado = $this->verificarFleteEnItemsSeleccionados($items);
             $estadoInicial = $fleteConfigurado ? 'Enviada' : 'Borrador';
+            $observacionesNormalizadas = trim((string) ($observaciones ?? '')) ?: null;
 
             // 1. Crear la cotización
             $cotizacion = Cotizacion::create([
@@ -457,6 +460,7 @@ class CotizacionService
                 'estado' => $estadoInicial,
                 'fecha_emision' => now(),
                 'fecha_vencimiento' => now()->addDays(15),
+                'observaciones' => $observacionesNormalizadas,
             ]);
 
             // 2. Asociar los items seleccionados
