@@ -215,18 +215,7 @@
                     }
                 </div>
             </div>
-
-            @if (tercero.sistemas && tercero.sistemas.length > 0) {
-            <p-divider></p-divider>
-            <div>
-                <h3 class="section-title"><i class="pi pi-sitemap mr-2"></i>Sistemas</h3>
-                <div class="flex flex-wrap gap-2">
-                    @for (sistema of tercero.sistemas; track sistema.id) {
-                    <p-tag [value]="sistema.nombre" severity="warn"></p-tag>
-                    }
-                </div>
-            </div>
-            } }
+            }
 
             <!-- Contactos -->
             @if (tercero.contactos && tercero.contactos.length > 0) {
