@@ -8,15 +8,15 @@ import { TextareaModule } from 'primeng/textarea';
 import { SelectModule } from 'primeng/select';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
-import { FileUploadModule } from 'primeng/fileupload';
 
 import { ListaService } from '../../../core/services/lista.service';
 import { ListaTipo } from '../../../core/models/lista.model';
+import { ImageUploadComponent } from '../image-upload/image-upload.component';
 
 @Component({
     selector: 'app-lista-create-modal',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, FileUploadModule],
+    imports: [CommonModule, ReactiveFormsModule, DialogModule, ButtonModule, InputTextModule, TextareaModule, SelectModule, ToastModule, ImageUploadComponent],
     templateUrl: './lista-create-modal.component.html',
     providers: [MessageService],
     styles: []
@@ -83,10 +83,8 @@ export class ListaCreateModalComponent implements OnInit, OnChanges {
         }
     }
 
-    onFileSelect(event: any, fieldName: string): void {
-        if (event.files && event.files.length > 0) {
-            this.listaForm.patchValue({ [fieldName]: event.files[0] });
-        }
+    onFileSelected(file: File, fieldName: string): void {
+        this.listaForm.patchValue({ [fieldName]: file });
     }
 
     closeDialog(): void {

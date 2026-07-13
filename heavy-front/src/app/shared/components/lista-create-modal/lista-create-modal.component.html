@@ -24,20 +24,14 @@
 
         <!-- Foto / Plano Esquemático -->
         <div class="flex flex-col gap-2">
-            <label class="text-sm font-medium text-gray-400">
-                {{ listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'Plano Esquemático (Medidas)' : 'Imagen Referencial' }}
-            </label>
-            <p-fileUpload
-                mode="basic"
-                chooseLabel="Seleccionar Imagen"
-                chooseIcon="pi pi-image"
-                [name]="listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'fotoMedida' : 'foto'"
-                accept="image/*"
-                maxFileSize="2000000"
-                (onSelect)="onFileSelect($event, listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'fotoMedida' : 'foto')"
-                styleClass="p-button-secondary w-full"
-            >
-            </p-fileUpload>
+            <label class="text-sm font-medium text-gray-400">Foto</label>
+            @if (visible) {
+                <app-image-upload
+                    icon="pi pi-map"
+                    height="10rem"
+                    (fileSelected)="onFileSelected($event, listaForm.get('tipo')?.value === 'Piezas Estandar' ? 'fotoMedida' : 'foto')"
+                ></app-image-upload>
+            }
         </div>
     </form>
 

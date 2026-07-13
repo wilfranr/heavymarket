@@ -2385,6 +2385,31 @@
         "review_result": "Aprobado: la regresión valida que el PDF muestra descripcionEspecifica y no definicion."
       },
       "review_notes": "Reviewer: aprobado. La prueba crea un ítem real de cotización, renderiza el Blade del PDF y verifica explícitamente la descripción esperada."
+    },
+    {
+      "id": "lista-modal-image-upload",
+      "description": "Frontend: sustituir el selector básico de imágenes del modal de creación rápida de listas, usado para crear una Pieza Estándar desde crear o editar artículo, por el componente compartido app-image-upload con arrastrar, soltar y previsualización. El campo debe conservar el rótulo Foto y enviar el archivo en fotoMedida para Piezas Estandar o en foto para los demás tipos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/lista-modal-image-upload",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/lista-create-modal/lista-create-modal.component.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "scope": "El componente se recrea al cerrar el diálogo para limpiar la previsualización temporal.",
+        "tests": "npm run test:ci falló: 16 pruebas preexistentes de AuthService y LayoutService por localStorage no disponible; 94 pruebas pasaron.",
+        "exception": "Cierre autorizado por el usuario. Deuda técnica: reparar el entorno o mocks de localStorage que bloquean las pruebas de AuthService y LayoutService."
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. La UI, el flujo de archivo, el build y git diff --check pasan. Se registra como deuda técnica el fallo de 16 pruebas de AuthService y LayoutService por localStorage no disponible."
     }
   ]
 }
