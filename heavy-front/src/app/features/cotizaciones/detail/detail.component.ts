@@ -63,8 +63,8 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                 <!-- Header -->
                 <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4 px-8">
                     <div>
-                        <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Cotizaciones > Detalle</div>
-                        <h1 class="text-3xl font-bold text-yellow-600 dark:text-brand-yellow" style="font-family: 'Figtree'">
+                        <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">Cotizaciones > Detalle</div>
+                        <h1 class="text-3xl font-bold text-yellow-600 dark:text-brand-yellow">
                             {{ cot.id ? 'COT-' + cot.id.toString().padStart(6, '0') : 'COT-XXXXXX' }}
                         </h1>
                     </div>

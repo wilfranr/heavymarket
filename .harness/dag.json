@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-05T22:15:00-05:00",
-  "issue": "articulo-medidas-select-ux",
-  "description": "Mejorar la UX del select de Tipo y Unidad de Medida en la edicion en linea: permitir crear la opcion directamente desde el dropdown cuando no es encontrada mediante busqueda (emptyfilter) y eliminar los botones + externos.",
+  "last_updated": "2026-07-12T19:23:35-05:00",
+  "issue": "cotizacion-costeo-observaciones",
+  "description": "Capturar observaciones de cotizacion desde el modal de confirmacion de Costeo y persistirlas al generar la cotizacion, ajustando textos y estilos de botones del modal.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -2076,6 +2076,244 @@
         "sqlite_trm_tests": "vendor/bin/pest corriendo con sqlite en memoria en local (100% PASS)"
       },
       "review_notes": "Reviewer: Aprobado. Se cambiaron las aserciones assertJsonPath del campo decimal form_costo por una validación con expect casted a float, evitando fallos causados por las diferencias de formateo de campos decimales entre MySQL (devuelve strings con decimales) y SQLite (devuelve números flotantes)."
+    },
+    {
+      "id": "cotizacion-pdf-observaciones-triage",
+      "description": "Triage: documentar y planificar la correccion del PDF de cotizacion para que Observaciones use exclusivamente cotizacion.observaciones capturada desde Editar Cotizacion, sin fallback a comentarios internos del pedido o items.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/cotizacion-pdf-observaciones",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: causa raiz localizada en resources/views/pdf/cotizacion.blade.php; el fallback a pedido.comentario expone comentarios internos cuando cotizacion.observaciones esta vacio."
+    },
+    {
+      "id": "cotizacion-pdf-observaciones-source-fix",
+      "description": "Backend/PDF: eliminar del Blade de cotizacion el fallback a pedido.comentario y cualquier concatenacion derivada de comentarios internos. La seccion Observaciones debe renderizarse solo cuando cotizacion.observaciones tenga contenido.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-pdf-observaciones-triage"
+      ],
+      "topic_key": "bugfix/cotizacion-pdf-observaciones",
+      "files": [
+        {
+          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l resources/views/pdf/cotizacion.blade.php OK",
+        "blade_cache": "php artisan view:cache OK",
+        "backend_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php OK (4 tests, 15 assertions; deprecation notices only)",
+        "review_result": "Aprobado: PDF usa exclusivamente cotizacion.observaciones y elimina fallback a comentarios internos."
+      },
+      "review_notes": "Reviewer: aprobado. La sección Observaciones del PDF se alimenta solo de cotizacion.observaciones, conserva escaping nl2br(e()) y no expone pedido.comentario."
+    },
+    {
+      "id": "cotizacion-pdf-observaciones-regression-tests",
+      "description": "Pruebas: agregar cobertura de regresion para validar que UpdateCotizacionRequest/Controller persiste observaciones comerciales y que el PDF no muestra pedido.comentario cuando cotizacion.observaciones esta vacio; debe mostrar solo las observaciones editadas cuando existen.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-pdf-observaciones-source-fix"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionPdfObservacionesTest.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l tests/Feature/Api/CotizacionPdfObservacionesTest.php OK",
+        "pint": "./vendor/bin/pint --test tests/Feature/Api/CotizacionPdfObservacionesTest.php OK",
+        "backend_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionPdfObservacionesTest.php OK (2 tests, 5 assertions; deprecation notices only)",
+        "review_result": "Aprobado: la regresión cubre que el PDF no use pedido.comentario y muestre solo cotizacion.observaciones."
+      },
+      "review_notes": "Reviewer: aprobado. La prueba renderiza el Blade del PDF con fixtures mínimos y valida la fuente de Observaciones sin depender del binario DomPDF."
+    },
+    {
+      "id": "cotizacion-costeo-observaciones-triage",
+      "description": "Triage: planificar captura de observaciones comerciales en el modal de confirmacion de Generar Cotizacion desde Costeo y propagarlas hasta cotizaciones.observaciones.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/cotizacion-pdf-observaciones",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: atomizado en contrato backend, UI de Costeo y pruebas; la observacion debe persistirse en cotizaciones.observaciones al finalizar costeo."
+    },
+    {
+      "id": "cotizacion-costeo-observaciones-backend",
+      "description": "Backend: extender POST cotizaciones/finalizar-costeo para aceptar observaciones nullable string max 1000 y persistirlas en CotizacionService::finalizarCosteo al crear la cotizacion.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-costeo-observaciones-triage"
+      ],
+      "topic_key": "bugfix/cotizacion-pdf-observaciones",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l CotizacionController.php OK; php -l CotizacionService.php OK",
+        "pint": "./vendor/bin/pint --test archivos backend modificados OK",
+        "backend_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php OK (4 tests, 15 assertions; deprecation notices only)",
+        "review_result": "Aprobado: contrato finalizar-costeo acepta observaciones nullable|max:1000 y CotizacionService persiste valor normalizado."
+      },
+      "review_notes": "Reviewer: aprobado. El endpoint valida observaciones y el service guarda null para vacío o el texto trimmeado al crear la cotización."
+    },
+    {
+      "id": "cotizacion-costeo-observaciones-frontend",
+      "description": "Frontend/UI: reemplazar o extender la confirmacion de Generar Cotizacion en Costeo con input textarea de observaciones, placeholder Observaciones de Cotizacion, boton Si en español y boton No con estilo secundario; enviar observaciones al servicio.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-costeo-observaciones-backend"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/cotizacion.service.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "targeted_tests": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts OK (6/6)",
+        "build": "npm run build OK; warning CommonJS preexistente pusher-js",
+        "lint": "npm run lint no disponible: Missing script lint",
+        "global_tests_note": "npm run test:ci falla por deuda global no relacionada en auth.service.spec.ts/layout.service.spec.ts; targeted del issue OK",
+        "review_result": "Aprobado: p-dialog con pTextarea, Signals, placeholder requerido, botón Sí y botón No secundario."
+      },
+      "review_notes": "Reviewer: aprobado. UI compatible con PrimeNG/Tailwind, modo claro/oscuro mediante tokens y acciones en español; No usa estilo secundario."
+    },
+    {
+      "id": "cotizacion-costeo-observaciones-tests",
+      "description": "Pruebas: agregar o ajustar cobertura para que finalizarCosteo persista observaciones y que el flujo de Costeo envie el valor ingresado al confirmar.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-costeo-observaciones-frontend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionFinalizarCosteoTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "backend_syntax": "php -l tests/Feature/Api/CotizacionFinalizarCosteoTest.php OK",
+        "backend_pint": "./vendor/bin/pint --test archivos backend modificados OK",
+        "backend_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php OK (4 tests, 15 assertions; deprecation notices only)",
+        "frontend_targeted": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts OK (6/6)",
+        "review_result": "Aprobado: cobertura backend de persistencia y frontend de normalización del payload."
+      },
+      "review_notes": "Reviewer: aprobado. Feature test backend pasó en heavymarket_test usando DB_HOST=localhost; vitest específico pasó."
+    },
+    {
+      "id": "bugfix-tipografias-inline-triage",
+      "description": "Triage: Planificar y registrar en dag.json la remoción de la declaración inline de font-family en los 5 componentes frontend y documentar la causa raíz del comportamiento con serifa.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/tipografias-inline-incorrectas",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: Tarea planificada y mapeada en el DAG. El problema reside en style=\"font-family: 'Figtree'\" sin fallback y sin importación de la fuente, lo que provoca que los navegadores usen la fuente serif por defecto."
+    },
+    {
+      "id": "bugfix-tipografias-inline-impl",
+      "description": "Frontend: Remover la declaración inline style=\"font-family: 'Figtree'\" en los breadcrumbs y títulos h1 de los 5 componentes afectados (detail.component.ts, analysis.html, costeo.html, edit.html y costing-opportunities.component.html) para que hereden la fuente sans-serif global.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "bugfix-tipografias-inline-triage"
+      ],
+      "topic_key": "bugfix/tipografias-inline-incorrectas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build OK"
+      },
+      "review_notes": "Reviewer: aprobado. La eliminación de los estilos inline fue verificada en los 5 archivos del frontend. La compilación de Angular culminó de forma exitosa."
+    },
+    {
+      "id": "bugfix-tipografias-inline-tests",
+      "description": "QA: Verificar la compilación exitosa del frontend (npm run build) y comprobar visualmente en desarrollo la correcta visualización de las tipografías heredadas.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "bugfix-tipografias-inline-impl"
+      ],
+      "topic_key": "bugfix/tipografias-inline-incorrectas",
+      "files": [],
+      "validation": {
+        "build": "npm run build exitoso",
+        "tests": "vitest run dirigido exitoso (6/6). Los tests globales fallidos son deudas previas de localStorage"
+      },
+      "review_notes": "Reviewer: aprobado. Compilación y tests dirigidos exitosos. No se reportan regresiones visuales o de código."
     }
   ]
 }

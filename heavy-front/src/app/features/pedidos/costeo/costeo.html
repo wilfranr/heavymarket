@@ -11,8 +11,8 @@
         <!-- Header -->
         <div class="flex justify-between items-center mb-6 px-8">
             <div>
-                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1" style="font-family: 'Figtree'">Costeo > Editar</div>
-                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500" style="font-family: 'Figtree'">Costeo asesor</h1>
+                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">Costeo > Editar</div>
+                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500">Costeo asesor</h1>
             </div>
             <!-- Top Buttons -->
             <div class="flex gap-4 items-center">
@@ -377,7 +377,42 @@
 </div>
 }
 
-<p-confirmDialog></p-confirmDialog>
+<p-dialog
+    [visible]="displayGenerarCotizacionDialog()"
+    (visibleChange)="displayGenerarCotizacionDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '520px', 'max-width': '95vw' }"
+    header="Confirmar Finalización"
+    appendTo="body"
+>
+    <div class="grid grid-cols-1 gap-4 pt-2">
+        <div class="flex items-start gap-3 rounded-lg border p-3" style="border-color: var(--p-surface-border); background: var(--p-content-background)">
+            <i class="pi pi-exclamation-triangle mt-1" style="color: var(--p-primary-color)"></i>
+            <p class="m-0 text-sm leading-6" style="color: var(--p-text-color)">¿Está seguro de finalizar el costeo y generar la cotización? Se guardarán los cambios actuales automáticamente.</p>
+        </div>
+
+        <div class="field">
+            <label for="cotizacion_observaciones" class="block text-sm font-medium mb-2">Observaciones</label>
+            <textarea
+                pTextarea
+                id="cotizacion_observaciones"
+                [ngModel]="cotizacionObservaciones()"
+                (ngModelChange)="cotizacionObservaciones.set($event)"
+                [rows]="4"
+                [autoResize]="true"
+                class="w-full"
+                placeholder="Observaciones de Cotización"
+            ></textarea>
+        </div>
+    </div>
+
+    <ng-template pTemplate="footer">
+        <div class="flex justify-end gap-2">
+            <p-button label="No" icon="pi pi-times" severity="secondary" [outlined]="true" (onClick)="cancelarGeneracionCotizacion()" [disabled]="submitting()"></p-button>
+            <p-button label="Sí" icon="pi pi-check" (onClick)="confirmarGeneracionCotizacion()" [loading]="submitting()"></p-button>
+        </div>
+    </ng-template>
+</p-dialog>
 
 <!-- Diálogo de Devolución -->
 <p-dialog [(visible)]="showSolicitudFleteDialog" [modal]="true" [style]="{ width: '480px', 'max-width': '95vw' }" header="Solicitar tarifa de flete" appendTo="body">
