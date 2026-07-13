@@ -441,6 +441,16 @@ Al rechazar via `POST responder`, la cotizacion activa debe quedar en estado **`
 ---
 
 
+### Descripción de Ítems en PDF de Cotización (Julio 2026)
+
+**Regla PDF**: En la tabla de ítems del PDF de cotización, la columna **Descripción** debe mostrar `articulos.descripcionEspecifica`, no `articulos.definicion`.
+
+**Motivo**: `definicion` representa la pieza estándar/categoría genérica, mientras que `descripcionEspecifica` contiene la descripción comercial exacta que debe ver el cliente en la cotización.
+
+**Anclas técnicas del issue**:
+- `heavy-api/resources/views/pdf/cotizacion.blade.php` — celda Descripción del listado de ítems.
+- `heavy-api/tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php` — regresión esperada.
+
 ### Observaciones al Generar Cotización desde Costeo (Julio 2026)
 
 **Regla UX/Negocio**: Al generar una cotización desde la vista de Costeo, el modal de confirmación debe permitir capturar las observaciones comerciales de la cotización antes de crearla. El valor ingresado se persiste en `cotizaciones.observaciones`, igual que el formulario de Editar Cotización.

@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-12T19:23:35-05:00",
-  "issue": "cotizacion-costeo-observaciones",
-  "description": "Capturar observaciones de cotizacion desde el modal de confirmacion de Costeo y persistirlas al generar la cotizacion, ajustando textos y estilos de botones del modal.",
+  "last_updated": "2026-07-12T19:51:44-05:00",
+  "issue": "cotizacion-pdf-descripcion-especifica",
+  "description": "Corregir la columna Descripción del PDF de cotización para que use descripcionEspecifica del artículo en lugar de definicion.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -2314,6 +2314,77 @@
         "tests": "vitest run dirigido exitoso (6/6). Los tests globales fallidos son deudas previas de localStorage"
       },
       "review_notes": "Reviewer: aprobado. Compilación y tests dirigidos exitosos. No se reportan regresiones visuales o de código."
+    },
+    {
+      "id": "cotizacion-pdf-descripcion-especifica-triage",
+      "description": "Triage: planificar que la columna Descripción del PDF de cotización use articulo.descripcionEspecifica en lugar de articulo.definicion.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/cotizacion-pdf-descripcion-especifica",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: cambio atómico en Blade del PDF con regresión backend enfocada."
+    },
+    {
+      "id": "cotizacion-pdf-descripcion-especifica-fix",
+      "description": "Backend/PDF: cambiar la celda Descripción del listado de ítems en cotizacion.blade.php para mostrar articulo.descripcionEspecifica, con fallback seguro a definicion si falta el dato histórico.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-pdf-descripcion-especifica-triage"
+      ],
+      "topic_key": "bugfix/cotizacion-pdf-descripcion-especifica",
+      "files": [
+        {
+          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l resources/views/pdf/cotizacion.blade.php OK",
+        "blade_cache": "php artisan view:cache OK",
+        "pint": "./vendor/bin/pint --test resources/views/pdf/cotizacion.blade.php OK",
+        "backend_full_suite": "DB_HOST=localhost php artisan test OK (17 passed, 391 deprecated, 1263 assertions; exit code 0)",
+        "phpstan": "vendor/bin/phpstan no instalado",
+        "scramble": "php artisan scramble:generate no disponible",
+        "review_result": "Aprobado: la columna Descripción del PDF prioriza articulo.descripcionEspecifica con fallback seguro a definicion."
+      },
+      "review_notes": "Reviewer: aprobado. El cambio es acotado al Blade del PDF, mantiene fallback para datos históricos y evita mostrar la definición genérica cuando existe descripción específica."
+    },
+    {
+      "id": "cotizacion-pdf-descripcion-especifica-tests",
+      "description": "Pruebas: agregar cobertura de regresión para validar que la tabla de ítems del PDF muestra descripcionEspecifica y no definicion del artículo.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-pdf-descripcion-especifica-fix"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "php -l tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php OK",
+        "pint": "./vendor/bin/pint --test tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php OK",
+        "backend_targeted": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php OK (1 test, 2 assertions; deprecation notices only)",
+        "backend_full_suite": "DB_HOST=localhost php artisan test OK (17 passed, 391 deprecated, 1263 assertions; exit code 0)",
+        "phpstan": "vendor/bin/phpstan no instalado",
+        "scramble": "php artisan scramble:generate no disponible",
+        "review_result": "Aprobado: la regresión valida que el PDF muestra descripcionEspecifica y no definicion."
+      },
+      "review_notes": "Reviewer: aprobado. La prueba crea un ítem real de cotización, renderiza el Blade del PDF y verifica explícitamente la descripción esperada."
     }
   ]
 }

@@ -408,7 +408,7 @@
                         @endif
                     </td>
                     <td class="text-left">
-                        {{ strtoupper($prp?->pedidoReferencia?->referencia?->articulo?->definicion ?? 'REPUESTO') }}
+                        {{ strtoupper($prp?->pedidoReferencia?->referencia?->articulo?->descripcionEspecifica ?? $prp?->pedidoReferencia?->referencia?->articulo?->definicion ?? 'REPUESTO') }}
                     </td>
                     <td class="text-center">
                         {{ strtoupper($prp?->marca?->nombre ?? 'N/A') }}
