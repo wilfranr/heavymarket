@@ -129,35 +129,13 @@ class CotizacionService
      */
     public function aprobarDesdePedido(Pedido $pedido, string $comentario = ''): void
     {
-        DB::transaction(function () use ($pedido, $comentario) {
-            // 1. Transitar pedido a Aprobado
-            $pedido->transitarA(PedidoEstado::Aprobado);
-            $pedido->save();
+        $cotizacionActiva = $this->cotizacionActivaParaPedido($pedido);
 
-            // 2. Buscar y aprobar cotizacion activa
-            $cotizacionActiva = Cotizacion::query()
-                ->where('pedido_id', $pedido->id)
-                ->whereIn('estado', ['Enviada', 'Borrador'])
-                ->latest('created_at')
-                ->first();
+        if (! $cotizacionActiva) {
+            throw new \InvalidArgumentException('No hay una cotización activa para aprobar.');
+        }
 
-            if ($cotizacionActiva) {
-                $observaciones = $cotizacionActiva->observaciones ?? '';
-                if ($comentario !== '') {
-                    $observaciones = trim($observaciones."\nAprobada: ".$comentario);
-                }
-                $cotizacionActiva->update([
-                    'estado' => 'Aprobada',
-                    'observaciones' => $observaciones,
-                ]);
-
-                // 3. Crear Orden de Trabajo
-                $this->crearOrdenTrabajo($cotizacionActiva);
-
-                // 4. Crear Orden de Compra
-                $this->crearOrdenCompra($cotizacionActiva);
-            }
-        });
+        $this->aprobar($cotizacionActiva, $comentario);
     }
 
     /**
@@ -169,30 +147,13 @@ class CotizacionService
      */
     public function rechazarDesdePedido(Pedido $pedido, string $comentario = ''): void
     {
-        DB::transaction(function () use ($pedido, $comentario) {
-            // 1. Transitar pedido a Rechazado
-            $pedido->transitarA(PedidoEstado::Rechazado, $comentario);
-            $pedido->comentarios_rechazo = $comentario;
-            $pedido->save();
+        $cotizacionActiva = $this->cotizacionActivaParaPedido($pedido);
 
-            // 2. Buscar y rechazar cotizacion activa
-            $cotizacionActiva = Cotizacion::query()
-                ->where('pedido_id', $pedido->id)
-                ->whereIn('estado', ['Enviada', 'Borrador'])
-                ->latest('created_at')
-                ->first();
+        if (! $cotizacionActiva) {
+            throw new \InvalidArgumentException('No hay una cotización activa para rechazar.');
+        }
 
-            if ($cotizacionActiva) {
-                $observaciones = $cotizacionActiva->observaciones ?? '';
-                if ($comentario !== '') {
-                    $observaciones = trim($observaciones."\nRechazada: ".$comentario);
-                }
-                $cotizacionActiva->update([
-                    'estado' => 'Rechazada',
-                    'observaciones' => $observaciones,
-                ]);
-            }
-        });
+        $this->rechazar($cotizacionActiva, $comentario);
     }
 
     /**
@@ -202,24 +163,44 @@ class CotizacionService
      * - Orden de Trabajo
      * - Orden de Compra (con referencias de proveedores)
      */
-    public function aprobar(Cotizacion $cotizacion): Cotizacion
+    public function aprobar(Cotizacion $cotizacion, string $comentario = ''): Cotizacion
     {
-        return DB::transaction(function () use ($cotizacion) {
-            // 1. Actualizar estado de cotización
-            $cotizacion->update(['estado' => 'Aprobada']);
+        return DB::transaction(function () use ($cotizacion, $comentario) {
+            $cotizacion->loadMissing(['pedido', 'referenciasProveedores.pedidoReferenciaProveedor']);
+            $pedido = $cotizacion->pedido;
 
-            // 2. Actualizar estado del pedido asociado
-            if ($cotizacion->pedido) {
-                $cotizacion->pedido->update(['estado' => 'Cotizado']);
+            if (! in_array($cotizacion->estado, ['Enviada', 'Borrador'], true)) {
+                throw new \InvalidArgumentException('Solo se pueden aprobar cotizaciones activas.');
             }
 
-            // 3. Crear Orden de Trabajo
-            $this->crearOrdenTrabajo($cotizacion);
+            if ($pedido) {
+                $pedido->transitarA(PedidoEstado::Aprobado);
+                $pedido->save();
+            }
 
-            // 4. Crear Orden de Compra
+            Cotizacion::query()
+                ->where('pedido_id', $cotizacion->pedido_id)
+                ->where('id', '!=', $cotizacion->id)
+                ->whereIn('estado', ['Enviada', 'Borrador'])
+                ->update(['estado' => 'No_Seleccionada']);
+
+            $observaciones = $cotizacion->observaciones ?? '';
+            if ($comentario !== '') {
+                $observaciones = trim($observaciones."
+Aprobada: ".$comentario);
+            }
+
+            $cotizacion->update([
+                'estado' => 'Aprobada',
+                'observaciones' => $observaciones ?: $cotizacion->observaciones,
+            ]);
+
+            $cotizacion->refresh()->load(['pedido', 'tercero', 'user', 'referenciasProveedores.pedidoReferenciaProveedor']);
+
+            $this->crearOrdenTrabajo($cotizacion);
             $this->crearOrdenCompra($cotizacion);
 
-            return $cotizacion->fresh(['pedido', 'tercero', 'user']);
+            return $cotizacion->fresh(['pedido', 'tercero', 'user', 'referenciasProveedores']);
         });
     }
 
@@ -286,7 +267,7 @@ class CotizacionService
                 continue;
             }
 
-            $proveedorId = $prp->tercero_id ?? null;
+            $proveedorId = $prp->proveedor_id ?? null;
             if (! $proveedorId) {
                 continue;
             }
@@ -298,8 +279,8 @@ class CotizacionService
             $proveedores[$proveedorId][] = [
                 'referencia_id' => $prp->referencia_id,
                 'cantidad' => $prp->cantidad,
-                'valor_unitario' => $prp->precio_unitario,
-                'valor_total' => $prp->valor_total ?? ($prp->cantidad * $prp->precio_unitario),
+                'valor_unitario' => $prp->valor_unidad,
+                'valor_total' => $prp->valor_total ?? ($prp->cantidad * $prp->valor_unidad),
             ];
         }
 
@@ -341,12 +322,26 @@ class CotizacionService
      */
     public function rechazar(Cotizacion $cotizacion, string $motivo = ''): Cotizacion
     {
+        if (! in_array($cotizacion->estado, ['Enviada', 'Borrador'], true)) {
+            throw new \InvalidArgumentException('Solo se pueden rechazar cotizaciones activas.');
+        }
+
         $cotizacion->update([
             'estado' => 'Rechazada',
-            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '')."\nRechazo: ".$motivo) : $cotizacion->observaciones,
+            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '')."
+Rechazo: ".$motivo) : $cotizacion->observaciones,
         ]);
 
-        return $cotizacion;
+        return $cotizacion->fresh(['pedido', 'tercero', 'user']);
+    }
+
+    private function cotizacionActivaParaPedido(Pedido $pedido): ?Cotizacion
+    {
+        return Cotizacion::query()
+            ->where('pedido_id', $pedido->id)
+            ->whereIn('estado', ['Enviada', 'Borrador'])
+            ->latest('created_at')
+            ->first();
     }
 
     /**
@@ -463,33 +458,59 @@ class CotizacionService
                 'observaciones' => $observacionesNormalizadas,
             ]);
 
-            // 2. Asociar los items seleccionados
+            // 2. Asociar los items seleccionados y congelar snapshot comercial
             $total = 0;
             foreach ($items as $itemData) {
-                CotizacionReferenciaProveedor::create([
-                    'cotizacion_id' => $cotizacion->id,
-                    'pedido_referencia_proveedor_id' => $itemData['id'],
-                    'mostrar_referencia' => $itemData['mostrar_referencia'],
-                ]);
+                $prov = PedidoReferenciaProveedor::with([
+                    'pedidoReferencia.referencia.articulo',
+                    'referencia.articulo',
+                    'marca',
+                    'tercero',
+                ])->find($itemData['id']);
 
-                // Sumar al total (asumiendo que el precio ya está en el proveedor)
-                $prov = PedidoReferenciaProveedor::find($itemData['id']);
-                if ($prov) {
-                    $total += $prov->valor_total;
+                if (! $prov) {
+                    continue;
                 }
+
+                CotizacionReferenciaProveedor::create(array_merge([
+                    'cotizacion_id' => $cotizacion->id,
+                    'pedido_referencia_proveedor_id' => $prov->id,
+                    'mostrar_referencia' => $itemData['mostrar_referencia'],
+                ], $this->snapshotReferenciaProveedor($prov)));
+
+                $total += (float) ($prov->valor_total ?? 0);
             }
 
             $cotizacion->update(['total' => $total]);
 
-            // 3. Actualizar estado del pedido solo si el flete está configurado
-            if ($fleteConfigurado) {
-                $pedido->update(['estado' => 'Cotizado']);
-            } else {
+            if (! $fleteConfigurado) {
                 $this->notificarFleteFaltante($pedido, $cotizacion, $items);
             }
 
-            return $cotizacion;
+            return $cotizacion->fresh(['referenciasProveedores']);
         });
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function snapshotReferenciaProveedor(PedidoReferenciaProveedor $proveedor): array
+    {
+        $referencia = $proveedor->pedidoReferencia?->referencia ?? $proveedor->referencia;
+        $articulo = $referencia?->articulo;
+
+        return [
+            'snapshot_referencia' => $referencia?->referencia,
+            'snapshot_descripcion' => $articulo?->descripcionEspecifica ?? $articulo?->definicion,
+            'snapshot_marca_id' => $proveedor->marca_id,
+            'snapshot_marca' => $proveedor->marca?->nombre,
+            'snapshot_proveedor_id' => $proveedor->proveedor_id,
+            'snapshot_proveedor_nombre' => $proveedor->tercero?->nombre,
+            'snapshot_entrega' => $proveedor->entrega_label,
+            'snapshot_cantidad' => $proveedor->cantidad,
+            'snapshot_valor_unidad' => $proveedor->valor_unidad,
+            'snapshot_valor_total' => $proveedor->valor_total,
+        ];
     }
 
     /**

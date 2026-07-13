@@ -111,7 +111,7 @@ class CotizacionTest extends TestCase
             'maquina_id' => $maquina->id,
             'user_id' => $user->id,
             'contacto_id' => $contacto->id,
-            'estado' => 'En_Analisis',
+            'estado' => 'En_Costeo',
         ]);
 
         $articulo = Articulo::create(['definicion' => 'REPUESTO TEST']);
@@ -167,7 +167,7 @@ class CotizacionTest extends TestCase
 
         $this->assertDatabaseHas('pedidos', [
             'id' => $data['pedido']->id,
-            'estado' => 'Cotizado',
+            'estado' => 'En_Costeo',
         ]);
     }
 

@@ -28,7 +28,7 @@ beforeEach(function () {
 
 it('aprueba pedido y crea OT/OC', function () {
     $pedido = Pedido::factory()->create([
-        'estado' => 'Cotizado',
+        'estado' => 'En_Costeo',
         'tercero_id' => $this->tercero->id,
         'user_id' => $this->vendedor->id,
     ]);
@@ -57,7 +57,7 @@ it('aprueba pedido y crea OT/OC', function () {
     expect(OrdenTrabajo::where('pedido_id', $pedido->id)->exists())->toBeTrue();
 })->skip('OC requiere proveedores con tercero_id en cotizacion_referencias_proveedores');
 
-it('rechaza aprobar si el pedido no esta Cotizado', function () {
+it('rechaza aprobar si el pedido no esta En Costeo ni Cotizado', function () {
     $pedido = Pedido::factory()->create([
         'estado' => 'Aprobado',
         'tercero_id' => $this->tercero->id,
@@ -70,7 +70,7 @@ it('rechaza aprobar si el pedido no esta Cotizado', function () {
         ]);
 
     $response->assertStatus(422)
-        ->assertJsonPath('message', 'Solo los pedidos en estado Cotizado pueden responderse.');
+        ->assertJsonPath('message', 'Solo los pedidos en estado En Costeo o Cotizado pueden responderse.');
 });
 
 it('rechaza aprobar sin respuesta', function () {
@@ -88,9 +88,9 @@ it('rechaza aprobar sin respuesta', function () {
 
 // === Rechazar ===
 
-it('rechaza pedido y marca cotizacion como Rechazada', function () {
+it('rechaza cotizacion y conserva pedido en costeo', function () {
     $pedido = Pedido::factory()->create([
-        'estado' => 'Cotizado',
+        'estado' => 'En_Costeo',
         'tercero_id' => $this->tercero->id,
         'user_id' => $this->vendedor->id,
     ]);
@@ -111,10 +111,10 @@ it('rechaza pedido y marca cotizacion como Rechazada', function () {
         ]);
 
     $response->assertOk()
-        ->assertJsonPath('data.estado', 'Rechazado')
-        ->assertJsonPath('message', 'Pedido rechazado');
+        ->assertJsonPath('data.estado', 'En_Costeo')
+        ->assertJsonPath('message', 'Cotización rechazada. El pedido permanece disponible para costeo.');
 
-    expect($pedido->fresh()->estado)->toBe('Rechazado');
+    expect($pedido->fresh()->estado)->toBe('En_Costeo');
     expect($cotizacion->fresh()->estado)->toBe('Rechazada');
 });
 
@@ -144,7 +144,7 @@ it('rechaza sin crear OT/OC al rechazar', function () {
     expect(OrdenCompra::where('pedido_id', $pedido->id)->exists())->toBeFalse();
 });
 
-it('rechaza sin comentario', function () {
+it('rechaza responder si no hay cotizacion activa', function () {
     $pedido = Pedido::factory()->create([
         'estado' => 'Cotizado',
         'tercero_id' => $this->tercero->id,
@@ -156,8 +156,8 @@ it('rechaza sin comentario', function () {
             'respuesta' => 'rechazar',
         ]);
 
-    $response->assertOk()
-        ->assertJsonPath('data.estado', 'Rechazado');
+    $response->assertStatus(422)
+        ->assertJsonPath('message', 'No hay una cotización activa para rechazar.');
 
-    expect($pedido->fresh()->estado)->toBe('Rechazado');
+    expect($pedido->fresh()->estado)->toBe('Cotizado');
 });

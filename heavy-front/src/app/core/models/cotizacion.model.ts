@@ -24,7 +24,7 @@ export interface Cotizacion {
 /**
  * Estados posibles de una cotización
  */
-export type CotizacionEstado = 'Pendiente' | 'Enviada' | 'Aprobada' | 'Rechazada' | 'Vencida' | 'En_Proceso' | 'Borrador';
+export type CotizacionEstado = 'Pendiente' | 'Enviada' | 'Aprobada' | 'Rechazada' | 'Vencida' | 'En_Proceso' | 'Borrador' | 'Anulada' | 'No_Seleccionada';
 
 /**
  * Modelo de CotizacionReferenciaProveedor
@@ -33,6 +33,17 @@ export interface CotizacionReferenciaProveedor {
     id: number;
     cotizacion_id: number;
     pedido_referencia_proveedor_id: number;
+    mostrar_referencia: boolean;
+    snapshot_referencia: string | null;
+    snapshot_descripcion: string | null;
+    snapshot_marca_id: number | null;
+    snapshot_marca: string | null;
+    snapshot_proveedor_id: number | null;
+    snapshot_proveedor_nombre: string | null;
+    snapshot_entrega: string | null;
+    snapshot_cantidad: number | null;
+    snapshot_valor_unidad: string | number | null;
+    snapshot_valor_total: string | number | null;
     created_at: string;
     updated_at: string;
 

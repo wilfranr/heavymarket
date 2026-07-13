@@ -754,9 +754,9 @@ class PedidoController extends Controller
 
         $this->authorize('update', $pedido);
 
-        if ($pedido->estado !== PedidoEstado::Cotizado->value) {
+        if (! in_array($pedido->estado, [PedidoEstado::En_Costeo->value, PedidoEstado::Cotizado->value], true)) {
             return response()->json([
-                'message' => 'Solo los pedidos en estado Cotizado pueden responderse.',
+                'message' => 'Solo los pedidos en estado En Costeo o Cotizado pueden responderse.',
             ], 422);
         }
 
@@ -790,7 +790,7 @@ class PedidoController extends Controller
                     $vendedor->notify(new SystemNotification(
                         'pedido_rechazado',
                         'Pedido #'.$pedido->id.' rechazado',
-                        'El cliente ha rechazado la cotizacion: '.($validated['comentario'] ?? 'Sin comentario'),
+                        'El cliente ha rechazado una cotizacion: '.($validated['comentario'] ?? 'Sin comentario'),
                         'pi-times-circle',
                         'red',
                         ['id' => $pedido->id]
@@ -799,7 +799,7 @@ class PedidoController extends Controller
 
                 return response()->json([
                     'data' => new PedidoResource($pedido->fresh()),
-                    'message' => 'Pedido rechazado',
+                    'message' => 'Cotización rechazada. El pedido permanece disponible para costeo.',
                 ]);
             }
         } catch (\InvalidArgumentException $e) {

@@ -19,11 +19,17 @@ import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/co
 import { Cotizacion } from '../../../core/models/cotizacion.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
-import { PedidoService } from '../../../core/services/pedido.service';
 import { formatearEntrega } from '../../../core/utils/entrega-plazo';
 
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+
+
+export const COTIZACION_ESTADOS_ACCIONABLES = ['Enviada', 'Borrador', 'En_Proceso', 'Pendiente'] as const;
+
+export function cotizacionPermiteRespuesta(estado: string): boolean {
+    return COTIZACION_ESTADOS_ACCIONABLES.includes(estado as (typeof COTIZACION_ESTADOS_ACCIONABLES)[number]);
+}
 
 /**
  * Componente de detalle de cotización
@@ -275,7 +281,7 @@ import { MaquinaDetailComponent } from '../../../shared/components/maquina-detai
                         <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="onBack()"><i class="pi pi-arrow-left"></i> Volver al listado</button>
                         @if (cot.estado !== 'Anulada') {
                             <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"><i class="pi pi-pencil"></i> Editar</button>
-                            @if (cot.estado === 'En_Proceso' || cot.estado === 'Pendiente') {
+                            @if (cotizacionPermiteRespuesta(cot.estado)) {
                                 <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;"><i class="pi pi-times"></i> Rechazar</button>
                                 <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"><i class="pi pi-check"></i> Aprobar</button>
                             }
@@ -412,12 +418,12 @@ export class DetailComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly cotizacionService = inject(CotizacionService);
-    private readonly pedidoService = inject(PedidoService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
     readonly formatearEntrega = formatearEntrega;
+    readonly cotizacionPermiteRespuesta = cotizacionPermiteRespuesta;
 
     cotizacion = signal<any | null>(null);
     cotizacionId = signal<number>(0);
@@ -536,14 +542,14 @@ export class DetailComponent implements OnInit {
 
     onApprove(): void {
         const cot = this.cotizacion();
-        if (!cot || !cot.pedido?.id) return;
+        if (!cot) return;
 
         this.confirmationService.confirm({
             message: '¿Está seguro de aprobar esta cotizacion? Se generaran la Orden de Trabajo y Orden de Compra automaticamente.',
             header: 'Aprobar Cotizacion',
             icon: 'pi pi-check-circle',
             accept: () => {
-                this.pedidoService.responderPedido(cot.pedido.id, 'aprobar').subscribe({
+                this.cotizacionService.approve(cot.id).subscribe({
                     next: () => {
                         this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotizacion aprobada. OT y OC generadas.' });
                         this.loadCotizacion(this.cotizacionId());
@@ -558,16 +564,16 @@ export class DetailComponent implements OnInit {
 
     onReject(): void {
         const cot = this.cotizacion();
-        if (!cot || !cot.pedido?.id) return;
+        if (!cot) return;
 
         this.confirmationService.confirm({
             message: '¿Está seguro de rechazar esta cotizacion?',
             header: 'Rechazar Cotizacion',
             icon: 'pi pi-times-circle',
             accept: () => {
-                this.pedidoService.responderPedido(cot.pedido.id, 'rechazar').subscribe({
+                this.cotizacionService.reject(cot.id).subscribe({
                     next: () => {
-                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotizacion rechazada' });
+                        this.messageService.add({ severity: 'warn', summary: 'Rechazada', detail: 'Cotizacion rechazada. El pedido permanece en costeo.' });
                         this.loadCotizacion(this.cotizacionId());
                     },
                     error: () => {
@@ -592,6 +598,8 @@ export class DetailComponent implements OnInit {
             case 'Vencida':
             case 'Anulada':
                 return 'danger';
+            case 'No_Seleccionada':
+                return 'secondary';
             default:
                 return 'secondary';
         }

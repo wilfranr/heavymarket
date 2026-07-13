@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-12T19:51:44-05:00",
-  "issue": "cotizacion-pdf-descripcion-especifica",
-  "description": "Corregir la columna Descripción del PDF de cotización para que use descripcionEspecifica del artículo en lugar de definicion.",
+  "last_updated": "2026-07-12T21:09:13-05:00",
+  "issue": "cotizacion-multiple-en-costeo",
+  "description": "Permitir multiples cotizaciones durante En_Costeo, mantener el pedido en costeo al generar cotizaciones, aprobar/rechazar cotizaciones especificas y congelar snapshot de items.",
   "workflow": "triage-incremental",
   "nodes": [
     {
@@ -2410,6 +2410,409 @@
         "exception": "Cierre autorizado por el usuario. Deuda técnica: reparar el entorno o mocks de localStorage que bloquean las pruebas de AuthService y LayoutService."
       },
       "review_notes": "Reviewer: aprobado con excepción explícita del usuario. La UI, el flujo de archivo, el build y git diff --check pasan. Se registra como deuda técnica el fallo de 16 pruebas de AuthService y LayoutService por localStorage no disponible."
+    },
+    {
+      "id": "cotizacion-multiple-costeo-triage",
+      "description": "Triage: documentar el nuevo flujo donde generar cotizaciones no saca el pedido de En_Costeo, se permiten multiples cotizaciones activas y Cotizado queda como decision pendiente.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/cotizacion-multiple-en-costeo",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage: decisiones confirmadas por usuario; requiere snapshot de items y aprobación/rechazo sobre cotizacion especifica."
+    },
+    {
+      "id": "cotizacion-multiple-costeo-schema-snapshot",
+      "description": "Backend/DB: agregar snapshot a cotizacion_referencia_proveedores para congelar datos comerciales del item al generar cotizacion: referencia, descripcion_especifica, marca, entrega, cantidad, valor_unidad, valor_total y mostrar_referencia. Incluir migracion y actualizar modelo/resource.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "cotizacion-multiple-costeo-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/",
+          "status": "validated",
+          "note": "Migración 2026_07_13_000001_add_snapshot_fields_to_cotizacion_referencia_proveedores.php aplicada en heavymarket_test"
+        },
+        {
+          "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "passed",
+        "test_db_migrate": "DB_HOST=localhost DB_DATABASE=heavymarket_test php artisan migrate --env=testing --force passed"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-service-finalizar",
+      "description": "Backend: modificar CotizacionService::finalizarCosteo para no cambiar pedido En_Costeo a Cotizado, permitir multiples cotizaciones Enviada/Borrador del mismo pedido y escribir snapshot por item al crear cotizacion.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-multiple-costeo-schema-snapshot"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "passed",
+        "phpunit": "DB_HOST=localhost php artisan test targeted cotizacion/pedido tests passed with existing deprecations"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-responder-cotizacion",
+      "description": "Backend: cambiar aprobacion/rechazo para operar sobre una cotizacion especifica. Aprobar desde En_Costeo o Cotizado transita pedido a Aprobado, marca esa cotizacion Aprobada, crea OT/OC y marca las demas cotizaciones activas del pedido como No_Seleccionada. Rechazar una cotizacion solo marca esa cotizacion Rechazada y mantiene pedido En_Costeo.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-multiple-costeo-service-finalizar"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Enums/PedidoEstado.php",
+          "status": "validated",
+          "note": "Permite transición En_Costeo -> Aprobado al aprobar cotización específica"
+        }
+      ],
+      "validation": {
+        "php_lint": "passed",
+        "phpunit": "DB_HOST=localhost php artisan test targeted cotizacion/pedido tests passed with existing deprecations"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-pdf-snapshot",
+      "description": "Backend/PDF: actualizar generacion de PDF para leer la tabla de items desde snapshot de cotizacion_referencia_proveedores y no desde lineas vivas de costeo, preservando PDFs historicos aunque se edite el costeo despues.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-multiple-costeo-schema-snapshot"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/resources/views/pdf/cotizacion.blade.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "php_lint": "passed",
+        "phpunit": "CotizacionSnapshotTest and CotizacionPdfDescripcionEspecificaTest passed"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-frontend-costeo",
+      "description": "Frontend/UI: tras generar cotizacion desde Costeo, descargar PDF y permanecer en la vista de Costeo. Agregar acceso/enlace a cotizaciones del pedido si aplica, sin navegar automaticamente a /app/cotizaciones.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-multiple-costeo-service-finalizar"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/cotizacion.service.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "vitest": "npx vitest run costeo.spec.ts detail.component.spec.ts passed",
+        "build": "npm run build passed"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-frontend-cotizacion-detail",
+      "description": "Frontend/UI: ajustar detalle de cotizacion para aprobar/rechazar la cotizacion especifica; permitir aprobar cuando pedido esta En_Costeo; ocultar boton Devolver a costeo si el pedido ya esta En_Costeo; mostrar estado No_Seleccionada.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-multiple-costeo-responder-cotizacion"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/cotizacion.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "vitest": "npx vitest run costeo.spec.ts detail.component.spec.ts passed",
+        "build": "npm run build passed"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-tests-backend",
+      "description": "Pruebas backend: cubrir que finalizarCosteo mantiene pedido En_Costeo y permite multiples cotizaciones Enviada/Borrador; snapshot no cambia al editar costeo; aprobar una cotizacion marca otras activas como No_Seleccionada y pedido Aprobado; rechazar una cotizacion mantiene pedido En_Costeo.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-multiple-costeo-responder-cotizacion",
+        "cotizacion-multiple-costeo-pdf-snapshot"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionFinalizarCosteoTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionSnapshotTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/CotizacionTest.php",
+          "status": "validated",
+          "note": "Debe actualizar expectativa legacy Cotizado -> En_Costeo"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Enums/PedidoEstadoTest.php",
+          "status": "validated",
+          "note": "Actualizado por rechazo de Reviewer"
+        }
+      ],
+      "validation": {
+        "phpunit": "DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionFinalizarCosteoTest.php tests/Feature/Api/PedidoResponderTest.php tests/Feature/Api/CotizacionSnapshotTest.php tests/Feature/Api/CotizacionPdfDescripcionEspecificaTest.php passed with deprecations",
+        "phpunit_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "phpunit_targeted_legacy": "DB_HOST=localhost php artisan test tests/Feature/CotizacionTest.php tests/Unit/Enums/PedidoEstadoTest.php passed with existing deprecations"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "cotizacion-multiple-costeo-tests-frontend",
+      "description": "Pruebas frontend: validar que Costeo permanece en la vista tras generar cotizacion y que detalle de cotizacion usa acciones sobre cotizacion especifica, oculta Devolver a costeo cuando pedido esta En_Costeo y reconoce No_Seleccionada.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-multiple-costeo-frontend-costeo",
+        "cotizacion-multiple-costeo-frontend-cotizacion-detail"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "vitest": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "build": "npm run build passed"
+      },
+      "review_validation": {
+        "reviewer_diff_check": "git diff --check passed",
+        "backend_global": "DB_HOST=localhost php artisan test passed with existing deprecations",
+        "frontend_specs": "npx vitest run src/app/features/pedidos/costeo/costeo.spec.ts src/app/features/cotizaciones/detail/detail.component.spec.ts passed",
+        "frontend_build": "npm run build passed with existing CommonJS warning for pusher-js",
+        "phpstan": "not installed in project",
+        "scramble": "scramble:generate command not available",
+        "frontend_lint": "lint script not configured"
+      }
+    },
+    {
+      "id": "maquina-modal-image-upload-impl",
+      "description": "Frontend/UI: en el modal compartido de creación y edición de máquinas, sustituir los dos selectores básicos de archivo por app-image-upload para permitir arrastrar, soltar y previsualizar. Conservar exactamente los rótulos Foto Máquina y Foto Placa ID, y preservar el envío FormData existente en foto y fotoId para los flujos desde terceros y creación de pedido.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/maquina-modal-image-upload",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "build": "npm run build (heavy-front) OK",
+        "diff_check": "git diff --check OK",
+        "tests": "npm run test:ci falló: 16 pruebas existentes de AuthService y LayoutService por localStorage no disponible; 94 pruebas pasaron.",
+        "lint": "npm run lint no está definido en heavy-front/package.json",
+        "exception": "Cierre autorizado por el usuario; las fallas de localStorage y la ausencia del script lint se mantienen como deuda técnica conocida."
+      },
+      "review_notes": "Reviewer: aprobado con excepción explícita del usuario. La UI conserva los labels y usa app-image-upload con salida File; build y diff check pasan. Las fallas de localStorage y la ausencia del script lint permanecen como deuda técnica conocida. El nodo de pruebas específico continúa pendiente."
+    },
+    {
+      "id": "maquina-modal-image-upload-tests",
+      "description": "Pruebas frontend: añadir cobertura para verificar que el modal compartido recibe archivos de app-image-upload y los conserva en los controles foto y fotoId antes de crear o actualizar una máquina.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "maquina-modal-image-upload-impl"
+      ],
+      "topic_key": "bugfix/maquina-modal-image-upload",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "tests": "npx vitest run src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts OK (2/2)",
+        "diff_check": "git diff --check OK"
+      },
+      "review_notes": "Reviewer: aprobado. La prueba focalizada cubre la recepción de File para foto y fotoId; 2/2 pruebas pasan."
+    },
+    {
+      "id": "terceros-proveedor-ocultar-sistemas-ui",
+      "description": "Frontend/UI: ocultar la sección heredada Sistemas en el detalle de terceros para Proveedor y Ambos, conservando Fabricantes y Categorías Comerciales como información comercial vigente.",
+      "status": "in_progress",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/terceros-proveedor-sistemas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/terceros/detail/detail.html",
+          "status": "writing"
+        }
+      ]
+    },
+    {
+      "id": "terceros-proveedor-ocultar-sistemas-tests",
+      "description": "Pruebas frontend: verificar que el detalle no renderiza Sistemas para Proveedor ni Ambos aun con datos legacy, y conserva Categorías Comerciales.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "terceros-proveedor-ocultar-sistemas-ui"
+      ],
+      "topic_key": "bugfix/terceros-proveedor-sistemas",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/terceros/detail/detail.component.spec.ts",
+          "status": "writing"
+        }
+      ]
     }
   ]
 }

@@ -378,6 +378,16 @@
                     $imagePath = null;
                     $articulo = $prp?->pedidoReferencia?->referencia?->articulo
                         ?? $prp?->referencia?->articulo;
+                    $cantidad = $item->snapshot_cantidad ?? $prp?->cantidad ?? 1;
+                    $referencia = $item->snapshot_referencia ?? $prp?->referencia?->referencia ?? 'N/A';
+                    $descripcion = $item->snapshot_descripcion
+                        ?? $prp?->pedidoReferencia?->referencia?->articulo?->descripcionEspecifica
+                        ?? $prp?->pedidoReferencia?->referencia?->articulo?->definicion
+                        ?? 'REPUESTO';
+                    $marca = $item->snapshot_marca ?? $prp?->marca?->nombre ?? 'N/A';
+                    $entrega = $item->snapshot_entrega ?? $prp?->entrega_label ?? 'SIN DEFINIR';
+                    $valorUnidad = $item->snapshot_valor_unidad ?? $prp?->valor_unidad ?? 0;
+                    $valorTotal = $item->snapshot_valor_total ?? $prp?->valor_total ?? 0;
 
                     if ($articulo) {
                         $rawFoto = $articulo->getRawOriginal('fotoDescriptiva');
@@ -398,29 +408,29 @@
                         @endif
                     </td>
                     <td class="text-center">
-                        {{ $prp?->cantidad ?? 1 }}
+                        {{ $cantidad }}
                     </td>
                     <td class="text-center">
                         @if($item->mostrar_referencia)
-                            {{ $prp?->referencia?->referencia ?? 'N/A' }}
+                            {{ $referencia }}
                         @else
                             N/A
                         @endif
                     </td>
                     <td class="text-left">
-                        {{ strtoupper($prp?->pedidoReferencia?->referencia?->articulo?->descripcionEspecifica ?? $prp?->pedidoReferencia?->referencia?->articulo?->definicion ?? 'REPUESTO') }}
+                        {{ strtoupper($descripcion) }}
                     </td>
                     <td class="text-center">
-                        {{ strtoupper($prp?->marca?->nombre ?? 'N/A') }}
+                        {{ strtoupper($marca) }}
                     </td>
                     <td class="text-center">
-                        {{ strtoupper($prp?->entrega_label ?? 'SIN DEFINIR') }}
+                        {{ strtoupper($entrega) }}
                     </td>
                     <td class="text-right">
-                        {{ number_format($prp?->valor_unidad ?? 0, 0, ',', '.') }}
+                        {{ number_format((float) $valorUnidad, 0, ',', '.') }}
                     </td>
                     <td class="text-right">
-                        {{ number_format($prp?->valor_total ?? 0, 0, ',', '.') }}
+                        {{ number_format((float) $valorTotal, 0, ',', '.') }}
                     </td>
                 </tr>
             @endforeach

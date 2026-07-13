@@ -268,6 +268,10 @@ class CotizacionController extends Controller
                 'message' => 'Cotización aprobada exitosamente',
             ]);
 
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al aprobar la cotización',
@@ -297,6 +301,10 @@ class CotizacionController extends Controller
                 'message' => 'Cotización rechazada exitosamente',
             ]);
 
+        } catch (\InvalidArgumentException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+            ], 422);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Error al rechazar la cotización',

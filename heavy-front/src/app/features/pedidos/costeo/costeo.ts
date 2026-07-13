@@ -1135,9 +1135,15 @@ export class CosteoComponent implements OnInit {
 
                     if (resp.data?.id && !esBorrador) {
                         this.descargarPDF(resp.data.id);
-                        setTimeout(() => this.router.navigate(['/app/cotizaciones']), 2000);
-                    } else if (resp.data?.id && esBorrador) {
-                        setTimeout(() => this.router.navigate(['/app/cotizaciones', resp.data.id]), 2500);
+                    }
+
+                    if (resp.data?.id) {
+                        this.messageService.add({
+                            severity: 'info',
+                            summary: 'Pedido en costeo',
+                            detail: 'El pedido permanece en Costeo para permitir nuevas cotizaciones.',
+                            life: 6000
+                        });
                     }
                 },
                 error: (err: any) => {

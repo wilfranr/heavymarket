@@ -91,7 +91,7 @@ it('finalizar costeo sin flete deja cotización en Borrador y notifica', functio
     );
 });
 
-it('finalizar costeo con flete configurado deja cotización Enviada', function () {
+it('finalizar costeo con flete configurado deja cotización Enviada y conserva pedido en costeo', function () {
     $usa = Country::factory()->create(['name' => 'Estados Unidos', 'iso2' => 'US', 'flete' => 3.5]);
     $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor', 'country_id' => $usa->id]);
     $cliente = Tercero::factory()->create(['tipo' => 'Cliente']);
@@ -137,7 +137,7 @@ it('finalizar costeo con flete configurado deja cotización Enviada', function (
         ->assertJsonPath('data.estado', 'Enviada')
         ->assertJsonPath('missing_freight_rate', false);
 
-    expect($pedido->fresh()->estado)->toBe('Cotizado');
+    expect($pedido->fresh()->estado)->toBe('En_Costeo');
 });
 
 it('finalizar costeo persiste observaciones comerciales de cotización', function () {
@@ -186,6 +186,8 @@ it('finalizar costeo persiste observaciones comerciales de cotización', functio
     $response->assertOk()
         ->assertJsonPath('data.observaciones', 'Observación comercial desde costeo');
 
-    expect(Cotizacion::query()->where('pedido_id', $pedido->id)->latest('id')->first()?->observaciones)
+    $cotizacion = Cotizacion::query()->where('pedido_id', $pedido->id)->latest('id')->first();
+
+    expect($cotizacion?->observaciones)
         ->toBe('Observación comercial desde costeo');
 });

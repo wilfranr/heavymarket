@@ -88,11 +88,47 @@ Las unicas mutaciones permitidas en estos estados son **transiciones de flujo** 
 
 `Aprobado` **no** implica que el pedido ya salio; solo que el cliente acepto. El avance a `Enviado` es accion de despacho posterior.
 
+
+### Cotizaciones múltiples durante Costeo (decisión Julio 2026)
+
+**Nueva regla de negocio**: Generar una cotización desde `En_Costeo` **no debe cambiar** el estado del pedido a `Cotizado`. El pedido permanece en `En_Costeo` para permitir generar tantas cotizaciones como sean necesarias durante la negociación y ajuste del costeo.
+
+**Decisiones confirmadas**:
+- El pedido solo sale de `En_Costeo` cuando se aprueba una cotización específica.
+- Aprobar una cotización transita el pedido a `Aprobado`, marca esa cotización como `Aprobada`, genera OT/OC y marca las demás cotizaciones activas del pedido como `No_Seleccionada`.
+- Rechazar una cotización marca solo esa cotización como `Rechazada`; el pedido permanece en `En_Costeo`.
+- Pueden existir múltiples cotizaciones en estado `Enviada`/`Borrador` para un mismo pedido mientras está en costeo.
+- La acción `Devolver a costeo` debe ocultarse cuando el pedido ya está en `En_Costeo`.
+- Tras generar una cotización desde Costeo, la UI debe permanecer en Costeo y no navegar automáticamente al listado de cotizaciones.
+
+**Snapshot obligatorio**: Cada cotización debe congelar los datos comerciales de sus ítems al momento de generarse. El PDF y la aprobación deben leer esos snapshots, no las líneas vivas de costeo, para que editar costos/proveedores después no altere cotizaciones históricas.
+
+Campos mínimos de snapshot por ítem:
+- referencia mostrada
+- descripción específica del artículo
+- marca
+- entrega
+- cantidad
+- valor unitario
+- valor total
+- bandera `mostrar_referencia`
+
+**Decisión pendiente**: conservar el estado `Cotizado` por compatibilidad, pero queda pendiente definir su significado futuro. Ya no será el estado automático al generar cotización desde Costeo.
+
+```mermaid
+flowchart LR
+    EC[En Costeo] -->|Generar cotización 1..N| EC
+    EC -->|Rechazar cotización específica| EC
+    EC -->|Aprobar cotización específica| AP[Aprobado]
+    AP -->|Despacho| EN[Enviado]
+    EN -->|Entrega| ET[Entregado]
+```
+
 ### Cotizaciones: activa vs anulada
 
 | Concepto | Regla |
 |----------|-------|
-| Cotizacion activa | Maximo **una** por pedido en `Enviada` o `Borrador` |
+| Cotizacion activa | Pueden existir **múltiples** por pedido en `Enviada` o `Borrador` mientras el pedido está en `En_Costeo` |
 | Al devolver desde `Cotizado` | Cotizacion activa pasa a **`Anulada`** (motivo + usuario + fecha) |
 | Nueva cotizacion | Se crea al **finalizar costeo** (flujo existente) |
 | `Rechazada` vs `Anulada` | `Rechazada` = decision del cliente; `Anulada` = correccion interna del flujo |
@@ -101,8 +137,8 @@ Las unicas mutaciones permitidas en estos estados son **transiciones de flujo** 
 
 | Tema | Estado | Notas |
 |------|--------|-------|
-| Versionado de cotizaciones (v1, v2) | Diferido | Consultar con cliente si vale oportunidades comerciales |
-| Pedido como contenedor de oportunidad | Diferido | Cambio de paradigma comercial |
+| Versionado de cotizaciones (v1, v2) | Reemplazado por snapshot | Se permiten múltiples cotizaciones con snapshot de ítems; numeración formal sigue diferida |
+| Pedido como contenedor de oportunidad | Aprobado parcialmente | Durante `En_Costeo` el pedido actúa como contenedor de múltiples cotizaciones |
 | Devolver desde `Aprobado` con OT generada | Fuera de alcance inicial | Requiere reglas de logistica |
 | Significado legacy de `Enviado` | Deprecado | Antes = cotizacion enviada; hoy = despacho al cliente |
 | Reabrir desde `Rechazado` | No permitido | Estado final; crear pedido nuevo si el cliente vuelve |
