@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-20T17:29:07-05:00",
-  "issue": "articulo-peso-obligatorio",
-  "description": "Implementar ciclo de vida de OC y ajustar recepción para que Logística registre eventos físicos desde OT mediante recepciones de compra auditables.",
+  "last_updated": "2026-07-20T18:03:00-05:00",
+  "issue": "maquinas-codigo-interno",
+  "description": "Agregar a Máquinas un identificador interno opcional y único, llamado codigo_interno, en backend, frontend, formularios/modales y recurso principal.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
     {
@@ -1919,6 +1919,406 @@
         "status": "approved",
         "approved_at": "2026-07-20T17:29:07-05:00"
       }
+    },
+    {
+      "id": "ref-temporal-triage",
+      "description": "Triage: eliminar uso de campo comentario en referencias temporales, dejando es_temporal como unico tag de identificacion. Impacto: 3 archivos PHP, 4 archivos de test.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/ref-temporal-comentario",
+      "files": [
+        {
+          "path": "docs/issues/ref-temporal-comentario.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Triage completado: se reinterpreta el issue. El cambio es SOLO en frontend - ocultar columna comentario en el listado de referencias. El backend NO se modifica."
+    },
+    {
+      "id": "ref-temporal-frontend",
+      "description": "Frontend: ocultar columna comentario en listado de referencias y quitar del globalFilterFields. Tag temporal permanece visible.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ref-temporal-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/referencias/list/list.html",
+          "status": "validated"
+        }
+      ],
+      "gate_results": {
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "git_diff_backend_referencias": "PASS: No hay cambios en ReferenciaController ni ReferenciaFactory"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T23:05:00-05:00"
+      },
+      "review_notes": "APPROVED: Columna comentario eliminada del listado. Tag temporal se mantiene en columna Referencia. Backend no fue modificado."
+    },
+    {
+      "id": "maquinas-codigo-interno-triage",
+      "description": "Triage: definir nombre canónico codigo_interno para el identificador interno de máquina y planificar impacto backend/frontend sin escribir implementación.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/maquinas-codigo-interno",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "triage_notes": [
+        "No existe docs/modulo_maquinas.md ni sección ## Mapa de Implementación específica; se consultaron docs/especificacion_funcional.md y docs/diccionario_datos.md para el dominio de Máquinas.",
+        "Nombre canónico elegido: codigo_interno. Etiqueta UI: Código interno. Se evita placa ID porque fotoId ya representa la foto de la placa/ID y podría confundirse con archivos.",
+        "El campo debe ser nullable para datos históricos y unique cuando esté presente para que funcione como identificador interno.",
+        "La implementación debe incluir formularios de página crear/editar y el componente shared maquina-create-modal, que funciona tanto para creación como para edición desde pedidos/terceros."
+      ]
+    },
+    {
+      "id": "maquinas-codigo-interno-backend-schema",
+      "description": "Backend/SQL: agregar columna nullable unique codigo_interno a maquinas y mantener el esquema base de testing sincronizado.",
+      "status": "in_progress",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "maquinas-codigo-interno-triage"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_174100_add_codigo_interno_to_maquinas_table.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_01_01_000001_create_base_tables_for_testing.php",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "La columna maquinas.codigo_interno es string nullable y única cuando existe.",
+        "La migración es reversible y compatible con datos históricos sin backfill obligatorio.",
+        "El esquema base usado por tests crea la columna desde cero."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó sql_query_analyst antes de editar migraciones.",
+        "Migración incremental defensiva con Schema::hasColumn para convivir con migración base consolidada de testing."
+      ],
+      "validation": {
+        "php_lint": "PASS: php -l migration nueva",
+        "backend_targeted_tests": "PASS: php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php (19 deprecations preexistentes rtrim(null))",
+        "pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados"
+      },
+      "review_notes": [
+        "REJECTED por Reviewer: la migración incremental es defensiva en up(), pero down() puede borrar codigo_interno cuando la columna fue creada por la migración base consolidada de testing. Ajustar reversión para no eliminar una columna que no creó o documentar/implementar patrón seguro de rollback."
+      ]
+    },
+    {
+      "id": "maquinas-codigo-interno-backend-model-resource",
+      "description": "Backend: exponer codigo_interno en modelo, normalización/factory y MaquinaResource principal.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "maquinas-codigo-interno-backend-schema"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Models/Maquina.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/MaquinaResource.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/database/factories/MaquinaFactory.php",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "codigo_interno está en $fillable.",
+        "codigo_interno se normaliza como code sin alterar serie.",
+        "MaquinaResource retorna codigo_interno en el JSON principal.",
+        "La factory genera valores coherentes para pruebas sin romper unicidad."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se agregó codigo_interno a fillable, normalización, factory y MaquinaResource."
+      ],
+      "validation": {
+        "php_lint": "PASS",
+        "pint_targeted": "PASS"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-backend-validation",
+      "description": "Backend validación: aceptar codigo_interno en Store/UpdateMaquinaRequest con máximo y unicidad ignorando el registro actual en edición.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "maquinas-codigo-interno-backend-model-resource"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/StoreMaquinaRequest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateMaquinaRequest.php",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "Store valida codigo_interno como nullable|string|max:100|unique:maquinas,codigo_interno.",
+        "Update valida codigo_interno ignorando el id de la máquina editada.",
+        "Los mensajes de error usan la etiqueta Código interno."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Store/Update aceptan codigo_interno nullable, max 100 y único; Update ignora el registro actual."
+      ],
+      "validation": {
+        "php_lint": "PASS",
+        "backend_targeted_tests": "PASS",
+        "pint_targeted": "PASS"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-backend-tests",
+      "description": "Tests backend: cubrir serialización, creación/edición y validación de unicidad de codigo_interno.",
+      "status": "awaiting_review",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "maquinas-codigo-interno-backend-validation"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/MaquinaControllerTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Http/Resources/MaquinaResourceTest.php",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test archivos backend afectados"
+      ],
+      "acceptance_criteria": [
+        "El resource test espera codigo_interno.",
+        "Feature test confirma que se guarda y actualiza codigo_interno.",
+        "Feature test rechaza duplicados cuando codigo_interno no es null."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó automated_tester antes de editar tests backend.",
+        "Se agregó cobertura de creación, actualización, duplicado y resource codigo_interno."
+      ],
+      "validation": {
+        "backend_targeted_tests": "PASS: 19 tests, 107 assertions, deprecations preexistentes rtrim(null)",
+        "pint_targeted": "PASS después de formatear MaquinaControllerTest.php"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-frontend-models",
+      "description": "Frontend contrato: agregar codigo_interno a Maquina, CreateMaquinaDto y UpdateMaquinaDto sin usar any.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "maquinas-codigo-interno-backend-tests"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/maquina.model.ts",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "Maquina.codigo_interno acepta string|null.",
+        "Create/Update DTOs incluyen codigo_interno opcional.",
+        "No se introducen any nuevos."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se agregó codigo_interno al contrato TypeScript Maquina/Create/Update."
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build (warning CommonJS pusher-js preexistente)",
+        "frontend_vitest": "PASS: npm run test:ci (18 files, 127 tests)"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-frontend-create-page",
+      "description": "Frontend/UI: incluir Código interno en la página dedicada de creación de máquinas y enviarlo en FormData.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "maquinas-codigo-interno-frontend-models"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/maquinas/create/create.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/create/create.html",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "El formulario tiene control codigo_interno con maxLength 100.",
+        "El campo aparece en Información Técnica con label Código interno y placeholder claro.",
+        "Se agrega a FormData solo si tiene valor."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Campo Código interno agregado a página create y FormData."
+      ],
+      "validation": {
+        "frontend_build": "PASS",
+        "frontend_vitest": "PASS"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-frontend-edit-page",
+      "description": "Frontend/UI: incluir Código interno en la página dedicada de edición de máquinas, precargarlo y enviarlo en FormData.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "maquinas-codigo-interno-frontend-create-page"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/maquinas/edit/edit.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/edit/edit.html",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "El formulario de edición precarga codigo_interno desde la API.",
+        "El campo usa maxLength 100 y se muestra junto a serie/modelo sin romper layout claro/oscuro.",
+        "Se envía en FormData cuando tenga valor y se permite limpiar enviando cadena vacía/null según contrato backend."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Campo Código interno agregado a página edit, con precarga y envío para limpiar valor."
+      ],
+      "validation": {
+        "frontend_build": "PASS",
+        "frontend_vitest": "PASS"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-shared-modal",
+      "description": "Frontend/UI modal: incluir Código interno en app-maquina-create-modal para creación y edición desde terceros/pedidos, con prueba del componente.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "maquinas-codigo-interno-frontend-models"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "El modal crea y edita codigo_interno usando el mismo componente.",
+        "loadMaquinaForEdit precarga codigo_interno.",
+        "saveMaquina agrega codigo_interno al FormData.",
+        "El spec cubre el control o el envío del campo."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Campo Código interno agregado al modal compartido para crear/editar desde terceros/pedidos."
+      ],
+      "validation": {
+        "frontend_build": "PASS",
+        "frontend_vitest": "PASS: incluye spec de control codigo_interno"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-frontend-resource-display",
+      "description": "Frontend/UI recurso principal: mostrar Código interno en lista y detalle de máquinas para que el usuario pueda identificar el equipo.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "maquinas-codigo-interno-frontend-edit-page",
+        "maquinas-codigo-interno-shared-modal"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/maquinas/list/list.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/detail/detail.html",
+          "status": "implemented"
+        }
+      ],
+      "acceptance_criteria": [
+        "La lista incluye columna o visualización compacta de Código interno sin desbordar la tabla.",
+        "El detalle incluye Código interno en Detalles Técnicos.",
+        "Los estados vacíos muestran N/A o guion de forma consistente."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Código interno visible en lista y detalle de máquinas."
+      ],
+      "validation": {
+        "frontend_build": "PASS",
+        "frontend_vitest": "PASS",
+        "diff_check": "PASS: git diff --check"
+      }
+    },
+    {
+      "id": "maquinas-codigo-interno-review",
+      "description": "Reviewer: auditar backend/frontend del campo codigo_interno, validar todos los archivos listados y ejecutar gates dirigidos antes de marcar done.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "maquinas-codigo-interno-backend-tests",
+        "maquinas-codigo-interno-frontend-resource-display"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-api && php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test archivos backend afectados",
+        "cd heavy-front && npm run build",
+        "cd heavy-front && npm run test:ci",
+        "git diff --check"
+      ],
+      "acceptance_criteria": [
+        "Todos los archivos modificados quedan en estado validated antes de cerrar.",
+        "No existen usos de any nuevos en los cambios frontend.",
+        "El campo está presente en backend resource, modelos TS, páginas crear/editar, modal shared y vistas principales.",
+        "Solo el Reviewer puede pasar nodos a done."
+      ],
+      "review_notes": [
+        "Reviewer ejecutó gates y pasaron, pero se rechaza schema por riesgo de rollback defensivo con migración base consolidada."
+      ]
     }
   ]
 }

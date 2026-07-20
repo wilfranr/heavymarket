@@ -43,7 +43,7 @@
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} referencias"
             [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['referencia', 'comentario']"
+            [globalFilterFields]="['referencia']"
             (onLazyLoad)="onLazyLoad($event)"
             responsiveLayout="scroll"
             styleClass="p-datatable-sm"
@@ -67,7 +67,6 @@
                     <th pSortableColumn="referencia">Referencia <p-sortIcon field="referencia"></p-sortIcon></th>
                     <th pSortableColumn="created_at">Fecha Creación <p-sortIcon field="created_at"></p-sortIcon></th>
                     <th>Marca</th>
-                    <th>Comentario</th>
                     <th>Artículo Relacionado</th>
                     <th style="width: 10rem">Acciones</th>
                 </tr>
@@ -112,18 +111,6 @@
                                 } @else {
                                 <span class="text-gray-400">-</span>
                                 }
-                            </ng-template>
-                        </p-cellEditor>
-                    </td>
-                    <td>
-                        <p-cellEditor>
-                            <ng-template pTemplate="input">
-                                <textarea pTextarea [(ngModel)]="editingReferencias[referencia.id].comentario" rows="2" class="w-full" style="resize: none"></textarea>
-                            </ng-template>
-                            <ng-template pTemplate="output">
-                                <span class="text-sm text-gray-600" [title]="referencia.comentario || ''">
-                                    {{ referencia.comentario ? (referencia.comentario.length > 50 ? referencia.comentario.substring(0, 50) + '...' : referencia.comentario) : '-' }}
-                                </span>
                             </ng-template>
                         </p-cellEditor>
                     </td>
@@ -177,7 +164,7 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="6" class="text-center py-8">
+                    <td colspan="5" class="text-center py-8">
                         <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
                         <p class="text-gray-600">No se encontraron referencias</p>
                     </td>
