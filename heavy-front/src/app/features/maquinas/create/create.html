@@ -93,6 +93,15 @@
                                 }
                             </div>
 
+                            <!-- Código interno -->
+                            <div class="field">
+                                <label for="codigo_interno" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1"> Código interno </label>
+                                <input pInputText id="codigo_interno" formControlName="codigo_interno" placeholder="Código interno de flota" class="w-full rounded-2xl" />
+                                @if (maquinaForm.get('codigo_interno')?.invalid && maquinaForm.get('codigo_interno')?.touched) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El código interno no puede exceder 100 caracteres</small>
+                                }
+                            </div>
+
                             <!-- Serie -->
                             <div class="field">
                                 <label for="serie" class="block text-[11px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1"> Serie </label>

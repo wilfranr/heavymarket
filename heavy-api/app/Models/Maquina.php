@@ -17,6 +17,7 @@ class Maquina extends Model
         'tipo', // 'tipo' is a foreign key to the 'listas' table
         'modelo',
         'fabricante_id',
+        'codigo_interno',
         'serie',
         'arreglo',
         'foto',
@@ -44,6 +45,7 @@ class Maquina extends Model
      */
     protected $normalizableAttributes = [
         'modelo' => 'title',
+        'codigo_interno' => 'code',
         'serie' => 'code',
         'arreglo' => 'sentence',
     ];

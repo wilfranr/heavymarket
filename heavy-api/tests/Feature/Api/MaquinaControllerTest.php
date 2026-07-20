@@ -35,7 +35,7 @@ it('permite listar máquinas', function () {
     $response->assertStatus(200)
         ->assertJsonStructure([
             'data' => [
-                '*' => ['id', 'tipo', 'modelo', 'fabricante_id', 'serie', 'estado_revision'],
+                '*' => ['id', 'tipo', 'modelo', 'fabricante_id', 'codigo_interno', 'serie', 'estado_revision'],
             ],
             'meta' => ['current_page', 'total'],
         ]);
@@ -48,17 +48,19 @@ it('permite crear máquina', function () {
             'modelo' => 'CAT 320',
             'fabricante_id' => $this->fabricante->id,
             'serie' => 'ABC123456',
+            'codigo_interno' => 'HM-EXC-001',
         ]);
 
     $response->assertStatus(201)
         ->assertJsonStructure([
-            'data' => ['id', 'tipo', 'modelo', 'fabricante_id', 'serie', 'estado_revision'],
+            'data' => ['id', 'tipo', 'modelo', 'fabricante_id', 'codigo_interno', 'serie', 'estado_revision'],
             'message',
         ]);
 
     expectDatabaseHas('maquinas', [
         'modelo' => 'Cat 320',
         'serie' => 'ABC123456',
+        'codigo_interno' => 'HM-EXC-001',
     ]);
 });
 
@@ -72,6 +74,7 @@ it('permite actualizar máquina', function () {
     $response = $this->actingAs($this->user, 'sanctum')
         ->putJson("/v1/maquinas/{$maquina->id}", [
             'modelo' => 'CAT 320 ACTUALIZADO',
+            'codigo_interno' => 'HM-EXC-002',
             'estado_revision' => 'revisado',
         ]);
 
@@ -79,7 +82,44 @@ it('permite actualizar máquina', function () {
 
     $maquina->refresh();
     expect($maquina->modelo)->toBe('Cat 320 Actualizado')
+        ->and($maquina->codigo_interno)->toBe('HM-EXC-002')
         ->and($maquina->estado_revision)->toBe('revisado');
+});
+
+it('rechaza código interno duplicado', function () {
+    Maquina::factory()->create([
+        'tipo' => $this->tipoMaquina->id,
+        'fabricante_id' => $this->fabricante->id,
+        'codigo_interno' => 'HM-DUP-001',
+    ]);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/maquinas', [
+            'tipo' => $this->tipoMaquina->id,
+            'modelo' => 'CAT 320',
+            'fabricante_id' => $this->fabricante->id,
+            'codigo_interno' => 'HM-DUP-001',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['codigo_interno']);
+});
+
+it('permite mantener código interno al actualizar la misma máquina', function () {
+    $maquina = Maquina::factory()->create([
+        'tipo' => $this->tipoMaquina->id,
+        'fabricante_id' => $this->fabricante->id,
+        'codigo_interno' => 'HM-SAME-001',
+    ]);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson("/v1/maquinas/{$maquina->id}", [
+            'modelo' => 'CAT 320 RENOVADA',
+            'codigo_interno' => 'HM-SAME-001',
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJsonPath('data.codigo_interno', 'HM-SAME-001');
 });
 
 it('rechaza crear máquina sin tipo', function () {

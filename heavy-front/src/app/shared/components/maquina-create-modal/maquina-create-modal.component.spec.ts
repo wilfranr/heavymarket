@@ -27,6 +27,15 @@ describe('MaquinaCreateModalComponent', () => {
         (component as any).initForm();
     });
 
+    it('incluye el control codigo_interno en el formulario', () => {
+        const control = component.createMaquinaForm.get('codigo_interno');
+
+        expect(control).toBeTruthy();
+        control?.setValue('HM-MODAL-001');
+
+        expect(control?.value).toBe('HM-MODAL-001');
+    });
+
     it('guarda la foto seleccionada por el cargador en el formulario', () => {
         const foto = new File(['foto'], 'maquina.png', { type: 'image/png' });
 

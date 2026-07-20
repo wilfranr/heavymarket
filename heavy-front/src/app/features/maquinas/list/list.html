@@ -51,7 +51,7 @@
             [showCurrentPageReport]="true"
             currentPageReportTemplate="Mostrando {first} a {last} de {totalRecords} máquinas"
             [rowsPerPageOptions]="[10, 25, 50]"
-            [globalFilterFields]="['modelo', 'serie', 'arreglo']"
+            [globalFilterFields]="['modelo', 'codigo_interno', 'serie', 'arreglo']"
             (onPage)="onPageChange($event)"
             (onSort)="onSort($event)"
             responsiveLayout="scroll"
@@ -73,6 +73,7 @@
                     <th>Tipo</th>
                     <th>Fabricante</th>
                     <th pSortableColumn="modelo">Modelo <p-sortIcon field="modelo"></p-sortIcon></th>
+                    <th>Código interno</th>
                     <th>Serie</th>
                     <th>Arreglo</th>
                     <th>Revisión</th>
@@ -110,6 +111,9 @@
                         <span class="font-semibold">{{ maquina.modelo }}</span>
                     </td>
                     <td>
+                        <span class="text-sm font-medium">{{ maquina.codigo_interno || '-' }}</span>
+                    </td>
+                    <td>
                         <span class="text-sm">{{ maquina.serie || '-' }}</span>
                     </td>
                     <td>
@@ -130,7 +134,7 @@
 
             <ng-template pTemplate="emptymessage">
                 <tr>
-                    <td colspan="9" class="text-center py-8">
+                    <td colspan="10" class="text-center py-8">
                         <i class="pi pi-inbox text-4xl text-gray-400 mb-2"></i>
                         <p class="text-gray-600">No se encontraron máquinas</p>
                     </td>

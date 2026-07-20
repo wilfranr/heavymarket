@@ -58,6 +58,7 @@ export interface Maquina {
     tipo: number; // ID de lista donde tipo='Tipo de Máquina'
     modelo: string;
     fabricante_id: number;
+    codigo_interno: string | null;
     serie: string | null;
     arreglo: string | null;
     foto: string | null;
@@ -87,6 +88,7 @@ export interface CreateMaquinaDto {
     tipo: number;
     modelo: string;
     fabricante_id: number;
+    codigo_interno?: string;
     serie?: string;
     arreglo?: string;
     foto?: string;
@@ -100,6 +102,7 @@ export interface UpdateMaquinaDto {
     tipo?: number;
     modelo?: string;
     fabricante_id?: number;
+    codigo_interno?: string | null;
     serie?: string;
     arreglo?: string;
     foto?: string;

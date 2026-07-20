@@ -98,6 +98,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
                         tipo: m.tipo_id ? Number(m.tipo_id) : m.tipo?.id ? Number(m.tipo.id) : m.tipo ? Number(m.tipo) : null,
                         fabricante_id: m.fabricante_id ? Number(m.fabricante_id) : m.fabricante?.id ? Number(m.fabricante.id) : null,
                         modelo: m.modelo,
+                        codigo_interno: m.codigo_interno ?? '',
                         serie: m.serie ?? '',
                         arreglo: m.arreglo ?? '',
                         foto: null,
@@ -131,6 +132,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
             tipo: [null, [Validators.required]],
             fabricante_id: [null, [Validators.required]],
             modelo: ['', [Validators.required]],
+            codigo_interno: ['', [Validators.maxLength(100)]],
             serie: [''],
             arreglo: [''],
             foto: [null],
@@ -254,6 +256,7 @@ export class MaquinaCreateModalComponent implements OnInit, OnChanges {
         formData.append('tipo', String(formValue.tipo));
         formData.append('modelo', formValue.modelo);
         formData.append('fabricante_id', String(formValue.fabricante_id));
+        formData.append('codigo_interno', formValue.codigo_interno || '');
         if (formValue.serie) formData.append('serie', formValue.serie);
         if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
         if (this.terceroId) formData.append('tercero_id', this.terceroId.toString());

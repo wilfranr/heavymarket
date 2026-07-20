@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-20T18:03:00-05:00",
+  "last_updated": "2026-07-20T18:08:00-05:00",
   "issue": "maquinas-codigo-interno",
   "description": "Agregar a Máquinas un identificador interno opcional y único, llamado codigo_interno, en backend, frontend, formularios/modales y recurso principal.",
   "workflow": "harness-triage-multiagent",
@@ -1988,7 +1988,7 @@
     {
       "id": "maquinas-codigo-interno-backend-schema",
       "description": "Backend/SQL: agregar columna nullable unique codigo_interno a maquinas y mantener el esquema base de testing sincronizado.",
-      "status": "in_progress",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": [
         "maquinas-codigo-interno-triage"
@@ -1997,35 +1997,39 @@
       "files": [
         {
           "path": "heavy-api/database/migrations/2026_07_20_174100_add_codigo_interno_to_maquinas_table.php",
-          "status": "implemented"
-        },
-        {
-          "path": "heavy-api/database/migrations/2026_01_01_000001_create_base_tables_for_testing.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
         "La columna maquinas.codigo_interno es string nullable y única cuando existe.",
-        "La migración es reversible y compatible con datos históricos sin backfill obligatorio.",
-        "El esquema base usado por tests crea la columna desde cero."
+        "La migración incremental es reversible y compatible con datos históricos sin backfill obligatorio.",
+        "El esquema final de testing obtiene codigo_interno al ejecutar la migración incremental después de la base consolidada, evitando duplicidad en RefreshDatabase."
       ],
       "implementation_notes": [
-        "Role: Implementer. Se invocó sql_query_analyst antes de editar migraciones.",
-        "Migración incremental defensiva con Schema::hasColumn para convivir con migración base consolidada de testing."
+        "Role: Implementer. Se invocó sql_query_analyst antes de corregir el rechazo de Reviewer.",
+        "Corrección: la migración incremental queda como única responsable de crear/eliminar codigo_interno; se retira el cambio neto de la migración base consolidada para evitar rollback ambiguo."
       ],
       "validation": {
-        "php_lint": "PASS: php -l migration nueva",
+        "php_lint": "PASS: php -l heavy-api/database/migrations/2026_07_20_174100_add_codigo_interno_to_maquinas_table.php",
         "backend_targeted_tests": "PASS: php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php (19 deprecations preexistentes rtrim(null))",
-        "pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados"
+        "pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados",
+        "diff_check": "PASS: git diff --check"
       },
       "review_notes": [
-        "REJECTED por Reviewer: la migración incremental es defensiva en up(), pero down() puede borrar codigo_interno cuando la columna fue creada por la migración base consolidada de testing. Ajustar reversión para no eliminar una columna que no creó o documentar/implementar patrón seguro de rollback."
-      ]
+        "REJECTED por Reviewer: la migración incremental es defensiva en up(), pero down() puede borrar codigo_interno cuando la columna fue creada por la migración base consolidada de testing. Ajustar reversión para no eliminar una columna que no creó o documentar/implementar patrón seguro de rollback.",
+        "CORRECTED by Implementer: se elimina el cambio neto en la migración base consolidada; codigo_interno ahora lo crea y revierte únicamente la migración incremental, manteniendo rollback determinístico."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
+      }
     },
     {
       "id": "maquinas-codigo-interno-backend-model-resource",
       "description": "Backend: exponer codigo_interno en modelo, normalización/factory y MaquinaResource principal.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "maquinas-codigo-interno-backend-schema"
@@ -2034,15 +2038,15 @@
       "files": [
         {
           "path": "heavy-api/app/Models/Maquina.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Resources/MaquinaResource.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/database/factories/MaquinaFactory.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2057,12 +2061,18 @@
       "validation": {
         "php_lint": "PASS",
         "pint_targeted": "PASS"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-backend-validation",
       "description": "Backend validación: aceptar codigo_interno en Store/UpdateMaquinaRequest con máximo y unicidad ignorando el registro actual en edición.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "maquinas-codigo-interno-backend-model-resource"
@@ -2071,11 +2081,11 @@
       "files": [
         {
           "path": "heavy-api/app/Http/Requests/StoreMaquinaRequest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Requests/UpdateMaquinaRequest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2090,12 +2100,18 @@
         "php_lint": "PASS",
         "backend_targeted_tests": "PASS",
         "pint_targeted": "PASS"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-backend-tests",
       "description": "Tests backend: cubrir serialización, creación/edición y validación de unicidad de codigo_interno.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "maquinas-codigo-interno-backend-validation"
@@ -2104,11 +2120,11 @@
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/MaquinaControllerTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Unit/Http/Resources/MaquinaResourceTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
@@ -2127,12 +2143,18 @@
       "validation": {
         "backend_targeted_tests": "PASS: 19 tests, 107 assertions, deprecations preexistentes rtrim(null)",
         "pint_targeted": "PASS después de formatear MaquinaControllerTest.php"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-frontend-models",
       "description": "Frontend contrato: agregar codigo_interno a Maquina, CreateMaquinaDto y UpdateMaquinaDto sin usar any.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "maquinas-codigo-interno-backend-tests"
@@ -2141,7 +2163,7 @@
       "files": [
         {
           "path": "heavy-front/src/app/core/models/maquina.model.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2155,12 +2177,18 @@
       "validation": {
         "frontend_build": "PASS: npm run build (warning CommonJS pusher-js preexistente)",
         "frontend_vitest": "PASS: npm run test:ci (18 files, 127 tests)"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-frontend-create-page",
       "description": "Frontend/UI: incluir Código interno en la página dedicada de creación de máquinas y enviarlo en FormData.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "maquinas-codigo-interno-frontend-models"
@@ -2169,11 +2197,11 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/maquinas/create/create.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/maquinas/create/create.html",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2187,12 +2215,18 @@
       "validation": {
         "frontend_build": "PASS",
         "frontend_vitest": "PASS"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-frontend-edit-page",
       "description": "Frontend/UI: incluir Código interno en la página dedicada de edición de máquinas, precargarlo y enviarlo en FormData.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "maquinas-codigo-interno-frontend-create-page"
@@ -2201,11 +2235,11 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/maquinas/edit/edit.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/maquinas/edit/edit.html",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2219,12 +2253,18 @@
       "validation": {
         "frontend_build": "PASS",
         "frontend_vitest": "PASS"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-shared-modal",
       "description": "Frontend/UI modal: incluir Código interno en app-maquina-create-modal para creación y edición desde terceros/pedidos, con prueba del componente.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "maquinas-codigo-interno-frontend-models"
@@ -2233,15 +2273,15 @@
       "files": [
         {
           "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2256,12 +2296,18 @@
       "validation": {
         "frontend_build": "PASS",
         "frontend_vitest": "PASS: incluye spec de control codigo_interno"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-frontend-resource-display",
       "description": "Frontend/UI recurso principal: mostrar Código interno en lista y detalle de máquinas para que el usuario pueda identificar el equipo.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "maquinas-codigo-interno-frontend-edit-page",
@@ -2271,11 +2317,11 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/maquinas/list/list.html",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/maquinas/detail/detail.html",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "acceptance_criteria": [
@@ -2290,19 +2336,98 @@
         "frontend_build": "PASS",
         "frontend_vitest": "PASS",
         "diff_check": "PASS: git diff --check"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
       }
     },
     {
       "id": "maquinas-codigo-interno-review",
       "description": "Reviewer: auditar backend/frontend del campo codigo_interno, validar todos los archivos listados y ejecutar gates dirigidos antes de marcar done.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "maquinas-codigo-interno-backend-tests",
         "maquinas-codigo-interno-frontend-resource-display"
       ],
       "topic_key": "arch/heavy-audit-history",
-      "files": [],
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_174100_add_codigo_interno_to_maquinas_table.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Maquina.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/MaquinaResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/factories/MaquinaFactory.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreMaquinaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateMaquinaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/MaquinaControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Http/Resources/MaquinaResourceTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/maquina.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/list/list.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/maquinas/detail/detail.html",
+          "status": "validated"
+        }
+      ],
       "gates": [
         "cd heavy-api && php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php",
         "cd heavy-api && ./vendor/bin/pint --test archivos backend afectados",
@@ -2317,8 +2442,21 @@
         "Solo el Reviewer puede pasar nodos a done."
       ],
       "review_notes": [
-        "Reviewer ejecutó gates y pasaron, pero se rechaza schema por riesgo de rollback defensivo con migración base consolidada."
-      ]
+        "APPROVED: todos los gates dirigidos pasaron; deprecations backend rtrim(null) y warning pusher-js son preexistentes."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T18:08:00-05:00",
+        "notes": "APPROVED: código interno de máquinas validado en backend/frontend; migración incremental queda como única responsable del campo y rollback determinístico; cambios de Referencias excluidos por ser trabajo paralelo confirmado por el usuario."
+      },
+      "gate_results": {
+        "backend_targeted_tests": "PASS: php artisan test tests/Feature/Api/MaquinaControllerTest.php tests/Unit/Http/Resources/MaquinaResourceTest.php (19 deprecations preexistentes rtrim(null), 107 assertions)",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "frontend_vitest": "PASS: npm run test:ci (18 files, 127 tests)",
+        "diff_check": "PASS: git diff --check"
+      }
     }
   ]
 }

@@ -34,6 +34,7 @@ class MaquinaResource extends JsonResource
                 ? ($this->fabricante?->nombre ?? 'N/A')
                 : null,
             'fabricante_id' => $this->fabricante_id,
+            'codigo_interno' => $this->codigo_interno,
             'serie' => $this->serie,
             'arreglo' => $this->arreglo,
             'foto' => $this->foto && ! filter_var($this->foto, FILTER_VALIDATE_URL) ? Storage::disk('public')->url($this->foto) : $this->foto,

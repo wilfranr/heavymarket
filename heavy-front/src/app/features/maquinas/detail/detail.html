@@ -40,6 +40,10 @@
                             <span class="text-base font-semibold">{{ maquina.modelo }}</span>
                         </div>
                         <div class="p-4 bg-surface-ground/30 rounded-2xl border border-surface-border">
+                            <span class="flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1"><i class="pi pi-id-card mr-1.5 text-[10px]"></i>Código interno</span>
+                            <span class="text-base font-semibold">{{ maquina.codigo_interno || 'N/A' }}</span>
+                        </div>
+                        <div class="p-4 bg-surface-ground/30 rounded-2xl border border-surface-border">
                             <span class="flex items-center text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1"><i class="pi pi-hashtag mr-1.5 text-[10px]"></i>Serie</span>
                             <span class="text-base font-semibold">{{ maquina.serie || 'N/A' }}</span>
                         </div>

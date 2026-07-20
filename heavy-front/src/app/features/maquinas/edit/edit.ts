@@ -143,6 +143,7 @@ export class EditComponent implements OnInit {
             tipo: [maquina.tipo_id ? +maquina.tipo_id : maquina.tipo?.id ? +maquina.tipo.id : maquina.tipo ? +maquina.tipo : null, [Validators.required]],
             modelo: [maquina.modelo, [Validators.required, Validators.maxLength(255)]],
             fabricante_id: [maquina.fabricante_id ? +maquina.fabricante_id : maquina.fabricante?.id ? +maquina.fabricante.id : null, [Validators.required]],
+            codigo_interno: [maquina.codigo_interno || '', [Validators.maxLength(100)]],
             serie: [maquina.serie || ''],
             arreglo: [maquina.arreglo || ''],
             foto: [maquina.foto || null],
@@ -241,6 +242,7 @@ export class EditComponent implements OnInit {
         formData.append('tipo', formValue.tipo);
         formData.append('modelo', formValue.modelo);
         formData.append('fabricante_id', formValue.fabricante_id);
+        formData.append('codigo_interno', formValue.codigo_interno || '');
         if (formValue.serie) formData.append('serie', formValue.serie);
         if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
         if (this.fotoFile) formData.append('foto', this.fotoFile);

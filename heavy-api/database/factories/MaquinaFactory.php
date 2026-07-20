@@ -18,6 +18,7 @@ class MaquinaFactory extends Factory
             'tipo' => Lista::factory()->tipoMaquina(),
             'modelo' => fake()->word().' '.fake()->randomNumber(3),
             'fabricante_id' => Lista::factory()->fabricante(),
+            'codigo_interno' => 'INT-'.fake()->unique()->bothify('#####'),
             'serie' => fake()->unique()->uuid(),
             'arreglo' => fake()->optional()->sentence(),
             'foto' => null,
@@ -73,6 +74,16 @@ class MaquinaFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'fabricante_id' => $fabricante->id,
+        ]);
+    }
+
+    /**
+     * Create with código interno.
+     */
+    public function withCodigoInterno(string $codigoInterno): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'codigo_interno' => $codigoInterno,
         ]);
     }
 

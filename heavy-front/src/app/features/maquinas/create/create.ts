@@ -165,6 +165,7 @@ export class CreateComponent implements OnInit {
             tipo: [null, [Validators.required]],
             modelo: ['', [Validators.required, Validators.maxLength(255)]],
             fabricante_id: [null, [Validators.required]],
+            codigo_interno: ['', [Validators.maxLength(100)]],
             serie: ['', [Validators.maxLength(255)]],
             arreglo: ['', [Validators.maxLength(255)]],
             foto: [null],
@@ -258,6 +259,7 @@ export class CreateComponent implements OnInit {
         formData.append('tipo', formValue.tipo);
         formData.append('modelo', formValue.modelo);
         formData.append('fabricante_id', formValue.fabricante_id);
+        if (formValue.codigo_interno) formData.append('codigo_interno', formValue.codigo_interno);
         if (formValue.serie) formData.append('serie', formValue.serie);
         if (formValue.arreglo) formData.append('arreglo', formValue.arreglo);
 

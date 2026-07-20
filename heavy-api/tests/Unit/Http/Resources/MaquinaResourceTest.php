@@ -16,6 +16,7 @@ it('incluye todos los campos requeridos', function () {
     $maquina = Maquina::factory()->create([
         'tipo' => $tipo->id,
         'fabricante_id' => $fabricante->id,
+        'codigo_interno' => 'HM-RES-001',
     ]);
 
     $maquina->load(['fabricante', 'listas']);
@@ -24,9 +25,10 @@ it('incluye todos los campos requeridos', function () {
     $array = $resource->resolve(new Request);
 
     expect($array)->toHaveKeys([
-        'id', 'tipo', 'modelo', 'fabricante_id', 'marca', 'serie',
+        'id', 'tipo', 'modelo', 'fabricante_id', 'marca', 'codigo_interno', 'serie',
         'arreglo', 'estado_revision', 'created_at', 'updated_at',
-    ])->and($array['marca'])->toBe($fabricante->nombre);
+    ])->and($array['marca'])->toBe($fabricante->nombre)
+        ->and($array['codigo_interno'])->toBe('HM-RES-001');
 });
 
 it('incluye estado_revision con valor correcto', function () {
