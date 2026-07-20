@@ -745,10 +745,10 @@ export class EditComponent implements OnInit {
         }
         const idTemporal = -(this.articuloActual.medidas?.length || 0) - 1;
         const nuevaMedida: any = { id: idTemporal, identificador: '', unidad: '', valor: null, tipo: '', articulo_id: this.articuloId };
-        if (!this.articuloActual.medidas) {
-            this.articuloActual.medidas = [];
-        }
-        this.articuloActual.medidas = [...this.articuloActual.medidas, nuevaMedida];
+        this.articuloActual = {
+            ...this.articuloActual,
+            medidas: [...(this.articuloActual.medidas || []), nuevaMedida]
+        };
         this.iniciarEdicionMedida(nuevaMedida);
     }
 
@@ -763,7 +763,10 @@ export class EditComponent implements OnInit {
             return;
         }
         if (this.editingMedidaId < 0) {
-            this.articuloActual.medidas = (this.articuloActual.medidas || []).filter((m: any) => m.id !== this.editingMedidaId);
+            this.articuloActual = {
+                ...this.articuloActual,
+                medidas: (this.articuloActual.medidas || []).filter((m: any) => m.id !== this.editingMedidaId)
+            };
         }
         this.editingMedidaId = null;
         this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
@@ -808,7 +811,10 @@ export class EditComponent implements OnInit {
             return;
         }
         if (medida.id < 0) {
-            this.articuloActual.medidas = (this.articuloActual.medidas || []).filter((m: any) => m.id !== medida.id);
+            this.articuloActual = {
+                ...this.articuloActual,
+                medidas: (this.articuloActual.medidas || []).filter((m: any) => m.id !== medida.id)
+            };
             if (this.editingMedidaId === medida.id) {
                 this.editingMedidaId = null;
                 this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };

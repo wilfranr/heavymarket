@@ -356,7 +356,7 @@ class ArticuloController extends Controller
     {
         $validated = $request->validate([
             'identificador' => 'required|string',
-            'nombre' => 'required|string',
+            'nombre' => 'sometimes|string',
             'unidad' => 'required|string',
             'valor' => 'required|numeric',
             'tipo' => 'required|string',
