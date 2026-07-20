@@ -146,12 +146,12 @@
                                     </div>
                                 </div>
                                 <div>
-                                    <label for="sistema_id" [class]="fieldLabelClass + ' text-sm'">Sistema</label>
+                                    <label for="categoria_comercial_id" [class]="fieldLabelClass + ' text-sm'">Categorías Comerciales</label>
                                     <div class="flex gap-2">
                                         <p-multiselect
-                                            id="sistema_id"
-                                            formControlName="sistema_id"
-                                            [options]="sistemas()"
+                                            id="categoria_comercial_id"
+                                            formControlName="categoria_comercial_id"
+                                            [options]="categoriasComerciales()"
                                             optionLabel="label"
                                             optionValue="value"
                                             placeholder="Seleccione una opción"

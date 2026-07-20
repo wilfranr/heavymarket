@@ -35,7 +35,7 @@ import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
-import { SistemaService } from '../../../core/services/sistema.service';
+import { ListaService } from '../../../core/services/lista.service';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
 import { Tercero } from '../../../core/models/tercero.model'; // Added import
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
@@ -104,7 +104,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     private readonly ubicacionService = inject(UbicacionService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly fabricanteService = inject(FabricanteService);
-    private readonly sistemaService = inject(SistemaService);
+    private readonly listaService = inject(ListaService);
     private readonly messageService = inject(MessageService);
     private readonly authService = inject(AuthService);
     private readonly cdr = inject(ChangeDetectorRef);
@@ -151,7 +151,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     // Listas auxiliares
     maquinas = signal<any[]>([]);
     fabricantes = signal<any[]>([]);
-    sistemas = signal<any[]>([]);
+    categoriasComerciales = signal<any[]>([]);
 
     tiposDocumento = [
         { label: 'NIT', value: 'NIT' },
@@ -177,7 +177,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         this.loadPaises();
         this.loadMaquinas();
         this.loadFabricantes();
-        this.loadSistemas();
+        this.loadCategoriasComerciales();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -239,7 +239,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
             city_id: data.city_id,
             maquina_id: data.maquinas && data.maquinas.length > 0 ? data.maquinas[0].id : null,
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
-            sistema_id: data.sistemas ? data.sistemas.map((s: any) => s.id) : [],
+            categoria_comercial_id: data.categorias_comerciales ? data.categorias_comerciales.map((c: any) => c.id) : [],
             contactos: [] // Will be populated below
         });
 
@@ -345,7 +345,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
 
             maquina_id: [null],
             fabricante_id: [[]],
-            sistema_id: [[]],
+            categoria_comercial_id: [[]],
 
             direccion: ['', [Validators.required]],
             country_id: [null],
@@ -391,7 +391,7 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
                 tipo: this.tipoTercero,
                 estado: 'activo',
                 fabricante_id: [],
-                sistema_id: [],
+                categoria_comercial_id: [],
                 contactos: []
             });
             this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
@@ -550,8 +550,10 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
     private loadFabricantes(): void {
         this.fabricanteService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.fabricantes.set(r.data.map((f) => ({ label: f.nombre, value: f.id }))) });
     }
-    private loadSistemas(): void {
-        this.sistemaService.getAll({ per_page: 200 }).subscribe({ next: (r) => this.sistemas.set(r.data.map((s) => ({ label: s.nombre, value: s.id }))) });
+    private loadCategoriasComerciales(): void {
+        this.listaService.getByTipo('Categoría Comercial').subscribe({
+            next: (listas) => this.categoriasComerciales.set(listas.map((l) => ({ label: l.nombre, value: l.id })))
+        });
     }
 
     saveTercero(createAnother: boolean = false): void {
@@ -598,8 +600,8 @@ export class TerceroCreateModalComponent implements OnInit, OnChanges {
         if (formValue.fabricante_id && Array.isArray(formValue.fabricante_id)) {
             formValue.fabricante_id.forEach((id: any) => formData.append('fabricante_id[]', id));
         }
-        if (formValue.sistema_id && Array.isArray(formValue.sistema_id)) {
-            formValue.sistema_id.forEach((id: any) => formData.append('sistema_id[]', id));
+        if (formValue.categoria_comercial_id && Array.isArray(formValue.categoria_comercial_id)) {
+            formValue.categoria_comercial_id.forEach((id: any) => formData.append('categoria_comercial_id[]', id));
         }
 
         if (formValue.contactos && Array.isArray(formValue.contactos)) {
