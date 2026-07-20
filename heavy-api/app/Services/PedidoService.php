@@ -218,9 +218,9 @@ class PedidoService
             if ($referencia) {
                 $referencia->loadMissing('articulo');
             }
-            $peso = (float) ($referencia?->articulo?->peso ?? 0);
+            $pesoKilogramos = (float) ($referencia?->articulo?->peso ?? 0);
 
-            $peso_libras = $peso / 453.592;
+            $peso_libras = $pesoKilogramos * 2.20462;
             $costo_base_usd = ($peso_libras * $flete) + $costo_unidad;
             $costo_base_cop = $costo_base_usd * $trm;
 

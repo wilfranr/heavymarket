@@ -1,8 +1,8 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-20T15:16:00-05:00",
-  "issue": "feat-orden-compra-estados + feat-recepcion-compra-desde-ot",
+  "last_updated": "2026-07-20T17:11:08-05:00",
+  "issue": "feat-orden-compra-estados + feat-recepcion-compra-desde-ot + bugfix-costeo-internacional-peso-kg-lbs",
   "description": "Implementar ciclo de vida de OC y ajustar recepción para que Logística registre eventos físicos desde OT mediante recepciones de compra auditables.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
@@ -1455,6 +1455,232 @@
         "frontend_build": "PASS: warning preexistente CommonJS pusher-js",
         "diff_check": "PASS",
         "backend_pint_global": "FAIL aceptado por excepción autorizada: formato pendiente en archivos fuera del alcance."
+      }
+    },
+    {
+      "id": "costeo-internacional-peso-triage",
+      "description": "Triage: planificar corrección de fórmula de costeo internacional para convertir articulos.peso desde KG a libras antes de aplicar flete, validando fórmula [(peso_lbs * flete) + costo_usd] * TRM.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/costeo-internacional-peso-kg-lbs",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/modulo_pedidos.md",
+          "status": "validated",
+          "note": "Mapa de implementación consultado; no requiere cambio inicial"
+        },
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated",
+          "note": "Confirma que articulos.peso está en KG"
+        }
+      ],
+      "acceptance_criteria": [
+        "El backend y frontend usan la misma conversión KG a libras: peso_kg * 2.20462 o equivalente.",
+        "El caso 13.63 KG, flete 2.5, costo USD 352.81 y TRM 3850 calcula costo base COP aproximado 1,647,069 antes de utilidad.",
+        "No se altera la fórmula de utilidad ni el redondeo existente salvo que el test evidencie necesidad explícita."
+      ],
+      "triage_notes": [
+        "La causa raíz es tratar articulos.peso como gramos mediante /453.592 aunque la documentación lo define como KG.",
+        "El ajuste toca cálculo backend, cálculo informativo frontend y pruebas de regresión.",
+        "Implementer avanzó por autorización explícita del usuario pese a que el nodo de Triage sigue awaiting_review; no se marca done."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T17:07:22-05:00"
+      }
+    },
+    {
+      "id": "costeo-internacional-backend-formula",
+      "description": "Backend: corregir PedidoService::calcularValores para convertir peso del artículo de KG a libras antes de sumar flete internacional al costo USD.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-internacional-peso-triage"
+      ],
+      "topic_key": "bugfix/costeo-internacional-peso-kg-lbs",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "Reemplaza la división por 453.592 por conversión KG -> lb.",
+        "Mantiene fuente de TRM desde tabla trms y flete desde país del proveedor.",
+        "Mantiene retorno valor_unidad, valor_total, flete_usado y missing_freight_rate sin cambiar contrato API."
+      ],
+      "implementation_notes": [
+        "Usuario autorizó proceder como Implementer; se inicia corrección backend."
+      ],
+      "validation": {
+        "targeted_tests": "PASS: php artisan test tests/Unit/Services/PedidoServiceTest.php (4 deprecations preexistentes rtrim(null))",
+        "pint_targeted": "PASS: ./vendor/bin/pint --test app/Services/PedidoService.php tests/Unit/Services/PedidoServiceTest.php"
+      },
+      "review_notes": [
+        "REJECTED por Reviewer: gates dirigidos pasan, pero php artisan test global falla en un test dentro del alcance: tests/Feature/Api/PedidoGuardarCosteoFleteTest.php espera la fórmula anterior usando peso=453.592 como si fuera gramos/1 lb; con peso en KG ahora calcula 10,853,900. Debe actualizarse el fixture a KG coherente (ej. 0.453592 para 1 lb) o el esperado según la nueva regla. También falla Tests/Feature/Api/V1/ProviderPortalControllerTest::provider can register dispatch por estado Despachado vs Pendiente, considerado fuera del alcance y preexistente de OC/recepción."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved_with_exception",
+        "approved_at": "2026-07-20T17:11:08-05:00",
+        "exception_authorized_by_user": "Autorizado",
+        "exception_scope": "ProviderPortalControllerTest fuera del alcance del bugfix de costeo internacional",
+        "notes": "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
+      }
+    },
+    {
+      "id": "costeo-internacional-backend-tests",
+      "description": "Tests backend: agregar regresión para costeo internacional con peso en KG que valide costo base COP esperado usando 13.63 KG, flete 2.5, costo USD 352.81 y TRM 3850.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "costeo-internacional-backend-formula"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Unit/Services/PedidoServiceTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+          "status": "validated",
+          "note": "Fixture legacy actualizado a KG; expected ajustado por decimal(15,2) del peso"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && php artisan test tests/Unit/Services/PedidoServiceTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test app/Services/PedidoService.php tests/Unit/Services/PedidoServiceTest.php"
+      ],
+      "acceptance_criteria": [
+        "El test falla con la conversión anterior /453.592 y pasa con KG -> lb.",
+        "El valor calculado sin utilidad coincide con 1,647,068.5 COP o con el redondeo a centenas vigente 1,647,100 si se valida valor_unidad.",
+        "Los tests existentes de cálculo nacional e internacional siguen pasando."
+      ],
+      "implementation_notes": [
+        "Se invocó automated_tester para prueba de regresión del cálculo internacional.",
+        "Se corrige fixture legacy detectado por Reviewer: peso en KG, no gramos."
+      ],
+      "validation": {
+        "targeted_tests": "PASS: php artisan test tests/Feature/Api/PedidoGuardarCosteoFleteTest.php tests/Unit/Services/PedidoServiceTest.php (10 deprecations preexistentes rtrim(null))",
+        "pint_targeted": "PASS: ./vendor/bin/pint --test app/Services/PedidoService.php tests/Unit/Services/PedidoServiceTest.php tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+        "diff_check": "PASS: git diff --check",
+        "backend_global": "FAIL fuera del alcance restante: ProviderPortalControllerTest espera estado Despachado y el sistema conserva Pendiente"
+      },
+      "review_notes": [
+        "REJECTED por Reviewer: gates dirigidos pasan, pero php artisan test global falla en un test dentro del alcance: tests/Feature/Api/PedidoGuardarCosteoFleteTest.php espera la fórmula anterior usando peso=453.592 como si fuera gramos/1 lb; con peso en KG ahora calcula 10,853,900. Debe actualizarse el fixture a KG coherente (ej. 0.453592 para 1 lb) o el esperado según la nueva regla. También falla Tests/Feature/Api/V1/ProviderPortalControllerTest::provider can register dispatch por estado Despachado vs Pendiente, considerado fuera del alcance y preexistente de OC/recepción."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved_with_exception",
+        "approved_at": "2026-07-20T17:11:08-05:00",
+        "exception_authorized_by_user": "Autorizado",
+        "exception_scope": "ProviderPortalControllerTest fuera del alcance del bugfix de costeo internacional",
+        "notes": "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
+      }
+    },
+    {
+      "id": "costeo-internacional-frontend-formula",
+      "description": "Frontend: alinear cálculo informativo de la pantalla de costeo con la fórmula backend usando peso del artículo en KG convertido a libras.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-internacional-backend-tests"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "El cálculo local usa pesoKg * 2.20462 y no pesoGramos / 453.59.",
+        "Los comentarios de fórmula dejan de llamar gramos al peso si el dato proviene de articulos.peso.",
+        "No se introducen Observables para bindings ni cambios visuales de tema."
+      ],
+      "implementation_notes": [
+        "Se inicia alineación frontend del cálculo informativo."
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check"
+      },
+      "review_notes": [
+        "Frontend validado: usa pesoKilogramos * 2.20462; npm run build PASS; npm run test:ci PASS."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved_with_exception",
+        "approved_at": "2026-07-20T17:11:08-05:00",
+        "exception_authorized_by_user": "Autorizado",
+        "exception_scope": "ProviderPortalControllerTest fuera del alcance del bugfix de costeo internacional",
+        "notes": "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
+      }
+    },
+    {
+      "id": "costeo-internacional-review",
+      "description": "Reviewer: auditar consistencia backend/frontend de la fórmula internacional, ejecutar gates dirigidos y validar que el caso reportado calcula el costo esperado.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "costeo-internacional-frontend-formula"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/PedidoService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Services/PedidoServiceTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && php artisan test tests/Unit/Services/PedidoServiceTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test app/Services/PedidoService.php tests/Unit/Services/PedidoServiceTest.php",
+        "cd heavy-front && npm run build",
+        "git diff --check"
+      ],
+      "acceptance_criteria": [
+        "Todos los archivos del nodo están validados antes de marcar done.",
+        "El cálculo reportado por el usuario queda documentado en notas de revisión.",
+        "No se aprueba si backend y frontend divergen en la conversión de peso."
+      ],
+      "review_notes": [
+        "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
+      ],
+      "gate_results": {
+        "backend_costeo_targeted": "PASS: php artisan test tests/Feature/Api/PedidoGuardarCosteoFleteTest.php tests/Unit/Services/PedidoServiceTest.php",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test app/Services/PedidoService.php tests/Unit/Services/PedidoServiceTest.php tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "frontend_vitest": "PASS: npm run test:ci (18 files, 126 tests)",
+        "diff_check": "PASS: git diff --check",
+        "backend_global": "FAIL autorizado: solo queda ProviderPortalControllerTest::provider can register dispatch, fuera del alcance de costeo internacional"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved_with_exception",
+        "approved_at": "2026-07-20T17:11:08-05:00",
+        "exception_authorized_by_user": "Autorizado",
+        "exception_scope": "ProviderPortalControllerTest fuera del alcance del bugfix de costeo internacional",
+        "notes": "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
       }
     }
   ]

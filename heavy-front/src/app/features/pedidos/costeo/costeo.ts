@@ -712,7 +712,7 @@ export class CosteoComponent implements OnInit {
         const costoCOP = Math.max(0, provGroup.get('costo_cop')?.value || 0);
         const utilidad = Math.max(0, provGroup.get('utilidad')?.value || 0);
         const proveedorId = provGroup.get('proveedor_id')?.value;
-        const pesoGramos = this.referenciasFormArray.at(refIndex).get('peso')?.value || 0;
+        const pesoKilogramos = this.referenciasFormArray.at(refIndex).get('peso')?.value || 0;
 
         if (!this.trmCargada()) return;
 
@@ -734,12 +734,12 @@ export class CosteoComponent implements OnInit {
                 provGroup.get('costo_usd')?.patchValue(parseFloat(calculatedUSD.toFixed(2)), { emitEvent: false });
             } else {
                 // FÓRMULA INTERNACIONAL:
-                // 1. peso_en_libras = peso_gramos / 453.59
+                // 1. peso_en_libras = peso_kg * 2.20462
                 // 2. costo_base_usd = (peso_en_libras * flete) + costo_unidad
                 // 3. costo_base_cop = costo_base_usd * trm
                 // 4. valor_unidad = round(costo_base_cop + (utilidad * costo_base_cop / 100) / 100) * 100 (centenas)
 
-                const pesoLibras = pesoGramos / 453.59;
+                const pesoLibras = pesoKilogramos * 2.20462;
                 const flete = this.obtenerFleteProveedor(proveedorId);
                 const costoBaseUSD = pesoLibras * flete + costoUSD;
                 const costoBaseCOP = costoBaseUSD * this.trmCargada();

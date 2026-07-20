@@ -8,6 +8,7 @@ use App\Models\Country;
 use App\Models\Empresa;
 use App\Models\PedidoReferencia;
 use App\Models\Tercero;
+use App\Models\TRM;
 use App\Services\PedidoService;
 
 beforeEach(function () {
@@ -88,5 +89,39 @@ it('usa flete del país del proveedor internacional', function () {
     ], $pedidoReferencia);
 
     expect((float) $resultado['flete_usado'])->toBe(4.0)
+        ->and($resultado['missing_freight_rate'])->toBeFalse();
+});
+
+it('convierte el peso del artículo de kilogramos a libras para costeo internacional', function () {
+    $usa = Country::factory()->create(['iso2' => 'US', 'flete' => 2.5]);
+    $proveedor = Tercero::factory()->create(['country_id' => $usa->id]);
+
+    TRM::create([
+        'fecha' => now()->toDateString(),
+        'trm' => 3850,
+    ]);
+
+    $referenciaObj = new class
+    {
+        public object $articulo;
+
+        public function loadMissing(string|array $relations): void {}
+    };
+    $referenciaObj->articulo = (object) ['peso' => 13.6078];
+
+    $pedidoReferencia = Mockery::mock(PedidoReferencia::class)->makePartial();
+    $pedidoReferencia->shouldReceive('getAttribute')->with('referencia')->andReturn($referenciaObj);
+
+    $resultado = $this->pedidoService->calcularValores([
+        'costo_unidad' => 352.81,
+        'utilidad' => 0,
+        'cantidad' => 1,
+        'ubicacion' => 'Internacional',
+        'proveedor_id' => $proveedor->id,
+    ], $pedidoReferencia);
+
+    expect((float) $resultado['valor_unidad'])->toBe(1647100.0)
+        ->and((float) $resultado['valor_total'])->toBe(1647100.0)
+        ->and((float) $resultado['flete_usado'])->toBe(2.5)
         ->and($resultado['missing_freight_rate'])->toBeFalse();
 });

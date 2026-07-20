@@ -11,6 +11,7 @@ use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\Referencia;
 use App\Models\Tercero;
+use App\Models\TRM;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -218,7 +219,7 @@ it('guardar costeo rechaza omitir días y estado Backorder simultáneamente', fu
 it('guardar costeo para proveedor internacional utiliza la TRM de la tabla trms y calcula correctamente', function () {
     // Arrange
     $trmReal = 4500.0;
-    \App\Models\TRM::create([
+    TRM::create([
         'trm' => $trmReal,
         'fecha' => now(),
     ]);
@@ -229,7 +230,7 @@ it('guardar costeo para proveedor internacional utiliza la TRM de la tabla trms 
         'estado' => 'En_Costeo',
         'user_id' => $this->admin->id,
     ]);
-    $articulo = Articulo::factory()->create(['peso' => 453.592]);
+    $articulo = Articulo::factory()->create(['peso' => 0.453592]);
     $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
     $pedidoRef = PedidoReferencia::factory()->create([
         'pedido_id' => $pedido->id,
@@ -258,13 +259,13 @@ it('guardar costeo para proveedor internacional utiliza la TRM de la tabla trms 
 
     // Assert
     $response->assertOk();
-    
+
     $this->assertDatabaseHas('pedido_referencia_proveedor', [
         'pedido_referencia_id' => $pedidoRef->id,
         'proveedor_id' => $proveedor->id,
         'costo_unidad' => 10.00,
         'utilidad' => 20.0,
-        'valor_unidad' => 64800.00,
-        'valor_total' => 129600.00,
+        'valor_unidad' => 64700.00,
+        'valor_total' => 129400.00,
     ]);
 });
