@@ -20,7 +20,7 @@ export interface Referencia {
         descripcionEspecifica?: string;
         nombre?: string;
         es_pieza_estandar?: boolean;
-        peso?: number | null;
+        peso?: number;
         fotoDescriptiva?: string | null;
         foto_medida?: string | null;
         medidas?: any[];

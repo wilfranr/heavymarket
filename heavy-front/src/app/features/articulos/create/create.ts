@@ -542,7 +542,7 @@ export class CreateComponent implements OnInit {
         this.articuloForm = this.fb.group({
             definicion: ['', [Validators.required, Validators.maxLength(255)]],
             descripcionEspecifica: ['', [Validators.required, Validators.maxLength(500)]],
-            peso: [null],
+            peso: [null, [Validators.required, Validators.min(0)]],
             comentarios: [''],
             fotoDescriptiva: [null],
             foto_medida: [null],
@@ -759,7 +759,7 @@ export class CreateComponent implements OnInit {
         formData.append('definicion', formValue.definicion);
         formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
 
-        if (formValue.peso) formData.append('peso', formValue.peso.toString());
+        if (formValue.peso !== null && formValue.peso !== undefined) formData.append('peso', formValue.peso.toString());
         if (formValue.comentarios) formData.append('comentarios', formValue.comentarios);
 
         if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);

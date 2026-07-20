@@ -436,7 +436,7 @@ export class EditComponent implements OnInit {
         this.articuloForm = this.fb.group({
             definicion: [articulo.definicion, [Validators.required, Validators.maxLength(255)]],
             descripcionEspecifica: [articulo.descripcionEspecifica, [Validators.required, Validators.maxLength(500)]],
-            peso: [articulo.peso || null],
+            peso: [articulo.peso ?? null, [Validators.required, Validators.min(0)]],
             comentarios: [articulo.comentarios || ''],
             fotoDescriptiva: [articulo.fotoDescriptiva || null],
             foto_medida: [articulo.foto_medida || null],
@@ -920,7 +920,7 @@ export class EditComponent implements OnInit {
         formData.append('definicion', formValue.definicion);
         formData.append('descripcionEspecifica', formValue.descripcionEspecifica);
 
-        if (formValue.peso) formData.append('peso', formValue.peso.toString());
+        if (formValue.peso !== null && formValue.peso !== undefined) formData.append('peso', formValue.peso.toString());
         if (formValue.comentarios) formData.append('comentarios', formValue.comentarios);
 
         if (this.fotoFile) formData.append('fotoDescriptiva', this.fotoFile);

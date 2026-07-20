@@ -62,6 +62,10 @@ class ReferenciaResource extends JsonResource
                 $this->relationLoaded('articulo') && $this->articulo,
                 fn () => $this->articulo->descripcionEspecifica
             ),
+            'articulo_peso' => $this->when(
+                $this->relationLoaded('articulo') && $this->articulo,
+                fn () => $this->articulo->peso
+            ),
         ];
     }
 }

@@ -9,7 +9,7 @@ export interface Articulo {
     id: number;
     definicion: string; // Tipo de artículo (debe ser de tipo 'Piezas Estandar' en listas)
     descripcionEspecifica: string;
-    peso: number | null;
+    peso: number;
     comentarios: string | null;
     fotoDescriptiva: string | null;
     foto_medida: string | null;
@@ -57,7 +57,7 @@ export interface ArticuloJuego {
 export interface CreateArticuloDto {
     definicion: string;
     descripcionEspecifica: string;
-    peso?: number;
+    peso: number;
     comentarios?: string;
     fotoDescriptiva?: File | string;
     foto_medida?: File | string;

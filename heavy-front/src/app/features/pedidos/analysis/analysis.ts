@@ -1205,7 +1205,7 @@ export class AnalysisComponent implements OnInit {
             definicion_articulo: def.trim() || undefined,
             descripcion_especifica_articulo: esp.trim() || undefined,
             articulo_imagen: art?.fotoDescriptiva || r.articulo_imagen,
-            articulo_peso: art?.peso || r.articulo_peso,
+            articulo_peso: art?.peso ?? r.articulo_peso,
             referencias_cruzadas: art?.referencias || r.articulo_referencias || [],
             lista_id: r.lista_id ?? null,
             marca_nombre: r.marca?.nombre || r.marca_nombre || 'N/A',
@@ -1817,10 +1817,10 @@ export class AnalysisComponent implements OnInit {
                         refsCruzadas.push(...encontradas);
                     }
                     // Buscar foto y peso del artículo en las refs (viene incluido cuando se carga la referencia)
-                    const refConInfo = refsCruzadas.find((r: any) => r.articulo_imagen || r.articulo_peso);
+                    const refConInfo = refsCruzadas.find((r: any) => r.articulo_imagen || r.articulo_peso !== undefined);
                     if (refConInfo) {
                         fotoArticulo = refConInfo.articulo_imagen || null;
-                        pesoArticulo = refConInfo.articulo_peso || null;
+                        pesoArticulo = refConInfo.articulo_peso ?? null;
                         if (fotoArticulo) {
                             fotoArticulo = this.formatImageUrl(fotoArticulo);
                         }

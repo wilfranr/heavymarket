@@ -145,7 +145,7 @@ it('rechaza crear artículo sin datos requeridos', function () {
         ]);
 
     $response->assertStatus(422)
-        ->assertJsonValidationErrors(['definicion', 'descripcionEspecifica']);
+        ->assertJsonValidationErrors(['definicion', 'descripcionEspecifica', 'peso']);
 });
 
 it('artículo hereda foto_medida de pieza estándar', function () {
@@ -164,6 +164,7 @@ it('artículo hereda foto_medida de pieza estándar', function () {
     $data = [
         'definicion' => 'Abrazadera Maestra',
         'descripcionEspecifica' => 'Prueba de herencia',
+        'peso' => 1.25,
         'referencias_ids' => [$referencia->id],
     ];
 
@@ -187,6 +188,7 @@ it('artículo hereda foto_medida de pieza estándar', function () {
 
     $updateData = [
         'definicion' => 'Abrazadera Maestra 2',
+        'peso' => 1.25,
         'referencias_ids' => [$referencia->id],
     ];
 
@@ -209,6 +211,7 @@ it('sincroniza articulo_id en referencias al crear y actualizar articulo', funct
     $data = [
         'definicion' => 'Articulo Sincronizacion',
         'descripcionEspecifica' => 'Prueba de sincronización',
+        'peso' => 2.5,
         'referencias_ids' => [$referencia1->id, $referencia2->id],
     ];
 
@@ -230,6 +233,7 @@ it('sincroniza articulo_id en referencias al crear y actualizar articulo', funct
 
     $updateData = [
         'definicion' => 'Articulo Sincronizacion Modificado',
+        'peso' => 2.5,
         'referencias_ids' => [$referencia2->id, $referencia3->id],
     ];
 

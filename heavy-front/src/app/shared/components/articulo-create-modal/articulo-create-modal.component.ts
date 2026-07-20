@@ -139,7 +139,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         this.articuloForm = this.fb.group({
             definicion: [null, [Validators.required]],
             descripcionEspecifica: ['', [Validators.required, Validators.maxLength(500)]],
-            peso: [null],
+            peso: [null, [Validators.required, Validators.min(0)]],
             comentarios: [''],
             referenciasCruzadas: this.fb.array([]),
             articuloJuegos: this.fb.array([])

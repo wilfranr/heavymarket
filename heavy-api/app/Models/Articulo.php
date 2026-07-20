@@ -21,6 +21,10 @@ class Articulo extends Model
         'foto_medida',
     ];
 
+    protected $casts = [
+        'peso' => 'float',
+    ];
+
     protected $normalizableAttributes = [
         'definicion' => 'title',
         'comentarios' => 'sentence',

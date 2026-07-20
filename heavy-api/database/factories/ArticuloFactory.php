@@ -15,7 +15,7 @@ class ArticuloFactory extends Factory
             'definicion' => $this->faker->words(3, true),
             'descripcionEspecifica' => $this->faker->sentence(),
             'comentarios' => $this->faker->optional()->paragraph(),
-            'peso' => $this->faker->optional()->randomFloat(2, 0.1, 100),
+            'peso' => $this->faker->randomFloat(2, 0.1, 100),
             'fotoDescriptiva' => null,
             'foto_medida' => null,
         ];

@@ -1,8 +1,8 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-20T17:11:08-05:00",
-  "issue": "feat-orden-compra-estados + feat-recepcion-compra-desde-ot + bugfix-costeo-internacional-peso-kg-lbs",
+  "last_updated": "2026-07-20T17:29:07-05:00",
+  "issue": "articulo-peso-obligatorio",
   "description": "Implementar ciclo de vida de OC y ajustar recepción para que Logística registre eventos físicos desde OT mediante recepciones de compra auditables.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
@@ -1681,6 +1681,243 @@
         "exception_authorized_by_user": "Autorizado",
         "exception_scope": "ProviderPortalControllerTest fuera del alcance del bugfix de costeo internacional",
         "notes": "APPROVED WITH EXCEPTION: usuario autorizó explícitamente cerrar pese al FAIL de php artisan test global, limitado a ProviderPortalControllerTest::provider can register dispatch fuera del alcance de costeo internacional. Gates del alcance PASS: unit/feature costeo, Pint dirigido, frontend build, frontend Vitest y git diff --check."
+      }
+    },
+    {
+      "id": "articulo-peso-obligatorio-triage",
+      "description": "Triage: planificar que el peso de artículo sea obligatorio en backend, frontend y modelos consumidos por análisis/modales.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/articulo-peso-obligatorio",
+      "files": [
+        {
+          "path": "docs/modulo_articulos.md",
+          "status": "validated"
+        },
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "triage_notes": [
+        "Mapa de implementación de docs/modulo_articulos.md consultado antes de editar.",
+        "El cambio requiere validación backend, migración defensiva, DTOs/modelos frontend y formularios de crear/editar artículo usados también desde análisis."
+      ]
+    },
+    {
+      "id": "articulo-peso-obligatorio-backend",
+      "description": "Backend: hacer peso requerido en Store/Update ArticuloRequest, respaldar esquema no nullable y ajustar factory/tests.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "articulo-peso-obligatorio-triage"
+      ],
+      "topic_key": "bugfix/articulo-peso-obligatorio",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/StoreArticuloRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateArticuloRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/factories/ArticuloFactory.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_180000_make_articulos_peso_required.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/ArticuloControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Articulo.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/ReferenciaResource.php",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "backend_articulo_tests": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/ArticuloControllerTest.php (10 deprecations preexistentes rtrim(null))",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T17:29:07-05:00",
+        "notes": "Peso requerido en Store/UpdateArticuloRequest, migración defensiva NOT NULL DEFAULT 0, factory sin nullable y resource/model ajustados."
+      }
+    },
+    {
+      "id": "articulo-peso-obligatorio-frontend",
+      "description": "Frontend/UI: hacer peso requerido en formularios de artículos y modales compartidos usados desde análisis, alineando modelos TypeScript.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "articulo-peso-obligatorio-backend"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/articulo.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/referencia.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/pedido.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "frontend_vitest": "PASS: npm run test:ci (18 files, 126 tests)"
+      },
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T17:29:07-05:00",
+        "notes": "Formularios de creación/edición y modales compartidos marcan peso requerido; modelos TS alineados para Articulo y relaciones usadas en análisis/costeo."
+      }
+    },
+    {
+      "id": "articulo-peso-obligatorio-review",
+      "description": "Reviewer: validar gates dirigidos backend/frontend y consistencia de obligatoriedad del peso sin marcar done hasta aprobar.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "articulo-peso-obligatorio-frontend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/StoreArticuloRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateArticuloRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Articulo.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/ReferenciaResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_180000_make_articulos_peso_required.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/articulo.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ],
+      "gate_results": {
+        "backend_articulo_tests": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/ArticuloControllerTest.php (10 deprecations preexistentes rtrim(null))",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "frontend_vitest": "PASS: npm run test:ci (18 files, 126 tests)",
+        "diff_check": "PASS: git diff --check"
+      },
+      "review_notes": [
+        "APPROVED: gates dirigidos backend/frontend pasaron. El primer intento backend falló por sandbox MySQL local y se reejecutó con permiso escalado."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-07-20T17:29:07-05:00"
       }
     }
   ]

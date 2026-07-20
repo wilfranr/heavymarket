@@ -94,16 +94,19 @@
                             <!-- Peso -->
                             <div class="field">
                                 <div class="flex justify-between items-center mb-3 ml-1">
-                                    <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Peso (Kg)</label>
+                                    <label class="text-[11px] font-black text-gray-400 uppercase tracking-widest">Peso (Kg) <span class="text-red-500">*</span></label>
                                     <div class="flex items-center gap-1 text-[#fdb831] cursor-pointer hover:underline" (click)="abrirConversor()">
                                         <i class="pi pi-calculator text-[10px]"></i>
                                         <span class="text-[10px] font-bold uppercase tracking-wider">Conversor</span>
                                     </div>
                                 </div>
                                 <p-inputgroup styleClass="w-full">
-                                    <input pInputText type="number" formControlName="peso" placeholder="0.00" class="w-full rounded-l-2xl" />
+                                    <p-inputNumber formControlName="peso" placeholder="0.00" styleClass="w-full" inputStyleClass="w-full rounded-l-2xl" [min]="0" mode="decimal" [minFractionDigits]="0" [maxFractionDigits]="3" />
                                     <p-inputgroup-addon styleClass="rounded-r-2xl"> Kg </p-inputgroup-addon>
                                 </p-inputgroup>
+                                @if (articuloForm.get('peso')?.touched && articuloForm.get('peso')?.invalid) {
+                                <small class="text-red-500 text-xs mt-2 block ml-1 font-medium">El peso es requerido</small>
+                                }
                             </div>
 
                             <!-- Comentarios -->

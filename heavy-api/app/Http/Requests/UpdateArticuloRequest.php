@@ -30,7 +30,7 @@ class UpdateArticuloRequest extends FormRequest
         return [
             'definicion' => ['sometimes', 'required', 'string', 'max:255'],
             'descripcionEspecifica' => ['sometimes', 'required', 'string', 'max:500'],
-            'peso' => ['nullable', 'numeric', 'min:0'],
+            'peso' => ['required', 'numeric', 'min:0'],
             'comentarios' => ['nullable', 'string'],
             'fotoDescriptiva' => ['nullable', 'image', 'max:5120'],
             'foto_medida' => ['nullable', 'image', 'max:5120'],
@@ -52,6 +52,7 @@ class UpdateArticuloRequest extends FormRequest
             'definicion.max' => 'La definición no puede exceder 255 caracteres',
             'descripcionEspecifica.required' => 'La descripción específica es obligatoria',
             'descripcionEspecifica.max' => 'La descripción específica no puede exceder 500 caracteres',
+            'peso.required' => 'El peso es obligatorio',
             'peso.numeric' => 'El peso debe ser un número',
             'peso.min' => 'El peso no puede ser negativo',
             'fotoDescriptiva.max' => 'La ruta de la foto descriptiva no puede exceder 255 caracteres',
