@@ -120,6 +120,25 @@ export const ordenesTrabajoReducer = createReducer(
         error
     })),
 
+    // Registrar recepción de compra
+    on(OrdenesTrabajoActions.registrarRecepcionCompra, (state) => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+
+    on(OrdenesTrabajoActions.registrarRecepcionCompraSuccess, (state) => ({
+        ...state,
+        loading: false,
+        error: null
+    })),
+
+    on(OrdenesTrabajoActions.registrarRecepcionCompraFailure, (state, { error }) => ({
+        ...state,
+        loading: false,
+        error
+    })),
+
     // Eliminar orden de trabajo
     on(OrdenesTrabajoActions.deleteOrdenTrabajo, (state) => ({
         ...state,

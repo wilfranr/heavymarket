@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\OrdenCompraEstado;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -17,7 +18,7 @@ class UpdateOrdenCompraRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return $this->user()->can('update', $this->route('ordenes_compra'))
+        return $this->user()->can('update', $this->route('orden_compra'))
             || $this->user()->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
     }
 
@@ -29,15 +30,23 @@ class UpdateOrdenCompraRequest extends FormRequest
         return [
             'estado' => [
                 'sometimes',
-                Rule::in(['Pendiente', 'En proceso', 'Entregado', 'Cancelado']),
+                Rule::in(OrdenCompraEstado::toArray()),
             ],
             'color' => [
                 'sometimes',
-                Rule::in(['#FFFF00', '#00ff00', '#ff0000']),
+                Rule::in(array_map(
+                    static fn (OrdenCompraEstado $estado): string => $estado->color(),
+                    OrdenCompraEstado::todos()
+                )),
             ],
             'fecha_expedicion' => ['sometimes', 'date'],
             'fecha_entrega' => ['sometimes', 'date', 'after_or_equal:fecha_expedicion'],
+            'fecha_envio' => ['nullable', 'date'],
+            'fecha_confirmacion' => ['nullable', 'date'],
+            'fecha_recepcion' => ['nullable', 'date'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
+            'motivo_cancelacion' => ['nullable', 'string', 'max:2000'],
+            'notas_cierre' => ['nullable', 'string', 'max:2000'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:20'],
             'guia' => ['nullable', 'string', 'max:100'],

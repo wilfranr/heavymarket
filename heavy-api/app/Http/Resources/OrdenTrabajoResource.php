@@ -53,6 +53,9 @@ class OrdenTrabajoResource extends JsonResource
             'referencias' => $this->whenLoaded('referencias', function () {
                 return OrdenTrabajoReferenciaResource::collection($this->referencias);
             }),
+            'recepciones_compra' => $this->whenLoaded('recepcionesCompra', function () {
+                return RecepcionCompraResource::collection($this->recepcionesCompra);
+            }),
         ];
     }
 }

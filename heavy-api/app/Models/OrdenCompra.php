@@ -25,8 +25,13 @@ use Illuminate\Support\Carbon;
  * @property int|null $referencia_id
  * @property string|null $estado
  * @property Carbon|null $fecha_expedicion
+ * @property Carbon|null $fecha_envio
+ * @property Carbon|null $fecha_confirmacion
+ * @property Carbon|null $fecha_recepcion
  * @property Carbon|null $fecha_entrega
  * @property string|null $observaciones
+ * @property string|null $motivo_cancelacion
+ * @property string|null $notas_cierre
  * @property int|null $cantidad
  * @property string|null $direccion
  * @property string|null $telefono
@@ -44,6 +49,7 @@ use Illuminate\Support\Carbon;
  * @property-read Cotizacion|null $cotizacion
  * @property-read Referencia|null $referencia
  * @property-read Collection|OrdenCompraReferencia[] $detalles
+ * @property-read Collection|RecepcionCompra[] $recepcionesCompra
  * @property-read Collection|Referencia[] $referencias
  */
 class OrdenCompra extends Model
@@ -61,7 +67,12 @@ class OrdenCompra extends Model
         'estado',
         'fecha_expedicion',
         'fecha_entrega',
+        'fecha_envio',
+        'fecha_confirmacion',
+        'fecha_recepcion',
         'observaciones',
+        'motivo_cancelacion',
+        'notas_cierre',
         'cantidad',
         'direccion',
         'telefono',
@@ -79,13 +90,15 @@ class OrdenCompra extends Model
         'observaciones' => 'sentence',
         'direccion' => 'title',
         'guia' => 'code',
-        'color' => 'title',
     ];
 
     protected $casts = [
         'fecha_expedicion' => 'datetime',
         'fecha_entrega' => 'datetime',
         'fecha_despacho' => 'datetime',
+        'fecha_envio' => 'datetime',
+        'fecha_confirmacion' => 'datetime',
+        'fecha_recepcion' => 'datetime',
         'cantidad' => 'integer',
         'valor_unitario' => 'decimal:2',
         'valor_total' => 'decimal:2',
@@ -140,6 +153,11 @@ class OrdenCompra extends Model
     public function detalles(): HasMany
     {
         return $this->hasMany(OrdenCompraReferencia::class, 'orden_compra_id');
+    }
+
+    public function recepcionesCompra(): HasMany
+    {
+        return $this->hasMany(RecepcionCompra::class, 'orden_compra_id');
     }
 
     /**

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\OrdenCompraEstado;
 use App\Enums\PedidoEstado;
 use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
@@ -186,8 +187,8 @@ class CotizacionService
 
             $observaciones = $cotizacion->observaciones ?? '';
             if ($comentario !== '') {
-                $observaciones = trim($observaciones."
-Aprobada: ".$comentario);
+                $observaciones = trim($observaciones.'
+Aprobada: '.$comentario);
             }
 
             $cotizacion->update([
@@ -291,14 +292,14 @@ Aprobada: ".$comentario);
                 'pedido_id' => $pedido?->id,
                 'cotizacion_id' => $cotizacion->id,
                 'proveedor_id' => $proveedorId,
-                'estado' => 'Pendiente',
+                'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
                 'fecha_expedicion' => now(),
                 'fecha_entrega' => null,
                 'observaciones' => "Generada automáticamente desde cotización #{$cotizacion->id}",
                 'direccion' => null,
                 'telefono' => null,
                 'guia' => null,
-                'color' => '#FFFF00',
+                'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
             ]);
 
             foreach ($referencias as $ref) {
@@ -328,8 +329,8 @@ Aprobada: ".$comentario);
 
         $cotizacion->update([
             'estado' => 'Rechazada',
-            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '')."
-Rechazo: ".$motivo) : $cotizacion->observaciones,
+            'observaciones' => $motivo ? trim(($cotizacion->observaciones ?: '').'
+Rechazo: '.$motivo) : $cotizacion->observaciones,
         ]);
 
         return $cotizacion->fresh(['pedido', 'tercero', 'user']);

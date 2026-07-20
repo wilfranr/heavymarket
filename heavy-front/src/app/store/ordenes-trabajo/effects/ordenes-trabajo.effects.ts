@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
-import { catchError, map, switchMap } from 'rxjs/operators';
+import { catchError, map, mergeMap, switchMap } from 'rxjs/operators';
 import { OrdenTrabajoService } from '../../../core/services/orden-trabajo.service';
 import { MessageService } from 'primeng/api';
 import * as OrdenesTrabajoActions from '../actions/ordenes-trabajo.actions';
@@ -132,6 +132,42 @@ export class OrdenesTrabajoEffects {
                             detail: message
                         });
                         return of(OrdenesTrabajoActions.updateOrdenTrabajoFailure({ error: message }));
+                    })
+                )
+            )
+        )
+    );
+
+    /**
+     * Effect para registrar recepción de compra desde orden de trabajo
+     */
+    registrarRecepcionCompra$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(OrdenesTrabajoActions.registrarRecepcionCompra),
+            switchMap(({ ordenTrabajoId, data }) =>
+                this.ordenTrabajoService.registrarRecepcionCompra(ordenTrabajoId, data).pipe(
+                    mergeMap((response) => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Recepción de compra registrada exitosamente'
+                        });
+                        return [
+                            OrdenesTrabajoActions.registrarRecepcionCompraSuccess({
+                                ordenTrabajoId,
+                                recepcion: response.data
+                            }),
+                            OrdenesTrabajoActions.loadOrdenTrabajoById({ id: ordenTrabajoId })
+                        ];
+                    }),
+                    catchError((error) => {
+                        const message = error.error?.message || 'Error al registrar la recepción de compra';
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: message
+                        });
+                        return of(OrdenesTrabajoActions.registrarRecepcionCompraFailure({ error: message }));
                     })
                 )
             )

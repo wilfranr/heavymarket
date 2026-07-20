@@ -27,10 +27,15 @@ class RestrictLogistica
         if ($user && $user->hasRole('Logistica')) {
             $route = $request->route();
             $uri = $route ? $route->uri : $request->path();
+            $routeName = $route?->getName();
 
             // Permitir acceso únicamente a rutas de órdenes de trabajo
             if (! str_starts_with($uri, 'v1/ordenes-trabajo')) {
                 abort(403, 'Acceso denegado: El rol Logística solo tiene acceso a órdenes de trabajo.');
+            }
+
+            if ($routeName === 'ordenes-trabajo.recepciones-compra.store') {
+                return $next($request);
             }
 
             // Bloquear métodos de escritura (POST, PUT, PATCH, DELETE) en órdenes de trabajo

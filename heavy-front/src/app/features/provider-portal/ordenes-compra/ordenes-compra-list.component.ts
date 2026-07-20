@@ -12,6 +12,26 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { TransportadoraService } from '../../../core/services/transportadora.service';
+import { OrdenCompra, OrdenCompraEstado } from '../../../core/models/orden-compra.model';
+
+interface SelectOption<T> {
+    label: string;
+    value: T;
+}
+
+interface ApiErrorResponse {
+    error?: {
+        message?: string;
+    };
+}
+
+export function proveedorPuedeConfirmarOrden(estado: OrdenCompraEstado | null): boolean {
+    return estado === 'Enviada';
+}
+
+export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): boolean {
+    return estado === 'Confirmada';
+}
 
 @Component({
     selector: 'app-ordenes-compra-list',
@@ -20,7 +40,7 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
     providers: [MessageService],
     template: `
         <div class="card">
-            <div class="flex justify-content-between align-items-center mb-4">
+            <div class="flex justify-between items-center mb-4">
                 <h2 class="m-0"><i class="pi pi-shopping-bag text-emerald-600 mr-2"></i>Mis Órdenes de Compra</h2>
                 <p-button icon="pi pi-refresh" [loading]="loading()" (onClick)="loadPurchaseOrders()" [outlined]="true" label="Actualizar"></p-button>
             </div>
@@ -46,9 +66,12 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
                             <p-tag [value]="oc.estado" [severity]="getStatusSeverity(oc.estado)"></p-tag>
                         </td>
                         <td class="text-center">
-                            <div class="flex justify-content-center gap-2">
+                            <div class="flex justify-center gap-2">
                                 <p-button icon="pi pi-eye" [outlined]="true" severity="secondary" (onClick)="viewDetails(oc)" pTooltip="Ver Detalles"></p-button>
-                                @if (oc.estado === 'Pendiente' || oc.estado === 'En Proceso') {
+                                @if (proveedorPuedeConfirmarOrden(oc.estado)) {
+                                    <p-button icon="pi pi-check" severity="success" (onClick)="confirmOrder(oc)" label="Confirmar"></p-button>
+                                }
+                                @if (proveedorPuedeDespacharOrden(oc.estado)) {
                                     <p-button icon="pi pi-send" severity="success" (onClick)="openDispatchDialog(oc)" label="Despachar"></p-button>
                                 }
                             </div>
@@ -59,31 +82,31 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
         </div>
 
         <!-- Diálogo de Detalles -->
-        <p-dialog [(visible)]="displayDetails" [header]="'Detalle de Orden OC-' + selectedOrder?.id" [modal]="true" [style]="{ width: '700px' }">
-            @if (selectedOrder) {
-                <div class="grid">
-                    <div class="col-6 mb-3">
-                        <label class="block text-500 font-medium mb-1">Fecha Expedición</label>
-                        <div class="text-900">{{ selectedOrder.fecha_expedicion | date: 'mediumDate' }}</div>
+        <p-dialog [visible]="displayDetails()" (visibleChange)="displayDetails.set($event)" [header]="'Detalle de Orden OC-' + selectedOrder()?.id" [modal]="true" [style]="{ width: '700px' }">
+            @if (selectedOrder(); as order) {
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="field">
+                        <label class="block text-sm font-medium mb-1">Fecha Expedición</label>
+                        <div>{{ order.fecha_expedicion | date: 'mediumDate' }}</div>
                     </div>
-                    <div class="col-6 mb-3">
-                        <label class="block text-500 font-medium mb-1">Estado Actual</label>
-                        <p-tag [value]="selectedOrder.estado" [severity]="getStatusSeverity(selectedOrder.estado)"></p-tag>
+                    <div class="field">
+                        <label class="block text-sm font-medium mb-1">Estado Actual</label>
+                        <p-tag [value]="order.estado || 'N/A'" [severity]="getStatusSeverity(order.estado)"></p-tag>
                     </div>
-                    @if (selectedOrder.guia) {
-                        <div class="col-6 mb-3">
-                            <label class="block text-500 font-medium mb-1">Número de Guía</label>
-                            <div class="text-900 font-bold">{{ selectedOrder.guia }}</div>
+                    @if (order.guia) {
+                        <div class="field">
+                            <label class="block text-sm font-medium mb-1">Número de Guía</label>
+                            <div class="font-bold">{{ order.guia }}</div>
                         </div>
-                        <div class="col-6 mb-3">
-                            <label class="block text-500 font-medium mb-1">Transportadora</label>
-                            <div class="text-900">{{ selectedOrder.transportadora?.nombre || 'N/A' }}</div>
+                        <div class="field">
+                            <label class="block text-sm font-medium mb-1">Transportadora</label>
+                            <div>{{ order.transportadora?.nombre || 'N/A' }}</div>
                         </div>
                     }
                 </div>
 
-                <h4 class="mt-4 border-bottom-1 surface-border pb-2">Referencias Solicitadas</h4>
-                <p-table [value]="selectedOrder.detalles || []" styleClass="p-datatable-sm">
+                <h4 class="mt-4 pb-2" style="border-bottom: 1px solid var(--p-surface-border)">Referencias Solicitadas</h4>
+                <p-table [value]="order.detalles || []" styleClass="p-datatable-sm">
                     <ng-template pTemplate="header">
                         <tr>
                             <th>Referencia</th>
@@ -102,18 +125,18 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
                     </ng-template>
                 </p-table>
 
-                <div class="flex justify-content-end mt-4">
-                    <p-button label="Cerrar" (onClick)="displayDetails = false"></p-button>
+                <div class="flex justify-end mt-4">
+                    <p-button label="Cerrar" (onClick)="displayDetails.set(false)"></p-button>
                 </div>
             }
         </p-dialog>
 
         <!-- Diálogo de Despacho -->
-        <p-dialog [(visible)]="displayDispatch" [header]="'Registrar Despacho OC-' + selectedOrder?.id" [modal]="true" [style]="{ width: '450px' }">
+        <p-dialog [visible]="displayDispatch()" (visibleChange)="displayDispatch.set($event)" [header]="'Registrar Despacho OC-' + selectedOrder()?.id" [modal]="true" [style]="{ width: '450px' }">
             <form [formGroup]="dispatchForm" (ngSubmit)="onDispatchSubmit()">
                 <div class="field mb-4">
                     <label for="transp" class="block font-bold mb-2">Transportadora <span class="text-red-500">*</span></label>
-                    <p-select [options]="transportadoras" formControlName="transportadora_id" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccione transportadora" styleClass="w-full"></p-select>
+                    <p-select [options]="transportadoras()" formControlName="transportadora_id" optionLabel="label" optionValue="value" [filter]="true" placeholder="Seleccione transportadora" styleClass="w-full"></p-select>
                 </div>
 
                 <div class="field mb-4">
@@ -128,11 +151,11 @@ import { TransportadoraService } from '../../../core/services/transportadora.ser
 
                 <div class="field mb-4">
                     <label for="obs" class="block font-bold mb-2">Observaciones</label>
-                    <textarea pInputTextarea id="obs" formControlName="observaciones" rows="3" class="w-full" placeholder="Notas sobre el envío..."></textarea>
+                    <textarea pTextarea id="obs" formControlName="observaciones" rows="3" class="w-full" placeholder="Notas sobre el envío..."></textarea>
                 </div>
 
-                <div class="flex justify-content-end gap-2 mt-5">
-                    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="displayDispatch = false"></p-button>
+                <div class="flex justify-end gap-2 mt-5">
+                    <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="displayDispatch.set(false)"></p-button>
                     <p-button label="Confirmar Despacho" severity="success" type="submit" [loading]="submitting()" [disabled]="dispatchForm.invalid"></p-button>
                 </div>
             </form>
@@ -147,14 +170,16 @@ export class OrdenesCompraListComponent implements OnInit {
     private fb = inject(FormBuilder);
     private messageService = inject(MessageService);
 
-    orders = signal<any[]>([]);
+    orders = signal<OrdenCompra[]>([]);
     loading = signal(false);
     submitting = signal(false);
-    displayDetails = false;
-    displayDispatch = false;
-    selectedOrder: any = null;
-    transportadoras: any[] = [];
+    displayDetails = signal(false);
+    displayDispatch = signal(false);
+    selectedOrder = signal<OrdenCompra | null>(null);
+    transportadoras = signal<SelectOption<number>[]>([]);
     dispatchForm!: FormGroup;
+    protected readonly proveedorPuedeConfirmarOrden = proveedorPuedeConfirmarOrden;
+    protected readonly proveedorPuedeDespacharOrden = proveedorPuedeDespacharOrden;
 
     ngOnInit(): void {
         this.initForm();
@@ -188,39 +213,56 @@ export class OrdenesCompraListComponent implements OnInit {
     private loadTransportadoras(): void {
         this.transportadoraService.getAll({ per_page: 100 }).subscribe({
             next: (response) => {
-                this.transportadoras = response.data.map((t) => ({ label: t.nombre, value: t.id }));
+                this.transportadoras.set(response.data.map((t) => ({ label: t.nombre, value: t.id })));
             }
         });
     }
 
-    viewDetails(oc: any): void {
-        this.selectedOrder = oc;
-        this.displayDetails = true;
+    viewDetails(oc: OrdenCompra): void {
+        this.selectedOrder.set(oc);
+        this.displayDetails.set(true);
     }
 
-    openDispatchDialog(oc: any): void {
-        this.selectedOrder = oc;
+    confirmOrder(oc: OrdenCompra): void {
+        this.submitting.set(true);
+        this.providerPortalService.confirmPurchaseOrder(oc.id).subscribe({
+            next: () => {
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Orden confirmada correctamente.' });
+                this.submitting.set(false);
+                this.loadPurchaseOrders();
+            },
+            error: (error: ApiErrorResponse) => {
+                const errorMsg = error.error?.message || 'Error al confirmar la orden.';
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
+                this.submitting.set(false);
+            }
+        });
+    }
+
+    openDispatchDialog(oc: OrdenCompra): void {
+        this.selectedOrder.set(oc);
         this.dispatchForm.reset({
             transportadora_id: oc.transportadora_id,
             guia: oc.guia || '',
             fecha_despacho: oc.fecha_despacho ? new Date(oc.fecha_despacho).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
             observaciones: oc.observaciones || ''
         });
-        this.displayDispatch = true;
+        this.displayDispatch.set(true);
     }
 
     onDispatchSubmit(): void {
-        if (this.dispatchForm.invalid || !this.selectedOrder) return;
+        const selectedOrder = this.selectedOrder();
+        if (this.dispatchForm.invalid || !selectedOrder) return;
 
         this.submitting.set(true);
-        this.providerPortalService.registerDispatch(this.selectedOrder.id, this.dispatchForm.value).subscribe({
+        this.providerPortalService.registerDispatch(selectedOrder.id, this.dispatchForm.value).subscribe({
             next: () => {
                 this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Despacho registrado correctamente.' });
-                this.displayDispatch = false;
+                this.displayDispatch.set(false);
                 this.submitting.set(false);
                 this.loadPurchaseOrders();
             },
-            error: (error) => {
+            error: (error: ApiErrorResponse) => {
                 const errorMsg = error.error?.message || 'Error al registrar el despacho.';
                 this.messageService.add({ severity: 'error', summary: 'Error', detail: errorMsg });
                 this.submitting.set(false);
@@ -228,17 +270,18 @@ export class OrdenesCompraListComponent implements OnInit {
         });
     }
 
-    getStatusSeverity(status: string): 'info' | 'success' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
+    getStatusSeverity(status: OrdenCompraEstado | null): 'info' | 'success' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
         switch (status) {
-            case 'Pendiente':
+            case 'Pendiente de envío':
+            case 'Recibida parcialmente':
                 return 'warn';
-            case 'En Proceso':
+            case 'Enviada':
                 return 'info';
-            case 'Despachado':
+            case 'Confirmada':
+            case 'Recibida':
+            case 'Cerrada':
                 return 'success';
-            case 'Entregado':
-                return 'success';
-            case 'Cancelado':
+            case 'Cancelada':
                 return 'danger';
             default:
                 return 'secondary';

@@ -1,5 +1,6 @@
 import { createAction, props } from '@ngrx/store';
 import { OrdenTrabajo, CreateOrdenTrabajoDto, UpdateOrdenTrabajoDto } from '../../../core/models/orden-trabajo.model';
+import { CreateRecepcionCompraDto, RecepcionCompra } from '../../../core/models/recepcion-compra.model';
 
 /**
  * Acciones para el módulo de Órdenes de Trabajo
@@ -32,6 +33,13 @@ export const updateOrdenTrabajo = createAction('[OrdenesTrabajo] Update OrdenTra
 export const updateOrdenTrabajoSuccess = createAction('[OrdenesTrabajo] Update OrdenTrabajo Success', props<{ ordenTrabajo: OrdenTrabajo }>());
 
 export const updateOrdenTrabajoFailure = createAction('[OrdenesTrabajo] Update OrdenTrabajo Failure', props<{ error: string }>());
+
+// Registrar recepción de compra desde OT
+export const registrarRecepcionCompra = createAction('[OrdenesTrabajo] Registrar Recepcion Compra', props<{ ordenTrabajoId: number; data: CreateRecepcionCompraDto }>());
+
+export const registrarRecepcionCompraSuccess = createAction('[OrdenesTrabajo] Registrar Recepcion Compra Success', props<{ ordenTrabajoId: number; recepcion: RecepcionCompra }>());
+
+export const registrarRecepcionCompraFailure = createAction('[OrdenesTrabajo] Registrar Recepcion Compra Failure', props<{ error: string }>());
 
 // Eliminar orden de trabajo
 export const deleteOrdenTrabajo = createAction('[OrdenesTrabajo] Delete OrdenTrabajo', props<{ id: number }>());

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\OrdenCompraEstado;
 use App\Models\Cotizacion;
 use App\Models\OrdenCompra;
 use App\Models\Pedido;
@@ -31,7 +32,7 @@ class OrdenCompraFactory extends Factory
             'pedido_id' => Pedido::factory(),
             'cotizacion_id' => Cotizacion::factory(),
             'proveedor_id' => Tercero::factory(),
-            'estado' => 'Pendiente',
+            'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
             'fecha_expedicion' => now(),
             'fecha_entrega' => now()->addDays(7),
             'observaciones' => fake()->optional()->sentence(),
@@ -39,51 +40,51 @@ class OrdenCompraFactory extends Factory
             'direccion' => fake()->optional()->address(),
             'telefono' => fake()->optional()->phoneNumber(),
             'guia' => fake()->optional()->bothify('??########'),
-            'color' => '#FFFF00',
+            'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
         ];
     }
 
     /**
-     * Indicate that the order is "Pendiente".
+     * Indicate that the order is "Pendiente de envío".
      */
     public function pendiente(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'Pendiente',
-            'color' => '#FFFF00',
+            'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
+            'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
         ]);
     }
 
     /**
-     * Indicate that the order is "En proceso".
+     * Indicate that the order is "Confirmada".
      */
     public function enProceso(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'En proceso',
-            'color' => '#FFFF00',
+            'estado' => OrdenCompraEstado::Confirmada->value,
+            'color' => OrdenCompraEstado::Confirmada->color(),
         ]);
     }
 
     /**
-     * Indicate that the order is "Entregado".
+     * Indicate that the order is "Recibida".
      */
     public function entregado(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'Entregado',
-            'color' => '#00ff00',
+            'estado' => OrdenCompraEstado::Recibida->value,
+            'color' => OrdenCompraEstado::Recibida->color(),
         ]);
     }
 
     /**
-     * Indicate that the order is "Cancelado".
+     * Indicate that the order is "Cancelada".
      */
     public function cancelado(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => 'Cancelado',
-            'color' => '#ff0000',
+            'estado' => OrdenCompraEstado::Cancelada->value,
+            'color' => OrdenCompraEstado::Cancelada->color(),
         ]);
     }
 }

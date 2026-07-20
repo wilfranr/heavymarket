@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService, PaginatedResponse, QueryParams } from './api.service';
 import { OrdenTrabajo, CreateOrdenTrabajoDto, UpdateOrdenTrabajoDto } from '../models/orden-trabajo.model';
+import { CreateRecepcionCompraDto, RecepcionCompra } from '../models/recepcion-compra.model';
 
 /**
  * Servicio para gestionar órdenes de trabajo
@@ -40,6 +41,13 @@ export class OrdenTrabajoService extends ApiService {
      */
     update(id: number, orden: UpdateOrdenTrabajoDto): Observable<{ data: OrdenTrabajo }> {
         return this.put<{ data: OrdenTrabajo }>(`${this.getBaseUrl()}/${id}`, orden);
+    }
+
+    /**
+     * Registrar recepción física de repuestos desde la orden de trabajo
+     */
+    registrarRecepcionCompra(id: number, data: CreateRecepcionCompraDto): Observable<{ data: RecepcionCompra }> {
+        return this.post<{ data: RecepcionCompra }>(`${this.getBaseUrl()}/${id}/recepciones-compra`, data);
     }
 
     /**

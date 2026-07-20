@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
-import { ApiService, PaginatedResponse, QueryParams } from './api.service';
-import { OrdenCompra, CreateOrdenCompraDto, UpdateOrdenCompraDto } from '../models/orden-compra.model';
+import { ApiResponse, ApiService, PaginatedResponse, QueryParams } from './api.service';
+import { CreateOrdenCompraDto, OrdenCompra, ReceiveOrdenCompraDto, TransitionOrdenCompraDto, UpdateOrdenCompraDto } from '../models/orden-compra.model';
 
 /**
  * Servicio para gestionar órdenes de compra
@@ -40,6 +40,20 @@ export class OrdenCompraService extends ApiService {
      */
     update(id: number, orden: UpdateOrdenCompraDto): Observable<{ data: OrdenCompra }> {
         return this.put<{ data: OrdenCompra }>(`${this.getBaseUrl()}/${id}`, orden);
+    }
+
+    /**
+     * Transicionar explícitamente el estado de una orden de compra
+     */
+    transition(id: number, data: TransitionOrdenCompraDto): Observable<ApiResponse<OrdenCompra>> {
+        return this.patch<ApiResponse<OrdenCompra>>(`${this.getBaseUrl()}/${id}/transition`, data);
+    }
+
+    /**
+     * Registrar recepción parcial o completa de una orden de compra
+     */
+    receive(id: number, data: ReceiveOrdenCompraDto): Observable<ApiResponse<OrdenCompra>> {
+        return this.post<ApiResponse<OrdenCompra>>(`${this.getBaseUrl()}/${id}/receive`, data);
     }
 
     /**

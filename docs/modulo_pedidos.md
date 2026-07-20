@@ -88,6 +88,8 @@ Las unicas mutaciones permitidas en estos estados son **transiciones de flujo** 
 
 `Aprobado` **no** implica que el pedido ya salio; solo que el cliente acepto. El avance a `Enviado` es accion de despacho posterior.
 
+**Órdenes de Compra generadas al aprobar**: Las OC creadas por `CotizacionService::crearOrdenCompra()` inician en `Pendiente de envío`, no en `Pendiente` ni `Borrador`. El ciclo formal de OC se gestiona con `OrdenCompraEstado` y endpoints dedicados (`transition`, `receive`); el despacho del proveedor registra guía/transportadora/fecha, pero `Despachado` ya no es un estado formal.
+
 
 ### Cotizaciones múltiples durante Costeo (decisión Julio 2026)
 
@@ -145,6 +147,27 @@ flowchart LR
 | Reabrir desde `Rechazado` | No permitido | Estado final; crear pedido nuevo si el cliente vuelve |
 | Unificar aprobacion pedido + cotizacion + OT | Pendiente implementacion | Hoy existen dos caminos inconsistentes en codigo |
 | Roles para `enviar` / `entregar` | **Cerrado** | Logistica, Administrador, super_admin |
+
+### Incidente 2026-07-20: aprobación falla al crear OT/OC por `orden_trabajos.user_id`
+
+**Síntoma**: al aprobar una cotización, la API responde `Error al aprobar la cotización` y MySQL reporta `Unknown column 'user_id' in INSERT INTO orden_trabajos`.
+
+**Diagnóstico Triage**: `CotizacionService::aprobar()` aprueba dentro de una transacción, luego ejecuta `crearOrdenTrabajo()` y `crearOrdenCompra()`. La OT inserta `user_id` porque el modelo `OrdenTrabajo` y la migración nueva lo definen como dato de auditoría. El fallo indica drift de esquema en una base existente: la tabla `orden_trabajos` ya existía sin `user_id`, por lo que `2026_05_05_000001_create_orden_trabajos_tables.php` no la corrige al estar protegida por `Schema::hasTable`.
+
+**Decisión**: conservar `user_id` en OT para trazabilidad y corregir con migraciones idempotentes. Tras ejecutar la primera corrección en una base legacy, el siguiente fallo apareció en `telefono`, confirmando que el drift no era de una sola columna sino del contrato completo de `orden_trabajos`. La reparación debe reconciliar todas las columnas que inserta/usa `CotizacionService::crearOrdenTrabajo()`.
+
+**Segundo hallazgo en producción**: si una columna ya existe pero fue creada como `NOT NULL`, `Schema::hasColumn()` no la modifica. El error `Column 'telefono' cannot be null` indica que `telefono` existe, pero con nulabilidad incorrecta. Se requiere una migración adicional que normalice a `NULL` las columnas que el servicio puede insertar vacías (`telefono`, `guia`, `transportadora_id`, `archivo`, `motivo_cancelacion`, etc.).
+
+**Por qué no lo detectaba el test original**: `RefreshDatabase` reconstruye `heavymarket_test` con el esquema vigente, donde `telefono` y las demás columnas sí existen y son nullable. Para cubrir bases legacy, la regresión debe simular una tabla incompleta y una columna existente como `NOT NULL`, ejecutando explícitamente las migraciones de reconciliación.
+
+**Archivos clave del fix**:
+- `heavy-api/app/Services/CotizacionService.php` — flujo transaccional aprobar cotización, crear OT y crear OC.
+- `heavy-api/app/Models/OrdenTrabajo.php` — contrato de atributos esperados, incluye `user_id`.
+- `heavy-api/database/migrations/2026_05_05_000001_create_orden_trabajos_tables.php` — crea la columna solo en instalaciones nuevas.
+- `heavy-api/database/migrations/2026_07_20_121500_reconcile_orden_trabajos_legacy_schema.php` — reconciliación completa de columnas faltantes en instalaciones existentes.
+- `heavy-api/database/migrations/2026_07_20_123000_make_orden_trabajos_nullable_legacy_columns.php` — normalización de nulabilidad para columnas legacy existentes como `telefono`.
+- `heavy-api/tests/Feature/Api/OrdenTrabajoSchemaMigrationTest.php` — regresión que simula columnas legacy faltantes.
+- `heavy-api/tests/Feature/Api/PedidoResponderTest.php` — validación del flujo aprobar con OT/OC.
 
 ---
 
@@ -529,3 +552,9 @@ Al rechazar via `POST responder`, la cotizacion activa debe quedar en estado **`
 ---
 
 **Ultima actualizacion:** 8 de Julio, 2026 — Documentado diagnóstico del bug de costeo internacional en cero.
+
+## Recepción logística desde OT
+
+La Orden de Trabajo es el centro operativo de Logística para recibir repuestos. Desde el detalle de la OT, los roles `Logistica`, `Administrador` y `super_admin` pueden usar **Registrar recepción** para seleccionar una OC del mismo pedido/cotización y registrar el evento físico de recepción.
+
+Cada recepción queda asociada a la OT, a la OC, al usuario receptor y a las líneas recibidas. La OC no se edita manualmente para cambiar cantidades recibidas; el sistema recalcula sus acumulados y estado con base en las recepciones activas.

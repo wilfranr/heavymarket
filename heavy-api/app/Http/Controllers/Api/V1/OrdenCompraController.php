@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\OrdenCompraEstado;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReceiveOrdenCompraRequest;
 use App\Http\Requests\StoreOrdenCompraRequest;
+use App\Http\Requests\TransitionOrdenCompraRequest;
 use App\Http\Requests\UpdateOrdenCompraRequest;
 use App\Http\Resources\OrdenCompraResource;
 use App\Models\Empresa;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraReferencia;
+use App\Services\OrdenCompraLifecycleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
@@ -41,6 +45,14 @@ class OrdenCompraController extends Controller
 
         if ($request->filled('proveedor_id')) {
             $query->where('proveedor_id', $request->input('proveedor_id'));
+        }
+
+        if ($request->filled('pedido_id')) {
+            $query->where('pedido_id', $request->input('pedido_id'));
+        }
+
+        if ($request->filled('cotizacion_id')) {
+            $query->where('cotizacion_id', $request->input('cotizacion_id'));
         }
 
         if ($request->filled('search')) {
@@ -208,6 +220,50 @@ class OrdenCompraController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Transicionar una orden de compra a un nuevo estado.
+     */
+    public function transition(
+        TransitionOrdenCompraRequest $request,
+        OrdenCompra $orden_compra,
+        OrdenCompraLifecycleService $lifecycleService
+    ): JsonResponse {
+        $this->authorize('update', $orden_compra);
+
+        $validated = $request->validated();
+        $estadoDestino = OrdenCompraEstado::from($validated['estado_destino']);
+
+        $ordenCompra = $lifecycleService->transicionar(
+            $orden_compra,
+            $estadoDestino,
+            $validated,
+            $request->user()
+        );
+
+        return response()->json([
+            'data' => new OrdenCompraResource($ordenCompra),
+            'message' => 'Estado de la orden de compra actualizado correctamente',
+        ]);
+    }
+
+    /**
+     * Registrar recepción parcial o completa de una orden de compra.
+     */
+    public function receive(
+        ReceiveOrdenCompraRequest $request,
+        OrdenCompra $orden_compra,
+        OrdenCompraLifecycleService $lifecycleService
+    ): JsonResponse {
+        $this->authorize('update', $orden_compra);
+
+        $ordenCompra = $lifecycleService->recibir($orden_compra, $request->validated());
+
+        return response()->json([
+            'data' => new OrdenCompraResource($ordenCompra),
+            'message' => 'Recepción de la orden de compra registrada correctamente',
+        ]);
     }
 
     /**

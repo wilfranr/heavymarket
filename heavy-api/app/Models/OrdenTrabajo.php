@@ -39,6 +39,7 @@ use Illuminate\Support\Carbon;
  * @property-read Transportadora|null $transportadora
  * @property-read Direccion|null $direccion
  * @property-read Collection|OrdenTrabajoReferencia[] $referencias
+ * @property-read Collection|RecepcionCompra[] $recepcionesCompra
  */
 class OrdenTrabajo extends Model
 {
@@ -122,5 +123,10 @@ class OrdenTrabajo extends Model
     public function referencias(): HasMany
     {
         return $this->hasMany(OrdenTrabajoReferencia::class);
+    }
+
+    public function recepcionesCompra(): HasMany
+    {
+        return $this->hasMany(RecepcionCompra::class, 'orden_trabajo_id');
     }
 }

@@ -122,14 +122,16 @@ export class AppMenu implements OnInit {
             {
                 label: 'Comercial',
                 items: [
-                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
-                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] },
-                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }
                 ]
             },
             {
-                label: 'Compras',
-                items: [{ label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }]
+                label: 'Documentos',
+                items: [
+                    { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
+                    { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] },
+                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                ]
             },
             {
                 label: 'Catálogo de Productos',

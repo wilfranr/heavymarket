@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\OrdenCompraEstado;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProviderCosteoRequest;
 use App\Http\Resources\OrdenCompraResource;
@@ -12,6 +13,7 @@ use App\Models\OrdenCompra;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
 use App\Models\Tercero;
+use App\Services\OrdenCompraLifecycleService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -268,6 +270,37 @@ class ProviderPortalController extends Controller
     }
 
     /**
+     * Confirmar una OC desde el portal de proveedores.
+     */
+    public function confirmPurchaseOrder(Request $request, int $id, OrdenCompraLifecycleService $lifecycleService): JsonResponse
+    {
+        $validated = $request->validate([
+            'observaciones' => ['nullable', 'string', 'max:500'],
+        ]);
+
+        $user = $request->user();
+        $tercero = Tercero::where('user_id', $user->id)->first();
+
+        if (! $tercero) {
+            return response()->json(['message' => 'Perfil no encontrado'], 404);
+        }
+
+        $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
+
+        $ordenCompra = $lifecycleService->transicionar(
+            $oc,
+            OrdenCompraEstado::Confirmada,
+            $validated,
+            $user
+        );
+
+        return response()->json([
+            'message' => 'Orden de compra confirmada correctamente.',
+            'data' => new OrdenCompraResource($ordenCompra),
+        ]);
+    }
+
+    /**
      * Actualizar datos de despacho de una OC
      */
     public function updateDispatch(Request $request, int $id): JsonResponse
@@ -282,11 +315,13 @@ class ProviderPortalController extends Controller
         $user = $request->user();
         $tercero = Tercero::where('user_id', $user->id)->first();
 
+        if (! $tercero) {
+            return response()->json(['message' => 'Perfil no encontrado'], 404);
+        }
+
         $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
 
-        $oc->update(array_merge($validated, [
-            'estado' => 'Despachado',
-        ]));
+        $oc->update($validated);
 
         return response()->json([
             'message' => 'Despacho registrado correctamente.',

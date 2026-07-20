@@ -59,12 +59,15 @@ Cuando un pedido interno pasa al estado `En_Costeo`, se activa el motor de empar
 ## 4. Flujo de Órdenes de Compra (Postventa)
 Una vez que el cliente final aprueba una cotización, el sistema genera automáticamente una **Orden de Compra (OC)** por proveedor.
 
-1.  **Visibilidad**: El proveedor ve sus OC en estado `Pendiente`.
-2.  **Confirmación**: El proveedor debe "Aceptar" la OC para confirmar stock y precio.
+1.  **Visibilidad**: El proveedor ve sus OC cuando HeavyMarket las envía (`Enviada`).
+2.  **Confirmación**: El proveedor debe confirmar la OC para aceptar stock, precio, cantidades y condiciones. La OC pasa a `Confirmada`.
 3.  **Despacho**:
-    *   El proveedor marca como `Despachado`.
+    *   El proveedor registra datos logísticos sobre una OC `Confirmada`.
     *   Ingresa: Fecha de envío, Transportadora y Número de Guía.
+    *   `Despachado` ya no es un estado formal; la guía y la fecha de despacho son datos logísticos.
 4.  **Recepción**: Marcada ÚNICAMENTE por el personal de logística de HeavyMarket tras verificación física.
+    *   Puede quedar como `Recibida parcialmente` o `Recibida`.
+    *   El cierre formal queda en estado `Cerrada`.
 
 ## 5. Alcance de Datos y Seguridad
 *   **Proveedor**:
@@ -78,6 +81,7 @@ Una vez que el cliente final aprueba una cotización, el sistema genera automát
 *   `PedidoReferencia`: Estado `En_Costeo`.
 *   `PedidoReferenciaProveedor`: Almacena las ofertas de los proveedores.
 *   `OrdenCompra`: Documento final generado tras aprobación de cotización.
+*   `OrdenCompraEstado`: Enum backend que gobierna transiciones (`Pendiente de envío`, `Enviada`, `Confirmada`, `Recibida parcialmente`, `Recibida`, `Cerrada`, `Cancelada`).
 
 ---
 
@@ -92,6 +96,15 @@ Para entender la lógica del Portal de Proveedores y el Costeo Colaborativo, con
 5. **Tiempo Real (Event/Socket)**: `heavy-api/app/Events/NewReferencesAvailable.php` (Dispara avisos vía Laravel Reverb).
 6. **Alta administrativa (Terceros)**: `heavy-api/app/Http/Controllers/Api/V1/TerceroController.php` (`syncTerceroPortalUser` / flags `provider_access` y `landing_access`).
 7. **Formulario admin (Frontend)**: `heavy-front/src/app/shared/components/tercero-form/` (toggles de acceso separados por tipo).
+8. **Órdenes de Compra (Backend)**:
+   - `heavy-api/app/Enums/OrdenCompraEstado.php`.
+   - `heavy-api/app/Services/OrdenCompraLifecycleService.php`.
+   - `heavy-api/app/Http/Controllers/Api/V1/OrdenCompraController.php` (`transition`, `receive`).
+   - `heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php` (`confirmPurchaseOrder`, `updateDispatch`).
+9. **Órdenes de Compra (Frontend)**:
+   - `heavy-front/src/app/core/models/orden-compra.model.ts`.
+   - `heavy-front/src/app/core/services/orden-compra.service.ts`.
+   - `heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts`.
 
 ---
 *Última actualización: 17 de Mayo, 2026*
