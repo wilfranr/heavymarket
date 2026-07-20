@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { OrdenCompra, CreateOrdenCompraDto, UpdateOrdenCompraDto } from '../../../core/models/orden-compra.model';
+import { CreateOrdenCompraDto, OrdenCompra, ReceiveOrdenCompraDto, TransitionOrdenCompraDto, UpdateOrdenCompraDto } from '../../../core/models/orden-compra.model';
 
 /**
  * Acciones para el módulo de Órdenes de Compra
@@ -32,6 +32,20 @@ export const updateOrdenCompra = createAction('[OrdenesCompra] Update OrdenCompr
 export const updateOrdenCompraSuccess = createAction('[OrdenesCompra] Update OrdenCompra Success', props<{ ordenCompra: OrdenCompra }>());
 
 export const updateOrdenCompraFailure = createAction('[OrdenesCompra] Update OrdenCompra Failure', props<{ error: string }>());
+
+// Transicionar orden de compra
+export const transitionOrdenCompra = createAction('[OrdenesCompra] Transition OrdenCompra', props<{ id: number; data: TransitionOrdenCompraDto }>());
+
+export const transitionOrdenCompraSuccess = createAction('[OrdenesCompra] Transition OrdenCompra Success', props<{ ordenCompra: OrdenCompra }>());
+
+export const transitionOrdenCompraFailure = createAction('[OrdenesCompra] Transition OrdenCompra Failure', props<{ error: string }>());
+
+// Registrar recepción de orden de compra
+export const receiveOrdenCompra = createAction('[OrdenesCompra] Receive OrdenCompra', props<{ id: number; data: ReceiveOrdenCompraDto }>());
+
+export const receiveOrdenCompraSuccess = createAction('[OrdenesCompra] Receive OrdenCompra Success', props<{ ordenCompra: OrdenCompra }>());
+
+export const receiveOrdenCompraFailure = createAction('[OrdenesCompra] Receive OrdenCompra Failure', props<{ error: string }>());
 
 // Eliminar orden de compra
 export const deleteOrdenCompra = createAction('[OrdenesCompra] Delete OrdenCompra', props<{ id: number }>());

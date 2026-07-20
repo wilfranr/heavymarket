@@ -1,6 +1,5 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { OrdenCompraService } from '../../../core/services/orden-compra.service';
@@ -15,7 +14,6 @@ export class OrdenesCompraEffects {
     private actions$ = inject(Actions);
     private ordenCompraService = inject(OrdenCompraService);
     private messageService = inject(MessageService);
-    private router = inject(Router);
 
     /**
      * Effect para cargar órdenes de compra
@@ -132,6 +130,70 @@ export class OrdenesCompraEffects {
                             detail: message
                         });
                         return of(OrdenesCompraActions.updateOrdenCompraFailure({ error: message }));
+                    })
+                )
+            )
+        )
+    );
+
+    /**
+     * Effect para transicionar orden de compra
+     */
+    transitionOrdenCompra$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(OrdenesCompraActions.transitionOrdenCompra),
+            switchMap(({ id, data }) =>
+                this.ordenCompraService.transition(id, data).pipe(
+                    map((response) => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: response.message || 'Estado de la orden de compra actualizado'
+                        });
+                        return OrdenesCompraActions.transitionOrdenCompraSuccess({
+                            ordenCompra: response.data
+                        });
+                    }),
+                    catchError((error) => {
+                        const message = error.error?.message || 'Error al transicionar la orden de compra';
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: message
+                        });
+                        return of(OrdenesCompraActions.transitionOrdenCompraFailure({ error: message }));
+                    })
+                )
+            )
+        )
+    );
+
+    /**
+     * Effect para registrar recepción de orden de compra
+     */
+    receiveOrdenCompra$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(OrdenesCompraActions.receiveOrdenCompra),
+            switchMap(({ id, data }) =>
+                this.ordenCompraService.receive(id, data).pipe(
+                    map((response) => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: response.message || 'Recepción de la orden de compra registrada'
+                        });
+                        return OrdenesCompraActions.receiveOrdenCompraSuccess({
+                            ordenCompra: response.data
+                        });
+                    }),
+                    catchError((error) => {
+                        const message = error.error?.message || 'Error al registrar la recepción de la orden de compra';
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: message
+                        });
+                        return of(OrdenesCompraActions.receiveOrdenCompraFailure({ error: message }));
                     })
                 )
             )

@@ -120,6 +120,54 @@ export const ordenesCompraReducer = createReducer(
         error
     })),
 
+    // Transicionar orden de compra
+    on(OrdenesCompraActions.transitionOrdenCompra, (state) => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+
+    on(OrdenesCompraActions.transitionOrdenCompraSuccess, (state, { ordenCompra }) => {
+        return adapter.updateOne(
+            { id: ordenCompra.id, changes: ordenCompra },
+            {
+                ...state,
+                loading: false,
+                error: null
+            }
+        );
+    }),
+
+    on(OrdenesCompraActions.transitionOrdenCompraFailure, (state, { error }) => ({
+        ...state,
+        loading: false,
+        error
+    })),
+
+    // Registrar recepción de orden de compra
+    on(OrdenesCompraActions.receiveOrdenCompra, (state) => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+
+    on(OrdenesCompraActions.receiveOrdenCompraSuccess, (state, { ordenCompra }) => {
+        return adapter.updateOne(
+            { id: ordenCompra.id, changes: ordenCompra },
+            {
+                ...state,
+                loading: false,
+                error: null
+            }
+        );
+    }),
+
+    on(OrdenesCompraActions.receiveOrdenCompraFailure, (state, { error }) => ({
+        ...state,
+        loading: false,
+        error
+    })),
+
     // Eliminar orden de compra
     on(OrdenesCompraActions.deleteOrdenCompra, (state) => ({
         ...state,

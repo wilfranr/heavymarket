@@ -1,10 +1,10 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { TableModule } from 'primeng/table';
+import { TableLazyLoadEvent, TableModule } from 'primeng/table';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
@@ -17,7 +17,50 @@ import { OrdenCompra, OrdenCompraEstado, OrdenCompraColor } from '../../../core/
 import * as OrdenesCompraActions from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
 import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
-import { PedidoService } from '../../../core/services/pedido.service';
+
+interface SelectOption<T> {
+    label: string;
+    value: T;
+}
+
+export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+    switch (estado) {
+        case 'Confirmada':
+        case 'Recibida':
+        case 'Cerrada':
+            return 'success';
+        case 'Enviada':
+            return 'info';
+        case 'Pendiente de envío':
+        case 'Recibida parcialmente':
+            return 'warn';
+        case 'Cancelada':
+            return 'danger';
+        default:
+            return 'secondary';
+    }
+}
+
+export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string {
+    switch (color) {
+        case '#FFFF00':
+            return 'Pendiente de envío';
+        case '#2196F3':
+            return 'Enviada';
+        case '#8BC34A':
+            return 'Confirmada';
+        case '#FF9800':
+            return 'Recibida parcialmente';
+        case '#00ff00':
+            return 'Recibida';
+        case '#4CAF50':
+            return 'Cerrada';
+        case '#ff0000':
+            return 'Cancelada';
+        default:
+            return 'Desconocido';
+    }
+}
 
 /**
  * Componente de Lista de Órdenes de Compra
@@ -77,7 +120,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
                             <p-tag [value]="orden.estado || 'N/A'" [severity]="getEstadoSeverity(orden.estado)"> </p-tag>
                         </td>
                         <td class="text-center">
-                            <div class="mx-auto" [style.background-color]="orden.color || '#FFFF00'" [style.width]="'16px'" [style.height]="'16px'" [style.border-radius]="'50%'" [title]="getColorTooltip(orden.color)"></div>
+                            <div class="mx-auto w-4 h-4 rounded-full" [style.background-color]="orden.color || '#FFFF00'" style="border: 1px solid var(--p-surface-border)" [title]="getColorTooltip(orden.color)"></div>
                         </td>
                         <td>{{ orden.fecha_expedicion | date: 'dd/MM/yyyy' }}</td>
                         <td>{{ orden.fecha_entrega | date: 'dd/MM/yyyy' }}</td>
@@ -111,26 +154,33 @@ export class ListComponent implements OnInit {
 
     // Local State Signals
     filters = signal<{
-        estado?: string;
-        color?: string;
+        estado?: OrdenCompraEstado;
+        color?: OrdenCompraColor;
         proveedor_id?: number;
         search?: string;
         page?: number;
     }>({});
 
-    proveedores = signal<any[]>([]);
+    proveedores = signal<SelectOption<number>[]>([]);
 
-    estadosOptions = [
-        { label: 'Pendiente', value: 'Pendiente' },
-        { label: 'En proceso', value: 'En proceso' },
-        { label: 'Entregado', value: 'Entregado' },
-        { label: 'Cancelado', value: 'Cancelado' }
+    estadosOptions: SelectOption<OrdenCompraEstado>[] = [
+        { label: 'Pendiente de envío', value: 'Pendiente de envío' },
+        { label: 'Enviada', value: 'Enviada' },
+        { label: 'Confirmada', value: 'Confirmada' },
+        { label: 'Recibida parcialmente', value: 'Recibida parcialmente' },
+        { label: 'Recibida', value: 'Recibida' },
+        { label: 'Cerrada', value: 'Cerrada' },
+        { label: 'Cancelada', value: 'Cancelada' }
     ];
 
-    coloresOptions = [
-        { label: 'Amarillo (Proceso)', value: '#FFFF00' },
-        { label: 'Verde (Entregado)', value: '#00ff00' },
-        { label: 'Rojo (Cancelado)', value: '#ff0000' }
+    coloresOptions: SelectOption<OrdenCompraColor>[] = [
+        { label: 'Amarillo (Pendiente de envío)', value: '#FFFF00' },
+        { label: 'Azul (Enviada)', value: '#2196F3' },
+        { label: 'Verde claro (Confirmada)', value: '#8BC34A' },
+        { label: 'Naranja (Recibida parcialmente)', value: '#FF9800' },
+        { label: 'Verde (Recibida)', value: '#00ff00' },
+        { label: 'Verde oscuro (Cerrada)', value: '#4CAF50' },
+        { label: 'Rojo (Cancelada)', value: '#ff0000' }
     ];
 
     ngOnInit() {
@@ -155,14 +205,16 @@ export class ListComponent implements OnInit {
         this.store.dispatch(OrdenesCompraActions.loadOrdenesCompra({ ...this.filters() }));
     }
 
-    onLazyLoad(event: any) {
-        const page = event.first / event.rows + 1;
+    onLazyLoad(event: TableLazyLoadEvent) {
+        const first = event.first ?? 0;
+        const rows = event.rows ?? 15;
+        const page = first / rows + 1;
         this.filters.update((f) => ({ ...f, page }));
         this.applyFilters();
     }
 
-    onSearch(event: any) {
-        const search = event.target.value;
+    onSearch(event: Event) {
+        const search = event.target instanceof HTMLInputElement ? event.target.value : '';
         if (search.length === 0 || search.length >= 3) {
             this.filters.update((f) => ({ ...f, search, page: 1 }));
             this.applyFilters();
@@ -197,31 +249,11 @@ export class ListComponent implements OnInit {
         });
     }
 
-    getEstadoSeverity(estado: string | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
-        switch (estado) {
-            case 'Entregado':
-                return 'success';
-            case 'En proceso':
-                return 'info';
-            case 'Pendiente':
-                return 'warn';
-            case 'Cancelado':
-                return 'danger';
-            default:
-                return 'secondary';
-        }
+    getEstadoSeverity(estado: OrdenCompraEstado | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        return ordenCompraEstadoSeverity(estado);
     }
 
-    getColorTooltip(color: string | null): string {
-        switch (color) {
-            case '#FFFF00':
-                return 'En proceso';
-            case '#00ff00':
-                return 'Entregado';
-            case '#ff0000':
-                return 'Cancelado';
-            default:
-                return 'Desconocido';
-        }
+    getColorTooltip(color: OrdenCompraColor | null): string {
+        return ordenCompraColorTooltip(color);
     }
 }
