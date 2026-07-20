@@ -143,6 +143,7 @@ Route::prefix('v1')->group(function () {
             Route::get('/opportunities', [ProviderPortalController::class, 'opportunities']);
             Route::post('/submit-cost', [ProviderPortalController::class, 'submitCost']);
             Route::get('/purchase-orders', [ProviderPortalController::class, 'purchaseOrders']);
+            Route::post('/purchase-orders/{id}/confirm', [ProviderPortalController::class, 'confirmPurchaseOrder']);
             Route::put('/purchase-orders/{id}/dispatch', [ProviderPortalController::class, 'updateDispatch']);
         });
 
@@ -187,8 +188,11 @@ Route::prefix('v1')->group(function () {
         Route::post('cotizaciones/{cotizacion}/approve', [CotizacionController::class, 'approve'])->name('cotizaciones.approve');
         Route::post('cotizaciones/{cotizacion}/reject', [CotizacionController::class, 'reject'])->name('cotizaciones.reject');
         Route::apiResource('cotizaciones', CotizacionController::class)->parameters(['cotizaciones' => 'cotizacion']);
+        Route::patch('ordenes-compra/{orden_compra}/transition', [OrdenCompraController::class, 'transition'])->name('ordenes-compra.transition');
+        Route::post('ordenes-compra/{orden_compra}/receive', [OrdenCompraController::class, 'receive'])->name('ordenes-compra.receive');
         Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);
+        Route::post('ordenes-trabajo/{orden_trabajo}/recepciones-compra', [OrdenTrabajoController::class, 'registrarRecepcionCompra'])->name('ordenes-trabajo.recepciones-compra.store');
         Route::get('ordenes-compra/{orden_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
         Route::get('ordenes-trabajo/{orden_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
 

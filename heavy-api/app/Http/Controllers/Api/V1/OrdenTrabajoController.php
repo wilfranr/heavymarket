@@ -6,13 +6,18 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreOrdenTrabajoRequest;
+use App\Http\Requests\StoreRecepcionCompraRequest;
 use App\Http\Resources\OrdenTrabajoResource;
+use App\Http\Resources\RecepcionCompraResource;
 use App\Models\OrdenTrabajo;
 use App\Services\CotizacionService;
+use App\Services\RecepcionCompraService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Controlador API para gestion de Ordenes de Trabajo
@@ -21,6 +26,7 @@ class OrdenTrabajoController extends Controller
 {
     public function __construct(
         private readonly CotizacionService $cotizacionService,
+        private readonly RecepcionCompraService $recepcionCompraService,
     ) {}
 
     /**
@@ -135,12 +141,42 @@ class OrdenTrabajoController extends Controller
             'direccion',
             'user',
             'referencias.pedidoReferencia',
+            'recepcionesCompra.detalles.ordenCompraDetalle.referencia',
+            'recepcionesCompra.ordenCompra.proveedor',
+            'recepcionesCompra.recibidoPor',
             'referencias.referencia',
         ]);
 
         return response()->json([
             'data' => new OrdenTrabajoResource($orden_trabajo),
         ]);
+    }
+
+    public function registrarRecepcionCompra(StoreRecepcionCompraRequest $request, OrdenTrabajo $orden_trabajo): JsonResponse
+    {
+        $user = $request->user();
+
+        if (! $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica'])
+            && ! $user->roles()->whereIn('name', ['super_admin', 'Administrador', 'Logistica'])->exists()) {
+            abort(403, 'No está autorizado para registrar recepciones de compra.');
+        }
+
+        try {
+            $recepcion = $this->recepcionCompraService->registrarDesdeOrdenTrabajo(
+                $orden_trabajo,
+                $request->validated(),
+                $user
+            );
+
+            return response()->json([
+                'data' => new RecepcionCompraResource($recepcion),
+                'message' => 'Recepción de compra registrada exitosamente',
+            ], 201);
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            abort(500, 'Error al registrar la recepción de compra: '.$exception->getMessage());
+        }
     }
 
     /**
