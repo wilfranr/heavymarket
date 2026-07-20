@@ -30,6 +30,7 @@ class OrdenCompraReferenciaResource extends JsonResource
             'orden_compra_id' => $this->orden_compra_id,
             'referencia_id' => $this->referencia_id,
             'cantidad' => $this->cantidad,
+            'cantidad_recibida' => $this->cantidad_recibida,
             'valor_unitario' => $this->valor_unitario,
             'valor_total' => $this->valor_total,
             'created_at' => $this->created_at?->toISOString(),

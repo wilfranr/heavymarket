@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\OrdenCompraEstado;
 use App\Models\OrdenCompra;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -42,16 +43,21 @@ class StoreOrdenCompraRequest extends FormRequest
             'fecha_entrega' => ['required', 'date', 'after_or_equal:fecha_expedicion'],
             'estado' => [
                 'nullable',
-                Rule::in(['Pendiente', 'En proceso', 'Entregado', 'Cancelado']),
+                Rule::in(OrdenCompraEstado::toArray()),
             ],
             'color' => [
                 'nullable',
-                Rule::in(['#FFFF00', '#00ff00', '#ff0000']), // Amarillo, Verde, Rojo
+                Rule::in(array_map(
+                    static fn (OrdenCompraEstado $estado): string => $estado->color(),
+                    OrdenCompraEstado::todos()
+                )),
             ],
             'observaciones' => ['nullable', 'string', 'max:1000'],
             'direccion' => ['nullable', 'string', 'max:255'],
             'telefono' => ['nullable', 'string', 'max:20'],
             'guia' => ['nullable', 'string', 'max:100'],
+            'motivo_cancelacion' => ['nullable', 'string', 'max:2000'],
+            'notas_cierre' => ['nullable', 'string', 'max:2000'],
             'referencias' => ['nullable', 'array'],
             'referencias.*.referencia_id' => ['required_with:referencias', 'integer', 'exists:referencias,id'],
             'referencias.*.cantidad' => ['required_with:referencias', 'integer', 'min:1'],
@@ -85,8 +91,8 @@ class StoreOrdenCompraRequest extends FormRequest
     {
         $this->merge([
             'user_id' => $this->user()->id,
-            'estado' => $this->input('estado', 'Pendiente'),
-            'color' => $this->input('color', '#FFFF00'), // Amarillo por defecto (En proceso)
+            'estado' => $this->input('estado', OrdenCompraEstado::PendienteDeEnvio->value),
+            'color' => $this->input('color', OrdenCompraEstado::PendienteDeEnvio->color()),
         ]);
     }
 }

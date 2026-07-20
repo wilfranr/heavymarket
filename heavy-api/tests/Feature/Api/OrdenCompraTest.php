@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\OrdenCompraEstado;
 use App\Models\OrdenCompra;
 use App\Models\Referencia;
 use App\Models\Tercero;
@@ -30,7 +31,7 @@ it('permite crear una orden de compra con referencias', function () {
         'proveedor_id' => $proveedor->id,
         'fecha_expedicion' => now()->toDateString(),
         'fecha_entrega' => now()->addDays(5)->toDateString(),
-        'estado' => 'Pendiente',
+        'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
         'referencias' => [
             [
                 'referencia_id' => $referencia->id,
@@ -66,7 +67,7 @@ it('permite actualizar una orden de compra y sus referencias', function () {
     $nuevaReferencia = Referencia::factory()->create();
 
     $data = [
-        'estado' => 'En proceso',
+        'estado' => OrdenCompraEstado::Confirmada->value,
         'referencias' => [
             [
                 'referencia_id' => $nuevaReferencia->id,
@@ -81,7 +82,7 @@ it('permite actualizar una orden de compra y sus referencias', function () {
         ->putJson("/v1/ordenes-compra/{$orden->id}", $data);
 
     $response->assertStatus(200)
-        ->assertJsonPath('data.estado', 'En proceso')
+        ->assertJsonPath('data.estado', OrdenCompraEstado::Confirmada->value)
         ->assertJsonPath('data.valor_total', '250.00');
 
     $this->assertDatabaseHas('orden_compras', [
