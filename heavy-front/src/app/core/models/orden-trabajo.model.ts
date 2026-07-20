@@ -1,3 +1,5 @@
+import type { RecepcionCompra } from './recepcion-compra.model';
+
 /**
  * Modelo de Orden de Trabajo
  */
@@ -28,6 +30,7 @@ export interface OrdenTrabajo {
     transportadora?: any;
     direccion?: any;
     referencias?: OrdenTrabajoReferencia[];
+    recepciones_compra?: RecepcionCompra[];
 }
 
 /**
