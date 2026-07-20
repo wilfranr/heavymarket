@@ -1,6 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService, PaginatedResponse, ApiResponse, QueryParams } from '../../../core/services/api.service';
+import { OrdenCompra } from '../../../core/models/orden-compra.model';
 
 /**
  * Servicio para el Portal de Proveedores
@@ -28,8 +29,15 @@ export class ProviderPortalService extends ApiService {
     /**
      * Obtener Órdenes de Compra del proveedor
      */
-    getPurchaseOrders(params: QueryParams = {}): Observable<PaginatedResponse<any>> {
-        return this.get<PaginatedResponse<any>>(`${this.endpoint}/purchase-orders`, params);
+    getPurchaseOrders(params: QueryParams = {}): Observable<PaginatedResponse<OrdenCompra>> {
+        return this.get<PaginatedResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders`, params);
+    }
+
+    /**
+     * Confirmar una Orden de Compra del proveedor
+     */
+    confirmPurchaseOrder(ocId: number, data: { observaciones?: string } = {}): Observable<ApiResponse<OrdenCompra>> {
+        return this.post<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/confirm`, data);
     }
 
     /**
@@ -43,7 +51,7 @@ export class ProviderPortalService extends ApiService {
             fecha_despacho: string;
             observaciones?: string;
         }
-    ): Observable<ApiResponse<any>> {
-        return this.put<ApiResponse<any>>(`${this.endpoint}/purchase-orders/${ocId}/dispatch`, data);
+    ): Observable<ApiResponse<OrdenCompra>> {
+        return this.put<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/dispatch`, data);
     }
 }

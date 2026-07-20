@@ -6,6 +6,17 @@ import { vi, expect } from 'vitest';
 import { ResourceLoader } from '@angular/compiler';
 
 // Mock ResourceLoader para Vitest
+// Mock localStorage para entornos de pruebas donde no esté en globalThis
+if (typeof globalThis.localStorage === 'undefined') {
+    const store: Record<string, string> = {};
+    (globalThis as any).localStorage = {
+        getItem: (key: string) => store[key] || null,
+        setItem: (key: string, value: string) => { store[key] = value; },
+        removeItem: (key: string) => { delete store[key]; },
+        clear: () => { Object.keys(store).forEach(key => delete store[key]); }
+    };
+}
+
 class MockResourceLoader extends ResourceLoader {
     override get(url: string): string | Promise<string> {
         return Promise.resolve('');
