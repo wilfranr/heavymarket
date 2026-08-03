@@ -44,12 +44,24 @@ export interface CotizacionReferenciaProveedor {
     snapshot_cantidad: number | null;
     snapshot_valor_unidad: string | number | null;
     snapshot_valor_total: string | number | null;
+    estado_aprobacion: CotizacionReferenciaAprobacionEstado;
+    aprobada: boolean;
+    fecha_aprobacion: string | null;
     created_at: string;
     updated_at: string;
 
     // Relaciones
     cotizacion?: Cotizacion;
     pedido_referencia_proveedor?: any;
+}
+
+export type CotizacionReferenciaAprobacionEstado = 'Pendiente' | 'Aprobada' | 'Rechazada';
+
+/**
+ * DTO para aprobar una cotización completa o parcialmente.
+ */
+export interface ApproveCotizacionDto {
+    referencia_ids?: number[];
 }
 
 /**

@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-07-20T18:08:00-05:00",
-  "issue": "maquinas-codigo-interno",
-  "description": "Agregar a Máquinas un identificador interno opcional y único, llamado codigo_interno, en backend, frontend, formularios/modales y recurso principal.",
+  "last_updated": "2026-08-02T00:35:00-05:00",
+  "issue": "cotizacion-aprobacion-parcial-referencias",
+  "description": "Permitir aprobar parcialmente una cotizacion seleccionando solo ciertas referencias; la cotizacion queda Aprobada y su total suma unicamente los items aprobados.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
     {
@@ -2456,6 +2456,440 @@
         "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
         "frontend_vitest": "PASS: npm run test:ci (18 files, 127 tests)",
         "diff_check": "PASS: git diff --check"
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-schema",
+      "description": "Backend/SQL: agregar estado de aprobacion por linea en cotizacion_referencia_proveedores para distinguir items aprobados y no aprobados, con backfill que preserve el comportamiento historico como aprobado por defecto.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_08_01_162500_add_aprobacion_fields_to_cotizacion_referencia_proveedores_table.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "Cada linea de cotizacion puede persistir si fue aprobada por el cliente.",
+        "Las cotizaciones existentes quedan compatibles, tratando sus lineas como aprobadas para no alterar historicos.",
+        "El rollback es deterministico y no elimina columnas que no haya creado la migracion incremental."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó sql_query_analyst antes de editar schema/modelo.",
+        "Se agregó estado_aprobacion y fecha_aprobacion con backfill para historicos Aprobada/Rechazada/Anulada; no se modificó la migración base porque cotizacion_referencia_proveedores se crea en migraciones posteriores y la incremental cubre el schema final."
+      ],
+      "validation": {
+        "php_lint": "PASS",
+        "pint_targeted": "PASS after formatting CotizacionReferenciaProveedor.php"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-backend-contract",
+      "description": "Backend contrato: crear FormRequest para aprobar cotizacion con items opcionales; si no se envian items, aprobar todas las referencias para mantener compatibilidad del endpoint actual.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-schema"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "POST /cotizaciones/{cotizacion}/approve acepta referencia_ids como array opcional de IDs de cotizacion_referencia_proveedores.",
+        "Se rechaza aprobar con array vacio o con IDs que no pertenezcan a la cotizacion.",
+        "El Resource expone el estado de aprobacion de cada linea para frontend y auditoria."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Nodo desbloqueado tras schema; required_skill null."
+      ],
+      "validation": {
+        "php_lint": "PASS",
+        "pint_targeted": "PASS"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-backend-service",
+      "description": "Backend arquitectura: ajustar CotizacionService::aprobar para filtrar lineas aprobadas, recalcular cotizaciones.total con los items aprobados y crear OT/OC solo con esas lineas.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-backend-contract"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "La cotizacion queda en estado Aprobada aunque solo una parte de sus referencias sea aprobada.",
+        "cotizaciones.total queda igual a la suma de snapshot_valor_total o valor_total de las lineas aprobadas.",
+        "crearOrdenTrabajo y crearOrdenCompra solo copian referencias aprobadas.",
+        "Las demas cotizaciones activas del mismo pedido se siguen marcando Rechazada como hoy."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó software_architect antes de ajustar el flujo transaccional de aprobación parcial."
+      ],
+      "validation": {
+        "php_lint": "PASS",
+        "pint_targeted": "PASS after formatting CotizacionService.php"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-backend-tests",
+      "description": "Tests backend: cubrir aprobacion parcial, aprobacion total legacy sin payload, validacion de IDs y generacion de OT/OC solo con items aprobados.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-backend-service"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionControllerTest.php tests/Feature/Api/PedidoResponderTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test archivos backend afectados"
+      ],
+      "acceptance_criteria": [
+        "Con 5 lineas y 3 IDs aprobados, la cotizacion queda Aprobada y totaliza solo esas 3.",
+        "OT y OC creadas no contienen las 2 lineas no aprobadas.",
+        "El endpoint sin referencia_ids conserva aprobacion total para clientes actuales."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó automated_tester antes de editar tests backend."
+      ],
+      "validation": {
+        "backend_targeted_tests": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionControllerTest.php tests/Feature/Api/PedidoResponderTest.php (20 deprecations preexistentes rtrim(null), 77 assertions)",
+        "pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-frontend-contract",
+      "description": "Frontend contrato: tipar campos de aprobacion por linea y payload de aprobacion parcial sin introducir any nuevo en el modelo y servicio de cotizaciones.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-backend-contract"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/cotizacion.service.ts",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "CotizacionReferenciaProveedor expone aprobada/estado de aprobacion con tipos estrictos.",
+        "CotizacionService.approve permite enviar referencia_ids y mantiene compatibilidad con llamada sin payload.",
+        "No se agregan any nuevos en los contratos tocados."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Nodo frontend contract desbloqueado; required_skill null."
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build",
+        "frontend_vitest_targeted": "PASS"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-frontend-ui",
+      "description": "Frontend/UI: en detalle de cotizacion permitir seleccionar las referencias aprobadas antes de confirmar, mostrar total aprobado calculado con Signals y enviar solo los IDs seleccionados.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-frontend-contract",
+        "cotizacion-aprobacion-parcial-backend-tests"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "La seleccion de items usa Signals y no observables para bindings de template.",
+        "El modal de aprobacion inicia con todas las referencias seleccionadas para preservar el flujo actual.",
+        "El usuario no puede confirmar aprobacion con cero referencias seleccionadas.",
+        "La UI funciona en tema claro y oscuro con componentes PrimeNG/Tailwind existentes."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó ui_ux_design_expert antes de modificar la UI de selección parcial."
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build",
+        "frontend_vitest_targeted": "PASS"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-frontend-tests",
+      "description": "Tests frontend: cubrir helper/flujo de seleccion parcial, total aprobado y payload enviado al servicio al aprobar.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-frontend-ui"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npm run build",
+        "cd heavy-front && npm run test:ci -- --run src/app/features/cotizaciones/detail/detail.component.spec.ts"
+      ],
+      "acceptance_criteria": [
+        "El spec valida que seleccionar 3 de 5 items calcula solo esos 3 en total aprobado.",
+        "El spec valida que approve recibe los IDs seleccionados.",
+        "El build Angular no introduce errores zoneless/signals."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se usa automated_tester para cubrir helpers de selección parcial."
+      ],
+      "validation": {
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "frontend_vitest_targeted": "PASS: npm run test:ci -- src/app/features/cotizaciones/detail/detail.component.spec.ts (3 tests)",
+        "diff_check": "PASS: git diff --check"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-review",
+      "description": "Reviewer: auditar aprobacion parcial de cotizaciones en backend/frontend, validar archivos del DAG y ejecutar gates dirigidos antes de marcar done.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-backend-tests",
+        "cotizacion-aprobacion-parcial-frontend-tests",
+        "cotizacion-aprobacion-parcial-frontend-post-approval-status"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_08_01_162500_add_aprobacion_fields_to_cotizacion_referencia_proveedores_table.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/cotizacion.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionControllerTest.php tests/Feature/Api/PedidoResponderTest.php",
+        "cd heavy-api && ./vendor/bin/pint --test archivos backend afectados",
+        "cd heavy-front && npm run build",
+        "cd heavy-front && npm run test:ci -- --run src/app/features/cotizaciones/detail/detail.component.spec.ts",
+        "git diff --check",
+        "cd heavy-front && npm run test:ci -- src/app/features/cotizaciones/detail/detail.component.spec.ts"
+      ],
+      "acceptance_criteria": [
+        "Todos los archivos modificados figuran en el DAG y quedan validated antes del cierre.",
+        "No se aprueba el nodo si OT/OC incluyen referencias no aprobadas.",
+        "No se aprueba el nodo si cotizaciones.total suma referencias rechazadas/no aprobadas.",
+        "Solo Reviewer puede pasar nodos a done."
+      ],
+      "implementation_gate_results": {
+        "backend_targeted_tests": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionControllerTest.php tests/Feature/Api/PedidoResponderTest.php (20 deprecations preexistentes rtrim(null), 77 assertions)",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados",
+        "frontend_build": "PASS: cd heavy-front && npm run build (warning preexistente CommonJS pusher-js; requiere red para fonts.googleapis.com al inlining)",
+        "frontend_vitest_targeted": "PASS: npm run test:ci -- src/app/features/cotizaciones/detail/detail.component.spec.ts (4 tests)",
+        "diff_check": "PASS: git diff --check"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      },
+      "gate_results": {
+        "backend_targeted_tests": "PASS: DB_HOST=localhost php artisan test tests/Feature/Api/CotizacionControllerTest.php tests/Feature/Api/PedidoResponderTest.php (20 deprecations preexistentes rtrim(null), 77 assertions)",
+        "backend_pint_targeted": "PASS: ./vendor/bin/pint --test archivos backend afectados",
+        "frontend_vitest_targeted": "PASS: npm run test:ci -- src/app/features/cotizaciones/detail/detail.component.spec.ts (4 tests)",
+        "frontend_build": "PASS: npm run build (warning preexistente CommonJS pusher-js)",
+        "diff_check": "PASS: git diff --check y git diff --cached --check"
+      }
+    },
+    {
+      "id": "cotizacion-aprobacion-parcial-frontend-post-approval-status",
+      "description": "Frontend/UI: mostrar en el detalle de cotizacion que referencias fueron aprobadas y cuales no, con resumen post-aprobacion y estados visuales por linea.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cotizacion-aprobacion-parcial-frontend-ui"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        }
+      ],
+      "acceptance_criteria": [
+        "La tabla muestra un estado por referencia: Aprobada, No aprobada o Pendiente.",
+        "Las cotizaciones aprobadas muestran resumen de total, aprobadas, no aprobadas y total aprobado.",
+        "Las referencias no aprobadas se diferencian visualmente sin perder trazabilidad.",
+        "El diseño conserva compatibilidad claro/oscuro con Tailwind/PrimeNG."
+      ],
+      "implementation_notes": [
+        "Role: Implementer. Se invocó ui_ux_design_expert antes de modificar la visualización post-aprobación.",
+        "Se agregó resumen post-aprobación, columna Estado aprobación, diferenciación visual de filas aprobadas/no aprobadas y helpers testeados.",
+        "Se corrigió alineación del footer de totales agregando celda vacía para la columna Aprobación."
+      ],
+      "validation": {
+        "frontend_build": "PASS: cd heavy-front && npm run build (warning preexistente CommonJS pusher-js; sandbox falla por DNS fonts.googleapis.com, reejecutado con permisos y pasó)",
+        "frontend_vitest_targeted": "PASS: npm run test:ci -- src/app/features/cotizaciones/detail/detail.component.spec.ts (4 tests)",
+        "diff_check": "PASS: git diff --check"
+      },
+      "review_notes": [
+        "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
+      ],
+      "review": {
+        "reviewer": "Reviewer",
+        "status": "approved",
+        "approved_at": "2026-08-02T00:35:00-05:00",
+        "notes": "APPROVED por Reviewer: aprobación parcial validada en backend/frontend; cotizaciones.total, OT y OC consideran solo referencias aprobadas; detalle de cotización muestra estado por línea y resumen post-aprobación. Gates dirigidos pasaron; quedan deprecations preexistentes rtrim(null) y warning CommonJS pusher-js."
       }
     }
   ]

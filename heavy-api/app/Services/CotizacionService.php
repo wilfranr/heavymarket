@@ -158,20 +158,36 @@ class CotizacionService
     }
 
     /**
-     * Aprobar cotizacion
+     * Aprobar cotizacion.
      *
      * Al aprobar se crean automaticamente:
      * - Orden de Trabajo
      * - Orden de Compra (con referencias de proveedores)
+     *
+     * @param  array<int>|null  $referenciaIds
      */
-    public function aprobar(Cotizacion $cotizacion, string $comentario = ''): Cotizacion
+    public function aprobar(Cotizacion $cotizacion, string $comentario = '', ?array $referenciaIds = null): Cotizacion
     {
-        return DB::transaction(function () use ($cotizacion, $comentario) {
+        return DB::transaction(function () use ($cotizacion, $comentario, $referenciaIds) {
             $cotizacion->loadMissing(['pedido', 'referenciasProveedores.pedidoReferenciaProveedor']);
             $pedido = $cotizacion->pedido;
 
             if (! in_array($cotizacion->estado, ['Enviada', 'Borrador'], true)) {
                 throw new \InvalidArgumentException('Solo se pueden aprobar cotizaciones activas.');
+            }
+
+            $itemsCotizados = $cotizacion->referenciasProveedores;
+            $referenciaIdsAprobadas = $referenciaIds === null
+                ? $itemsCotizados->pluck('id')->map(fn ($id) => (int) $id)->all()
+                : array_values(array_unique(array_map('intval', $referenciaIds)));
+
+            if ($referenciaIdsAprobadas === []) {
+                throw new \InvalidArgumentException('Debe aprobar al menos una referencia.');
+            }
+
+            $idsCotizacion = $itemsCotizados->pluck('id')->map(fn ($id) => (int) $id)->all();
+            if (array_diff($referenciaIdsAprobadas, $idsCotizacion) !== []) {
+                throw new \InvalidArgumentException('Una de las referencias seleccionadas no pertenece a la cotización.');
             }
 
             if ($pedido) {
@@ -191,9 +207,24 @@ class CotizacionService
 Aprobada: '.$comentario);
             }
 
+            $cotizacion->referenciasProveedores()->update([
+                'estado_aprobacion' => 'Rechazada',
+                'fecha_aprobacion' => null,
+            ]);
+
+            $cotizacion->referenciasProveedores()
+                ->whereIn('id', $referenciaIdsAprobadas)
+                ->update([
+                    'estado_aprobacion' => 'Aprobada',
+                    'fecha_aprobacion' => now(),
+                ]);
+
+            $cotizacion->refresh()->load(['pedido', 'tercero', 'user', 'referenciasProveedores.pedidoReferenciaProveedor']);
+
             $cotizacion->update([
                 'estado' => 'Aprobada',
                 'observaciones' => $observaciones ?: $cotizacion->observaciones,
+                'total' => $this->calcularTotalItemsAprobados($cotizacion),
             ]);
 
             $cotizacion->refresh()->load(['pedido', 'tercero', 'user', 'referenciasProveedores.pedidoReferenciaProveedor']);
@@ -230,6 +261,10 @@ Aprobada: '.$comentario);
 
         // Copiar referencias de la cotizacion a la orden de trabajo
         foreach ($cotizacion->referenciasProveedores as $item) {
+            if ($item->estado_aprobacion !== 'Aprobada') {
+                continue;
+            }
+
             $prp = $item->pedidoReferenciaProveedor;
             if (! $prp) {
                 continue;
@@ -263,6 +298,10 @@ Aprobada: '.$comentario);
         // Agrupar referencias por proveedor
         $proveedores = [];
         foreach ($cotizacion->referenciasProveedores as $item) {
+            if ($item->estado_aprobacion !== 'Aprobada') {
+                continue;
+            }
+
             $prp = $item->pedidoReferenciaProveedor;
             if (! $prp) {
                 continue;
@@ -316,6 +355,36 @@ Aprobada: '.$comentario);
             $valorTotal = $ordenCompra->getTotalReferencias();
             $ordenCompra->update(['valor_total' => $valorTotal]);
         }
+    }
+
+    /**
+     * Totalizar solo las lineas aprobadas por el cliente.
+     */
+    private function calcularTotalItemsAprobados(Cotizacion $cotizacion): float
+    {
+        $total = $cotizacion->referenciasProveedores
+            ->filter(fn ($item) => $item->estado_aprobacion === 'Aprobada')
+            ->sum(function ($item): float {
+                if ($item->snapshot_valor_total !== null) {
+                    return (float) $item->snapshot_valor_total;
+                }
+
+                $prp = $item->pedidoReferenciaProveedor;
+                if (! $prp) {
+                    return 0.0;
+                }
+
+                if ($prp->valor_total !== null) {
+                    return (float) $prp->valor_total;
+                }
+
+                $cantidad = (float) ($prp->cantidad ?? 0);
+                $valorUnidad = (float) ($prp->valor_unidad ?? 0);
+
+                return $cantidad * $valorUnidad;
+            });
+
+        return round((float) $total, 2);
     }
 
     /**

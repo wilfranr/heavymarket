@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ApproveCotizacionRequest;
 use App\Http\Requests\StoreCotizacionRequest;
 use App\Http\Requests\UpdateCotizacionRequest;
 use App\Http\Resources\CotizacionResource;
@@ -257,10 +258,16 @@ class CotizacionController extends Controller
     /**
      * Aprobar una cotización
      */
-    public function approve(Cotizacion $cotizacion): JsonResponse
+    public function approve(ApproveCotizacionRequest $request, Cotizacion $cotizacion): JsonResponse
     {
+        $validated = $request->validated();
+
         try {
-            $cotizacion = $this->cotizacionService->aprobar($cotizacion);
+            $cotizacion = $this->cotizacionService->aprobar(
+                $cotizacion,
+                '',
+                $validated['referencia_ids'] ?? null
+            );
             $cotizacion->load(['pedido', 'tercero', 'user']);
 
             return response()->json([

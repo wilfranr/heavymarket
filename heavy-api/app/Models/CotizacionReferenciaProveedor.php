@@ -25,8 +25,9 @@ class CotizacionReferenciaProveedor extends Model
         'snapshot_cantidad',
         'snapshot_valor_unidad',
         'snapshot_valor_total',
+        'estado_aprobacion',
+        'fecha_aprobacion',
     ];
-
 
     protected function casts(): array
     {
@@ -37,6 +38,7 @@ class CotizacionReferenciaProveedor extends Model
             'snapshot_cantidad' => 'integer',
             'snapshot_valor_unidad' => 'decimal:2',
             'snapshot_valor_total' => 'decimal:2',
+            'fecha_aprobacion' => 'datetime',
         ];
     }
 

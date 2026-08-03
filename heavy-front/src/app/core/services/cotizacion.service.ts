@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiService, PaginatedResponse, QueryParams } from './api.service';
-import { Cotizacion, CreateCotizacionDto, UpdateCotizacionDto } from '../models/cotizacion.model';
+import { ApproveCotizacionDto, Cotizacion, CreateCotizacionDto, UpdateCotizacionDto } from '../models/cotizacion.model';
 
 /**
  * Servicio para gestionar cotizaciones
@@ -68,8 +68,8 @@ export class CotizacionService extends ApiService {
     /**
      * Aprobar una cotización
      */
-    approve(id: number): Observable<{ data: Cotizacion; message: string }> {
-        return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/${id}/approve`, {});
+    approve(id: number, data: ApproveCotizacionDto = {}): Observable<{ data: Cotizacion; message: string }> {
+        return this.post<{ data: Cotizacion; message: string }>(`${this.getBaseUrl()}/${id}/approve`, data);
     }
 
     /**

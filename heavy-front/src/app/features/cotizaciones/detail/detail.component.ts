@@ -1,5 +1,6 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule, CurrencyPipe, DatePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { CardModule } from 'primeng/card';
@@ -13,10 +14,11 @@ import { TooltipModule } from 'primeng/tooltip';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
 import { ImageModule } from 'primeng/image';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
-import { Cotizacion } from '../../../core/models/cotizacion.model';
+import { Cotizacion, CotizacionReferenciaProveedor } from '../../../core/models/cotizacion.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
 import { formatearEntrega } from '../../../core/utils/entrega-plazo';
@@ -24,6 +26,52 @@ import { formatearEntrega } from '../../../core/utils/entrega-plazo';
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
 
+
+
+export function cotizacionReferenciaValorTotal(item: CotizacionReferenciaProveedor): number {
+    const valor = Number(item.snapshot_valor_total ?? item.pedido_referencia_proveedor?.valor_total ?? 0);
+
+    return Number.isFinite(valor) ? valor : 0;
+}
+
+export function calcularTotalReferenciasCotizacion(items: CotizacionReferenciaProveedor[], referenciaIds: number[]): number {
+    const ids = new Set(referenciaIds);
+
+    return items.reduce((total, item) => total + (ids.has(item.id) ? cotizacionReferenciaValorTotal(item) : 0), 0);
+}
+
+export interface ResumenAprobacionCotizacion {
+    total: number;
+    aprobadas: number;
+    noAprobadas: number;
+    pendientes: number;
+    totalAprobado: number;
+}
+
+export function calcularResumenAprobacionCotizacion(items: CotizacionReferenciaProveedor[]): ResumenAprobacionCotizacion {
+    return items.reduce(
+        (resumen, item) => {
+            const estado = item.estado_aprobacion ?? 'Pendiente';
+            if (estado === 'Aprobada') {
+                resumen.aprobadas += 1;
+                resumen.totalAprobado += cotizacionReferenciaValorTotal(item);
+            } else if (estado === 'Rechazada') {
+                resumen.noAprobadas += 1;
+            } else {
+                resumen.pendientes += 1;
+            }
+
+            return resumen;
+        },
+        {
+            total: items.length,
+            aprobadas: 0,
+            noAprobadas: 0,
+            pendientes: 0,
+            totalAprobado: 0
+        }
+    );
+}
 
 export const COTIZACION_ESTADOS_ACCIONABLES = ['Enviada', 'Borrador', 'En_Proceso', 'Pendiente'] as const;
 
@@ -40,6 +88,7 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         RouterModule,
         CardModule,
         ButtonModule,
@@ -52,6 +101,7 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
         InputNumberModule,
         DialogModule,
         ImageModule,
+        CheckboxModule,
         TerceroFormComponent,
         MaquinaDetailComponent,
         CurrencyPipe,
@@ -210,9 +260,30 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                             <h3 class="text-xl font-bold text-yellow-600 dark:text-brand-yellow uppercase tracking-wider">Detalle de ítems</h3>
                             <div class="bg-gray-100 dark:bg-[#343743] border border-gray-200 dark:border-none rounded-lg px-4 py-2">
                                 <span class="text-gray-500 dark:text-slate-400 text-sm">Total ítems:</span>
-                                <span class="text-yellow-600 dark:text-brand-yellow font-bold text-lg ml-2">{{ cot.referencias_proveedores?.length || 0 }}</span>
+                                <span class="text-yellow-600 dark:text-brand-yellow font-bold text-lg ml-2">{{ resumenAprobacion().total }}</span>
                             </div>
                         </div>
+
+                        @if (cot.estado === 'Aprobada') {
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
+                                <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 dark:border-emerald-500/40 dark:bg-emerald-500/10">
+                                    <span class="block text-xs font-bold uppercase text-emerald-700 dark:text-emerald-200">Aprobadas</span>
+                                    <span class="text-2xl font-black text-emerald-700 dark:text-emerald-100">{{ resumenAprobacion().aprobadas }}</span>
+                                </div>
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 dark:border-slate-600 dark:bg-slate-800/70">
+                                    <span class="block text-xs font-bold uppercase text-slate-500 dark:text-slate-300">No aprobadas</span>
+                                    <span class="text-2xl font-black text-slate-700 dark:text-slate-100">{{ resumenAprobacion().noAprobadas }}</span>
+                                </div>
+                                <div class="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-500/40 dark:bg-amber-500/10">
+                                    <span class="block text-xs font-bold uppercase text-amber-700 dark:text-amber-200">Pendientes</span>
+                                    <span class="text-2xl font-black text-amber-700 dark:text-amber-100">{{ resumenAprobacion().pendientes }}</span>
+                                </div>
+                                <div class="rounded-xl border border-yellow-300 bg-yellow-50 px-4 py-3 dark:border-brand-yellow/50 dark:bg-yellow-500/10">
+                                    <span class="block text-xs font-bold uppercase text-yellow-700 dark:text-brand-yellow">Total aprobado</span>
+                                    <span class="text-2xl font-black text-yellow-700 dark:text-brand-yellow">{{ resumenAprobacion().totalAprobado | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                                </div>
+                            </div>
+                        }
 
                         <div class="overflow-hidden rounded-xl bg-white dark:bg-[#343743] shadow-md border border-gray-200 dark:border-none">
                             <p-table [value]="cot.referencias_proveedores || []" styleClass="p-datatable-sm p-datatable-striped" [responsiveLayout]="'scroll'">
@@ -226,11 +297,12 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                         <th class="text-slate-600 dark:text-slate-200 font-bold uppercase text-xs">Entrega</th>
                                         <th class="text-right text-slate-600 dark:text-slate-200 font-bold uppercase text-xs">Precio</th>
                                         <th class="text-right text-slate-600 dark:text-slate-200 font-bold uppercase text-xs">Total</th>
+                                        <th class="text-center text-slate-600 dark:text-slate-200 font-bold uppercase text-xs">Aprobación</th>
                                     </tr>
                                 </ng-template>
                                 <ng-template pTemplate="body" let-item>
-                                    <tr class="dark:border-slate-700">
-                                        <td><i class="pi pi-minus-circle text-muted-color opacity-30"></i></td>
+                                    <tr class="dark:border-slate-700" [ngClass]="getAprobacionRowClass(item)">
+                                        <td><i [ngClass]="getAprobacionIconClass(item)"></i></td>
                                         <td class="font-bold text-yellow-600 dark:text-brand-yellow">
                                             {{ item.pedido_referencia_proveedor?.referencia?.referencia || item.pedido_referencia_proveedor?.referencia_id || 'N/A' }}
                                         </td>
@@ -243,7 +315,10 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                             {{ formatearEntrega(item.pedido_referencia_proveedor?.dias_entrega, item.pedido_referencia_proveedor?.es_backorder) }}
                                         </td>
                                         <td class="text-right">{{ item.pedido_referencia_proveedor?.valor_unitario || item.pedido_referencia_proveedor?.valor_unidad | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                        <td class="text-right font-bold text-color">{{ item.pedido_referencia_proveedor?.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                        <td class="text-right font-bold text-color">{{ valorTotalReferencia(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                        <td class="text-center">
+                                            <p-tag [value]="getAprobacionLabel(item)" [severity]="getAprobacionSeverity(item)" styleClass="text-xs font-bold px-3 py-1 rounded-full"></p-tag>
+                                        </td>
                                     </tr>
                                 </ng-template>
                                 <ng-template pTemplate="footer">
@@ -254,6 +329,7 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                                 {{ subtotal() | currency: 'COP' : 'symbol' : '1.0-0' }}
                                             </div>
                                         </td>
+                                        <td class="border-0 pt-6"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="7" class="text-right border-0 py-2"><span class="text-lg font-bold uppercase text-slate-500 dark:text-slate-400">Descuento (0%)</span></td>
@@ -262,6 +338,7 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                                 {{ 0 | currency: 'COP' : 'symbol' : '1.0-0' }}
                                             </div>
                                         </td>
+                                        <td class="border-0 py-2"></td>
                                     </tr>
                                     <tr>
                                         <td colspan="7" class="text-right border-0 py-2"></td>
@@ -270,6 +347,7 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                                 {{ cot.total | currency: 'COP' : 'symbol' : '1.0-0' }}
                                             </div>
                                         </td>
+                                        <td class="border-0 py-2"></td>
                                     </tr>
                                 </ng-template>
                             </p-table>
@@ -289,6 +367,67 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                         }
                     </div>
                 </div>
+
+
+                <p-dialog [(visible)]="approvalDialogVisible" [modal]="true" [style]="{ width: '860px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" appendTo="body" header="Aprobar referencias de la cotización">
+                    <div class="space-y-5">
+                        <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-900 dark:border-emerald-500/40 dark:bg-emerald-500/10 dark:text-emerald-100">
+                            Seleccione las referencias aprobadas por el cliente. La cotización quedará aprobada y el total final solo sumará los ítems seleccionados.
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-3">
+                            <div class="text-sm text-slate-600 dark:text-slate-300">
+                                <span class="font-semibold">Referencias seleccionadas:</span>
+                                {{ referenciasAprobadasSeleccionadas().length }} de {{ referenciasAprobacionDisponibles().length }}
+                            </div>
+                            <div class="flex gap-2">
+                                <p-button label="Seleccionar todas" size="small" severity="secondary" [outlined]="true" (onClick)="seleccionarTodasReferenciasAprobacion()"></p-button>
+                                <p-button label="Limpiar" size="small" severity="secondary" [text]="true" (onClick)="limpiarReferenciasAprobacion()"></p-button>
+                            </div>
+                        </div>
+
+                        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-slate-700">
+                            <p-table [value]="referenciasAprobacionDisponibles()" styleClass="p-datatable-sm" [responsiveLayout]="'scroll'">
+                                <ng-template pTemplate="header">
+                                    <tr>
+                                        <th style="width: 4rem" class="text-center">Aprobar</th>
+                                        <th>Referencia</th>
+                                        <th>Descripción</th>
+                                        <th class="text-center">Cant</th>
+                                        <th class="text-right">Total</th>
+                                    </tr>
+                                </ng-template>
+                                <ng-template pTemplate="body" let-item>
+                                    <tr>
+                                        <td class="text-center">
+                                            <p-checkbox [binary]="true" [ngModel]="itemAprobacionSeleccionado(item.id)" (onChange)="toggleItemAprobacion(item.id, $event.checked)"></p-checkbox>
+                                        </td>
+                                        <td class="font-semibold text-yellow-600 dark:text-brand-yellow">
+                                            {{ item.pedido_referencia_proveedor?.referencia?.referencia || item.snapshot_referencia || item.pedido_referencia_proveedor?.referencia_id || 'N/A' }}
+                                        </td>
+                                        <td class="text-slate-700 dark:text-slate-300">
+                                            {{ item.pedido_referencia_proveedor?.referencia?.descripcion || item.snapshot_descripcion || item.pedido_referencia_proveedor?.referencia?.articulo?.definicion || 'N/A' }}
+                                        </td>
+                                        <td class="text-center">{{ item.snapshot_cantidad || item.pedido_referencia_proveedor?.cantidad || 0 }}</td>
+                                        <td class="text-right font-bold">{{ valorTotalReferencia(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                    </tr>
+                                </ng-template>
+                            </p-table>
+                        </div>
+
+                        <div class="flex items-center justify-between rounded-lg bg-slate-100 px-4 py-3 dark:bg-slate-800">
+                            <span class="text-sm font-semibold uppercase text-slate-500 dark:text-slate-400">Total aprobado</span>
+                            <span class="text-2xl font-black text-yellow-600 dark:text-brand-yellow">{{ totalAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                        </div>
+                    </div>
+
+                    <ng-template pTemplate="footer">
+                        <div class="flex justify-end gap-3">
+                            <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="approvalDialogVisible.set(false)"></p-button>
+                            <p-button label="Aprobar selección" severity="success" icon="pi pi-check" [disabled]="referenciasAprobadasSeleccionadas().length === 0" (onClick)="confirmApproveSelected()"></p-button>
+                        </div>
+                    </ng-template>
+                </p-dialog>
 
                 <!-- Modales de detalle -->
                 <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{ width: '900px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" styleClass="machine-detail-modal">
@@ -429,6 +568,10 @@ export class DetailComponent implements OnInit {
     cotizacionId = signal<number>(0);
     loading = signal(true);
     subtotal = signal<number>(0);
+    approvalDialogVisible = signal(false);
+    referenciasAprobadasSeleccionadas = signal<number[]>([]);
+    totalAprobado = computed(() => calcularTotalReferenciasCotizacion(this.referenciasAprobacionDisponibles(), this.referenciasAprobadasSeleccionadas()));
+    resumenAprobacion = computed(() => calcularResumenAprobacionCotizacion(this.referenciasAprobacionDisponibles()));
 
     // Modales
     displayMaquinaDialog = signal(false);
@@ -512,6 +655,82 @@ export class DetailComponent implements OnInit {
         this.displayTerceroDialog.set(true);
     }
 
+
+    referenciasAprobacionDisponibles(): CotizacionReferenciaProveedor[] {
+        return this.cotizacion()?.referencias_proveedores ?? [];
+    }
+
+    valorTotalReferencia(item: CotizacionReferenciaProveedor): number {
+        return cotizacionReferenciaValorTotal(item);
+    }
+
+    getAprobacionLabel(item: CotizacionReferenciaProveedor): string {
+        switch (item.estado_aprobacion) {
+            case 'Aprobada':
+                return 'Aprobada';
+            case 'Rechazada':
+                return 'No aprobada';
+            default:
+                return 'Pendiente';
+        }
+    }
+
+    getAprobacionSeverity(item: CotizacionReferenciaProveedor): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        switch (item.estado_aprobacion) {
+            case 'Aprobada':
+                return 'success';
+            case 'Rechazada':
+                return 'secondary';
+            default:
+                return 'warn';
+        }
+    }
+
+    getAprobacionRowClass(item: CotizacionReferenciaProveedor): string {
+        if (item.estado_aprobacion === 'Rechazada') {
+            return 'bg-slate-50 text-slate-500 opacity-75 dark:bg-slate-900/30 dark:text-slate-400';
+        }
+
+        if (item.estado_aprobacion === 'Aprobada') {
+            return 'bg-emerald-50/40 dark:bg-emerald-500/5';
+        }
+
+        return '';
+    }
+
+    getAprobacionIconClass(item: CotizacionReferenciaProveedor): string {
+        switch (item.estado_aprobacion) {
+            case 'Aprobada':
+                return 'pi pi-check-circle text-emerald-600 dark:text-emerald-400';
+            case 'Rechazada':
+                return 'pi pi-minus-circle text-slate-400 dark:text-slate-500';
+            default:
+                return 'pi pi-clock text-amber-500';
+        }
+    }
+
+    itemAprobacionSeleccionado(id: number): boolean {
+        return this.referenciasAprobadasSeleccionadas().includes(id);
+    }
+
+    toggleItemAprobacion(id: number, checked: boolean): void {
+        this.referenciasAprobadasSeleccionadas.update((ids) => {
+            if (checked) {
+                return ids.includes(id) ? ids : [...ids, id];
+            }
+
+            return ids.filter((itemId) => itemId !== id);
+        });
+    }
+
+    seleccionarTodasReferenciasAprobacion(): void {
+        this.referenciasAprobadasSeleccionadas.set(this.referenciasAprobacionDisponibles().map((item) => item.id));
+    }
+
+    limpiarReferenciasAprobacion(): void {
+        this.referenciasAprobadasSeleccionadas.set([]);
+    }
+
     onEdit(): void {
         this.router.navigate(['/app/cotizaciones', this.cotizacionId(), 'edit']);
     }
@@ -544,20 +763,29 @@ export class DetailComponent implements OnInit {
         const cot = this.cotizacion();
         if (!cot) return;
 
-        this.confirmationService.confirm({
-            message: '¿Está seguro de aprobar esta cotizacion? Se generaran la Orden de Trabajo y Orden de Compra automaticamente.',
-            header: 'Aprobar Cotizacion',
-            icon: 'pi pi-check-circle',
-            accept: () => {
-                this.cotizacionService.approve(cot.id).subscribe({
-                    next: () => {
-                        this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotizacion aprobada. OT y OC generadas.' });
-                        this.loadCotizacion(this.cotizacionId());
-                    },
-                    error: () => {
-                        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotizacion' });
-                    }
-                });
+        const referenciaIds = this.referenciasAprobacionDisponibles().map((item) => item.id);
+        if (referenciaIds.length === 0) {
+            this.messageService.add({ severity: 'warn', summary: 'Sin referencias', detail: 'La cotización no tiene referencias para aprobar' });
+            return;
+        }
+
+        this.referenciasAprobadasSeleccionadas.set(referenciaIds);
+        this.approvalDialogVisible.set(true);
+    }
+
+    confirmApproveSelected(): void {
+        const cot = this.cotizacion();
+        const referenciaIds = this.referenciasAprobadasSeleccionadas();
+        if (!cot || referenciaIds.length === 0) return;
+
+        this.cotizacionService.approve(cot.id, { referencia_ids: referenciaIds }).subscribe({
+            next: () => {
+                this.approvalDialogVisible.set(false);
+                this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada con las referencias seleccionadas. OT y OC generadas.' });
+                this.loadCotizacion(this.cotizacionId());
+            },
+            error: () => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo aprobar la cotización' });
             }
         });
     }

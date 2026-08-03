@@ -7,9 +7,13 @@
  */
 
 use App\Models\Cotizacion;
+use App\Models\CotizacionReferenciaProveedor;
 use App\Models\OrdenCompra;
 use App\Models\OrdenTrabajo;
 use App\Models\Pedido;
+use App\Models\PedidoReferencia;
+use App\Models\PedidoReferenciaProveedor;
+use App\Models\Referencia;
 use App\Models\Tercero;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -160,4 +164,58 @@ it('rechaza responder si no hay cotizacion activa', function () {
         ->assertJsonPath('message', 'No hay una cotización activa para rechazar.');
 
     expect($pedido->fresh()->estado)->toBe('Cotizado');
+});
+
+it('aprobar desde pedido conserva compatibilidad y aprueba todas las referencias activas', function () {
+    $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor']);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'tercero_id' => $this->tercero->id,
+        'user_id' => $this->vendedor->id,
+    ]);
+
+    $cotizacion = Cotizacion::create([
+        'pedido_id' => $pedido->id,
+        'tercero_id' => $this->tercero->id,
+        'user_id' => $this->vendedor->id,
+        'estado' => 'Enviada',
+        'fecha_emision' => now(),
+        'fecha_vencimiento' => now()->addDays(15),
+    ]);
+
+    collect([12000, 18000])->each(function (int $valorTotal) use ($pedido, $proveedor, $cotizacion) {
+        $referencia = Referencia::factory()->create();
+        $pedidoReferencia = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'referencia_id' => $referencia->id,
+            'cantidad' => 1,
+        ]);
+        $prp = PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $pedidoReferencia->id,
+            'proveedor_id' => $proveedor->id,
+            'referencia_id' => $referencia->id,
+            'cantidad' => 1,
+            'valor_unidad' => $valorTotal,
+            'valor_total' => $valorTotal,
+        ]);
+
+        CotizacionReferenciaProveedor::create([
+            'cotizacion_id' => $cotizacion->id,
+            'pedido_referencia_proveedor_id' => $prp->id,
+            'mostrar_referencia' => true,
+            'snapshot_valor_total' => $valorTotal,
+        ]);
+    });
+
+    $response = $this->actingAs($this->vendedor, 'sanctum')
+        ->postJson("/v1/pedidos/{$pedido->id}/responder", [
+            'respuesta' => 'aprobar',
+            'comentario' => 'Cliente aprobó todo',
+        ]);
+
+    $response->assertOk();
+
+    expect($cotizacion->fresh()->estado)->toBe('Aprobada');
+    expect((float) $cotizacion->fresh()->total)->toBe(30000.0);
+    expect(CotizacionReferenciaProveedor::where('cotizacion_id', $cotizacion->id)->where('estado_aprobacion', 'Aprobada')->count())->toBe(2);
 });
