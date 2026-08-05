@@ -331,14 +331,14 @@ Aprobada: '.$comentario);
                 'pedido_id' => $pedido?->id,
                 'cotizacion_id' => $cotizacion->id,
                 'proveedor_id' => $proveedorId,
-                'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
+                'estado' => OrdenCompraEstado::Generada->value,
                 'fecha_expedicion' => now(),
                 'fecha_entrega' => null,
                 'observaciones' => "Generada automáticamente desde cotización #{$cotizacion->id}",
                 'direccion' => null,
                 'telefono' => null,
                 'guia' => null,
-                'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
+                'color' => OrdenCompraEstado::Generada->color(),
             ]);
 
             foreach ($referencias as $ref) {

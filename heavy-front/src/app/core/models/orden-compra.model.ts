@@ -47,12 +47,12 @@ export interface OrdenCompra {
 /**
  * Estados posibles de una orden de compra
  */
-export type OrdenCompraEstado = 'Pendiente de envío' | 'Enviada' | 'Confirmada' | 'Recibida parcialmente' | 'Recibida' | 'Cerrada' | 'Cancelada';
+export type OrdenCompraEstado = 'Generada' | 'Enviada' | 'Confirmada' | 'Pagada' | 'Despachada' | 'Recibida parcialmente' | 'Recibida' | 'Cancelada';
 
 /**
  * Colores de estado de orden de compra
  */
-export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#FF9800' | '#00ff00' | '#4CAF50' | '#ff0000';
+export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#9C27B0' | '#E91E63' | '#FF9800' | '#00ff00' | '#ff0000';
 
 export interface OrdenCompraUsuario {
     id: number;
@@ -76,6 +76,38 @@ export interface OrdenCompraTransportadora {
 export interface OrdenCompraPedido {
     id: number;
     estado?: string | null;
+    maquina?: {
+        id: number;
+        nombre?: string | null;
+        marca?: string | null;
+        modelo?: string | null;
+        serie?: string | null;
+        horas?: number | null;
+        tipo?: string | null;
+    } | null;
+    tercero?: {
+        id: number;
+        nombre?: string | null;
+        nit?: string | null;
+        telefono?: string | null;
+        email?: string | null;
+        city?: {
+            id: number;
+            name?: string | null;
+        } | null;
+    } | null;
+    contacto?: {
+        id: number;
+        nombre?: string | null;
+        telefono?: string | null;
+        email?: string | null;
+    } | null;
+    user?: {
+        id: number;
+        name?: string | null;
+    } | null;
+    created_at?: string | null;
+    updated_at?: string | null;
 }
 
 export interface OrdenCompraCotizacion {

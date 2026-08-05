@@ -106,7 +106,7 @@ class OrdenCompraController extends Controller
                 'cotizacion_id' => $validated['cotizacion_id'] ?? null,
                 'fecha_expedicion' => $validated['fecha_expedicion'],
                 'fecha_entrega' => $validated['fecha_entrega'],
-                'estado' => $validated['estado'] ?? 'Pendiente',
+                'estado' => $validated['estado'] ?? OrdenCompraEstado::Generada->value,
                 'color' => $validated['color'] ?? '#FFFF00',
                 'observaciones' => $validated['observaciones'] ?? null,
                 'direccion' => $validated['direccion'] ?? null,
@@ -160,7 +160,10 @@ class OrdenCompraController extends Controller
         $orden_compra->load([
             'proveedor',
             'tercero',
-            'pedido',
+            'pedido.maquina',
+            'pedido.tercero.city',
+            'pedido.contacto',
+            'pedido.user',
             'cotizacion',
             'detalles.referencia',
         ]);

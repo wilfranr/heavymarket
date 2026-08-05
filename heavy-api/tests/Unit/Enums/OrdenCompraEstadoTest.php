@@ -2,37 +2,39 @@
 
 use App\Enums\OrdenCompraEstado;
 
-it('define los 7 estados del ciclo de vida de orden de compra', function () {
-    expect(OrdenCompraEstado::cases())->toHaveCount(7)
+it('define los 8 estados del ciclo de vida de orden de compra', function () {
+    expect(OrdenCompraEstado::cases())->toHaveCount(8)
         ->and(OrdenCompraEstado::toArray())->toContain(
-            'Pendiente de envío',
+            'Generada',
             'Enviada',
             'Confirmada',
+            'Pagada',
+            'Despachada',
             'Recibida parcialmente',
             'Recibida',
-            'Cerrada',
             'Cancelada'
         );
 });
 
 it('permite transiciones válidas del flujo principal', function () {
-    expect(OrdenCompraEstado::PendienteDeEnvio->puedeTransitarA(OrdenCompraEstado::Enviada))->toBeTrue()
+    expect(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Enviada))->toBeTrue()
         ->and(OrdenCompraEstado::Enviada->puedeTransitarA(OrdenCompraEstado::Confirmada))->toBeTrue()
-        ->and(OrdenCompraEstado::Confirmada->puedeTransitarA(OrdenCompraEstado::RecibidaParcialmente))->toBeTrue()
-        ->and(OrdenCompraEstado::Confirmada->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeTrue()
-        ->and(OrdenCompraEstado::RecibidaParcialmente->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeTrue()
-        ->and(OrdenCompraEstado::Recibida->puedeTransitarA(OrdenCompraEstado::Cerrada))->toBeTrue();
+        ->and(OrdenCompraEstado::Confirmada->puedeTransitarA(OrdenCompraEstado::Pagada))->toBeTrue()
+        ->and(OrdenCompraEstado::Pagada->puedeTransitarA(OrdenCompraEstado::Despachada))->toBeTrue()
+        ->and(OrdenCompraEstado::Despachada->puedeTransitarA(OrdenCompraEstado::RecibidaParcialmente))->toBeTrue()
+        ->and(OrdenCompraEstado::Despachada->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeTrue()
+        ->and(OrdenCompraEstado::RecibidaParcialmente->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeTrue();
 });
 
 it('rechaza transiciones inválidas y terminales', function () {
-    expect(OrdenCompraEstado::PendienteDeEnvio->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeFalse()
+    expect(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeFalse()
         ->and(OrdenCompraEstado::RecibidaParcialmente->puedeTransitarA(OrdenCompraEstado::Cancelada))->toBeFalse()
-        ->and(OrdenCompraEstado::Cerrada->transicionesValidas())->toBeEmpty()
+        ->and(OrdenCompraEstado::Recibida->transicionesValidas())->toBeEmpty()
         ->and(OrdenCompraEstado::Cancelada->transicionesValidas())->toBeEmpty();
 });
 
 it('identifica estados terminales', function () {
-    expect(OrdenCompraEstado::Cerrada->esTerminal())->toBeTrue()
+    expect(OrdenCompraEstado::Recibida->esTerminal())->toBeTrue()
         ->and(OrdenCompraEstado::Cancelada->esTerminal())->toBeTrue()
-        ->and(OrdenCompraEstado::Recibida->esTerminal())->toBeFalse();
+        ->and(OrdenCompraEstado::Despachada->esTerminal())->toBeFalse();
 });

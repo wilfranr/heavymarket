@@ -303,7 +303,7 @@ class ProviderPortalController extends Controller
     /**
      * Actualizar datos de despacho de una OC
      */
-    public function updateDispatch(Request $request, int $id): JsonResponse
+    public function updateDispatch(Request $request, int $id, OrdenCompraLifecycleService $lifecycleService): JsonResponse
     {
         $validated = $request->validate([
             'guia' => ['required', 'string', 'max:100'],
@@ -323,9 +323,16 @@ class ProviderPortalController extends Controller
 
         $oc->update($validated);
 
+        $ordenCompra = $lifecycleService->transicionar(
+            $oc,
+            OrdenCompraEstado::Despachada,
+            [],
+            $user
+        );
+
         return response()->json([
             'message' => 'Despacho registrado correctamente.',
-            'data' => new OrdenCompraResource($oc->load('transportadora')),
+            'data' => new OrdenCompraResource($ordenCompra->load('transportadora')),
         ]);
     }
 }

@@ -26,12 +26,13 @@ interface SelectOption<T> {
 export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
     switch (estado) {
         case 'Confirmada':
+        case 'Pagada':
         case 'Recibida':
-        case 'Cerrada':
             return 'success';
         case 'Enviada':
+        case 'Despachada':
             return 'info';
-        case 'Pendiente de envío':
+        case 'Generada':
         case 'Recibida parcialmente':
             return 'warn';
         case 'Cancelada':
@@ -44,17 +45,19 @@ export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'su
 export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string {
     switch (color) {
         case '#FFFF00':
-            return 'Pendiente de envío';
+            return 'Generada';
         case '#2196F3':
             return 'Enviada';
         case '#8BC34A':
             return 'Confirmada';
+        case '#9C27B0':
+            return 'Pagada';
+        case '#E91E63':
+            return 'Despachada';
         case '#FF9800':
             return 'Recibida parcialmente';
         case '#00ff00':
             return 'Recibida';
-        case '#4CAF50':
-            return 'Cerrada';
         case '#ff0000':
             return 'Cancelada';
         default:
@@ -102,7 +105,7 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
                         <th>ID</th>
                         <th>Proveedor</th>
                         <th>Estado</th>
-                        <th>Color</th>
+                        <th>Semáforo</th>
                         <th>Expedición</th>
                         <th>Entrega</th>
                         <th>Total</th>
@@ -164,22 +167,24 @@ export class ListComponent implements OnInit {
     proveedores = signal<SelectOption<number>[]>([]);
 
     estadosOptions: SelectOption<OrdenCompraEstado>[] = [
-        { label: 'Pendiente de envío', value: 'Pendiente de envío' },
+        { label: 'Generada', value: 'Generada' },
         { label: 'Enviada', value: 'Enviada' },
         { label: 'Confirmada', value: 'Confirmada' },
+        { label: 'Pagada', value: 'Pagada' },
+        { label: 'Despachada', value: 'Despachada' },
         { label: 'Recibida parcialmente', value: 'Recibida parcialmente' },
         { label: 'Recibida', value: 'Recibida' },
-        { label: 'Cerrada', value: 'Cerrada' },
         { label: 'Cancelada', value: 'Cancelada' }
     ];
 
     coloresOptions: SelectOption<OrdenCompraColor>[] = [
-        { label: 'Amarillo (Pendiente de envío)', value: '#FFFF00' },
+        { label: 'Amarillo (Generada)', value: '#FFFF00' },
         { label: 'Azul (Enviada)', value: '#2196F3' },
         { label: 'Verde claro (Confirmada)', value: '#8BC34A' },
+        { label: 'Púrpura (Pagada)', value: '#9C27B0' },
+        { label: 'Rosa (Despachada)', value: '#E91E63' },
         { label: 'Naranja (Recibida parcialmente)', value: '#FF9800' },
         { label: 'Verde (Recibida)', value: '#00ff00' },
-        { label: 'Verde oscuro (Cerrada)', value: '#4CAF50' },
         { label: 'Rojo (Cancelada)', value: '#ff0000' }
     ];
 

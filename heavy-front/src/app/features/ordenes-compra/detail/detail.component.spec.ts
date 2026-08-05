@@ -2,15 +2,16 @@ import { ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTran
 
 describe('Detalle de orden de compra - reglas de estado', () => {
     it('permite las transiciones principales del ciclo de vida', () => {
-        expect(ordenCompraPuedeTransitar('Pendiente de envío', 'Enviada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Generada', 'Enviada')).toBe(true);
         expect(ordenCompraPuedeTransitar('Enviada', 'Confirmada')).toBe(true);
-        expect(ordenCompraPuedeTransitar('Confirmada', 'Recibida')).toBe(true);
-        expect(ordenCompraPuedeTransitar('Recibida', 'Cerrada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Confirmada', 'Pagada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Pagada', 'Despachada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Despachada', 'Recibida')).toBe(true);
     });
 
     it('bloquea transiciones inválidas y estados terminales', () => {
         expect(ordenCompraPuedeTransitar('Recibida parcialmente', 'Cancelada')).toBe(false);
-        expect(ordenCompraPuedeTransitar('Cerrada', 'Enviada')).toBe(false);
+        expect(ordenCompraPuedeTransitar('Recibida', 'Enviada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Cancelada', 'Enviada')).toBe(false);
     });
 
@@ -21,9 +22,11 @@ describe('Detalle de orden de compra - reglas de estado', () => {
     });
 
     it('permite cancelar solo estados no terminales sin recepción parcial', () => {
+        expect(ordenCompraPuedeCancelar('Generada')).toBe(true);
         expect(ordenCompraPuedeCancelar('Enviada')).toBe(true);
         expect(ordenCompraPuedeCancelar('Confirmada')).toBe(true);
+        expect(ordenCompraPuedeCancelar('Pagada')).toBe(true);
+        expect(ordenCompraPuedeCancelar('Despachada')).toBe(true);
         expect(ordenCompraPuedeCancelar('Recibida parcialmente')).toBe(false);
-        expect(ordenCompraPuedeCancelar('Cerrada')).toBe(false);
     });
 });

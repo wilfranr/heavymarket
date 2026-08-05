@@ -1,18 +1,18 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-08-05T09:40:00-05:00",
-  "issue": "ordenes-trabajo-tarjetas",
-  "description": "Mostrar las 3 tarjetas de Pedido, Cliente y Maquina en el detalle de la Orden de Trabajo, unificando la interfaz y migrando a TailwindCSS.",
+  "last_updated": "2026-08-05T15:30:00-05:00",
+  "issue": "ordenes-compra-logistica",
+  "description": "Permitir a Logística ver Órdenes de Compra, actualizar el flujo de estados (Generada, Pagada, Despachada, remover Cerrada), e incorporar las 3 tarjetas de Pedido, Cliente y Máquina en el detalle de la OC.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
     {
-      "id": "ot-tarjetas-triage",
+      "id": "oc-logistica-triage",
       "description": "Triage: Planificar los cambios necesarios, verificar viabilidad técnica y definir el DAG.",
       "status": "done",
       "required_skill": "software_architect",
       "depends_on": [],
-      "topic_key": "decision/ordenes-trabajo-tarjetas",
+      "topic_key": "decision/ordenes-compra-logistica",
       "files": [
         {
           "path": ".harness/dag.json",
@@ -21,72 +21,248 @@
       ]
     },
     {
-      "id": "ot-tarjetas-backend",
-      "description": "Backend: Cargar relaciones de maquina y fabricante del pedido en OrdenTrabajoController (index y show).",
+      "id": "oc-logistica-backend-permissions",
+      "description": "Backend: Modificar OrdenCompraPolicy para permitir que el rol Logistica pueda ver las órdenes de compra (viewAny y view).",
       "status": "done",
       "required_skill": null,
       "depends_on": [
-        "ot-tarjetas-triage"
+        "oc-logistica-triage"
       ],
       "topic_key": "arch/heavy-api-logic",
       "files": [
         {
-          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
-          "status": "validated"
-        },
-        {
-          "path": "heavy-api/app/Http/Resources/OrdenTrabajoResource.php",
+          "path": "heavy-api/app/Policies/OrdenCompraPolicy.php",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ot-tarjetas-frontend-ui",
-      "description": "Frontend/UI: Rediseñar vista de detalle con TailwindCSS y agregar las 3 tarjetas en el sidebar (Información de Pedido, Cliente, Máquina).",
+      "id": "oc-logistica-backend-states",
+      "description": "Backend: Actualizar el Enum OrdenCompraEstado, StoreOrdenCompraRequest, CotizacionService y OrdenCompraLifecycleService para renombrar Pendiente de envío a Generada, agregar Pagada y Despachada, y eliminar Cerrada.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "oc-logistica-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "review_notes": "Reviewer agrego migracion de datos faltante: 2026_08_05_153000_migrate_orden_compra_estados_logistica.php. Tambien corregido estado por defecto 'Pendiente' a OrdenCompraEstado::Generada en controller store().",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreOrdenCompraRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenCompraLifecycleService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_08_05_153000_migrate_orden_compra_estados_logistica.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenCompraController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-backend-api-relations",
+      "description": "Backend: Modificar OrdenCompraController para cargar relaciones de maquina, tercero y contacto del pedido en show().",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "oc-logistica-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenCompraController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-backend-provider-portal",
+      "description": "Backend: Actualizar ProviderPortalController para que al registrar despacho se transicione el estado de la OC a Despachada.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "oc-logistica-backend-states"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-backend-tests",
+      "description": "Backend Tests: Actualizar tests unitarios y de integración para validar la nueva lógica de estados y transiciones en la OC.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-logistica-backend-states",
+        "oc-logistica-backend-provider-portal"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "review_notes": "61 assertions pasando. DEPR warnings son pre-existentes (APP_URL=null en entorno de test, config/filesystems.php:44). No son fallos.",
+      "files": [
+        {
+          "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenCompraTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenCompraTransitionTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-frontend-states",
+      "description": "Frontend: Modificar el modelo y mapeos en orden-compra.model.ts para soportar Generada, Pagada, Despachada y remover Cerrada.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "oc-logistica-triage"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "review_notes": "Se agrego created_at y updated_at a OrdenCompraPedido para soportar los timestamps en las tarjetas del detalle.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-compra.model.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-frontend-menu",
+      "description": "Frontend: Habilitar el módulo de Órdenes de Compra en el sidebar (app.menu.ts) para el rol Logistica.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "ot-tarjetas-backend"
+        "oc-logistica-triage"
       ],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
-          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "path": "heavy-front/src/app/layout/component/app.menu.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ot-tarjetas-frontend-tests",
-      "description": "Tests frontend: Actualizar los specs de detail.component.spec.ts para validar las nuevas secciones y layouts.",
+      "id": "oc-logistica-frontend-ui-list",
+      "description": "Frontend UI List: Modificar list.component.ts para renombrar la columna Color a Semáforo y actualizar colores y labels.",
       "status": "done",
-      "required_skill": "automated_tester",
+      "required_skill": "ui_ux_design_expert",
       "depends_on": [
-        "ot-tarjetas-frontend-ui"
+        "oc-logistica-frontend-states"
       ],
-      "topic_key": "arch/heavy-audit-history",
+      "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
-          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.spec.ts",
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts",
           "status": "validated"
         }
       ]
     },
     {
-      "id": "ot-tarjetas-review",
+      "id": "oc-logistica-frontend-ui-detail",
+      "description": "Frontend UI: Modificar detail.component.ts para agregar la sección con las 3 tarjetas informativas (Pedido, Cliente, Máquina) usando la misma maquetación que en la OT.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-logistica-frontend-states",
+        "oc-logistica-backend-api-relations"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-frontend-provider-portal",
+      "description": "Frontend UI: Modificar ordenes-compra-list.component.ts para que el proveedor pueda despachar cuando la OC esté en Pagada.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-logistica-frontend-states"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-frontend-tests",
+      "description": "Frontend Tests: Actualizar y verificar los specs del frontend para confirmar la correcta implementación del semáforo y del detalle de la OC.",
+      "status": "done",
+      "depends_on": [
+        "oc-logistica-frontend-ui-list",
+        "oc-logistica-frontend-ui-detail",
+        "oc-logistica-frontend-provider-portal"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "review_notes": "8/8 tests pasando. Build Angular sin errores de compilacion. Warning pusher-js pre-existente.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-logistica-review",
       "description": "Reviewer: Validar todos los cambios realizados, ejecutar los gates backend y frontend, y marcar nodos como done.",
       "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "ot-tarjetas-frontend-tests"
+        "oc-logistica-backend-tests",
+        "oc-logistica-frontend-tests",
+        "oc-logistica-backend-permissions",
+        "oc-logistica-frontend-menu"
       ],
       "topic_key": "arch/heavy-audit-history",
       "files": [],
       "gates": [
-        "cd heavy-api && php artisan test tests/Feature/Api/OrdenTrabajoControllerTest.php",
+        "cd heavy-api && php artisan test tests/Feature/Api/OrdenCompraTest.php",
+        "cd heavy-api && php artisan test tests/Feature/Api/OrdenCompraTransitionTest.php",
+        "cd heavy-api && php artisan test tests/Feature/Api/OrdenCompraReceiveTest.php",
+        "cd heavy-api && php artisan test tests/Unit/Enums/OrdenCompraEstadoTest.php",
         "cd heavy-front && npm run build",
-        "cd heavy-front && npm run test:ci -- src/app/features/ordenes-trabajo/detail/detail.component.spec.ts"
-      ]
+        "cd heavy-front && npm run test:ci -- src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+        "cd heavy-front && npm run test:ci -- src/app/features/ordenes-compra/list/list.component.spec.ts",
+        "cd heavy-front && npm run test:ci -- src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.spec.ts"
+      ],
+      "review_notes": "Todos los gates ejecutados. Backend: 61 assertions (10 DEPR por APP_URL=null pre-existente, no bloqueante). Frontend: 8/8 tests. Build: sin errores. Correcciones del Reviewer: (1) estado por defecto 'Pendiente' a OrdenCompraEstado::Generada en controller store(); (2) migracion de datos creada para migrar registros legacy. Issue cerrado."
     }
   ]
 }

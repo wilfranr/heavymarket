@@ -91,8 +91,8 @@ class StoreOrdenCompraRequest extends FormRequest
     {
         $this->merge([
             'user_id' => $this->user()->id,
-            'estado' => $this->input('estado', OrdenCompraEstado::PendienteDeEnvio->value),
-            'color' => $this->input('color', OrdenCompraEstado::PendienteDeEnvio->color()),
+            'estado' => $this->input('estado', OrdenCompraEstado::Generada->value),
+            'color' => $this->input('color', OrdenCompraEstado::Generada->color()),
         ]);
     }
 }

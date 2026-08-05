@@ -39,8 +39,8 @@ it('permite transicionar una orden enviada a confirmada', function () {
 
 it('rechaza transiciones no permitidas', function () {
     $orden = OrdenCompra::factory()->create([
-        'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
-        'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
+        'estado' => OrdenCompraEstado::Generada->value,
+        'color' => OrdenCompraEstado::Generada->color(),
     ]);
 
     $response = $this->actingAs($this->admin, 'sanctum')
@@ -91,4 +91,31 @@ it('exige aprobación admin para cancelar una orden confirmada', function () {
 
     $ok->assertOk()
         ->assertJsonPath('data.estado', OrdenCompraEstado::Cancelada->value);
+});
+
+it('permite transicionar de confirmada a pagada y luego a despachada', function () {
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::Confirmada->value,
+        'color' => OrdenCompraEstado::Confirmada->color(),
+    ]);
+
+    // De Confirmada a Pagada
+    $responsePagada = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::Pagada->value,
+        ]);
+
+    $responsePagada->assertOk()
+        ->assertJsonPath('data.estado', OrdenCompraEstado::Pagada->value);
+
+    // De Pagada a Despachada
+    $responseDespachada = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::Despachada->value,
+        ]);
+
+    $responseDespachada->assertOk()
+        ->assertJsonPath('data.estado', OrdenCompraEstado::Despachada->value);
+
+    expect($orden->fresh()->fecha_despacho)->not->toBeNull();
 });

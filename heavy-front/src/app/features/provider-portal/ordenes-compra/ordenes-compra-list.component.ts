@@ -30,7 +30,7 @@ export function proveedorPuedeConfirmarOrden(estado: OrdenCompraEstado | null): 
 }
 
 export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): boolean {
-    return estado === 'Confirmada';
+    return estado === 'Pagada';
 }
 
 @Component({
@@ -272,14 +272,15 @@ export class OrdenesCompraListComponent implements OnInit {
 
     getStatusSeverity(status: OrdenCompraEstado | null): 'info' | 'success' | 'warn' | 'danger' | 'secondary' | 'contrast' | undefined {
         switch (status) {
-            case 'Pendiente de envío':
+            case 'Generada':
             case 'Recibida parcialmente':
                 return 'warn';
             case 'Enviada':
+            case 'Despachada':
                 return 'info';
             case 'Confirmada':
+            case 'Pagada':
             case 'Recibida':
-            case 'Cerrada':
                 return 'success';
             case 'Cancelada':
                 return 'danger';

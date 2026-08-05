@@ -19,12 +19,13 @@ import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors
 import { OrdenCompra, OrdenCompraEstado } from '../../../core/models/orden-compra.model';
 
 const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> = {
-    'Pendiente de envío': ['Enviada', 'Cancelada'],
+    Generada: ['Enviada', 'Cancelada'],
     Enviada: ['Confirmada', 'Cancelada'],
-    Confirmada: ['Recibida parcialmente', 'Recibida', 'Cancelada'],
-    'Recibida parcialmente': ['Recibida', 'Cerrada'],
-    Recibida: ['Cerrada'],
-    Cerrada: [],
+    Confirmada: ['Pagada', 'Cancelada'],
+    Pagada: ['Despachada', 'Cancelada'],
+    Despachada: ['Recibida parcialmente', 'Recibida', 'Cancelada'],
+    'Recibida parcialmente': ['Recibida'],
+    Recibida: [],
     Cancelada: []
 };
 
@@ -37,7 +38,7 @@ export function ordenCompraPuedeRecibir(estado: OrdenCompraEstado | null): boole
 }
 
 export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): boolean {
-    return estado === 'Pendiente de envío' || estado === 'Enviada' || estado === 'Confirmada';
+    return estado === 'Generada' || estado === 'Enviada' || estado === 'Confirmada' || estado === 'Pagada' || estado === 'Despachada';
 }
 
 /**
@@ -66,6 +67,103 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                     <p class="mt-4">Cargando información...</p>
                 </div>
             } @else if (ordenCompra()) {
+                <!-- Fila Superior de Tarjetas Informativas (Tipo Costeo) -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <!-- Tarjeta Información del pedido -->
+                    <div class="figma-card p-0 overflow-hidden flex flex-col h-[290px] bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
+                        <div class="p-3 bg-surface-50 dark:bg-surface-800 flex justify-between items-center border-b border-surface-200 dark:border-surface-700">
+                            <span class="font-bold text-color text-base pl-2">Información del pedido</span>
+                            <div class="w-[47px] h-[44px] flex items-center justify-center">
+                                <i class="pi pi-shopping-bag text-muted-color text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-3 flex-1 text-sm bg-surface-0 dark:bg-surface-900">
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-500 font-semibold">Pedido:</span> <span class="text-color">{{ ordenCompra()?.pedido_id || '---' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-500 font-semibold">Creación:</span> <span class="text-color">{{ ordenCompra()?.pedido?.created_at | date: 'MMMM d, y' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-500 font-semibold">Actualización:</span> <span class="text-color">{{ ordenCompra()?.pedido?.updated_at | date: 'MMMM d, y' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-blue-500 font-semibold">Usuario:</span> <span class="text-color">{{ ordenCompra()?.pedido?.user?.name || '---' }}</span>
+                            </div>
+                            <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span class="text-color">Asesor</span></div>
+                            <div class="flex items-center gap-2 mt-2">
+                                <span class="text-blue-500 font-semibold">Estado:</span>
+                                <p-tag [value]="ordenCompra()?.pedido?.estado || 'N/A'" [severity]="getPedidoEstadoSeverity(ordenCompra()?.pedido?.estado || '')" styleClass="text-xs px-2.5 py-0.5 rounded-full" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Información de la máquina -->
+                    <div class="figma-card p-0 overflow-hidden flex flex-col h-[290px] bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
+                        <div class="p-3 bg-surface-50 dark:bg-surface-800 flex justify-between items-center border-b border-surface-200 dark:border-surface-700">
+                            <span class="font-bold text-color text-base pl-2">Información de la máquina</span>
+                            <div class="flex items-center gap-1 pr-2">
+                                <i class="pi pi-cog text-muted-color text-xl p-2"></i>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-3 flex-1 text-sm bg-surface-0 dark:bg-surface-900">
+                            @if (ordenCompra()?.pedido?.maquina) {
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Máquina:</span> <span class="text-color">{{ ordenCompra()?.pedido?.maquina?.tipo || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Fabricante:</span> <span class="text-color">{{ ordenCompra()?.pedido?.maquina?.marca || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Modelo:</span> <span class="text-color">{{ ordenCompra()?.pedido?.maquina?.modelo || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Serie:</span> <span class="text-color">{{ ordenCompra()?.pedido?.maquina?.serie || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Horas:</span> <span class="text-color">{{ ordenCompra()?.pedido?.maquina?.horas || '----' }}</span>
+                                </div>
+                            } @else {
+                                <p class="text-muted-color italic m-0">Sin máquina asociada</p>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Información de tercero -->
+                    <div class="figma-card p-0 overflow-hidden flex flex-col h-[290px] bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
+                        <div class="p-3 bg-surface-50 dark:bg-surface-800 flex justify-between items-center border-b border-surface-200 dark:border-surface-700">
+                            <span class="font-bold text-color text-base pl-2">Información del cliente</span>
+                            <div class="flex items-center gap-1 pr-2">
+                                <i class="pi pi-user text-muted-color text-xl p-2"></i>
+                            </div>
+                        </div>
+                        <div class="p-4 space-y-2 flex-1 text-sm bg-surface-0 dark:bg-surface-900">
+                            @if (ordenCompra()?.pedido?.tercero) {
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Cliente:</span> <span class="text-color truncate max-w-[200px]" [title]="ordenCompra()?.pedido?.tercero?.nombre">{{ ordenCompra()?.pedido?.tercero?.nombre }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Número de documento:</span> <span class="text-color">{{ ordenCompra()?.pedido?.tercero?.nit || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Ciudad:</span> <span class="text-color">{{ ordenCompra()?.pedido?.tercero?.city?.name || '--' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Contacto:</span> <span class="text-color">{{ ordenCompra()?.pedido?.contacto?.nombre || '--' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Teléfono:</span> <span class="text-color">{{ ordenCompra()?.pedido?.contacto?.telefono || ordenCompra()?.pedido?.tercero?.telefono || '---' }}</span>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-500 font-semibold">Email:</span> <span class="text-color truncate max-w-[200px]" [title]="ordenCompra()?.pedido?.contacto?.email || ordenCompra()?.pedido?.tercero?.email">{{ ordenCompra()?.pedido?.contacto?.email || ordenCompra()?.pedido?.tercero?.email || '---' }}</span>
+                                </div>
+                            } @else {
+                                <p class="text-muted-color italic m-0">No hay información del cliente asociada.</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Columna Izquierda: Info Principal -->
                     <div class="lg:col-span-2 flex flex-col gap-6">
@@ -104,8 +202,11 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                 @if (puedePasarA('Confirmada')) {
                                     <p-button label="Confirmar" icon="pi pi-thumbs-up" severity="success" (onClick)="transitionTo('Confirmada')"></p-button>
                                 }
-                                @if (puedePasarA('Cerrada')) {
-                                    <p-button label="Cerrar" icon="pi pi-lock" severity="secondary" (onClick)="transitionTo('Cerrada')"></p-button>
+                                @if (puedePasarA('Pagada')) {
+                                    <p-button label="Registrar Pago" icon="pi pi-dollar" severity="success" (onClick)="transitionTo('Pagada')"></p-button>
+                                }
+                                @if (puedePasarA('Despachada')) {
+                                    <p-button label="Registrar Despacho" icon="pi pi-truck" severity="info" (onClick)="transitionTo('Despachada')"></p-button>
                                 }
                                 @if (puedeCancelar()) {
                                     <p-button label="Cancelar" icon="pi pi-times" severity="danger" [outlined]="true" (onClick)="openCancelDialog()"></p-button>
@@ -179,6 +280,7 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                         <span class="text-xs font-bold text-gray-500">FECHAS DE CICLO</span>
                                         <span class="text-sm">Envío: {{ (ordenCompra()?.fecha_envio | date: 'short') || 'Pendiente' }}</span>
                                         <span class="text-sm">Confirmación: {{ (ordenCompra()?.fecha_confirmacion | date: 'short') || 'Pendiente' }}</span>
+                                        <span class="text-sm">Despacho: {{ (ordenCompra()?.fecha_despacho | date: 'short') || 'Pendiente' }}</span>
                                         <span class="text-sm">Recepción: {{ (ordenCompra()?.fecha_recepcion | date: 'short') || 'Pendiente' }}</span>
                                     </div>
                                 </div>
@@ -306,15 +408,36 @@ export class DetailComponent implements OnInit, OnDestroy {
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {
             case 'Confirmada':
+            case 'Pagada':
             case 'Recibida':
-            case 'Cerrada':
                 return 'success';
             case 'Enviada':
+            case 'Despachada':
                 return 'info';
-            case 'Pendiente de envío':
+            case 'Generada':
             case 'Recibida parcialmente':
                 return 'warn';
             case 'Cancelada':
+                return 'danger';
+            default:
+                return 'secondary';
+        }
+    }
+
+    getPedidoEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
+        switch (estado) {
+            case 'Aprobado':
+            case 'Entregado':
+                return 'success';
+            case 'En_Analisis':
+            case 'En_Costeo':
+            case 'Enviado':
+                return 'info';
+            case 'Nuevo':
+            case 'Cotizado':
+                return 'warn';
+            case 'Rechazado':
+            case 'Cancelado':
                 return 'danger';
             default:
                 return 'secondary';

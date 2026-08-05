@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Api\V1;
 
+use App\Enums\OrdenCompraEstado;
 use App\Models\Lista;
 use App\Models\OrdenCompra;
 use App\Models\Pedido;
@@ -286,7 +287,8 @@ class ProviderPortalControllerTest extends TestCase
         $transportadora = Transportadora::factory()->create();
         $oc = OrdenCompra::factory()->create([
             'proveedor_id' => $this->tercero->id,
-            'estado' => 'Pendiente',
+            'estado' => OrdenCompraEstado::Pagada->value,
+            'color' => OrdenCompraEstado::Pagada->color(),
         ]);
 
         $response = $this->actingAs($this->provider)
@@ -304,7 +306,7 @@ class ProviderPortalControllerTest extends TestCase
             'id' => $oc->id,
             'guia' => 'GUIA-12345',
             'transportadora_id' => $transportadora->id,
-            'estado' => 'Despachado',
+            'estado' => OrdenCompraEstado::Despachada->value,
         ]);
     }
 

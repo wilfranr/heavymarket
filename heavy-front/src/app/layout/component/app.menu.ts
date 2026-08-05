@@ -50,12 +50,15 @@ export class AppMenu implements OnInit {
 
         // Caso 2: Sesión Interna (Asesores, Analistas, Admin)
 
-        // Caso especial: Logistica solo ve Órdenes de Trabajo
+        // Caso especial: Logistica ve Órdenes de Trabajo y Órdenes de Compra
         if (hasLogisticaRole && !hasAdminRole) {
             this.model = [
                 {
                     label: 'Operaciones',
-                    items: [{ label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }]
+                    items: [
+                        { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] },
+                        { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                    ]
                 },
                 {
                     label: 'Perfil',

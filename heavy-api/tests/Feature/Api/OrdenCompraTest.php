@@ -31,7 +31,7 @@ it('permite crear una orden de compra con referencias', function () {
         'proveedor_id' => $proveedor->id,
         'fecha_expedicion' => now()->toDateString(),
         'fecha_entrega' => now()->addDays(5)->toDateString(),
-        'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
+        'estado' => OrdenCompraEstado::Generada->value,
         'referencias' => [
             [
                 'referencia_id' => $referencia->id,

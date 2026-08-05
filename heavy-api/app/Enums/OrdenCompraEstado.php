@@ -12,12 +12,13 @@ namespace App\Enums;
  */
 enum OrdenCompraEstado: string
 {
-    case PendienteDeEnvio = 'Pendiente de envío';
+    case Generada = 'Generada';
     case Enviada = 'Enviada';
     case Confirmada = 'Confirmada';
+    case Pagada = 'Pagada';
+    case Despachada = 'Despachada';
     case RecibidaParcialmente = 'Recibida parcialmente';
     case Recibida = 'Recibida';
-    case Cerrada = 'Cerrada';
     case Cancelada = 'Cancelada';
 
     /**
@@ -28,29 +29,31 @@ enum OrdenCompraEstado: string
     public function transicionesValidas(): array
     {
         return match ($this) {
-            self::PendienteDeEnvio => [
+            self::Generada => [
                 self::Enviada,
                 self::Cancelada,
             ],
             self::Enviada => [
                 self::Confirmada,
-                self::RecibidaParcialmente,
-                self::Recibida,
                 self::Cancelada,
             ],
             self::Confirmada => [
+                self::Pagada,
+                self::Cancelada,
+            ],
+            self::Pagada => [
+                self::Despachada,
+                self::Cancelada,
+            ],
+            self::Despachada => [
                 self::RecibidaParcialmente,
                 self::Recibida,
                 self::Cancelada,
             ],
             self::RecibidaParcialmente => [
                 self::Recibida,
-                self::Cerrada,
             ],
-            self::Recibida => [
-                self::Cerrada,
-            ],
-            self::Cerrada,
+            self::Recibida,
             self::Cancelada => [],
         };
     }
@@ -62,7 +65,7 @@ enum OrdenCompraEstado: string
 
     public function esTerminal(): bool
     {
-        return in_array($this, [self::Cerrada, self::Cancelada], true);
+        return in_array($this, [self::Recibida, self::Cancelada], true);
     }
 
     public function requiereMotivoCancelacion(): bool
@@ -78,12 +81,13 @@ enum OrdenCompraEstado: string
     public function color(): string
     {
         return match ($this) {
-            self::PendienteDeEnvio => '#FFFF00',
+            self::Generada => '#FFFF00',
             self::Enviada => '#2196F3',
             self::Confirmada => '#8BC34A',
+            self::Pagada => '#9C27B0',
+            self::Despachada => '#E91E63',
             self::RecibidaParcialmente => '#FF9800',
             self::Recibida => '#00ff00',
-            self::Cerrada => '#4CAF50',
             self::Cancelada => '#ff0000',
         };
     }
@@ -94,12 +98,13 @@ enum OrdenCompraEstado: string
     public static function todos(): array
     {
         return [
-            self::PendienteDeEnvio,
+            self::Generada,
             self::Enviada,
             self::Confirmada,
+            self::Pagada,
+            self::Despachada,
             self::RecibidaParcialmente,
             self::Recibida,
-            self::Cerrada,
             self::Cancelada,
         ];
     }

@@ -32,7 +32,7 @@ class OrdenCompraFactory extends Factory
             'pedido_id' => Pedido::factory(),
             'cotizacion_id' => Cotizacion::factory(),
             'proveedor_id' => Tercero::factory(),
-            'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
+            'estado' => OrdenCompraEstado::Generada->value,
             'fecha_expedicion' => now(),
             'fecha_entrega' => now()->addDays(7),
             'observaciones' => fake()->optional()->sentence(),
@@ -40,19 +40,24 @@ class OrdenCompraFactory extends Factory
             'direccion' => fake()->optional()->address(),
             'telefono' => fake()->optional()->phoneNumber(),
             'guia' => fake()->optional()->bothify('??########'),
-            'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
+            'color' => OrdenCompraEstado::Generada->color(),
         ];
     }
 
     /**
-     * Indicate that the order is "Pendiente de envío".
+     * Indicate that the order is "Generada".
      */
     public function pendiente(): static
     {
         return $this->state(fn (array $attributes) => [
-            'estado' => OrdenCompraEstado::PendienteDeEnvio->value,
-            'color' => OrdenCompraEstado::PendienteDeEnvio->color(),
+            'estado' => OrdenCompraEstado::Generada->value,
+            'color' => OrdenCompraEstado::Generada->color(),
         ]);
+    }
+
+    public function generada(): static
+    {
+        return $this->pendiente();
     }
 
     /**

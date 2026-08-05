@@ -6,8 +6,9 @@ describe('Portal proveedor - acciones de órdenes de compra', () => {
         expect(proveedorPuedeConfirmarOrden('Confirmada')).toBe(false);
     });
 
-    it('permite despachar solo órdenes confirmadas', () => {
-        expect(proveedorPuedeDespacharOrden('Confirmada')).toBe(true);
+    it('permite despachar solo órdenes pagadas', () => {
+        expect(proveedorPuedeDespacharOrden('Pagada')).toBe(true);
+        expect(proveedorPuedeDespacharOrden('Confirmada')).toBe(false);
         expect(proveedorPuedeDespacharOrden('Enviada')).toBe(false);
         expect(proveedorPuedeDespacharOrden('Recibida')).toBe(false);
     });

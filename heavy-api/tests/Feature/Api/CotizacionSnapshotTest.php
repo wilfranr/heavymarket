@@ -114,11 +114,47 @@ it('aprobar una cotizacion activa marca las otras como rechazadas y aprueba el p
         'user_id' => $admin->id,
     ]);
 
+    // Crear referencias necesarias para que no falle la aprobación
+    $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor']);
+    $referencia = Referencia::factory()->create();
+    $pedidoReferencia = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+        'cantidad' => 2,
+    ]);
+    $prp = PedidoReferenciaProveedor::query()->create([
+        'pedido_referencia_id' => $pedidoReferencia->id,
+        'referencia_id' => $referencia->id,
+        'proveedor_id' => $proveedor->id,
+        'marca_id' => Lista::factory()->create(['tipo' => 'Marcas'])->id,
+        'dias_entrega' => 10,
+        'costo_unidad' => 100,
+        'utilidad' => 20,
+        'valor_unidad' => 120,
+        'valor_total' => 240,
+        'ubicacion' => 'Nacional',
+        'estado' => 1,
+        'cantidad' => 2,
+    ]);
+
     $seleccionada = Cotizacion::factory()->create([
         'pedido_id' => $pedido->id,
         'tercero_id' => $cliente->id,
         'user_id' => $admin->id,
         'estado' => 'Enviada',
+    ]);
+
+    CotizacionReferenciaProveedor::query()->create([
+        'cotizacion_id' => $seleccionada->id,
+        'pedido_referencia_proveedor_id' => $prp->id,
+        'mostrar_referencia' => true,
+        'snapshot_referencia' => 'REF-SNAP',
+        'snapshot_descripcion' => 'Desc',
+        'snapshot_marca' => 'Marca',
+        'snapshot_entrega' => 'Inmediata',
+        'snapshot_cantidad' => 2,
+        'snapshot_valor_unidad' => 120,
+        'snapshot_valor_total' => 240,
     ]);
 
     $otra = Cotizacion::factory()->create([

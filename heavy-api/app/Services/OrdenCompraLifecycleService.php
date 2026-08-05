@@ -45,9 +45,11 @@ class OrdenCompraLifecycleService
                 $updates['motivo_cancelacion'] = $data['motivo_cancelacion'] ?? null;
             }
 
-            if ($destino === OrdenCompraEstado::Cerrada) {
-                $updates['notas_cierre'] = $data['notas_cierre'] ?? $ordenCompra->notas_cierre;
+            if ($destino === OrdenCompraEstado::Despachada) {
+                $updates['fecha_despacho'] = $ordenCompra->fecha_despacho ?? now();
             }
+
+
 
             if (array_key_exists('observaciones', $data)) {
                 $updates['observaciones'] = $data['observaciones'];
@@ -73,7 +75,7 @@ class OrdenCompraLifecycleService
     {
         $origen = $this->estadoActual($ordenCompra);
 
-        if (in_array($origen, [OrdenCompraEstado::Cerrada, OrdenCompraEstado::Cancelada], true)) {
+        if (in_array($origen, [OrdenCompraEstado::Cancelada], true)) {
             return $ordenCompra->refresh();
         }
 
