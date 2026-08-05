@@ -35,7 +35,7 @@ class OrdenTrabajoController extends Controller
     public function index(Request $request): JsonResponse
     {
         $query = OrdenTrabajo::query()
-            ->with(['tercero', 'pedido', 'cotizacion', 'transportadora', 'direccion', 'user', 'referencias.pedidoReferencia']);
+            ->with(['tercero', 'pedido.maquina', 'pedido.fabricante', 'pedido.tercero.city', 'pedido.contacto', 'cotizacion', 'transportadora', 'direccion', 'user', 'referencias.pedidoReferencia.proveedores.marca']);
 
         // Filtros
         if ($request->filled('estado')) {
@@ -135,12 +135,15 @@ class OrdenTrabajoController extends Controller
     {
         $orden_trabajo->load([
             'tercero',
-            'pedido',
+            'pedido.maquina',
+            'pedido.fabricante',
+            'pedido.tercero.city',
+            'pedido.contacto',
             'cotizacion',
             'transportadora',
             'direccion',
             'user',
-            'referencias.pedidoReferencia',
+            'referencias.pedidoReferencia.proveedores.marca',
             'recepcionesCompra.detalles.ordenCompraDetalle.referencia',
             'recepcionesCompra.ordenCompra.proveedor',
             'recepcionesCompra.recibidoPor',

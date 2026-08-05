@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Models\OrdenTrabajoReferencia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\PedidoReferenciaResource;
 
 /**
  * API Resource para el modelo OrdenTrabajoReferencia
@@ -40,7 +41,9 @@ class OrdenTrabajoReferenciaResource extends JsonResource
 
             // Relaciones opcionales
             'orden_trabajo' => $this->whenLoaded('ordenTrabajo'),
-            'pedido_referencia' => $this->whenLoaded('pedidoReferencia'),
+            'pedido_referencia' => $this->whenLoaded('pedidoReferencia', function () {
+                return new PedidoReferenciaResource($this->pedidoReferencia);
+            }),
             'referencia' => $this->whenLoaded('referencia'),
         ];
     }

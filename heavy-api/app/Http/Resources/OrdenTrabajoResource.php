@@ -7,6 +7,7 @@ namespace App\Http\Resources;
 use App\Models\OrdenTrabajo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Http\Resources\PedidoResource;
 
 /**
  * API Resource para el modelo OrdenTrabajo
@@ -46,7 +47,9 @@ class OrdenTrabajoResource extends JsonResource
             // Relaciones opcionales
             'user' => $this->whenLoaded('user'),
             'tercero' => $this->whenLoaded('tercero'),
-            'pedido' => $this->whenLoaded('pedido'),
+            'pedido' => $this->whenLoaded('pedido', function () {
+                return new PedidoResource($this->pedido);
+            }),
             'cotizacion' => $this->whenLoaded('cotizacion'),
             'transportadora' => $this->whenLoaded('transportadora'),
             'direccion' => $this->whenLoaded('direccion'),
