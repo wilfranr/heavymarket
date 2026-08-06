@@ -183,7 +183,10 @@ it('aprobar desde pedido conserva compatibilidad y aprueba todas las referencias
         'fecha_vencimiento' => now()->addDays(15),
     ]);
 
-    collect([12000, 18000])->each(function (int $valorTotal) use ($pedido, $proveedor, $cotizacion) {
+    collect([
+        ['costo' => 8000, 'costo_actual' => 8500, 'venta' => 12000],
+        ['costo' => 12000, 'costo_actual' => 12500, 'venta' => 18000],
+    ])->each(function (array $valores) use ($pedido, $proveedor, $cotizacion) {
         $referencia = Referencia::factory()->create();
         $pedidoReferencia = PedidoReferencia::factory()->create([
             'pedido_id' => $pedido->id,
@@ -195,15 +198,18 @@ it('aprobar desde pedido conserva compatibilidad y aprueba todas las referencias
             'proveedor_id' => $proveedor->id,
             'referencia_id' => $referencia->id,
             'cantidad' => 1,
-            'valor_unidad' => $valorTotal,
-            'valor_total' => $valorTotal,
+            'costo_unidad' => $valores['costo_actual'],
+            'valor_unidad' => $valores['venta'],
+            'valor_total' => $valores['venta'],
         ]);
 
         CotizacionReferenciaProveedor::create([
             'cotizacion_id' => $cotizacion->id,
             'pedido_referencia_proveedor_id' => $prp->id,
             'mostrar_referencia' => true,
-            'snapshot_valor_total' => $valorTotal,
+            'snapshot_costo_unidad' => $valores['costo'],
+            'snapshot_valor_unidad' => $valores['venta'],
+            'snapshot_valor_total' => $valores['venta'],
         ]);
     });
 
@@ -218,4 +224,16 @@ it('aprobar desde pedido conserva compatibilidad y aprueba todas las referencias
     expect($cotizacion->fresh()->estado)->toBe('Aprobada');
     expect((float) $cotizacion->fresh()->total)->toBe(30000.0);
     expect(CotizacionReferenciaProveedor::where('cotizacion_id', $cotizacion->id)->where('estado_aprobacion', 'Aprobada')->count())->toBe(2);
+
+    $ordenCompra = OrdenCompra::query()
+        ->with('detalles')
+        ->where('cotizacion_id', $cotizacion->id)
+        ->where('proveedor_id', $proveedor->id)
+        ->sole();
+
+    expect((float) $ordenCompra->valor_total)->toBe(20000.0)
+        ->and($ordenCompra->detalles->pluck('valor_unitario')->map(fn ($valor) => (float) $valor)->sort()->values()->all())
+        ->toBe([8000.0, 12000.0])
+        ->and($ordenCompra->detalles->pluck('valor_total')->map(fn ($valor) => (float) $valor)->sum())
+        ->toBe(20000.0);
 });

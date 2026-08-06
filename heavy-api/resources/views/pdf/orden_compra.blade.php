@@ -251,7 +251,7 @@
         <thead>
             <tr>
                 <th style="width: 50%;">Referencia / Ítem</th>
-                <th style="width: 15%;" class="text-right">Precio</th>
+                <th style="width: 15%;" class="text-right">Costo unitario</th>
                 <th style="width: 10%;" class="text-center">Cantidad</th>
                 <th style="width: 10%;" class="text-right">Descuento</th>
                 <th style="width: 15%;" class="text-right">Total</th>

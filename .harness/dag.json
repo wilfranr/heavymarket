@@ -1,9 +1,9 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-08-05T15:30:00-05:00",
-  "issue": "ordenes-compra-logistica",
-  "description": "Permitir a Logística ver Órdenes de Compra, actualizar el flujo de estados (Generada, Pagada, Despachada, remover Cerrada), e incorporar las 3 tarjetas de Pedido, Cliente y Máquina en el detalle de la OC.",
+  "last_updated": "2026-08-05T11:45:00-05:00",
+  "issue": "orden-compra-costo-proveedor",
+  "description": "Corregir las órdenes de compra para congelar y mostrar el costo de compra al proveedor, sin exponer el precio de venta ni la utilidad.",
   "workflow": "harness-triage-multiagent",
   "nodes": [
     {
@@ -263,6 +263,106 @@
         "cd heavy-front && npm run test:ci -- src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.spec.ts"
       ],
       "review_notes": "Todos los gates ejecutados. Backend: 61 assertions (10 DEPR por APP_URL=null pre-existente, no bloqueante). Frontend: 8/8 tests. Build: sin errores. Correcciones del Reviewer: (1) estado por defecto 'Pendiente' a OrdenCompraEstado::Generada en controller store(); (2) migracion de datos creada para migrar registros legacy. Issue cerrado."
+    },
+    {
+      "id": "oc-costo-generacion",
+      "description": "Backend: congelar costo_unidad en el snapshot de cotización y usarlo como valor_unitario de las nuevas órdenes de compra.",
+      "status": "awaiting_review",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "oc-logistica-review"
+      ],
+      "topic_key": "decision/orden-compra-costo",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-costo-migracion",
+      "description": "Datos: agregar snapshot_costo_unidad, backfill desde costeo y corregir importes de OCs automáticas existentes.",
+      "status": "awaiting_review",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "oc-costo-generacion"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_08_05_164500_use_purchase_cost_in_orden_compra_referencias.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-costo-presentacion",
+      "description": "UI/PDF: etiquetar el valor de las líneas de OC como costo unitario en detalle, portal proveedor y PDF.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-costo-generacion"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/resources/views/pdf/orden_compra.blade.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-costo-formularios",
+      "description": "UI: aclarar que valor_unitario representa costo unitario en los formularios manuales de creación y edición de OC.",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-costo-generacion"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/create/create.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/edit/edit.component.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-costo-tests",
+      "description": "Tests: verificar que la OC use costo_unidad, no valor_unidad, y ejecutar gates dirigidos.",
+      "status": "awaiting_review",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-costo-generacion",
+        "oc-costo-migracion",
+        "oc-costo-presentacion",
+        "oc-costo-formularios"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "review_notes": "Implementer: prueba funcional de costo congelado pasa; backend 34 assertions dirigidas pasan; frontend 7/7 tests; npm run build exitoso; Pint y git diff --check pasan. ProviderPortalOrdenCompraTest mantiene un fallo preexistente por transición Confirmada→Despachada, fuera del alcance de costo.",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
+          "status": "implemented"
+        }
+      ]
     }
   ]
 }

@@ -1,4 +1,5 @@
 import { ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTransitar } from './detail.component';
+import { OrdenCompraEstado } from '../../../core/models/orden-compra.model';
 
 describe('Detalle de orden de compra - reglas de estado', () => {
     it('permite las transiciones principales del ciclo de vida', () => {
@@ -13,6 +14,11 @@ describe('Detalle de orden de compra - reglas de estado', () => {
         expect(ordenCompraPuedeTransitar('Recibida parcialmente', 'Cancelada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Recibida', 'Enviada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Cancelada', 'Enviada')).toBe(false);
+    });
+
+    it('no falla con estados legacy previos a la migración de logística', () => {
+        expect(ordenCompraPuedeTransitar('Pendiente de envío' as OrdenCompraEstado, 'Enviada')).toBe(false);
+        expect(ordenCompraPuedeTransitar('Cerrada' as OrdenCompraEstado, 'Recibida')).toBe(false);
     });
 
     it('no permite recepción directa desde la orden de compra', () => {

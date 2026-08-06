@@ -51,7 +51,7 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                         <th>OC #</th>
                         <th>Fecha Expedición</th>
                         <th>Cliente</th>
-                        <th class="text-right">Valor Total</th>
+                        <th class="text-right">Total orden</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
                     </tr>
@@ -111,7 +111,7 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                         <tr>
                             <th>Referencia</th>
                             <th class="text-center">Cantidad</th>
-                            <th class="text-right">Precio Unit.</th>
+                            <th class="text-right">Costo unitario</th>
                             <th class="text-right">Subtotal</th>
                         </tr>
                     </ng-template>

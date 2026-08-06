@@ -316,11 +316,14 @@ Aprobada: '.$comentario);
                 $proveedores[$proveedorId] = [];
             }
 
+            $cantidad = (int) ($item->snapshot_cantidad ?? $prp->cantidad ?? 0);
+            $costoUnitario = (float) ($item->snapshot_costo_unidad ?? $prp->costo_unidad ?? 0);
+
             $proveedores[$proveedorId][] = [
                 'referencia_id' => $prp->referencia_id,
-                'cantidad' => $prp->cantidad,
-                'valor_unitario' => $prp->valor_unidad,
-                'valor_total' => $prp->valor_total ?? ($prp->cantidad * $prp->valor_unidad),
+                'cantidad' => $cantidad,
+                'valor_unitario' => $costoUnitario,
+                'valor_total' => $cantidad * $costoUnitario,
             ];
         }
 
@@ -578,6 +581,7 @@ Rechazo: '.$motivo) : $cotizacion->observaciones,
             'snapshot_proveedor_nombre' => $proveedor->tercero?->nombre,
             'snapshot_entrega' => $proveedor->entrega_label,
             'snapshot_cantidad' => $proveedor->cantidad,
+            'snapshot_costo_unidad' => $proveedor->costo_unidad,
             'snapshot_valor_unidad' => $proveedor->valor_unidad,
             'snapshot_valor_total' => $proveedor->valor_total,
         ];

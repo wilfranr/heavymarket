@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -16,7 +16,15 @@ import { TextareaModule } from 'primeng/textarea';
 import { InputTextModule } from 'primeng/inputtext';
 import { loadOrdenCompraById, transitionOrdenCompra } from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
 import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
-import { OrdenCompra, OrdenCompraEstado } from '../../../core/models/orden-compra.model';
+import { OrdenCompra, OrdenCompraEstado, OrdenCompraPedido, OrdenCompraReferencia } from '../../../core/models/orden-compra.model';
+import { Maquina } from '../../../core/models/maquina.model';
+import { MaquinaService } from '../../../core/services/maquina.service';
+import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
+import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+
+type PedidoMaquina = NonNullable<OrdenCompraPedido['maquina']>;
+type PedidoTercero = NonNullable<OrdenCompraPedido['tercero']>;
+type MaquinaDetalle = Maquina | PedidoMaquina;
 
 const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> = {
     Generada: ['Enviada', 'Cancelada'],
@@ -30,7 +38,9 @@ const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> 
 };
 
 export function ordenCompraPuedeTransitar(origen: OrdenCompraEstado | null, destino: OrdenCompraEstado): boolean {
-    return origen ? ORDEN_COMPRA_TRANSICIONES[origen].includes(destino) : false;
+    if (!origen) return false;
+    // Las OC previas a la migración de estados pueden traer valores fuera del ciclo vigente.
+    return (ORDEN_COMPRA_TRANSICIONES[origen] ?? []).includes(destino);
 }
 
 export function ordenCompraPuedeRecibir(estado: OrdenCompraEstado | null): boolean {
@@ -47,7 +57,7 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
 @Component({
     selector: 'app-orden-compra-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, TooltipModule, DialogModule, TextareaModule, InputTextModule],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, TooltipModule, DialogModule, TextareaModule, InputTextModule, TerceroFormComponent, MaquinaDetailComponent],
     template: `
         <div class="card">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -103,6 +113,9 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                         <div class="p-3 bg-surface-50 dark:bg-surface-800 flex justify-between items-center border-b border-surface-200 dark:border-surface-700">
                             <span class="font-bold text-color text-base pl-2">Información de la máquina</span>
                             <div class="flex items-center gap-1 pr-2">
+                                @if (ordenCompra()?.pedido?.maquina) {
+                                    <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="viewMaquina(ordenCompra()?.pedido?.maquina)" pTooltip="Ver detalle de máquina" styleClass="w-8 h-8"></p-button>
+                                }
                                 <i class="pi pi-cog text-muted-color text-xl p-2"></i>
                             </div>
                         </div>
@@ -134,6 +147,9 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                         <div class="p-3 bg-surface-50 dark:bg-surface-800 flex justify-between items-center border-b border-surface-200 dark:border-surface-700">
                             <span class="font-bold text-color text-base pl-2">Información del cliente</span>
                             <div class="flex items-center gap-1 pr-2">
+                                @if (ordenCompra()?.pedido?.tercero) {
+                                    <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="viewTercero(ordenCompra()?.pedido?.tercero)" pTooltip="Ver detalle de cliente" styleClass="w-8 h-8"></p-button>
+                                }
                                 <i class="pi pi-user text-muted-color text-xl p-2"></i>
                             </div>
                         </div>
@@ -215,37 +231,62 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                         </p-card>
 
                         <p-card header="Referencias vinculadas">
-                            <p-table [value]="ordenCompra()?.detalles || ordenCompra()?.referencias || []" styleClass="p-datatable-sm">
-                                <ng-template pTemplate="header">
-                                    <tr>
-                                        <th>Referencia</th>
-                                        <th class="text-center">Cant.</th>
-                                        <th class="text-center">Recibida</th>
-                                        <th class="text-right">V. Unitario</th>
-                                        <th class="text-right">Total</th>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="body" let-item>
-                                    <tr>
-                                        <td>
-                                            <div class="flex flex-col">
-                                                <span class="font-bold">{{ item.referencia?.codigo_heavymarket }}</span>
-                                                <span class="text-xs text-gray-400">{{ item.referencia?.descripcion }}</span>
-                                            </div>
-                                        </td>
-                                        <td class="text-center">{{ item.cantidad }}</td>
-                                        <td class="text-center">{{ item.cantidad_recibida ?? 0 }}</td>
-                                        <td class="text-right">{{ item.valor_unitario | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                        <td class="text-right font-bold">{{ item.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                    </tr>
-                                </ng-template>
-                                <ng-template pTemplate="footer">
-                                    <tr>
-                                        <td colspan="4" class="text-right font-bold text-lg">Total Orden:</td>
-                                        <td class="text-right text-lg font-bold text-primary">{{ ordenCompra()?.valor_total | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
-                                    </tr>
-                                </ng-template>
-                            </p-table>
+                            <div class="overflow-hidden rounded-xl bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm">
+                                <p-table [value]="ordenCompra()?.detalles || ordenCompra()?.referencias || []" styleClass="p-datatable-sm p-datatable-striped" [responsiveLayout]="'scroll'">
+                                    <ng-template pTemplate="header">
+                                        <tr class="bg-surface-50 dark:bg-surface-800">
+                                            <th style="width: 3rem"></th>
+                                            <th class="text-color font-bold uppercase text-xs">Referencia</th>
+                                            <th class="text-color font-bold uppercase text-xs">Descripción</th>
+                                            <th class="text-center text-color font-bold uppercase text-xs">Cant</th>
+                                            <th class="text-color font-bold uppercase text-xs">Marca</th>
+                                            <th class="text-color font-bold uppercase text-xs">Entrega</th>
+                                            <th class="text-right text-color font-bold uppercase text-xs">Costo unitario</th>
+                                            <th class="text-right text-color font-bold uppercase text-xs">Total</th>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="body" let-item>
+                                        <tr class="dark:border-surface-700">
+                                            <td>
+                                                <span class="inline-block w-3 h-3 rounded-full" [ngClass]="getIndicadorEstadoClass(item)" [title]="getIndicadorEstadoTitle(item)"></span>
+                                            </td>
+                                            <td class="font-bold text-yellow-600 dark:text-yellow-500">
+                                                <div class="flex items-center">
+                                                    <span>{{ item.referencia?.referencia || item.referencia?.codigo_heavymarket || 'N/A' }}</span>
+                                                    <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [title]="'Información de referencia'"></i>
+                                                </div>
+                                            </td>
+                                            <td class="text-color-secondary">
+                                                <div class="flex items-center">
+                                                    <span>{{ item.referencia?.articulo?.definicion || item.referencia?.articulo_definicion || item.referencia?.descripcion || item.referencia?.comentario || 'N/A' }}</span>
+                                                    <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [title]="'Definición del artículo'"></i>
+                                                </div>
+                                            </td>
+                                            <td class="text-center font-semibold text-color">{{ item.cantidad }}</td>
+                                            <td class="text-color-secondary">
+                                                {{ item.referencia?.marca?.nombre || 'N/A' }}
+                                            </td>
+                                            <td class="text-color-secondary">Inmediata</td>
+                                            <td class="text-right text-color-secondary">
+                                                {{ item.valor_unitario || 0 | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                            </td>
+                                            <td class="text-right font-bold text-color">
+                                                {{ item.valor_total || (item.valor_unitario || 0) * item.cantidad | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                    <ng-template pTemplate="footer">
+                                        <tr class="dark:bg-surface-800/30">
+                                            <td colspan="7" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
+                                            <td class="text-right border-0 pt-6">
+                                                <div class="px-3 py-2 text-base font-bold text-color">
+                                                    {{ calcularSubtotalReferencias() | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </ng-template>
+                                </p-table>
+                            </div>
                         </p-card>
                     </div>
 
@@ -327,6 +368,27 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
             </ng-template>
         </p-dialog>
 
+        <p-dialog [visible]="displayMaquinaDialog()" (visibleChange)="displayMaquinaDialog.set($event)" [modal]="true" [style]="{ width: '900px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" styleClass="machine-detail-modal">
+            <ng-template pTemplate="header">
+                <div class="w-full text-center">
+                    @if (selectedMaquina()) {
+                        <div class="space-y-1">
+                            <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">{{ maquinaModelo() }}</h2>
+                            <p class="text-sm text-gray-600 dark:text-gray-300 m-0">Fabricante: {{ maquinaFabricante() }}</p>
+                        </div>
+                    }
+                </div>
+            </ng-template>
+            @if (selectedMaquina(); as m) {
+                <app-maquina-detail [maquina]="m"></app-maquina-detail>
+            }
+        </p-dialog>
+
+        <p-dialog [visible]="displayTerceroDialog()" (visibleChange)="displayTerceroDialog.set($event)" [modal]="true" [style]="{ width: '1000px', 'max-width': '95vw' }" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" header="Detalle del Cliente">
+            @if (selectedTercero(); as t) {
+                <app-tercero-form [terceroId]="t.id" [isViewMode]="true" [showLandingAccess]="false" (onCancel)="displayTerceroDialog.set(false)"></app-tercero-form>
+            }
+        </p-dialog>
     `,
     styles: []
 })
@@ -334,15 +396,28 @@ export class DetailComponent implements OnInit, OnDestroy {
     private readonly store = inject(Store);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly maquinaService = inject(MaquinaService);
     private readonly destroy$ = new Subject<void>();
 
     ordenCompraId = signal<number>(0);
     loading = toSignal(this.store.select(OrdenesCompraSelectors.selectOrdenesCompraLoading), { initialValue: true });
 
-    // Select from store using a computed or derived signal
     ordenCompra = signal<OrdenCompra | null>(null);
     cancelDialogVisible = signal(false);
     motivoCancelacion = signal('');
+    displayMaquinaDialog = signal(false);
+    displayTerceroDialog = signal(false);
+    selectedMaquina = signal<MaquinaDetalle | null>(null);
+    selectedTercero = signal<PedidoTercero | null>(null);
+
+    maquinaModelo = computed(() => this.selectedMaquina()?.modelo || 'Máquina');
+    maquinaFabricante = computed(() => {
+        const maquina = this.selectedMaquina();
+        if (!maquina) return 'No registrado';
+        const fabricante = 'fabricante' in maquina ? maquina.fabricante?.nombre : null;
+        const marca = 'marca' in maquina ? maquina.marca : null;
+        return fabricante || marca || 'No registrado';
+    });
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
@@ -405,6 +480,26 @@ export class DetailComponent implements OnInit, OnDestroy {
         this.cancelDialogVisible.set(false);
     }
 
+    viewMaquina(maquina: PedidoMaquina | null | undefined): void {
+        if (!maquina) return;
+        this.maquinaService.getById(maquina.id).subscribe({
+            next: (response) => {
+                this.selectedMaquina.set(response.data);
+                this.displayMaquinaDialog.set(true);
+            },
+            error: () => {
+                this.selectedMaquina.set(maquina);
+                this.displayMaquinaDialog.set(true);
+            }
+        });
+    }
+
+    viewTercero(tercero: PedidoTercero | null | undefined): void {
+        if (!tercero) return;
+        this.selectedTercero.set(tercero);
+        this.displayTerceroDialog.set(true);
+    }
+
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {
             case 'Confirmada':
@@ -442,5 +537,51 @@ export class DetailComponent implements OnInit, OnDestroy {
             default:
                 return 'secondary';
         }
+    }
+
+    getIndicadorEstadoClass(item: OrdenCompraReferencia): string {
+        const cant = item.cantidad || 0;
+        const recibida = item.cantidad_recibida || 0;
+
+        if (recibida >= cant && cant > 0) {
+            return 'bg-green-500';
+        }
+        if (recibida > 0 && recibida < cant) {
+            return 'bg-orange-500';
+        }
+
+        const estadoOC = this.ordenCompra()?.estado;
+        if (estadoOC === 'Cancelada') {
+            return 'bg-red-500';
+        }
+
+        return 'bg-yellow-500';
+    }
+
+    getIndicadorEstadoTitle(item: OrdenCompraReferencia): string {
+        const cant = item.cantidad || 0;
+        const recibida = item.cantidad_recibida || 0;
+
+        if (recibida >= cant && cant > 0) {
+            return 'Llegó todo';
+        }
+        if (recibida > 0 && recibida < cant) {
+            return 'Llegó parcialmente';
+        }
+
+        const estadoOC = this.ordenCompra()?.estado;
+        if (estadoOC === 'Cancelada') {
+            return 'No llegó';
+        }
+
+        return 'Pendiente de recibido - En tránsito';
+    }
+
+    calcularSubtotalReferencias(): number {
+        const referencias = this.ordenCompra()?.detalles || this.ordenCompra()?.referencias || [];
+        return referencias.reduce((acc, item) => {
+            const total = item.valor_total ?? (item.valor_unitario || 0) * (item.cantidad || 0);
+            return acc + Number(total || 0);
+        }, 0);
     }
 }

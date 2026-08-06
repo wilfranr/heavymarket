@@ -98,7 +98,7 @@ import { Referencia } from '../../../core/models/referencia.model';
                             <tr>
                                 <th>Referencia</th>
                                 <th style="width: 150px">Cantidad</th>
-                                <th style="width: 200px">V. Unitario</th>
+                                <th style="width: 200px">Costo unitario</th>
                                 <th style="width: 200px">Total</th>
                                 <th style="width: 50px"></th>
                             </tr>

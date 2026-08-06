@@ -36,7 +36,7 @@ class OrdenCompraController extends Controller
         $this->authorize('viewAny', OrdenCompra::class);
 
         $query = OrdenCompra::query()
-            ->with(['proveedor', 'detalles.referencia']);
+            ->with(['proveedor', 'detalles.referencia.marca', 'detalles.referencia.articulo']);
 
         // Filtros
         if ($request->filled('estado')) {
@@ -133,7 +133,7 @@ class OrdenCompraController extends Controller
 
             DB::commit();
 
-            $ordenCompra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia']);
+            $ordenCompra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia.marca', 'detalles.referencia.articulo']);
 
             return response()->json([
                 'data' => new OrdenCompraResource($ordenCompra),
@@ -165,7 +165,8 @@ class OrdenCompraController extends Controller
             'pedido.contacto',
             'pedido.user',
             'cotizacion',
-            'detalles.referencia',
+            'detalles.referencia.marca',
+            'detalles.referencia.articulo',
         ]);
 
         return response()->json([
@@ -208,7 +209,7 @@ class OrdenCompraController extends Controller
 
             DB::commit();
 
-            $orden_compra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia']);
+            $orden_compra->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia.marca', 'detalles.referencia.articulo']);
 
             return response()->json([
                 'data' => new OrdenCompraResource($orden_compra),

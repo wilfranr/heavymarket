@@ -126,6 +126,17 @@ export interface OrdenCompraReferenciaDetalle {
     referencia?: string | null;
     codigo_heavymarket?: string | null;
     descripcion?: string | null;
+    comentario?: string | null;
+    marca?: {
+        id: number;
+        nombre?: string | null;
+    } | null;
+    articulo?: {
+        id: number;
+        definicion?: string | null;
+        descripcionEspecifica?: string | null;
+    } | null;
+    articulo_definicion?: string | null;
 }
 
 /**
