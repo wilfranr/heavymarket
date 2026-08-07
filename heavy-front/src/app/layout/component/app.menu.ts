@@ -107,7 +107,7 @@ export class AppMenu implements OnInit {
         this.model = [
             {
                 label: 'Principal',
-                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/app'] }]
+                items: [{ label: 'Dashboard', icon: 'pi pi-fw pi-home', routerLink: ['/app'], routerLinkActiveOptions: { paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' } }]
             }
         ];
 
@@ -178,7 +178,7 @@ export class AppMenu implements OnInit {
             this.model.push({
                 label: 'Landing',
                 items: [
-                    { label: 'Categorías Landing', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'] },
+                    { label: 'Categorías Landing', icon: 'pi pi-fw pi-list', routerLink: ['/app/gestion-landing'], routerLinkActiveOptions: { paths: 'exact', queryParams: 'ignored', matrixParams: 'ignored', fragment: 'ignored' } },
                     { label: 'Tipos de Máquina', icon: 'pi pi-fw pi-cog', routerLink: ['/app/gestion-landing/machine-types'] },
                     { label: 'Clientes Interesados', icon: 'pi pi-fw pi-users', routerLink: ['/app/gestion-landing/contact-leads'] }
                 ]
