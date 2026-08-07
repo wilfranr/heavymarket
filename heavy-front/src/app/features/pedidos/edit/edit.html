@@ -54,133 +54,30 @@
         </div>
 
         <form [formGroup]="pedidoForm" (ngSubmit)="onSubmit()">
+            @let pedido = (pedido$ | async);
             <!-- Top Info Cards Grid -->
             <div class="flex gap-6 mb-10 px-8">
                 <!-- Order Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
-                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
-                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del pedido</span>
-                        <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)]">
-                        <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Documento: Pedido</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Consecutivo: {{ pedidoId() }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Creación: {{ (pedido$ | async)?.created_at | date:'MMMM d, y' }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Actualización: {{ (pedido$ | async)?.updated_at | date:'MMMM d, y' }}</span>
-                        </div>
-                        <div class="flex justify-between">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Usuario: {{ (pedido$ | async)?.user?.name || '---' }}</span>
-                        </div>
-                        <div class="flex justify-between items-center mt-2">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold">Estado:</span>
-                            <span class="px-3 py-1 rounded-full text-xs font-semibold ml-2" [ngClass]="getEstadoClase(estadoActual)"> {{ pedidoEstadoEtiqueta(estadoActual) }} </span>
-                        </div>
-
-                        <!-- Botón Comentarios del pedido -->
-                        @if (comentariosDelPedido.length > 0) {
-                        <div class="mt-3 pt-2 border-t border-gray-100 dark:border-gray-700">
-                            <p-button [label]="getLabelConteo(comentariosDelPedido.length)" icon="pi pi-comments" styleClass="text-sm" [text]="true" (onClick)="displayComentariosPedidoDialog = true"> </p-button>
-                        </div>
-                        }
-                    </div>
-                </div>
+                <app-pedido-info-card [pedido]="pedido" [consecutivo]="pedidoId()" [estado]="estadoActual" [comentariosCount]="comentariosDelPedido.length" (openComments)="displayComentariosPedidoDialog = true"></app-pedido-info-card>
 
                 <!-- Machine Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
-                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
-                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la máquina</span>
-                        <div class="w-[47px] h-[44px] flex items-center justify-center">
-                            <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] relative">
-                        <!-- Machine Selector -->
-                        <div class="mb-2">
-                            <p-select formControlName="maquina_id" [options]="maquinas" optionLabel="label" optionValue="value" [filter]="true" filterBy="label" [showClear]="true" placeholder="Seleccionar Máquina" appendTo="body" styleClass="w-full">
-                            </p-select>
-                        </div>
-
-                        @if (pedidoForm.get('maquina_id')?.value) { @let maquina = currentMaquinaInfo; @if (maquina) {
-                        <div class="flex flex-col gap-2 relative group">
-                            <!-- Ver / editar máquina -->
-                            <div class="absolute top-0 right-0 z-10 flex items-center gap-0.5">
-                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="abrirModalEditarMaquina(maquina)" pTooltip="Editar máquina"></p-button>
-                                <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="viewMaquina(maquina)" pTooltip="Ver detalle de máquina"></p-button>
-                            </div>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Máquina: {{ maquina.modelo }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Fabricante: {{ maquina.marca || maquina.fabricante?.nombre || 'No registrado' }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Serie: {{ maquina.serie }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">ID adicional: {{ maquina.id_interno || '----' }}</span>
-                            @if (maquina.estado_revision === 'por_revisar') {
-                            <div class="mt-3 flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-2.5 py-2">
-                                <i class="pi pi-exclamation-triangle text-amber-600 dark:text-amber-400 text-sm shrink-0"></i>
-                                <span class="text-xs font-medium text-amber-800 dark:text-amber-300 leading-tight">Máquina pendiente por revisar</span>
-                            </div>
-                            }
-                        </div>
-                        } }
-                    </div>
-                </div>
+                <app-maquina-info-card mode="edit" [maquina]="currentMaquinaInfo()" [control]="maquinaIdControl" [options]="maquinas" (editMaquina)="abrirModalEditarMaquina($event)" (viewMaquina)="viewMaquina($event)"></app-maquina-info-card>
 
                 <!-- Client Info -->
-                <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
-                    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
-                        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del Cliente</span>
-                        <div class="flex items-center gap-1">
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="abrirModalEditarCliente()" [disabled]="!pedidoForm.get('tercero_id')?.value" pTooltip="Editar cliente"></p-button>
-                            <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail(emailCliente)" [disabled]="!emailCliente" pTooltip="Enviar correo"></p-button>
-                            <p-button icon="pi pi-whatsapp" [rounded]="true" [text]="true" severity="success" (onClick)="sendWhatsApp(telefonoClienteWhatsApp)" [disabled]="!telefonoClienteWhatsApp" pTooltip="Enviar WhatsApp"></p-button>
-                        </div>
-                    </div>
-                    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] relative">
-                        <!-- Client Selector -->
-                        <div class="mb-2">
-                            <p-select
-                                formControlName="tercero_id"
-                                [options]="terceros"
-                                [filter]="true"
-                                placeholder="Seleccionar Cliente"
-                                appendTo="body"
-                                styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
-                                [filterMatchMode]="filterMode"
-                            >
-                            </p-select>
-                        </div>
-
-                        @if (pedidoForm.get('tercero_id')?.value) { @let cliente = (pedido$ | async)?.tercero;
-                        <div class="flex flex-col gap-1">
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Tipo: Cliente</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block truncate">Razón Social: {{ cliente?.nombre || '---' }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Tipo de documento: {{ cliente?.tipo_documento || '---' }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Número de documento: {{ cliente?.numero_documento || '---' }}</span>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Ciudad: {{ cliente?.ciudad?.name || '--' }}</span>
-                            <div class="flex items-center gap-2 mt-1">
-                                <p-select
-                                    formControlName="contacto_id"
-                                    [options]="contactos"
-                                    [filter]="true"
-                                    placeholder="Seleccionar Contacto"
-                                    appendTo="body"
-                                    styleClass="flex-1 !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
-                                    [filterMatchMode]="filterMode"
-                                >
-                                </p-select>
-                                <p-button icon="pi pi-plus" (onClick)="openCreateContactoDialog()" [text]="true" severity="secondary" pTooltip="Crear nuevo contacto" tooltipPosition="left"></p-button>
-                            </div>
-                            <span class="text-yellow-600 dark:text-brand-yellow font-semibold block">Teléfono: {{ cliente?.telefono || '---' }}</span>
-                        </div>
-                        }
-                    </div>
-                </div>
+                <app-tercero-info-card
+                    mode="edit"
+                    [tercero]="pedido?.tercero"
+                    [terceroControl]="terceroIdControl"
+                    [tercerosOptions]="terceros"
+                    [contactoControl]="contactoIdControl"
+                    [contactosOptions]="contactos"
+                    [emailCliente]="emailCliente"
+                    [telefonoWhatsApp]="telefonoClienteWhatsApp"
+                    (editCliente)="abrirModalEditarCliente()"
+                    (sendEmail)="sendEmail(emailCliente)"
+                    (sendWhatsApp)="sendWhatsApp(telefonoClienteWhatsApp)"
+                    (createContacto)="openCreateContactoDialog()"
+                ></app-tercero-info-card>
             </div>
 
             <!-- Items Section -->
@@ -413,19 +310,33 @@
     </div>
 
     <!-- Machine Detail Modal -->
-    <p-dialog [(visible)]="displayMaquinaDialog" [modal]="true" [style]="{width: '900px', 'max-width': '95vw'}" [showHeader]="true" [closable]="true" [dismissableMask]="true" appendTo="body" styleClass="machine-detail-modal">
+    <p-dialog
+        [visible]="displayMaquinaDialog()"
+        (visibleChange)="displayMaquinaDialog.set($event)"
+        [modal]="true"
+        [style]="{width: '900px', 'max-width': '95vw'}"
+        [showHeader]="true"
+        [closable]="true"
+        [dismissableMask]="true"
+        appendTo="body"
+        styleClass="machine-detail-modal"
+    >
         <ng-template pTemplate="header">
             <div class="w-full text-center">
-                <div *ngIf="selectedMaquina" class="space-y-1">
-                    <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">{{ selectedMaquina.modelo }}</h2>
-                    <p class="text-sm text-gray-600 dark:text-gray-300 m-0">Fabricante: {{ selectedMaquina.marca || selectedMaquina.fabricante?.nombre || 'No registrado' }}</p>
+                @if (selectedMaquina(); as selMaquina) {
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">{{ selMaquina.modelo }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 m-0">Fabricante: {{ selMaquina.marca || selMaquina.fabricante?.nombre || 'No registrado' }}</p>
                 </div>
+                }
             </div>
         </ng-template>
 
-        <div *ngIf="selectedMaquina">
-            <app-maquina-detail [maquina]="selectedMaquina"></app-maquina-detail>
+        @if (selectedMaquina(); as selMaquina) {
+        <div>
+            <app-maquina-detail [maquina]="selMaquina"></app-maquina-detail>
         </div>
+        }
     </p-dialog>
 
     <!-- Dialogo Agregar Lote -->
@@ -607,40 +518,40 @@
         <div class="gallery-container p-4 flex flex-col gap-6" *ngIf="selectedItemIndex !== -1">
             <!-- Carrusel / Galería si existen imágenes -->
             @if (galleriaImagesArray.length > 0) {
-                <p-galleria
-                    [value]="galleriaImagesArray"
-                    [(activeIndex)]="activeIndexGallery"
-                    [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]"
-                    [containerStyle]="{'width': '100%'}"
-                    [numVisible]="5"
-                    [circular]="true"
-                    [showItemNavigators]="true"
-                    [showThumbnails]="true"
-                >
-                    <ng-template #item let-item>
-                        <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
-                            <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
+            <p-galleria
+                [value]="galleriaImagesArray"
+                [(activeIndex)]="activeIndexGallery"
+                [responsiveOptions]="[{breakpoint: '1024px', numVisible: 5}, {breakpoint: '768px', numVisible: 3}]"
+                [containerStyle]="{'width': '100%'}"
+                [numVisible]="5"
+                [circular]="true"
+                [showItemNavigators]="true"
+                [showThumbnails]="true"
+            >
+                <ng-template #item let-item>
+                    <div class="relative group aspect-video w-full overflow-hidden rounded-xl bg-slate-900 flex items-center justify-center">
+                        <img [src]="item.itemImageSrc" class="max-w-full max-h-full object-contain" />
 
-                            <!-- Info overlay -->
-                            <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
-                                <p class="text-white text-xs truncate">{{ item.title }}</p>
-                                <span class="text-[10px] uppercase font-bold" [ngClass]="item.isExisting ? 'text-blue-400' : 'text-green-400'"> {{ item.isExisting ? 'Guardada' : 'Nueva para cargar' }} </span>
-                            </div>
+                        <!-- Info overlay -->
+                        <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
+                            <p class="text-white text-xs truncate">{{ item.title }}</p>
+                            <span class="text-[10px] uppercase font-bold" [ngClass]="item.isExisting ? 'text-blue-400' : 'text-green-400'"> {{ item.isExisting ? 'Guardada' : 'Nueva para cargar' }} </span>
                         </div>
-                    </ng-template>
+                    </div>
+                </ng-template>
 
-                    <ng-template #thumbnail let-item>
-                        <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800 border-2" [ngClass]="item.isExisting ? 'border-blue-500/30' : 'border-green-500/30'">
-                            <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
-                        </div>
-                    </ng-template>
-                </p-galleria>
+                <ng-template #thumbnail let-item>
+                    <div class="w-16 h-12 overflow-hidden rounded-md bg-slate-800 border-2" [ngClass]="item.isExisting ? 'border-blue-500/30' : 'border-green-500/30'">
+                        <img [src]="item.thumbnailImageSrc" class="w-full h-full object-cover opacity-60 hover:opacity-100 transition-opacity" />
+                    </div>
+                </ng-template>
+            </p-galleria>
             } @else {
-                <!-- Empty state si no hay imágenes -->
-                <div class="text-center py-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-800/10">
-                    <i class="pi pi-images text-slate-500 text-3xl mb-2"></i>
-                    <p class="theme-text-secondary text-xs italic">Este ítem no tiene imágenes asociadas aún.</p>
-                </div>
+            <!-- Empty state si no hay imágenes -->
+            <div class="text-center py-6 border border-dashed border-slate-300 dark:border-slate-700 rounded-xl bg-slate-800/10">
+                <i class="pi pi-images text-slate-500 text-3xl mb-2"></i>
+                <p class="theme-text-secondary text-xs italic">Este ítem no tiene imágenes asociadas aún.</p>
+            </div>
             }
 
             <!-- Drag & Drop Zone -->
@@ -664,32 +575,32 @@
 
             <!-- Listado de archivos cargados en esta sesión -->
             @if (galleriaImagesArray.length > 0) {
-                <div class="mt-6">
-                    <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
-                        <i class="pi pi-images text-purple-400"></i>
-                        Resumen de imágenes ({{ galleriaImagesArray.length }}/10)
-                    </h5>
-                    <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
-                        <div *ngFor="let img of galleriaImagesArray; let i = index" class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
-                            <div class="flex items-center gap-3">
-                                <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
-                                <div class="flex flex-col">
-                                    <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.alt }}</span>
-                                    <span class="text-[9px] uppercase font-bold" [ngClass]="img.isExisting ? 'text-blue-400' : 'text-green-400'"> {{ img.isExisting ? 'Ya en servidor' : 'Por subir' }} </span>
-                                </div>
+            <div class="mt-6">
+                <h5 class="text-sm font-semibold mb-3 theme-text-primary flex items-center gap-2">
+                    <i class="pi pi-images text-purple-400"></i>
+                    Resumen de imágenes ({{ galleriaImagesArray.length }}/10)
+                </h5>
+                <div class="grid grid-cols-1 gap-2 max-h-48 overflow-y-auto pr-2 custom-scrollbar">
+                    <div *ngFor="let img of galleriaImagesArray; let i = index" class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50 group">
+                        <div class="flex items-center gap-3">
+                            <img [src]="img.thumbnailImageSrc" class="w-8 h-8 rounded object-cover" />
+                            <div class="flex flex-col">
+                                <span class="text-xs text-slate-300 truncate max-w-[250px]">{{ img.alt }}</span>
+                                <span class="text-[9px] uppercase font-bold" [ngClass]="img.isExisting ? 'text-blue-400' : 'text-green-400'"> {{ img.isExisting ? 'Ya en servidor' : 'Por subir' }} </span>
                             </div>
-                            <button
-                                *ngIf="!img.isExisting"
-                                pButton
-                                type="button"
-                                icon="pi pi-times"
-                                class="p-button-rounded p-button-text p-button-danger p-button-sm opacity-0 group-hover:opacity-100 transition-opacity"
-                                (click)="removeFile(selectedItemIndex, i - (galleriaImagesArray.length - (referenciasFormArray.at(selectedItemIndex).get('files')?.value?.length || 0)))"
-                                pTooltip="Eliminar nueva imagen"
-                            ></button>
                         </div>
+                        <button
+                            *ngIf="!img.isExisting"
+                            pButton
+                            type="button"
+                            icon="pi pi-times"
+                            class="p-button-rounded p-button-text p-button-danger p-button-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            (click)="removeFile(selectedItemIndex, i - (galleriaImagesArray.length - (referenciasFormArray.at(selectedItemIndex).get('files')?.value?.length || 0)))"
+                            pTooltip="Eliminar nueva imagen"
+                        ></button>
                     </div>
                 </div>
+            </div>
             }
         </div>
 

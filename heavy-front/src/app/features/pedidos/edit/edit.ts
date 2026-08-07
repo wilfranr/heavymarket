@@ -35,7 +35,7 @@ import { AutoCompleteModule } from 'primeng/autocomplete';
 
 import { updatePedido, loadPedido } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia } from '../../../core/models/pedido.model';
-import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
+import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosError, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { PedidoService } from '../../../core/services/pedido.service';
 import { TerceroService } from '../../../core/services/tercero.service';
@@ -52,6 +52,9 @@ import { AuthService } from '../../../core/auth/services/auth.service';
 import { Tercero } from '../../../core/models/tercero.model';
 
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+import { PedidoInfoCardComponent } from '../../../shared/components/pedido-info-card/pedido-info-card.component';
+import { MaquinaInfoCardComponent } from '../../../shared/components/maquina-info-card/maquina-info-card.component';
+import { TerceroInfoCardComponent } from '../../../shared/components/tercero-info-card/tercero-info-card.component';
 import { AutoFocusDirective } from '../../../shared/directives/auto-focus.directive';
 
 type TipoListaSelectOption = {
@@ -102,6 +105,9 @@ type RowTiposCatalogEntry = {
         MaquinaCreateModalComponent,
         TerceroCreateModalComponent,
         MaquinaDetailComponent,
+        PedidoInfoCardComponent,
+        MaquinaInfoCardComponent,
+        TerceroInfoCardComponent,
         AutoFocusDirective
     ],
     providers: [MessageService],
@@ -161,10 +167,24 @@ export class EditComponent implements OnInit {
     pedidoId = signal<number>(0);
     terceros: any[] = [];
     tercerosOriginal: any[] = [];
+
+    /** Controles tipados para los selects compartidos (pedidoForm es FormGroup sin tipos). */
+    get maquinaIdControl(): FormControl<number | null> {
+        return this.pedidoForm.get('maquina_id') as FormControl<number | null>;
+    }
+
+    get terceroIdControl(): FormControl<number | null> {
+        return this.pedidoForm.get('tercero_id') as FormControl<number | null>;
+    }
+
+    get contactoIdControl(): FormControl<number | null> {
+        return this.pedidoForm.get('contacto_id') as FormControl<number | null>;
+    }
     sistemas: any[] = [];
     marcas: any[] = [];
     maquinas: any[] = [];
     maquinasList: any[] = []; // Lista completa de máquinas con todos sus datos
+    currentMaquinaInfo = signal<any>(null);
     fabricantes: any[] = [];
     referencias: any[] = [];
     contactos: any[] = [];
@@ -222,9 +242,9 @@ export class EditComponent implements OnInit {
         this.displayHelpDialog = true;
     }
 
-    // Modal de detalle de máquina
-    displayMaquinaDialog = false;
-    selectedMaquina: any = null;
+    // Modal de detalle de máquina (signals: en Zoneless los callbacks HTTP no agendan CD)
+    displayMaquinaDialog = signal(false);
+    selectedMaquina = signal<any>(null);
 
     // Lote de Referencias
     displayLoteDialog = false;
@@ -868,8 +888,14 @@ export class EditComponent implements OnInit {
                 this.contactos = [];
                 this.contactosDetalle = [];
                 this.pedidoForm.patchValue({ maquina_id: null, contacto_id: null }, { emitEvent: false });
+                this.currentMaquinaInfo.set(null);
             }
         });
+
+        // Mantiene la señal de la máquina seleccionada sincronizada con el control
+        // (el select vive en el componente compartido; en Zoneless el padre no se
+        // re-renderiza por sí solo, así que la señal es la fuente de verdad reactiva).
+        this.pedidoForm.get('maquina_id')?.valueChanges.subscribe(() => this.syncCurrentMaquina());
 
         this.loteForm = this.fb.group({
             sistema_id: [null, [Validators.required]],
@@ -1001,6 +1027,7 @@ export class EditComponent implements OnInit {
                     label: `${m.modelo}${m.serie ? ' - ' + m.serie : ''}`,
                     value: m.id
                 }));
+                this.syncCurrentMaquina();
             }
         });
     }
@@ -1594,8 +1621,8 @@ export class EditComponent implements OnInit {
         const articuloId = row.get('articulo_id')?.value ? Number(row.get('articulo_id')?.value) : null;
         const listaId = row.get('lista_id')?.value ? Number(row.get('lista_id')?.value) : null;
 
-        if (!marcaId && this.selectedMaquina?.fabricante_id) {
-            marcaId = Number(this.selectedMaquina.fabricante_id);
+        if (!marcaId && this.selectedMaquina()?.fabricante_id) {
+            marcaId = Number(this.selectedMaquina()?.fabricante_id);
         }
 
         const esTemporal = !articuloId;
@@ -2414,14 +2441,6 @@ export class EditComponent implements OnInit {
         return raw as PedidoEstado;
     }
 
-    getEstadoClase(estado: PedidoEstado): string {
-        return pedidoEstadoTagClass(estado);
-    }
-
-    getLabelConteo(count: number): string {
-        return `Comentarios previos (${count})`;
-    }
-
     /**
      * Envía el formulario para actualizar el pedido
      */
@@ -2779,18 +2798,13 @@ export class EditComponent implements OnInit {
         });
     }
 
-    get currentMaquinaInfo(): any {
+    private syncCurrentMaquina(): void {
         const id = this.pedidoForm.get('maquina_id')?.value;
-        if (!id) return null;
-
-        // Buscar en la lista de máquinas cargadas
-        const maquina = this.maquinasList.find((m) => m.id === id);
-        if (maquina) return maquina;
-
-        // Si no está en la lista (caso raro), intentar usar la del pedido si coincide el ID
-        // Nota: Esto es limitado ya que pedido$ es observable, pero es un fallback
-        // Idealmente siempre debería estar en maquinasList
-        return null;
+        if (!id) {
+            this.currentMaquinaInfo.set(null);
+            return;
+        }
+        this.currentMaquinaInfo.set(this.maquinasList.find((m) => m.id === id) ?? null);
     }
 
     /**
@@ -2802,13 +2816,13 @@ export class EditComponent implements OnInit {
         // Cargamos la máquina completa para asegurar que tenga los componentes
         this.maquinaService.getById(maquina.id).subscribe({
             next: (response: any) => {
-                this.selectedMaquina = response.data || response;
-                this.displayMaquinaDialog = true;
+                this.selectedMaquina.set(response.data || response);
+                this.displayMaquinaDialog.set(true);
             },
             error: () => {
                 // Fallback a los datos que ya tenemos si falla la carga
-                this.selectedMaquina = maquina;
-                this.displayMaquinaDialog = true;
+                this.selectedMaquina.set(maquina);
+                this.displayMaquinaDialog.set(true);
             }
         });
     }

@@ -1,10 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-08-05T11:45:00-05:00",
-  "issue": "orden-compra-costo-proveedor",
-  "description": "Corregir las órdenes de compra para congelar y mostrar el costo de compra al proveedor, sin exponer el precio de venta ni la utilidad.",
+  "last_updated": "2026-08-07T10:30:00-05:00",
+  "issue": "tarjetas-info-pedidos",
+  "description": "Corregir y unificar las tarjetas informativas (pedido, maquina, tercero) en pedidos/edit, detail, costeo, analisis y portal proveedor, extrayendo luego un componente compartido.",
   "workflow": "harness-triage-multiagent",
+  "previous_issue": "orden-compra-costo-proveedor",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -365,6 +366,97 @@
       ]
     },
     {
+      "id": "cards-info-triage",
+      "description": "Triage: auditar las tarjetas informativas (pedido/maquina/tercero) en edit, detail, costeo, analisis y portal proveedor; definir plan de unificacion.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/tarjetas-info-pedidos",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "cards-info-edit",
+      "description": "Frontend: corregir y mejorar las 3 tarjetas informativas de pedidos/edit: labels y valores separados, p-tag para estado, una sola suscripcion async (@let), min-height con scroll, campo codigo_interno correcto (antes id_interno inexistente), ciudad correcta (city) y email del cliente. Incluye eager load de tercero.city en PedidoController@show. Fix bug Zoneless: el modal de detalle de maquina (boton ojo) no abria al primer click porque displayMaquinaDialog/selectedMaquina eran propiedades planas mutadas en callback HTTP async; convertidas a signal().",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "Gates: npm run build OK (warning pusher-js pre-existente), vitest pedidos 7/7 OK, php -l y Pint OK. Prettier aplicado a edit.html. Ajuste posterior del usuario: tarjeta pedido sin campo Documento, label Consecutivo renombrado a Pedido, label Usuario renombrado a Vendedor. Fix Zoneless: viewMaquina() ahora usa signals; en analysis.ts persiste el mismo bug (mismas lineas 152-153, 1727-1732) pendiente de decidir si se corrige.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.html",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/PedidoController.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "cards-info-backend-id-interno",
+      "description": "Backend: corregir PedidoResource que expone maquina.id_interno (atributo inexistente en el modelo, siempre retorna '----'); debe usar codigo_interno.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [
+        "cards-info-triage"
+      ],
+      "topic_key": "bugfix/pedido-resource-id-interno",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Resources/PedidoResource.php",
+          "status": "pending"
+        }
+      ]
+    },
+    {
+      "id": "cards-info-shared-component",
+      "description": "Frontend: extraer las tarjetas mejoradas de edit a un componente compartido reutilizable en shared/components (inputs: pedido, modo editable, tarjetas visibles, acciones; OnPush + signals).",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-edit"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.ts",
+        "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.html",
+        "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.scss",
+        "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.ts",
+        "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.html",
+        "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.scss",
+        "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.ts",
+        "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.html",
+        "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.scss",
+        "heavy-front/src/app/features/pedidos/edit/edit.ts",
+        "heavy-front/src/app/features/pedidos/edit/edit.html"
+      ],
+      "notes": "Componentes compartidos: InfoCardMode ('edit'|'view'), pedido-info-card (read-only), maquina-info-card (select en edit, labels en view, botones lapiz/ojo), tercero-info-card (documento NIT/CC, contacto select al final). Edit.ts: getters tipados maquinaIdControl/terceroIdControl/contactoIdControl, currentMaquinaInfo convertido de getter a signal sincronizada con maquina_id valueChanges (fix Zoneless: select vive en el hijo). Gates: ng build OK, prettier OK, vitest 159/159."
+    },
+    {
+      "id": "cards-info-rollout",
+      "description": "Frontend: implementar el componente compartido en costeo, analisis, portal proveedor (opportunities) y detail, normalizando los datos por vista (tipo de maquina, ciudad, id adicional).",
+      "status": "pending",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-shared-component",
+        "cards-info-backend-id-interno"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": []
+    },
+    {
       "id": "maquina-foto-placa-triage",
       "description": "Triage: en el modal crear/editar maquina (usado dentro de crear/editar tercero), reemplazar el boton de camara del campo Foto Placa de cada componente por el mismo drag-and-drop (app-image-upload) que ya usa Foto Maquina / Foto Placa ID, cuidando los estilos.",
       "status": "done",
@@ -397,6 +489,75 @@
       "files": [
         {
           "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "cards-info-review",
+      "description": "Reviewer: validar tarjetas en modo claro y oscuro, ejecutar gates de frontend y backend, y cerrar la iniciativa.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "cards-info-rollout"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-front && npm run lint",
+        "cd heavy-front && npm run build",
+        "cd heavy-api && php artisan test tests/Feature/Api/PedidoTest.php"
+      ]
+    },
+    {
+      "id": "medidas-permisos-triage",
+      "description": "Triage: se detecto que addMedida/updateMedida/removeMedida en ArticuloController no tienen restriccion de rol (solo auth:sanctum, sin $this->authorize), a diferencia de create/update/delete de Articulo que usan ArticuloPolicy. Cualquier usuario autenticado (incluido Cliente/Proveedor) podia crear, editar o eliminar medidas. Usuario confirmo el fix y definio el alcance: solo super_admin, Administrador y Analista deben poder crear/editar/eliminar medidas.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "medidas-permisos-backend",
+      "description": "Backend: agregar metodo manageMedidas a ArticuloPolicy (super_admin, Administrador, Analista) e invocar $this->authorize('manageMedidas', $articulo) en addMedida, updateMedida y removeMedida de ArticuloController.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "medidas-permisos-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "review_notes": "Reviewer: authorize() sin try-catch es consistente con store/update/destroy del mismo controller (AuthorizationException manejada globalmente -> 403). Policy usa hasAnyRole tipado igual que el resto de ArticuloPolicy. Observacion no bloqueante fuera de alcance: addMedida/updateMedida/removeMedida devuelven response()->json() en vez de un Resource, pero es preexistente y no se toco en este fix.",
+      "files": [
+        {
+          "path": "heavy-api/app/Policies/ArticuloPolicy.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ArticuloController.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "medidas-permisos-tests",
+      "description": "Tests: verificar que Administrador/Analista/super_admin pueden crear-editar-eliminar medidas y que un rol sin permiso (ej. Cliente) recibe 403.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "medidas-permisos-backend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "implementer_notes": "php artisan test tests/Feature/Api/ArticuloControllerTest.php: 70 assertions, 0 fallos (14 DEPR pre-existentes por APP_URL=null, no bloqueantes, mismo patron documentado en oc-logistica-backend-tests). php -l y Pint OK en los 3 archivos.",
+      "review_notes": "Reviewer: re-ejecutado php artisan test tests/Feature/Api/ArticuloControllerTest.php, 70 assertions 0 fallos. Verificado que ningun otro test del suite invoca los endpoints de medidas (grep sin resultados), sin riesgo de regresion. Gate adicional php artisan scramble:analyze: 'Documentation is generated without any errors'. phpstan no esta configurado en el proyecto (sin phpstan.neon ni binario instalado) - gate no aplicable, mismo criterio que la sustitucion de ng lint documentada en maquina-foto-placa-dragdrop.",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/ArticuloControllerTest.php",
           "status": "validated"
         }
       ]

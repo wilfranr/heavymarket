@@ -1,0 +1,84 @@
+<div class="figma-card p-0 overflow-hidden flex flex-col flex-1 min-h-[320px] bg-white dark:bg-[var(--p-content-background)] rounded-lg shadow-md border border-gray-200 dark:border-[var(--p-content-border-color)]">
+    <div class="p-3 bg-gray-50 dark:bg-[var(--p-content-background)] flex justify-between items-center border-b border-gray-200 dark:border-[var(--p-content-border-color)]">
+        <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del Cliente</span>
+        <div class="flex items-center gap-1">
+            @if (mode() === 'edit') {
+                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="editCliente.emit()" [disabled]="!tercero()" pTooltip="Editar cliente"></p-button>
+                <p-button icon="pi pi-envelope" [rounded]="true" [text]="true" severity="secondary" (onClick)="sendEmail.emit()" [disabled]="!emailCliente()" pTooltip="Enviar correo"></p-button>
+                <p-button icon="pi pi-whatsapp" [rounded]="true" [text]="true" severity="success" (onClick)="sendWhatsApp.emit()" [disabled]="!telefonoWhatsApp()" pTooltip="Enviar WhatsApp"></p-button>
+            }
+        </div>
+    </div>
+    <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[var(--p-content-background)] overflow-y-auto">
+        @if (mode() === 'edit') {
+            @if (terceroControl(); as ctrl) {
+                <div class="mb-2">
+                    <p-select
+                        [formControl]="ctrl"
+                        [options]="tercerosOptions()"
+                        [filter]="true"
+                        placeholder="Seleccionar Cliente"
+                        appendTo="body"
+                        styleClass="w-full !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
+                    ></p-select>
+                </div>
+            }
+        }
+
+        @if (tercero(); as t) {
+            <div class="flex flex-col gap-1">
+                <div class="flex items-center gap-2">
+                    <span class="text-brand-yellow font-semibold">Razón Social:</span>
+                    <span class="text-gray-800 dark:text-gray-100 truncate">{{ t.nombre || '---' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-brand-yellow font-semibold">Documento:</span>
+                    <span class="text-gray-800 dark:text-gray-100">{{ documento() }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-brand-yellow font-semibold">Ciudad:</span>
+                    <span class="text-gray-800 dark:text-gray-100">{{ t.city?.name || '---' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-brand-yellow font-semibold">Teléfono:</span>
+                    <span class="text-gray-800 dark:text-gray-100">{{ t.telefono || '---' }}</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-brand-yellow font-semibold">Email:</span>
+                    <span class="text-gray-800 dark:text-gray-100 truncate">{{ t.email || '---' }}</span>
+                </div>
+
+                @if (mode() === 'view') {
+                    @if (contacto(); as c) {
+                        <div class="flex items-center gap-2">
+                            <span class="text-brand-yellow font-semibold">Contacto:</span>
+                            <span class="text-gray-800 dark:text-gray-100">{{ c.nombre || '---' }}</span>
+                        </div>
+                        @if (c.cargo) {
+                            <div class="flex items-center gap-2">
+                                <span class="text-brand-yellow font-semibold">Cargo:</span>
+                                <span class="text-gray-800 dark:text-gray-100">{{ c.cargo }}</span>
+                            </div>
+                        }
+                    }
+                }
+
+                @if (mode() === 'edit') {
+                    <div class="flex items-center gap-2 mt-1">
+                        @if (contactoControl(); as cctrl) {
+                            <p-select
+                                [formControl]="cctrl"
+                                [options]="contactosOptions()"
+                                [filter]="true"
+                                placeholder="Seleccionar Contacto"
+                                appendTo="body"
+                                styleClass="flex-1 !bg-gray-100 dark:!bg-[#2A2D36] border border-gray-300 dark:border-none text-gray-800 dark:text-white"
+                            ></p-select>
+                        }
+                        <p-button icon="pi pi-plus" (onClick)="createContacto.emit()" [text]="true" severity="secondary" pTooltip="Crear nuevo contacto" tooltipPosition="left"></p-button>
+                    </div>
+                }
+            </div>
+        }
+    </div>
+</div>
