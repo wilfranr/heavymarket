@@ -354,6 +354,8 @@ class ArticuloController extends Controller
      */
     public function addMedida(Request $request, Articulo $articulo): JsonResponse
     {
+        $this->authorize('manageMedidas', $articulo);
+
         $validated = $request->validate([
             'identificador' => 'required|string',
             'nombre' => 'sometimes|string',
@@ -376,6 +378,8 @@ class ArticuloController extends Controller
      */
     public function updateMedida(Request $request, Articulo $articulo, Medida $medida): JsonResponse
     {
+        $this->authorize('manageMedidas', $articulo);
+
         $validated = $request->validate([
             'identificador' => 'sometimes|string',
             'nombre' => 'sometimes|string',
@@ -398,6 +402,8 @@ class ArticuloController extends Controller
      */
     public function removeMedida(Articulo $articulo, Medida $medida): JsonResponse
     {
+        $this->authorize('manageMedidas', $articulo);
+
         $medida->delete();
 
         return response()->json([

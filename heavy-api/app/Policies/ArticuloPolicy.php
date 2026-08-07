@@ -44,4 +44,9 @@ class ArticuloPolicy
     {
         return $user->hasAnyRole(['super_admin', 'Administrador']);
     }
+
+    public function manageMedidas(User $user, Articulo $articulo): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Analista']);
+    }
 }

@@ -561,6 +561,38 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "medidas-tabla-refresh-triage",
+      "description": "Triage: al crear/editar una medida desde la tabla de medidas en articulos/edit, el backend guarda correctamente pero la fila no se re-renderiza visualmente (sigue en modo edicion) ni se muestra mensaje de exito. Causa raiz: articuloActual es una propiedad plana reasignada dentro de un subscribe() de store async (linea 157-183 de edit.ts); la app es Zoneless y el componente no dispara ChangeDetectorRef tras esa mutacion async, a diferencia de articulo-edit-modal.component.ts que si llama cdr.detectChanges() en su equivalente cargarArticulo(). Ademas guardarMedida()/eliminarMedida() nunca invocan messageService para el toast de exito.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "bugfix/medidas-tabla-refresh",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "medidas-tabla-refresh-frontend",
+      "description": "Frontend: inyectar ChangeDetectorRef en EditComponent (articulos/edit) y llamar detectChanges() tras la reasignacion de articuloActual en el subscribe de articulo$, mismo patron que articulo-edit-modal.component.ts. Agregar toast de exito en guardarMedida() (mensajes distintos para creacion/actualizacion).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "medidas-tabla-refresh-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "cdr.detectChanges() agregado en 2 puntos: (1) al final del subscribe de articulo$ en ngOnInit, que es donde llega articuloActual con las medidas frescas tras el round-trip por NgRx store (dispatch loadArticuloById -> effect -> HTTP -> selector); (2) dentro de los callbacks next de updateMedida/addMedida en guardarMedida(), para que la fila salga del modo edicion (editingMedidaId = null) de inmediato sin esperar el segundo round-trip. Toast de exito agregado solo en guardarMedida (crear/editar), que es lo que reporto el usuario; no se toco eliminarMedida (fuera de alcance). Gates: npx prettier --check OK, npx vitest run edit.spec.ts 18/18 OK, ng build --configuration development sin errores.",
+      "review_notes": "Reviewer: diff acotado a 4 puntos (import ChangeDetectorRef, injeccion cdr, detectChanges en subscribe de articulo$, detectChanges + toast en los 2 branches de guardarMedida). Verificado que edit.html ya tiene <p-toast /> montado, por lo que el mensaje de exito se mostrara. Checklist frontend: no se toco template (sin cambios de i18n_keys/signal_syntax aplicables), no se agregaron Services ni EventEmitter, el uso de 'any' en articuloActual/medidaData es preexistente y no se amplio en este diff. Gates re-ejecutados: prettier --check OK, vitest edit.spec.ts 18/18 OK, ng build --configuration development sin errores. Nodo aprobado.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }

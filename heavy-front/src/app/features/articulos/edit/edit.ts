@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -80,6 +80,7 @@ export class EditComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly articuloService = inject(ArticuloService);
     private readonly referenciaService = inject(ReferenciaService);
+    private readonly cdr = inject(ChangeDetectorRef);
 
     articuloForm!: FormGroup;
     articulo$!: Observable<any>;
@@ -179,6 +180,7 @@ export class EditComponent implements OnInit {
                         }
                     }
                     this.initForm(articulo);
+                    this.cdr.detectChanges();
                 }
             });
         });
@@ -786,6 +788,8 @@ export class EditComponent implements OnInit {
                     this.editingMedidaId = null;
                     this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
                     this.guardandoMedida = false;
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Medida actualizada correctamente' });
+                    this.cdr.detectChanges();
                 },
                 error: () => {
                     this.guardandoMedida = false;
@@ -798,6 +802,8 @@ export class EditComponent implements OnInit {
                     this.editingMedidaId = null;
                     this.medidaData = { identificador: '', unidad: '', valor: null, tipo: '' };
                     this.guardandoMedida = false;
+                    this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'Medida agregada correctamente' });
+                    this.cdr.detectChanges();
                 },
                 error: () => {
                     this.guardandoMedida = false;

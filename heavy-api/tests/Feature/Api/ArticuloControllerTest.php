@@ -277,3 +277,59 @@ it('sincroniza articulo_id en referencias al agregar y remover referencia indivi
     $referencia->refresh();
     expect($referencia->articulo_id)->toBeNull();
 });
+
+it('permite a Administrador, super_admin y Analista crear, editar y eliminar medidas', function (string $role) {
+    Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
+    $user = createUserWithRole($role);
+    $articulo = Articulo::factory()->create();
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->postJson("/v1/articulos/{$articulo->id}/medidas", [
+            'identificador' => 'A',
+            'unidad' => 'mm',
+            'valor' => 10,
+            'tipo' => 'diametro',
+        ]);
+    $response->assertStatus(200);
+
+    $medida = $articulo->medidas()->first();
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->putJson("/v1/articulos/{$articulo->id}/medidas/{$medida->id}", [
+            'valor' => 20,
+        ]);
+    $response->assertStatus(200);
+
+    $response = $this->actingAs($user, 'sanctum')
+        ->deleteJson("/v1/articulos/{$articulo->id}/medidas/{$medida->id}");
+    $response->assertStatus(200);
+})->with(['super_admin', 'Administrador', 'Analista']);
+
+it('rechaza crear, editar y eliminar medidas para roles sin permiso', function () {
+    Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
+    $user = createUserWithRole('Cliente');
+    $articulo = Articulo::factory()->create();
+    $medida = $articulo->medidas()->create([
+        'identificador' => 'A',
+        'unidad' => 'mm',
+        'valor' => 10,
+        'tipo' => 'diametro',
+    ]);
+
+    $this->actingAs($user, 'sanctum')
+        ->postJson("/v1/articulos/{$articulo->id}/medidas", [
+            'identificador' => 'B',
+            'unidad' => 'mm',
+            'valor' => 10,
+            'tipo' => 'diametro',
+        ])->assertStatus(403);
+
+    $this->actingAs($user, 'sanctum')
+        ->putJson("/v1/articulos/{$articulo->id}/medidas/{$medida->id}", [
+            'valor' => 20,
+        ])->assertStatus(403);
+
+    $this->actingAs($user, 'sanctum')
+        ->deleteJson("/v1/articulos/{$articulo->id}/medidas/{$medida->id}")
+        ->assertStatus(403);
+});
