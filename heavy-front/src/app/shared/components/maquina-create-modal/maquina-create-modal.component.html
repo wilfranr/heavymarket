@@ -137,44 +137,29 @@
                                         <input type="text" pInputText formControlName="serie" placeholder="Serie" class="w-full text-sm rounded-xl" />
                                     </div>
 
-                                    <div class="md:col-span-2 flex items-center gap-4">
-                                        <div class="flex-1">
-                                            <label class="text-[10px] font-black uppercase text-gray-500 block mb-2">Foto Placa y Observaciones</label>
-                                            <div class="flex items-center gap-2 p-2 bg-surface-card rounded-xl border border-surface-border">
-                                                <!-- Camera -->
-                                                <p-button
-                                                    icon="pi pi-camera"
-                                                    [severity]="comp.get('fotoPlacaFile')?.value ? 'success' : 'warn'"
-                                                    [rounded]="true"
-                                                    [text]="true"
-                                                    [pTooltip]="comp.get('fotoPlacaFile')?.value ? 'Foto seleccionada' : 'Adjuntar foto'"
-                                                    (onClick)="placaUpload.click()"
-                                                ></p-button>
+                                    <div class="md:col-span-2">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <label class="text-[10px] font-black uppercase text-gray-500">Foto Placa</label>
+                                            <!-- Comment Toggle -->
+                                            <p-button
+                                                icon="pi pi-comment"
+                                                [severity]="comp.get('comentario')?.value ? 'warn' : 'secondary'"
+                                                [rounded]="true"
+                                                [text]="true"
+                                                size="small"
+                                                [pTooltip]="'Observaciones'"
+                                                (onClick)="opModal.toggle($event)"
+                                            ></p-button>
 
-                                                <!-- Comment Toggle -->
-                                                <p-button
-                                                    icon="pi pi-comment"
-                                                    [severity]="comp.get('comentario')?.value ? 'warn' : 'secondary'"
-                                                    [rounded]="true"
-                                                    [text]="true"
-                                                    [pTooltip]="'Observaciones'"
-                                                    (onClick)="opModal.toggle($event)"
-                                                ></p-button>
-
-                                                <p-popover #opModal>
-                                                    <div class="p-3 w-80">
-                                                        <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Observaciones del Componente</label>
-                                                        <textarea pTextarea formControlName="comentario" rows="3" class="w-full rounded-xl text-sm p-3 border-surface-border bg-surface-ground/20" placeholder="Escriba aquí..."></textarea>
-                                                    </div>
-                                                </p-popover>
-
-                                                <span class="text-[10px] text-gray-400 truncate flex-1" *ngIf="comp.get('fotoPlacaFile')?.value">
-                                                    {{ comp.get('fotoPlacaFile')?.value.name }}
-                                                </span>
-                                                <span class="text-[10px] text-gray-500" *ngIf="!comp.get('fotoPlacaFile')?.value">Sin foto placa</span>
-                                                <input #placaUpload type="file" class="hidden" accept="image/*" (change)="onFotoPlacaSelected($any($event.target).files[0], $index)" />
-                                            </div>
+                                            <p-popover #opModal>
+                                                <div class="p-3 w-80">
+                                                    <label class="block text-[10px] font-black uppercase text-gray-500 mb-2 tracking-widest">Observaciones del Componente</label>
+                                                    <textarea pTextarea formControlName="comentario" rows="3" class="w-full rounded-xl text-sm p-3 border-surface-border bg-surface-ground/20" placeholder="Escriba aquí..."></textarea>
+                                                </div>
+                                            </p-popover>
                                         </div>
+
+                                        <app-image-upload height="8rem" [currentImage]="comp.get('foto_placa')?.value" (fileSelected)="onFotoPlacaSelected($event, $index)"></app-image-upload>
                                     </div>
                                 </div>
                             </div>

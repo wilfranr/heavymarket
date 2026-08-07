@@ -363,6 +363,43 @@
           "status": "implemented"
         }
       ]
+    },
+    {
+      "id": "maquina-foto-placa-triage",
+      "description": "Triage: en el modal crear/editar maquina (usado dentro de crear/editar tercero), reemplazar el boton de camara del campo Foto Placa de cada componente por el mismo drag-and-drop (app-image-upload) que ya usa Foto Maquina / Foto Placa ID, cuidando los estilos.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "decision/maquina-foto-placa",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "maquina-foto-placa-dragdrop",
+      "description": "Frontend: en maquina-create-modal, dentro del FormArray de componentes, reemplazar el p-button de camara + input file oculto del campo Foto Placa por app-image-upload (drag-and-drop), reutilizando el handler existente onFotoPlacaSelected(file, index) y pasando currentImage=foto_placa para modo edicion. Se reordeno el layout (label + boton de comentarios arriba, dropzone abajo) para no compartir fila angosta con el boton de observaciones.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "maquina-foto-placa-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "Registrado de forma retroactiva: el cambio se implemento antes de crear el nodo en el DAG (se salto el protocolo Triage -> Implementer). ng build --configuration development sin errores. Reutiliza ImageUploadComponent ya importado en el modulo, sin cambios en el .ts salvo ninguno (fotoPlacaFile/foto_placa intactos en el FormGroup y en el envio por FormData).",
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+        "cd heavy-front && npx vitest run src/app/shared/components/maquina-create-modal/maquina-create-modal.component.spec.ts",
+        "cd heavy-front && npx ng build --configuration development"
+      ],
+      "review_notes": "Gates ejecutados: prettier --check OK, vitest maquina-create-modal.component.spec.ts 3/3 OK, ng build sin errores. Gate 'ng lint' de la tabla de GEMINI.md no aplica: el proyecto no tiene eslint/target de lint configurado (sin script 'lint' en package.json ni target en angular.json); se sustituyo por prettier --check como gate de formato, consistente con el precedente en cards-info-edit. Checklist ui_ux_design_expert: usa componentes standalone (app-image-upload ya standalone), solo clases Tailwind (sin PrimeFlex), p-button preferido sobre button pButton, variables de tema (surface-border, surface-card, text-gray-*) consistentes con el resto del modal para dark/light. No se agrego cobertura de test especifica para onFotoPlacaSelected via drag-and-drop (gap preexistente, el metodo ya no tenia test dedicado antes del cambio); se deja anotado, no bloqueante para este nodo puntual. No se toco codigo backend ni FormGroup (fotoPlacaFile/foto_placa intactos). Nodo cerrado.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-create-modal/maquina-create-modal.component.html",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }
