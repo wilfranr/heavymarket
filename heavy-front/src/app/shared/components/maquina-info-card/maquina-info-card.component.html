@@ -35,7 +35,7 @@
                 </div>
                 <div class="flex items-center gap-2">
                     <span class="text-brand-yellow font-semibold">ID adicional:</span>
-                    <span class="text-gray-800 dark:text-gray-100">{{ m.codigo_interno || m.id_interno || '---' }}</span>
+                    <span class="text-gray-800 dark:text-gray-100">{{ m.codigo_interno || '---' }}</span>
                 </div>
                 @if (m.estado_revision === 'por_revisar') {
                     <div class="mt-3 flex items-center gap-2 rounded-md border border-amber-500/50 bg-amber-500/10 px-2.5 py-2">

@@ -1050,7 +1050,7 @@ export class EditComponent implements OnInit {
         }
     }
 
-    abrirModalEditarMaquina(maquina: { id: number }): void {
+    abrirModalEditarMaquina(maquina: { id: number } | null): void {
         if (!maquina?.id) {
             return;
         }

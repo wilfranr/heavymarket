@@ -1,7 +1,25 @@
+import type { EstadoRevisionMaquina } from './maquina.model';
+
 /**
  * Modelo de Pedido
  */
 export type PedidoOrigen = 'panel' | 'landing';
+
+/**
+ * Shape de `maquina` tal como lo devuelve PedidoResource/MaquinaResource
+ * (usa `marca` ya resuelta desde fabricante, no coincide 1:1 con el modelo Maquina).
+ */
+export interface PedidoMaquinaInfo {
+    id: number;
+    modelo: string | null;
+    marca?: string | null;
+    fabricante?: { id: number; nombre: string } | null;
+    serie: string | null;
+    codigo_interno: string | null;
+    estado_revision: EstadoRevisionMaquina;
+    tipo?: string;
+    arreglo?: string | null;
+}
 
 export interface Pedido {
     id: number;

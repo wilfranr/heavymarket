@@ -16,6 +16,7 @@ import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/
     standalone: true,
     imports: [CommonModule, ButtonModule, TagModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { class: 'flex flex-1 min-w-0' },
     templateUrl: './pedido-info-card.component.html',
     styleUrl: './pedido-info-card.component.scss'
 })

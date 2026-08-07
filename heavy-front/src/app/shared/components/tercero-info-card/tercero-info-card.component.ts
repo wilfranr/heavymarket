@@ -4,7 +4,8 @@ import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { SelectModule } from 'primeng/select';
 import { TooltipModule } from 'primeng/tooltip';
-import { InfoCardMode } from '../maquina-info-card/maquina-info-card.component';
+import { InfoCardMode, SelectOption } from '../maquina-info-card/maquina-info-card.component';
+import { Tercero, Contacto } from '../../../core/models/tercero.model';
 
 /**
  * Tarjeta informativa del cliente/tercero, compartida por las vistas de edición,
@@ -20,20 +21,21 @@ import { InfoCardMode } from '../maquina-info-card/maquina-info-card.component';
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, ButtonModule, SelectModule, TooltipModule],
     changeDetection: ChangeDetectionStrategy.OnPush,
+    host: { class: 'flex flex-1 min-w-0' },
     templateUrl: './tercero-info-card.component.html',
     styleUrl: './tercero-info-card.component.scss'
 })
 export class TerceroInfoCardComponent {
     mode = input<InfoCardMode>('view');
-    tercero = input<any>(null);
+    tercero = input<Tercero | null>(null);
     /** Contacto asociado al pedido (solo visible en modo view). */
-    contacto = input<any>(null);
+    contacto = input<Contacto | null>(null);
 
     // Solo modo edit
-    terceroControl = input<FormControl | null>(null);
-    tercerosOptions = input<any[]>([]);
-    contactoControl = input<FormControl | null>(null);
-    contactosOptions = input<any[]>([]);
+    terceroControl = input<FormControl<number | null> | null>(null);
+    tercerosOptions = input<SelectOption[]>([]);
+    contactoControl = input<FormControl<number | null> | null>(null);
+    contactosOptions = input<SelectOption[]>([]);
     emailCliente = input<string | undefined>(undefined);
     telefonoWhatsApp = input<string | undefined>(undefined);
 

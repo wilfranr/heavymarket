@@ -63,7 +63,7 @@ class PedidoResource extends JsonResource
                     'serie' => $this->maquina->serie,
                     'marca' => $this->maquina->fabricante?->nombre ?? 'N/A',
                     'estado_revision' => $this->maquina->estado_revision,
-                    'id_interno' => $this->maquina->id_interno ?? '----',
+                    'codigo_interno' => $this->maquina->codigo_interno ?? '----',
                     'arreglo' => $this->maquina->arreglo,
                     'imagen_url' => $this->maquina->imagen_url,
                     'imagen_placa_url' => $this->maquina->imagen_placa_url,
