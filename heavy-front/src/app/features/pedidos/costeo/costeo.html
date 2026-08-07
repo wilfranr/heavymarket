@@ -126,7 +126,6 @@
                 <!-- Item Header -->
                 <div class="flex justify-between items-center mb-4 border-b border-gray-200 dark:border-gray-700 pb-3">
                     <div class="flex items-center gap-6 text-blue-500 font-semibold">
-                        <span class="px-3 py-1 rounded bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-xs uppercase tracking-wider"> {{ refGroup.get('estado_str')?.value }} </span>
                         <!-- 1. Categoria Comercial -->
                         @if (pedido.referencias?.[refIndex]?.categorias_comerciales && (pedido.referencias?.[refIndex]?.categorias_comerciales?.length ?? 0) > 1) {
                         <span
