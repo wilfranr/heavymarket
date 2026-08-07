@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Resources;
 
+use App\Enums\EstadoRecepcion;
 use App\Models\OrdenCompraReferencia;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -25,12 +26,17 @@ class OrdenCompraReferenciaResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
+        $cantidad = (int) $this->cantidad;
+        $cantidadRecibida = (int) $this->cantidad_recibida;
+
         return [
             'id' => $this->id,
             'orden_compra_id' => $this->orden_compra_id,
             'referencia_id' => $this->referencia_id,
             'cantidad' => $this->cantidad,
             'cantidad_recibida' => $this->cantidad_recibida,
+            'estado_item' => EstadoRecepcion::desdeCantidades($cantidadRecibida, $cantidad)->value,
+            'saldo_pendiente' => max($cantidad - $cantidadRecibida, 0),
             'valor_unitario' => $this->valor_unitario,
             'valor_total' => $this->valor_total,
             'created_at' => $this->created_at?->toISOString(),

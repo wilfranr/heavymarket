@@ -5,7 +5,7 @@ export type RecepcionCompraEstado = 'Activa' | 'Anulada';
 
 export interface RecepcionCompra {
     id: number;
-    orden_trabajo_id: number;
+    orden_trabajo_id: number | null;
     orden_compra_id: number;
     recibido_por: number;
     fecha_recepcion: string;
@@ -22,6 +22,22 @@ export interface RecepcionCompra {
     recibido_por_usuario?: RecepcionCompraUsuario | null;
     anulada_por_usuario?: RecepcionCompraUsuario | null;
     detalles?: RecepcionCompraDetalle[];
+    imagenes?: RecepcionCompraImagen[];
+}
+
+export type RecepcionCompraImagenTipo = 'guia' | 'foto';
+
+export interface RecepcionCompraImagen {
+    id: number;
+    recepcion_compra_id: number;
+    ruta: string;
+    url?: string | null;
+    nombre_original: string;
+    mime: string;
+    size: number;
+    tipo: RecepcionCompraImagenTipo;
+    creado_por: number | null;
+    created_at: string;
 }
 
 export interface RecepcionCompraDetalle {
@@ -72,4 +88,27 @@ export interface CreateRecepcionCompraDto {
     numero_remision?: string | null;
     observaciones?: string | null;
     detalles: CreateRecepcionCompraDetalleDto[];
+}
+
+/**
+ * Línea de detalle para registrar una recepción directamente desde la Orden
+ * de Compra (POST /ordenes-compra/{id}/recepciones).
+ */
+export interface RecepcionDetallePayload {
+    orden_compra_detalle_id: number;
+    cantidad_recibida: number;
+    cantidad_conforme: number;
+    cantidad_rechazada: number;
+    motivo_rechazo?: string | null;
+}
+
+/**
+ * Payload para registrar una recepción desde la Orden de Compra. No exige
+ * orden_trabajo_id: el backend infiere orden_compra_id desde la ruta.
+ */
+export interface RegistrarRecepcionPayload {
+    fecha_recepcion: string;
+    numero_remision?: string | null;
+    observaciones?: string | null;
+    detalles: RecepcionDetallePayload[];
 }

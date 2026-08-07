@@ -35,6 +35,9 @@ class RecepcionCompraResource extends JsonResource
             'detalles' => $this->whenLoaded('detalles', function () {
                 return RecepcionCompraDetalleResource::collection($this->detalles);
             }),
+            'imagenes' => $this->whenLoaded('imagenes', function () {
+                return RecepcionCompraImagenResource::collection($this->imagenes);
+            }),
         ];
     }
 }

@@ -16,6 +16,30 @@ use Symfony\Component\HttpFoundation\Response;
 class RestrictLogistica
 {
     /**
+     * Rutas de Orden de Compra permitidas para Logística pese a no vivir bajo
+     * /ordenes-trabajo: el flujo de recepción de mercancía se registra ahora
+     * directamente desde la OC (ver issues #147-#157).
+     *
+     * @var array<int, string>
+     */
+    private const RUTAS_RECEPCION_ORDEN_COMPRA_PERMITIDAS = [
+        'ordenes-compra.recepciones.store',
+        'ordenes-compra.recepciones.index',
+        'recepciones-compra.imagenes.store',
+    ];
+
+    /**
+     * Logística necesita poder listar y ver el detalle de una OC para llegar
+     * al botón "Registrar Recepción" (no implica acceso de escritura al recurso OC).
+     *
+     * @var array<int, string>
+     */
+    private const RUTAS_ORDEN_COMPRA_SOLO_LECTURA = [
+        'ordenes-compra.index',
+        'ordenes-compra.show',
+    ];
+
+    /**
      * Handle an incoming request.
      *
      * @param  Closure(Request): (Response)  $next
@@ -28,6 +52,14 @@ class RestrictLogistica
             $route = $request->route();
             $uri = $route ? $route->uri : $request->path();
             $routeName = $route?->getName();
+
+            if (in_array($routeName, self::RUTAS_RECEPCION_ORDEN_COMPRA_PERMITIDAS, true)) {
+                return $next($request);
+            }
+
+            if ($request->isMethod('GET') && in_array($routeName, self::RUTAS_ORDEN_COMPRA_SOLO_LECTURA, true)) {
+                return $next($request);
+            }
 
             // Permitir acceso únicamente a rutas de órdenes de trabajo
             if (! str_starts_with($uri, 'v1/ordenes-trabajo')) {

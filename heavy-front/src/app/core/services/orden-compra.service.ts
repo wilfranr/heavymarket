@@ -1,7 +1,9 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiResponse, ApiService, PaginatedResponse, QueryParams } from './api.service';
 import { CreateOrdenCompraDto, OrdenCompra, ReceiveOrdenCompraDto, TransitionOrdenCompraDto, UpdateOrdenCompraDto } from '../models/orden-compra.model';
+import { RecepcionCompra, RecepcionCompraImagen, RecepcionCompraImagenTipo, RegistrarRecepcionPayload } from '../models/recepcion-compra.model';
 
 /**
  * Servicio para gestionar órdenes de compra
@@ -61,5 +63,30 @@ export class OrdenCompraService extends ApiService {
      */
     deleteOrdenCompra(id: number): Observable<void> {
         return this.delete<void>(`${this.getBaseUrl()}/${id}`);
+    }
+
+    /**
+     * Registrar una recepción de mercancía directamente desde la Orden de Compra
+     */
+    registrarRecepcion(ordenCompraId: number, payload: RegistrarRecepcionPayload): Observable<RecepcionCompra> {
+        return this.post<ApiResponse<RecepcionCompra>>(`${this.getBaseUrl()}/${ordenCompraId}/recepciones`, payload).pipe(map((response) => response.data));
+    }
+
+    /**
+     * Listar el historial de entregas (recepciones) de una Orden de Compra
+     */
+    listarRecepciones(ordenCompraId: number): Observable<RecepcionCompra[]> {
+        return this.get<ApiResponse<RecepcionCompra[]>>(`${this.getBaseUrl()}/${ordenCompraId}/recepciones`).pipe(map((response) => response.data));
+    }
+
+    /**
+     * Adjuntar una foto o guía de transportadora a una recepción registrada
+     */
+    adjuntarImagenRecepcion(recepcionId: number, file: File, tipo: RecepcionCompraImagenTipo): Observable<RecepcionCompraImagen> {
+        const formData = new FormData();
+        formData.append('imagen', file);
+        formData.append('tipo', tipo);
+
+        return this.http.post<ApiResponse<RecepcionCompraImagen>>(this.formatUrl(`recepciones-compra/${recepcionId}/imagenes`), formData).pipe(map((response) => response.data));
     }
 }

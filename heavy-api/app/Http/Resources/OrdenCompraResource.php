@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\OrdenCompra;
+use App\Services\OrdenCompraLifecycleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -50,6 +51,8 @@ class OrdenCompraResource extends JsonResource
             'transportadora_id' => $this->transportadora_id,
             'color' => $this->color,
             'fecha_despacho' => $this->fecha_despacho?->toISOString(),
+            'estado_recepcion' => app(OrdenCompraLifecycleService::class)
+                ->calcularEstadoRecepcion($this->resource)?->value,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 

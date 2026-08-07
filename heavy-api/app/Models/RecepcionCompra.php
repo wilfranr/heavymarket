@@ -13,7 +13,7 @@ use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
- * @property int $orden_trabajo_id
+ * @property int|null $orden_trabajo_id
  * @property int $orden_compra_id
  * @property int $recibido_por
  * @property Carbon $fecha_recepcion
@@ -25,11 +25,12 @@ use Illuminate\Support\Carbon;
  * @property string|null $motivo_anulacion
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
- * @property-read OrdenTrabajo $ordenTrabajo
+ * @property-read OrdenTrabajo|null $ordenTrabajo
  * @property-read OrdenCompra $ordenCompra
  * @property-read User $recibidoPor
  * @property-read User|null $anuladaPor
  * @property-read Collection|RecepcionCompraDetalle[] $detalles
+ * @property-read Collection|RecepcionCompraImagen[] $imagenes
  */
 class RecepcionCompra extends Model
 {
@@ -82,6 +83,11 @@ class RecepcionCompra extends Model
     public function detalles(): HasMany
     {
         return $this->hasMany(RecepcionCompraDetalle::class, 'recepcion_compra_id');
+    }
+
+    public function imagenes(): HasMany
+    {
+        return $this->hasMany(RecepcionCompraImagen::class, 'recepcion_compra_id');
     }
 
     public function estaActiva(): bool

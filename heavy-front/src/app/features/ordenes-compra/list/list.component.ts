@@ -9,14 +9,16 @@ import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TagModule } from 'primeng/tag';
+import { TooltipModule } from 'primeng/tooltip';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
-import { OrdenCompra, OrdenCompraEstado, OrdenCompraColor } from '../../../core/models/orden-compra.model';
+import { OrdenCompra, OrdenCompraEstado, OrdenCompraColor, EstadoRecepcion } from '../../../core/models/orden-compra.model';
 import * as OrdenesCompraActions from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
 import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
+import { estadoRecepcionLabel, estadoRecepcionSeverity } from '../../../core/utils/estado-recepcion';
 
 interface SelectOption<T> {
     label: string;
@@ -40,6 +42,19 @@ export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'su
         default:
             return 'secondary';
     }
+}
+
+export function ordenCompraRecepcionTooltip(orden: OrdenCompra): string {
+    const detalles = orden.detalles ?? orden.referencias ?? [];
+
+    if (!orden.estado_recepcion || detalles.length === 0) {
+        return 'Aún no despachada';
+    }
+
+    const recibido = detalles.reduce((acc, detalle) => acc + (detalle.cantidad_recibida ?? 0), 0);
+    const total = detalles.reduce((acc, detalle) => acc + (detalle.cantidad ?? 0), 0);
+
+    return `${recibido}/${total} unidades recibidas`;
 }
 
 export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string {
@@ -71,7 +86,7 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
 @Component({
     selector: 'app-ordenes-compra-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, TooltipModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -105,6 +120,7 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
                         <th>ID</th>
                         <th>Proveedor</th>
                         <th>Estado</th>
+                        <th>Recepción</th>
                         <th>Semáforo</th>
                         <th>Expedición</th>
                         <th>Entrega</th>
@@ -121,6 +137,13 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
                         <td>{{ orden.proveedor?.nombre || 'N/A' }}</td>
                         <td>
                             <p-tag [value]="orden.estado || 'N/A'" [severity]="getEstadoSeverity(orden.estado)"> </p-tag>
+                        </td>
+                        <td [pTooltip]="getRecepcionTooltip(orden)" tooltipPosition="top">
+                            @if (orden.estado_recepcion) {
+                                <p-tag [value]="getRecepcionLabel(orden.estado_recepcion)" [severity]="getRecepcionSeverity(orden.estado_recepcion)"></p-tag>
+                            } @else {
+                                <span class="text-muted-color text-xs">—</span>
+                            }
                         </td>
                         <td class="text-center">
                             <div class="mx-auto w-4 h-4 rounded-full" [style.background-color]="orden.color || '#FFFF00'" style="border: 1px solid var(--p-surface-border)" [title]="getColorTooltip(orden.color)"></div>
@@ -260,5 +283,17 @@ export class ListComponent implements OnInit {
 
     getColorTooltip(color: OrdenCompraColor | null): string {
         return ordenCompraColorTooltip(color);
+    }
+
+    getRecepcionSeverity(estado: EstadoRecepcion | null): 'success' | 'info' | 'warn' {
+        return estadoRecepcionSeverity(estado);
+    }
+
+    getRecepcionLabel(estado: EstadoRecepcion | null): string {
+        return estadoRecepcionLabel(estado);
+    }
+
+    getRecepcionTooltip(orden: OrdenCompra): string {
+        return ordenCompraRecepcionTooltip(orden);
     }
 }

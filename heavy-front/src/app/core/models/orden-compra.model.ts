@@ -29,6 +29,7 @@ export interface OrdenCompra {
     guia: string | null;
     transportadora_id: number | null;
     color: OrdenCompraColor | null;
+    estado_recepcion: EstadoRecepcion | null;
     created_at: string;
     updated_at: string;
 
@@ -43,6 +44,12 @@ export interface OrdenCompra {
     detalles?: OrdenCompraReferencia[];
     referencias?: OrdenCompraReferencia[];
 }
+
+/**
+ * Estado de recepción computado (informativo), derivado de cantidad_recibida
+ * vs cantidad. No forma parte del ciclo de vida formal (OrdenCompraEstado).
+ */
+export type EstadoRecepcion = 'En tránsito' | 'Recibida parcialmente' | 'Recibida';
 
 /**
  * Estados posibles de una orden de compra
@@ -148,6 +155,8 @@ export interface OrdenCompraReferencia {
     referencia_id: number;
     cantidad: number;
     cantidad_recibida: number;
+    estado_item: EstadoRecepcion | null;
+    saldo_pendiente: number;
     valor_unitario: number;
     valor_total: number;
     created_at: string;

@@ -22,23 +22,10 @@ import { OrdenCompraService } from '../../../core/services/orden-compra.service'
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+import { RecepcionLineaForm, recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.util';
 
-export interface RecepcionLineaForm {
-    orden_compra_detalle_id: number;
-    referencia: string;
-    cantidad_ordenada: number;
-    cantidad_recibida: number;
-    cantidad_conforme: number;
-    cantidad_rechazada: number;
-    motivo_rechazo: string | null;
-}
-
-export function recepcionCompraLineaValida(linea: RecepcionLineaForm): boolean {
-    const sumaCondiciones = linea.cantidad_conforme + linea.cantidad_rechazada;
-    const motivoValido = linea.cantidad_rechazada <= 0 || (linea.motivo_rechazo ?? '').trim().length > 0;
-
-    return linea.cantidad_recibida > 0 && linea.cantidad_recibida === sumaCondiciones && linea.cantidad_recibida <= linea.cantidad_ordenada && motivoValido;
-}
+export type { RecepcionLineaForm } from '../../../core/utils/recepcion-lines.util';
+export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.util';
 
 /**
  * Componente de detalle de orden de trabajo

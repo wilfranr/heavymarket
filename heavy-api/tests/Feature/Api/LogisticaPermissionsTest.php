@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Models\OrdenCompra;
 use App\Models\OrdenTrabajo;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
@@ -62,12 +63,23 @@ it('Logistica no puede acceder a cotizaciones', function () {
     $response->assertForbidden();
 });
 
-it('Logistica no puede acceder a ordenes de compra', function () {
+it('Logistica puede acceder en modo lectura a ordenes de compra (para registrar recepciones)', function () {
     $user = createUserWithRole('Logistica');
 
     $response = $this->actingAs($user)->getJson('/v1/ordenes-compra');
 
-    $response->assertForbidden();
+    // Desde #147-#157 Logistica registra recepciones directamente desde la OC,
+    // por lo que necesita poder listar/ver (no escribir) órdenes de compra.
+    $response->assertOk();
+});
+
+it('Logistica no puede crear, editar ni eliminar ordenes de compra', function () {
+    $user = createUserWithRole('Logistica');
+    $orden = OrdenCompra::factory()->create();
+
+    $this->actingAs($user)->postJson('/v1/ordenes-compra', [])->assertForbidden();
+    $this->actingAs($user)->putJson("/v1/ordenes-compra/{$orden->id}", ['observaciones' => 'x'])->assertForbidden();
+    $this->actingAs($user)->deleteJson("/v1/ordenes-compra/{$orden->id}")->assertForbidden();
 });
 
 it('Logistica no puede acceder a terceros', function () {

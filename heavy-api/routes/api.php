@@ -21,6 +21,7 @@ use App\Http\Controllers\Api\V1\OrdenTrabajoController;
 use App\Http\Controllers\Api\V1\PedidoController;
 use App\Http\Controllers\Api\V1\ProviderAuthController;
 use App\Http\Controllers\Api\V1\ProviderPortalController;
+use App\Http\Controllers\Api\V1\RecepcionCompraController;
 use App\Http\Controllers\Api\V1\ReferenciaController;
 use App\Http\Controllers\Api\V1\SearchController;
 use App\Http\Controllers\Api\V1\SistemaController;
@@ -193,6 +194,9 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);
         Route::post('ordenes-trabajo/{orden_trabajo}/recepciones-compra', [OrdenTrabajoController::class, 'registrarRecepcionCompra'])->name('ordenes-trabajo.recepciones-compra.store');
+        Route::post('ordenes-compra/{orden_compra}/recepciones', [RecepcionCompraController::class, 'store'])->name('ordenes-compra.recepciones.store');
+        Route::get('ordenes-compra/{orden_compra}/recepciones', [RecepcionCompraController::class, 'index'])->name('ordenes-compra.recepciones.index');
+        Route::post('recepciones-compra/{recepcion}/imagenes', [RecepcionCompraController::class, 'storeImagen'])->name('recepciones-compra.imagenes.store');
         Route::get('ordenes-compra/{orden_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
         Route::get('ordenes-trabajo/{orden_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
 

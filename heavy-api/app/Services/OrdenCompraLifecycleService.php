@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Enums\EstadoRecepcion;
 use App\Enums\OrdenCompraEstado;
 use App\Models\OrdenCompra;
 use App\Models\RecepcionCompra;
@@ -14,6 +15,46 @@ use Illuminate\Validation\ValidationException;
 
 class OrdenCompraLifecycleService
 {
+    /**
+     * Estados de OC en los que tiene sentido informar un estado de recepción.
+     *
+     * @var array<int, OrdenCompraEstado>
+     */
+    private const ESTADOS_RECEPCIONABLES = [
+        OrdenCompraEstado::Enviada,
+        OrdenCompraEstado::Confirmada,
+        OrdenCompraEstado::Despachada,
+        OrdenCompraEstado::RecibidaParcialmente,
+        OrdenCompraEstado::Recibida,
+    ];
+
+    /**
+     * Campo informativo derivado de orden_compra_referencia.cantidad_recibida.
+     * No muta el ciclo de vida formal de la OC (ver actualizarEstadoPorRecepciones).
+     */
+    public function calcularEstadoRecepcion(OrdenCompra $ordenCompra): ?EstadoRecepcion
+    {
+        $estado = OrdenCompraEstado::tryFrom((string) $ordenCompra->estado);
+
+        if (! $estado || ! in_array($estado, self::ESTADOS_RECEPCIONABLES, true)) {
+            return null;
+        }
+
+        $detalles = $ordenCompra->relationLoaded('detalles')
+            ? $ordenCompra->detalles
+            : $ordenCompra->detalles()->get();
+
+        $cantidadOrdenada = (int) $detalles->sum('cantidad');
+
+        if ($cantidadOrdenada <= 0) {
+            return null;
+        }
+
+        $cantidadRecibida = (int) $detalles->sum('cantidad_recibida');
+
+        return EstadoRecepcion::desdeCantidades($cantidadRecibida, $cantidadOrdenada);
+    }
+
     /**
      * @param  array<string, mixed>  $data
      */
@@ -49,8 +90,6 @@ class OrdenCompraLifecycleService
                 $updates['fecha_despacho'] = $ordenCompra->fecha_despacho ?? now();
             }
 
-
-
             if (array_key_exists('observaciones', $data)) {
                 $updates['observaciones'] = $data['observaciones'];
             }
@@ -62,6 +101,10 @@ class OrdenCompraLifecycleService
     }
 
     /**
+     * @deprecated La recepción de compra se registra vía RecepcionCompraService
+     * (registrarDesdeOrdenCompra / registrarDesdeOrdenTrabajo). Este stub queda
+     * obsoleto y se elimina en una limpieza posterior.
+     *
      * @param  array<string, mixed>  $data
      */
     public function recibir(OrdenCompra $ordenCompra, array $data = []): OrdenCompra

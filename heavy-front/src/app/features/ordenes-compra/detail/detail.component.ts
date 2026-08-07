@@ -14,13 +14,19 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { InputTextModule } from 'primeng/inputtext';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { loadOrdenCompraById, transitionOrdenCompra } from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
 import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
-import { OrdenCompra, OrdenCompraEstado, OrdenCompraPedido, OrdenCompraReferencia } from '../../../core/models/orden-compra.model';
+import { OrdenCompra, OrdenCompraEstado, OrdenCompraPedido, OrdenCompraReferencia, EstadoRecepcion } from '../../../core/models/orden-compra.model';
+import { RecepcionCompra } from '../../../core/models/recepcion-compra.model';
 import { Maquina } from '../../../core/models/maquina.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
+import { OrdenCompraService } from '../../../core/services/orden-compra.service';
+import { AuthService } from '../../../core/auth/services/auth.service';
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
+import { RecepcionCompraModalComponent } from './recepcion-compra-modal/recepcion-compra-modal.component';
+import { estadoRecepcionLabel, estadoRecepcionSeverity } from '../../../core/utils/estado-recepcion';
 
 type PedidoMaquina = NonNullable<OrdenCompraPedido['maquina']>;
 type PedidoTercero = NonNullable<OrdenCompraPedido['tercero']>;
@@ -44,11 +50,20 @@ export function ordenCompraPuedeTransitar(origen: OrdenCompraEstado | null, dest
 }
 
 export function ordenCompraPuedeRecibir(estado: OrdenCompraEstado | null): boolean {
-    return false;
+    return estado === 'Enviada' || estado === 'Confirmada' || estado === 'Despachada' || estado === 'Recibida parcialmente';
 }
 
 export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): boolean {
     return estado === 'Generada' || estado === 'Enviada' || estado === 'Confirmada' || estado === 'Pagada' || estado === 'Despachada';
+}
+
+export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'cantidad' | 'cantidad_recibida'>): number {
+    const cantidad = item.cantidad || 0;
+    const recibido = item.cantidad_recibida || 0;
+
+    if (cantidad <= 0) return 0;
+
+    return Math.min(100, Math.round((recibido / cantidad) * 100));
 }
 
 /**
@@ -57,7 +72,7 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
 @Component({
     selector: 'app-orden-compra-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, TooltipModule, DialogModule, TextareaModule, InputTextModule, TerceroFormComponent, MaquinaDetailComponent],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, TooltipModule, DialogModule, TextareaModule, InputTextModule, ProgressBarModule, TerceroFormComponent, MaquinaDetailComponent, RecepcionCompraModalComponent],
     template: `
         <div class="card">
             <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
@@ -191,8 +206,11 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                 </div>
                                 <div class="flex flex-col">
                                     <span class="text-sm font-bold text-gray-500 uppercase">Estado</span>
-                                    <div class="mt-1">
+                                    <div class="mt-1 flex items-center gap-2 flex-wrap">
                                         <p-tag [value]="ordenCompra()?.estado || 'N/A'" [severity]="getEstadoSeverity(ordenCompra()?.estado || '')"></p-tag>
+                                        @if (ordenCompra()?.estado_recepcion; as estadoRecepcion) {
+                                            <p-tag [value]="getRecepcionLabel(estadoRecepcion)" [severity]="getRecepcionSeverity(estadoRecepcion)"></p-tag>
+                                        }
                                     </div>
                                 </div>
                                 <div class="flex flex-col">
@@ -227,6 +245,9 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                 @if (puedeCancelar()) {
                                     <p-button label="Cancelar" icon="pi pi-times" severity="danger" [outlined]="true" (onClick)="openCancelDialog()"></p-button>
                                 }
+                                @if (puedeRecibir()) {
+                                    <p-button label="Registrar Recepción" icon="pi pi-box" severity="info" (onClick)="openRecepcionModal()"></p-button>
+                                }
                             </div>
                         </p-card>
 
@@ -239,6 +260,7 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                             <th class="text-color font-bold uppercase text-xs">Referencia</th>
                                             <th class="text-color font-bold uppercase text-xs">Descripción</th>
                                             <th class="text-center text-color font-bold uppercase text-xs">Cant</th>
+                                            <th class="text-color font-bold uppercase text-xs">Recibido</th>
                                             <th class="text-color font-bold uppercase text-xs">Marca</th>
                                             <th class="text-color font-bold uppercase text-xs">Entrega</th>
                                             <th class="text-right text-color font-bold uppercase text-xs">Costo unitario</th>
@@ -263,6 +285,12 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                                 </div>
                                             </td>
                                             <td class="text-center font-semibold text-color">{{ item.cantidad }}</td>
+                                            <td class="min-w-[7rem]">
+                                                <div class="flex items-center gap-2">
+                                                    <p-progressBar [value]="progresoRecepcionItem(item)" [showValue]="false" styleClass="h-1.5 flex-1"></p-progressBar>
+                                                    <span class="text-xs text-color-secondary whitespace-nowrap">{{ item.cantidad_recibida || 0 }}/{{ item.cantidad }}</span>
+                                                </div>
+                                            </td>
                                             <td class="text-color-secondary">
                                                 {{ item.referencia?.marca?.nombre || 'N/A' }}
                                             </td>
@@ -277,7 +305,7 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                                     </ng-template>
                                     <ng-template pTemplate="footer">
                                         <tr class="dark:bg-surface-800/30">
-                                            <td colspan="7" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
+                                            <td colspan="8" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
                                             <td class="text-right border-0 pt-6">
                                                 <div class="px-3 py-2 text-base font-bold text-color">
                                                     {{ calcularSubtotalReferencias() | currency: 'COP' : 'symbol' : '1.0-0' }}
@@ -294,6 +322,15 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                     <div class="flex flex-col gap-6">
                         <p-card header="Logística y Entrega">
                             <div class="flex flex-col gap-4">
+                                @if (ultimaRecepcion()?.observaciones; as observacionesRecepcion) {
+                                    <div class="flex items-start gap-3 bg-surface-50 dark:bg-surface-800 p-3 rounded border border-surface-200 dark:border-surface-700">
+                                        <i class="pi pi-info-circle text-primary text-lg mt-0.5"></i>
+                                        <div class="flex flex-col">
+                                            <span class="text-xs font-bold text-gray-500 uppercase">Novedades de la última recepción</span>
+                                            <span class="text-sm text-color whitespace-pre-wrap break-words">{{ observacionesRecepcion }}</span>
+                                        </div>
+                                    </div>
+                                }
                                 <div class="flex items-center gap-3">
                                     <i class="pi pi-map-marker text-primary text-xl"></i>
                                     <div class="flex flex-col">
@@ -389,6 +426,8 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
                 <app-tercero-form [terceroId]="t.id" [isViewMode]="true" [showLandingAccess]="false" (onCancel)="displayTerceroDialog.set(false)"></app-tercero-form>
             }
         </p-dialog>
+
+        <app-recepcion-compra-modal [ordenCompra]="ordenCompra()" [visible]="recepcionModalVisible()" (cerrado)="onRecepcionModalCerrado()" (recepcionRegistrada)="onRecepcionRegistrada()" />
     `,
     styles: []
 })
@@ -397,6 +436,8 @@ export class DetailComponent implements OnInit, OnDestroy {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly maquinaService = inject(MaquinaService);
+    private readonly authService = inject(AuthService);
+    private readonly ordenCompraService = inject(OrdenCompraService);
     private readonly destroy$ = new Subject<void>();
 
     ordenCompraId = signal<number>(0);
@@ -407,8 +448,10 @@ export class DetailComponent implements OnInit, OnDestroy {
     motivoCancelacion = signal('');
     displayMaquinaDialog = signal(false);
     displayTerceroDialog = signal(false);
+    recepcionModalVisible = signal(false);
     selectedMaquina = signal<MaquinaDetalle | null>(null);
     selectedTercero = signal<PedidoTercero | null>(null);
+    ultimaRecepcion = signal<RecepcionCompra | null>(null);
 
     maquinaModelo = computed(() => this.selectedMaquina()?.modelo || 'Máquina');
     maquinaFabricante = computed(() => {
@@ -431,7 +474,16 @@ export class DetailComponent implements OnInit, OnDestroy {
                 .subscribe((val) => {
                     if (val) this.ordenCompra.set(val);
                 });
+
+            this.loadUltimaRecepcion(+id);
         }
+    }
+
+    private loadUltimaRecepcion(ordenCompraId: number): void {
+        this.ordenCompraService.listarRecepciones(ordenCompraId).subscribe({
+            next: (recepciones) => this.ultimaRecepcion.set(recepciones[0] ?? null),
+            error: () => this.ultimaRecepcion.set(null)
+        });
     }
 
     ngOnDestroy(): void {
@@ -453,6 +505,38 @@ export class DetailComponent implements OnInit, OnDestroy {
 
     puedeCancelar(): boolean {
         return ordenCompraPuedeCancelar(this.ordenCompra()?.estado ?? null);
+    }
+
+    puedeRecibir(): boolean {
+        const tieneRol = this.authService.hasAnyRole(['Logistica', 'Administrador', 'super_admin']);
+
+        return tieneRol && ordenCompraPuedeRecibir(this.ordenCompra()?.estado ?? null);
+    }
+
+    openRecepcionModal(): void {
+        this.recepcionModalVisible.set(true);
+    }
+
+    onRecepcionModalCerrado(): void {
+        this.recepcionModalVisible.set(false);
+    }
+
+    onRecepcionRegistrada(): void {
+        this.recepcionModalVisible.set(false);
+        this.store.dispatch(loadOrdenCompraById({ id: this.ordenCompraId() }));
+        this.loadUltimaRecepcion(this.ordenCompraId());
+    }
+
+    getRecepcionSeverity(estado: EstadoRecepcion): 'success' | 'info' | 'warn' {
+        return estadoRecepcionSeverity(estado);
+    }
+
+    getRecepcionLabel(estado: EstadoRecepcion): string {
+        return estadoRecepcionLabel(estado);
+    }
+
+    progresoRecepcionItem(item: OrdenCompraReferencia): number {
+        return ordenCompraProgresoItem(item);
     }
 
     transitionTo(estadoDestino: OrdenCompraEstado): void {

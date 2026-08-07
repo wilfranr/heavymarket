@@ -16,6 +16,20 @@ class StoreRecepcionCompraRequest extends FormRequest
     }
 
     /**
+     * Cuando la ruta está vinculada directamente a una Orden de Compra
+     * (POST /ordenes-compra/{orden_compra}/recepciones) se infiere
+     * orden_compra_id desde el binding si el payload no lo trae explícito.
+     */
+    protected function prepareForValidation(): void
+    {
+        $ordenCompra = $this->route('orden_compra');
+
+        if ($ordenCompra && ! $this->filled('orden_compra_id')) {
+            $this->merge(['orden_compra_id' => $ordenCompra->id]);
+        }
+    }
+
+    /**
      * @return array<string, mixed>
      */
     public function rules(): array

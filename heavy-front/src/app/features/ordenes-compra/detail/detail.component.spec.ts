@@ -1,4 +1,4 @@
-import { ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTransitar } from './detail.component';
+import { ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTransitar, ordenCompraProgresoItem } from './detail.component';
 import { OrdenCompraEstado } from '../../../core/models/orden-compra.model';
 
 describe('Detalle de orden de compra - reglas de estado', () => {
@@ -21,10 +21,19 @@ describe('Detalle de orden de compra - reglas de estado', () => {
         expect(ordenCompraPuedeTransitar('Cerrada' as OrdenCompraEstado, 'Recibida')).toBe(false);
     });
 
-    it('no permite recepción directa desde la orden de compra', () => {
-        expect(ordenCompraPuedeRecibir('Confirmada')).toBe(false);
-        expect(ordenCompraPuedeRecibir('Recibida parcialmente')).toBe(false);
-        expect(ordenCompraPuedeRecibir('Enviada')).toBe(false);
+    it('permite recepción directa desde la orden de compra en estados despachables', () => {
+        expect(ordenCompraPuedeRecibir('Enviada')).toBe(true);
+        expect(ordenCompraPuedeRecibir('Confirmada')).toBe(true);
+        expect(ordenCompraPuedeRecibir('Despachada')).toBe(true);
+        expect(ordenCompraPuedeRecibir('Recibida parcialmente')).toBe(true);
+    });
+
+    it('no permite recepción directa fuera del rango recepcionable', () => {
+        expect(ordenCompraPuedeRecibir('Generada')).toBe(false);
+        expect(ordenCompraPuedeRecibir('Pagada')).toBe(false);
+        expect(ordenCompraPuedeRecibir('Recibida')).toBe(false);
+        expect(ordenCompraPuedeRecibir('Cancelada')).toBe(false);
+        expect(ordenCompraPuedeRecibir(null)).toBe(false);
     });
 
     it('permite cancelar solo estados no terminales sin recepción parcial', () => {
@@ -34,5 +43,13 @@ describe('Detalle de orden de compra - reglas de estado', () => {
         expect(ordenCompraPuedeCancelar('Pagada')).toBe(true);
         expect(ordenCompraPuedeCancelar('Despachada')).toBe(true);
         expect(ordenCompraPuedeCancelar('Recibida parcialmente')).toBe(false);
+    });
+
+    it('calcula el progreso de recepción de un ítem como porcentaje', () => {
+        expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 4 })).toBe(40);
+        expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 10 })).toBe(100);
+        expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 0 })).toBe(0);
+        expect(ordenCompraProgresoItem({ cantidad: 0, cantidad_recibida: 0 })).toBe(0);
+        expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 15 })).toBe(100);
     });
 });
