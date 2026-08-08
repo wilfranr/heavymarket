@@ -75,11 +75,13 @@ class PedidoReferenciaResource extends JsonResource
                         : null,
                     'maquina' => $pedido->relationLoaded('maquina') && $pedido->maquina
                         ? [
+                            'id' => $pedido->maquina->id,
                             'tipo' => $pedido->maquina->tipo,
-                            'marca' => $pedido->maquina->marca,
+                            'marca' => $pedido->maquina->fabricante?->nombre ?? 'N/A',
                             'modelo' => $pedido->maquina->modelo,
                             'serie' => $pedido->maquina->serie,
-                            'id_interno' => $pedido->maquina->id_interno,
+                            'codigo_interno' => $pedido->maquina->codigo_interno,
+                            'estado_revision' => $pedido->maquina->estado_revision,
                         ]
                         : null,
                 ];

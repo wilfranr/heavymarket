@@ -1,247 +1,268 @@
 <p-toast></p-toast>
 
 @if (loading()) {
-<div class="p-6">
-    <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
-    <p-skeleton width="100%" height="300px"></p-skeleton>
-</div>
+    <div class="p-6">
+        <p-skeleton width="100%" height="200px" styleClass="mb-4"></p-skeleton>
+        <p-skeleton width="100%" height="300px"></p-skeleton>
+    </div>
 } @else {
-<div class="min-h-screen p-6 font-sans text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-transparent">
-    <div class="max-w-[1906px] mx-auto">
-        <!-- Header -->
-        <div class="flex justify-between items-center mb-6 px-8">
-            <div>
-                <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">Costeo > Editar</div>
-                <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500">Costeo proveedor</h1>
-            </div>
-            <div class="flex gap-4 items-center">
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="guardarSeleccion()" [disabled]="submitting() || !hayFilasEditables()">
-                    <i class="pi pi-save"></i>
-                    <span>Guardar</span>
-                </button>
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="toggleModoEdicion()" [disabled]="activeStatus() === 'pending' || !opportunities().length">
-                    <i class="pi pi-pencil"></i>
-                    <span>{{ modoEdicion() ? 'Ver' : 'Editar' }}</span>
-                </button>
-                <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="finalizarCosteo()" [disabled]="submitting() || activeStatus() !== 'pending'">
-                    <i class="pi pi-check-circle"></i>
-                    <span>Finalizar</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Filtro de estado -->
-        <div class="px-8 mb-6">
-            <div class="flex flex-wrap items-center gap-4">
-                <label class="text-sm font-medium" for="estadoCosteo">Estado de ofertas</label>
-                <p-select
-                    inputId="estadoCosteo"
-                    [options]="estadoOptions"
-                    [ngModel]="activeStatus()"
-                    (ngModelChange)="onStatusChange($event)"
-                    optionLabel="label"
-                    optionValue="value"
-                    styleClass="min-w-[220px]"
-                ></p-select>
-                @if (pedidosDisponibles().length > 1) {
-                <label class="text-sm font-medium ml-4" for="pedidoActivo">Pedido</label>
-                <p-select
-                    inputId="pedidoActivo"
-                    [options]="pedidosDisponibles()"
-                    [ngModel]="activePedidoId()"
-                    (ngModelChange)="onPedidoChange($event)"
-                    optionLabel="label"
-                    optionValue="value"
-                    styleClass="min-w-[220px]"
-                ></p-select>
-                }
-            </div>
-        </div>
-
-        @if (pedidoActivo(); as pedido) {
-        <!-- Tarjetas informativas -->
-        <div class="flex gap-6 mb-10 px-8">
-            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
-                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del pedido</span>
-                    <div class="w-[47px] h-[44px] flex items-center justify-center">
-                        <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
-                    </div>
+    <div class="min-h-screen p-6 font-sans text-slate-700 dark:text-slate-200 bg-slate-50 dark:bg-transparent">
+        <div class="max-w-[1906px] mx-auto">
+            <!-- Header -->
+            <div class="flex justify-between items-center mb-6 px-8">
+                <div>
+                    <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">Costeo > Editar</div>
+                    <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500">Costeo proveedor</h1>
                 </div>
-                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Documento:</span> <span>Análisis</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Consecutivo:</span> <span>{{ pedido.id }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Creación:</span> <span>{{ pedido.created_at | date:'MMMM d, y' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Actualización:</span> <span>{{ pedido.updated_at | date:'MMMM d, y' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Usuario:</span> <span>{{ pedido.user?.name || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>Asesor</span></div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="text-blue-500 font-semibold">Estado:</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(pedido.estado)">{{ pedidoEstadoEtiqueta(pedido.estado) }}</span>
-                    </div>
+                <div class="flex gap-4 items-center">
+                    <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="guardarSeleccion()" [disabled]="submitting() || !hayFilasEditables()">
+                        <i class="pi pi-save"></i>
+                        <span>Guardar</span>
+                    </button>
+                    <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="toggleModoEdicion()" [disabled]="activeStatus() === 'pending' || !opportunities().length">
+                        <i class="pi pi-pencil"></i>
+                        <span>{{ modoEdicion() ? 'Ver' : 'Editar' }}</span>
+                    </button>
+                    <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="finalizarCosteo()" [disabled]="submitting() || activeStatus() !== 'pending'">
+                        <i class="pi pi-check-circle"></i>
+                        <span>Finalizar</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
-                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la máquina</span>
-                    <div class="w-[47px] h-[44px] flex items-center justify-center">
-                        <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
-                    @if (pedido.maquina) {
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Máquina:</span> <span>{{ pedido.maquina.tipo || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Fabricante:</span> <span>{{ pedido.maquina.marca || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Modelo:</span> <span>{{ pedido.maquina.modelo || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Serie:</span> <span>{{ pedido.maquina.serie || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">ID adicional:</span> <span>{{ pedido.maquina.id_interno || '----' }}</span></div>
-                    } @else {
-                    <p class="text-gray-500">Sin máquina asociada</p>
+            <!-- Filtro de estado -->
+            <div class="px-8 mb-6">
+                <div class="flex flex-wrap items-center gap-4">
+                    <label class="text-sm font-medium" for="estadoCosteo">Estado de ofertas</label>
+                    <p-select inputId="estadoCosteo" [options]="estadoOptions" [ngModel]="activeStatus()" (ngModelChange)="onStatusChange($event)" optionLabel="label" optionValue="value" styleClass="min-w-[220px]"></p-select>
+                    @if (pedidosDisponibles().length > 1) {
+                        <label class="text-sm font-medium ml-4" for="pedidoActivo">Pedido</label>
+                        <p-select inputId="pedidoActivo" [options]="pedidosDisponibles()" [ngModel]="activePedidoId()" (ngModelChange)="onPedidoChange($event)" optionLabel="label" optionValue="value" styleClass="min-w-[220px]"></p-select>
                     }
                 </div>
             </div>
-        </div>
 
-        <!-- Tabla de ítems -->
-        @if (filasPedidoActivo().length > 0) {
-        <div class="px-8">
-            <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-none w-full">
-                <div class="grid grid-cols-[2.5rem_4.5rem_minmax(0,0.9fr)_minmax(0,1.4fr)_4rem_4.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
-                    <div class="text-center">Ítem</div>
-                    <div class="text-center">Cant. pedida</div>
-                    <div>Referencia</div>
-                    <div>Descripción</div>
-                    <div class="text-center">Peso</div>
-                    <div class="text-center">Cant. Cotizada</div>
-                    <div>Marca</div>
-                    <div>Entrega</div>
-                    <div>{{ providerInfo().is_national ? 'Costo COP' : 'Costo USD' }}</div>
-                    <div>Costo Total</div>
+            @if (pedidoActivo(); as pedido) {
+                <!-- Tarjetas informativas -->
+                <div class="flex gap-6 mb-10 px-8">
+                    <app-pedido-info-card mode="view" [pedido]="$any(pedido)"></app-pedido-info-card>
+                    <app-maquina-info-card mode="view" [maquina]="pedido.maquina ?? null" [showDetailButton]="true" (viewMaquina)="viewMaquina($event)"></app-maquina-info-card>
                 </div>
 
-                @for (ref of filasPedidoActivo(); track ref.id) {
-                <div class="grid grid-cols-[2.5rem_4.5rem_minmax(0,0.9fr)_minmax(0,1.4fr)_4rem_4.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 items-center mb-3 px-2 min-w-0">
-                    <div class="text-center flex justify-center min-w-0">
-                        <p-checkbox [(ngModel)]="ref.form_seleccionado" [binary]="true" [disabled]="!filaEditable(ref)"></p-checkbox>
+                <!-- Tabla de ítems -->
+                @if (filasPedidoActivo().length > 0) {
+                    <div class="px-8">
+                        <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-4 shadow-sm border border-gray-200 dark:border-none w-full">
+                            <div class="grid grid-cols-[2.5rem_4.5rem_minmax(0,0.9fr)_minmax(0,1.4fr)_4rem_4.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 text-xs font-semibold text-gray-400 mb-2 px-2">
+                                <div class="text-center">Ítem</div>
+                                <div class="text-center">Cant. pedida</div>
+                                <div>Referencia</div>
+                                <div>Descripción</div>
+                                <div class="text-center">Peso</div>
+                                <div class="text-center">Cant. Cotizada</div>
+                                <div>Marca</div>
+                                <div>Entrega</div>
+                                <div>{{ providerInfo().is_national ? 'Costo COP' : 'Costo USD' }}</div>
+                                <div>Costo Total</div>
+                            </div>
+
+                            @for (ref of filasPedidoActivo(); track ref.id) {
+                                <div class="grid grid-cols-[2.5rem_4.5rem_minmax(0,0.9fr)_minmax(0,1.4fr)_4rem_4.5rem_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)] gap-2 items-center mb-3 px-2 min-w-0">
+                                    <div class="text-center flex justify-center min-w-0">
+                                        <p-checkbox [(ngModel)]="ref.form_seleccionado" [binary]="true" [disabled]="!filaEditable(ref)"></p-checkbox>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="number"
+                                            [value]="ref.cantidad"
+                                            readonly
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded"
+                                        />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="text"
+                                            [value]="ref.referencia?.referencia || 'N/A'"
+                                            readonly
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
+                                        />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="text"
+                                            [value]="ref.definicion || 'Sin definición'"
+                                            readonly
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
+                                        />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="number"
+                                            [value]="ref.peso || 0"
+                                            readonly
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded"
+                                        />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="number"
+                                            [(ngModel)]="ref.form_cantidad_cotizada"
+                                            min="1"
+                                            [disabled]="!filaEditable(ref)"
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded"
+                                        />
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p-select
+                                            [options]="marcas"
+                                            [(ngModel)]="ref.form_marca_id"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            [filter]="true"
+                                            filterBy="label"
+                                            placeholder="Seleccionar"
+                                            styleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none h-[40px] flex items-center text-gray-800 dark:text-white"
+                                            [showClear]="true"
+                                            appendTo="body"
+                                            [disabled]="!filaEditable(ref)"
+                                        ></p-select>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p-select
+                                            [options]="tiemposEntrega"
+                                            [(ngModel)]="ref.form_entrega"
+                                            optionLabel="label"
+                                            optionValue="value"
+                                            placeholder="Seleccionar"
+                                            styleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none h-[40px] flex items-center text-gray-800 dark:text-white"
+                                            appendTo="body"
+                                            [disabled]="!filaEditable(ref)"
+                                        ></p-select>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p-inputNumber
+                                            [(ngModel)]="ref.form_costo"
+                                            [mode]="'currency'"
+                                            [currency]="providerInfo().is_national ? 'COP' : 'USD'"
+                                            [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'"
+                                            inputStyleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
+                                            styleClass="w-full min-w-0"
+                                            [min]="0"
+                                            [disabled]="!filaEditable(ref)"
+                                        ></p-inputNumber>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <input
+                                            pInputText
+                                            type="text"
+                                            [value]="formatearCostoTotal(ref)"
+                                            readonly
+                                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 font-bold"
+                                        />
+                                    </div>
+                                </div>
+                            }
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <input pInputText type="number" [value]="ref.cantidad" readonly class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded" />
+
+                    <!-- Totales -->
+                    <div class="px-8 mt-10 mb-20 flex justify-end">
+                        <div class="w-full max-w-md space-y-3">
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm font-semibold uppercase tracking-wide">Subtotal</span>
+                                <input
+                                    pInputText
+                                    type="text"
+                                    [value]="formatearMoneda(calcularSubtotal())"
+                                    readonly
+                                    class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold"
+                                />
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm font-semibold uppercase tracking-wide">Impuestos</span>
+                                <input
+                                    pInputText
+                                    type="text"
+                                    [value]="formatearMoneda(calcularImpuestos())"
+                                    readonly
+                                    class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold"
+                                />
+                            </div>
+                            <div class="flex items-center justify-between gap-4">
+                                <span class="text-sm font-semibold uppercase tracking-wide">Fletes</span>
+                                <input
+                                    pInputText
+                                    type="text"
+                                    [value]="formatearMoneda(calcularFletes())"
+                                    readonly
+                                    class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold"
+                                />
+                            </div>
+                            <div class="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
+                                <span class="text-base font-bold uppercase tracking-wide">Total</span>
+                                <input
+                                    pInputText
+                                    type="text"
+                                    [value]="formatearMoneda(calcularTotal())"
+                                    readonly
+                                    class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-bold"
+                                />
+                            </div>
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <input pInputText type="text" [value]="ref.referencia?.referencia || 'N/A'" readonly class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
+                } @else {
+                    <div class="px-8">
+                        <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-12 text-center border border-gray-200 dark:border-none">
+                            <p class="text-gray-500 dark:text-gray-400 m-0">No hay referencias disponibles para este pedido en el estado seleccionado.</p>
+                        </div>
                     </div>
-                    <div class="min-w-0">
-                        <input pInputText type="text" [value]="ref.definicion || 'Sin definición'" readonly class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3" />
-                    </div>
-                    <div class="min-w-0">
-                        <input pInputText type="number" [value]="ref.peso || 0" readonly class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded" />
-                    </div>
-                    <div class="min-w-0">
-                        <input
-                            pInputText
-                            type="number"
-                            [(ngModel)]="ref.form_cantidad_cotizada"
-                            min="1"
-                            [disabled]="!filaEditable(ref)"
-                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] text-center rounded"
-                        />
-                    </div>
-                    <div class="min-w-0">
-                        <p-select
-                            [options]="marcas"
-                            [(ngModel)]="ref.form_marca_id"
-                            optionLabel="label"
-                            optionValue="value"
-                            [filter]="true"
-                            filterBy="label"
-                            placeholder="Seleccionar"
-                            styleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none h-[40px] flex items-center text-gray-800 dark:text-white"
-                            [showClear]="true"
-                            appendTo="body"
-                            [disabled]="!filaEditable(ref)"
-                        ></p-select>
-                    </div>
-                    <div class="min-w-0">
-                        <p-select
-                            [options]="tiemposEntrega"
-                            [(ngModel)]="ref.form_entrega"
-                            optionLabel="label"
-                            optionValue="value"
-                            placeholder="Seleccionar"
-                            styleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none h-[40px] flex items-center text-gray-800 dark:text-white"
-                            appendTo="body"
-                            [disabled]="!filaEditable(ref)"
-                        ></p-select>
-                    </div>
-                    <div class="min-w-0">
-                        <p-inputNumber
-                            [(ngModel)]="ref.form_costo"
-                            [mode]="'currency'"
-                            [currency]="providerInfo().is_national ? 'COP' : 'USD'"
-                            [locale]="providerInfo().is_national ? 'es-CO' : 'en-US'"
-                            inputStyleClass="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3"
-                            styleClass="w-full min-w-0"
-                            [min]="0"
-                            [disabled]="!filaEditable(ref)"
-                        ></p-inputNumber>
-                    </div>
-                    <div class="min-w-0">
-                        <input
-                            pInputText
-                            type="text"
-                            [value]="formatearCostoTotal(ref)"
-                            readonly
-                            class="w-full min-w-0 bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 font-bold"
-                        />
-                    </div>
-                </div>
                 }
-            </div>
+            } @else {
+                <div class="px-8">
+                    <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-12 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center gap-4">
+                        <div class="w-20 h-20 bg-gray-100 dark:bg-[#343743] rounded-full flex items-center justify-center">
+                            <i class="pi pi-inbox text-4xl text-gray-400"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-800 dark:text-white m-0">Sin oportunidades pendientes</h3>
+                            <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">No hay piezas que coincidan con su especialidad en este momento.</p>
+                        </div>
+                        <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
+                    </div>
+                </div>
+            }
         </div>
-
-        <!-- Totales -->
-        <div class="px-8 mt-10 mb-20 flex justify-end">
-            <div class="w-full max-w-md space-y-3">
-                <div class="flex items-center justify-between gap-4">
-                    <span class="text-sm font-semibold uppercase tracking-wide">Subtotal</span>
-                    <input pInputText type="text" [value]="formatearMoneda(calcularSubtotal())" readonly class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold" />
-                </div>
-                <div class="flex items-center justify-between gap-4">
-                    <span class="text-sm font-semibold uppercase tracking-wide">Impuestos</span>
-                    <input pInputText type="text" [value]="formatearMoneda(calcularImpuestos())" readonly class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold" />
-                </div>
-                <div class="flex items-center justify-between gap-4">
-                    <span class="text-sm font-semibold uppercase tracking-wide">Fletes</span>
-                    <input pInputText type="text" [value]="formatearMoneda(calcularFletes())" readonly class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-semibold" />
-                </div>
-                <div class="flex items-center justify-between gap-4 pt-3 border-t border-gray-200 dark:border-gray-700">
-                    <span class="text-base font-bold uppercase tracking-wide">Total</span>
-                    <input pInputText type="text" [value]="formatearMoneda(calcularTotal())" readonly class="w-[220px] bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none text-gray-800 dark:text-white h-[40px] rounded px-3 text-right font-bold" />
-                </div>
-            </div>
-        </div>
-        } @else {
-        <div class="px-8">
-            <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-12 text-center border border-gray-200 dark:border-none">
-                <p class="text-gray-500 dark:text-gray-400 m-0">No hay referencias disponibles para este pedido en el estado seleccionado.</p>
-            </div>
-        </div>
-        }
-        } @else {
-        <div class="px-8">
-            <div class="bg-white dark:bg-[#2A2D36] rounded-xl p-12 text-center border-2 border-dashed border-gray-200 dark:border-gray-700 flex flex-col items-center gap-4">
-                <div class="w-20 h-20 bg-gray-100 dark:bg-[#343743] rounded-full flex items-center justify-center">
-                    <i class="pi pi-inbox text-4xl text-gray-400"></i>
-                </div>
-                <div>
-                    <h3 class="text-xl font-bold text-gray-800 dark:text-white m-0">Sin oportunidades pendientes</h3>
-                    <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">No hay piezas que coincidan con su especialidad en este momento.</p>
-                </div>
-                <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
-            </div>
-        </div>
-        }
     </div>
-</div>
 }
+
+<!-- Modal Detalle de Máquina -->
+<p-dialog
+    [visible]="displayMaquinaDialog()"
+    (visibleChange)="displayMaquinaDialog.set($event)"
+    [modal]="true"
+    [style]="{ width: '900px', 'max-width': '95vw' }"
+    [showHeader]="true"
+    [closable]="true"
+    [dismissableMask]="true"
+    appendTo="body"
+    styleClass="machine-detail-modal"
+>
+    <ng-template pTemplate="header">
+        <div class="w-full text-center">
+            @if (selectedMaquina(); as m) {
+                <div class="space-y-1">
+                    <h2 class="text-2xl font-bold text-yellow-500 uppercase tracking-wider m-0">{{ m.modelo || m.tipo || 'Máquina' }}</h2>
+                    <p class="text-sm text-gray-600 dark:text-gray-300 m-0">Fabricante: {{ m.marca || m.fabricante?.nombre || 'No registrado' }}</p>
+                </div>
+            }
+        </div>
+    </ng-template>
+    @if (selectedMaquina(); as m) {
+        <app-maquina-detail [maquina]="m"></app-maquina-detail>
+    }
+</p-dialog>

@@ -34,7 +34,7 @@ import { Popover } from 'primeng/popover';
 
 import { updatePedido, loadPedido, updatePedidoSuccess, updatePedidoFailure } from '../../../store/pedidos/actions/pedidos.actions';
 import { Pedido, UpdatePedidoDto, PedidoEstado, PedidoReferencia, PedidoReferenciaImagen } from '../../../core/models/pedido.model';
-import { PEDIDO_ESTADO_ETIQUETA, pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
+import { PEDIDO_ESTADO_ETIQUETA } from '../../../core/utils/pedido-estado-tag';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { ReferenciaService } from '../../../core/services/referencia.service';
@@ -51,6 +51,8 @@ import { ReferenciaCreateModalComponent } from '../../../shared/components/refer
 import { ReferenciaEditModalComponent } from '../../../shared/components/referencia-edit-modal/referencia-edit-modal.component';
 import { ArticuloCreateModalComponent } from '../../../shared/components/articulo-create-modal/articulo-create-modal.component';
 import { ArticuloEditModalComponent } from '../../../shared/components/articulo-edit-modal/articulo-edit-modal.component';
+import { PedidoInfoCardComponent } from '../../../shared/components/pedido-info-card/pedido-info-card.component';
+import { MaquinaInfoCardComponent } from '../../../shared/components/maquina-info-card/maquina-info-card.component';
 import { Referencia } from '../../../core/models/referencia.model';
 
 @Component({
@@ -86,16 +88,15 @@ import { Referencia } from '../../../core/models/referencia.model';
         ReferenciaEditModalComponent,
         ArticuloCreateModalComponent,
         ArticuloEditModalComponent,
-        PopoverModule
+        PopoverModule,
+        PedidoInfoCardComponent,
+        MaquinaInfoCardComponent
     ],
     providers: [MessageService],
     templateUrl: './analysis.html',
     styleUrl: './analysis.scss'
 })
 export class AnalysisComponent implements OnInit {
-    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
-    readonly pedidoEstadoTagClass = pedidoEstadoTagClass;
-
     private readonly fb = inject(FormBuilder);
     private readonly store = inject(Store);
     private readonly actions$ = inject(Actions);
@@ -1214,7 +1215,15 @@ export class AnalysisComponent implements OnInit {
     }
 
     /** En análisis, la descripción de la fila corresponde a descripcionEspecifica del artículo. */
-    private descripcionAnalisisDesdeOpcion(opt: { articulo_id?: number | null; es_temporal?: boolean; es_pieza_estandar?: boolean; definicion_articulo?: string; descripcion_especifica_articulo?: string; articulo_nombre?: string; descripcion?: string }): string {
+    private descripcionAnalisisDesdeOpcion(opt: {
+        articulo_id?: number | null;
+        es_temporal?: boolean;
+        es_pieza_estandar?: boolean;
+        definicion_articulo?: string;
+        descripcion_especifica_articulo?: string;
+        articulo_nombre?: string;
+        descripcion?: string;
+    }): string {
         if (opt.articulo_id && !opt.es_temporal) {
             return String(opt.descripcion_especifica_articulo || '').trim() || String(opt.articulo_nombre || '').trim() || String(opt.definicion_articulo || '').trim() || String(opt.descripcion || '').trim() || 'Sin descripción';
         }
@@ -1730,12 +1739,6 @@ export class AnalysisComponent implements OnInit {
     viewMaquina(maquina: any): void {
         this.selectedMaquina = maquina;
         this.displayMaquinaDialog = true;
-    }
-
-    getLabelConteo(conteo: number): string {
-        if (conteo === 0) return 'Sin comentarios';
-        if (conteo === 1) return '1 comentario';
-        return `${conteo} comentarios`;
     }
 
     /**

@@ -30,87 +30,8 @@
         <!-- Info Cards -->
         @let pedido = (pedido$ | async);
         <div class="flex gap-6 mb-10 px-8">
-            <!-- Order Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] rounded-lg shadow-md">
-                <div class="p-3 flex justify-between items-center border-b border-[var(--p-content-border-color)]">
-                    <span class="font-bold text-base pl-2">Información del pedido</span>
-                    <i class="pi pi-shopping-bag text-xl pr-2"></i>
-                </div>
-                <div class="p-4 space-y-1 flex-1 text-sm bg-transparent">
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Documento:</span>
-                        <span>Análisis</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Consecutivo:</span>
-                        <span>{{ pedido?.id }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Creación:</span>
-                        <span>{{ pedido?.created_at | date:'MMMM d, y' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Actualización:</span>
-                        <span>{{ pedido?.updated_at | date:'MMMM d, y' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Usuario:</span>
-                        <span>{{ pedido?.user?.name }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-green-400 font-semibold">Cargo:</span>
-                        <span>Asesor</span>
-                    </div>
-                    <div class="flex gap-2 items-center">
-                        <span class="text-green-400 font-semibold">Estado:</span>
-                        <p-tag [value]="pedidoEstadoEtiqueta(pedido?.estado)" [styleClass]="'px-3 py-1 ' + pedidoEstadoTagClass(pedido?.estado)"></p-tag>
-                    </div>
-
-                    <!-- Botón Comentarios del pedido -->
-                    @if (comentariosDelPedido.length > 0) {
-                    <div class="mt-3 pt-2 border-t border-gray-100/10 dark:border-gray-700/50">
-                        <p-button [label]="getLabelConteo(comentariosDelPedido.length)" icon="pi pi-comments" styleClass="text-sm !text-green-400" [text]="true" (onClick)="displayComentariosPedidoDialog = true"> </p-button>
-                    </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Machine Info Card -->
-            <div class="figma-card-analysis p-0 overflow-hidden flex flex-col flex-1 min-h-[260px] rounded-lg shadow-md">
-                @let maquina = pedido?.maquina;
-                <div class="p-3 flex justify-between items-center border-b border-[var(--p-content-border-color)]">
-                    <span class="font-bold text-base pl-2">Información de la máquina</span>
-                    <button type="button" pButton icon="pi pi-eye" [text]="true" [rounded]="true" styleClass="!text-white" (click)="viewMaquina(maquina)"></button>
-                </div>
-                <div class="p-4 space-y-1 flex-1 text-sm bg-transparent overflow-y-auto min-h-0">
-                    <div class="flex gap-2">
-                        <span class="text-primary-400 font-semibold">Máquina:</span>
-                        <span>{{ maquina?.tipo || 'N/A' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-primary-400 font-semibold">Fabricante:</span>
-                        <span>{{ maquina?.marca || 'N/A' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-primary-400 font-semibold">Modelo:</span>
-                        <span>{{ maquina?.modelo || 'N/A' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-primary-400 font-semibold">Serie:</span>
-                        <span>{{ maquina?.serie || 'N/A' }}</span>
-                    </div>
-                    <div class="flex gap-2">
-                        <span class="text-primary-400 font-semibold">ID adicional:</span>
-                        <span>{{ maquina?.id_interno || '----' }}</span>
-                    </div>
-                    @if (maquina?.estado_revision === 'por_revisar') {
-                    <div class="mt-2 flex items-center gap-2 rounded border border-amber-400/50 bg-amber-500/15 px-2 py-1.5">
-                        <i class="pi pi-exclamation-triangle text-amber-300 text-xs shrink-0"></i>
-                        <span class="text-[11px] font-medium text-amber-100 leading-tight">Máquina pendiente por revisar</span>
-                    </div>
-                    }
-                </div>
-            </div>
+            <app-pedido-info-card mode="view" [pedido]="pedido" [comentariosCount]="comentariosDelPedido.length" (openComments)="displayComentariosPedidoDialog = true"></app-pedido-info-card>
+            <app-maquina-info-card mode="view" [maquina]="pedido?.maquina" [showDetailButton]="true" (viewMaquina)="viewMaquina($event)"></app-maquina-info-card>
         </div>
 
         <!-- Machine Detail Modal -->
@@ -353,25 +274,9 @@
                                     <td class="p-3 pr-4 text-center rounded-r-lg">
                                         <div class="flex gap-1 justify-center items-center flex-wrap">
                                             @if (parte.get('referencia_id')?.value) {
-                                            <p-button
-                                                icon="pi pi-pencil"
-                                                [rounded]="true"
-                                                [text]="true"
-                                                severity="warn"
-                                                pTooltip="Gestionar artículo asociado"
-                                                tooltipPosition="top"
-                                                (onClick)="abrirEditarReferencia(i, j)"
-                                            />
+                                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Gestionar artículo asociado" tooltipPosition="top" (onClick)="abrirEditarReferencia(i, j)" />
                                             } @else {
-                                            <p-button
-                                                icon="pi pi-pencil"
-                                                [rounded]="true"
-                                                [text]="true"
-                                                severity="warn"
-                                                pTooltip="Crear artículo para esta referencia"
-                                                tooltipPosition="top"
-                                                (onClick)="abrirCrearArticuloDesdeParte(i, j)"
-                                            />
+                                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" pTooltip="Crear artículo para esta referencia" tooltipPosition="top" (onClick)="abrirCrearArticuloDesdeParte(i, j)" />
                                             } @if (j > 0) {
                                             <p-button icon="pi pi-minus" [rounded]="true" severity="danger" (onClick)="removeParte(i, j)" />
                                             }

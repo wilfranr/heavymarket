@@ -27,7 +27,6 @@ import { PedidoService } from '../../../core/services/pedido.service';
 import { loadPedido, loadPedidoSuccess } from '../../../store/pedidos/actions/pedidos.actions';
 import { selectPedidoById, selectPedidosLoading } from '../../../store/pedidos/selectors/pedidos.selectors';
 import { Pedido, PedidoEstado } from '../../../core/models/pedido.model';
-import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { Tercero } from '../../../core/models/tercero.model';
 import { TRMService } from '../../../core/services/trm.service';
@@ -38,6 +37,9 @@ import { ListaService } from '../../../core/services/lista.service';
 import { Lista } from '../../../core/models/lista.model';
 import { TerceroCreateModalComponent } from '../../../shared/components/tercero-create-modal/tercero-create-modal.component';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
+import { PedidoInfoCardComponent } from '../../../shared/components/pedido-info-card/pedido-info-card.component';
+import { MaquinaInfoCardComponent } from '../../../shared/components/maquina-info-card/maquina-info-card.component';
+import { TerceroInfoCardComponent } from '../../../shared/components/tercero-info-card/tercero-info-card.component';
 import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
 
 export function observacionesCotizacionPayload(observaciones: string): string | undefined {
@@ -71,7 +73,10 @@ export function observacionesCotizacionPayload(observaciones: string): string | 
         ToggleSwitchModule,
         InputNumberModule,
         TerceroCreateModalComponent,
-        ListaCreateModalComponent
+        ListaCreateModalComponent,
+        PedidoInfoCardComponent,
+        MaquinaInfoCardComponent,
+        TerceroInfoCardComponent
     ],
     providers: [MessageService],
     templateUrl: './costeo.html',
@@ -89,8 +94,6 @@ export class CosteoComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly cotizacionService = inject(CotizacionService);
     private readonly ubicacionService = inject(UbicacionService);
-
-    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
     pedidoId = signal<number>(0);
     pedido = signal<Pedido | null>(null);
@@ -342,10 +345,6 @@ export class CosteoComponent implements OnInit {
     eliminarProveedor(refIndex: number, provIndex: number): void {
         const proveedoresArray = this.referenciasFormArray.at(refIndex).get('proveedores') as FormArray;
         proveedoresArray.removeAt(provIndex);
-    }
-
-    getEstadoClase(estado: PedidoEstado): string {
-        return pedidoEstadoTagClass(estado);
     }
 
     // --- Imágenes y Galería ---

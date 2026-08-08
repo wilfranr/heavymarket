@@ -51,71 +51,9 @@
         } @if (pedido(); as pedido) {
         <!-- Top Info Cards Grid -->
         <div class="flex gap-6 mb-10 px-8">
-            <!-- Order Info -->
-            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
-                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información del pedido</span>
-                    <div class="w-[47px] h-[44px] flex items-center justify-center">
-                        <i class="pi pi-shopping-bag text-gray-600 dark:text-white text-xl"></i>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Documento:</span> <span>Análisis</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Consecutivo:</span> <span>{{ pedidoId() }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Creación:</span> <span>{{ pedido.created_at | date:'MMMM d, y' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Actualización:</span> <span>{{ pedido.updated_at | date:'MMMM d, y' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Usuario:</span> <span>{{ pedido.user?.name || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>Asesor</span></div>
-                    <div class="flex items-center gap-2 mt-2">
-                        <span class="text-blue-500 font-semibold">Estado:</span>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="getEstadoClase(estadoActual())"> {{ pedidoEstadoEtiqueta(estadoActual()) }} </span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Machine Info -->
-            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
-                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de la máquina</span>
-                    <div class="w-[47px] h-[44px] flex items-center justify-center">
-                        <i class="pi pi-cog text-gray-600 dark:text-white text-xl"></i>
-                    </div>
-                </div>
-                <div class="p-4 space-y-3 flex-1 text-sm bg-white dark:bg-[#343743]">
-                    @if (pedido.maquina) {
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Máquina:</span> <span>{{ pedido.maquina.tipo || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Fabricante:</span> <span>{{ pedido.maquina.marca || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Modelo:</span> <span>{{ pedido.maquina.modelo || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Serie:</span> <span>{{ pedido.maquina.serie || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">ID adicional:</span> <span>{{ pedido.maquina.id_interno || '----' }}</span></div>
-                    } @else {
-                    <p class="text-gray-500">Sin máquina asociada</p>
-                    }
-                </div>
-            </div>
-
-            <!-- Client Info -->
-            <div class="figma-card p-0 overflow-hidden flex flex-col flex-1 h-[280px] bg-white dark:bg-[#343743] rounded-lg shadow-md border border-gray-200 dark:border-none">
-                <div class="p-3 bg-gray-50 dark:bg-[#343743] flex justify-between items-center border-b border-gray-200 dark:border-none">
-                    <span class="font-bold text-gray-800 dark:text-white text-base pl-2">Información de tercero</span>
-                    <div class="flex gap-1">
-                        <i class="pi pi-envelope text-gray-600 dark:text-white text-xl p-2"></i>
-                        <i class="pi pi-whatsapp text-gray-600 dark:text-white text-xl p-2"></i>
-                    </div>
-                </div>
-                <div class="p-4 space-y-2 flex-1 text-sm bg-white dark:bg-[#343743]">
-                    @if (pedido.tercero) {
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo:</span> <span>{{ pedido.tercero.tipo || 'Cliente' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Razón social:</span> <span class="truncate">{{ pedido.tercero.nombre }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Tipo de documento:</span> <span>{{ pedido.tercero.tipo_documento || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Número de documento:</span> <span>{{ pedido.tercero.numero_documento || '---' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Ciudad:</span> <span>{{ pedido.tercero.ciudad?.name || '--' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Contacto:</span> <span>{{ pedido.contacto?.nombre || '--' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Cargo:</span> <span>{{ pedido.contacto?.cargo || '--' }}</span></div>
-                    <div class="flex items-center gap-2"><span class="text-blue-500 font-semibold">Teléfono:</span> <span>{{ pedido.tercero.telefono || '---' }}</span></div>
-                    }
-                </div>
-            </div>
+            <app-pedido-info-card mode="view" [pedido]="pedido" [consecutivo]="pedidoId()" [estado]="estadoActual()"></app-pedido-info-card>
+            <app-maquina-info-card mode="view" [maquina]="pedido.maquina"></app-maquina-info-card>
+            <app-tercero-info-card mode="view" [tercero]="pedido.tercero" [contacto]="pedido.contacto"></app-tercero-info-card>
         </div>
 
         <!-- Costeo Grid (Items) -->
@@ -376,14 +314,7 @@
 </div>
 }
 
-<p-dialog
-    [visible]="displayGenerarCotizacionDialog()"
-    (visibleChange)="displayGenerarCotizacionDialog.set($event)"
-    [modal]="true"
-    [style]="{ width: '520px', 'max-width': '95vw' }"
-    header="Confirmar Finalización"
-    appendTo="body"
->
+<p-dialog [visible]="displayGenerarCotizacionDialog()" (visibleChange)="displayGenerarCotizacionDialog.set($event)" [modal]="true" [style]="{ width: '520px', 'max-width': '95vw' }" header="Confirmar Finalización" appendTo="body">
     <div class="grid grid-cols-1 gap-4 pt-2">
         <div class="flex items-start gap-3 rounded-lg border p-3" style="border-color: var(--p-surface-border); background: var(--p-content-background)">
             <i class="pi pi-exclamation-triangle mt-1" style="color: var(--p-primary-color)"></i>

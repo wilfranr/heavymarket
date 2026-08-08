@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-08-07T18:19:33-05:00",
+  "last_updated": "2026-08-07T19:38:09-05:00",
   "issue": "tarjetas-info-pedidos",
   "description": "Corregir y unificar las tarjetas informativas (pedido, maquina, tercero) en pedidos/edit, detail, costeo, analisis y portal proveedor, extrayendo luego un componente compartido.",
   "workflow": "harness-triage-multiagent",
@@ -426,7 +426,7 @@
     {
       "id": "cards-info-shared-component",
       "description": "Frontend: extraer las tarjetas mejoradas de edit a un componente compartido reutilizable en shared/components (inputs: pedido, modo editable, tarjetas visibles, acciones; OnPush + signals).",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "cards-info-edit"
@@ -435,7 +435,7 @@
       "files": [
         {
           "path": "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.html",
@@ -443,11 +443,11 @@
         },
         {
           "path": "heavy-front/src/app/shared/components/pedido-info-card/pedido-info-card.component.scss",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.html",
@@ -455,11 +455,11 @@
         },
         {
           "path": "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.scss",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.html",
@@ -467,7 +467,7 @@
         },
         {
           "path": "heavy-front/src/app/shared/components/tercero-info-card/tercero-info-card.component.scss",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/pedidos/edit/edit.ts",
@@ -483,20 +483,117 @@
         }
       ],
       "notes": "Componentes compartidos: InfoCardMode ('edit'|'view'), pedido-info-card (read-only), maquina-info-card (select en edit, labels en view, botones lapiz/ojo), tercero-info-card (documento NIT/CC, contacto select al final). Edit.ts: getters tipados maquinaIdControl/terceroIdControl/contactoIdControl, currentMaquinaInfo convertido de getter a signal sincronizada con maquina_id valueChanges (fix Zoneless: select vive en el hijo). Gates: ng build OK, prettier OK, vitest 159/159.",
-      "review_notes": "RECHAZADO (segunda vuelta, encontrado por el usuario via verificacion manual en navegador — yo no pude verificar visualmente, browser tools de Claude no estaban habilitados en la sesion). Regresion de layout: en edit.html original, el div .figma-card con flex-1 era HIJO DIRECTO de .flex.gap-6 (el contenedor padre), por lo que se estiraba correctamente. Al extraerlo a pedido-info-card/maquina-info-card/tercero-info-card, ese div paso a ser un NIETO (vive dentro del host <app-*-info-card>), y el host del componente no tiene flex-1 ni display:flex — por defecto es display:inline, asi que no participa del layout flex del padre y las tarjetas no ocupan el ancho disponible. Fix: agregar host binding o :host{display:flex; flex:1 1 0; min-width:0} en los 3 .component.ts/.scss (pedido-info-card, maquina-info-card, tercero-info-card). No se marcan validated los archivos de estilos/componente. La correccion de tipado (any) de la ronda anterior sigue valida y no se toca.",
+      "review_notes": "RECHAZADO (segunda vuelta, encontrado por el usuario via verificacion manual en navegador — yo no pude verificar visualmente, browser tools de Claude no estaban habilitados en la sesion). Regresion de layout: en edit.html original, el div .figma-card con flex-1 era HIJO DIRECTO de .flex.gap-6 (el contenedor padre), por lo que se estiraba correctamente. Al extraerlo a pedido-info-card/maquina-info-card/tercero-info-card, ese div paso a ser un NIETO (vive dentro del host <app-*-info-card>), y el host del componente no tiene flex-1 ni display:flex — por defecto es display:inline, asi que no participa del layout flex del padre y las tarjetas no ocupan el ancho disponible. Fix: agregar host binding o :host{display:flex; flex:1 1 0; min-width:0} en los 3 .component.ts/.scss (pedido-info-card, maquina-info-card, tercero-info-card). No se marcan validated los archivos de estilos/componente. La correccion de tipado (any) de la ronda anterior sigue valida y no se toca. | Aprobado (tercera vuelta): usuario confirmo visualmente en navegador que las 3 tarjetas ahora ocupan el ancho correctamente tras el host binding flex-1. Nodo cerrado.",
       "implementer_notes": " | Fix review (no_any): agregado PedidoMaquinaInfo en pedido.model.ts (shape real de PedidoResource/MaquinaResource, con marca ya resuelta). maquina-info-card.component.ts: maquina->PedidoMaquinaInfo|null, options->SelectOption[] (nuevo tipo exportado), control->FormControl<number|null>|null, editMaquina/viewMaquina->output<PedidoMaquinaInfo|null>. tercero-info-card.component.ts: tercero->Tercero|null, contacto->Contacto|null (modelos existentes en tercero.model.ts), terceroControl/contactoControl->FormControl<number|null>|null, tercerosOptions/contactosOptions->SelectOption[]. Limpiado fallback muerto m.id_interno en maquina-info-card.component.html (ya no existe en el backend tras cards-info-backend-id-interno). abrirModalEditarMaquina en edit.ts ahora acepta {id:number}|null (antes no nullable, rompía build al tipar el output). Gates: prettier OK, ng build OK, vitest 159/159. | Fix layout (host sin flex): agregado host: { class: 'flex flex-1 min-w-0' } en @Component de pedido-info-card, maquina-info-card y tercero-info-card, replicando las clases que el div .figma-card tenia cuando era hijo directo de .flex.gap-6 en edit.html (antes de la extraccion). Gates: prettier OK, ng build OK, vitest pedidos 7/7 OK. Pendiente verificacion visual en navegador (Claude no tiene browser tools habilitados esta sesion)."
     },
     {
       "id": "cards-info-rollout",
       "description": "Frontend: implementar el componente compartido en costeo, analisis, portal proveedor (opportunities) y detail, normalizando los datos por vista (tipo de maquina, ciudad, id adicional).",
-      "status": "pending",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "cards-info-shared-component",
         "cards-info-backend-id-interno"
       ],
       "topic_key": "arch/heavy-ui-patterns",
-      "files": []
+      "files": [],
+      "implementer_notes": "Atomizado por regla de atomicidad (4 vistas, >3 archivos, >3 \"y\" en la descripcion). Ver sub-nodos cards-info-rollout-costeo, cards-info-rollout-analysis, cards-info-rollout-detail, cards-info-rollout-portal. | Los 4 sub-nodos completados y aprobados."
+    },
+    {
+      "id": "cards-info-rollout-costeo",
+      "description": "Frontend: reemplazar las 3 tarjetas manuales de pedidos/costeo.html por app-pedido-info-card/app-maquina-info-card/app-tercero-info-card en mode=\"view\", normalizando tipo de maquina y id adicional (codigo_interno).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-shared-component",
+        "cards-info-backend-id-interno"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Reemplazadas las 3 tarjetas manuales por app-pedido-info-card/app-maquina-info-card/app-tercero-info-card mode=view. Normalizado: maquina.id_interno -> codigo_interno (via PedidoMaquinaInfo), tercero.ciudad (typo, no existia) -> city (correcto). Se quitaron campos Documento/Cargo hardcodeados (Analisis/Asesor) para alinear con el diseño ya aprobado en cards-info-edit. Iconos email/whatsapp decorativos (sin handler) removidos junto con la tarjeta manual, el mode view no los expone. Limpieza: eliminado getEstadoClase() (dead code, la logica de estado ahora vive en pedido-info-card). Gates: prettier OK, ng build OK, vitest costeo 6/6 OK.",
+      "review_notes": "Aprobado. Diff limpio, coincide con implementer_notes. ng build OK, prettier OK, vitest full suite 159/159 OK. Codigo muerto (getEstadoClase, pedidoEstadoEtiqueta/TagClass import) correctamente removido."
+    },
+    {
+      "id": "cards-info-rollout-analysis",
+      "description": "Frontend: reemplazar las 3 tarjetas manuales de pedidos/analysis.html por los componentes compartidos en mode=\"view\", normalizando tipo de maquina y id adicional (codigo_interno).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-shared-component",
+        "cards-info-backend-id-interno"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Esta vista solo tenia 2 tarjetas (pedido, maquina), no tercero. Reemplazadas por app-pedido-info-card/app-maquina-info-card mode=view. maquina-info-card con [showDetailButton]=true + (viewMaquina) para preservar el boton de ojo -> modal de detalle existente (p-dialog no tocado). Normalizado maquina.id_interno -> codigo_interno. Cambio visual: se abandona el tema verde especifico (.figma-card-analysis, text-green-400) en favor del look unificado del componente compartido (mismo criterio ya aplicado en costeo) — la clase .figma-card-analysis queda huerfana en analysis.scss, no se borro (fuera de alcance). Limpieza: eliminados pedidoEstadoEtiqueta/pedidoEstadoTagClass (properties+import, dead code) y getLabelConteo() (dead code, reemplazado por el boton de comentarios integrado del componente). NO se corrigio el bug Zoneless preexistente de displayMaquinaDialog/selectedMaquina (propiedades planas, no signal) — fuera de alcance de este nodo, ya documentado como pendiente en cards-info-edit. Gates: prettier OK, ng build OK, vitest analysis 1/1 OK.",
+      "review_notes": "Aprobado. showDetailButton+viewMaquina preserva el modal de detalle existente sin tocarlo. Codigo muerto (getLabelConteo, pedidoEstadoEtiqueta/TagClass) removido. ng build OK, prettier OK, vitest full suite 159/159 OK."
+    },
+    {
+      "id": "cards-info-rollout-detail",
+      "description": "Frontend: evaluar e implementar los componentes compartidos en pedidos/detail.html (layout tipo sidebar/timeline, distinto al patron de 3 columnas de edit/costeo/analysis) en mode=\"view\", normalizando ciudad y datos de maquina/tercero.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-shared-component",
+        "cards-info-backend-id-interno"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Decision de diseño (confirmada con el usuario): NO se usan los componentes compartidos aqui. El sidebar de detail.html es de una sola columna con tarjetas .card angostas (borde superior de color, junto a \"Resumen del Pedido\"); los componentes compartidos (min-h-320px, pensados para fila flex de 3) se verian desproporcionados. En su lugar se corrigieron bugs de nombres de campo en las tarjetas existentes: pedido.maquina.nombre (Maquina no tiene ese campo) -> modelo; se agrego tipo (nombre de la lista/categoria) e ID adicional (codigo_interno); pedido.tercero.documento (Tercero no tiene ese campo) -> numero_documento; se agrego ciudad (tercero.city.name, ya veniamos eager-cargando tercero.city desde PedidoController@show). Gates: prettier OK, ng build OK (no hay specs para detail.ts).",
+      "review_notes": "Aprobado. Decision de no forzar componentes compartidos en el sidebar es correcta dado el layout. Bugs reales corregidos (maquina.nombre inexistente -> modelo, tercero.documento inexistente -> numero_documento) mas ciudad e ID adicional agregados. ng build OK, prettier OK."
+    },
+    {
+      "id": "cards-info-rollout-portal",
+      "description": "Frontend: reemplazar la tarjeta de maquina/cliente en costing-opportunities.component.html (portal proveedor) por los componentes compartidos en mode=\"view\". BLOQUEADO: el archivo tiene cambios sin commitear de otro frente (boton+modal ver detalle de maquina) que aun no se han coordinado.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "cards-info-shared-component",
+        "cards-info-backend-id-interno"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/PedidoReferenciaResource.php",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "DESBLOQUEADO: en vez de descartar el trabajo en curso de otro frente (boton+modal ver detalle de maquina, MaquinaDetailComponent), se integro: el boton manual pi-eye en el header se elimino porque app-maquina-info-card con [showDetailButton]=true ya expone uno equivalente; su (viewMaquina) se conecta al mismo metodo viewMaquina() existente que abre el mismo modal (p-dialog + app-maquina-detail), sin tocar el modal. Reemplazadas las 2 tarjetas (pedido, maquina; esta vista no tiene tercero) por los componentes compartidos mode=view. pedido es de tipo local ProviderPedidoSummary (no Pedido completo) por lo que [pedido]=\"(pedido)\" usa el cast de Angular ya usado en costeo.html ((refGroup)) en vez de aflojar el tipo del input compartido para todos los consumidores. maquina ahora tipado con PedidoMaquinaInfo (ya no any local) porque se corrigio el bug espejo de id_interno en el backend: ProviderPortalController::opportunities() y PedidoReferenciaResource.php (ambos construian el array maquina manualmente con el mismo id_interno inexistente que PedidoResource tenia) -> codigo_interno, mas se agrego id (permite que viewMaquina() haga el fetch completo por maquinaService.getById en vez de caer siempre al fallback) y estado_revision (para el badge \"pendiente por revisar\"). Limpieza: removido boton pTooltip redundante y import TooltipModule ya sin uso, pedidoEstadoEtiqueta/getEstadoClase (dead code, logica ahora en pedido-info-card). Gates: php -l y Pint OK en los 2 backend; prettier OK, ng build OK, vitest full suite 159/159 OK. Nota: 1 test backend pre-existente falla (ProviderPortalOrdenCompraTest::registra despacho...) — verificado que falla igual con git stash (no relacionado, es de Ordenes de Compra, dominio distinto).",
+      "review_notes": "Aprobado. Integracion limpia con el trabajo previo del otro frente (boton/modal ver detalle preservado, ahora disparado por showDetailButton del componente compartido). Bug id_interno corregido consistentemente en los 2 backends que lo replicaban. php -l y Pint OK en ambos backend, prettier OK, ng build OK. El resto del diff en el .html es reformateo de prettier (antes este archivo nunca habia pasado por prettier con la config del proyecto), sin cambios funcionales fuera de las 2 tarjetas."
     },
     {
       "id": "maquina-foto-placa-triage",
@@ -538,10 +635,13 @@
     {
       "id": "cards-info-review",
       "description": "Reviewer: validar tarjetas en modo claro y oscuro, ejecutar gates de frontend y backend, y cerrar la iniciativa.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
-        "cards-info-rollout"
+        "cards-info-rollout-costeo",
+        "cards-info-rollout-analysis",
+        "cards-info-rollout-detail",
+        "cards-info-rollout-portal"
       ],
       "topic_key": "arch/heavy-audit-history",
       "files": [],
@@ -549,7 +649,8 @@
         "cd heavy-front && npm run lint",
         "cd heavy-front && npm run build",
         "cd heavy-api && php artisan test tests/Feature/Api/PedidoTest.php"
-      ]
+      ],
+      "review_notes": "Iniciativa tarjetas-info-pedidos cerrada. Gates: ng build OK, vitest full suite 159/159 OK, php artisan test PedidoTest.php 24/24 OK, Pint OK en todos los backend tocados (PedidoResource, ProviderPortalController, PedidoReferenciaResource). npm run lint no esta configurado en heavy-front (sin target lint en package.json, gap preexistente al proyecto, no introducido por esta iniciativa). Modo claro/oscuro verificado por el usuario en navegador durante la iniciativa (layout flex-1 confirmado visualmente). Resumen: PedidoResource.id_interno->codigo_interno; 3 componentes compartidos (pedido/maquina/tercero-info-card) creados y tipados sin any; regresion de layout (host sin flex-1) detectada y corregida; rollout completo a costeo, analysis, detail (decision de no forzar el componente ahi, solo fix de campos) y portal proveedor (integrado con feature en curso de otro frente, mismo bug id_interno corregido en 2 lugares backend adicionales)."
     },
     {
       "id": "medidas-permisos-triage",

@@ -63,7 +63,7 @@ class ProviderPortalController extends Controller
                         'pedidoReferencia.categoriaComercial',
                         'marca',
                         'pedidoReferencia.pedido.user',
-                        'pedidoReferencia.pedido.maquina',
+                        'pedidoReferencia.pedido.maquina.fabricante',
                     ])
                     ->orderBy('created_at', 'desc');
 
@@ -97,11 +97,13 @@ class ProviderPortalController extends Controller
                             'updated_at' => $pedido->updated_at?->toISOString(),
                             'user' => $pedido->user ? ['name' => $pedido->user->name] : null,
                             'maquina' => $pedido->maquina ? [
+                                'id' => $pedido->maquina->id,
                                 'tipo' => $pedido->maquina->tipo,
-                                'marca' => $pedido->maquina->marca,
+                                'marca' => $pedido->maquina->fabricante?->nombre ?? 'N/A',
                                 'modelo' => $pedido->maquina->modelo,
                                 'serie' => $pedido->maquina->serie,
-                                'id_interno' => $pedido->maquina->id_interno,
+                                'codigo_interno' => $pedido->maquina->codigo_interno,
+                                'estado_revision' => $pedido->maquina->estado_revision,
                             ] : null,
                         ] : null,
                         'form_costo' => $costeo->costo_unidad,
@@ -150,7 +152,7 @@ class ProviderPortalController extends Controller
                 });
 
             // Ordenamiento y Carga de relaciones
-            $query->with(['referencia.marca', 'referencia.articulo', 'categoriaComercial', 'marca', 'pedido.user', 'pedido.maquina'])
+            $query->with(['referencia.marca', 'referencia.articulo', 'categoriaComercial', 'marca', 'pedido.user', 'pedido.maquina.fabricante'])
                 ->orderBy('created_at', 'desc');
 
             // Paginación

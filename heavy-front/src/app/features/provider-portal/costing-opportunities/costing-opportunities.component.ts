@@ -9,12 +9,16 @@ import { MessageService } from 'primeng/api';
 import { SelectModule } from 'primeng/select';
 import { CheckboxModule } from 'primeng/checkbox';
 import { SkeletonModule } from 'primeng/skeleton';
+import { DialogModule } from 'primeng/dialog';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { ListaService } from '../../../core/services/lista.service';
+import { MaquinaService } from '../../../core/services/maquina.service';
+import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
 import { Lista } from '../../../core/models/lista.model';
 import { ENTREGA_OPTIONS, EntregaValue, entregaPayload, entregaValueDesdePersistencia } from '../../../core/utils/entrega-plazo';
-import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
-import { PedidoEstado } from '../../../core/models/pedido.model';
+import { PedidoEstado, PedidoMaquinaInfo } from '../../../core/models/pedido.model';
+import { PedidoInfoCardComponent } from '../../../shared/components/pedido-info-card/pedido-info-card.component';
+import { MaquinaInfoCardComponent } from '../../../shared/components/maquina-info-card/maquina-info-card.component';
 
 interface ProviderPedidoSummary {
     id: number;
@@ -22,13 +26,7 @@ interface ProviderPedidoSummary {
     created_at?: string;
     updated_at?: string;
     user?: { name?: string };
-    maquina?: {
-        tipo?: string;
-        marca?: string;
-        modelo?: string;
-        serie?: string;
-        id_interno?: string;
-    };
+    maquina?: PedidoMaquinaInfo;
 }
 
 interface ProviderCosteoRow {
@@ -52,7 +50,7 @@ interface ProviderCosteoRow {
 @Component({
     selector: 'app-costing-opportunities',
     standalone: true,
-    imports: [CommonModule, ButtonModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, CheckboxModule, SkeletonModule],
+    imports: [CommonModule, ButtonModule, FormsModule, InputTextModule, InputNumberModule, ToastModule, SelectModule, CheckboxModule, SkeletonModule, DialogModule, MaquinaDetailComponent, PedidoInfoCardComponent, MaquinaInfoCardComponent],
     providers: [MessageService],
     templateUrl: './costing-opportunities.component.html',
     styleUrl: '../../pedidos/edit/edit.scss'
@@ -60,9 +58,8 @@ interface ProviderCosteoRow {
 export class CostingOpportunitiesComponent implements OnInit {
     private readonly providerPortalService = inject(ProviderPortalService);
     private readonly listaService = inject(ListaService);
+    private readonly maquinaService = inject(MaquinaService);
     private readonly messageService = inject(MessageService);
-
-    readonly pedidoEstadoEtiqueta = pedidoEstadoEtiqueta;
 
     opportunities = signal<ProviderCosteoRow[]>([]);
     providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean }>({ is_national: true });
@@ -71,6 +68,8 @@ export class CostingOpportunitiesComponent implements OnInit {
     activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
     activePedidoId = signal<number | null>(null);
     modoEdicion = signal(false);
+    displayMaquinaDialog = signal(false);
+    selectedMaquina = signal<any>(null);
 
     marcas: { label: string; value: number }[] = [];
     tiemposEntrega = ENTREGA_OPTIONS;
@@ -124,9 +123,7 @@ export class CostingOpportunitiesComponent implements OnInit {
                     this.providerInfo.set(response.provider);
                 }
 
-                const pedidoIds = items
-                    .map((item) => item.pedido_id ?? item.pedido?.id)
-                    .filter((id): id is number => typeof id === 'number');
+                const pedidoIds = items.map((item) => item.pedido_id ?? item.pedido?.id).filter((id): id is number => typeof id === 'number');
 
                 if (pedidoIds.length === 0) {
                     this.activePedidoId.set(null);
@@ -182,8 +179,24 @@ export class CostingOpportunitiesComponent implements OnInit {
         this.activePedidoId.set(pedidoId);
     }
 
-    getEstadoClase(estado: string): string {
-        return pedidoEstadoTagClass(estado);
+    viewMaquina(maquina: any): void {
+        if (!maquina) return;
+
+        if (maquina.id) {
+            this.maquinaService.getById(maquina.id).subscribe({
+                next: (response: any) => {
+                    this.selectedMaquina.set(response.data || response);
+                    this.displayMaquinaDialog.set(true);
+                },
+                error: () => {
+                    this.selectedMaquina.set(maquina);
+                    this.displayMaquinaDialog.set(true);
+                }
+            });
+        } else {
+            this.selectedMaquina.set(maquina);
+            this.displayMaquinaDialog.set(true);
+        }
     }
 
     filaEditable(ref: ProviderCosteoRow): boolean {

@@ -148,10 +148,10 @@ class PedidoController extends Controller
         $this->authorize('view', $pedido);
 
         $pedido->load([
-            'user', 'tercero', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema', 'fabricante', 'contacto',
+            'user', 'tercero.city', 'maquina.fabricante', 'maquina.listas', 'maquina.componentes.marca', 'maquina.componentes.sistema', 'fabricante', 'contacto',
             'referencias' => function ($query): void {
                 $query->withCount('imagenes')
-                    ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'referencia.articulo.medidas', 'referencia.articulo.piezaEstandar', 'referencia.articulo.articuloJuegos.referencia.articulo', 'referencia.articuloJuegos.articulo', 'sistema', 'lista', 'categoriaComercial', 'categoriasComerciales', 'marca', 'imagenes', 'proveedores.tercero']);
+                    ->with(['referencia.marca', 'referencia.articulo.referencias.marca', 'referencia.articulo.medidas', 'referencia.articulo.piezaEstandar', 'referencia.articulo.articuloJuegos.referencia.articulo', 'referencia.articulo.articuloJuegos.articulo', 'sistema', 'lista', 'categoriaComercial', 'categoriasComerciales', 'marca', 'imagenes', 'proveedores.tercero']);
             },
             'articulos.articulo', 'articulos.sistema',
         ]);
