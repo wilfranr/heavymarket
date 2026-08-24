@@ -1044,34 +1044,43 @@ export class AnalysisComponent implements OnInit {
     onArticuloCreated(payload: any): void {
         const i = this.articuloContextItemIndex;
         const j = this.articuloContextParteIndex;
-        const refId = this.articuloContextReferenciaId;
+        let refId = this.articuloContextReferenciaId;
         const referenciaActualizada = payload?.referencia;
 
         // Recargar referencias para obtener el artículo recién creado
         this.loadReferencias();
 
-        if (i >= 0 && j >= 0 && refId) {
+        if (i >= 0 && j >= 0) {
             const parte = this.getPartesFormArray(i).at(j);
-            const optActualizada = referenciaActualizada ? this.opcionReferenciaDesdeApi(referenciaActualizada) : null;
-            if (referenciaActualizada) {
-                this.actualizarReferenciaLocal(referenciaActualizada, i);
+
+            if (!refId && referenciaActualizada?.id) {
+                // El item no tenia referencia previa: seleccionar la referencia creada/asociada dentro del modal.
+                refId = referenciaActualizada.id;
+                parte.patchValue({ referencia_id: refId });
             }
 
-            // Actualizar descripción con los datos del artículo recién creado sin esperar recargas.
-            const opt =
-                optActualizada ||
-                this.referencias.find((x) => x.value === refId) ||
-                Object.values(this.referenciasPorTipo)
-                    .flat()
-                    .find((x) => x.value === refId);
-            if (opt) {
-                const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
-                if (referenciaActualizada || this.debeSobrescribirDescripcion(currentDesc)) {
-                    parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
+            if (refId) {
+                const optActualizada = referenciaActualizada ? this.opcionReferenciaDesdeApi(referenciaActualizada) : null;
+                if (referenciaActualizada) {
+                    this.actualizarReferenciaLocal(referenciaActualizada, i);
                 }
+
+                // Actualizar descripción con los datos del artículo recién creado sin esperar recargas.
+                const opt =
+                    optActualizada ||
+                    this.referencias.find((x) => x.value === refId) ||
+                    Object.values(this.referenciasPorTipo)
+                        .flat()
+                        .find((x) => x.value === refId);
+                if (opt) {
+                    const currentDesc = (parte.get('descripcion')?.value ?? '').trim();
+                    if (referenciaActualizada || this.debeSobrescribirDescripcion(currentDesc)) {
+                        parte.patchValue({ descripcion: this.descripcionAnalisisDesdeOpcion(opt) });
+                    }
+                }
+                this.actualizarEstadoItem(i);
+                this.cdr.detectChanges();
             }
-            this.actualizarEstadoItem(i);
-            this.cdr.detectChanges();
         }
 
         // Reset context

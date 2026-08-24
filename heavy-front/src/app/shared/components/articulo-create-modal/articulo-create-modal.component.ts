@@ -76,10 +76,13 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     referenciasJuegosDisponibles: Referencia[] = [];
     referenciaJuegosIndex: number | null = null;
 
-    // Edición inline de referencias
+    // Edición y creación inline de referencias
     editingReferenciaIndex = signal<number | null>(null);
+    creatingReferenciaIndex = signal<number | null>(null);
     editingReferenciaJuegoIndex = signal<number | null>(null);
     marcasReferencias = signal<Lista[]>([]);
+    // Ultima referencia creada mediante el input inline, para que el consumidor (p.ej. analisis) pueda seleccionarla
+    ultimaReferenciaCreada: Referencia | null = null;
 
     // Variables para el CRUD de medidas
     unidadesMedida: Lista[] = [];
@@ -95,7 +98,6 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     showListaModal = false;
     currentListaTipo: ListaTipo = 'Unidad de Medida';
     showReferenciaModal = false;
-    currentReferenciaArrayIndex: number | null = null;
 
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
@@ -292,11 +294,6 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         this.referenciasCruzadas.removeAt(index);
     }
 
-    abrirCrearReferencia(index: number): void {
-        this.currentReferenciaArrayIndex = index;
-        this.showReferenciaModal = true;
-    }
-
     onReferenciaCreada(nuevaRef: any): void {
         // Añadir inmediatamente a la lista local para que el renderizado sea instantáneo
         if (nuevaRef) {
@@ -308,11 +305,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
             }
         }
 
-        if (this.currentReferenciaArrayIndex !== null) {
-            const control = this.referenciasCruzadas.at(this.currentReferenciaArrayIndex);
-            control.patchValue({ referencia_id: nuevaRef.id });
-            this.currentReferenciaArrayIndex = null;
-        } else if (this.referenciaJuegosIndex !== null) {
+        if (this.referenciaJuegosIndex !== null) {
             const control = this.articuloJuegos.at(this.referenciaJuegosIndex);
             control.patchValue({ referencia_id: nuevaRef.id });
             this.referenciaJuegosIndex = null;
@@ -521,7 +514,10 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
                 summary: 'Éxito',
                 detail: 'Artículo creado correctamente.'
             });
-            this.onArticuloCreated.emit(articulo);
+            this.onArticuloCreated.emit({
+                articulo: articuloCreado,
+                referencia: this.ultimaReferenciaCreada
+            });
             this.closeDialog();
             this.loading = false;
         }
@@ -595,6 +591,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         this.fotoFile = null;
         this.planoFile = null;
         this.fotoMedidaHeredada = null;
+        this.ultimaReferenciaCreada = null;
     }
 
     cargarMarcasReferencias(): void {
@@ -608,6 +605,7 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         }
 
         this.cancelarEdicionReferencia();
+        this.cancelarCreacionReferencia();
 
         const row = this.referenciasCruzadas.at(index) as FormGroup;
         row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
@@ -658,6 +656,71 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         row.removeControl('referencia');
         row.removeControl('marca_id');
         this.editingReferenciaIndex.set(null);
+    }
+
+    iniciarCreacionReferencia(index: number): void {
+        this.cancelarEdicionReferencia();
+        this.cancelarCreacionReferencia();
+
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control('', [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(null));
+        this.creatingReferenciaIndex.set(index);
+    }
+
+    guardarCreacionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        const referenciaControl = row.get('referencia');
+
+        if (referenciaControl?.invalid) {
+            referenciaControl.markAsTouched();
+            return;
+        }
+
+        const data = {
+            referencia: referenciaControl?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: null,
+            comentario: null
+        };
+
+        this.referenciaService.create(data).subscribe({
+            next: ({ data: creada }) => {
+                if (!this.referenciasDisponibles.some((referencia) => referencia.id === creada.id)) {
+                    this.referenciasDisponibles = [...this.referenciasDisponibles, creada];
+                }
+                row.patchValue({ referencia_id: creada.id });
+                this.ultimaReferenciaCreada = creada;
+                this.finalizarCreacionReferencia(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia creada',
+                    detail: 'La referencia se creó y asoció correctamente.'
+                });
+            },
+            error: (error) => {
+                console.error('Error al crear referencia:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'No se pudo crear la referencia'
+                });
+            }
+        });
+    }
+
+    cancelarCreacionReferencia(): void {
+        const index = this.creatingReferenciaIndex();
+        if (index !== null) {
+            this.finalizarCreacionReferencia(index);
+        }
+    }
+
+    private finalizarCreacionReferencia(index: number): void {
+        const row = this.referenciasCruzadas.at(index) as FormGroup;
+        row.removeControl('referencia');
+        row.removeControl('marca_id');
+        this.creatingReferenciaIndex.set(null);
     }
 
     private actualizarReferenciaEnLista(referencias: Referencia[], actualizada: Referencia): Referencia[] {

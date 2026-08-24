@@ -91,7 +91,8 @@ export class ReferenciaEditModalComponent implements OnInit, OnChanges {
         this.showArticuloModal = true;
     }
 
-    onArticuloCreado(nuevoArticulo: any): void {
+    onArticuloCreado(payload: any): void {
+        const nuevoArticulo = payload?.articulo ?? payload;
         // Agregar el nuevo artículo a la lista local para que aparezca en el dropdown
         this.articulos.update((prev) => [nuevoArticulo, ...prev]);
         // Asignar automáticamente el artículo recién creado a la referencia

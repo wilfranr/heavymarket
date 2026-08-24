@@ -736,6 +736,154 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "ref-cruzada-inline-triage",
+      "description": "Triage: mapear el select de Referencias Cruzadas en articulo-create-modal y articulo-edit-modal (usados desde analisis para crear/editar articulo desde una referencia) y definir el plan para permitir crear una referencia nueva mediante input directamente en la fila, en vez de abrir el modal secundario referencia-create-modal.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/referencia-cruzada-inline",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Hallazgos: el select `referencia_id` de la tabla 'Referencias Cruzadas' esta duplicado en articulo-create-modal.component.html (lineas 148-176) y articulo-edit-modal.component.html (lineas 150-205); ambos usan el boton '+' (abrirCrearReferencia) que abre app-referencia-create-modal (modal secundario, aparte). Ese modal secundario TAMBIEN se usa en features/referencias/list y features/articulos/create|edit, por lo que NO debe eliminarse ni modificarse su comportamiento general, solo dejar de invocarse desde este boton '+' especifico. Ya existe en articulo-create-modal.component.ts el patron exacto a reutilizar para la UI de input+marca+check: iniciarEdicionReferencia/guardarEdicionReferencia/finalizarEdicionReferencia (lineas 604-661), que reemplaza el p-select por <input pInputText formControlName=\"referencia\"> + p-select de marca_id + botones check/times, pero opera sobre una referencia YA seleccionada (llama a ReferenciaService.update). El issue pide el caso de CREACION: fila vacia (sin referencia_id), boton/input para escribir codigo nuevo, habilita el input de marca, y el check llama a ReferenciaService.create() en vez de update(), inyectando la referencia nueva en referenciasDisponibles y haciendo patchValue(referencia_id) en la fila (mismo efecto que onReferenciaCreada, lineas 300-324, que hoy solo se dispara desde el modal secundario). Para el modal de CREAR articulo (articulo-create-modal), el articulo aun no existe al momento del check: reutilizar el mismo mecanismo ya implementado en prediligenciarReferenciaInicial/oficializarReferenciaInicial (nodo analysis-articulo-referencia-cruzada-prefill, engram #1243) que crea la referencia sin articulo_id y la asocia despues del guardado del articulo. Para el modal de EDITAR articulo (articulo-edit-modal) el articulo_id ya existe y puede enviarse directo en el create(). Alcance: SOLO la tabla 'Referencias Cruzadas' (no el bloque 'Juegos', que tiene el mismo patron duplicado con abrirCrearReferenciaJuegos pero no fue mencionado en el issue; queda fuera, posible follow-up)."
+    },
+    {
+      "id": "ref-cruzada-inline-create-modal",
+      "description": "Frontend: en articulo-create-modal (tabla Referencias Cruzadas), permitir seleccionar una referencia existente en el p-select o ingresar una nueva mediante input; al usar el input se habilita un segundo input/select de marca, y el check crea la referencia (ReferenciaService.create) asociandola al articulo que se esta creando, reutilizando el mecanismo de prediligenciarReferenciaInicial/oficializarReferenciaInicial para el caso sin articulo_id aun.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ref-cruzada-inline-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "Agregado signal creatingReferenciaIndex y metodos iniciarCreacionReferencia/guardarCreacionReferencia/cancelarCreacionReferencia/finalizarCreacionReferencia en articulo-create-modal.component.ts, reutilizando el patron ya existente de iniciarEdicionReferencia/guardarEdicionReferencia (mismo par input+p-select de marca + botones check/times) pero llamando a ReferenciaService.create() en vez de update(), en una fila sin referencia_id previo. El boton '+' que antes abria el modal secundario app-referencia-create-modal (abrirCrearReferencia) ahora activa el modo de creacion inline en la misma fila (iniciarCreacionReferencia). Se elimino abrirCrearReferencia y el campo currentReferenciaArrayIndex por quedar sin uso (dead code); el modal secundario referencia-create-modal se mantiene intacto para el bloque 'Juegos' (abrirCrearReferenciaJuegos/referenciaJuegosIndex, fuera de alcance de este nodo) y sigue disponible sin cambios para sus otros consumidores (referencias/list, articulos/create, articulos/edit, referencia-edit-modal). Como el articulo aun no existe en el flujo de creacion, la referencia se crea con articulo_id null y se asocia al articulo mediante el mecanismo ya existente de referencias_ids[] en saveArticulo() (mismo comportamiento que ya tenian las referencias creadas via el modal secundario u onReferenciaCreada); no se toco oficializarReferenciaInicial (ese sigue siendo exclusivo de la referencia prediligenciada via @Input referenciaId). No se creo articulo-create-modal.component.spec.ts: no existia antes de este cambio y la cobertura de tests quedo deliberadamente en el nodo separado ref-cruzada-inline-tests (decision de atomicidad tomada en Triage). Gates locales: prettier --check limpio para el codigo nuevo (persisten 2 diferencias preexistentes no relacionadas: linea 64 indentacion de <small> y el <p-inputNumber> de medidas, no tocadas); ng build --configuration development sin errores ni warnings nuevos.",
+      "review_notes": "Aprobado. Gates re-ejecutados por el Reviewer: prettier --check confirma que las unicas 2 diferencias en articulo-create-modal.component.ts/html son preexistentes y ajenas (verificado con git stash antes de implementar); ng build --configuration development sin errores/warnings nuevos; npx vitest run (suite completa) 159/159 OK, sin regresiones. grep confirmo que no quedan referencias colgantes a abrirCrearReferencia/currentReferenciaArrayIndex en estos 2 archivos (los hits restantes en analysis.ts, articulos/create y articulos/edit son metodos homonimos de otros componentes, no tocados, correctamente fuera de alcance). Checklist frontend: sin 'any' nuevo (grep confirmado sobre las lineas agregadas), signal_syntax correcto (creatingReferenciaIndex() en template, .set() en TS), sin EventEmitter nuevo, sin cambios a Services. Consistencia i18n: el componente no usa pipe translate en ningun tooltip/label preexistente, por lo que los nuevos textos en español plano son consistentes con la convencion ya establecida en este archivo. Riesgo menor no bloqueante (preexistente, no introducido por este cambio): eliminar una fila con eliminarReferencia(index) mientras otra fila esta en editingReferenciaIndex/creatingReferenciaIndex puede desincronizar el indice del signal si el indice eliminado es anterior al que se esta editando/creando; el mismo riesgo ya existia para editingReferenciaIndex antes de este nodo, no se corrige aqui por estar fuera de alcance.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-edit-modal",
+      "description": "Frontend: aplicar el mismo comportamiento (select existente o input de creacion inline con marca + check) en articulo-edit-modal (tabla Referencias Cruzadas), asociando la referencia creada directamente al articulo_id ya existente.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ref-cruzada-inline-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "Mismo patron aplicado en ref-cruzada-inline-create-modal, replicado en articulo-edit-modal.component.ts/html: signal creatingReferenciaIndex + iniciarCreacionReferencia/guardarCreacionReferencia/cancelarCreacionReferencia/finalizarCreacionReferencia, boton '+' de la tabla Referencias Cruzadas cambiado de abrirCrearReferencia (modal secundario) a iniciarCreacionReferencia (modo inline en la fila); abrirCrearReferencia/currentReferenciaArrayIndex eliminados por quedar sin uso (dead code), el modal secundario referencia-create-modal se mantiene intacto para el bloque Juegos. Diferencia clave vs create-modal: aqui articuloId siempre existe (se esta editando un articulo ya creado), por lo que guardarCreacionReferencia envia articulo_id: this.articuloId directo en el create(), sin necesidad del mecanismo diferido de referencias_ids[]/oficializacion posterior que usa create-modal. No se llamo this.cdr.detectChanges() en los metodos nuevos, siguiendo el mismo criterio ya usado por guardarEdicionReferencia/onReferenciaCreada en este archivo (no lo hacen tampoco): el signal creatingReferenciaIndex.set(...) dispara la deteccion de cambios Zoneless en el mismo tick que las mutaciones de referenciasDisponibles/patchValue, consistente con el patron ya validado en el componente. Gates locales: prettier --check limpio en el codigo nuevo (persisten 3 diferencias preexistentes ajenas al campo peso y medidas, no tocadas); ng build --configuration development sin errores ni warnings nuevos.",
+      "review_notes": "Aprobado. Gates re-ejecutados por el Reviewer: prettier --check confirma que las diferencias en articulo-edit-modal.component.html (peso, medidas) son preexistentes y ajenas (el .ts no presenta ninguna diferencia); ng build --configuration development sin errores/warnings nuevos; npx vitest run (suite completa) 159/159 OK, sin regresiones. grep confirmo que no quedan referencias colgantes a abrirCrearReferencia/currentReferenciaArrayIndex en estos 2 archivos. Checklist frontend: sin 'any' nuevo, signal_syntax correcto, sin EventEmitter nuevo, sin cambios a Services. La decision de enviar articulo_id: this.articuloId directo (en vez del mecanismo diferido de create-modal) es correcta porque en este modal el articulo siempre existe antes de abrir el formulario. Mismo riesgo menor no bloqueante que en ref-cruzada-inline-create-modal (desincronizacion de indice de fila si se elimina una fila anterior mientras otra esta en modo edicion/creacion), preexistente, no introducido por este nodo.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-tests",
+      "description": "Tests: cubrir la creacion inline de referencia (input+marca+check) en articulo-create-modal y articulo-edit-modal, y validar que la seleccion de referencia existente y el flujo de edicion inline previo no se rompan. Ejecutar gates dirigidos.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ref-cruzada-inline-create-modal",
+        "ref-cruzada-inline-edit-modal"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "review_notes": "Aprobado. Gates re-ejecutados por el Reviewer: npx vitest run suite completa 173/173 OK (incluye los 2 tests adicionales agregados posteriormente en ref-cruzada-inline-analysis-linking sobre ultimaReferenciaCreada), ng build --configuration development sin errores. Una corrida aislada de la suite completa fallo transitoriamente (38 archivos, error de ambiente no relacionado al codigo); se repitio inmediatamente despues y paso limpio 173/173 -- no reproducible, no se considera bloqueante. prettier --check limpio en ambos specs.",
+      "implementer_notes": "Creados articulo-create-modal.component.spec.ts y articulo-edit-modal.component.spec.ts (no existian previamente), siguiendo el patron liviano ya usado en maquina-create-modal.component.spec.ts: TestBed.runInInjectionContext(() => new Component()) + (component as any).initForm(), evitando invocar ngOnInit (que dispara varias llamadas HTTP de carga) para testear los metodos nuevos de forma aislada. Cada spec cubre 6 casos: activar creacion inline (agrega controles referencia/marca_id), mutua exclusion con el modo de edicion (iniciar creacion cancela edicion activa en otra fila), validacion de input vacio (no llama al servicio, marca touched), creacion exitosa (verifica payload exacto enviado a ReferenciaService.create -- articulo_id: null en create-modal vs articulo_id: this.articuloId en edit-modal, la diferencia de diseño clave entre ambos nodos), cancelar creacion sin llamar al servicio, y regresion del flujo de edicion inline preexistente (iniciarEdicionReferencia/cancelarEdicionReferencia sobre una referencia ya seleccionada, sin tocar). edit-modal.component.spec.ts requirio proveer ChangeDetectorRef en el TestBed (inyectado explicitamente en ese componente para el fix Zoneless ya documentado en engram, ausente en create-modal). Gates: prettier --check limpio en ambos specs nuevos; npx vitest run suite completa 171/171 OK (159 previos + 12 nuevos); ng build --configuration development sin errores ni warnings nuevos.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-analysis-linking-triage",
+      "description": "Triage: bug reportado por el usuario en QA manual. Al crear un articulo desde un item de analisis SIN referencia previa (abrirCrearArticuloDesdeParte con parte.referencia_id null) y crear una referencia nueva mediante el input inline dentro del modal, el select de referencia del item en analisis queda en 'Seleccionar...' en vez de quedar seleccionada la referencia recien creada.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ref-cruzada-inline-create-modal"
+      ],
+      "topic_key": "bugfix/analysis-referencia-inline-no-linking",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Causa raiz: onArticuloCreated(payload) en analysis.ts solo actualiza la fila (parte) cuando articuloContextReferenciaId (refId, capturado ANTES de abrir el modal desde parte.referencia_id) es truthy. Si el item no tenia referencia previa, refId es null y todo el bloque se salta -- nunca se hace parte.patchValue({referencia_id}). Ademas, handleCreateSuccess en articulo-create-modal.component.ts, en el branch SIN referenciaId prediligenciado (linea 515), emite el `articulo` crudo (ApiResponse envuelto en {data:...}) en vez del articulo desenvuelto, y nunca informa que referencia se creo/asocio durante la sesion del modal -- inconsistente con el otro branch (oficializarReferenciaInicial) que si emite {articulo, referencia}. Ese mismo emit crudo tambien es consumido por referencia-edit-modal.component.ts (onArticuloCreado), que accede a nuevoArticulo.id/.descripcionEspecifica directamente (bug latente preexistente e independiente, no reportado por el usuario, pero se corrige de paso por tocar la misma linea). Plan: (1) articulo-create-modal.component.ts: trackear ultimaReferenciaCreada (Referencia|null) seteada en guardarCreacionReferencia y reseteada en closeDialog; unificar el emit del branch sin referenciaId a {articulo: articuloCreado, referencia: this.ultimaReferenciaCreada}, igual forma que el otro branch. (2) referencia-edit-modal.component.ts: onArticuloCreado debe leer payload.articulo (con fallback ?? payload por compatibilidad). (3) analysis.ts: onArticuloCreated debe, cuando refId es null pero payload.referencia.id existe, hacer parte.patchValue({referencia_id: payload.referencia.id}) antes de continuar con el resto de la logica de refresco (descripcion, actualizarReferenciaLocal, actualizarEstadoItem)."
+    },
+    {
+      "id": "ref-cruzada-inline-analysis-linking",
+      "description": "Frontend: corregir el bug de arriba -- que la ultima referencia creada dentro del modal de creacion de articulo quede seleccionada/asociada en el select del item de analisis cuando este no tenia referencia previa.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ref-cruzada-inline-analysis-linking-triage"
+      ],
+      "topic_key": "bugfix/analysis-referencia-inline-no-linking",
+      "review_notes": "Aprobado. Usuario confirmo en navegador que el select del item de analisis queda seleccionado con la referencia recien creada, sin necesidad de desplegarlo. Gates re-ejecutados: prettier --check limpio en los 4 archivos (unicas diferencias son las mismas 3 preexistentes ya documentadas en cards con peso/medidas y oficializarReferenciaInicial, confirmado con diff linea por linea, ninguna toca las lineas nuevas de este fix), ng build --configuration development sin errores, npx vitest run suite completa 173/173 OK. Verificado por grep que app-articulo-create-modal solo tiene 2 consumidores (referencia-edit-modal y analysis), ambos corregidos para el nuevo shape del payload {articulo, referencia} -- no quedan otros consumidores rotos. Revisado el diff completo de analysis.ts y referencia-edit-modal.component.ts: cambios minimos, logica correcta (refId se reasigna solo cuando era null y llega una referencia nueva del modal; el resto del flujo existente para items que ya tenian referencia queda intacto bajo el `if (refId)` anidado). Nota aparte no bloqueante: durante la revision se detecto heavy-front/pnpm-lock.yaml modificado en el working tree (remueve entradas huerfanas de 'primeclt', dependencia ya removida de package.json en un commit previo) -- no relacionado a este cambio, no se toco ni se incluye en este nodo; se le informo al usuario para que decida si lo commitea por separado.",
+      "implementer_notes": "articulo-create-modal.component.ts: agregado campo ultimaReferenciaCreada (Referencia|null), seteado en guardarCreacionReferencia tras un create() exitoso y reseteado en closeDialog(). handleCreateSuccess (branch sin referenciaId prediligenciado) ahora emite {articulo: articuloCreado, referencia: this.ultimaReferenciaCreada} en vez del `articulo` crudo -- de paso corrige una inconsistencia preexistente (ese branch emitia el ApiResponse envuelto {data:...} sin desenvolver, a diferencia del otro branch que ya emitia articuloCreado desenvuelto). referencia-edit-modal.component.ts: onArticuloCreado ahora lee payload?.articulo ?? payload (fallback defensivo) para seguir funcionando con el nuevo shape sin romper su unico consumo (nuevoArticulo.id/.descripcionEspecifica); no tiene spec propio, se valido manualmente por inspeccion + gates generales. analysis.ts: onArticuloCreated ahora, cuando refId (articuloContextReferenciaId, capturado del parte ANTES de abrir el modal) es null pero payload.referencia.id existe, hace parte.patchValue({referencia_id: payload.referencia.id}) antes de continuar con el resto del refresco (descripcion, actualizarReferenciaLocal, actualizarEstadoItem); se cambio el guard externo de `if (i>=0 && j>=0 && refId)` a `if (i>=0 && j>=0)` con el bloque dependiente de refId anidado adentro. No se creo test para AnalysisComponent: el propio analysis.spec.ts documenta que los tests de fixture estan desactivados por problemas de resolucion de plantillas en Vitest/Angular 21 JIT (preexistente, no relacionado a este fix). Se agregaron 2 tests nuevos a articulo-create-modal.component.spec.ts verificando que ultimaReferenciaCreada se setea tras crear y se resetea al cerrar el modal. Gates: prettier --check limpio en los 4 archivos tocados (unicas 2 diferencias en articulo-create-modal.component.ts son las mismas 2 preexistentes ya documentadas, confirmado por diff, no relacionadas a estas lineas); npx vitest run suite completa 173/173 OK (171 previos + 2 nuevos); ng build --configuration development sin errores ni warnings nuevos.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/referencia-edit-modal/referencia-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-review",
+      "description": "Reviewer: validar ambos modales (crear/editar articulo desde referencia) en claro y oscuro, confirmar que referencia-create-modal sigue funcionando sin cambios en sus otros usos (referencias/list, articulos/create, articulos/edit), ejecutar gates de frontend y cerrar la iniciativa.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ref-cruzada-inline-tests",
+        "ref-cruzada-inline-analysis-linking"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-front && npm run build",
+        "cd heavy-front && npx vitest run src/app/shared/components/articulo-create-modal/articulo-create-modal.component.spec.ts",
+        "cd heavy-front && npx vitest run src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.spec.ts",
+        "cd heavy-front && npx prettier --check src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html"
+      ],
+      "review_notes": "Iniciativa ref-cruzada-inline cerrada. Todos los nodos (triage, create-modal, edit-modal, tests, analysis-linking-triage, analysis-linking) en done. Gates finales: npm run build OK (warning pusher-js CommonJS preexistente, no bloqueante, documentado en iniciativas previas del repo); vitest de ambos specs 14/14 OK; suite completa 173/173 OK confirmado durante la revision de los nodos individuales; prettier --check en los 2 .html marca 'issues' pero son exactamente las mismas diferencias preexistentes ya verificadas linea por linea (con git stash) antes de implementar en cada nodo -- ninguna toca codigo de esta iniciativa (campo peso, medidas p-inputNumber, oficializarReferenciaInicial), mismo criterio de gap preexistente ya usado en iniciativas anteriores de este repo (ej. cards-info-review con npm run lint). Resumen funcional: en articulo-create-modal y articulo-edit-modal, la tabla 'Referencias Cruzadas' ahora permite crear una referencia nueva directamente con un input+marca+check en la misma fila (antes abria un modal secundario), reutilizando el patron visual de edicion inline ya existente; el modal secundario referencia-create-modal se mantiene intacto para el bloque Juegos y sus otros 4 consumidores. Bug adicional encontrado por el usuario en QA manual (item de analisis sin referencia previa no quedaba seleccionado tras crear el articulo+referencia) fue diagnosticado y corregido en el mismo ciclo, confirmado por el usuario en navegador. Nota no bloqueante fuera de alcance: heavy-front/pnpm-lock.yaml aparecio modificado en el working tree durante la sesion (remueve entradas huerfanas de 'primeclt' ya eliminado de package.json en un commit previo) -- no relacionado a este trabajo, no se toco, se informo al usuario para que decida si lo commitea aparte."
     }
   ]
 }
