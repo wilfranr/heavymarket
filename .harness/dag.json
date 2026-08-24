@@ -884,6 +884,109 @@
         "cd heavy-front && npx prettier --check src/app/shared/components/articulo-create-modal/articulo-create-modal.component.html src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.html"
       ],
       "review_notes": "Iniciativa ref-cruzada-inline cerrada. Todos los nodos (triage, create-modal, edit-modal, tests, analysis-linking-triage, analysis-linking) en done. Gates finales: npm run build OK (warning pusher-js CommonJS preexistente, no bloqueante, documentado en iniciativas previas del repo); vitest de ambos specs 14/14 OK; suite completa 173/173 OK confirmado durante la revision de los nodos individuales; prettier --check en los 2 .html marca 'issues' pero son exactamente las mismas diferencias preexistentes ya verificadas linea por linea (con git stash) antes de implementar en cada nodo -- ninguna toca codigo de esta iniciativa (campo peso, medidas p-inputNumber, oficializarReferenciaInicial), mismo criterio de gap preexistente ya usado en iniciativas anteriores de este repo (ej. cards-info-review con npm run lint). Resumen funcional: en articulo-create-modal y articulo-edit-modal, la tabla 'Referencias Cruzadas' ahora permite crear una referencia nueva directamente con un input+marca+check en la misma fila (antes abria un modal secundario), reutilizando el patron visual de edicion inline ya existente; el modal secundario referencia-create-modal se mantiene intacto para el bloque Juegos y sus otros 4 consumidores. Bug adicional encontrado por el usuario en QA manual (item de analisis sin referencia previa no quedaba seleccionado tras crear el articulo+referencia) fue diagnosticado y corregido en el mismo ciclo, confirmado por el usuario en navegador. Nota no bloqueante fuera de alcance: heavy-front/pnpm-lock.yaml aparecio modificado en el working tree durante la sesion (remueve entradas huerfanas de 'primeclt' ya eliminado de package.json en un commit previo) -- no relacionado a este trabajo, no se toco, se informo al usuario para que decida si lo commitea aparte."
+    },
+    {
+      "id": "ref-cruzada-inline-articulos-triage",
+      "description": "Triage: el usuario pidio replicar el mismo comportamiento de creacion inline de referencia (input+marca+check en vez de modal secundario) en las vistas principales de crear/editar articulo (features/articulos/create y features/articulos/edit), omitiendo el campo comentario. El boton '+' actual abre referencia-create-modal con referencia, marca y comentario.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ref-cruzada-inline-review"
+      ],
+      "topic_key": "decision/referencia-cruzada-inline",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Confirmado por el propio Reviewer al momento de planificar (root cause + plan ya validados por lectura de codigo antes de implementar).",
+      "implementer_notes": "Verificado por lectura de codigo: features/articulos/create/create.ts y features/articulos/edit/edit.ts tienen exactamente el mismo patron ya extendido en articulo-create-modal/articulo-edit-modal (mismos nombres: abrirCrearReferencia, currentReferenciaArrayIndex, showReferenciaModal, onReferenciaCreada, iniciarEdicionReferencia/guardarEdicionReferencia/cancelarEdicionReferencia/finalizarEdicionReferencia, editingReferenciaIndex signal, marcasReferencias signal, referenciaService ya inyectado, UpdateReferenciaDto ya usado en guardarEdicionReferencia). El HTML de la tabla 'Referencias Cruzadas' en create.html (~linea 163-250) y edit.html es estructuralmente identico a los modales compartidos. Plan: aplicar la misma transformacion ya usada 2 veces (creatingReferenciaIndex signal + iniciarCreacionReferencia/guardarCreacionReferencia/cancelarCreacionReferencia/finalizarCreacionReferencia + boton '+' cambia de abrirCrearReferencia a iniciarCreacionReferencia), SIN campo comentario (se envia null, igual que en los modales) y sin tocar el bloque 'Juegos' (mismo criterio de alcance que las 2 rondas anteriores). Diferencia entre las 2 vistas: en create.ts el articulo aun no existe (articulo_id: null en el create de la referencia, se asocia via referencias_ids[] al hacer onSubmit, mismo mecanismo que create-modal); en edit.ts el articulo ya existe (articuloId!: number ya seteado desde route params), se envia articulo_id: this.articuloId directo (mismo criterio que articulo-edit-modal). referencia-create-modal (modal secundario) NO se toca, sigue usandose para Juegos en ambas vistas. edit.ts ya tiene edit.spec.ts (patron TestBed.createComponent/fixture + jasmine spies) con tests existentes de iniciarEdicionReferencia/guardarEdicionReferencia a extender; create.ts no tiene spec, se creara uno nuevo con el patron liviano ya usado en los modales (TestBed.runInInjectionContext + initForm manual)."
+    },
+    {
+      "id": "ref-cruzada-inline-articulos-create",
+      "description": "Frontend: aplicar la creacion inline de referencia (input+marca+check, sin comentario) en features/articulos/create (tabla Referencias Cruzadas), asociando via referencias_ids[] al guardar el articulo (aun no existe articulo_id en el momento de crear la referencia).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ref-cruzada-inline-articulos-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Aprobado. Gates re-ejecutados: npm run build OK, npx vitest run suite completa 183/183 OK, prettier --check en create.html marca issues pero son las mismas diferencias preexistentes de la tabla de medidas (verificado con git stash antes de implementar), no relacionadas a las lineas nuevas. grep confirmo que abrirCrearReferencia/currentReferenciaArrayIndex no quedan colgantes en create.ts/create.html (unico hit restante en todo heavy-front es el metodo homonimo, distinto, de analysis.ts). CreateReferenciaDto correctamente importado y tipado en guardarCreacionReferencia, consistente con UpdateReferenciaDto ya usado en guardarEdicionReferencia.",
+      "implementer_notes": "Mismo patron aplicado a create.ts/create.html: signal creatingReferenciaIndex + iniciarCreacionReferencia/guardarCreacionReferencia/cancelarCreacionReferencia/finalizarCreacionReferencia (data tipado con CreateReferenciaDto, ya importado junto a UpdateReferenciaDto). Boton '+' cambiado de abrirCrearReferencia a iniciarCreacionReferencia; abrirCrearReferencia y currentReferenciaArrayIndex eliminados (dead code, confirmado por grep que no quedan referencias). El campo comentario se omite (se envia null), tal como pidio el usuario. articulo_id: null porque el articulo aun no existe en este flujo; se asocia via referencias_ids[] en onSubmit (mismo mecanismo ya usado por create-modal). No se toco el bloque Juegos (abrirCrearReferenciaJuegos/referencia-create-modal intactos). Gates: prettier --check limpio en el codigo nuevo (unica diferencia restante es preexistente en la tabla de medidas, verificada con git stash, no relacionada); ng build --configuration development sin errores ni warnings nuevos.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-articulos-edit",
+      "description": "Frontend: aplicar la creacion inline de referencia (input+marca+check, sin comentario) en features/articulos/edit (tabla Referencias Cruzadas), asociando la referencia directo al articuloId existente.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ref-cruzada-inline-articulos-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Aprobado. Gates re-ejecutados: npm run build OK, npx vitest run suite completa 183/183 OK (incluye los tests preexistentes de edicion inline en edit.spec.ts, sin regresion), prettier --check en edit.html marca issues pero son las mismas diferencias preexistentes de la tabla de medidas (verificado con git stash), no relacionadas a las lineas nuevas. grep confirmo que abrirCrearReferencia/currentReferenciaArrayIndex no quedan colgantes en edit.ts/edit.html. Decision de enviar articulo_id: this.articuloId directo (en vez del mecanismo diferido de create) es correcta porque en esta vista el articulo siempre existe antes de abrir el formulario.",
+      "implementer_notes": "Mismo patron aplicado a edit.ts/edit.html: signal creatingReferenciaIndex + iniciarCreacionReferencia/guardarCreacionReferencia/cancelarCreacionReferencia/finalizarCreacionReferencia. Diferencia clave vs create: articulo_id: this.articuloId (articuloId!: number ya seteado desde route params en ngOnInit), no null, porque el articulo ya existe. abrirCrearReferencia y currentReferenciaArrayIndex eliminados (dead code, confirmado por grep). Comentario omitido (null). Bloque Juegos intacto. Gates: prettier --check limpio en codigo nuevo (unica diferencia restante preexistente en tabla de medidas, no relacionada); ng build sin errores; npx vitest run suite completa 173/173 OK, incluye los tests ya existentes en edit.spec.ts de iniciarEdicionReferencia/guardarEdicionReferencia (sin regresion).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.html",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-articulos-tests",
+      "description": "Tests: cubrir la creacion inline de referencia en create.ts (spec nuevo) y edit.ts (extender edit.spec.ts existente), validando que no se rompa el flujo de edicion inline ni de seleccion existente.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ref-cruzada-inline-articulos-create",
+        "ref-cruzada-inline-articulos-edit"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "review_notes": "Aprobado. 28/28 tests de los 2 specs re-ejecutados OK, suite completa 183/183 OK. edit.spec.ts marca warning de prettier pero se confirmo (git show HEAD) que ya fallaba antes de este cambio en lineas de un bloque de medidas no tocado.",
+      "implementer_notes": "create.spec.ts (nuevo, no existia): patron liviano TestBed.runInInjectionContext + initForm manual (mismo criterio que articulo-create-modal.component.spec.ts), 6 tests. edit.spec.ts (existente, extendido): se agrego 'create' al spy de ReferenciaService y 4 tests nuevos usando el mismo patron TestBed.createComponent/fixture + jasmine ya establecido en el archivo, insertados junto a los tests de edicion inline existentes. Total 10 tests nuevos (6+4): activar creacion inline, mutua exclusion con edicion, input vacio no llama al servicio, creacion exitosa con payload exacto (articulo_id null en create vs articulo_id: this.articuloId en edit), cancelar sin llamar al servicio, regresion del flujo de edicion inline preexistente. Gates: prettier --check limpio en create.spec.ts; edit.spec.ts marca warnings pero son lineas con espacios finales preexistentes en bloques de medidas no tocados (confirmado comparando contra git show HEAD, fallaba igual antes de este cambio); npx vitest run suite completa 183/183 OK (173 previos + 6 create.spec + 4 edit.spec nuevos); ng build sin errores.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ref-cruzada-inline-articulos-review",
+      "description": "Reviewer: validar create.ts/edit.ts (claro y oscuro), confirmar que referencia-create-modal sigue funcionando en Juegos y en sus otros usos, ejecutar gates de frontend y cerrar esta extension.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ref-cruzada-inline-articulos-tests"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-front && npm run build",
+        "cd heavy-front && npx vitest run src/app/features/articulos/create/create.spec.ts",
+        "cd heavy-front && npx vitest run src/app/features/articulos/edit/edit.spec.ts",
+        "cd heavy-front && npx prettier --check src/app/features/articulos/create/create.html src/app/features/articulos/edit/edit.html"
+      ],
+      "review_notes": "Extension ref-cruzada-inline-articulos cerrada. Todos los nodos (triage, create, edit, tests, review) en done. Gates finales: npm run build OK, vitest de create.spec.ts+edit.spec.ts 28/28 OK, suite completa 183/183 OK, prettier --check en los 2 .html marca solo diferencias preexistentes de la tabla de medidas (verificadas con git stash / git show HEAD antes de implementar, ninguna toca las lineas de esta extension). grep confirmo que abrirCrearReferencia/currentReferenciaArrayIndex ya no existen en ningun archivo del patron 'Referencias Cruzadas' (create.ts/html, edit.ts/html, articulo-create-modal, articulo-edit-modal); el unico hit restante en heavy-front es un metodo homonimo no relacionado en analysis.ts. referencia-create-modal (modal secundario) no se toco, sigue funcionando para el bloque Juegos en las 4 ubicaciones (create.ts/html, edit.ts/html) y para sus consumidores previos (referencias/list, referencia-edit-modal). Resumen: el patron de creacion inline de referencia (input+marca+check en la fila, sin comentario) ya esta implementado consistentemente en las 4 vistas de HeavyMarket donde existe la tabla Referencias Cruzadas: articulo-create-modal, articulo-edit-modal (usados desde analisis) y ahora tambien features/articulos/create y features/articulos/edit (vistas principales de crear/editar articulo)."
     }
   ]
 }

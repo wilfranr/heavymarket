@@ -190,8 +190,8 @@
                                                     @for (ref of referenciasCruzadas.controls; track $index) { @if (shouldShowReference(ref.value.referencia_id)) {
                                                     <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                                         <td class="px-4 py-2">
-                                                            @if (editingReferenciaIndex() === $index) {
-                                                            <input pInputText formControlName="referencia" class="w-full" />
+                                                            @if (editingReferenciaIndex() === $index || creatingReferenciaIndex() === $index) {
+                                                            <input pInputText formControlName="referencia" placeholder="Código de referencia..." class="w-full" />
                                                             } @else {
                                                             <p-inputgroup styleClass="w-full h-9">
                                                                 <p-select
@@ -214,13 +214,21 @@
                                                                     </ng-template>
                                                                 </p-select>
                                                                 <p-inputgroup-addon styleClass="rounded-r-xl border-surface-border bg-surface-ground">
-                                                                    <p-button icon="pi pi-plus" [text]="true" severity="secondary" styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]" (onClick)="abrirCrearReferencia($index)"></p-button>
+                                                                    <p-button
+                                                                        icon="pi pi-plus"
+                                                                        [text]="true"
+                                                                        severity="secondary"
+                                                                        styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
+                                                                        (onClick)="iniciarCreacionReferencia($index)"
+                                                                        pTooltip="Crear referencia nueva"
+                                                                        tooltipPosition="top"
+                                                                    ></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
                                                             }
                                                         </td>
                                                         <td class="px-4 py-2 text-sm text-gray-400">
-                                                            @if (editingReferenciaIndex() === $index) {
+                                                            @if (editingReferenciaIndex() === $index || creatingReferenciaIndex() === $index) {
                                                             <p-select
                                                                 formControlName="marca_id"
                                                                 [options]="marcasReferencias()"
@@ -240,6 +248,9 @@
                                                                 @if (editingReferenciaIndex() === $index) {
                                                                 <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferencia($index)" pTooltip="Guardar" tooltipPosition="top" />
                                                                 <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferencia()" pTooltip="Cancelar" tooltipPosition="top" />
+                                                                } @else if (creatingReferenciaIndex() === $index) {
+                                                                <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarCreacionReferencia($index)" pTooltip="Crear y asociar" tooltipPosition="top" />
+                                                                <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarCreacionReferencia()" pTooltip="Cancelar" tooltipPosition="top" />
                                                                 } @else {
                                                                 <p-button
                                                                     icon="pi pi-pencil"

@@ -41,7 +41,7 @@ describe('ArticuloEditComponent', () => {
         const routerSpy = jasmine.createSpyObj('Router', ['navigate']);
         const messageServiceSpy = jasmine.createSpyObj('MessageService', ['add']);
         const articuloServiceSpy = jasmine.createSpyObj('ArticuloService', ['getById', 'addMedida', 'updateMedida', 'removeMedida']);
-        const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', ['getAll', 'update']);
+        const referenciaServiceSpy = jasmine.createSpyObj('ReferenciaService', ['getAll', 'update', 'create']);
         referenciaServiceSpy.getAll.and.returnValue(of({ data: [], meta: {} }));
         const listaServiceSpy = jasmine.createSpyObj('ListaService', ['getAll', 'getByTipo', 'getMarcasYFabricantesParaReferencia', 'create']);
         listaServiceSpy.getByTipo.and.returnValue(of([]));
@@ -171,6 +171,75 @@ describe('ArticuloEditComponent', () => {
         });
         expect(component.getReferenciaDetail(10)?.referencia).toBe('REF-EDITADA');
         expect(component.editingReferenciaIndex()).toBeNull();
+    });
+
+    it('should activate inline creation mode and add referencia/marca_id controls to the row', () => {
+        if (!component.articuloForm) {
+            (component as any).initForm(mockArticulo);
+        }
+        component.agregarReferencia();
+        const index = component.referenciasCruzadas.length - 1;
+
+        component.iniciarCreacionReferencia(index);
+
+        expect(component.creatingReferenciaIndex()).toBe(index);
+        expect(component.referenciasCruzadas.at(index).get('referencia')).toBeTruthy();
+        expect(component.referenciasCruzadas.at(index).get('marca_id')).toBeTruthy();
+    });
+
+    it('should not create a referencia when the input is empty and should mark it touched', () => {
+        if (!component.articuloForm) {
+            (component as any).initForm(mockArticulo);
+        }
+        component.agregarReferencia();
+        const index = component.referenciasCruzadas.length - 1;
+        component.iniciarCreacionReferencia(index);
+
+        component.guardarCreacionReferencia(index);
+
+        expect(referenciaService.create).not.toHaveBeenCalled();
+        expect(component.referenciasCruzadas.at(index).get('referencia')?.touched).toBe(true);
+    });
+
+    it('should create a new referencia associating it directly with articuloId and select it in the row', () => {
+        if (!component.articuloForm) {
+            (component as any).initForm(mockArticulo);
+        }
+        component.articuloId = 1;
+        const nuevaReferencia = { id: 20, referencia: 'REF-NUEVA', marca_id: 9, articulo_id: 1, comentario: null } as any;
+        referenciaService.create.and.returnValue(of({ data: nuevaReferencia } as any));
+
+        component.agregarReferencia();
+        const index = component.referenciasCruzadas.length - 1;
+        component.iniciarCreacionReferencia(index);
+        component.referenciasCruzadas.at(index).patchValue({ referencia: 'REF-NUEVA', marca_id: 9 });
+
+        component.guardarCreacionReferencia(index);
+
+        expect(referenciaService.create).toHaveBeenCalledWith({
+            referencia: 'REF-NUEVA',
+            marca_id: 9,
+            articulo_id: 1,
+            comentario: null
+        });
+        expect(component.referenciasCruzadas.at(index).get('referencia_id')?.value).toBe(20);
+        expect(component.creatingReferenciaIndex()).toBeNull();
+        expect(component.referenciasDisponibles.some((r) => r.id === 20)).toBe(true);
+    });
+
+    it('should cancel inline creation without calling the service', () => {
+        if (!component.articuloForm) {
+            (component as any).initForm(mockArticulo);
+        }
+        component.agregarReferencia();
+        const index = component.referenciasCruzadas.length - 1;
+        component.iniciarCreacionReferencia(index);
+
+        component.cancelarCreacionReferencia();
+
+        expect(referenciaService.create).not.toHaveBeenCalled();
+        expect(component.creatingReferenciaIndex()).toBeNull();
+        expect(component.referenciasCruzadas.at(index).get('referencia')).toBeNull();
     });
 
     it('should update a kit reference from inline editing', () => {
