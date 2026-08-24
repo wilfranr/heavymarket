@@ -242,6 +242,18 @@ describe('ArticuloEditComponent', () => {
         expect(component.referenciasCruzadas.at(index).get('referencia')).toBeNull();
     });
 
+    it('should not throw when starting an inline creation while a stale out-of-range creatingReferenciaIndex is set (production crash regression)', () => {
+        if (!component.articuloForm) {
+            (component as any).initForm(mockArticulo);
+        }
+        component.creatingReferenciaIndex.set(5);
+        component.agregarReferencia();
+        const index = component.referenciasCruzadas.length - 1;
+
+        expect(() => component.iniciarCreacionReferencia(index)).not.toThrow();
+        expect(component.creatingReferenciaIndex()).toBe(index);
+    });
+
     it('should update a kit reference from inline editing', () => {
         if (!component.articuloForm) {
             (component as any).initForm(mockArticulo);

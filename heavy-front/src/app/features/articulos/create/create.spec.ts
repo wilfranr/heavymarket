@@ -130,4 +130,13 @@ describe('ArticuloCreateComponent (Referencias Cruzadas inline)', () => {
         expect(component.editingReferenciaIndex()).toBeNull();
         expect(component.referenciasCruzadas.at(0).get('referencia')).toBeNull();
     });
+
+    it('no lanza error de runtime al iniciar una creacion cuando queda un indice de creacion obsoleto y fuera de rango (regresion del crash de produccion)', () => {
+        component.creatingReferenciaIndex.set(5);
+
+        component.agregarReferencia();
+
+        expect(() => component.iniciarCreacionReferencia(0)).not.toThrow();
+        expect(component.creatingReferenciaIndex()).toBe(0);
+    });
 });

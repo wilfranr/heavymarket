@@ -987,6 +987,69 @@
         "cd heavy-front && npx prettier --check src/app/features/articulos/create/create.html src/app/features/articulos/edit/edit.html"
       ],
       "review_notes": "Extension ref-cruzada-inline-articulos cerrada. Todos los nodos (triage, create, edit, tests, review) en done. Gates finales: npm run build OK, vitest de create.spec.ts+edit.spec.ts 28/28 OK, suite completa 183/183 OK, prettier --check en los 2 .html marca solo diferencias preexistentes de la tabla de medidas (verificadas con git stash / git show HEAD antes de implementar, ninguna toca las lineas de esta extension). grep confirmo que abrirCrearReferencia/currentReferenciaArrayIndex ya no existen en ningun archivo del patron 'Referencias Cruzadas' (create.ts/html, edit.ts/html, articulo-create-modal, articulo-edit-modal); el unico hit restante en heavy-front es un metodo homonimo no relacionado en analysis.ts. referencia-create-modal (modal secundario) no se toco, sigue funcionando para el bloque Juegos en las 4 ubicaciones (create.ts/html, edit.ts/html) y para sus consumidores previos (referencias/list, referencia-edit-modal). Resumen: el patron de creacion inline de referencia (input+marca+check en la fila, sin comentario) ya esta implementado consistentemente en las 4 vistas de HeavyMarket donde existe la tabla Referencias Cruzadas: articulo-create-modal, articulo-edit-modal (usados desde analisis) y ahora tambien features/articulos/create y features/articulos/edit (vistas principales de crear/editar articulo)."
+    },
+    {
+      "id": "ref-cruzada-inline-crash-fix-triage",
+      "description": "Triage: bug de produccion reportado por el usuario. TypeError: Cannot read properties of undefined (reading 'removeControl') en finalizarCreacionReferencia, disparado desde iniciarCreacionReferencia -> cancelarCreacionReferencia, al hacer click en '+' en el modal de crear articulo desde analisis. No reproducible en local (sesion corta de prueba).",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ref-cruzada-inline-articulos-review"
+      ],
+      "topic_key": "bugfix/ref-cruzada-inline-stale-index-crash",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Causa raiz: closeDialog() en articulo-create-modal.component.ts (y su espejo en articulo-edit-modal.component.ts) hace referenciasCruzadas.clear()/articuloJuegos.clear() pero NUNCA resetea los signals creatingReferenciaIndex/editingReferenciaIndex/editingReferenciaJuegoIndex. Como estos modales son componentes compartidos que se muestran/ocultan (no se destruyen) via [(visible)] desde analysis.html, el signal queda con un indice de una sesion anterior (ej. fila 2 de una tabla con 3 filas). Si el usuario cierra el dialogo sin confirmar/cancelar esa fila (ej. clic en X o Cancelar del modal completo) y luego lo reabre para otro item con MENOS filas, cualquier click en '+' (iniciarCreacionReferencia) dispara primero cancelarCreacionReferencia(), que lee el indice obsoleto (ahora fuera de rango) y llama a this.referenciasCruzadas.at(indiceObsoleto) -> undefined -> undefined.removeControl() explota. El mismo patron exacto (mismo bug latente, aun no reportado) existe para editingReferenciaIndex/finalizarEdicionReferencia y para editingReferenciaJuegoIndex/finalizarEdicionReferenciaJuego en los 4 archivos que comparten este patron (articulo-create-modal, articulo-edit-modal, create.ts, edit.ts). Plan de fix (2 capas): (1) Guarda defensiva: usar optional chaining (row?.removeControl(...)) en finalizarCreacionReferencia/finalizarEdicionReferencia/finalizarEdicionReferenciaJuego en los 4 archivos -- elimina la clase de crash sin importar la causa (indices obsoletos, out-of-bounds por eliminar filas, etc). (2) Fix de causa raiz: en closeDialog() de articulo-create-modal y articulo-edit-modal, resetear explicitamente creatingReferenciaIndex.set(null), editingReferenciaIndex.set(null) y editingReferenciaJuegoIndex.set(null) para que no quede estado obsoleto entre aperturas del modal (create.ts/edit.ts no lo necesitan: son componentes de ruta, se destruyen en la navegacion, no persisten estado entre sesiones)."
+    },
+    {
+      "id": "ref-cruzada-inline-crash-fix",
+      "description": "Frontend: aplicar la guarda defensiva (optional chaining) en los 3 metodos finalizarX de los 4 archivos, y resetear los signals de edicion/creacion en closeDialog() de los 2 modales compartidos.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ref-cruzada-inline-crash-fix-triage"
+      ],
+      "topic_key": "bugfix/ref-cruzada-inline-stale-index-crash",
+      "review_notes": "Aprobado. Reviewer re-ejecuto los gates de forma independiente: grep confirmo que no queda ningun row.removeControl sin optional chaining en todo heavy-front; npm run build OK; npx vitest run suite completa 189/189 OK. Los 6 tests de regresion reproducen fielmente el stack trace reportado en produccion (iniciarCreacionReferencia -> cancelarCreacionReferencia -> finalizarCreacionReferencia con indice fuera de rango) y confirman que ya no lanza TypeError. prettier --check sin diferencias nuevas (mismas 2 preexistentes en articulo-create-modal.component.ts y las de siempre en edit.spec.ts, ya documentadas en nodos anteriores de esta iniciativa). Fix desplegado: aplica tanto la causa raiz (reset de signals en closeDialog de los 2 modales compartidos, que es lo unico que puede acumular estado obsoleto entre aperturas) como una guarda defensiva universal (optional chaining) en los 4 archivos que comparten el patron, cerrando tambien el mismo riesgo latente -aun no reportado- en el flujo de edicion inline preexistente y en el bloque Juegos.",
+      "implementer_notes": "Aplicado en los 4 archivos: finalizarEdicionReferencia/finalizarCreacionReferencia/finalizarEdicionReferenciaJuego ahora usan row?.removeControl(...) (optional chaining) en vez de row.removeControl(...), tolerando row=null/undefined cuando el indice queda fuera de rango. En articulo-create-modal.component.ts y articulo-edit-modal.component.ts (los 2 modales compartidos que persisten entre aperturas via [(visible)]), closeDialog() ahora resetea explicitamente editingReferenciaIndex/creatingReferenciaIndex/editingReferenciaJuegoIndex a null, eliminando la causa raiz (indice obsoleto que sobrevivia entre sesiones del modal). create.ts/edit.ts no requieren el reset en closeDialog porque son componentes de ruta que se destruyen en la navegacion; solo llevan la guarda defensiva. Se agregaron 6 tests de regresion (2 por archivo x 4... realmente 2 en cada uno de los 2 modales [closeDialog resetea + no-throw con indice obsoleto] y 1 en cada uno de create.spec.ts/edit.spec.ts [no-throw con indice obsoleto]) que reproducen exactamente el escenario del crash de produccion (creatingReferenciaIndex.set(indice_fuera_de_rango) seguido de iniciarCreacionReferencia en una fila real) y confirman que ya no lanza excepcion. Gates: prettier --check limpio en codigo nuevo (unicas diferencias son las mismas preexistentes ya documentadas repetidas veces en esta iniciativa); ng build --configuration development sin errores ni warnings nuevos; npx vitest run suite completa 189/189 OK (183 previos + 6 nuevos de regresion).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-create-modal/articulo-create-modal.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/create/create.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }

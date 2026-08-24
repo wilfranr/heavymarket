@@ -456,9 +456,9 @@ export class CreateComponent implements OnInit {
     }
 
     private finalizarEdicionReferencia(index: number): void {
-        const row = this.referenciasCruzadas.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.referenciasCruzadas.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.editingReferenciaIndex.set(null);
     }
 
@@ -520,9 +520,9 @@ export class CreateComponent implements OnInit {
     }
 
     private finalizarCreacionReferencia(index: number): void {
-        const row = this.referenciasCruzadas.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.referenciasCruzadas.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.creatingReferenciaIndex.set(null);
     }
 
@@ -703,9 +703,9 @@ export class CreateComponent implements OnInit {
     }
 
     private finalizarEdicionReferenciaJuego(index: number): void {
-        const row = this.articuloJuegos.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.articuloJuegos.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.editingReferenciaJuegoIndex.set(null);
     }
 

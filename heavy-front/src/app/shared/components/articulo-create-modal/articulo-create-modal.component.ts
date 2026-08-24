@@ -592,6 +592,10 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
         this.planoFile = null;
         this.fotoMedidaHeredada = null;
         this.ultimaReferenciaCreada = null;
+        // Evita indices obsoletos si el modal se reabre despues con menos filas (ver ref-cruzada-inline-crash-fix)
+        this.editingReferenciaIndex.set(null);
+        this.creatingReferenciaIndex.set(null);
+        this.editingReferenciaJuegoIndex.set(null);
     }
 
     cargarMarcasReferencias(): void {
@@ -652,9 +656,9 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     }
 
     private finalizarEdicionReferencia(index: number): void {
-        const row = this.referenciasCruzadas.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.referenciasCruzadas.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.editingReferenciaIndex.set(null);
     }
 
@@ -717,9 +721,9 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     }
 
     private finalizarCreacionReferencia(index: number): void {
-        const row = this.referenciasCruzadas.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.referenciasCruzadas.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.creatingReferenciaIndex.set(null);
     }
 
@@ -784,9 +788,9 @@ export class ArticuloCreateModalComponent implements OnInit, OnChanges {
     }
 
     private finalizarEdicionReferenciaJuego(index: number): void {
-        const row = this.articuloJuegos.at(index) as FormGroup;
-        row.removeControl('referencia');
-        row.removeControl('marca_id');
+        const row = this.articuloJuegos.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
         this.editingReferenciaJuegoIndex.set(null);
     }
 
