@@ -1721,6 +1721,23 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "ot-factura-contabilidad-users-ui-fix",
+      "description": "Gap encontrado al ser preguntado por el alcance real del rol Contabilidad: heavy-front/src/app/features/users/list/list.ts (pantalla de gestion de usuarios, Administracion > Usuarios) tenia availableRoles hardcodeado sin 'Contabilidad' -- ningun administrador podia asignar el rol nuevo a un usuario desde la UI (solo via tinker/DB directo, como se hizo para las pruebas manuales de esta sesion). El backend (UserController + StoreUserRequest/UpdateUserRequest) ya soportaba cualquier rol existente en la tabla roles sin cambios (validacion generica exists:roles,name), por lo que el unico gap era este listado de frontend.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-factura-backend-rol"
+      ],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario al preguntar por el alcance del rol. Se agrego { label: 'Contabilidad', value: 'Contabilidad' } a availableRoles y un case 'Contabilidad' -> severity 'contrast' en getSeverity() (badge visual distinto a los demas roles ya usados: danger/info/warn/success). No se toco UserController/StoreUserRequest/UpdateUserRequest (backend ya generico, sin nombres de rol hardcodeados). Deliberadamente NO se agregaron 'Cliente'/'Proveedor' a availableRoles -- ya estaban ausentes antes de este fix, son roles de portal externo gestionados por flujos de registro separados (ClientAuthController/ProviderAuthController), no por esta pantalla interna de staff. Gates: tsc --noEmit limpio, ng build --configuration development sin errores.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/users/list/list.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }
