@@ -29,6 +29,14 @@ return new class extends Migration
 
     public function up(): void
     {
+        // Este fix de compatibilidad legacy solo aplica a bases MySQL reales
+        // (INFORMATION_SCHEMA.COLUMNS y ALTER ... MODIFY son sintaxis MySQL).
+        // En SQLite (usado por la suite de tests en CI) las columnas ya nacen
+        // nullable via Schema::create(), por lo que este ajuste es innecesario.
+        if (DB::getDriverName() !== 'mysql') {
+            return;
+        }
+
         if (! Schema::hasTable('orden_trabajos')) {
             return;
         }

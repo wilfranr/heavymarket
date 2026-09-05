@@ -58,7 +58,7 @@ it('normaliza nullable en columnas legacy de orden_trabajos', function () {
     $migration->up();
 
     expect(ordenTrabajoColumnIsNullable('telefono'))->toBeTrue();
-});
+})->skip(fn () => DB::connection()->getDriverName() !== 'mysql', 'Prueba especifica de reconciliacion de esquema legacy MySQL (ALTER MODIFY / INFORMATION_SCHEMA), no aplica en SQLite.');
 
 function ordenTrabajoColumnIsNullable(string $column): bool
 {

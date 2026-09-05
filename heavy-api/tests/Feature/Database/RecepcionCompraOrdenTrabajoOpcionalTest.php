@@ -4,15 +4,15 @@ use App\Models\OrdenCompra;
 use App\Models\RecepcionCompra;
 use App\Models\User;
 use Illuminate\Database\QueryException;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 it('permite orden_trabajo_id nulo en el esquema de recepciones_compra', function () {
-    $column = DB::selectOne(
-        "SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS
-         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'recepciones_compra' AND COLUMN_NAME = 'orden_trabajo_id'"
-    );
+    // Schema::getColumns() es portable entre drivers (MySQL en dev/prod,
+    // SQLite en la suite de tests de CI), a diferencia de una consulta
+    // directa a INFORMATION_SCHEMA (especifica de MySQL).
+    $column = collect(Schema::getColumns('recepciones_compra'))->firstWhere('name', 'orden_trabajo_id');
 
-    expect($column->IS_NULLABLE)->toBe('YES');
+    expect($column['nullable'])->toBeTrue();
 });
 
 it('permite crear una recepcion_compra sin orden de trabajo', function () {

@@ -19,11 +19,17 @@ return new class extends Migration
 {
     public function up(): void
     {
-        DB::statement("ALTER TABLE orden_trabajos MODIFY estado VARCHAR(255) NOT NULL DEFAULT 'Pendiente'");
+        // MODIFY es sintaxis MySQL; en SQLite (usado en la suite de tests) la
+        // columna ya nace sin el ENUM legacy via Schema::create(), no aplica.
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE orden_trabajos MODIFY estado VARCHAR(255) NOT NULL DEFAULT 'Pendiente'");
+        }
     }
 
     public function down(): void
     {
-        DB::statement("ALTER TABLE orden_trabajos MODIFY estado ENUM('Pendiente','En Proceso','Completado','Cancelado') NOT NULL DEFAULT 'Pendiente'");
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::statement("ALTER TABLE orden_trabajos MODIFY estado ENUM('Pendiente','En Proceso','Completado','Cancelado') NOT NULL DEFAULT 'Pendiente'");
+        }
     }
 };
