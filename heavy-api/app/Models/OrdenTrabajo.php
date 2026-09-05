@@ -30,6 +30,10 @@ use Illuminate\Support\Carbon;
  * @property int|null $transportadora_id
  * @property string|null $archivo
  * @property string|null $motivo_cancelacion
+ * @property string|null $numero_factura
+ * @property string|null $factura_pdf
+ * @property int|null $facturado_por
+ * @property Carbon|null $facturado_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read User|null $user
@@ -62,11 +66,16 @@ class OrdenTrabajo extends Model
         'transportadora_id',
         'archivo',
         'motivo_cancelacion',
+        'numero_factura',
+        'factura_pdf',
+        'facturado_por',
+        'facturado_at',
     ];
 
     protected $casts = [
         'fecha_ingreso' => 'datetime',
         'fecha_entrega' => 'datetime',
+        'facturado_at' => 'datetime',
     ];
 
     /**
@@ -128,5 +137,10 @@ class OrdenTrabajo extends Model
     public function recepcionesCompra(): HasMany
     {
         return $this->hasMany(RecepcionCompra::class, 'orden_trabajo_id');
+    }
+
+    public function facturadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'facturado_por');
     }
 }

@@ -12,6 +12,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { IconFieldModule } from 'primeng/iconfield';
 import { InputIconModule } from 'primeng/inputicon';
+import { ProgressBarModule } from 'primeng/progressbar';
 import { OrdenTrabajo, OrdenTrabajoEstado } from '../../../core/models/orden-trabajo.model';
 import * as OrdenesTrabajoActions from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
 import * as OrdenesTrabajoSelectors from '../../../store/ordenes-trabajo/selectors/ordenes-trabajo.selectors';
@@ -26,7 +27,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
 @Component({
     selector: 'app-ordenes-trabajo-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule],
+    imports: [CommonModule, FormsModule, RouterModule, TableModule, ButtonModule, InputTextModule, SelectModule, TagModule, ConfirmDialogModule, IconFieldModule, InputIconModule, ProgressBarModule],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -43,9 +44,9 @@ import { PedidoService } from '../../../core/services/pedido.service';
 
                         <p-select [options]="estadosOptions" [(ngModel)]="selectedEstado" (ngModelChange)="onEstadoChange($event)" placeholder="Estado" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="clientes" [(ngModel)]="selectedCliente" (ngModelChange)="onClienteChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="clientes()" [(ngModel)]="selectedCliente" (ngModelChange)="onClienteChange($event)" placeholder="Cliente" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
 
-                        <p-select [options]="pedidos" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
+                        <p-select [options]="pedidos()" [(ngModel)]="selectedPedido" (ngModelChange)="onPedidoChange($event)" placeholder="Pedido" [filter]="true" [showClear]="true" styleClass="w-48"> </p-select>
                     </div>
 
                     <div class="flex gap-2">
@@ -64,6 +65,7 @@ import { PedidoService } from '../../../core/services/pedido.service';
                         <th>Cliente</th>
                         <th>Pedido</th>
                         <th>Estado</th>
+                        <th>Progreso</th>
                         <th>Transportadora</th>
                         <th>Fecha Ingreso</th>
                         <th>Fecha Entrega</th>
@@ -86,6 +88,16 @@ import { PedidoService } from '../../../core/services/pedido.service';
                         <td>#{{ orden.pedido_id || 'N/A' }}</td>
                         <td>
                             <p-tag [value]="orden.estado || 'N/A'" [severity]="getEstadoSeverity(orden.estado || 'Pendiente')"> </p-tag>
+                        </td>
+                        <td>
+                            @if (orden.progreso) {
+                                <div class="flex items-center gap-2">
+                                    <p-progressbar [value]="orden.progreso.porcentaje" [showValue]="false" styleClass="w-24 h-1.5"></p-progressbar>
+                                    <span class="text-xs text-muted-color whitespace-nowrap">{{ orden.progreso.recibido }}/{{ orden.progreso.cotizado }}</span>
+                                </div>
+                            } @else {
+                                <span class="text-gray-400">-</span>
+                            }
                         </td>
                         <td>{{ orden.transportadora?.nombre || 'N/A' }}</td>
                         <td>
@@ -133,13 +145,15 @@ export class ListComponent implements OnInit {
     selectedPedido: number | null = null;
 
     // Opciones para filtros
-    clientes: any[] = [];
-    pedidos: any[] = [];
+    clientes = signal<any[]>([]);
+    pedidos = signal<any[]>([]);
 
     estadosOptions: Array<{ label: string; value: OrdenTrabajoEstado }> = [
         { label: 'Pendiente', value: 'Pendiente' },
         { label: 'En Proceso', value: 'En Proceso' },
+        { label: 'Lista para Facturar', value: 'Lista para Facturar' },
         { label: 'Completado', value: 'Completado' },
+        { label: 'Cerrada', value: 'Cerrada' },
         { label: 'Cancelado', value: 'Cancelado' }
     ];
 
@@ -171,20 +185,24 @@ export class ListComponent implements OnInit {
         // Cargar clientes (terceros)
         this.terceroService.list({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.clientes = response.data.map((t) => ({
-                    label: t.nombre || `Tercero ${t.id}`,
-                    value: t.id
-                }));
+                this.clientes.set(
+                    response.data.map((t) => ({
+                        label: t.nombre || `Tercero ${t.id}`,
+                        value: t.id
+                    }))
+                );
             }
         });
 
         // Cargar pedidos
         this.pedidoService.list({ per_page: 200 }).subscribe({
             next: (response) => {
-                this.pedidos = response.data.map((p: any) => ({
-                    label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
-                    value: p.id
-                }));
+                this.pedidos.set(
+                    response.data.map((p: any) => ({
+                        label: `Pedido #${p.id} - ${p.tercero?.nombre || 'N/A'}`,
+                        value: p.id
+                    }))
+                );
             }
         });
     }
@@ -264,7 +282,10 @@ export class ListComponent implements OnInit {
     getEstadoSeverity(estado: OrdenTrabajoEstado): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {
             case 'Completado':
+            case 'Cerrada':
                 return 'success';
+            case 'Lista para Facturar':
+                return 'warn';
             case 'En Proceso':
                 return 'info';
             case 'Pendiente':

@@ -17,6 +17,11 @@ export const ordenesTrabajoRoutes: Routes = [
                 title: 'Crear Orden de Trabajo'
             },
             {
+                path: 'facturacion',
+                loadComponent: () => import('./facturacion/facturacion.component').then((m) => m.FacturacionComponent),
+                title: 'Facturación de Órdenes de Trabajo'
+            },
+            {
                 path: ':id',
                 loadComponent: () => import('./detail/detail.component').then((m) => m.DetailComponent),
                 title: 'Detalle de Orden de Trabajo'

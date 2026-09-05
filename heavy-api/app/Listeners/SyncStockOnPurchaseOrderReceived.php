@@ -63,6 +63,8 @@ class SyncStockOnPurchaseOrderReceived
 
     private function esViolacionIndiceUnico(QueryException $exception): bool
     {
-        return (int) ($exception->errorInfo[1] ?? 0) === 1062;
+        // 1062 = MySQL (Duplicate entry); 19 = SQLite (SQLITE_CONSTRAINT,
+        // usado por la suite de tests en CI).
+        return in_array((int) ($exception->errorInfo[1] ?? 0), [1062, 19], true);
     }
 }

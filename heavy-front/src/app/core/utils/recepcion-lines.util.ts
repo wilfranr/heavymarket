@@ -5,7 +5,10 @@
 export interface RecepcionLineaForm {
     orden_compra_detalle_id: number;
     referencia: string;
+    /** Tope de esta operacion (saldo pendiente por recibir), no el total original ordenado. */
     cantidad_ordenada: number;
+    /** Informativo: cuanto ya se recibio en recepciones previas de esta linea. */
+    cantidad_ya_recibida?: number;
     cantidad_recibida: number;
     cantidad_conforme: number;
     cantidad_rechazada: number;

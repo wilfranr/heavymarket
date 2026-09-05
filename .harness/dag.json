@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-08-07T19:38:09-05:00",
-  "issue": "tarjetas-info-pedidos",
-  "description": "Corregir y unificar las tarjetas informativas (pedido, maquina, tercero) en pedidos/edit, detail, costeo, analisis y portal proveedor, extrayendo luego un componente compartido.",
+  "last_updated": "2026-09-05T13:30:29-05:00",
+  "issue": "flujo-ot-facturacion",
+  "description": "Implementar el flujo Cotizacion -> OT -> Facturacion compartido por el cliente: sincronizacion automatica de recepcion OC->OT, depuracion de faltantes, cierre tecnico automatico y modulo de facturacion. Ver docs/issues/flujo-ot-facturacion/.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "orden-compra-costo-proveedor",
+  "previous_issue": "tarjetas-info-pedidos",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -1047,6 +1047,694 @@
         },
         {
           "path": "heavy-front/src/app/features/articulos/edit/edit.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-facturacion-triage",
+      "description": "Triage: analizar el flujo Cotizacion->OT->Facturacion compartido por el cliente, comparar contra el codigo actual, validar viabilidad tecnica (patrones Service/Enum/Event ya usados en OrdenCompra) y definir el DAG de los 4 issues (sincronizacion de progreso, depuracion de faltantes, cierre tecnico automatico y modulo de facturacion).",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/orden-trabajo-facturacion",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        },
+        {
+          "path": "docs/issues/flujo-ot-facturacion/README.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/issues/flujo-ot-facturacion/01-feat-ot-sincronizacion-progreso.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/issues/flujo-ot-facturacion/02-feat-ot-depuracion-faltantes.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/issues/flujo-ot-facturacion/03-feat-ot-cierre-tecnico-automatico.md",
+          "status": "validated"
+        },
+        {
+          "path": "docs/issues/flujo-ot-facturacion/04-feat-modulo-facturacion.md",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-sync-backend-migracion",
+      "description": "Backend: migracion para renombrar orden_trabajo_referencias.cantidad a cantidad_cotizada y actualizar OrdenTrabajoReferencia::$fillable y CotizacionService::crearOrdenTrabajo().",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "ot-facturacion-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_133100_rename_cantidad_to_cantidad_cotizada_orden_trabajo_referencias.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/OrdenTrabajoReferencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenTrabajoReferenciaResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateOrdenTrabajoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/factories/OrdenTrabajoReferenciaFactory.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK (tests, migraciones, scramble). Rename verificado en MySQL de test (DESCRIBE orden_trabajo_referencias). Sin conflictos de FK."
+    },
+    {
+      "id": "ot-sync-backend-lifecycle",
+      "description": "Backend: crear OrdenTrabajoLifecycleService que sincroniza cantidad_recibida en orden_trabajo_referencias desde RecepcionCompraService y transiciona la OT a 'En Proceso' automaticamente.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ot-sync-backend-migracion"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Services/OrdenTrabajoLifecycleService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/RecepcionCompraService.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK. Diseño encapsulado y tipado correctamente. Limitacion conocida documentada: si un pedido tuviera dos OrdenTrabajoReferencia distintas apuntando a la misma referencia_id, sincronizarReferencia() les asignaria el mismo total recibido (edge case no cubierto por el modelo de datos actual, no bloqueante)."
+    },
+    {
+      "id": "ot-sync-backend-resource",
+      "description": "Backend: exponer bloque 'progreso' (cotizado/recibido/porcentaje) calculado en OrdenTrabajoResource.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-sync-backend-lifecycle"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenTrabajoResource.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK. Observacion menor: OrdenTrabajoResource resuelve OrdenTrabajoLifecycleService via app() dentro de toArray() para reutilizar calcularProgreso() en vez de duplicar la suma; es un patron valido para evitar duplicacion mas que un problema de capas."
+    },
+    {
+      "id": "ot-sync-backend-tests",
+      "description": "Backend Tests: feature tests de sincronizacion de recepcion OC->OT y de calculo de progreso/estado automatico de la OT.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ot-sync-backend-lifecycle",
+        "ot-sync-backend-resource"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoProgresoSyncTest.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: 5 tests nuevos + 32 tests de regresion en OT/RecepcionCompra, todos verdes. Suite completa de heavy-api ejecutada: 1 failure preexistente y no relacionado (Tests/Feature/Api/ProviderPortalOrdenCompraTest, transicion Confirmada->Despachada) verificado via git stash que ya fallaba antes de este issue; corresponde a la deuda huerfana oc-costo-* detectada en el Triage, no a este trabajo."
+    },
+    {
+      "id": "ot-sync-frontend-model",
+      "description": "Frontend: renombrar cantidad->cantidad_cotizada y agregar campo progreso en orden-trabajo.model.ts.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-sync-backend-migracion"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-trabajo.model.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK (ng build limpio). Tipado estricto sin any en los campos nuevos."
+    },
+    {
+      "id": "ot-sync-frontend-ui",
+      "description": "Frontend: barra de progreso y semaforo real (basado en cantidad_recibida/cantidad_cotizada) en detail y list de Ordenes de Trabajo.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ot-sync-frontend-model",
+        "ot-sync-backend-resource"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/list/list.component.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK (ng build limpio, vitest del spec existente pasa). ng lint no esta configurado en el proyecto (no hay target lint en angular.json) por lo que ese gate se marca N/A, no es atribuible a este cambio. Barra de progreso y columna de progreso verificadas por lectura de codigo contra los criterios de aceptacion del issue 01."
+    },
+    {
+      "id": "ot-depura-backend-migracion",
+      "description": "Backend: migracion para agregar cantidad_depurada, motivo_depuracion, depurado_por y depurado_at a orden_trabajo_referencias.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "ot-facturacion-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_135900_add_depuracion_columns_orden_trabajo_referencias.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/OrdenTrabajoReferencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenTrabajoReferenciaResource.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: gates OK (tests, migracion verificada por DESCRIBE en MySQL de test — 4 columnas nuevas en el orden correcto, sin conflictos de FK; consistente con el resto de la tabla que tampoco declara FKs). Resource expone los campos nuevos correctamente (field_selection OK)."
+    },
+    {
+      "id": "ot-depura-backend-service",
+      "description": "Backend: OrdenTrabajoDepuracionService, endpoint PATCH ordenes-trabajo/{ot}/referencias/{ref}/depurar y regla de autorizacion en OrdenTrabajoPolicy (solo Vendedor/Administrador/super_admin).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-depura-backend-migracion"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/DepurarOrdenTrabajoReferenciaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenTrabajoDepuracionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Policies/OrdenTrabajoPolicy.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: fix verificado (try-catch-abort aplicado correctamente, igual patron que registrarRecepcionCompra). Gates re-ejecutados: suite completa OK (1 failure preexistente no relacionado, ya documentado), scramble:analyze OK, pint passed. Aprobado."
+    },
+    {
+      "id": "ot-depura-backend-tests",
+      "description": "Backend Tests: saldo excedido al depurar, rol no autorizado (403) y depuracion exitosa con auditoria (depurado_por/depurado_at).",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ot-depura-backend-service"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoDepuracionTest.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: 6 tests cubren saldo excedido, acumulacion, motivo obligatorio, restriccion de rol y cruce de OT/referencia. Todos verdes, sin cambios necesarios."
+    },
+    {
+      "id": "ot-depura-frontend-model",
+      "description": "Frontend: agregar campos de depuracion al modelo OrdenTrabajoReferencia y metodo depurarReferencia() en OrdenTrabajoService.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-depura-backend-migracion"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-trabajo.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/orden-trabajo.service.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: tipado estricto sin any en los campos nuevos (DepurarOrdenTrabajoReferenciaDto, campos de OrdenTrabajoReferencia). ng build limpio."
+    },
+    {
+      "id": "ot-depura-frontend-ui",
+      "description": "Frontend: boton 'Depurar Faltante' (solo roles autorizados), modal de confirmacion con motivo obligatorio y badge visual 'Depurado' distinto del semaforo estandar.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ot-depura-frontend-model",
+        "ot-depura-backend-service"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/store/ordenes-trabajo/actions/ordenes-trabajo.actions.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/store/ordenes-trabajo/reducers/ordenes-trabajo.reducer.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/store/ordenes-trabajo/effects/ordenes-trabajo.effects.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: flujo NgRx (action/reducer/effect) replica correctamente el patron ya usado por registrarRecepcionCompra. UI (boton, modal, badge Depurado) verificada por lectura de codigo contra los criterios de aceptacion del issue 02. ng build y vitest del spec existente OK. ng lint sigue sin estar configurado en el proyecto (N/A, no atribuible a este cambio)."
+    },
+    {
+      "id": "ot-cierre-backend-enum",
+      "description": "Backend: crear App\\Enums\\OrdenTrabajoEstado (Pendiente, EnProceso, ListaParaFacturar, Completado, Cancelado) y migracion con plan de reconciliacion de datos legacy en estado 'Completado'.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ot-facturacion-triage"
+      ],
+      "topic_key": "decision/orden-trabajo-facturacion",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/OrdenTrabajoEstado.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreOrdenTrabajoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateOrdenTrabajoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: Enum consistente con el patron de OrdenCompraEstado. asignablesManualmente() excluye correctamente ListaParaFacturar de Store/Update. No se requirio migracion (estado ya es varchar(255), sin datos legacy en este entorno). Gates OK."
+    },
+    {
+      "id": "ot-cierre-backend-evaluacion",
+      "description": "Backend: metodo evaluarCompletitud() en OrdenTrabajoLifecycleService (recibida+depurada==cotizada) mas evento OrdenTrabajoReferenciaActualizada y listener que lo dispara automaticamente tras cada recepcion y cada depuracion.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ot-cierre-backend-enum",
+        "ot-sync-backend-lifecycle",
+        "ot-depura-backend-service"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Events/OrdenTrabajoReferenciaActualizada.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Listeners/RecalcularCompletitudOrdenTrabajo.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Providers/EventServiceProvider.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenTrabajoLifecycleService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenTrabajoDepuracionService.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: evento+listener siguen el mismo patron ya validado de PurchaseOrderItemsReceived/SyncStockOnPurchaseOrderReceived. evaluarCompletitud() es idempotente y maneja correctamente el caso de referencias vacias (evita verdad vacua de every()). actualizarEstadoPorProgreso() correctamente no revierte ListaParaFacturar. Logica encapsulada en el service, tipado estricto. Gates OK."
+    },
+    {
+      "id": "ot-cierre-backend-endpoint",
+      "description": "Backend: endpoint GET ordenes-trabajo/{ot}/completitud con el detalle de cumplimiento por linea.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-cierre-backend-evaluacion"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: endpoint funcional y correctamente delegado al service (sin logica de negocio en el controller). Observacion no bloqueante: igual que show(), completitud() solo esta protegido por auth:sanctum a nivel de grupo de rutas, sin autorizacion via OrdenTrabajoPolicy::view() -- es un gap preexistente del controlador completo (show(), completitud(), index() tampoco la tienen), no una regresion de este nodo. Vale la pena atenderlo en un issue de hardening de permisos aparte."
+    },
+    {
+      "id": "ot-cierre-backend-tests",
+      "description": "Backend Tests: completitud parcial, completitud alcanzada via depuracion, e idempotencia del recalculo de completitud.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ot-cierre-backend-evaluacion",
+        "ot-cierre-backend-endpoint"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoCierreTecnicoTest.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: 6 tests cubren exactamente los criterios de aceptacion del issue 03 (completitud parcial, completitud via recepcion, completitud via depuracion, detalle del endpoint, idempotencia, bloqueo de asignacion manual). Todos verdes."
+    },
+    {
+      "id": "ot-cierre-frontend-ui",
+      "description": "Frontend: badge de estado 'Lista para Facturar', panel de completitud por linea (usa GET completitud) y bloqueo de edicion manual de ese estado en el formulario estandar.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ot-cierre-backend-endpoint",
+        "ot-sync-frontend-ui"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-trabajo.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/orden-trabajo.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/list/list.component.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: badge y panel de completitud correctos, tipado estricto sin any en los nuevos campos. Observacion menor no bloqueante: Completado y Lista para Facturar comparten el mismo severity (success/verde) en getEstadoSeverity, lo que podria generar ambiguedad visual entre ambos estados; no es un defecto funcional, se puede ajustar el color en un futuro pase de UI. ng build y vitest OK."
+    },
+    {
+      "id": "ot-factura-backend-rol",
+      "description": "Backend: agregar rol 'Contabilidad' a los seeders de roles (DevBootstrapSeeder y equivalente de produccion si existe).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-facturacion-triage"
+      ],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_143500_ensure_contabilidad_role_exists.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/seeders/DevBootstrapSeeder.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: rol creado via migracion idempotente (Role::firstOrCreate), mismo patron que ensure_cliente_role_exists.php -- correcto para asegurar el rol tambien en produccion, no solo en dev seeder. Verificado en MySQL de test (SELECT roles WHERE name=Contabilidad). Gates OK."
+    },
+    {
+      "id": "ot-factura-backend-migracion",
+      "description": "Backend: migracion para agregar numero_factura, factura_pdf, facturado_por y facturado_at a orden_trabajos, y extender OrdenTrabajoEstado con el caso 'Cerrada'.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "ot-cierre-backend-enum"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_143600_add_facturacion_columns_orden_trabajos.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/OrdenTrabajo.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenTrabajoResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Enums/OrdenTrabajoEstado.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: columnas verificadas en MySQL de test (DESCRIBE orden_trabajos), sin conflictos de FK (consistente con el resto de la tabla, que tampoco declara FKs). Enum OrdenTrabajoEstado extendido correctamente con Cerrada como terminal y excluido de asignablesManualmente junto a ListaParaFacturar. Resource expone los campos nuevos correctamente."
+    },
+    {
+      "id": "ot-factura-backend-service",
+      "description": "Backend: OrdenTrabajoFacturacionService (facturar), endpoint POST ordenes-trabajo/{ot}/facturar, endpoint GET ordenes-trabajo/{ot}/resumen-facturacion (excluye lineas depuradas) y permisos en OrdenTrabajoPolicy para rol Contabilidad (solo ver + facturar).",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "ot-factura-backend-migracion",
+        "ot-factura-backend-rol",
+        "ot-cierre-backend-evaluacion"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Requests/FacturarOrdenTrabajoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenTrabajoFacturacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Policies/OrdenTrabajoPolicy.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: OrdenTrabajoFacturacionService encapsula la logica correctamente, tipado estricto. facturar() valida estado antes de transicionar (bloquea doble facturacion via el mismo chequeo). resumenFacturable() excluye correctamente cantidad_depurada del total (usa cantidad_recibida como base facturable). Controller sigue el patron try-catch-abort establecido en el fix de issue 02, y agrega autorizacion EXPLICITA en resumenFacturacion() (a diferencia del gap preexistente en show()/index()/completitud() ya documentado). Policy::facturar restringe correctamente a Contabilidad/Administrador/super_admin. Gates OK."
+    },
+    {
+      "id": "ot-factura-backend-tests",
+      "description": "Backend Tests: rechazo si la OT no esta 'Lista para Facturar', rechazo sin numero_factura, rechazo de doble facturacion, rol no autorizado (403) y resumen-facturacion excluye lineas depuradas del total.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "ot-factura-backend-service"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoFacturacionTest.php",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: 7 tests cubren exactamente los criterios de aceptacion del issue 04 (rechazo por estado, sin numero_factura, exito, doble facturacion, rol no autorizado, resumen excluye depurados, resumen restringido por rol). Todos verdes."
+    },
+    {
+      "id": "ot-factura-frontend",
+      "description": "Frontend: modelo/servicio de facturacion, bandeja de Contabilidad filtrada por 'Lista para Facturar' en el menu, vista de resumen facturable y modal de facturacion (numero de factura obligatorio + PDF opcional).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "ot-factura-backend-service",
+        "ot-cierre-frontend-ui"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-trabajo.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/orden-trabajo.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/facturacion/facturacion.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/ordenes-trabajo.routes.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/layout/component/app.menu.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/list/list.component.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Reviewer: bandeja, modal y flujo de facturacion correctos, tipado estricto sin any. Buena decision de diseño: diferencio los colores de Lista para Facturar (warn) vs Completado/Cerrada (success), resolviendo la observacion de ambiguedad visual que deje pendiente en la revision de issue 03. Observacion menor no bloqueante: TagModule se importa en facturacion.component.ts pero no se usa en el template (ningun p-tag) -- import muerto, se puede limpiar en un futuro pase de housekeeping. ng build y vitest OK."
+    },
+    {
+      "id": "ot-factura-housekeeping-tagmodule",
+      "description": "Fix puntual: eliminar import muerto de TagModule en facturacion.component.ts (hallazgo no bloqueante de la revision de issue 04).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-factura-frontend"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "review_notes": "Fix directo solicitado por el usuario fuera del flujo de roles formal. Verificado con ng build (limpio).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/facturacion/facturacion.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-recepcion-saldo-pendiente-fix",
+      "description": "Fix puntual: bug preexistente (no introducido por flujo-ot-facturacion) hallado en QA manual del issue 01. El modal 'Registrar recepcion de compra' del detalle de OT calculaba el tope de cada linea (columna 'Ordenada' y [max] de los inputs) contra la cantidad total ordenada de la OC, sin restar lo ya recibido en recepciones previas. Al intentar registrar una segunda recepcion parcial, el backend (RecepcionCompraService::validarSaldoConforme) rechazaba con 'La cantidad conforme acumulada no puede superar la cantidad ordenada', sin que el usuario tuviera ninguna pista visual de cuanto quedaba realmente pendiente.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario durante QA manual, fuera del flujo de roles formal (mismo criterio que ot-factura-housekeeping-tagmodule). El patron correcto ya existia en el modal hermano de OC (recepcion-compra-modal.util.ts::crearLineaModal, que usa detalle.saldo_pendiente como tope) pero no se habia replicado en el modal inline de OT (detail.component.ts::crearLineaRecepcion, que usaba detalle.cantidad crudo). Cambios: (1) RecepcionLineaForm (recepcion-lines.util.ts, tipo compartido por ambos modales) gana un campo opcional cantidad_ya_recibida, sin tocar el campo cantidad_ordenada (que en este tipo compartido siempre significo 'tope de la operacion', no el total original -- confirmado leyendo aLineaCompartida() en recepcion-compra-modal.util.ts, que ya mapeaba saldo_pendiente a ese mismo campo). (2) crearLineaRecepcion() en ordenes-trabajo/detail/detail.component.ts ahora calcula saldoPendiente = detalle.saldo_pendiente ?? Math.max(detalle.cantidad - cantidad_recibida, 0) y lo asigna a cantidad_ordenada (que ya alimentaba el [max] de los 3 inputNumber y la validacion compartida recepcionCompraLineaValida, sin requerir tocar esos bindings). (3) Tabla del modal: nueva columna 'Ya recibida' (informativa) y la columna que decia 'Ordenada' se renombro a 'Pendiente' para reflejar el valor real que muestra. El modal de OC (recepcion-compra-modal) no se toco, ya estaba correcto. Aplicado en un worktree aislado (partido de origin/main, que ya contenia ambos archivos sin modificar por el trabajo sin commitear de flujo-ot-facturacion) por la politica de aislamiento de sesiones en background; el usuario aprobo saltarse el aislamiento pero el cambio a .claude/settings.json (worktree.bgIsolation=none) no aplica en caliente en la sesion activa, asi que se opto por el worktree y luego se copiaron los 2 archivos validados de vuelta al checkout principal. Gates: npx tsc --noEmit limpio, ng build --configuration development sin errores, npx vitest run del spec del modal hermano de OC 15/15 OK (confirma que el campo opcional nuevo no rompe ese consumidor), prettier --check en detail.component.ts marca 4 diferencias pero las 4 son preexistentes y ajenas (lineas 236, 643, 649, 677 -- ninguna toca crearLineaRecepcion ni la tabla del modal, verificado por diff linea a linea). INCIDENTE Y RECUPERACION: la primera vez que se copio detail.component.ts del worktree (basado en origin/main) de vuelta al checkout principal, se sobreescribio por error TODO el archivo en vez de solo aplicar el diff puntual, borrando ~13 ediciones sin commitear de la sesion de hoy (progreso/depuracion/cierre-tecnico/facturacion de flujo-ot-facturacion) que vivian unicamente en el working tree. Detectado de inmediato porque ng build fallo con 'Property cantidad does not exist on type OrdenTrabajoReferencia' (el modelo ya tenia cantidad_cotizada, evidencia de que se habia vuelto a una version vieja del componente). Recuperado reconstruyendo el archivo: se tomo el blob de origin/main como base y se re-aplicaron en orden las 23 llamadas Edit de la transcripcion de la sesion de hoy (jsonl en ~/.claude/projects, tool_use con file_path=este archivo) que habian producido el estado previo al clobber; las 23 aplicaron limpio (old_string encontrado exactamente 1 vez cada una). Verificado por: (a) grep de fragmentos de texto exacto que ya se habian leido directamente en esta conversacion antes del incidente (ej. 'Orden de trabajo no encontrada', 'Ver comprobante de factura') -- coincidencia byte a byte; (b) presencia confirmada de las 4 features completas (progreso, panel de completitud, modal de depuracion, bloque de facturacion); (c) ng build y tsc --noEmit limpios sobre el archivo reconstruido + el resto de archivos hermanos sin commitear. Leccion para el futuro: al copiar un archivo worktree->checkout principal para sortear el aislamiento de sesiones background, NUNCA hacerlo si el archivo tiene cambios sin commitear ajenos al fix puntual que no existen en la base del worktree (origin/main) -- aplicar el diff con Edit/patch en vez de cp de archivo completo, o verificar primero que ambas versiones solo difieren en las lineas que se van a tocar.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/utils/recepcion-lines.util.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-cierre-estado-enum-legacy-fix",
+      "description": "Fix puntual: bug de datos hallado en QA manual del issue 03 (cierre tecnico automatico). Al recibir el resto de una linea de OT y disparar evaluarCompletitud() -> Lista para Facturar, MySQL lanzaba SQLSTATE[01000] Warning 1265 'Data truncated for column estado' al hacer UPDATE orden_trabajos SET estado='Lista para Facturar'. Causa raiz: en el entorno del usuario, orden_trabajos.estado quedo como ENUM('Pendiente','En Proceso','Completado','Cancelado') de un esquema legacy anterior a 2026_05_05_000001_create_orden_trabajos_tables.php (esa migracion ya declara la columna como string(), pero Schema::create() no corre porque Schema::hasTable() ya era true). El review_notes de ot-cierre-backend-enum asumio 'estado ya es varchar(255), sin datos legacy' -- esa asuncion era incorrecta para este entorno (SHOW COLUMNS confirmo el ENUM real via tinker). El mismo patron de legacy-ENUM ya se habia dado y corregido antes en orden_compras.estado (ver oc-logistica-backend-states); orden_trabajo_referencias.estado ya era varchar(255), sin problema.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "ot-cierre-backend-enum"
+      ],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario durante QA manual. Migracion nueva 2026_09_05_150000_convert_orden_trabajos_estado_column_to_varchar.php: ALTER TABLE orden_trabajos MODIFY estado VARCHAR(255) NOT NULL DEFAULT 'Pendiente' via DB::statement (no se uso Blueprint::change() porque doctrine/dbal no esta instalado en el proyecto, confirmado por composer show). down() revierte al ENUM original de 4 valores para simetria. Verificado antes de migrar que no habia registros legacy en 'Completado' en este entorno (unicamente 'Pendiente' y 'En Proceso'), por lo que no aplica la reconciliacion de datos que advertia el issue 03 -- solo conversion de tipo de columna, sin tocar datos. Aplicado como archivo nuevo (sin conflicto de clobber, a diferencia del nodo anterior) copiado del worktree al checkout principal, migracion corrida con --path apuntado solo a este archivo. Gates: SHOW COLUMNS confirma varchar(255) tras migrar; datos de las 5 OTs existentes preservados (verificado por SELECT id, estado); ./vendor/bin/pest tests/Feature/Api/OrdenTrabajoCierreTecnicoTest.php tests/Feature/Api/OrdenTrabajoProgresoSyncTest.php tests/Feature/Api/OrdenTrabajoFacturacionTest.php: 18/18 OK (solo DEPR preexistentes por APP_URL=null, no bloqueantes) -- estos tests corren contra una DB de test que se crea desde cero, por lo que Schema::create() de 2026_05_05 ya la crea como string() y la nueva migracion es un no-op idempotente ahi, sin conflicto.",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_150000_convert_orden_trabajos_estado_column_to_varchar.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-recepcion-validacion-lineas-parciales-fix",
+      "description": "Fix puntual: bug preexistente hallado en QA manual. En el modal 'Registrar recepcion de compra' del detalle de OT, recepcionValida() exigia que TODAS las lineas de la OC (via .every() sobre recepcionLineas() completo) pasaran recepcionCompraLineaValida(), que a su vez requiere cantidad_recibida > 0. Como el usuario normalmente solo llena algunas lineas por recepcion parcial (dejando otras en 0), el boton 'Guardar recepcion' quedaba deshabilitado permanentemente en cuanto habia mas de una linea y no todas tenian cantidad > 0, incluso con datos validos.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-recepcion-saldo-pendiente-fix"
+      ],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario durante QA manual. Mismo patron incorrecto (validar sobre TODAS las lineas en vez de solo las tocadas) que ya se habia corregido correctamente en el modal hermano de OC (recepcion-compra-modal.util.ts::lineasModalValidas, que primero filtra lineas.filter(l => l.cantidad_recibida > 0) y luego aplica every() solo sobre ese subconjunto, exigiendo ademas length > 0). recepcionValida() en ordenes-trabajo/detail/detail.component.ts ahora replica ese mismo patron: const lineasConCantidad = this.recepcionLineas().filter(l => l.cantidad_recibida > 0); return ... && lineasConCantidad.length > 0 && lineasConCantidad.every(l => recepcionCompraLineaValida(l)). No se toco guardarRecepcion() (su .filter(cantidad_recibida > 0) antes del map ya era correcto). Aplicado como reemplazo puntual de string directo sobre el checkout principal (sin cp de archivo completo, lección aplicada del incidente del nodo ot-recepcion-saldo-pendiente-fix). Gates: tsc --noEmit limpio, ng build --configuration development sin errores.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-recepcion-conforme-autocalculado-fix",
+      "description": "Fix puntual: tercer bug hallado en la misma sesion de QA manual del modal 'Registrar recepcion de compra' del detalle de OT. El modal exponia 'Conforme' como un input numerico manual independiente de 'Recibida', sin ningun autocompletado; recepcionCompraLineaValida() exige recibida === conforme + rechazada, asi que con Recibida=1 y Conforme en su default 0, la validacion fallaba silenciosamente y el boton Guardar recepcion quedaba deshabilitado sin pista visual de por que.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-recepcion-validacion-lineas-parciales-fix"
+      ],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario durante QA manual. El modal hermano de OC (recepcion-compra-modal.component.ts) ya resolvia esto de raiz: no expone Conforme como input en absoluto, lo deriva siempre como cantidad_recibida - cantidad_rechazada (ver aplicarCantidadRecibida/aplicarCantidadRechazada en recepcion-compra-modal.util.ts). Se replico el mismo diseño en el modal de OT en vez de parchar la sincronizacion de 3 campos editables: (1) columna 'Conforme' eliminada de la tabla del dialogo de recepcion (header + celda con el p-inputNumber); (2) actualizarLinea() en detail.component.ts cambia su firma de campo de 'cantidad_recibida'|'cantidad_conforme'|'cantidad_rechazada' a solo 'cantidad_recibida'|'cantidad_rechazada', y ahora calcula cantidad_conforme = cantidadRecibida - cantidadRechazada en cada actualizacion, ademas de acotar cantidad_rechazada a no superar cantidad_recibida (Math.min), igual que hace aplicarCantidadRecibida en el modal de OC; (3) el [max] del input de Rechazada paso de linea.cantidad_ordenada a linea.cantidad_recibida (no tiene sentido rechazar mas de lo que se recibio en esta operacion), tambien alineado con el modal de OC. cantidad_conforme se mantiene en el tipo RecepcionLineaForm (usado por recepcionCompraLineaValida y por el payload de guardarRecepcion) pero ya no se edita directo desde el template. Aplicado como reemplazo puntual de 2 bloques de texto (template + metodo) directamente sobre el checkout principal via script Python de un solo uso, sin cp de archivo completo (leccion aplicada del incidente anterior en este mismo archivo). Gates: tsc --noEmit limpio, ng build --configuration development sin errores.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-list-zoneless-clientes-pedidos-fix",
+      "description": "Fix puntual: NG0100 ExpressionChangedAfterItHasBeenCheckedError en consola al usar los filtros de Cliente/Pedido del listado de Ordenes de Trabajo, detectado durante QA manual post cierre de las 4 pruebas del issue flujo-ot-facturacion. Causa raiz: clientes/pedidos en ListComponent (ordenes-trabajo/list) eran propiedades planas (any[] = []) mutadas dentro de callbacks next de HTTP subscribe (terceroService.list/pedidoService.list), sin pasar por deteccion de cambios explicita -- mismo patron Zoneless ya documentado y corregido varias veces en este repo (cards-info-edit, medidas-tabla-refresh-frontend).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario durante QA manual. A diferencia de otros fixes Zoneless previos en el repo (que agregaron cdr.detectChanges() como parche), aqui se opto por el patron ya establecido en el MISMO archivo: ordenesTrabajo/loading/total en este componente ya son signal(). Se convirtieron clientes y pedidos a signal<any[]>([]) tambien, actualizando loadFilterOptions() para usar .set(...) en los 2 callbacks next, y los 2 bindings del template ([options]=\"clientes\" -> [options]=\"clientes()\", igual para pedidos). No se toco selectedEstado/selectedCliente/selectedPedido ni estadosOptions (no mutados asincronamente, sin el bug). Aplicado como reemplazo puntual de bloques de texto directamente sobre el checkout principal via script Python de un solo uso (mismo criterio que los 2 fixes anteriores en detail.component.ts esta sesion, sin cp de archivo completo). Gates: tsc --noEmit limpio, ng build --configuration development sin errores. Verificacion en consola del navegador pendiente de confirmacion del usuario (no se pudo reproducir localmente sin datos identicos de terceros/pedidos del entorno del usuario).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/list/list.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "ot-factura-contabilidad-users-ui-fix",
+      "description": "Gap encontrado al ser preguntado por el alcance real del rol Contabilidad: heavy-front/src/app/features/users/list/list.ts (pantalla de gestion de usuarios, Administracion > Usuarios) tenia availableRoles hardcodeado sin 'Contabilidad' -- ningun administrador podia asignar el rol nuevo a un usuario desde la UI (solo via tinker/DB directo, como se hizo para las pruebas manuales de esta sesion). El backend (UserController + StoreUserRequest/UpdateUserRequest) ya soportaba cualquier rol existente en la tabla roles sin cambios (validacion generica exists:roles,name), por lo que el unico gap era este listado de frontend.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "ot-factura-backend-rol"
+      ],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix directo solicitado por el usuario al preguntar por el alcance del rol. Se agrego { label: 'Contabilidad', value: 'Contabilidad' } a availableRoles y un case 'Contabilidad' -> severity 'contrast' en getSeverity() (badge visual distinto a los demas roles ya usados: danger/info/warn/success). No se toco UserController/StoreUserRequest/UpdateUserRequest (backend ya generico, sin nombres de rol hardcodeados). Deliberadamente NO se agregaron 'Cliente'/'Proveedor' a availableRoles -- ya estaban ausentes antes de este fix, son roles de portal externo gestionados por flujos de registro separados (ClientAuthController/ProviderAuthController), no por esta pantalla interna de staff. Gates: tsc --noEmit limpio, ng build --configuration development sin errores.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/users/list/list.ts",
           "status": "validated"
         }
       ]

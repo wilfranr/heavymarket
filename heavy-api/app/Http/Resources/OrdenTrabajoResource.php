@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace App\Http\Resources;
 
 use App\Models\OrdenTrabajo;
+use App\Services\OrdenTrabajoLifecycleService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-use App\Http\Resources\PedidoResource;
 
 /**
  * API Resource para el modelo OrdenTrabajo
@@ -41,11 +41,16 @@ class OrdenTrabajoResource extends JsonResource
             'transportadora_id' => $this->transportadora_id,
             'archivo' => $this->archivo,
             'motivo_cancelacion' => $this->motivo_cancelacion,
+            'numero_factura' => $this->numero_factura,
+            'factura_pdf' => $this->factura_pdf,
+            'facturado_por' => $this->facturado_por,
+            'facturado_at' => $this->facturado_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
 
             // Relaciones opcionales
             'user' => $this->whenLoaded('user'),
+            'facturado_por_usuario' => $this->whenLoaded('facturadoPor'),
             'tercero' => $this->whenLoaded('tercero'),
             'pedido' => $this->whenLoaded('pedido', function () {
                 return new PedidoResource($this->pedido);
@@ -58,6 +63,9 @@ class OrdenTrabajoResource extends JsonResource
             }),
             'recepciones_compra' => $this->whenLoaded('recepcionesCompra', function () {
                 return RecepcionCompraResource::collection($this->recepcionesCompra);
+            }),
+            'progreso' => $this->whenLoaded('referencias', function () {
+                return app(OrdenTrabajoLifecycleService::class)->calcularProgreso($this->resource);
             }),
         ];
     }

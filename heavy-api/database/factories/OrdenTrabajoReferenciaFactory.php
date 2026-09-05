@@ -26,7 +26,7 @@ class OrdenTrabajoReferenciaFactory extends Factory
         return [
             'orden_trabajo_id' => OrdenTrabajo::factory(),
             'pedido_referencia_id' => PedidoReferencia::factory(),
-            'cantidad' => fake()->numberBetween(1, 10),
+            'cantidad_cotizada' => fake()->numberBetween(1, 10),
             'cantidad_recibida' => 0,
             'estado' => 'Pendiente',
             'recibido' => false,

@@ -4,13 +4,21 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Api\V1;
 
+use App\Enums\OrdenTrabajoEstado;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DepurarOrdenTrabajoReferenciaRequest;
+use App\Http\Requests\FacturarOrdenTrabajoRequest;
 use App\Http\Requests\StoreOrdenTrabajoRequest;
 use App\Http\Requests\StoreRecepcionCompraRequest;
+use App\Http\Resources\OrdenTrabajoReferenciaResource;
 use App\Http\Resources\OrdenTrabajoResource;
 use App\Http\Resources\RecepcionCompraResource;
 use App\Models\OrdenTrabajo;
+use App\Models\OrdenTrabajoReferencia;
 use App\Services\CotizacionService;
+use App\Services\OrdenTrabajoDepuracionService;
+use App\Services\OrdenTrabajoFacturacionService;
+use App\Services\OrdenTrabajoLifecycleService;
 use App\Services\RecepcionCompraService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,6 +35,9 @@ class OrdenTrabajoController extends Controller
     public function __construct(
         private readonly CotizacionService $cotizacionService,
         private readonly RecepcionCompraService $recepcionCompraService,
+        private readonly OrdenTrabajoDepuracionService $ordenTrabajoDepuracionService,
+        private readonly OrdenTrabajoLifecycleService $ordenTrabajoLifecycleService,
+        private readonly OrdenTrabajoFacturacionService $ordenTrabajoFacturacionService,
     ) {}
 
     /**
@@ -155,6 +166,19 @@ class OrdenTrabajoController extends Controller
         ]);
     }
 
+    /**
+     * Detalle de cumplimiento por linea (recibida + depurada == cotizada),
+     * usado para explicar por que una OT si o no esta lista para facturar.
+     */
+    public function completitud(OrdenTrabajo $orden_trabajo): JsonResponse
+    {
+        $orden_trabajo->load('referencias');
+
+        return response()->json(
+            $this->ordenTrabajoLifecycleService->detalleCompletitud($orden_trabajo)
+        );
+    }
+
     public function registrarRecepcionCompra(StoreRecepcionCompraRequest $request, OrdenTrabajo $orden_trabajo): JsonResponse
     {
         $user = $request->user();
@@ -191,7 +215,7 @@ class OrdenTrabajoController extends Controller
             'estado' => [
                 'sometimes',
                 'string',
-                Rule::in(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']),
+                Rule::in(OrdenTrabajoEstado::asignablesManualmente()),
             ],
             'fecha_ingreso' => ['sometimes', 'date'],
             'fecha_entrega' => ['nullable', 'date'],
@@ -237,6 +261,73 @@ class OrdenTrabajoController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Depurar (marcar como faltante definitivo) una referencia de la orden.
+     */
+    public function depurarReferencia(
+        DepurarOrdenTrabajoReferenciaRequest $request,
+        OrdenTrabajo $orden_trabajo,
+        OrdenTrabajoReferencia $orden_trabajo_referencia
+    ): JsonResponse {
+        if ((int) $orden_trabajo_referencia->orden_trabajo_id !== (int) $orden_trabajo->id) {
+            abort(404, 'La referencia indicada no pertenece a esta orden de trabajo.');
+        }
+
+        try {
+            $referencia = $this->ordenTrabajoDepuracionService->depurarFaltante(
+                $orden_trabajo_referencia,
+                $request->validated(),
+                $request->user()
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            abort(500, 'Error al depurar el ítem: '.$exception->getMessage());
+        }
+
+        return response()->json([
+            'data' => new OrdenTrabajoReferenciaResource($referencia->load(['pedidoReferencia', 'depuradoPor'])),
+            'message' => 'Ítem depurado exitosamente',
+        ]);
+    }
+
+    /**
+     * Resumen de lo facturable (excluye lo depurado del total a cobrar).
+     */
+    public function resumenFacturacion(Request $request, OrdenTrabajo $orden_trabajo): JsonResponse
+    {
+        if (! $request->user()?->can('facturar', $orden_trabajo)) {
+            abort(403, 'No está autorizado para ver el resumen de facturación.');
+        }
+
+        return response()->json(
+            $this->ordenTrabajoFacturacionService->resumenFacturable($orden_trabajo)
+        );
+    }
+
+    /**
+     * Facturar (cerrar comercialmente) la orden de trabajo.
+     */
+    public function facturar(FacturarOrdenTrabajoRequest $request, OrdenTrabajo $orden_trabajo): JsonResponse
+    {
+        try {
+            $orden_trabajo = $this->ordenTrabajoFacturacionService->facturar(
+                $orden_trabajo,
+                $request->validated(),
+                $request->user()
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            abort(500, 'Error al facturar la orden de trabajo: '.$exception->getMessage());
+        }
+
+        return response()->json([
+            'data' => new OrdenTrabajoResource($orden_trabajo),
+            'message' => 'Orden de trabajo facturada exitosamente',
+        ]);
     }
 
     /**

@@ -19,20 +19,27 @@ return new class extends Migration
             }
         });
 
-        DB::table('cotizacion_referencia_proveedores')
-            ->join('cotizaciones', 'cotizaciones.id', '=', 'cotizacion_referencia_proveedores.cotizacion_id')
-            ->where('cotizaciones.estado', 'Aprobada')
-            ->update([
-                'cotizacion_referencia_proveedores.estado_aprobacion' => 'Aprobada',
-                'cotizacion_referencia_proveedores.fecha_aprobacion' => DB::raw('COALESCE(cotizaciones.updated_at, cotizacion_referencia_proveedores.updated_at)'),
-            ]);
+        // Backfill de datos legacy: el UPDATE...JOIN con columna cruzada en el
+        // SET (cotizaciones.updated_at) es sintaxis MySQL; SQLite (usado en la
+        // suite de tests) no permite referenciar columnas de la tabla unida
+        // dentro del SET. No aplica en una base de tests recien creada (sin
+        // datos legacy que retroalimentar).
+        if (DB::connection()->getDriverName() === 'mysql') {
+            DB::table('cotizacion_referencia_proveedores')
+                ->join('cotizaciones', 'cotizaciones.id', '=', 'cotizacion_referencia_proveedores.cotizacion_id')
+                ->where('cotizaciones.estado', 'Aprobada')
+                ->update([
+                    'cotizacion_referencia_proveedores.estado_aprobacion' => 'Aprobada',
+                    'cotizacion_referencia_proveedores.fecha_aprobacion' => DB::raw('COALESCE(cotizaciones.updated_at, cotizacion_referencia_proveedores.updated_at)'),
+                ]);
 
-        DB::table('cotizacion_referencia_proveedores')
-            ->join('cotizaciones', 'cotizaciones.id', '=', 'cotizacion_referencia_proveedores.cotizacion_id')
-            ->whereIn('cotizaciones.estado', ['Rechazada', 'Anulada'])
-            ->update([
-                'cotizacion_referencia_proveedores.estado_aprobacion' => 'Rechazada',
-            ]);
+            DB::table('cotizacion_referencia_proveedores')
+                ->join('cotizaciones', 'cotizaciones.id', '=', 'cotizacion_referencia_proveedores.cotizacion_id')
+                ->whereIn('cotizaciones.estado', ['Rechazada', 'Anulada'])
+                ->update([
+                    'cotizacion_referencia_proveedores.estado_aprobacion' => 'Rechazada',
+                ]);
+        }
     }
 
     public function down(): void

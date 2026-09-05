@@ -29,6 +29,7 @@ export class AppMenu implements OnInit {
         const hasLogisticaRole = this.authService.hasAnyRole(['Logistica', 'logistica']);
         const hasClienteRole = this.authService.hasAnyRole(['Cliente', 'cliente']);
         const hasProveedorRole = this.authService.hasAnyRole(['Proveedor', 'proveedor']);
+        const hasContabilidadRole = this.authService.hasAnyRole(['Contabilidad', 'contabilidad']);
 
         // Caso 1: Sesión de Proveedor (Detección unificada)
         if (this.providerAuthService.isProvider() || hasProveedorRole) {
@@ -68,6 +69,21 @@ export class AppMenu implements OnInit {
             return;
         }
 
+        // Caso especial: Contabilidad ve solo la bandeja de Facturación
+        if (hasContabilidadRole && !hasAdminRole) {
+            this.model = [
+                {
+                    label: 'Facturación',
+                    items: [{ label: 'Órdenes por Facturar', icon: 'pi pi-fw pi-file-invoice', routerLink: ['/app/ordenes-trabajo/facturacion'] }]
+                },
+                {
+                    label: 'Perfil',
+                    items: [{ label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }]
+                }
+            ];
+            return;
+        }
+
         // Caso especial: Analista (y no Admin) solo ve lo solicitado
         if (hasAnalistaRole && !hasAdminRole) {
             this.model = [
@@ -90,7 +106,7 @@ export class AppMenu implements OnInit {
         }
 
         // Caso especial: Cliente (Solo ve sus pedidos)
-        if (hasClienteRole && !hasAdminRole && !hasVendedorRole && !hasAnalistaRole && !hasLogisticaRole) {
+        if (hasClienteRole && !hasAdminRole && !hasVendedorRole && !hasAnalistaRole && !hasLogisticaRole && !hasContabilidadRole) {
             this.model = [
                 {
                     label: 'Mi Cuenta',
@@ -124,16 +140,15 @@ export class AppMenu implements OnInit {
         this.model.push(
             {
                 label: 'Comercial',
-                items: [
-                    { label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }
-                ]
+                items: [{ label: 'Pedidos', icon: 'pi pi-fw pi-shopping-cart', routerLink: ['/app/pedidos'] }]
             },
             {
                 label: 'Documentos',
                 items: [
                     { label: 'Cotizaciones', icon: 'pi pi-fw pi-file', routerLink: ['/app/cotizaciones'] },
                     { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] },
-                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] }
+                    { label: 'Órdenes de Trabajo', icon: 'pi pi-fw pi-briefcase', routerLink: ['/app/ordenes-trabajo'] },
+                    { label: 'Facturación', icon: 'pi pi-fw pi-file-invoice', routerLink: ['/app/ordenes-trabajo/facturacion'] }
                 ]
             },
             {

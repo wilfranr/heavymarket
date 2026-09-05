@@ -22,6 +22,7 @@ class RecepcionCompraService
 {
     public function __construct(
         private readonly OrdenCompraLifecycleService $ordenCompraLifecycleService,
+        private readonly OrdenTrabajoLifecycleService $ordenTrabajoLifecycleService,
     ) {}
 
     /**
@@ -145,11 +146,17 @@ class RecepcionCompraService
             ]);
         }
 
-        $this->sincronizarAcumuladorCantidadRecibida(
-            $detallesPayload->pluck('orden_compra_detalle_id')->map(fn ($id) => (int) $id)->unique()
-        );
+        $detalleIds = $detallesPayload->pluck('orden_compra_detalle_id')->map(fn ($id) => (int) $id)->unique();
+
+        $this->sincronizarAcumuladorCantidadRecibida($detalleIds);
 
         $this->ordenCompraLifecycleService->actualizarEstadoPorRecepciones($ordenCompra);
+
+        $ordenTrabajoObjetivo = $ordenTrabajo ?? $this->ordenTrabajoLifecycleService->resolverDesdeOrdenCompra($ordenCompra);
+
+        if ($ordenTrabajoObjetivo) {
+            $this->ordenTrabajoLifecycleService->sincronizarProgresoPorRecepcion($ordenTrabajoObjetivo, $detalleIds);
+        }
 
         $recepcion->load(['detalles.ordenCompraDetalle.referencia', 'ordenCompra', 'recibidoPor']);
 

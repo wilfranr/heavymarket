@@ -17,7 +17,7 @@ class DevBootstrapSeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'Cliente', 'Proveedor', 'panel_user'] as $role) {
+        foreach (['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica', 'Contabilidad', 'Cliente', 'Proveedor', 'panel_user'] as $role) {
             Role::firstOrCreate(['name' => $role, 'guard_name' => 'web']);
         }
 

@@ -139,6 +139,25 @@ export const ordenesTrabajoReducer = createReducer(
         error
     })),
 
+    // Depurar referencia de la OT
+    on(OrdenesTrabajoActions.depurarReferencia, (state) => ({
+        ...state,
+        loading: true,
+        error: null
+    })),
+
+    on(OrdenesTrabajoActions.depurarReferenciaSuccess, (state) => ({
+        ...state,
+        loading: false,
+        error: null
+    })),
+
+    on(OrdenesTrabajoActions.depurarReferenciaFailure, (state, { error }) => ({
+        ...state,
+        loading: false,
+        error
+    })),
+
     // Eliminar orden de trabajo
     on(OrdenesTrabajoActions.deleteOrdenTrabajo, (state) => ({
         ...state,

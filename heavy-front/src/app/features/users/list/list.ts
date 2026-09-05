@@ -76,6 +76,7 @@ export class ListComponent implements OnInit {
         { label: 'Analista', value: 'Analista' },
         { label: 'Vendedor', value: 'Vendedor' },
         { label: 'Logística', value: 'Logistica' },
+        { label: 'Contabilidad', value: 'Contabilidad' },
         { label: 'Panel User', value: 'panel_user' }
     ];
 
@@ -174,6 +175,8 @@ export class ListComponent implements OnInit {
                 return 'warn';
             case 'Logistica':
                 return 'success';
+            case 'Contabilidad':
+                return 'contrast';
             default:
                 return 'secondary';
         }

@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace App\Providers;
 
+use App\Events\OrdenTrabajoReferenciaActualizada;
 use App\Events\PurchaseOrderItemsReceived;
+use App\Listeners\RecalcularCompletitudOrdenTrabajo;
 use App\Listeners\SyncStockOnPurchaseOrderReceived;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 
@@ -16,6 +18,9 @@ class EventServiceProvider extends ServiceProvider
     protected $listen = [
         PurchaseOrderItemsReceived::class => [
             SyncStockOnPurchaseOrderReceived::class,
+        ],
+        OrdenTrabajoReferenciaActualizada::class => [
+            RecalcularCompletitudOrdenTrabajo::class,
         ],
     ];
 }

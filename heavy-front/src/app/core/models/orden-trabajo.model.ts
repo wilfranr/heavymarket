@@ -19,6 +19,10 @@ export interface OrdenTrabajo {
     transportadora_id: number | null;
     archivo: string | null;
     motivo_cancelacion: string | null;
+    numero_factura: string | null;
+    factura_pdf: string | null;
+    facturado_por: number | null;
+    facturado_at: string | null;
     created_at: string;
     updated_at: string;
 
@@ -31,12 +35,40 @@ export interface OrdenTrabajo {
     direccion?: any;
     referencias?: OrdenTrabajoReferencia[];
     recepciones_compra?: RecepcionCompra[];
+    progreso?: OrdenTrabajoProgreso;
+    facturado_por_usuario?: any;
+}
+
+/**
+ * Progreso agregado de recepcion de la OT, calculado por el backend
+ * (OrdenTrabajoLifecycleService::calcularProgreso).
+ */
+export interface OrdenTrabajoProgreso {
+    cotizado: number;
+    recibido: number;
+    porcentaje: number;
+}
+
+/**
+ * Detalle de cierre tecnico por linea (GET .../completitud)
+ */
+export interface OrdenTrabajoCompletitudLinea {
+    referencia_id: number;
+    cotizada: number;
+    recibida: number;
+    depurada: number;
+    cumple: boolean;
+}
+
+export interface OrdenTrabajoCompletitud {
+    completa: boolean;
+    lineas: OrdenTrabajoCompletitudLinea[];
 }
 
 /**
  * Estados posibles de una orden de trabajo
  */
-export type OrdenTrabajoEstado = 'Pendiente' | 'En Proceso' | 'Completado' | 'Cancelado';
+export type OrdenTrabajoEstado = 'Pendiente' | 'En Proceso' | 'Lista para Facturar' | 'Completado' | 'Cerrada' | 'Cancelado';
 
 /**
  * Modelo de OrdenTrabajoReferencia
@@ -45,8 +77,12 @@ export interface OrdenTrabajoReferencia {
     id: number;
     orden_trabajo_id: number;
     pedido_referencia_id: number;
-    cantidad: number;
+    cantidad_cotizada: number;
     cantidad_recibida: number | null;
+    cantidad_depurada: number;
+    motivo_depuracion: string | null;
+    depurado_por: number | null;
+    depurado_at: string | null;
     estado: string | null;
     recibido: boolean;
     fecha_recepcion: string | null;
@@ -58,6 +94,34 @@ export interface OrdenTrabajoReferencia {
     orden_trabajo?: OrdenTrabajo;
     pedido_referencia?: any;
     referencia?: any;
+    depurado_por_usuario?: any;
+}
+
+/**
+ * DTO para depurar (marcar como faltante definitivo) una referencia de la OT
+ */
+export interface DepurarOrdenTrabajoReferenciaDto {
+    cantidad_depurada: number;
+    motivo_depuracion: string;
+}
+
+/**
+ * Resumen de lo facturable (GET .../resumen-facturacion). El total ya
+ * excluye lo depurado (no se cobra al cliente lo que no llego).
+ */
+export interface OrdenTrabajoResumenFacturacionLinea {
+    referencia_id: number;
+    referencia: string | null;
+    cantidad_cotizada: number;
+    cantidad_depurada: number;
+    cantidad_facturable: number;
+    precio_unitario: number;
+    subtotal: number;
+}
+
+export interface OrdenTrabajoResumenFacturacion {
+    lineas: OrdenTrabajoResumenFacturacionLinea[];
+    total: number;
 }
 
 /**

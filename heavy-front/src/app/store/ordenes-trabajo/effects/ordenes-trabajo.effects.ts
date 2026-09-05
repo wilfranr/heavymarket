@@ -175,6 +175,42 @@ export class OrdenesTrabajoEffects {
     );
 
     /**
+     * Effect para depurar (marcar como faltante definitivo) una referencia de la OT
+     */
+    depurarReferencia$ = createEffect(() =>
+        this.actions$.pipe(
+            ofType(OrdenesTrabajoActions.depurarReferencia),
+            switchMap(({ ordenTrabajoId, referenciaId, data }) =>
+                this.ordenTrabajoService.depurarReferencia(ordenTrabajoId, referenciaId, data).pipe(
+                    mergeMap((response) => {
+                        this.messageService.add({
+                            severity: 'success',
+                            summary: 'Éxito',
+                            detail: 'Ítem depurado exitosamente'
+                        });
+                        return [
+                            OrdenesTrabajoActions.depurarReferenciaSuccess({
+                                ordenTrabajoId,
+                                referencia: response.data
+                            }),
+                            OrdenesTrabajoActions.loadOrdenTrabajoById({ id: ordenTrabajoId })
+                        ];
+                    }),
+                    catchError((error) => {
+                        const message = error.error?.message || 'Error al depurar el ítem';
+                        this.messageService.add({
+                            severity: 'error',
+                            summary: 'Error',
+                            detail: message
+                        });
+                        return of(OrdenesTrabajoActions.depurarReferenciaFailure({ error: message }));
+                    })
+                )
+            )
+        )
+    );
+
+    /**
      * Effect para eliminar orden de trabajo
      */
     deleteOrdenTrabajo$ = createEffect(() =>
