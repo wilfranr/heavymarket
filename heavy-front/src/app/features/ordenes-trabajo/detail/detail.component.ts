@@ -13,12 +13,14 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
-import { loadOrdenTrabajoById, registrarRecepcionCompra } from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
+import { ProgressBarModule } from 'primeng/progressbar';
+import { loadOrdenTrabajoById, registrarRecepcionCompra, depurarReferencia } from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
 import * as OrdenesTrabajoSelectors from '../../../store/ordenes-trabajo/selectors/ordenes-trabajo.selectors';
-import { OrdenTrabajo } from '../../../core/models/orden-trabajo.model';
+import { OrdenTrabajo, OrdenTrabajoReferencia, OrdenTrabajoCompletitud } from '../../../core/models/orden-trabajo.model';
 import { OrdenCompra, OrdenCompraReferencia } from '../../../core/models/orden-compra.model';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { OrdenCompraService } from '../../../core/services/orden-compra.service';
+import { OrdenTrabajoService } from '../../../core/services/orden-trabajo.service';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
 import { MaquinaDetailComponent } from '../../../shared/components/maquina-detail/maquina-detail.component';
@@ -33,7 +35,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
 @Component({
     selector: 'app-orden-trabajo-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, DialogModule, InputNumberModule, InputTextModule, SelectModule, TextareaModule, TerceroFormComponent, MaquinaDetailComponent],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, DialogModule, InputNumberModule, InputTextModule, SelectModule, TextareaModule, ProgressBarModule, TerceroFormComponent, MaquinaDetailComponent],
     template: `
         <div class="px-4 py-8 md:px-6 lg:px-8">
             @if (loading()) {
@@ -68,6 +70,48 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                         <p-button label="Editar" icon="pi pi-pencil" severity="warn" [outlined]="true" (onClick)="onEdit()"></p-button>
                     </div>
                 </div>
+
+                @if (ordenTrabajo()?.progreso; as progreso) {
+                    <div class="figma-card p-4 mb-6 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="font-semibold text-color text-sm">Progreso de abastecimiento</span>
+                            <span class="text-sm text-muted-color">Entregado: {{ progreso.recibido }} de {{ progreso.cotizado }}</span>
+                        </div>
+                        <p-progressbar [value]="progreso.porcentaje" [showValue]="true"></p-progressbar>
+                    </div>
+                }
+
+                @if (completitud(); as c) {
+                    <div class="figma-card p-4 mb-6 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
+                        <span class="font-semibold text-color text-sm block mb-2">¿Por qué esta orden aún no está lista para facturar?</span>
+                        <div class="overflow-hidden rounded-xl border border-surface-200 dark:border-surface-700">
+                            <table class="w-full text-sm">
+                                <thead class="bg-surface-50 dark:bg-surface-800">
+                                    <tr>
+                                        <th class="text-left text-color font-bold uppercase text-xs p-2">Línea</th>
+                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Cotizada</th>
+                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Recibida</th>
+                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Depurada</th>
+                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Cumple</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @for (linea of c.lineas; track linea.referencia_id) {
+                                        <tr class="border-t border-surface-200 dark:border-surface-700">
+                                            <td class="p-2 text-color-secondary">#{{ linea.referencia_id }}</td>
+                                            <td class="p-2 text-center text-color">{{ linea.cotizada }}</td>
+                                            <td class="p-2 text-center text-color">{{ linea.recibida }}</td>
+                                            <td class="p-2 text-center text-color">{{ linea.depurada }}</td>
+                                            <td class="p-2 text-center">
+                                                <i class="pi" [ngClass]="linea.cumple ? 'pi-check-circle text-green-500' : 'pi-times-circle text-orange-500'"></i>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                }
 
                 <!-- Fila Superior de Tarjetas Informativas (Tipo Costeo) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -203,12 +247,18 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                 <th class="text-color font-bold uppercase text-xs">Entrega</th>
                                                 <th class="text-right text-color font-bold uppercase text-xs">Precio</th>
                                                 <th class="text-right text-color font-bold uppercase text-xs">Total</th>
+                                                <th class="text-center text-color font-bold uppercase text-xs">Acciones</th>
                                             </tr>
                                         </ng-template>
                                         <ng-template pTemplate="body" let-item>
                                             <tr class="dark:border-surface-700">
                                                 <td>
-                                                    <span class="inline-block w-3 h-3 rounded-full" [ngClass]="getIndicadorEstadoClass(item)" [title]="getIndicadorEstadoTitle(item)"></span>
+                                                    <div class="flex items-center gap-2">
+                                                        <span class="inline-block w-3 h-3 rounded-full" [ngClass]="getIndicadorEstadoClass(item)" [title]="getIndicadorEstadoTitle(item)"></span>
+                                                        @if (item.cantidad_depurada > 0) {
+                                                            <p-tag value="Depurado" severity="secondary" styleClass="text-xs" [title]="item.motivo_depuracion || ''"></p-tag>
+                                                        }
+                                                    </div>
                                                 </td>
                                                 <td class="font-bold text-yellow-600 dark:text-yellow-500">
                                                     <div class="flex items-center">
@@ -222,7 +272,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                         <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [title]="'Definición del artículo'"></i>
                                                     </div>
                                                 </td>
-                                                <td class="text-center font-semibold text-color">{{ item.cantidad }}</td>
+                                                <td class="text-center font-semibold text-color">{{ item.cantidad_cotizada }}</td>
                                                 <td class="text-color-secondary">
                                                     {{ getProveedorAprobado(item)?.marca?.nombre || item.pedido_referencia?.marca?.nombre || 'N/A' }}
                                                 </td>
@@ -233,13 +283,18 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                     {{ getProveedorAprobado(item)?.valor_unidad || 0 | currency: 'COP' : 'symbol' : '1.0-0' }}
                                                 </td>
                                                 <td class="text-right font-bold text-color">
-                                                    {{ ((getProveedorAprobado(item)?.valor_unidad || 0) * item.cantidad) | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                                    {{ ((getProveedorAprobado(item)?.valor_unidad || 0) * item.cantidad_cotizada) | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (puedeDepurar() && item.cantidad_recibida + item.cantidad_depurada < item.cantidad_cotizada) {
+                                                        <p-button label="Depurar" icon="pi pi-ban" [text]="true" severity="secondary" size="small" (onClick)="openDepurarDialog(item)"></p-button>
+                                                    }
                                                 </td>
                                             </tr>
                                         </ng-template>
                                         <ng-template pTemplate="footer">
                                             <tr class="dark:bg-surface-800/30">
-                                                <td colspan="7" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
+                                                <td colspan="8" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
                                                 <td class="text-right border-0 pt-6">
                                                     <div class="px-3 py-2 text-base font-bold text-color">
                                                         {{ calcularSubtotal() | currency: 'COP' : 'symbol' : '1.0-0' }}
@@ -296,6 +351,21 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                         <p class="text-red-500 m-0 whitespace-pre-wrap break-words bg-red-50 dark:bg-red-950/20 p-3 rounded border border-red-200 dark:border-red-800/40">{{ ordenTrabajo()!.motivo_cancelacion }}</p>
                                     </div>
                                 }
+                                @if (ordenTrabajo()?.numero_factura) {
+                                    <div>
+                                        <span class="text-muted-color block text-xs uppercase tracking-wider mb-1">Número de Factura</span>
+                                        <span class="font-medium text-color block">{{ ordenTrabajo()?.numero_factura }}</span>
+                                    </div>
+                                    <div>
+                                        <span class="text-muted-color block text-xs uppercase tracking-wider mb-1">Facturado el</span>
+                                        <span class="font-medium text-color block">{{ ordenTrabajo()?.facturado_at ? (ordenTrabajo()!.facturado_at | date: 'dd/MM/yyyy HH:mm') : 'N/A' }}</span>
+                                    </div>
+                                    @if (ordenTrabajo()?.factura_pdf) {
+                                        <div>
+                                            <a [href]="'/storage/' + ordenTrabajo()?.factura_pdf" target="_blank" class="text-primary font-medium inline-flex items-center gap-1"> <i class="pi pi-file-pdf"></i> Ver comprobante de factura </a>
+                                        </div>
+                                    }
+                                }
                             </div>
                         </div>
                     </div>
@@ -348,9 +418,9 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                     <ng-template pTemplate="header">
                         <tr>
                             <th>Referencia</th>
-                            <th>Ordenada</th>
+                            <th>Ya recibida</th>
+                            <th>Pendiente</th>
                             <th>Recibida</th>
-                            <th>Conforme</th>
                             <th>Rechazada</th>
                             <th>Motivo rechazo</th>
                         </tr>
@@ -358,15 +428,13 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                     <ng-template pTemplate="body" let-linea>
                         <tr>
                             <td>{{ linea.referencia }}</td>
+                            <td class="text-muted-color">{{ linea.cantidad_ya_recibida ?? 0 }}</td>
                             <td>{{ linea.cantidad_ordenada }}</td>
                             <td>
                                 <p-inputNumber [ngModel]="linea.cantidad_recibida" (ngModelChange)="actualizarLinea(linea.orden_compra_detalle_id, 'cantidad_recibida', $event)" [min]="0" [max]="linea.cantidad_ordenada" inputStyleClass="w-24" />
                             </td>
                             <td>
-                                <p-inputNumber [ngModel]="linea.cantidad_conforme" (ngModelChange)="actualizarLinea(linea.orden_compra_detalle_id, 'cantidad_conforme', $event)" [min]="0" [max]="linea.cantidad_ordenada" inputStyleClass="w-24" />
-                            </td>
-                            <td>
-                                <p-inputNumber [ngModel]="linea.cantidad_rechazada" (ngModelChange)="actualizarLinea(linea.orden_compra_detalle_id, 'cantidad_rechazada', $event)" [min]="0" [max]="linea.cantidad_ordenada" inputStyleClass="w-24" />
+                                <p-inputNumber [ngModel]="linea.cantidad_rechazada" (ngModelChange)="actualizarLinea(linea.orden_compra_detalle_id, 'cantidad_rechazada', $event)" [min]="0" [max]="linea.cantidad_recibida" inputStyleClass="w-24" />
                             </td>
                             <td>
                                 <input pInputText [ngModel]="linea.motivo_rechazo" (ngModelChange)="actualizarMotivoRechazo(linea.orden_compra_detalle_id, $event)" [disabled]="linea.cantidad_rechazada <= 0" class="w-full" />
@@ -386,6 +454,28 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                     <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="recepcionDialogVisible.set(false)" />
                     <p-button label="Guardar recepción" icon="pi pi-check" [disabled]="!recepcionValida()" (onClick)="guardarRecepcion()" />
                 </div>
+            </ng-template>
+        </p-dialog>
+
+        <!-- Modal de depuración de faltantes -->
+        <p-dialog header="Depurar faltante" [modal]="true" [visible]="depurarDialogVisible()" (visibleChange)="depurarDialogVisible.set($event)" [style]="{ width: 'min(520px, 95vw)' }">
+            <div class="flex flex-col gap-4">
+                <p class="text-color-secondary m-0">
+                    Estos ítems serán excluidos de la orden final y no se le cobrarán al cliente. ¿Desea continuar?
+                </p>
+                <div class="field">
+                    <label class="block mb-2 text-sm font-medium text-color">Cantidad a depurar</label>
+                    <p-inputnumber [ngModel]="cantidadDepurar()" (ngModelChange)="cantidadDepurar.set($event)" [min]="1" [max]="saldoPendienteDepurar()" [showButtons]="true" styleClass="w-full"></p-inputnumber>
+                    <small class="text-muted-color">Saldo pendiente en esta línea: {{ saldoPendienteDepurar() }}</small>
+                </div>
+                <div class="field">
+                    <label class="block mb-2 text-sm font-medium text-color">Motivo</label>
+                    <textarea pTextarea [ngModel]="motivoDepurar()" (ngModelChange)="motivoDepurar.set($event)" rows="3" class="w-full" placeholder="Ej. Proveedor no puede reponer la pieza dañada"></textarea>
+                </div>
+            </div>
+            <ng-template pTemplate="footer">
+                <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="depurarDialogVisible.set(false)" />
+                <p-button label="Depurar" icon="pi pi-ban" severity="danger" [disabled]="!motivoDepurar() || !cantidadDepurar()" (onClick)="confirmarDepuracion()" />
             </ng-template>
         </p-dialog>
 
@@ -421,6 +511,7 @@ export class DetailComponent implements OnInit {
     private readonly authService = inject(AuthService);
     private readonly ordenCompraService = inject(OrdenCompraService);
     private readonly maquinaService = inject(MaquinaService);
+    private readonly ordenTrabajoService = inject(OrdenTrabajoService);
 
     ordenTrabajo = signal<OrdenTrabajo | null>(null);
     ordenTrabajoId = signal<number>(0);
@@ -433,10 +524,17 @@ export class DetailComponent implements OnInit {
     observacionesRecepcion = signal<string | null>(null);
     recepcionLineas = signal<RecepcionLineaForm[]>([]);
 
+    depurarDialogVisible = signal(false);
+    referenciaDepurar = signal<OrdenTrabajoReferencia | null>(null);
+    cantidadDepurar = signal<number | null>(null);
+    motivoDepurar = signal<string | null>(null);
+
     displayMaquinaDialog = signal<boolean>(false);
     displayTerceroDialog = signal<boolean>(false);
     selectedMaquina = signal<any>(null);
     selectedTercero = signal<any>(null);
+
+    completitud = signal<OrdenTrabajoCompletitud | null>(null);
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
@@ -454,7 +552,19 @@ export class DetailComponent implements OnInit {
                 this.ordenTrabajo.set(ordenTrabajo);
                 this.loading.set(false);
                 this.loadOrdenesCompraRelacionadas(ordenTrabajo);
+
+                if (ordenTrabajo.estado === 'Pendiente' || ordenTrabajo.estado === 'En Proceso') {
+                    this.loadCompletitud(id);
+                } else {
+                    this.completitud.set(null);
+                }
             }
+        });
+    }
+
+    private loadCompletitud(id: number): void {
+        this.ordenTrabajoService.getCompletitud(id).subscribe((completitud) => {
+            this.completitud.set(completitud);
         });
     }
 
@@ -471,6 +581,48 @@ export class DetailComponent implements OnInit {
         const tieneRol = roles.includes('Logistica') || roles.includes('Administrador') || roles.includes('super_admin');
 
         return tieneRol && this.ordenesCompra().length > 0;
+    }
+
+    puedeDepurar(): boolean {
+        const roles = this.authService.currentUser()?.roles ?? [];
+
+        return roles.includes('Vendedor') || roles.includes('Administrador') || roles.includes('super_admin');
+    }
+
+    saldoPendienteDepurar(): number {
+        const item = this.referenciaDepurar();
+
+        if (!item) {
+            return 0;
+        }
+
+        return Math.max(0, item.cantidad_cotizada - (item.cantidad_recibida ?? 0) - item.cantidad_depurada);
+    }
+
+    openDepurarDialog(item: OrdenTrabajoReferencia): void {
+        this.referenciaDepurar.set(item);
+        this.cantidadDepurar.set(null);
+        this.motivoDepurar.set(null);
+        this.depurarDialogVisible.set(true);
+    }
+
+    confirmarDepuracion(): void {
+        const referencia = this.referenciaDepurar();
+        const cantidad = this.cantidadDepurar();
+        const motivo = this.motivoDepurar();
+
+        if (!referencia || !cantidad || !motivo) {
+            return;
+        }
+
+        this.store.dispatch(
+            depurarReferencia({
+                ordenTrabajoId: this.ordenTrabajoId(),
+                referenciaId: referencia.id,
+                data: { cantidad_depurada: cantidad, motivo_depuracion: motivo }
+            })
+        );
+        this.depurarDialogVisible.set(false);
     }
 
     ordenCompraOptions(): { label: string; value: number }[] {
@@ -496,16 +648,24 @@ export class DetailComponent implements OnInit {
         this.recepcionLineas.set((orden?.detalles ?? orden?.referencias ?? []).map((detalle) => this.crearLineaRecepcion(detalle)));
     }
 
-    actualizarLinea(id: number, campo: 'cantidad_recibida' | 'cantidad_conforme' | 'cantidad_rechazada', valor: number | null): void {
+    actualizarLinea(id: number, campo: 'cantidad_recibida' | 'cantidad_rechazada', valor: number | null): void {
         this.recepcionLineas.update((lineas) =>
-            lineas.map((linea) =>
-                linea.orden_compra_detalle_id === id
-                    ? {
-                          ...linea,
-                          [campo]: Number(valor ?? 0)
-                      }
-                    : linea
-            )
+            lineas.map((linea) => {
+                if (linea.orden_compra_detalle_id !== id) {
+                    return linea;
+                }
+
+                const cantidadRecibida = campo === 'cantidad_recibida' ? Number(valor ?? 0) : linea.cantidad_recibida;
+                const cantidadRechazada = Math.min(campo === 'cantidad_rechazada' ? Number(valor ?? 0) : linea.cantidad_rechazada, cantidadRecibida);
+
+                return {
+                    ...linea,
+                    cantidad_recibida: cantidadRecibida,
+                    cantidad_rechazada: cantidadRechazada,
+                    cantidad_conforme: cantidadRecibida - cantidadRechazada,
+                    motivo_rechazo: cantidadRechazada > 0 ? linea.motivo_rechazo : null
+                };
+            })
         );
     }
 
@@ -523,7 +683,9 @@ export class DetailComponent implements OnInit {
     }
 
     recepcionValida(): boolean {
-        return this.selectedOrdenCompraId() !== null && this.fechaRecepcion().length > 0 && this.recepcionLineas().some((linea) => linea.cantidad_recibida > 0) && this.recepcionLineas().every((linea) => recepcionCompraLineaValida(linea));
+        const lineasConCantidad = this.recepcionLineas().filter((linea) => linea.cantidad_recibida > 0);
+
+        return this.selectedOrdenCompraId() !== null && this.fechaRecepcion().length > 0 && lineasConCantidad.length > 0 && lineasConCantidad.every((linea) => recepcionCompraLineaValida(linea));
     }
 
     guardarRecepcion(): void {
@@ -557,10 +719,14 @@ export class DetailComponent implements OnInit {
     }
 
     private crearLineaRecepcion(detalle: OrdenCompraReferencia): RecepcionLineaForm {
+        const yaRecibida = detalle.cantidad_recibida ?? 0;
+        const saldoPendiente = detalle.saldo_pendiente ?? Math.max(detalle.cantidad - yaRecibida, 0);
+
         return {
             orden_compra_detalle_id: detalle.id,
             referencia: detalle.referencia?.referencia || detalle.referencia?.codigo_heavymarket || `Detalle #${detalle.id}`,
-            cantidad_ordenada: detalle.cantidad,
+            cantidad_ordenada: saldoPendiente,
+            cantidad_ya_recibida: yaRecibida,
             cantidad_recibida: 0,
             cantidad_conforme: 0,
             cantidad_rechazada: 0,
@@ -587,7 +753,10 @@ export class DetailComponent implements OnInit {
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
         switch (estado) {
             case 'Completado':
+            case 'Cerrada':
                 return 'success';
+            case 'Lista para Facturar':
+                return 'warn';
             case 'En Proceso':
                 return 'info';
             case 'Pendiente':
@@ -625,7 +794,7 @@ export class DetailComponent implements OnInit {
     }
 
     getIndicadorEstadoClass(item: any): string {
-        const cant = item.cantidad || 0;
+        const cant = item.cantidad_cotizada || 0;
         const recibida = item.cantidad_recibida || 0;
 
         if (recibida >= cant) {
@@ -645,7 +814,7 @@ export class DetailComponent implements OnInit {
     }
 
     getIndicadorEstadoTitle(item: any): string {
-        const cant = item.cantidad || 0;
+        const cant = item.cantidad_cotizada || 0;
         const recibida = item.cantidad_recibida || 0;
 
         if (recibida >= cant) {
@@ -668,7 +837,7 @@ export class DetailComponent implements OnInit {
         return referencias.reduce((acc, item) => {
             const prov = this.getProveedorAprobado(item);
             const precio = prov?.valor_unitario || prov?.valor_unidad || 0;
-            return acc + (precio * item.cantidad);
+            return acc + (precio * item.cantidad_cotizada);
         }, 0);
     }
 

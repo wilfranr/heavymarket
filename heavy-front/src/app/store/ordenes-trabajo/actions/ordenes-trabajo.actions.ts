@@ -1,5 +1,5 @@
 import { createAction, props } from '@ngrx/store';
-import { OrdenTrabajo, CreateOrdenTrabajoDto, UpdateOrdenTrabajoDto } from '../../../core/models/orden-trabajo.model';
+import { OrdenTrabajo, OrdenTrabajoReferencia, CreateOrdenTrabajoDto, UpdateOrdenTrabajoDto, DepurarOrdenTrabajoReferenciaDto } from '../../../core/models/orden-trabajo.model';
 import { CreateRecepcionCompraDto, RecepcionCompra } from '../../../core/models/recepcion-compra.model';
 
 /**
@@ -40,6 +40,13 @@ export const registrarRecepcionCompra = createAction('[OrdenesTrabajo] Registrar
 export const registrarRecepcionCompraSuccess = createAction('[OrdenesTrabajo] Registrar Recepcion Compra Success', props<{ ordenTrabajoId: number; recepcion: RecepcionCompra }>());
 
 export const registrarRecepcionCompraFailure = createAction('[OrdenesTrabajo] Registrar Recepcion Compra Failure', props<{ error: string }>());
+
+// Depurar (marcar como faltante definitivo) una referencia de la OT
+export const depurarReferencia = createAction('[OrdenesTrabajo] Depurar Referencia', props<{ ordenTrabajoId: number; referenciaId: number; data: DepurarOrdenTrabajoReferenciaDto }>());
+
+export const depurarReferenciaSuccess = createAction('[OrdenesTrabajo] Depurar Referencia Success', props<{ ordenTrabajoId: number; referencia: OrdenTrabajoReferencia }>());
+
+export const depurarReferenciaFailure = createAction('[OrdenesTrabajo] Depurar Referencia Failure', props<{ error: string }>());
 
 // Eliminar orden de trabajo
 export const deleteOrdenTrabajo = createAction('[OrdenesTrabajo] Delete OrdenTrabajo', props<{ id: number }>());

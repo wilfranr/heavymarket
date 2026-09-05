@@ -18,6 +18,7 @@ use Illuminate\Auth\Access\HandlesAuthorization;
  * - Administrador: CRUD completo
  * - Logistica: solo lectura (viewAny, view)
  * - Vendedor: solo lectura (viewAny, view)
+ * - Contabilidad: solo lectura (viewAny, view) + facturar
  */
 class OrdenTrabajoPolicy
 {
@@ -28,7 +29,7 @@ class OrdenTrabajoPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica', 'Contabilidad']);
     }
 
     /**
@@ -36,7 +37,7 @@ class OrdenTrabajoPolicy
      */
     public function view(User $user, OrdenTrabajo $ordenTrabajo): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica', 'Contabilidad']);
     }
 
     /**
@@ -107,5 +108,29 @@ class OrdenTrabajoPolicy
     public function dispatchReferencia(User $user, OrdenTrabajo $ordenTrabajo): bool
     {
         return $user->hasAnyRole(['super_admin', 'Administrador']);
+    }
+
+    /**
+     * Determine whether the user can depurar (marcar como faltante
+     * definitivo) un ítem de la orden de trabajo.
+     *
+     * Rol equivalente al "Asesor" del flujo de negocio: Vendedor,
+     * Administrador o super_admin.
+     */
+    public function depurarReferencia(User $user, OrdenTrabajo $ordenTrabajo): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+    }
+
+    /**
+     * Determine whether the user can facturar (cerrar comercialmente) la
+     * orden de trabajo.
+     *
+     * Rol equivalente a "Contabilidad" del flujo de negocio: Contabilidad,
+     * Administrador o super_admin.
+     */
+    public function facturar(User $user, OrdenTrabajo $ordenTrabajo): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Contabilidad']);
     }
 }

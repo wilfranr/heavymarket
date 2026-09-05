@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\OrdenTrabajoEstado;
 use App\Models\OrdenTrabajo;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,7 +40,7 @@ class StoreOrdenTrabajoRequest extends FormRequest
             'cotizacion_id' => ['nullable', 'integer', 'exists:cotizaciones,id'],
             'estado' => [
                 'nullable',
-                Rule::in(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']),
+                Rule::in(OrdenTrabajoEstado::asignablesManualmente()),
             ],
             'fecha_ingreso' => ['required', 'date'],
             'fecha_entrega' => ['nullable', 'date', 'after_or_equal:fecha_ingreso'],

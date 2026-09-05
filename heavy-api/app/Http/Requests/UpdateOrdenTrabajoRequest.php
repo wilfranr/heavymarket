@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Requests;
 
+use App\Enums\OrdenTrabajoEstado;
 use App\Models\OrdenTrabajo;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
@@ -39,7 +40,7 @@ class UpdateOrdenTrabajoRequest extends FormRequest
             'cotizacion_id' => ['nullable', 'integer', 'exists:cotizaciones,id'],
             'estado' => [
                 'nullable',
-                Rule::in(['Pendiente', 'En Proceso', 'Completado', 'Cancelado']),
+                Rule::in(OrdenTrabajoEstado::asignablesManualmente()),
             ],
             'fecha_ingreso' => ['nullable', 'date'],
             'fecha_entrega' => ['nullable', 'date', 'after_or_equal:fecha_ingreso'],
@@ -54,7 +55,7 @@ class UpdateOrdenTrabajoRequest extends FormRequest
             'referencias' => ['nullable', 'array'],
             'referencias.*.id' => ['nullable', 'integer', 'exists:orden_trabajo_referencias,id'],
             'referencias.*.pedido_referencia_id' => ['nullable', 'integer', 'exists:pedido_referencias,id'],
-            'referencias.*.cantidad' => ['nullable', 'integer', 'min:1'],
+            'referencias.*.cantidad_cotizada' => ['nullable', 'integer', 'min:1'],
             'referencias.*.estado' => [
                 'nullable',
                 Rule::in(['Pendiente', 'Recibido', 'Cancelado', 'Despachado']),
@@ -76,7 +77,7 @@ class UpdateOrdenTrabajoRequest extends FormRequest
             'fecha_entrega.after_or_equal' => 'La fecha de entrega debe ser posterior o igual a la fecha de ingreso',
             'estado.in' => 'El estado seleccionado no es válido',
             'referencias.*.estado.in' => 'El estado de la referencia debe ser: Pendiente, Recibido, Cancelado o Despachado',
-            'referencias.*.cantidad.min' => 'La cantidad debe ser al menos 1',
+            'referencias.*.cantidad_cotizada.min' => 'La cantidad debe ser al menos 1',
         ];
     }
 

@@ -279,7 +279,7 @@ Aprobada: '.$comentario);
                 OrdenTrabajoReferencia::create([
                     'orden_trabajo_id' => $ordenTrabajo->id,
                     'pedido_referencia_id' => $pedidoReferencia->id,
-                    'cantidad' => $prp->cantidad,
+                    'cantidad_cotizada' => $prp->cantidad,
                     'cantidad_recibida' => 0,
                     'estado' => 'Pendiente',
                     'recibido' => false,

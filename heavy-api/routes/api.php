@@ -194,11 +194,15 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);
         Route::post('ordenes-trabajo/{orden_trabajo}/recepciones-compra', [OrdenTrabajoController::class, 'registrarRecepcionCompra'])->name('ordenes-trabajo.recepciones-compra.store');
+        Route::patch('ordenes-trabajo/{orden_trabajo}/referencias/{orden_trabajo_referencia}/depurar', [OrdenTrabajoController::class, 'depurarReferencia'])->name('ordenes-trabajo.referencias.depurar');
         Route::post('ordenes-compra/{orden_compra}/recepciones', [RecepcionCompraController::class, 'store'])->name('ordenes-compra.recepciones.store');
         Route::get('ordenes-compra/{orden_compra}/recepciones', [RecepcionCompraController::class, 'index'])->name('ordenes-compra.recepciones.index');
         Route::post('recepciones-compra/{recepcion}/imagenes', [RecepcionCompraController::class, 'storeImagen'])->name('recepciones-compra.imagenes.store');
         Route::get('ordenes-compra/{orden_compra}/download-pdf', [OrdenCompraController::class, 'downloadPDF'])->name('ordenes-compra.download-pdf');
         Route::get('ordenes-trabajo/{orden_trabajo}/download-pdf', [OrdenTrabajoController::class, 'downloadPDF'])->name('ordenes-trabajo.download-pdf');
+        Route::get('ordenes-trabajo/{orden_trabajo}/completitud', [OrdenTrabajoController::class, 'completitud'])->name('ordenes-trabajo.completitud');
+        Route::get('ordenes-trabajo/{orden_trabajo}/resumen-facturacion', [OrdenTrabajoController::class, 'resumenFacturacion'])->name('ordenes-trabajo.resumen-facturacion');
+        Route::post('ordenes-trabajo/{orden_trabajo}/facturar', [OrdenTrabajoController::class, 'facturar'])->name('ordenes-trabajo.facturar');
 
         /**
          * Catálogos y referencias
