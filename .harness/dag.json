@@ -1738,6 +1738,53 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "ot-ci-sqlite-compat-fix",
+      "description": "Fix de CI: el workflow 'Heavy API - PHPUnit' en GitHub Actions llevaba roto en main desde hace mas de un mes (485 de 508 tests fallando) por migraciones y codigo de aplicacion con sintaxis especifica de MySQL (ALTER ... MODIFY, INFORMATION_SCHEMA, codigo de error 1062 de duplicado) incompatible con SQLite (usado por CI). Detectado al revisar los checks del PR #158 de esta iniciativa, que heredo el mismo problema preexistente sin tener relacion con el.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [],
+      "topic_key": "bugfix/ot-recepcion-saldo-pendiente",
+      "implementer_notes": "Fix solicitado por el usuario al ver 'muchos errores en github' en el PR. Iterativo: cada corrida de la suite completa contra SQLite revelaba el siguiente problema en la cadena de migraciones, hasta llegar a 1 solo fallo (preexistente y no relacionado, ver mas abajo). Cambios: (1) 6 migraciones (2026_07_20_123000, 2026_07_20_180000, 2026_08_01_162500, 2026_08_06_090000, 2026_09_05_150000 -esta ultima de la propia iniciativa OT-, mas dropForeign por nombre en la de recepciones_compra) ahora detectan el driver (DB::connection()->getDriverName()) y usan Schema::Blueprint::change() nativo de Laravel 13 (sin necesitar doctrine/dbal, verificado con tinker) o directamente omiten el ajuste MySQL-only cuando no aplica (sin datos legacy en una base de tests recien creada). (2) SyncStockOnPurchaseOrderReceived::esViolacionIndiceUnico() comparaba solo contra el codigo de error 1062 (MySQL); se agrego 19 (SQLITE_CONSTRAINT). (3) tests/Feature/Database/RecepcionCompraOrdenTrabajoOpcionalTest.php: reemplazada una consulta directa a INFORMATION_SCHEMA por Schema::getColumns() (portable, confirmado con tinker). (4) 2 tests marcados explicitamente ->skip() para SQLite por depender de comportamiento exclusivo de MySQL: OrdenTrabajoSchemaMigrationTest (prueba la reconciliacion de esquema legacy con ALTER MODIFY crudo, no tiene sentido en SQLite) y PedidoGuardarCosteoFleteTest::...utiliza la TRM... (el valor esperado depende del redondeo de la columna DECIMAL de MySQL; SQLite, sin DECIMAL real, almacena el resultado de round() de PHP sin ese ajuste adicional, dando un valor distinto en un limite exacto de centenas -- no es un bug de aplicacion, es una diferencia de storage-precision entre motores, confirmado calculando la cadena de operaciones a mano). Sin cambios de comportamiento en MySQL (dev/prod) en ningun caso -- verificado re-corriendo toda la suite contra MySQL antes y despues (mismo resultado: 1 solo fallo). Ultimo fallo remanente en ambos motores: ProviderPortalOrdenCompraTest::registra despacho... (transicion Confirmada->Despachada rechazada por la maquina de estados de OrdenCompraEstado) -- deuda huerfana ya documentada en multiples notas de revision de la iniciativa oc-costo-* (anterior a esta sesion), de un modulo distinto (Portal de Proveedores / OC), deliberadamente fuera de alcance por ser un problema de logica de negocio real, no de sintaxis SQL. Usuario decidio explicitamente mergear el PR aceptando ese check en rojo. Gates: php -l en los 9 archivos OK; ./vendor/bin/pint OK (1 fix automatico de import fully_qualified_strict_types en PedidoGuardarCosteoFleteTest.php); suite completa vs MySQL: 486 deprecated, 1 failed (el conocido), 21 passed, 1570 assertions; suite completa vs SQLite (replicando el entorno exacto de CI, DB_CONNECTION=sqlite DB_DATABASE=:memory:): 486 deprecated, 1 failed (el mismo, identico stack), 21 passed, 1566 assertions; verificado tambien en el run real de GitHub Actions tras el push (job php-tests): 1 failed, 6 skipped, 501 passed, 1566 assertions -- coincide exactamente con lo esperado.",
+      "files": [
+        {
+          "path": "heavy-api/app/Listeners/SyncStockOnPurchaseOrderReceived.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_123000_make_orden_trabajos_nullable_legacy_columns.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_07_20_180000_make_articulos_peso_required.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_08_01_162500_add_aprobacion_fields_to_cotizacion_referencia_proveedores_table.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_08_06_090000_make_orden_trabajo_id_nullable_in_recepciones_compra_table.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_09_05_150000_convert_orden_trabajos_estado_column_to_varchar.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoSchemaMigrationTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/PedidoGuardarCosteoFleteTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Database/RecepcionCompraOrdenTrabajoOpcionalTest.php",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }
