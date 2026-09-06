@@ -2,7 +2,13 @@
   "permissions": {
     "allow": [
       "Bash(./vendor/bin/pest*)",
-      "Bash(./vendor/bin/pint*)"
+      "Bash(./vendor/bin/pint*)",
+      "Bash(php artisan route:list*)",
+      "Bash(npx vitest run*)",
+      "Bash(npx ng build*)"
     ]
+  },
+  "worktree": {
+    "bgIsolation": "none"
   }
 }
