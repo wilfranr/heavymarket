@@ -1,8 +1,10 @@
 import { proveedorPuedeConfirmarOrden, proveedorPuedeDespacharOrden } from './ordenes-compra-list.component';
 
 describe('Portal proveedor - acciones de órdenes de compra', () => {
-    it('permite confirmar solo órdenes enviadas', () => {
+    it('permite confirmar órdenes enviadas o pendientes de revisión de stock', () => {
         expect(proveedorPuedeConfirmarOrden('Enviada')).toBe(true);
+        expect(proveedorPuedeConfirmarOrden('Pendiente de Revisión de Stock')).toBe(true);
+        expect(proveedorPuedeConfirmarOrden('Stock Incompleto')).toBe(false);
         expect(proveedorPuedeConfirmarOrden('Confirmada')).toBe(false);
     });
 

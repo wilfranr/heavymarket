@@ -16,6 +16,19 @@ export interface OrdenCompra {
     fecha_confirmacion: string | null;
     fecha_recepcion: string | null;
     fecha_despacho: string | null;
+    fecha_aprobacion_gerencia?: string | null;
+    fecha_pago?: string | null;
+    fecha_resolucion_novedad?: string | null;
+    instrucciones_despacho?: string | null;
+    motivo_rechazo_gerencia?: string | null;
+    aprobado_por_gerente_id?: number | null;
+    comprobante_pago_ruta?: string | null;
+    pagado_por_id?: number | null;
+    referencia_pago?: string | null;
+    motivo_reembolso?: string | null;
+    resolucion_novedad_tipo?: string | null;
+    resolucion_novedad_comentario?: string | null;
+    resuelto_por_id?: number | null;
     observaciones: string | null;
     motivo_cancelacion: string | null;
     notas_cierre: string | null;
@@ -35,6 +48,9 @@ export interface OrdenCompra {
 
     // Relaciones
     user?: OrdenCompraUsuario | null;
+    aprobado_por_gerente?: OrdenCompraUsuario | null;
+    pagado_por?: OrdenCompraUsuario | null;
+    resuelto_por?: OrdenCompraUsuario | null;
     tercero?: OrdenCompraTercero | null;
     transportadora?: OrdenCompraTransportadora | null;
     proveedor?: OrdenCompraTercero | null;
@@ -43,6 +59,20 @@ export interface OrdenCompra {
     pedido_referencia?: OrdenCompraPedidoReferencia | null;
     detalles?: OrdenCompraReferencia[];
     referencias?: OrdenCompraReferencia[];
+    archivos_despacho?: OrdenCompraDespachoArchivo[];
+}
+
+export interface OrdenCompraDespachoArchivo {
+    id: number;
+    orden_compra_id: number;
+    ruta: string;
+    nombre_original: string;
+    mime?: string | null;
+    size?: number | null;
+    tipo: 'foto_paquete' | 'guia';
+    url?: string | null;
+    created_at?: string;
+    updated_at?: string;
 }
 
 /**
@@ -52,14 +82,32 @@ export interface OrdenCompra {
 export type EstadoRecepcion = 'En tránsito' | 'Recibida parcialmente' | 'Recibida';
 
 /**
- * Estados posibles de una orden de compra
+ * Estados posibles de una orden de compra (Flujo formal del cliente + retrocompatibilidad)
  */
-export type OrdenCompraEstado = 'Generada' | 'Enviada' | 'Confirmada' | 'Pagada' | 'Despachada' | 'Recibida parcialmente' | 'Recibida' | 'Cancelada';
+export type OrdenCompraEstado =
+    | 'Pendiente de Revisión de Stock'
+    | 'Stock Incompleto'
+    | 'En Espera de Aprobación Gerencial'
+    | 'Devuelta por Gerencia'
+    | 'Pendiente de Pago'
+    | 'Pagada / Lista para Despacho'
+    | 'Cancelada - Reembolso Pendiente'
+    | 'En Tránsito'
+    | 'Recepción con Novedades (Bloqueada)'
+    | 'Entregada / Cerrada'
+    | 'Generada'
+    | 'Enviada'
+    | 'Confirmada'
+    | 'Pagada'
+    | 'Despachada'
+    | 'Recibida parcialmente'
+    | 'Recibida'
+    | 'Cancelada';
 
 /**
  * Colores de estado de orden de compra
  */
-export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#9C27B0' | '#E91E63' | '#FF9800' | '#00ff00' | '#ff0000';
+export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#9C27B0' | '#E91E63' | '#FF9800' | '#00ff00' | '#ff0000' | '#F44336' | '#FFC107' | '#00BCD4' | '#D32F2F';
 
 export interface OrdenCompraUsuario {
     id: number;
@@ -154,6 +202,8 @@ export interface OrdenCompraReferencia {
     orden_compra_id: number;
     referencia_id: number;
     cantidad: number;
+    cantidad_original?: number | null;
+    motivo_faltante?: string | null;
     cantidad_recibida: number;
     estado_item: EstadoRecepcion | null;
     saldo_pendiente: number;
@@ -220,6 +270,13 @@ export interface UpdateOrdenCompraDto {
 
 export interface TransitionOrdenCompraDto {
     estado_destino: OrdenCompraEstado;
+    instrucciones_despacho?: string;
+    motivo_rechazo_gerencia?: string;
+    referencia_pago?: string;
+    comprobante_pago_ruta?: string;
+    motivo_reembolso?: string;
+    resolucion_novedad_tipo?: 'reposicion' | 'nota_credito';
+    resolucion_novedad_comentario?: string;
     motivo_cancelacion?: string;
     notas_cierre?: string;
     aprobacion_admin?: boolean;
@@ -235,4 +292,15 @@ export interface ReceiveOrdenCompraDto {
     referencias: ReceiveOrdenCompraReferenciaDto[];
     notas_cierre?: string;
     observaciones?: string;
+}
+
+export interface ConfirmPurchaseOrderItemDto {
+    referencia_id: number;
+    cantidad_disponible: number;
+    motivo_faltante?: string;
+}
+
+export interface ConfirmPurchaseOrderDto {
+    observaciones?: string;
+    items?: ConfirmPurchaseOrderItemDto[];
 }
