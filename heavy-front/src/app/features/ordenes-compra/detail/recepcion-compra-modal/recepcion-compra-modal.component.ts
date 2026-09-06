@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, OnChanges, SimpleChanges, input, output, signal, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, OnChanges, SimpleChanges, input, output, signal, computed, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DialogModule } from 'primeng/dialog';
@@ -13,7 +13,17 @@ import { OrdenCompra } from '../../../../core/models/orden-compra.model';
 import { RecepcionCompra, RecepcionCompraImagenTipo } from '../../../../core/models/recepcion-compra.model';
 import { OrdenCompraService } from '../../../../core/services/orden-compra.service';
 import { ImageUploadComponent } from '../../../../shared/components/image-upload/image-upload.component';
-import { aplicarCantidadRecibida, aplicarCantidadRechazada, aplicarMotivoRechazo, construirPayloadRecepcion, crearLineasModal, estadoItemSeverity, lineasModalValidas, marcarTodoRecibidoLineas, RecepcionModalLinea } from './recepcion-compra-modal.util';
+import {
+    aplicarCantidadRecibida,
+    aplicarCantidadRechazada,
+    aplicarMotivoRechazo,
+    construirPayloadRecepcion,
+    crearLineasModal,
+    estadoItemSeverity,
+    lineasModalValidas,
+    marcarTodoRecibidoLineas,
+    RecepcionModalLinea
+} from './recepcion-compra-modal.util';
 
 @Component({
     selector: 'app-recepcion-compra-modal',
@@ -102,9 +112,23 @@ import { aplicarCantidadRecibida, aplicarCantidadRechazada, aplicarMotivoRechazo
                     <textarea pTextarea id="oc-observaciones-recepcion" [ngModel]="observaciones()" (ngModelChange)="observaciones.set($event)" rows="3" class="w-full" placeholder="Novedades de la entrega, estado del empaque, etc."></textarea>
                 </div>
 
-                <app-image-upload label="Foto o guía de la transportadora" icon="pi pi-camera" [currentImage]="null" accept="image/*,.pdf" height="10rem" (fileSelected)="onArchivoSeleccionado($event)" />
+                <app-image-upload
+                    [label]="hayRechazos() ? 'Foto obligatoria de daño / novedad del paquete' : 'Foto o guía de la transportadora'"
+                    icon="pi pi-camera"
+                    [currentImage]="null"
+                    accept="image/*,.pdf"
+                    height="10rem"
+                    (fileSelected)="onArchivoSeleccionado($event)"
+                />
 
-                @if (!recepcionValida()) {
+                @if (hayRechazos() && !archivoSeleccionado()) {
+                    <div class="text-sm font-semibold text-amber-600 dark:text-amber-400 flex items-center gap-1.5 bg-amber-50 dark:bg-amber-950/40 p-2.5 rounded-lg border border-amber-300 dark:border-amber-700">
+                        <i class="pi pi-exclamation-triangle text-base"></i>
+                        <span>Se registraron unidades rechazadas. Es obligatoria la evidencia fotográfica del daño o paquete para continuar.</span>
+                    </div>
+                }
+
+                @if (!recepcionValida() && (!hayRechazos() || archivoSeleccionado())) {
                     <div class="text-sm text-red-500">Ingrese al menos una cantidad a recibir; verifique que ninguna línea supere el saldo pendiente y que todo rechazo tenga motivo.</div>
                 }
                 @if (errorMensaje()) {
@@ -138,6 +162,8 @@ export class RecepcionCompraModalComponent implements OnChanges {
     archivoSeleccionado = signal<File | null>(null);
     guardando = signal(false);
     errorMensaje = signal<string | null>(null);
+
+    hayRechazos = computed(() => this.lineas().some((l) => l.cantidad_rechazada > 0));
 
     readonly estadoItemSeverity = estadoItemSeverity;
 
@@ -178,7 +204,12 @@ export class RecepcionCompraModalComponent implements OnChanges {
     }
 
     recepcionValida(): boolean {
-        return this.fechaRecepcion().length > 0 && lineasModalValidas(this.lineas());
+        const baseValida = this.fechaRecepcion().length > 0 && lineasModalValidas(this.lineas());
+        if (!baseValida) return false;
+        if (this.hayRechazos() && !this.archivoSeleccionado()) {
+            return false;
+        }
+        return true;
     }
 
     guardarRecepcion(): void {

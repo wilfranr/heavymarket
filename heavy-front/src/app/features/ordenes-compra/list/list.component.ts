@@ -30,13 +30,23 @@ export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'su
         case 'Confirmada':
         case 'Pagada':
         case 'Recibida':
+        case 'Entregada / Cerrada':
             return 'success';
         case 'Enviada':
         case 'Despachada':
+        case 'En Tránsito':
+        case 'En Espera de Aprobación Gerencial':
             return 'info';
         case 'Generada':
+        case 'Pendiente de Revisión de Stock':
+        case 'Stock Incompleto':
+        case 'Pendiente de Pago':
+        case 'Pagada / Lista para Despacho':
         case 'Recibida parcialmente':
             return 'warn';
+        case 'Devuelta por Gerencia':
+        case 'Recepción con Novedades (Bloqueada)':
+        case 'Cancelada - Reembolso Pendiente':
         case 'Cancelada':
             return 'danger';
         default:
@@ -190,6 +200,16 @@ export class ListComponent implements OnInit {
     proveedores = signal<SelectOption<number>[]>([]);
 
     estadosOptions: SelectOption<OrdenCompraEstado>[] = [
+        { label: 'Pendiente de Revisión de Stock', value: 'Pendiente de Revisión de Stock' },
+        { label: 'Stock Incompleto', value: 'Stock Incompleto' },
+        { label: 'En Espera de Aprobación Gerencial', value: 'En Espera de Aprobación Gerencial' },
+        { label: 'Devuelta por Gerencia', value: 'Devuelta por Gerencia' },
+        { label: 'Pendiente de Pago', value: 'Pendiente de Pago' },
+        { label: 'Pagada / Lista para Despacho', value: 'Pagada / Lista para Despacho' },
+        { label: 'Cancelada - Reembolso Pendiente', value: 'Cancelada - Reembolso Pendiente' },
+        { label: 'En Tránsito', value: 'En Tránsito' },
+        { label: 'Recepción con Novedades (Bloqueada)', value: 'Recepción con Novedades (Bloqueada)' },
+        { label: 'Entregada / Cerrada', value: 'Entregada / Cerrada' },
         { label: 'Generada', value: 'Generada' },
         { label: 'Enviada', value: 'Enviada' },
         { label: 'Confirmada', value: 'Confirmada' },
