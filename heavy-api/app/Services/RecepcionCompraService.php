@@ -207,7 +207,9 @@ class RecepcionCompraService
             OrdenCompraEstado::Enviada,
             OrdenCompraEstado::Confirmada,
             OrdenCompraEstado::Despachada,
+            OrdenCompraEstado::EnTransito,
             OrdenCompraEstado::RecibidaParcialmente,
+            OrdenCompraEstado::RecepcionConNovedades,
         ], true)) {
             throw ValidationException::withMessages([
                 'orden_compra_id' => 'La orden de compra no está en un estado válido para registrar recepción.',
