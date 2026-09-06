@@ -17,6 +17,8 @@ class OrdenCompraReferencia extends Model
         'orden_compra_id',
         'referencia_id',
         'cantidad',
+        'cantidad_original',
+        'motivo_faltante',
         'cantidad_recibida',
         'valor_unitario',
         'valor_total',
@@ -24,6 +26,7 @@ class OrdenCompraReferencia extends Model
 
     protected $casts = [
         'cantidad' => 'integer',
+        'cantidad_original' => 'integer',
         'cantidad_recibida' => 'integer',
         'valor_unitario' => 'decimal:2',
         'valor_total' => 'decimal:2',

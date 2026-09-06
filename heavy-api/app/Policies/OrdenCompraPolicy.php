@@ -20,7 +20,7 @@ class OrdenCompraPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial', 'Contabilidad', 'Vendedor', 'Analista', 'Logistica']);
     }
 
     /**
@@ -28,7 +28,7 @@ class OrdenCompraPolicy
      */
     public function view(User $user, OrdenCompra $ordenCompra): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Analista', 'Logistica']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial', 'Contabilidad', 'Vendedor', 'Analista', 'Logistica']);
     }
 
     /**
@@ -36,7 +36,7 @@ class OrdenCompraPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial', 'Vendedor']);
     }
 
     /**
@@ -44,7 +44,23 @@ class OrdenCompraPolicy
      */
     public function update(User $user, OrdenCompra $ordenCompra): bool
     {
-        return $user->hasAnyRole(['super_admin', 'Administrador', 'Vendedor']);
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial', 'Contabilidad', 'Vendedor', 'Logistica']);
+    }
+
+    /**
+     * Determine whether the user can approve or return as manager.
+     */
+    public function manageGerencia(User $user, OrdenCompra $ordenCompra): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial']);
+    }
+
+    /**
+     * Determine whether the user can register payment or refund.
+     */
+    public function managePago(User $user, OrdenCompra $ordenCompra): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Contabilidad']);
     }
 
     /**

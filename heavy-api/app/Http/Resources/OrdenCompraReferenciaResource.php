@@ -34,6 +34,8 @@ class OrdenCompraReferenciaResource extends JsonResource
             'orden_compra_id' => $this->orden_compra_id,
             'referencia_id' => $this->referencia_id,
             'cantidad' => $this->cantidad,
+            'cantidad_original' => $this->cantidad_original,
+            'motivo_faltante' => $this->motivo_faltante,
             'cantidad_recibida' => $this->cantidad_recibida,
             'estado_item' => EstadoRecepcion::desdeCantidades($cantidadRecibida, $cantidad)->value,
             'saldo_pendiente' => max($cantidad - $cantidadRecibida, 0),

@@ -84,6 +84,19 @@ class OrdenCompra extends Model
         'transportadora_id',
         'color',
         'fecha_despacho',
+        'instrucciones_despacho',
+        'motivo_rechazo_gerencia',
+        'aprobado_por_gerente_id',
+        'fecha_aprobacion_gerencia',
+        'comprobante_pago_ruta',
+        'fecha_pago',
+        'pagado_por_id',
+        'referencia_pago',
+        'motivo_reembolso',
+        'resolucion_novedad_tipo',
+        'resolucion_novedad_comentario',
+        'resuelto_por_id',
+        'fecha_resolucion_novedad',
     ];
 
     protected $normalizableAttributes = [
@@ -99,13 +112,34 @@ class OrdenCompra extends Model
         'fecha_envio' => 'datetime',
         'fecha_confirmacion' => 'datetime',
         'fecha_recepcion' => 'datetime',
+        'fecha_aprobacion_gerencia' => 'datetime',
+        'fecha_pago' => 'datetime',
+        'fecha_resolucion_novedad' => 'datetime',
         'cantidad' => 'integer',
         'valor_unitario' => 'decimal:2',
         'valor_total' => 'decimal:2',
         'valor_iva' => 'decimal:2',
         'valor_descuento' => 'decimal:2',
         'transportadora_id' => 'integer',
+        'aprobado_por_gerente_id' => 'integer',
+        'pagado_por_id' => 'integer',
+        'resuelto_por_id' => 'integer',
     ];
+
+    public function aprobadoPorGerente(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'aprobado_por_gerente_id');
+    }
+
+    public function pagadoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'pagado_por_id');
+    }
+
+    public function resueltoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'resuelto_por_id');
+    }
 
     /**
      * Relación con el tercero (cliente)
@@ -158,6 +192,11 @@ class OrdenCompra extends Model
     public function recepcionesCompra(): HasMany
     {
         return $this->hasMany(RecepcionCompra::class, 'orden_compra_id');
+    }
+
+    public function archivosDespacho(): HasMany
+    {
+        return $this->hasMany(OrdenCompraDespachoArchivo::class, 'orden_compra_id');
     }
 
     /**

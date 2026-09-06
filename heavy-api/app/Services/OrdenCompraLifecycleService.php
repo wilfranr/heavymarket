@@ -24,8 +24,11 @@ class OrdenCompraLifecycleService
         OrdenCompraEstado::Enviada,
         OrdenCompraEstado::Confirmada,
         OrdenCompraEstado::Despachada,
+        OrdenCompraEstado::EnTransito,
         OrdenCompraEstado::RecibidaParcialmente,
+        OrdenCompraEstado::RecepcionConNovedades,
         OrdenCompraEstado::Recibida,
+        OrdenCompraEstado::EntregadaCerrada,
     ];
 
     /**
@@ -70,23 +73,64 @@ class OrdenCompraLifecycleService
                 'color' => $destino->color(),
             ];
 
-            if ($destino === OrdenCompraEstado::Enviada) {
+            if ($destino === OrdenCompraEstado::Enviada || $destino === OrdenCompraEstado::PendienteRevisionStock) {
                 $updates['fecha_envio'] = $ordenCompra->fecha_envio ?? now();
+                if (isset($data['instrucciones_despacho'])) {
+                    $updates['instrucciones_despacho'] = $data['instrucciones_despacho'];
+                }
             }
 
-            if ($destino === OrdenCompraEstado::Confirmada) {
+            if ($destino === OrdenCompraEstado::Confirmada || $destino === OrdenCompraEstado::EnEsperaAprobacionGerencial) {
                 $updates['fecha_confirmacion'] = $ordenCompra->fecha_confirmacion ?? now();
             }
 
-            if ($destino === OrdenCompraEstado::Recibida) {
+            if ($destino === OrdenCompraEstado::DevueltaPorGerencia) {
+                $updates['motivo_rechazo_gerencia'] = $data['motivo_rechazo_gerencia'] ?? null;
+            }
+
+            if ($destino === OrdenCompraEstado::PendienteDePago) {
+                $updates['fecha_aprobacion_gerencia'] = now();
+                if ($user) {
+                    $updates['aprobado_por_gerente_id'] = $user->id;
+                }
+            }
+
+            if ($destino === OrdenCompraEstado::Pagada || $destino === OrdenCompraEstado::PagadaListaDespacho) {
+                $updates['fecha_pago'] = $ordenCompra->fecha_pago ?? now();
+                if ($user && empty($ordenCompra->pagado_por_id)) {
+                    $updates['pagado_por_id'] = $user->id;
+                }
+                if (isset($data['referencia_pago'])) {
+                    $updates['referencia_pago'] = $data['referencia_pago'];
+                }
+                if (isset($data['comprobante_pago_ruta'])) {
+                    $updates['comprobante_pago_ruta'] = $data['comprobante_pago_ruta'];
+                }
+            }
+
+            if ($destino === OrdenCompraEstado::Recibida || $destino === OrdenCompraEstado::EntregadaCerrada) {
                 $updates['fecha_recepcion'] = $ordenCompra->fecha_recepcion ?? now();
+            }
+
+            if ($origen === OrdenCompraEstado::RecepcionConNovedades && in_array($destino, [OrdenCompraEstado::PagadaListaDespacho, OrdenCompraEstado::EntregadaCerrada], true)) {
+                $updates['resolucion_novedad_tipo'] = $data['resolucion_novedad_tipo'] ?? ($destino === OrdenCompraEstado::PagadaListaDespacho ? 'reposicion' : 'nota_credito');
+                $updates['resolucion_novedad_comentario'] = $data['resolucion_novedad_comentario'] ?? null;
+                $updates['fecha_resolucion_novedad'] = now();
+                if ($user) {
+                    $updates['resuelto_por_id'] = $user->id;
+                }
             }
 
             if ($destino === OrdenCompraEstado::Cancelada) {
                 $updates['motivo_cancelacion'] = $data['motivo_cancelacion'] ?? null;
             }
 
-            if ($destino === OrdenCompraEstado::Despachada) {
+            if ($destino === OrdenCompraEstado::CanceladaReembolsoPendiente) {
+                $updates['motivo_reembolso'] = $data['motivo_reembolso'] ?? $data['motivo_cancelacion'] ?? null;
+                $updates['motivo_cancelacion'] = $updates['motivo_reembolso'];
+            }
+
+            if ($destino === OrdenCompraEstado::Despachada || $destino === OrdenCompraEstado::EnTransito) {
                 $updates['fecha_despacho'] = $ordenCompra->fecha_despacho ?? now();
             }
 
@@ -140,14 +184,41 @@ class OrdenCompraLifecycleService
 
         $cantidadRecibida = (int) ($acumulados?->recibida ?? 0);
         $cantidadConforme = (int) ($acumulados?->conforme ?? 0);
+        $cantidadRechazada = (int) RecepcionCompraDetalle::query()
+            ->whereIn('orden_compra_detalle_id', $detalleIds)
+            ->whereHas('recepcionCompra', function ($query): void {
+                $query->where('estado', RecepcionCompra::ESTADO_ACTIVA);
+            })
+            ->sum('cantidad_rechazada');
 
         if ($cantidadRecibida <= 0) {
             return $ordenCompra->refresh();
         }
 
-        $destino = $cantidadConforme >= $cantidadOrdenada
-            ? OrdenCompraEstado::Recibida
-            : OrdenCompraEstado::RecibidaParcialmente;
+        $esCicloFormal = in_array($origen, [
+            OrdenCompraEstado::EnTransito,
+            OrdenCompraEstado::RecepcionConNovedades,
+            OrdenCompraEstado::EntregadaCerrada,
+            OrdenCompraEstado::PagadaListaDespacho,
+        ], true);
+
+        if ($esCicloFormal) {
+            if ($cantidadRechazada > 0) {
+                $destino = OrdenCompraEstado::RecepcionConNovedades;
+            } elseif ($cantidadConforme >= $cantidadOrdenada) {
+                $destino = OrdenCompraEstado::EntregadaCerrada;
+            } else {
+                $destino = OrdenCompraEstado::RecibidaParcialmente;
+            }
+        } else {
+            if ($cantidadRechazada > 0) {
+                $destino = OrdenCompraEstado::RecepcionConNovedades;
+            } elseif ($cantidadConforme >= $cantidadOrdenada) {
+                $destino = OrdenCompraEstado::Recibida;
+            } else {
+                $destino = OrdenCompraEstado::RecibidaParcialmente;
+            }
+        }
 
         if ($origen === $destino) {
             return $ordenCompra->refresh()->load(['proveedor', 'tercero', 'pedido', 'cotizacion', 'detalles.referencia']);
@@ -186,19 +257,39 @@ class OrdenCompraLifecycleService
             ]);
         }
 
-        if ($destino === OrdenCompraEstado::Cancelada && blank($data['motivo_cancelacion'] ?? null)) {
+        if ($destino === OrdenCompraEstado::PendienteRevisionStock && blank($data['instrucciones_despacho'] ?? null)) {
             throw ValidationException::withMessages([
-                'motivo_cancelacion' => 'El motivo de cancelación es obligatorio para este estado.',
+                'instrucciones_despacho' => 'Las instrucciones de despacho son obligatorias para enviar la orden a revisión del proveedor.',
+            ]);
+        }
+
+        if ($destino->requiereMotivoCancelacion() && blank($data['motivo_cancelacion'] ?? $data['motivo_reembolso'] ?? null)) {
+            throw ValidationException::withMessages([
+                'motivo_cancelacion' => 'El motivo de cancelación o reembolso es obligatorio para este estado.',
+            ]);
+        }
+
+        if ($destino === OrdenCompraEstado::DevueltaPorGerencia && blank($data['motivo_rechazo_gerencia'] ?? null)) {
+            throw ValidationException::withMessages([
+                'motivo_rechazo_gerencia' => 'El motivo de rechazo gerencial es obligatorio para devolver la orden.',
+            ]);
+        }
+
+        if ($origen === OrdenCompraEstado::RecepcionConNovedades
+            && in_array($destino, [OrdenCompraEstado::PagadaListaDespacho, OrdenCompraEstado::EntregadaCerrada], true)
+            && blank($data['resolucion_novedad_comentario'] ?? null)) {
+            throw ValidationException::withMessages([
+                'resolucion_novedad_comentario' => 'El comentario de resolución de la novedad es obligatorio.',
             ]);
         }
 
         if ($destino === OrdenCompraEstado::Cancelada && $origen->requiereAprobacionAdminParaCancelar()) {
             $tieneAprobacion = (bool) ($data['aprobacion_admin'] ?? false);
-            $esAdmin = $user?->hasAnyRole(['super_admin', 'Administrador']) ?? false;
+            $esAdmin = $user?->hasAnyRole(['super_admin', 'Administrador', 'Gerente Comercial']) ?? false;
 
             if (! $tieneAprobacion || ! $esAdmin) {
                 throw ValidationException::withMessages([
-                    'aprobacion_admin' => 'Cancelar una OC confirmada requiere aprobación de administrador.',
+                    'aprobacion_admin' => 'Cancelar una OC en este estado requiere aprobación administrativa o gerencial.',
                 ]);
             }
         }
