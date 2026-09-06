@@ -10,6 +10,8 @@ use App\Http\Requests\StoreProviderCosteoRequest;
 use App\Http\Resources\OrdenCompraResource;
 use App\Http\Resources\PedidoReferenciaResource;
 use App\Models\OrdenCompra;
+use App\Models\OrdenCompraDespachoArchivo;
+use App\Models\OrdenCompraReferencia;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
 use App\Models\Tercero;
@@ -273,11 +275,17 @@ class ProviderPortalController extends Controller
 
     /**
      * Confirmar una OC desde el portal de proveedores.
+     * Si no se envían items o todos tienen stock completo, transiciona a En Espera de Aprobación Gerencial (o Confirmada si es legacy).
+     * Si algún item tiene faltantes (cantidad < original), ajusta cantidades y transiciona a Stock Incompleto.
      */
     public function confirmPurchaseOrder(Request $request, int $id, OrdenCompraLifecycleService $lifecycleService): JsonResponse
     {
         $validated = $request->validate([
             'observaciones' => ['nullable', 'string', 'max:500'],
+            'items' => ['nullable', 'array'],
+            'items.*.referencia_id' => ['required', 'integer'],
+            'items.*.cantidad_disponible' => ['required', 'integer', 'min:0'],
+            'items.*.motivo_faltante' => ['nullable', 'string', 'max:500'],
         ]);
 
         $user = $request->user();
@@ -289,21 +297,64 @@ class ProviderPortalController extends Controller
 
         $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
 
+        $hayFaltantes = false;
+
+        if (! empty($validated['items'])) {
+            foreach ($validated['items'] as $itemData) {
+                $refItem = OrdenCompraReferencia::where('orden_compra_id', $oc->id)
+                    ->where('referencia_id', $itemData['referencia_id'])
+                    ->first();
+
+                if (! $refItem) {
+                    continue;
+                }
+
+                $original = $refItem->cantidad_original ?? $refItem->cantidad;
+                $disponible = (int) $itemData['cantidad_disponible'];
+
+                if ($disponible < $original) {
+                    $hayFaltantes = true;
+                }
+
+                $valorUnitario = (float) $refItem->valor_unitario;
+                $refItem->update([
+                    'cantidad_original' => $original,
+                    'cantidad' => $disponible,
+                    'valor_total' => $disponible * $valorUnitario,
+                    'motivo_faltante' => $itemData['motivo_faltante'] ?? null,
+                ]);
+            }
+
+            // Recalcular valor total de la orden
+            $nuevoTotal = (float) OrdenCompraReferencia::where('orden_compra_id', $oc->id)->sum('valor_total');
+            $oc->update(['valor_total' => $nuevoTotal]);
+        }
+
+        // Determinar estado destino según el ciclo actual y si hubo faltantes
+        $estadoActual = OrdenCompraEstado::tryFrom((string) $oc->estado);
+        $destino = match (true) {
+            $hayFaltantes => OrdenCompraEstado::StockIncompleto,
+            $estadoActual === OrdenCompraEstado::PendienteRevisionStock => OrdenCompraEstado::EnEsperaAprobacionGerencial,
+            default => OrdenCompraEstado::Confirmada,
+        };
+
         $ordenCompra = $lifecycleService->transicionar(
             $oc,
-            OrdenCompraEstado::Confirmada,
+            $destino,
             $validated,
             $user
         );
 
         return response()->json([
-            'message' => 'Orden de compra confirmada correctamente.',
-            'data' => new OrdenCompraResource($ordenCompra),
+            'message' => $hayFaltantes
+                ? 'Se reportaron faltantes de stock. La orden pasa a revisión del asesor.'
+                : 'Orden de compra confirmada correctamente.',
+            'data' => new OrdenCompraResource($ordenCompra->load(['detalles.referencia', 'proveedor'])),
         ]);
     }
 
     /**
-     * Actualizar datos de despacho de una OC
+     * Actualizar datos de despacho de una OC y adjuntar evidencias obligatorias (guía y fotos del paquete)
      */
     public function updateDispatch(Request $request, int $id, OrdenCompraLifecycleService $lifecycleService): JsonResponse
     {
@@ -312,6 +363,8 @@ class ProviderPortalController extends Controller
             'transportadora_id' => ['required', 'integer', 'exists:transportadoras,id'],
             'fecha_despacho' => ['required', 'date'],
             'observaciones' => ['nullable', 'string', 'max:500'],
+            'fotos' => ['required', 'array', 'min:1'],
+            'fotos.*' => ['file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
         ]);
 
         $user = $request->user();
@@ -323,18 +376,50 @@ class ProviderPortalController extends Controller
 
         $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
 
-        $oc->update($validated);
+        $oc->update([
+            'guia' => $validated['guia'],
+            'transportadora_id' => $validated['transportadora_id'],
+            'fecha_despacho' => $validated['fecha_despacho'],
+            'observaciones' => $validated['observaciones'] ?? $oc->observaciones,
+        ]);
+
+        // Guardar archivos de despacho adjuntos
+        if ($request->hasFile('fotos')) {
+            foreach ($request->file('fotos') as $fotoFile) {
+                $path = $fotoFile->store("ordenes-compra/{$oc->id}/despacho", 'public');
+                $mime = $fotoFile->getClientMimeType() ?: 'image/jpeg';
+                $tipo = str_contains(strtolower($mime), 'pdf') ? OrdenCompraDespachoArchivo::TIPO_GUIA : OrdenCompraDespachoArchivo::TIPO_FOTO_PAQUETE;
+
+                OrdenCompraDespachoArchivo::create([
+                    'orden_compra_id' => $oc->id,
+                    'ruta' => $path,
+                    'nombre_original' => $fotoFile->getClientOriginalName(),
+                    'mime' => $mime,
+                    'size' => $fotoFile->getSize(),
+                    'tipo' => $tipo,
+                    'creado_por' => $user->id,
+                ]);
+            }
+        }
+
+        // Determinar estado de despacho: En Tránsito si viene del ciclo formal o Pagada/Confirmada
+        $estadoActual = OrdenCompraEstado::tryFrom((string) $oc->estado);
+        $destino = match ($estadoActual) {
+            OrdenCompraEstado::PagadaListaDespacho, OrdenCompraEstado::Pagada => OrdenCompraEstado::EnTransito,
+            OrdenCompraEstado::Confirmada => OrdenCompraEstado::Despachada,
+            default => OrdenCompraEstado::EnTransito,
+        };
 
         $ordenCompra = $lifecycleService->transicionar(
             $oc,
-            OrdenCompraEstado::Despachada,
+            $destino,
             [],
             $user
         );
 
         return response()->json([
             'message' => 'Despacho registrado correctamente.',
-            'data' => new OrdenCompraResource($ordenCompra->load('transportadora')),
+            'data' => new OrdenCompraResource($ordenCompra->load(['transportadora', 'archivosDespacho'])),
         ]);
     }
 }
