@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { ApiService, PaginatedResponse, ApiResponse, QueryParams } from '../../../core/services/api.service';
-import { OrdenCompra } from '../../../core/models/orden-compra.model';
+import { OrdenCompra, ConfirmPurchaseOrderDto } from '../../../core/models/orden-compra.model';
 
 /**
  * Servicio para el Portal de Proveedores
@@ -34,24 +34,26 @@ export class ProviderPortalService extends ApiService {
     }
 
     /**
-     * Confirmar una Orden de Compra del proveedor
+     * Confirmar una Orden de Compra del proveedor con disponibilidad o reporte de faltantes
      */
-    confirmPurchaseOrder(ocId: number, data: { observaciones?: string } = {}): Observable<ApiResponse<OrdenCompra>> {
+    confirmPurchaseOrder(ocId: number, data: ConfirmPurchaseOrderDto = {}): Observable<ApiResponse<OrdenCompra>> {
         return this.post<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/confirm`, data);
     }
 
     /**
-     * Registrar despacho de una Orden de Compra
+     * Registrar despacho de una Orden de Compra con evidencias fotográficas
      */
     registerDispatch(
         ocId: number,
-        data: {
-            guia: string;
-            transportadora_id: number;
-            fecha_despacho: string;
-            observaciones?: string;
-        }
+        data:
+            | FormData
+            | {
+                  guia: string;
+                  transportadora_id: number;
+                  fecha_despacho: string;
+                  observaciones?: string;
+              }
     ): Observable<ApiResponse<OrdenCompra>> {
-        return this.put<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/dispatch`, data);
+        return this.post<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/dispatch`, data);
     }
 }

@@ -89,4 +89,14 @@ export class OrdenCompraService extends ApiService {
 
         return this.http.post<ApiResponse<RecepcionCompraImagen>>(this.formatUrl(`recepciones-compra/${recepcionId}/imagenes`), formData).pipe(map((response) => response.data));
     }
+
+    /**
+     * Subir comprobante de pago de una orden de compra
+     */
+    uploadComprobantePago(ordenCompraId: number, file: File): Observable<{ success: boolean; file_url: string; file_name: string; original_name: string }> {
+        const formData = new FormData();
+        formData.append('file', file);
+
+        return this.http.post<{ success: boolean; file_url: string; file_name: string; original_name: string }>(this.formatUrl(`${this.getBaseUrl()}/${ordenCompraId}/upload-comprobante`), formData);
+    }
 }

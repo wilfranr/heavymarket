@@ -460,6 +460,13 @@ return new class extends Migration
                 $table->string('telefono', 50)->nullable();
                 $table->string('email', 100)->nullable();
                 $table->string('direccion', 255)->nullable();
+                $table->unsignedBigInteger('city_id')->nullable();
+                $table->unsignedBigInteger('state_id')->nullable();
+                $table->unsignedBigInteger('country_id')->nullable();
+                $table->string('contacto')->nullable();
+                $table->string('celular')->nullable();
+                $table->string('observaciones')->nullable();
+                $table->string('logo')->nullable();
                 $table->string('estado', 20)->default('Activo');
                 $table->timestamps();
             });

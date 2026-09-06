@@ -145,7 +145,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/submit-cost', [ProviderPortalController::class, 'submitCost']);
             Route::get('/purchase-orders', [ProviderPortalController::class, 'purchaseOrders']);
             Route::post('/purchase-orders/{id}/confirm', [ProviderPortalController::class, 'confirmPurchaseOrder']);
-            Route::put('/purchase-orders/{id}/dispatch', [ProviderPortalController::class, 'updateDispatch']);
+            Route::match(['put', 'post'], '/purchase-orders/{id}/dispatch', [ProviderPortalController::class, 'updateDispatch']);
         });
 
         /**
@@ -190,6 +190,7 @@ Route::prefix('v1')->group(function () {
         Route::post('cotizaciones/{cotizacion}/reject', [CotizacionController::class, 'reject'])->name('cotizaciones.reject');
         Route::apiResource('cotizaciones', CotizacionController::class)->parameters(['cotizaciones' => 'cotizacion']);
         Route::patch('ordenes-compra/{orden_compra}/transition', [OrdenCompraController::class, 'transition'])->name('ordenes-compra.transition');
+        Route::post('ordenes-compra/{orden_compra}/upload-comprobante', [OrdenCompraController::class, 'uploadComprobantePago'])->name('ordenes-compra.upload-comprobante');
         Route::post('ordenes-compra/{orden_compra}/receive', [OrdenCompraController::class, 'receive'])->name('ordenes-compra.receive');
         Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);

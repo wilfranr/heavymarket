@@ -20,6 +20,8 @@ use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Controlador API para gestión de Órdenes de Compra
@@ -165,6 +167,8 @@ class OrdenCompraController extends Controller
             'pedido.contacto',
             'pedido.user',
             'cotizacion',
+            'transportadora',
+            'archivosDespacho',
             'detalles.referencia.marca',
             'detalles.referencia.articulo',
         ]);
@@ -250,6 +254,39 @@ class OrdenCompraController extends Controller
             'data' => new OrdenCompraResource($ordenCompra),
             'message' => 'Estado de la orden de compra actualizado correctamente',
         ]);
+    }
+
+    /**
+     * Cargar comprobante de pago para una orden de compra.
+     */
+    public function uploadComprobantePago(Request $request, OrdenCompra $orden_compra): JsonResponse
+    {
+        $this->authorize('update', $orden_compra);
+
+        $request->validate([
+            'file' => ['required', 'file', 'max:10240', 'mimes:pdf,png,jpeg,jpg,webp'],
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $path = $file->store("ordenes-compra/{$orden_compra->id}/comprobantes", 'public');
+
+            return response()->json([
+                'success' => true,
+                'file_url' => Storage::url($path),
+                'file_name' => $path,
+                'original_name' => $file->getClientOriginalName(),
+                'size' => $file->getSize(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error uploading comprobante orden compra {$orden_compra->id}: ".$e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al subir el comprobante de pago',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
     /**

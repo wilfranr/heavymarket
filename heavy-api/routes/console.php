@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('trm:sync')->dailyAt('07:00');
+Schedule::command('compras:alertar-transito-prolongado')->dailyAt('08:00');

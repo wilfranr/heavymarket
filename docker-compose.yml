@@ -1,26 +1,13 @@
-version: '3.8'
-
 services:
   # Backend Laravel API
   api:
-    image: php:8.2-fpm-alpine
+    build:
+      context: ./heavy-api
     container_name: heavymarket-api
-    working_dir: /var/www/html
+    working_dir: /var/www
     volumes:
-      - ./heavy-api:/var/www/html
-    ports:
-      - "8000:8000"
-    environment:
-      - DB_HOST=mysql
-      - DB_PORT=3306
-      - DB_DATABASE=heavymarket
-      - DB_USERNAME=heavymarket
-      - DB_PASSWORD=secret
-    depends_on:
-      - mysql
-      - redis
-    networks:
-      - heavymarket
+      - ./heavy-api:/var/www
+    network_mode: host
     command: sh -c "composer install && php artisan serve --host=0.0.0.0 --port=8000"
 
   # Frontend Angular
@@ -32,53 +19,12 @@ services:
       - ./heavy-front:/app
       - /app/node_modules
       - /app/.angular
-    ports:
-      - "4200:4200"
-    networks:
-      - heavymarket
-    command: sh -c "rm -rf .angular/cache && npm install && npm start"
+    network_mode: host
+    command: sh -c "rm -rf .angular/cache && npm install && npm start -- --host 0.0.0.0"
     environment:
       - NODE_ENV=development
 
-  # Base de datos MySQL
-  mysql:
-    image: mysql:8.0
-    container_name: heavymarket-mysql
-    restart: unless-stopped
-    ports:
-      - "3306:3306"
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: heavymarket
-      MYSQL_USER: heavymarket
-      MYSQL_PASSWORD: secret
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./docker/mysql/my.cnf:/etc/mysql/conf.d/my.cnf
-    networks:
-      - heavymarket
-    healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
-      timeout: 20s
-      retries: 10
-
-  # Redis para cache y queues
-  redis:
-    image: redis:7-alpine
-    container_name: heavymarket-redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
-    volumes:
-      - redis_data:/data
-    networks:
-      - heavymarket
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      timeout: 10s
-      retries: 5
-
-  # phpMyAdmin para administrar la BD
+  # phpMyAdmin para administrar la BD local
   phpmyadmin:
     image: phpmyadmin:latest
     container_name: heavymarket-phpmyadmin
@@ -86,14 +32,10 @@ services:
     ports:
       - "8080:80"
     environment:
-      PMA_HOST: mysql
+      PMA_HOST: host.docker.internal
       PMA_PORT: 3306
-      PMA_USER: root
-      PMA_PASSWORD: root
-    depends_on:
-      - mysql
-    networks:
-      - heavymarket
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
 
   # Mailhog para desarrollo (servidor SMTP de prueba)
   mailhog:
@@ -103,15 +45,3 @@ services:
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
-    networks:
-      - heavymarket
-
-volumes:
-  mysql_data:
-    driver: local
-  redis_data:
-    driver: local
-
-networks:
-  heavymarket:
-    driver: bridge
