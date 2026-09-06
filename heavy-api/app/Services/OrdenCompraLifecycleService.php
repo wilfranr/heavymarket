@@ -211,9 +211,7 @@ class OrdenCompraLifecycleService
                 $destino = OrdenCompraEstado::RecibidaParcialmente;
             }
         } else {
-            if ($cantidadRechazada > 0) {
-                $destino = OrdenCompraEstado::RecepcionConNovedades;
-            } elseif ($cantidadConforme >= $cantidadOrdenada) {
+            if ($cantidadConforme >= $cantidadOrdenada) {
                 $destino = OrdenCompraEstado::Recibida;
             } else {
                 $destino = OrdenCompraEstado::RecibidaParcialmente;

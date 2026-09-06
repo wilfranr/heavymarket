@@ -353,20 +353,8 @@ class ProviderPortalController extends Controller
         ]);
     }
 
-    /**
-     * Actualizar datos de despacho de una OC y adjuntar evidencias obligatorias (guía y fotos del paquete)
-     */
     public function updateDispatch(Request $request, int $id, OrdenCompraLifecycleService $lifecycleService): JsonResponse
     {
-        $validated = $request->validate([
-            'guia' => ['required', 'string', 'max:100'],
-            'transportadora_id' => ['required', 'integer', 'exists:transportadoras,id'],
-            'fecha_despacho' => ['required', 'date'],
-            'observaciones' => ['nullable', 'string', 'max:500'],
-            'fotos' => ['required', 'array', 'min:1'],
-            'fotos.*' => ['file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
-        ]);
-
         $user = $request->user();
         $tercero = Tercero::where('user_id', $user->id)->first();
 
@@ -375,6 +363,17 @@ class ProviderPortalController extends Controller
         }
 
         $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
+
+        $requiereFotos = $oc->estado === OrdenCompraEstado::PagadaListaDespacho->value;
+
+        $validated = $request->validate([
+            'guia' => ['required', 'string', 'max:100'],
+            'transportadora_id' => ['required', 'integer', 'exists:transportadoras,id'],
+            'fecha_despacho' => ['required', 'date'],
+            'observaciones' => ['nullable', 'string', 'max:500'],
+            'fotos' => [$requiereFotos ? 'required' : 'nullable', 'array', $requiereFotos ? 'min:1' : 'nullable'],
+            'fotos.*' => ['file', 'mimes:jpg,jpeg,png,webp,pdf', 'max:10240'],
+        ]);
 
         $oc->update([
             'guia' => $validated['guia'],
@@ -402,11 +401,11 @@ class ProviderPortalController extends Controller
             }
         }
 
-        // Determinar estado de despacho: En Tránsito si viene del ciclo formal o Pagada/Confirmada
+        // Determinar estado de despacho: En Tránsito si viene del ciclo formal (PagadaListaDespacho), o Despachada en ciclo legacy
         $estadoActual = OrdenCompraEstado::tryFrom((string) $oc->estado);
         $destino = match ($estadoActual) {
-            OrdenCompraEstado::PagadaListaDespacho, OrdenCompraEstado::Pagada => OrdenCompraEstado::EnTransito,
-            OrdenCompraEstado::Confirmada => OrdenCompraEstado::Despachada,
+            OrdenCompraEstado::PagadaListaDespacho => OrdenCompraEstado::EnTransito,
+            OrdenCompraEstado::Pagada, OrdenCompraEstado::Confirmada => OrdenCompraEstado::Despachada,
             default => OrdenCompraEstado::EnTransito,
         };
 
