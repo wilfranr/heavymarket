@@ -221,3 +221,29 @@ it('transiciona a Stock Incompleto y recalcula totales si el proveedor reporta f
         'motivo_faltante' => 'Quiebre de stock por importación demorada',
     ]);
 });
+
+it('no expone datos del cliente tercero en el listado de ordenes de compra del proveedor', function () {
+    $cliente = Tercero::factory()->create([
+        'nombre' => 'Cliente Confidencial SAS',
+    ]);
+
+    $orden = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'tercero_id' => $cliente->id,
+        'estado' => OrdenCompraEstado::PagadaListaDespacho->value,
+    ]);
+
+    $response = $this->actingAs($this->providerUser, 'sanctum')
+        ->getJson('/v1/provider/purchase-orders');
+
+    $response->assertOk();
+
+    // Validar que la orden existe en los resultados
+    $data = $response->json('data');
+    expect($data)->not->toBeEmpty();
+    expect($data[0]['id'])->toBe($orden->id);
+
+    // Validar que la relación tercero (cliente) no está cargada ni expuesta
+    expect(array_key_exists('tercero', $data[0]))->toBeFalse();
+    $response->assertDontSee('Cliente Confidencial SAS');
+});

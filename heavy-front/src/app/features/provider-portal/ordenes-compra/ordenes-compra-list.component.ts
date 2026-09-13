@@ -59,7 +59,6 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                     <tr>
                         <th>OC #</th>
                         <th>Fecha Expedición</th>
-                        <th>Cliente</th>
                         <th class="text-right">Total orden</th>
                         <th class="text-center">Estado</th>
                         <th class="text-center">Acciones</th>
@@ -69,7 +68,6 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                     <tr>
                         <td class="font-bold">OC-{{ oc.id }}</td>
                         <td>{{ oc.fecha_expedicion | date: 'dd/MM/yyyy' }}</td>
-                        <td>{{ oc.tercero?.razon_social || oc.tercero?.nombre || 'N/A' }}</td>
                         <td class="text-right font-medium">{{ oc.valor_total | currency }}</td>
                         <td class="text-center">
                             <p-tag [value]="oc.estado" [severity]="getStatusSeverity(oc.estado)"></p-tag>

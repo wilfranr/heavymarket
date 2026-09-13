@@ -256,7 +256,7 @@ class ProviderPortalController extends Controller
 
         $query = OrdenCompra::query()
             ->where('proveedor_id', $tercero->id)
-            ->with(['tercero', 'transportadora', 'detalles.referencia'])
+            ->with(['transportadora', 'detalles.referencia'])
             ->orderBy('created_at', 'desc');
 
         $perPage = (int) $request->input('per_page', 15);

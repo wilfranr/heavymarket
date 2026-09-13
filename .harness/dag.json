@@ -2456,58 +2456,62 @@
     {
       "id": "oc-proveedor-ocultar-cliente-frontend",
       "description": "Frontend UI: Remover la columna Cliente de la tabla de Ordenes de Compra del portal de proveedores (ordenes-compra-list.component.ts).",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "oc-proveedor-ocultar-cliente-triage"
       ],
       "topic_key": "arch/heavy-ui-patterns",
       "implementer_notes": "Removida columna Cliente del header y de la fila de la tabla en ordenes-compra-list.component.ts. Prettier OK, vitest 2/2 OK, ng build exitoso.",
+      "review_notes": "Aprobado por Reviewer: Columna y celda removidas limpiamente, sin alterar la responsividad ni el resto de columnas. Prettier y vitest ejecutados exitosamente.",
       "files": [
         {
           "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "oc-proveedor-ocultar-cliente-backend",
       "description": "Backend: Remover la relación 'tercero' (cliente) del eager loading en ProviderPortalController::purchaseOrders para no exponer datos del cliente en la API del portal proveedor.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [
         "oc-proveedor-ocultar-cliente-triage"
       ],
       "topic_key": "arch/heavy-api-logic",
       "implementer_notes": "Removido 'tercero' del eager loading en ProviderPortalController::purchaseOrders. php -l y Pint pasando.",
+      "review_notes": "Aprobado por Reviewer: Se retiro la relación 'tercero' de with(). Pint y php -l pasan sin errores. OrdenCompraResource omite la relación al no estar cargada.",
       "files": [
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "oc-proveedor-ocultar-cliente-tests",
       "description": "Tests: Verificar que el endpoint de purchaseOrders no exponga el cliente del pedido y validar la suite de pruebas del portal proveedor.",
-      "status": "in_progress",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "oc-proveedor-ocultar-cliente-frontend",
         "oc-proveedor-ocultar-cliente-backend"
       ],
       "topic_key": "arch/heavy-audit-history",
+      "implementer_notes": "Test agregado y pasando en ProviderPortalOrdenCompraTest: verifica que purchase-orders no expone datos ni relacion tercero (cliente). Suite de tests pasando (7/7 tests, 30 assertions).",
+      "review_notes": "Aprobado por Reviewer: Pest ejecutado de forma independiente pasando 7/7 tests y 30 assertions.",
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
-          "status": "writing"
+          "status": "validated"
         }
       ]
     },
     {
       "id": "oc-proveedor-ocultar-cliente-review",
       "description": "Reviewer: Validar que no se muestre el cliente en la vista ni en el payload de la API para proveedores, ejecutar gates de frontend y backend, y cerrar el issue.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "oc-proveedor-ocultar-cliente-tests"
@@ -2518,7 +2522,8 @@
         "cd heavy-api && ./vendor/bin/pest tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
         "cd heavy-front && npx vitest run src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.spec.ts",
         "cd heavy-front && npx ng build --configuration development"
-      ]
+      ],
+      "review_notes": "Todos los gates ejecutados independientemente por el Reviewer. Backend Pint: passed, Pest: 7/7 tests (30 assertions). Frontend Prettier: OK, Vitest: 2/2 tests OK, Build Angular: exitoso. Se valida que ni la interfaz visual ni el payload API exponen información del cliente final al proveedor. Issue cerrado exitosamente."
     }
   ]
 }
