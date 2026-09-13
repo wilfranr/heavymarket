@@ -21,6 +21,7 @@ enum OrdenCompraEstado: string
     case PagadaListaDespacho = 'Pagada / Lista para Despacho';
     case CanceladaReembolsoPendiente = 'Cancelada - Reembolso Pendiente';
     case EnTransito = 'En Tránsito';
+    case Demorado = 'Demorado';
     case RecepcionConNovedades = 'Recepción con Novedades (Bloqueada)';
     case EntregadaCerrada = 'Entregada / Cerrada';
 
@@ -76,6 +77,15 @@ enum OrdenCompraEstado: string
             ],
             self::CanceladaReembolsoPendiente => [],
             self::EnTransito => [
+                self::Demorado,
+                self::RecepcionConNovedades,
+                self::EntregadaCerrada,
+                self::RecibidaParcialmente,
+                self::Recibida,
+                self::Cancelada,
+            ],
+            self::Demorado => [
+                self::EnTransito,
                 self::RecepcionConNovedades,
                 self::EntregadaCerrada,
                 self::RecibidaParcialmente,
@@ -117,6 +127,7 @@ enum OrdenCompraEstado: string
             ],
             self::Despachada => [
                 self::EnTransito,
+                self::Demorado,
                 self::RecepcionConNovedades,
                 self::EntregadaCerrada,
                 self::RecibidaParcialmente,
@@ -173,6 +184,7 @@ enum OrdenCompraEstado: string
             self::Enviada,
             self::Despachada,
             self::EnTransito => '#00BCD4',
+            self::Demorado => '#FF5722',
             self::Confirmada => '#8BC34A',
             self::RecepcionConNovedades => '#E91E63',
             self::RecibidaParcialmente => '#FF9800',
@@ -196,6 +208,7 @@ enum OrdenCompraEstado: string
             self::PagadaListaDespacho,
             self::CanceladaReembolsoPendiente,
             self::EnTransito,
+            self::Demorado,
             self::RecepcionConNovedades,
             self::EntregadaCerrada,
             self::Generada,

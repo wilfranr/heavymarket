@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-05T13:30:29-05:00",
-  "issue": "flujo-orden-compra",
-  "description": "Implementacion del flujo integral y definitivo de Orden de Compra con contingencias y roles (Asesor, Proveedor, Gerente Comercial, Contabilidad, Logistica) segun docs/issues/flujo-orden-compra/.",
+  "last_updated": "2026-09-13T16:11:00-05:00",
+  "issue": "oc-proveedor-ocultar-cliente",
+  "description": "En la vista de Ordenes de Compra del portal proveedor no se debe mostrar el nombre del cliente ni filtrar datos del tercero cliente en el backend.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "tarjetas-info-pedidos",
+  "previous_issue": "oc-demorado",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -2159,6 +2159,365 @@
           "path": "heavy-front/src/app/features/pedidos/costeo/costeo.html",
           "status": "validated"
         }
+      ]
+    },
+    {
+      "id": "oc-demorado-triage",
+      "description": "Triage: falta un estado que salte automaticamente cuando una OC en transito excede su tiempo estimado de entrega. Decisiones tomadas con el usuario: (1) el umbral sigue siendo el mismo dia-limite global que ya usa AlertarTransitoProlongadoCommand (--dias, default 5), no se agrega un campo fecha_entrega_estimada por OC; (2) 'volverse depurable' reutiliza el patron ya existente de Depurar Faltantes de Ordenes de Trabajo (OrdenTrabajoDepuracionService, docs/issues/flujo-ot-facturacion/02-feat-ot-depuracion-faltantes.md: marcar cantidad como faltante definitivo, excluirla y no cobrarla), replicado para OrdenCompraReferencia. El comando compras:alertar-transito-prolongado hoy (nodo oc-despacho-fotos-alerta-transito) solo hace Log::warning y el frontend solo muestra un banner reactivo local (tieneTransitoProlongado(), umbral fijo >=5 dias en detail.component.ts:894-907) sin persistir estado ni habilitar ninguna accion.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/orden-compra-demorado",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-backend-estado",
+      "description": "Backend: agregar el case Demorado a OrdenCompraEstado (heavy-api/app/Enums/OrdenCompraEstado.php). Transiciones: EnTransito y Despachada pueden ir a Demorado; Demorado puede ir a EnTransito (tras reasignar tiempo de entrega), RecepcionConNovedades, EntregadaCerrada/Recibida (si llega tarde pero completa) y Cancelada. No es estado terminal (esTerminal() no debe incluirlo). Asignar un color distintivo (ej. naranja/rojo, distinto del cian de EnTransito/Despachada) en color(). Agregarlo a todos() y toArray().",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "oc-demorado-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "implementer_notes": "Agregado case Demorado = 'Demorado' entre EnTransito y RecepcionConNovedades. Transiciones: EnTransito->Demorado, Despachada->Demorado (agregadas a los match arms existentes); nuevo match arm Demorado->[EnTransito, RecepcionConNovedades, EntregadaCerrada, RecibidaParcialmente, Recibida, Cancelada] (permite tanto reasignar tiempo y volver a EnTransito, como recibir tarde -directo o parcial-, bloquear por novedades, o cancelar). No se agrego a esTerminal() (queda no terminal, correcto). Color '#FF5722' (deep orange), distinto del '#00BCD4' cian de EnTransito/Despachada y del '#FF9800' de StockIncompleto/RecibidaParcialmente. Agregado a todos()/toArray(). Verificado que el unico match(...) exhaustivo sobre OrdenCompraEstado fuera del propio enum (ProviderPortalController.php:406) tiene rama default, no se rompe con el nuevo case. Test unitario extendido: conteo de estados 18->19, nuevo test 'permite transiciones validas desde y hacia el estado Demorado' (Despachada->Demorado, Demorado->{EnTransito,RecepcionConNovedades,EntregadaCerrada,RecibidaParcialmente,Recibida,Cancelada} true, Demorado->Generada false, esTerminal false). Gates: php -l OK en ambos archivos, Pint --test OK (0 issues en los 2 archivos tocados; el pint --test global preexistente marca 5 archivos ajenos no tocados por este nodo), php artisan test tests/Unit/Enums/OrdenCompraEstadoTest.php: 6/6 passed (62 assertions).",
+      "review_notes": "Aprobado. Enum verificado: transiciones EnTransito/Despachada->Demorado y Demorado->{EnTransito,RecepcionConNovedades,EntregadaCerrada,RecibidaParcialmente,Recibida,Cancelada} correctas y simetricas con el resto del enum; no terminal; color distinto (#FF5722) de EnTransito/Despachada (#00BCD4) y de StockIncompleto/RecibidaParcialmente (#FF9800). Verificado que el unico match() externo sobre este enum (ProviderPortalController.php:406) tiene rama default, no se rompe con el nuevo case. Gates re-ejecutados: Pint --test OK, php artisan test tests/Unit/Enums/OrdenCompraEstadoTest.php 6/6 (62 assertions) OK.",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-backend-comando-alerta",
+      "description": "Backend: modificar AlertarTransitoProlongadoCommand para que, ademas de loggear, transicione cada OC encontrada a OrdenCompraEstado::Demorado a traves de OrdenCompraLifecycleService (idempotente: si ya esta Demorado no la vuelve a transicionar ni renotifica). Reemplazar el Log::warning actual por una notificacion real a los usuarios con rol Logistica (reutilizar el mecanismo de App\\Notifications\\SystemNotification ya usado en el proyecto) en vez de solo dejar constancia en el log.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "oc-demorado-backend-estado"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "implementer_notes": "AlertarTransitoProlongadoCommand ahora inyecta OrdenCompraLifecycleService en handle() y, por cada OC encontrada (misma query previa: estado EnTransito/Despachada + fecha_despacho vencida), llama lifecycleService->transicionar($oc, OrdenCompraEstado::Demorado) dentro de un try/catch (si falla, Log::error y continue, no aborta el resto del batch). Idempotencia: al transicionar a Demorado, la OC deja de matchear la query (estado ya no es EnTransito/Despachada), por lo que corridas posteriores del comando no la vuelven a tocar hasta que se reasigne (nodo oc-demorado-backend-reasignacion) y vuelva a EnTransito. Notificacion real agregada: por cada usuario con rol Logistica se envia SystemNotification('orden_compra_demorada', ...) ademas del Log::warning existente (se mantiene el log por trazabilidad/auditoria, la notificacion real es la que faltaba). No se agrego aun el filtro por transito_prorrogado_hasta en el where de la query: esa columna todavia no existe (se crea en oc-demorado-backend-reasignacion); se documenta como pendiente para ese nodo, que debe re-tocar este mismo archivo agregando el whereNull/where<=now() sobre esa columna. Gates: php -l OK, Pint --test OK.",
+      "review_notes": "Aprobado. Idempotencia confirmada por test dedicado (segunda corrida no vuelve a notificar). Notificacion real a Logistica via SystemNotification agregada sin remover el Log::warning existente (trazabilidad). try/catch por OC individual evita que un fallo aborte el resto del batch. Gates re-ejecutados: Pint --test OK, suite backend completa 536 tests / 0 fallos.",
+      "files": [
+        {
+          "path": "heavy-api/app/Console/Commands/AlertarTransitoProlongadoCommand.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-backend-reasignacion",
+      "description": "Backend: agregar columna nullable transito_prorrogado_hasta (date) a orden_compras (nueva migracion). Cuando esta seteada y es futura, AlertarTransitoProlongadoCommand debe saltar esa OC aunque supere el dia-limite (usarla en el where de la query junto a fecha_despacho). Reasignar tiempo de entrega NO necesita endpoint nuevo: ya existe PATCH ordenes-compra/{orden_compra}/transition (OrdenCompraController::transition, autorizado por TransitionOrdenCompraRequest::authorize() que ya permite super_admin/Administrador/Logistica) que llama a OrdenCompraLifecycleService::transicionar() con el payload validado; basta con (1) agregar transito_prorrogado_hasta a las reglas de TransitionOrdenCompraRequest (requerido y fecha futura cuando estado_destino=EnTransito y el estado actual de la OC es Demorado), y (2) en transicionar(), persistir transito_prorrogado_hasta cuando venga en $data y limpiarlo (null) al volver a transitar a Demorado.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "oc-demorado-backend-estado"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "implementer_notes": "Revisado (segunda vuelta, durante oc-demorado-backend-tests): el plan original de reutilizar PATCH ordenes-compra/{orden_compra}/transition para 'reasignar tiempo de entrega' resulto invalido. Descubrimiento: App\\Http\\Middleware\\RestrictLogistica bloquea con 403 CUALQUIER ruta de OC para el rol Logistica salvo un allowlist explicito por nombre de ruta (RUTAS_RECEPCION_ORDEN_COMPRA_PERMITIDAS) mas lectura de index/show -- 'ordenes-compra.transition' NO esta en ese allowlist, asi que Logistica jamas podria haber usado el endpoint generico pese a que TransitionOrdenCompraRequest::authorize() lo permite a nivel de Policy/FormRequest (ese chequeo es codigo muerto para Logistica, el middleware corre antes). Se revirtio la regla agregada en TransitionOrdenCompraRequest (diff neto cero en ese archivo) y en su lugar se creo un endpoint dedicado: PATCH ordenes-compra/{orden_compra}/reasignar-transito -> OrdenCompraController::reasignarTransito (valida que la OC este Demorado, delega en OrdenCompraLifecycleService::transicionar con estado_destino=EnTransito), autorizado por nuevo ReasignarTransitoOrdenCompraRequest (required+date+after:today) + nuevo metodo OrdenCompraPolicy::reasignarTransito (super_admin, Administrador, Logistica), y se agrego 'ordenes-compra.reasignar-transito' junto con 'ordenes-compra.referencias.depurar' (ver oc-demorado-backend-depuracion) al allowlist de RestrictLogistica. Se mantiene ademas: (1) migracion transito_prorrogado_hasta (date, nullable, after fecha_despacho) en orden_compras, aplicada con 'php artisan migrate --force' en dev. (2) OrdenCompra.php: fillable+casts('date'). (3) OrdenCompraLifecycleService::transicionar(): persiste transito_prorrogado_hasta cuando destino=EnTransito y viene en $data; lo limpia (null) cuando destino=Demorado. (4) OrdenCompraResource: expone transito_prorrogado_hasta (ISO string). (5) AlertarTransitoProlongadoCommand: where whereNull(transito_prorrogado_hasta) OR <=now() para respetar la prorroga. Gates: php -l OK en todos los archivos, Pint --test OK, suite completa re-ejecutada en oc-demorado-backend-tests con Logistica probado explicitamente contra ambos endpoints (bloqueada en /transition, permitida en /reasignar-transito) -- ver esa nota para el detalle de tests.",
+      "review_notes": "Aprobado. Verificado el pivote de diseno documentado (endpoint dedicado /reasignar-transito en vez de reutilizar /transition, por el bloqueo de RestrictLogistica) con test explicito que prueba ambos caminos (bloqueada en /transition, permitida en /reasignar-transito) para Logistica. transito_prorrogado_hasta se persiste/limpia dentro del service (no hay fuga de logica al controller). Migracion idempotente (guard hasColumn). Gates re-ejecutados: Pint --test OK, suite backend completa 536 tests / 0 fallos (incluye RestrictLogisticaTest y LogisticaPermissionsTest sin regresion).",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_13_000000_add_transito_prorrogado_hasta_to_orden_compras.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/OrdenCompra.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenCompraLifecycleService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/ReasignarTransitoOrdenCompraRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenCompraController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Policies/OrdenCompraPolicy.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Middleware/RestrictLogistica.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenCompraResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Console/Commands/AlertarTransitoProlongadoCommand.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-backend-depuracion",
+      "description": "Backend: replicar el flujo Depurar Faltantes de Ordenes de Trabajo para OrdenCompraReferencia. Nueva migracion agregando cantidad_depurada (integer default 0), motivo_depuracion (text nullable), depurado_por (FK users nullable), depurado_at (timestamp nullable) a orden_compra_referencia (tabla singular, no orden_compra_referencias). Nuevo OrdenCompraDepuracionService::depurarFaltante() (mirror de OrdenTrabajoDepuracionService::depurarFaltante()): solo permitido si la OC padre esta en estado Demorado, valida que cantidad_recibida + cantidad_depurada no supere la cantidad ordenada. Nuevo metodo depurarReferencia en OrdenCompraPolicy (super_admin, Administrador, Logistica). Nuevo endpoint PATCH en OrdenCompraController + DepurarOrdenCompraReferenciaRequest + ruta, siguiendo el mismo patron que ordenes-trabajo/{id}/referencias/{id}/depurar.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [
+        "oc-demorado-backend-estado"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "implementer_notes": "Correccion vs. plan de Triage: la tabla real es 'orden_compra_referencia' (singular), no 'orden_compra_referencias'; migracion y Schema::table() usan el nombre correcto. Replicado el patron exacto de OrdenTrabajoDepuracionService: OrdenCompraDepuracionService::depurarFaltante() valida que la OC padre este en estado Demorado (bloqueo por allowlist, a diferencia de OT que usa blocklist de estados Completado/Cancelado, porque para OC solo tiene sentido depurar durante el estado Demorado) y que cantidad_recibida+cantidad_depurada no supere cantidad. No se disparo ningun evento tipo OrdenTrabajoReferenciaActualizada porque no existe un equivalente para OC (grep confirmado, no hay eventos OC existentes) -- fuera de alcance crear uno nuevo solo para esto. DepurarOrdenCompraReferenciaRequest+OrdenCompraController::depurarReferencia+ruta PATCH ordenes-compra/{orden_compra}/referencias/{orden_compra_referencia}/depurar, mismo patron 1:1 que ordenes-trabajo/.../depurar (valida que la referencia pertenezca a la orden, 404 si no). Policy: nuevo metodo depurarReferencia (super_admin, Administrador, Logistica -- equivalente logistico del Vendedor/Administrador/super_admin de OT). OrdenCompraReferenciaResource: expuestos cantidad_depurada/motivo_depuracion/depurado_por/depurado_at/depurado_por_usuario; estado_item y saldo_pendiente ahora consideran cantidad_recibida+cantidad_depurada (paridad con OrdenTrabajoLifecycleService:232, que trata una linea como resuelta cuando recibida+depurada=cotizada) para que un item depurado no quede eternamente 'en transito' en el front. Fuera de alcance (no tocado): la agregacion a nivel de OC completa (OrdenCompraLifecycleService::calcularEstadoRecepcion/actualizarEstadoPorRecepciones) sigue sin considerar cantidad_depurada, por lo que una OC Demorada con todas sus lineas depuradas no se autocierra a Recibida/EntregadaCerrada -- requeriria decision de negocio explicita, no pedida por el usuario en este alcance. Migracion aplicada en dev (php artisan migrate --force). CORRECCION posterior (durante oc-demorado-backend-tests): la ruta 'ordenes-compra.referencias.depurar' tambien tuvo que agregarse al allowlist de App\\Http\\Middleware\\RestrictLogistica (ver detalle completo del hallazgo en oc-demorado-backend-reasignacion), sin esa correccion Logistica recibia 403 antes de llegar siquiera a la Policy. Gates: php -l OK en los 8 archivos, Pint --test OK, php artisan test tests/Feature/Api/OrdenCompraTest.php tests/Feature/Api/OrdenCompraTransitionTest.php tests/Feature/Api/OrdenCompraReceiveTest.php tests/Feature/Api/ProviderPortalOrdenCompraTest.php: 20/20 (104 assertions, DEPR preexistente por APP_URL=null, no bloqueante) -- sin regresiones, incluye el test ya existente 'ejecuta comando de alerta de transito prolongado correctamente' que sigue pasando con el comando modificado en el nodo anterior. Cobertura completa del endpoint de depuracion (incluyendo el fix de RestrictLogistica) verificada en oc-demorado-backend-tests.",
+      "review_notes": "Aprobado. Mirror fiel de OrdenTrabajoDepuracionService (misma validacion de saldo, mismo patron de acumulacion, controller con try-catch+abort igual que su equivalente OT). Correccion de nombre de tabla (orden_compra_referencia, singular) verificada contra el modelo real. Paridad con OT en estado_item/saldo_pendiente (cantidad_recibida+cantidad_depurada) razonable; la exclusion de alcance documentada (sin autocierre agregado de la OC) queda anotada para decision de negocio futura, no bloqueante. Gates re-ejecutados: Pint --test OK, suite backend completa 536 tests / 0 fallos, php artisan scramble:analyze sin errores.",
+      "files": [
+        {
+          "path": "heavy-api/database/migrations/2026_09_13_000100_add_depuracion_columns_orden_compra_referencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/OrdenCompraReferencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/OrdenCompraDepuracionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/DepurarOrdenCompraReferenciaRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenCompraController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Policies/OrdenCompraPolicy.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/api.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/OrdenCompraReferenciaResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Middleware/RestrictLogistica.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-backend-tests",
+      "description": "Tests: cubrir el nuevo estado Demorado (unit del enum: transiciones validas/invalidas, no terminal), el comando compras:alertar-transito-prolongado transicionando OCs vencidas y respetando transito_prorrogado_hasta, el endpoint de reasignacion de tiempo de entrega (Demorado -> EnTransito) y el endpoint de depuracion de referencia (validacion de saldo, solo permitido en Demorado, autorizacion por rol). Ejecutar gates dirigidos (php artisan test + Pint).",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-demorado-backend-comando-alerta",
+        "oc-demorado-backend-reasignacion",
+        "oc-demorado-backend-depuracion"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "implementer_notes": "Hallazgo critico durante este nodo: los primeros tests del endpoint de depuracion fallaban con 403 (no 422/200 esperados) para el usuario Logistica. Debug con echo directo de $response->content() revelo la causa: App\\Http\\Middleware\\RestrictLogistica bloquea con 403 CUALQUIER ruta de OC para Logistica salvo un allowlist explicito por nombre de ruta -- el mensaje literal era 'El rol Logistica solo tiene acceso a ordenes de trabajo'. Esto invalido el diseño original de oc-demorado-backend-reasignacion (reutilizar el endpoint generico /transition), que se corrigio retroactivamente creando un endpoint dedicado /reasignar-transito (ver nota completa en ese nodo) y agregando ambas rutas nuevas ('ordenes-compra.reasignar-transito', 'ordenes-compra.referencias.depurar') al allowlist de RestrictLogistica. Tests agregados/editados: (1) tests/Feature/Console/AlertarTransitoProlongadoCommandTest.php (nuevo): respeta transito_prorrogado_hasta futuro (no renotifica, Notification::assertNothingSent), marca Demorado con prorroga vencida, idempotencia en segunda corrida (Notification::assertSentTimes 1 en ambas corridas), tambien aplica a OCs en estado legacy Despachada. (2) tests/Feature/Api/ProviderPortalOrdenCompraTest.php: extendido el test existente 'ejecuta comando de alerta...' con Notification::fake()+assertSentTo y assert de que el estado final es Demorado (antes solo verificaba el output de consola). (3) tests/Feature/Api/OrdenCompraTransitionTest.php: agregados 3 tests -- reasignar exige transito_prorrogado_hasta futuro y que la OC este Demorado (via el endpoint dedicado /reasignar-transito), Demorado limpia transito_prorrogado_hasta al ser re-marcado, y un test explicito que prueba que Logistica es bloqueada en /transition pero permitida en /reasignar-transito (documenta la interaccion con RestrictLogistica para el proximo que lea el archivo). (4) tests/Feature/Api/OrdenCompraDepuracionTest.php (nuevo, mirror de OrdenTrabajoDepuracionTest.php): permite depurar dentro del saldo, rechaza si la OC no esta Demorado, rechaza exceder saldo, acumula depuraciones sucesivas, exige motivo, restringe por rol, rechaza cruce de OC/referencia. Se renombro la funcion helper local depurar() a depurarOc() porque OrdenTrabajoDepuracionTest.php ya declara una funcion global depurar() en el mismo namespace de Pest (ambos archivos se cargan en el mismo proceso) -- una colision de nombres hubiera causado un fatal 'Cannot redeclare'. Gates: php -l y Pint --test OK en todos los archivos de test. Corrida final ampliada: php artisan test --filter 'OrdenCompra|OrdenTrabajo|Logistica|AlertarTransito' -> 127 tests (121 DEPR preexistente por APP_URL=null + 6 limpios, 442 assertions), 0 fallos -- incluye tests/Feature/Middleware/RestrictLogisticaTest.php preexistente ('bloquea a Logistica de transicionar el estado formal de una orden...'), que sigue pasando: la correccion no abrio el endpoint generico /transition para Logistica, solo las 2 rutas nuevas y especificas. No bloqueante para el Reviewer: no se agrego cobertura positiva de las 2 rutas nuevas dentro de RestrictLogisticaTest.php mismo (la cobertura existe pero vive en OrdenCompraTransitionTest.php/OrdenCompraDepuracionTest.php); podria moverse ahi por cohesion en un follow-up.",
+      "review_notes": "Aprobado. Cobertura solida: idempotencia, respeto de prorroga, notificacion real, ambos endpoints dedicados con Logistica probada explicitamente contra RestrictLogistica. Colision de nombre de funcion global depurar()/depurarOc() correctamente evitada (Pest carga todos los Feature en el mismo proceso). Re-ejecutada la suite completa del backend de forma independiente como Reviewer: 536 tests, 0 fallos, 1750 assertions -- sin regresion en ningun otro modulo del sistema.",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Console/AlertarTransitoProlongadoCommandTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenCompraTransitionTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenCompraDepuracionTest.php",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-frontend-modelo",
+      "description": "Frontend: agregar Demorado al mapeo de estados/colores/labels en orden-compra.model.ts (mismo patron que los demas estados de OrdenCompraEstado). Agregar transito_prorrogado_hasta a la interfaz OrdenCompra, y cantidad_depurada/motivo_depuracion/depurado_por/depurado_at a OrdenCompraReferencia.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [
+        "oc-demorado-backend-reasignacion",
+        "oc-demorado-backend-depuracion"
+      ],
+      "topic_key": "arch/heavy-data-mapping",
+      "implementer_notes": "orden-compra.model.ts: agregado 'Demorado' a OrdenCompraEstado, '#FF5722' a OrdenCompraColor, transito_prorrogado_hasta a OrdenCompra, cantidad_depurada/motivo_depuracion/depurado_por/depurado_at/depurado_por_usuario a OrdenCompraReferencia, mas 2 DTOs nuevos (ReasignarTransitoOrdenCompraDto, DepurarOrdenCompraReferenciaDto) siguiendo el patron de los DTOs existentes (TransitionOrdenCompraDto, ReceiveOrdenCompraDto). Se agrego ademas orden-compra.service.ts (no estaba en el plan original de Triage, pero es el mismo tipo de cambio -- contrato de datos con el backend): 2 metodos nuevos reasignarTransito()/depurarReferencia() apuntando a los 2 endpoints dedicados creados en el backend (PATCH .../reasignar-transito y PATCH .../referencias/{id}/depurar), mismo patron que transition()/receive() ya existentes. Gates: prettier --check OK en ambos archivos. ng build se ejecuta consolidado al cerrar oc-demorado-frontend-ui (mismo criterio que otras iniciativas del repo, evita builds redundantes por cada archivo de modelo).",
+      "review_notes": "Aprobado. DTOs y campos nuevos sin 'any', contrato alineado 1:1 con los Resources del backend (transito_prorrogado_hasta, cantidad_depurada, motivo_depuracion, depurado_por, depurado_at, depurado_por_usuario). Metodos de servicio retornan Observables tipados (ApiResponse<OrdenCompra>/ApiResponse<OrdenCompraReferencia>), sin EventEmitter. Gate: prettier --check OK.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/core/models/orden-compra.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/orden-compra.service.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-frontend-ui",
+      "description": "Frontend: en detail.component.ts, reemplazar el banner local tieneTransitoProlongado()/diasEnTransito() (umbral fijo hardcodeado en el cliente, detail.component.ts:894-907) por logica basada en el estado real Demorado que llega del backend. Cuando estado==='Demorado', mostrar el banner de alerta ya existente mas dos acciones para Logistica/Administrador/super_admin: 'Reasignar tiempo de entrega' (formulario/modal que llama al endpoint de oc-demorado-backend-reasignacion) y 'Depurar Faltante' por linea de referencia (modal que llama al endpoint de oc-demorado-backend-depuracion, mismo look and feel que el flujo de depuracion ya implementado en Ordenes de Trabajo). Actualizar tambien list.component.ts para que el semaforo/badge de estado reconozca Demorado.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-demorado-frontend-modelo"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "detail.component.ts: (1) ORDEN_COMPRA_TRANSICIONES (mapa duplicado del backend usado por puedePasarA/ordenCompraPuedeTransitar) actualizado con Demorado y sus transiciones, mas EnTransito/Despachada->Demorado -- se descubrio este mapa duplicado al revisar el archivo completo, no estaba mencionado en el plan de Triage pero es necesario tocarlo para que la UI sepa que Demorado es un estado valido. (2) ordenCompraPuedeRecibir/ordenCompraPuedeCancelar actualizados para incluir Demorado (el backend permite recibir o cancelar directamente desde Demorado, ej. si la mercancia llega mientras esta marcada demorada). (3) Banner eliminado tieneTransitoProlongado()/diasEnTransito()>=5 hardcodeado (dead code, ya no se usa - se elimino el signal computed) reemplazado por @if (ordenCompra()?.estado === 'Demorado'), reutilizando diasEnTransito() (aun util para mostrar dias transcurridos) para el titulo; boton 'Reasignar Tiempo de Entrega' visible solo si puedeReasignarTransito() (rol Logistica/Administrador/super_admin), si no tiene permiso muestra el tag informativo que ya existia. (4) Dialog 'Reasignar Tiempo de Entrega' con p-datepicker (minDate=manana, mismo patron que cotizaciones/edit) llamando a ordenCompraService.reasignarTransito() + recarga via loadOrdenCompraById (mismo patron que onRecepcionRegistrada(), no se uso NgRx action porque el endpoint es dedicado, no el /transition generico). (5) Columna condicional 'Depurar' en la tabla de referencias (solo si puedeDepurarReferencia(), boton visible solo si saldo_pendiente>0) + dialog 'Depurar Faltante' con p-inputNumber(max=saldo_pendiente) y motivo, llamando a ordenCompraService.depurarReferencia() + misma recarga. Colspan del footer de la tabla ajustado dinamicamente (8 o 9) segun si la columna Depurar esta visible. (6) getEstadoSeverity: agregado case Demorado -> danger. list.component.ts: ordenCompraEstadoSeverity (Demorado->danger), ordenCompraColorTooltip (#FF5722->Demorado), estadosOptions y coloresOptions del filtro, ambos actualizados con Demorado. Gates: prettier --write+--check OK (detail.component.ts requirio --write, solo diffs de formato), ng build --configuration development sin errores ni warnings nuevos, vitest detail.component.spec.ts (7/7) + list.component.spec.ts (4/4) sin regresion -- specs nuevos de estas 2 nuevas acciones se agregan en oc-demorado-frontend-tests.",
+      "review_notes": "Aprobado. Banner reemplazado correctamente por el estado real (elimina el umbral hardcodeado >=5 dias del cliente); ORDEN_COMPRA_TRANSICIONES (mapa duplicado del backend detectado por el Implementer) actualizado en simetria con el enum PHP. Dialogs siguen el patron ya establecido en el mismo archivo (p-dialog + pTemplate footer + p-divider). Checklist frontend: sin 'any' nuevo, sin EventEmitter, solo Tailwind (sin clases PrimeFlex), p-button en vez de button pButton, colspan dinamico correcto para la columna condicional 'Depurar'. Gates re-ejecutados: prettier --check OK, ng build --configuration development sin errores ni warnings nuevos.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-frontend-tests",
+      "description": "Tests: cubrir en detail.component.spec.ts y list.component.spec.ts la aparicion del estado/banner Demorado y las nuevas acciones (reasignar tiempo de entrega, depurar faltante), incluyendo el guard de permisos por rol. Ejecutar gates dirigidos (prettier, vitest, ng build).",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-demorado-frontend-ui"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "implementer_notes": "Siguiendo la convencion ya establecida en estos 2 archivos de spec (solo prueban las funciones puras exportadas a nivel de modulo, nunca instancian DetailComponent/ListComponent completos -- ambos tienen dependencias pesadas de NgRx/ActivatedRoute/Router sin mocks existentes en el repo para este caso), se agregaron: detail.component.spec.ts -- transiciones de/hacia Demorado (ordenCompraPuedeTransitar), recepcion/cancelacion directa desde Demorado (ordenCompraPuedeRecibir/Cancelar), y un test nuevo de formato de fecha. Para hacer esto ultimo testeable se extrajo el metodo privado toDateInputValue() de la clase a una funcion pura exportada a nivel de modulo ordenCompraFechaInput() (mismo patron que ordenCompraProgresoItem ya existente), actualizando confirmReasignarTransito() para llamarla. list.component.spec.ts -- Demorado en ordenCompraEstadoSeverity (danger) y ordenCompraColorTooltip (#FF5722). No bloqueante para el Reviewer: los metodos de instancia puedeReasignarTransito/confirmReasignarTransito/puedeDepurarReferencia/confirmDepurar (que si llaman a authService.hasAnyRole y ordenCompraService) no tienen cobertura directa por la misma razon (requeriria mockear Store+ActivatedRoute+Router+servicios, infraestructura de test que no existe hoy para DetailComponent); la logica de permisos que exponen es un unico `&&` trivial ya cubierto indirectamente por los tests de estado. Gates: prettier --check OK en los 6 archivos tocados de la iniciativa, ng build --configuration development sin errores ni warnings nuevos, npx vitest run suite COMPLETA: 24 archivos, 192/192 tests OK (incluye los 14 de detail+list) -- sin regresiones en ningun otro modulo del frontend.",
+      "review_notes": "Aprobado. Extraccion de toDateInputValue a funcion pura ordenCompraFechaInput() correcta y testeada (usa componentes locales de Date, sin riesgo de timezone). Se acepta como no bloqueante que los metodos de instancia (puedeReasignarTransito, confirmDepurar, etc.) no tengan test directo, por falta de infraestructura de mocking de Store/ActivatedRoute/Router para DetailComponent en este repo -- consistente con el alcance ya limitado del spec existente (solo funciones puras a nivel de modulo). Re-ejecutada la suite completa del frontend de forma independiente como Reviewer: 24 archivos, 192 tests, 0 fallos; ng build limpio.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.spec.ts",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-demorado-review",
+      "description": "Reviewer: validar el estado Demorado de punta a punta (comando cron transicionando OCs vencidas, reasignacion de tiempo, depuracion de faltantes con su autorizacion por rol), ejecutar los gates backend y frontend, y cerrar la iniciativa.",
+      "status": "done",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-demorado-backend-tests",
+        "oc-demorado-frontend-tests"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-api && ./vendor/bin/pint --test",
+        "cd heavy-api && ./vendor/bin/pest",
+        "cd heavy-api && php artisan scramble:analyze",
+        "cd heavy-front && npx prettier --check src/app/core/models/orden-compra.model.ts src/app/core/services/orden-compra.service.ts src/app/features/ordenes-compra/detail/detail.component.ts src/app/features/ordenes-compra/detail/detail.component.spec.ts src/app/features/ordenes-compra/list/list.component.ts src/app/features/ordenes-compra/list/list.component.spec.ts",
+        "cd heavy-front && npx vitest run",
+        "cd heavy-front && npx ng build --configuration development"
+      ],
+      "review_notes": "Iniciativa oc-demorado-* cerrada. Se auditaron los 8 nodos de implementacion (files verificados uno a uno contra la checklist de AGENTS.md, no solo confiando en los implementer_notes) mas los diffs completos via git diff. Todos aprobados y marcados done/validated. Resumen funcional: (1) nuevo estado OrdenCompraEstado::Demorado, disparado automaticamente por compras:alertar-transito-prolongado (antes solo un Log::warning informativo, ahora transiciona de verdad y notifica a Logistica via SystemNotification); (2) reasignar tiempo de entrega (Demorado->EnTransito con transito_prorrogado_hasta) via endpoint dedicado PATCH ordenes-compra/{id}/reasignar-transito; (3) depurar faltante definitivo por linea via PATCH ordenes-compra/{id}/referencias/{id}/depurar, mirror de OrdenTrabajoDepuracionService. Hallazgo critico validado: App\\Http\\Middleware\\RestrictLogistica bloqueaba con 403 el endpoint generico /transition para Logistica; el Implementer detecto esto durante los tests y pivoteo correctamente a 2 endpoints dedicados agregados al allowlist del middleware -- verificado con test explicito (Logistica bloqueada en /transition, permitida en /reasignar-transito) y confirmado que RestrictLogisticaTest.php preexistente sigue pasando sin regresion (el endpoint generico sigue bloqueado para Logistica). Checklist backend: Services con logica encapsulada y tipado estricto (OrdenCompraDepuracionService, OrdenCompraLifecycleService), Controllers con try-catch+abort donde corresponde (depurarReferencia) o delegando en el manejador global de ValidationException (reasignarTransito, consistente con transition() ya existente), Resources exponiendo solo los campos necesarios, migraciones idempotentes (guards hasColumn) sin conflictos de FK (depurado_por sin constraint FK, igual que su precedente identico en Ordenes de Trabajo, gap preexistente compartido no introducido aqui). Checklist frontend: sin 'any' nuevo, signals para todo el estado nuevo (8 signals nuevos en DetailComponent, todos con .set()), sin EventEmitter, Observables tipados en el service, solo Tailwind (sin PrimeFlex), p-button/p-inputNumber/p-datepicker con casing correcto, dialogs siguiendo el patron pTemplate=footer+p-divider ya establecido en el mismo archivo. Gates finales ejecutados por el Reviewer de forma independiente (no reutilizando corridas del Implementer): backend ./vendor/bin/pint --test (solo 5 archivos preexistentes ajenos fallan, no tocados por esta iniciativa, gap documentado en iniciativas previas del repo), ./vendor/bin/pest suite COMPLETA 536 tests / 0 fallos / 1750 assertions, php artisan scramble:analyze sin errores; frontend prettier --check limpio en los 6 archivos tocados, npx vitest run suite COMPLETA 24 archivos / 192 tests / 0 fallos, ng build --configuration development sin errores ni warnings nuevos. Ningun archivo de implementacion fue modificado por el Reviewer (solo .harness/dag.json). Deuda no bloqueante para follow-up futuro (no introducida por esta iniciativa, documentada por el Implementer y confirmada por el Reviewer): (a) la agregacion a nivel de OC completa (calcularEstadoRecepcion/actualizarEstadoPorRecepciones) no considera cantidad_depurada, por lo que una OC Demorada con todas sus lineas depuradas no se autocierra -- requiere decision de negocio explicita; (b) la cobertura de Logistica en los 2 endpoints nuevos vive en OrdenCompraTransitionTest.php/OrdenCompraDepuracionTest.php en vez de RestrictLogisticaTest.php, por cohesion podria moverse alli."
+    },
+    {
+      "id": "oc-proveedor-ocultar-cliente-triage",
+      "description": "Triage: Planificar los cambios para ocultar el nombre del cliente en el portal proveedor (tabla y backend) y definir el DAG.",
+      "status": "done",
+      "required_skill": "software_architect",
+      "depends_on": [],
+      "topic_key": "decision/oc-proveedor-ocultar-cliente",
+      "files": [
+        {
+          "path": ".harness/dag.json",
+          "status": "validated"
+        }
+      ]
+    },
+    {
+      "id": "oc-proveedor-ocultar-cliente-frontend",
+      "description": "Frontend UI: Remover la columna Cliente de la tabla de Ordenes de Compra del portal de proveedores (ordenes-compra-list.component.ts).",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "oc-proveedor-ocultar-cliente-triage"
+      ],
+      "topic_key": "arch/heavy-ui-patterns",
+      "implementer_notes": "Removida columna Cliente del header y de la fila de la tabla en ordenes-compra-list.component.ts. Prettier OK, vitest 2/2 OK, ng build exitoso.",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-proveedor-ocultar-cliente-backend",
+      "description": "Backend: Remover la relación 'tercero' (cliente) del eager loading en ProviderPortalController::purchaseOrders para no exponer datos del cliente en la API del portal proveedor.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [
+        "oc-proveedor-ocultar-cliente-triage"
+      ],
+      "topic_key": "arch/heavy-api-logic",
+      "implementer_notes": "Removido 'tercero' del eager loading en ProviderPortalController::purchaseOrders. php -l y Pint pasando.",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "implemented"
+        }
+      ]
+    },
+    {
+      "id": "oc-proveedor-ocultar-cliente-tests",
+      "description": "Tests: Verificar que el endpoint de purchaseOrders no exponga el cliente del pedido y validar la suite de pruebas del portal proveedor.",
+      "status": "in_progress",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-proveedor-ocultar-cliente-frontend",
+        "oc-proveedor-ocultar-cliente-backend"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [
+        {
+          "path": "heavy-api/tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
+          "status": "writing"
+        }
+      ]
+    },
+    {
+      "id": "oc-proveedor-ocultar-cliente-review",
+      "description": "Reviewer: Validar que no se muestre el cliente en la vista ni en el payload de la API para proveedores, ejecutar gates de frontend y backend, y cerrar el issue.",
+      "status": "pending",
+      "required_skill": "automated_tester",
+      "depends_on": [
+        "oc-proveedor-ocultar-cliente-tests"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "files": [],
+      "gates": [
+        "cd heavy-api && ./vendor/bin/pest tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
+        "cd heavy-front && npx vitest run src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.spec.ts",
+        "cd heavy-front && npx ng build --configuration development"
       ]
     }
   ]

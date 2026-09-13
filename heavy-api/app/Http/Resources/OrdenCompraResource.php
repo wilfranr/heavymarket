@@ -51,6 +51,7 @@ class OrdenCompraResource extends JsonResource
             'guia' => $this->guia,
             'transportadora_id' => $this->transportadora_id,
             'fecha_despacho' => $this->fecha_despacho?->toISOString(),
+            'transito_prorrogado_hasta' => $this->transito_prorrogado_hasta?->toISOString(),
             'fecha_aprobacion_gerencia' => $this->fecha_aprobacion_gerencia?->toISOString(),
             'fecha_pago' => $this->fecha_pago?->toISOString(),
             'fecha_resolucion_novedad' => $this->fecha_resolucion_novedad?->toISOString(),

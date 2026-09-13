@@ -192,6 +192,8 @@ Route::prefix('v1')->group(function () {
         Route::patch('ordenes-compra/{orden_compra}/transition', [OrdenCompraController::class, 'transition'])->name('ordenes-compra.transition');
         Route::post('ordenes-compra/{orden_compra}/upload-comprobante', [OrdenCompraController::class, 'uploadComprobantePago'])->name('ordenes-compra.upload-comprobante');
         Route::post('ordenes-compra/{orden_compra}/receive', [OrdenCompraController::class, 'receive'])->name('ordenes-compra.receive');
+        Route::patch('ordenes-compra/{orden_compra}/referencias/{orden_compra_referencia}/depurar', [OrdenCompraController::class, 'depurarReferencia'])->name('ordenes-compra.referencias.depurar');
+        Route::patch('ordenes-compra/{orden_compra}/reasignar-transito', [OrdenCompraController::class, 'reasignarTransito'])->name('ordenes-compra.reasignar-transito');
         Route::apiResource('ordenes-compra', OrdenCompraController::class)->parameters(['ordenes-compra' => 'orden_compra']);
         Route::apiResource('ordenes-trabajo', OrdenTrabajoController::class)->parameters(['ordenes-trabajo' => 'orden_trabajo']);
         Route::post('ordenes-trabajo/{orden_trabajo}/recepciones-compra', [OrdenTrabajoController::class, 'registrarRecepcionCompra'])->name('ordenes-trabajo.recepciones-compra.store');

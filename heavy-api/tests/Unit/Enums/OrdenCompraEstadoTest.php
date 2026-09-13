@@ -2,8 +2,8 @@
 
 use App\Enums\OrdenCompraEstado;
 
-it('define los 18 estados (10 nuevos del cliente y 8 de retrocompatibilidad) del ciclo de vida de orden de compra', function () {
-    expect(OrdenCompraEstado::cases())->toHaveCount(18)
+it('define los 19 estados (11 nuevos del cliente y 8 de retrocompatibilidad) del ciclo de vida de orden de compra', function () {
+    expect(OrdenCompraEstado::cases())->toHaveCount(19)
         ->and(OrdenCompraEstado::toArray())->toContain(
             'Pendiente de Revisión de Stock',
             'Stock Incompleto',
@@ -13,6 +13,7 @@ it('define los 18 estados (10 nuevos del cliente y 8 de retrocompatibilidad) del
             'Pagada / Lista para Despacho',
             'Cancelada - Reembolso Pendiente',
             'En Tránsito',
+            'Demorado',
             'Recepción con Novedades (Bloqueada)',
             'Entregada / Cerrada',
             'Generada',
@@ -38,8 +39,21 @@ it('permite transiciones válidas del nuevo flujo formal del cliente', function 
         ->and(OrdenCompraEstado::PagadaListaDespacho->puedeTransitarA(OrdenCompraEstado::CanceladaReembolsoPendiente))->toBeTrue()
         ->and(OrdenCompraEstado::EnTransito->puedeTransitarA(OrdenCompraEstado::EntregadaCerrada))->toBeTrue()
         ->and(OrdenCompraEstado::EnTransito->puedeTransitarA(OrdenCompraEstado::RecepcionConNovedades))->toBeTrue()
+        ->and(OrdenCompraEstado::EnTransito->puedeTransitarA(OrdenCompraEstado::Demorado))->toBeTrue()
         ->and(OrdenCompraEstado::RecepcionConNovedades->puedeTransitarA(OrdenCompraEstado::PagadaListaDespacho))->toBeTrue()
         ->and(OrdenCompraEstado::RecepcionConNovedades->puedeTransitarA(OrdenCompraEstado::EntregadaCerrada))->toBeTrue();
+});
+
+it('permite transiciones válidas desde y hacia el estado Demorado', function () {
+    expect(OrdenCompraEstado::Despachada->puedeTransitarA(OrdenCompraEstado::Demorado))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::EnTransito))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::RecepcionConNovedades))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::EntregadaCerrada))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::RecibidaParcialmente))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::Cancelada))->toBeTrue()
+        ->and(OrdenCompraEstado::Demorado->puedeTransitarA(OrdenCompraEstado::Generada))->toBeFalse()
+        ->and(OrdenCompraEstado::Demorado->esTerminal())->toBeFalse();
 });
 
 it('permite transiciones válidas del flujo retrocompatible', function () {

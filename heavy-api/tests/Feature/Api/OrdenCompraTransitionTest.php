@@ -252,6 +252,90 @@ it('valida que devolver por gerencia exige motivo_rechazo_gerencia obligatorio y
     $reenvio->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::EnEsperaAprobacionGerencial->value);
 });
 
+it('exige transito_prorrogado_hasta futuro para reasignar tiempo de entrega desde Demorado', function () {
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::Demorado->value,
+        'color' => OrdenCompraEstado::Demorado->color(),
+        'fecha_despacho' => now()->subDays(8),
+    ]);
+
+    // Falla sin transito_prorrogado_hasta
+    $fail = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/reasignar-transito", []);
+    $fail->assertStatus(422)->assertJsonValidationErrors('transito_prorrogado_hasta');
+
+    // Falla con una fecha en el pasado
+    $failPasado = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/reasignar-transito", [
+            'transito_prorrogado_hasta' => now()->subDay()->toDateString(),
+        ]);
+    $failPasado->assertStatus(422)->assertJsonValidationErrors('transito_prorrogado_hasta');
+
+    // Falla si la OC no esta Demorada
+    $ordenEnTransito = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::EnTransito->value,
+        'color' => OrdenCompraEstado::EnTransito->color(),
+    ]);
+    $failEstado = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$ordenEnTransito->id}/reasignar-transito", [
+            'transito_prorrogado_hasta' => now()->addDays(4)->toDateString(),
+        ]);
+    $failEstado->assertStatus(422);
+
+    // Exitoso con fecha futura
+    $nuevaFecha = now()->addDays(4)->toDateString();
+    $ok = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/reasignar-transito", [
+            'transito_prorrogado_hasta' => $nuevaFecha,
+        ]);
+    $ok->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::EnTransito->value);
+
+    $ordenFresca = $orden->fresh();
+    expect($ordenFresca->estado)->toBe(OrdenCompraEstado::EnTransito->value)
+        ->and($ordenFresca->transito_prorrogado_hasta->toDateString())->toBe($nuevaFecha);
+});
+
+it('permite a Logistica reasignar el tiempo de entrega pese a estar restringida al resto de rutas de OC', function () {
+    Role::firstOrCreate(['name' => 'Logistica', 'guard_name' => 'web']);
+    $logistica = createUserWithRole('Logistica');
+
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::Demorado->value,
+        'color' => OrdenCompraEstado::Demorado->color(),
+    ]);
+
+    // Bloqueada en el endpoint generico de transicion (RestrictLogistica)
+    $bloqueada = $this->actingAs($logistica, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::EnTransito->value,
+        ]);
+    $bloqueada->assertForbidden();
+
+    // Permitida en el endpoint dedicado de reasignacion
+    $permitida = $this->actingAs($logistica, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/reasignar-transito", [
+            'transito_prorrogado_hasta' => now()->addDays(3)->toDateString(),
+        ]);
+    $permitida->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::EnTransito->value);
+});
+
+it('limpia transito_prorrogado_hasta al volver a marcar la OC como Demorado', function () {
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::EnTransito->value,
+        'color' => OrdenCompraEstado::EnTransito->color(),
+        'fecha_despacho' => now()->subDays(3),
+        'transito_prorrogado_hasta' => now()->addDays(2),
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::Demorado->value,
+        ]);
+
+    $response->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::Demorado->value);
+    expect($orden->fresh()->transito_prorrogado_hasta)->toBeNull();
+});
+
 it('valida que transicionar a Pagada / Lista para Despacho exige comprobante_pago_ruta obligatorio', function () {
     $contabilidad = createUserWithRole('Contabilidad');
 

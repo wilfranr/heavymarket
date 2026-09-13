@@ -70,4 +70,22 @@ class OrdenCompraPolicy
     {
         return $user->hasAnyRole(['super_admin', 'Administrador']);
     }
+
+    /**
+     * Determine whether the user can depurar (marcar como faltante
+     * definitivo) un ítem de la orden de compra cuando está Demorada.
+     */
+    public function depurarReferencia(User $user, OrdenCompra $ordenCompra): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
+    }
+
+    /**
+     * Determine whether the user can reasignar (prorrogar) el tiempo de
+     * entrega de una orden de compra Demorada, devolviéndola a En Tránsito.
+     */
+    public function reasignarTransito(User $user, OrdenCompra $ordenCompra): bool
+    {
+        return $user->hasAnyRole(['super_admin', 'Administrador', 'Logistica']);
+    }
 }

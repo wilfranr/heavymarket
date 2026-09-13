@@ -41,6 +41,7 @@ export interface OrdenCompra {
     valor_descuento: number | null;
     guia: string | null;
     transportadora_id: number | null;
+    transito_prorrogado_hasta?: string | null;
     color: OrdenCompraColor | null;
     estado_recepcion: EstadoRecepcion | null;
     created_at: string;
@@ -93,6 +94,7 @@ export type OrdenCompraEstado =
     | 'Pagada / Lista para Despacho'
     | 'Cancelada - Reembolso Pendiente'
     | 'En Tránsito'
+    | 'Demorado'
     | 'Recepción con Novedades (Bloqueada)'
     | 'Entregada / Cerrada'
     | 'Generada'
@@ -107,7 +109,7 @@ export type OrdenCompraEstado =
 /**
  * Colores de estado de orden de compra
  */
-export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#9C27B0' | '#E91E63' | '#FF9800' | '#00ff00' | '#ff0000' | '#F44336' | '#FFC107' | '#00BCD4' | '#D32F2F';
+export type OrdenCompraColor = '#FFFF00' | '#2196F3' | '#8BC34A' | '#9C27B0' | '#E91E63' | '#FF9800' | '#00ff00' | '#ff0000' | '#F44336' | '#FFC107' | '#00BCD4' | '#D32F2F' | '#FF5722';
 
 export interface OrdenCompraUsuario {
     id: number;
@@ -205,6 +207,10 @@ export interface OrdenCompraReferencia {
     cantidad_original?: number | null;
     motivo_faltante?: string | null;
     cantidad_recibida: number;
+    cantidad_depurada?: number;
+    motivo_depuracion?: string | null;
+    depurado_por?: number | null;
+    depurado_at?: string | null;
     estado_item: EstadoRecepcion | null;
     saldo_pendiente: number;
     valor_unitario: number;
@@ -215,6 +221,7 @@ export interface OrdenCompraReferencia {
     // Relaciones
     orden_compra?: OrdenCompra;
     referencia?: OrdenCompraReferenciaDetalle | null;
+    depurado_por_usuario?: OrdenCompraUsuario | null;
 }
 
 /**
@@ -303,4 +310,13 @@ export interface ConfirmPurchaseOrderItemDto {
 export interface ConfirmPurchaseOrderDto {
     observaciones?: string;
     items?: ConfirmPurchaseOrderItemDto[];
+}
+
+export interface ReasignarTransitoOrdenCompraDto {
+    transito_prorrogado_hasta: string;
+}
+
+export interface DepurarOrdenCompraReferenciaDto {
+    cantidad_depurada: number;
+    motivo_depuracion: string;
 }

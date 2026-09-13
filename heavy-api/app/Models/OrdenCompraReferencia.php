@@ -22,6 +22,10 @@ class OrdenCompraReferencia extends Model
         'cantidad_recibida',
         'valor_unitario',
         'valor_total',
+        'cantidad_depurada',
+        'motivo_depuracion',
+        'depurado_por',
+        'depurado_at',
     ];
 
     protected $casts = [
@@ -30,6 +34,9 @@ class OrdenCompraReferencia extends Model
         'cantidad_recibida' => 'integer',
         'valor_unitario' => 'decimal:2',
         'valor_total' => 'decimal:2',
+        'cantidad_depurada' => 'integer',
+        'depurado_por' => 'integer',
+        'depurado_at' => 'datetime',
     ];
 
     public function ordenCompra(): BelongsTo
@@ -40,6 +47,11 @@ class OrdenCompraReferencia extends Model
     public function referencia(): BelongsTo
     {
         return $this->belongsTo(Referencia::class);
+    }
+
+    public function depuradoPor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'depurado_por');
     }
 
     public function recepcionDetalles(): HasMany

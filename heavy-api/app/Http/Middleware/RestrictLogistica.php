@@ -18,7 +18,10 @@ class RestrictLogistica
     /**
      * Rutas de Orden de Compra permitidas para Logística pese a no vivir bajo
      * /ordenes-trabajo: el flujo de recepción de mercancía se registra ahora
-     * directamente desde la OC (ver issues #147-#157).
+     * directamente desde la OC (ver issues #147-#157). Incluye tambien las
+     * acciones sobre una OC Demorada (reasignar tiempo de entrega, depurar
+     * un item faltante), que son parte del mismo flujo operativo de
+     * Logistica sobre mercancia en transito.
      *
      * @var array<int, string>
      */
@@ -26,6 +29,8 @@ class RestrictLogistica
         'ordenes-compra.recepciones.store',
         'ordenes-compra.recepciones.index',
         'recepciones-compra.imagenes.store',
+        'ordenes-compra.reasignar-transito',
+        'ordenes-compra.referencias.depurar',
     ];
 
     /**

@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { ApiResponse, ApiService, PaginatedResponse, QueryParams } from './api.service';
-import { CreateOrdenCompraDto, OrdenCompra, ReceiveOrdenCompraDto, TransitionOrdenCompraDto, UpdateOrdenCompraDto } from '../models/orden-compra.model';
+import { CreateOrdenCompraDto, DepurarOrdenCompraReferenciaDto, OrdenCompra, OrdenCompraReferencia, ReasignarTransitoOrdenCompraDto, ReceiveOrdenCompraDto, TransitionOrdenCompraDto, UpdateOrdenCompraDto } from '../models/orden-compra.model';
 import { RecepcionCompra, RecepcionCompraImagen, RecepcionCompraImagenTipo, RegistrarRecepcionPayload } from '../models/recepcion-compra.model';
 
 /**
@@ -56,6 +56,20 @@ export class OrdenCompraService extends ApiService {
      */
     receive(id: number, data: ReceiveOrdenCompraDto): Observable<ApiResponse<OrdenCompra>> {
         return this.post<ApiResponse<OrdenCompra>>(`${this.getBaseUrl()}/${id}/receive`, data);
+    }
+
+    /**
+     * Reasignar (prorrogar) el tiempo de entrega de una OC Demorada, que vuelve a En Tránsito
+     */
+    reasignarTransito(id: number, data: ReasignarTransitoOrdenCompraDto): Observable<ApiResponse<OrdenCompra>> {
+        return this.patch<ApiResponse<OrdenCompra>>(`${this.getBaseUrl()}/${id}/reasignar-transito`, data);
+    }
+
+    /**
+     * Depurar (marcar como faltante definitivo) una referencia de una OC Demorada
+     */
+    depurarReferencia(id: number, referenciaId: number, data: DepurarOrdenCompraReferenciaDto): Observable<ApiResponse<OrdenCompraReferencia>> {
+        return this.patch<ApiResponse<OrdenCompraReferencia>>(`${this.getBaseUrl()}/${id}/referencias/${referenciaId}/depurar`, data);
     }
 
     /**

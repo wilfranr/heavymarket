@@ -6,14 +6,18 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Enums\OrdenCompraEstado;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\DepurarOrdenCompraReferenciaRequest;
+use App\Http\Requests\ReasignarTransitoOrdenCompraRequest;
 use App\Http\Requests\ReceiveOrdenCompraRequest;
 use App\Http\Requests\StoreOrdenCompraRequest;
 use App\Http\Requests\TransitionOrdenCompraRequest;
 use App\Http\Requests\UpdateOrdenCompraRequest;
+use App\Http\Resources\OrdenCompraReferenciaResource;
 use App\Http\Resources\OrdenCompraResource;
 use App\Models\Empresa;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraReferencia;
+use App\Services\OrdenCompraDepuracionService;
 use App\Services\OrdenCompraLifecycleService;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
@@ -22,6 +26,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 /**
  * Controlador API para gestión de Órdenes de Compra
@@ -304,6 +310,63 @@ class OrdenCompraController extends Controller
         return response()->json([
             'data' => new OrdenCompraResource($ordenCompra),
             'message' => 'Recepción de la orden de compra registrada correctamente',
+        ]);
+    }
+
+    /**
+     * Reasignar (prorrogar) el tiempo de entrega de una OC Demorada, que
+     * vuelve a En Tránsito con una nueva fecha estimada.
+     */
+    public function reasignarTransito(
+        ReasignarTransitoOrdenCompraRequest $request,
+        OrdenCompra $orden_compra,
+        OrdenCompraLifecycleService $lifecycleService
+    ): JsonResponse {
+        if ($orden_compra->estado !== OrdenCompraEstado::Demorado->value) {
+            abort(422, 'Solo se puede reasignar el tiempo de entrega de una orden de compra Demorada.');
+        }
+
+        $ordenCompra = $lifecycleService->transicionar(
+            $orden_compra,
+            OrdenCompraEstado::EnTransito,
+            $request->validated(),
+            $request->user()
+        );
+
+        return response()->json([
+            'data' => new OrdenCompraResource($ordenCompra),
+            'message' => 'Tiempo de entrega reasignado correctamente',
+        ]);
+    }
+
+    /**
+     * Depurar (marcar como faltante definitivo) una referencia de la orden.
+     */
+    public function depurarReferencia(
+        DepurarOrdenCompraReferenciaRequest $request,
+        OrdenCompra $orden_compra,
+        OrdenCompraReferencia $orden_compra_referencia,
+        OrdenCompraDepuracionService $depuracionService
+    ): JsonResponse {
+        if ((int) $orden_compra_referencia->orden_compra_id !== (int) $orden_compra->id) {
+            abort(404, 'La referencia indicada no pertenece a esta orden de compra.');
+        }
+
+        try {
+            $referencia = $depuracionService->depurarFaltante(
+                $orden_compra_referencia,
+                $request->validated(),
+                $request->user()
+            );
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            abort(500, 'Error al depurar el ítem: '.$exception->getMessage());
+        }
+
+        return response()->json([
+            'data' => new OrdenCompraReferenciaResource($referencia->load(['referencia', 'depuradoPor'])),
+            'message' => 'Ítem depurado exitosamente',
         ]);
     }
 

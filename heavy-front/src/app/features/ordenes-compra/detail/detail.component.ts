@@ -14,6 +14,8 @@ import { TooltipModule } from 'primeng/tooltip';
 import { DialogModule } from 'primeng/dialog';
 import { TextareaModule } from 'primeng/textarea';
 import { InputTextModule } from 'primeng/inputtext';
+import { InputNumberModule } from 'primeng/inputnumber';
+import { DatePickerModule } from 'primeng/datepicker';
 import { ProgressBarModule } from 'primeng/progressbar';
 import { ImageModule } from 'primeng/image';
 import { loadOrdenCompraById, transitionOrdenCompra } from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
@@ -42,7 +44,8 @@ const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> 
     'Pendiente de Pago': ['Pagada / Lista para Despacho', 'Pagada', 'Cancelada'],
     'Pagada / Lista para Despacho': ['En Tránsito', 'Despachada', 'Cancelada - Reembolso Pendiente', 'Cancelada'],
     'Cancelada - Reembolso Pendiente': [],
-    'En Tránsito': ['Recepción con Novedades (Bloqueada)', 'Entregada / Cerrada', 'Recibida parcialmente', 'Recibida', 'Cancelada'],
+    'En Tránsito': ['Demorado', 'Recepción con Novedades (Bloqueada)', 'Entregada / Cerrada', 'Recibida parcialmente', 'Recibida', 'Cancelada'],
+    Demorado: ['En Tránsito', 'Recepción con Novedades (Bloqueada)', 'Entregada / Cerrada', 'Recibida parcialmente', 'Recibida', 'Cancelada'],
     'Recepción con Novedades (Bloqueada)': ['Pagada / Lista para Despacho', 'Entregada / Cerrada', 'Cancelada'],
     'Entregada / Cerrada': [],
 
@@ -51,7 +54,7 @@ const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> 
     Enviada: ['Confirmada', 'Stock Incompleto', 'En Espera de Aprobación Gerencial', 'Cancelada'],
     Confirmada: ['Pendiente de Pago', 'En Espera de Aprobación Gerencial', 'Pagada', 'Despachada', 'En Tránsito', 'Cancelada'],
     Pagada: ['En Tránsito', 'Despachada', 'Cancelada - Reembolso Pendiente', 'Cancelada'],
-    Despachada: ['En Tránsito', 'Recepción con Novedades (Bloqueada)', 'Entregada / Cerrada', 'Recibida parcialmente', 'Recibida', 'Cancelada'],
+    Despachada: ['En Tránsito', 'Demorado', 'Recepción con Novedades (Bloqueada)', 'Entregada / Cerrada', 'Recibida parcialmente', 'Recibida', 'Cancelada'],
     'Recibida parcialmente': ['Recibida', 'Entregada / Cerrada', 'Recepción con Novedades (Bloqueada)'],
     Recibida: [],
     Cancelada: []
@@ -63,7 +66,7 @@ export function ordenCompraPuedeTransitar(origen: OrdenCompraEstado | null, dest
 }
 
 export function ordenCompraPuedeRecibir(estado: OrdenCompraEstado | null): boolean {
-    return estado === 'Enviada' || estado === 'Confirmada' || estado === 'Despachada' || estado === 'En Tránsito' || estado === 'Recibida parcialmente' || estado === 'Recepción con Novedades (Bloqueada)';
+    return estado === 'Enviada' || estado === 'Confirmada' || estado === 'Despachada' || estado === 'En Tránsito' || estado === 'Demorado' || estado === 'Recibida parcialmente' || estado === 'Recepción con Novedades (Bloqueada)';
 }
 
 export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): boolean {
@@ -79,8 +82,16 @@ export function ordenCompraPuedeCancelar(estado: OrdenCompraEstado | null): bool
         estado === 'Confirmada' ||
         estado === 'Pagada' ||
         estado === 'Despachada' ||
-        estado === 'En Tránsito'
+        estado === 'En Tránsito' ||
+        estado === 'Demorado'
     );
+}
+
+export function ordenCompraFechaInput(fecha: Date): string {
+    const year = fecha.getFullYear();
+    const month = String(fecha.getMonth() + 1).padStart(2, '0');
+    const day = String(fecha.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'cantidad' | 'cantidad_recibida'>): number {
@@ -111,6 +122,8 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
         DialogModule,
         TextareaModule,
         InputTextModule,
+        InputNumberModule,
+        DatePickerModule,
         ProgressBarModule,
         ImageModule,
         TerceroFormComponent,
@@ -279,21 +292,25 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                             </div>
                         }
 
-                        @if (tieneTransitoProlongado()) {
-                            <div class="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-400 dark:border-orange-600 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 animate-pulse">
+                        @if (ordenCompra()?.estado === 'Demorado') {
+                            <div class="p-4 rounded-xl bg-orange-50 dark:bg-orange-950/40 border-2 border-orange-400 dark:border-orange-600 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div class="flex items-start gap-3">
                                     <i class="pi pi-exclamation-triangle text-orange-600 dark:text-orange-400 text-2xl mt-0.5"></i>
                                     <div>
-                                        <h4 class="m-0 text-orange-900 dark:text-orange-200 font-bold text-base">Alerta: Tránsito Prolongado ({{ diasEnTransito() }} días sin entrega)</h4>
+                                        <h4 class="m-0 text-orange-900 dark:text-orange-200 font-bold text-base">Demorado ({{ diasEnTransito() }} días sin entrega)</h4>
                                         <p class="m-0 text-xs sm:text-sm text-orange-800 dark:text-orange-300 mt-1">
-                                            Esta orden de compra fue despachada el {{ ordenCompra()?.fecha_despacho | date: 'mediumDate' }} y excede el umbral de 5 días. Por favor contacte a la transportadora
-                                            <strong>{{ ordenCompra()?.transportadora?.nombre || 'asignada' }}</strong> con el número de guía <strong>{{ ordenCompra()?.guia }}</strong
-                                            >.
+                                            Esta orden de compra fue despachada el {{ ordenCompra()?.fecha_despacho | date: 'mediumDate' }} y excedió el tiempo estimado de entrega. Contacte a la transportadora
+                                            <strong>{{ ordenCompra()?.transportadora?.nombre || 'asignada' }}</strong> con el número de guía <strong>{{ ordenCompra()?.guia }}</strong> y luego reasigne un nuevo tiempo de entrega o depure los ítems que
+                                            se consideren faltante definitivo.
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex flex-wrap gap-2 w-full sm:w-auto justify-end">
-                                    <p-tag severity="warn" value="Monitoreo Requerido" icon="pi pi-clock"></p-tag>
+                                    @if (puedeReasignarTransito()) {
+                                        <p-button label="Reasignar Tiempo de Entrega" icon="pi pi-calendar-plus" severity="warn" (onClick)="openReasignarTransitoDialog()"></p-button>
+                                    } @else {
+                                        <p-tag severity="warn" value="Monitoreo Requerido" icon="pi pi-clock"></p-tag>
+                                    }
                                 </div>
                             </div>
                         }
@@ -473,6 +490,9 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                                             <th class="text-color font-bold uppercase text-xs">Entrega</th>
                                             <th class="text-right text-color font-bold uppercase text-xs">Costo unitario</th>
                                             <th class="text-right text-color font-bold uppercase text-xs">Total</th>
+                                            @if (puedeDepurarReferencia()) {
+                                                <th class="text-center text-color font-bold uppercase text-xs">Depurar</th>
+                                            }
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="body" let-item>
@@ -512,6 +532,9 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                                                     <p-progressBar [value]="progresoRecepcionItem(item)" [showValue]="false" styleClass="h-1.5 flex-1"></p-progressBar>
                                                     <span class="text-xs text-color-secondary whitespace-nowrap">{{ item.cantidad_recibida || 0 }}/{{ item.cantidad }}</span>
                                                 </div>
+                                                @if (item.cantidad_depurada) {
+                                                    <span class="text-xs text-orange-600 dark:text-orange-400 font-medium" [pTooltip]="item.motivo_depuracion || ''"> <i class="pi pi-ban mr-1"></i>{{ item.cantidad_depurada }} depurado(s) </span>
+                                                }
                                             </td>
                                             <td class="text-color-secondary">
                                                 {{ item.referencia?.marca?.nombre || 'N/A' }}
@@ -523,11 +546,18 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                                             <td class="text-right font-bold text-color">
                                                 {{ item.valor_total || (item.valor_unitario || 0) * item.cantidad | currency: 'COP' : 'symbol' : '1.0-0' }}
                                             </td>
+                                            @if (puedeDepurarReferencia()) {
+                                                <td class="text-center">
+                                                    @if ((item.saldo_pendiente || 0) > 0) {
+                                                        <p-button icon="pi pi-ban" [rounded]="true" [text]="true" severity="danger" pTooltip="Depurar faltante" (onClick)="openDepurarDialog(item)"></p-button>
+                                                    }
+                                                </td>
+                                            }
                                         </tr>
                                     </ng-template>
                                     <ng-template pTemplate="footer">
                                         <tr class="dark:bg-surface-800/30">
-                                            <td colspan="8" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
+                                            <td [attr.colspan]="puedeDepurarReferencia() ? 9 : 8" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
                                             <td class="text-right border-0 pt-6">
                                                 <div class="px-3 py-2 text-base font-bold text-color">
                                                     {{ calcularSubtotalReferencias() | currency: 'COP' : 'symbol' : '1.0-0' }}
@@ -803,6 +833,54 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
             </ng-template>
         </p-dialog>
 
+        <p-dialog [visible]="reasignarTransitoDialogVisible()" (visibleChange)="reasignarTransitoDialogVisible.set($event)" header="Reasignar Tiempo de Entrega" [modal]="true" [style]="{ width: '28rem' }">
+            <div class="grid grid-cols-1 gap-4 pt-2">
+                <p class="text-sm text-color-secondary m-0">La orden volverá al estado <strong>"En Tránsito"</strong> con una nueva fecha estimada de entrega.</p>
+                <div class="field">
+                    <label for="nueva_fecha_entrega" class="block text-sm font-medium mb-2">Nueva fecha estimada de entrega <span class="text-red-500">*</span></label>
+                    <p-datepicker id="nueva_fecha_entrega" [ngModel]="nuevaFechaEntrega()" (ngModelChange)="nuevaFechaEntrega.set($event)" [minDate]="manana" dateFormat="yy-mm-dd" [showIcon]="true" styleClass="w-full"></p-datepicker>
+                </div>
+            </div>
+            <ng-template pTemplate="footer">
+                <p-divider />
+                <div class="flex justify-end gap-2">
+                    <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="reasignarTransitoDialogVisible.set(false)" />
+                    <p-button label="Reasignar" icon="pi pi-check" severity="warn" [disabled]="!nuevaFechaEntrega() || reasignandoTransito()" [loading]="reasignandoTransito()" (onClick)="confirmReasignarTransito()" />
+                </div>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [visible]="depurarDialogVisible()" (visibleChange)="depurarDialogVisible.set($event)" header="Depurar Faltante" [modal]="true" [style]="{ width: '32rem' }">
+            <div class="grid grid-cols-1 gap-4 pt-2">
+                <p class="text-sm text-color-secondary m-0">
+                    Se marcará como faltante definitivo (no se cobrará al cliente). Saldo pendiente de esta línea: <strong>{{ depurarReferenciaActual()?.saldo_pendiente || 0 }}</strong> unidad(es).
+                </p>
+                <div class="field">
+                    <label for="depurar_cantidad" class="block text-sm font-medium mb-2">Cantidad a depurar <span class="text-red-500">*</span></label>
+                    <p-inputNumber
+                        id="depurar_cantidad"
+                        [ngModel]="depurarCantidad()"
+                        (ngModelChange)="depurarCantidad.set($event)"
+                        [min]="1"
+                        [max]="depurarReferenciaActual()?.saldo_pendiente || 1"
+                        styleClass="w-full"
+                        inputStyleClass="w-full"
+                    ></p-inputNumber>
+                </div>
+                <div class="field">
+                    <label for="depurar_motivo" class="block text-sm font-medium mb-2">Motivo de la depuración <span class="text-red-500">*</span></label>
+                    <textarea pTextarea id="depurar_motivo" [ngModel]="depurarMotivo()" (ngModelChange)="depurarMotivo.set($event)" rows="3" class="w-full" placeholder="Ej: el proveedor confirmó pérdida definitiva de la mercancía"></textarea>
+                </div>
+            </div>
+            <ng-template pTemplate="footer">
+                <p-divider />
+                <div class="flex justify-end gap-2">
+                    <p-button label="Cancelar" icon="pi pi-times" severity="secondary" [text]="true" (onClick)="depurarDialogVisible.set(false)" />
+                    <p-button label="Depurar" icon="pi pi-ban" severity="danger" [disabled]="!depurarCantidad() || !depurarMotivo().trim() || depurando()" [loading]="depurando()" (onClick)="confirmDepurar()" />
+                </div>
+            </ng-template>
+        </p-dialog>
+
         <p-dialog
             [visible]="displayMaquinaDialog()"
             (visibleChange)="displayMaquinaDialog.set($event)"
@@ -881,6 +959,16 @@ export class DetailComponent implements OnInit, OnDestroy {
     selectedMaquina = signal<MaquinaDetalle | null>(null);
     selectedTercero = signal<PedidoTercero | null>(null);
     ultimaRecepcion = signal<RecepcionCompra | null>(null);
+    reasignarTransitoDialogVisible = signal(false);
+    nuevaFechaEntrega = signal<Date | null>(null);
+    reasignandoTransito = signal(false);
+    depurarDialogVisible = signal(false);
+    depurarReferenciaActual = signal<OrdenCompraReferencia | null>(null);
+    depurarCantidad = signal<number | null>(null);
+    depurarMotivo = signal('');
+    depurando = signal(false);
+
+    readonly manana = new Date(new Date().setDate(new Date().getDate() + 1));
 
     maquinaModelo = computed(() => this.selectedMaquina()?.modelo || 'Máquina');
     maquinaFabricante = computed(() => {
@@ -898,13 +986,6 @@ export class DetailComponent implements OnInit, OnDestroy {
         const hoy = new Date();
         const diffTime = hoy.getTime() - fechaDespacho.getTime();
         return Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
-    });
-
-    tieneTransitoProlongado = computed(() => {
-        const oc = this.ordenCompra();
-        const estado = oc?.estado;
-        const enTransito = estado === 'En Tránsito' || estado === 'Despachada';
-        return enTransito && this.diasEnTransito() >= 5;
     });
 
     ngOnInit(): void {
@@ -991,6 +1072,64 @@ export class DetailComponent implements OnInit, OnDestroy {
         this.recepcionModalVisible.set(false);
         this.store.dispatch(loadOrdenCompraById({ id: this.ordenCompraId() }));
         this.loadUltimaRecepcion(this.ordenCompraId());
+    }
+
+    puedeReasignarTransito(): boolean {
+        const tieneRol = this.authService.hasAnyRole(['Logistica', 'Administrador', 'super_admin']);
+        return tieneRol && this.ordenCompra()?.estado === 'Demorado';
+    }
+
+    openReasignarTransitoDialog(): void {
+        this.nuevaFechaEntrega.set(null);
+        this.reasignarTransitoDialogVisible.set(true);
+    }
+
+    confirmReasignarTransito(): void {
+        const fecha = this.nuevaFechaEntrega();
+        if (!fecha) return;
+
+        this.reasignandoTransito.set(true);
+        this.ordenCompraService.reasignarTransito(this.ordenCompraId(), { transito_prorrogado_hasta: ordenCompraFechaInput(fecha) }).subscribe({
+            next: () => {
+                this.reasignandoTransito.set(false);
+                this.reasignarTransitoDialogVisible.set(false);
+                this.store.dispatch(loadOrdenCompraById({ id: this.ordenCompraId() }));
+            },
+            error: () => {
+                this.reasignandoTransito.set(false);
+            }
+        });
+    }
+
+    puedeDepurarReferencia(): boolean {
+        const tieneRol = this.authService.hasAnyRole(['Logistica', 'Administrador', 'super_admin']);
+        return tieneRol && this.ordenCompra()?.estado === 'Demorado';
+    }
+
+    openDepurarDialog(item: OrdenCompraReferencia): void {
+        this.depurarReferenciaActual.set(item);
+        this.depurarCantidad.set(null);
+        this.depurarMotivo.set('');
+        this.depurarDialogVisible.set(true);
+    }
+
+    confirmDepurar(): void {
+        const item = this.depurarReferenciaActual();
+        const cantidad = this.depurarCantidad();
+        const motivo = this.depurarMotivo().trim();
+        if (!item || !cantidad || !motivo) return;
+
+        this.depurando.set(true);
+        this.ordenCompraService.depurarReferencia(this.ordenCompraId(), item.id, { cantidad_depurada: cantidad, motivo_depuracion: motivo }).subscribe({
+            next: () => {
+                this.depurando.set(false);
+                this.depurarDialogVisible.set(false);
+                this.store.dispatch(loadOrdenCompraById({ id: this.ordenCompraId() }));
+            },
+            error: () => {
+                this.depurando.set(false);
+            }
+        });
     }
 
     getRecepcionSeverity(estado: EstadoRecepcion): 'success' | 'info' | 'warn' {
@@ -1170,6 +1309,7 @@ export class DetailComponent implements OnInit, OnDestroy {
             case 'Devuelta por Gerencia':
             case 'Recepción con Novedades (Bloqueada)':
             case 'Cancelada - Reembolso Pendiente':
+            case 'Demorado':
             case 'Cancelada':
                 return 'danger';
             default:

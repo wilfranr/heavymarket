@@ -1,4 +1,4 @@
-import { ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTransitar, ordenCompraProgresoItem } from './detail.component';
+import { ordenCompraFechaInput, ordenCompraPuedeCancelar, ordenCompraPuedeRecibir, ordenCompraPuedeTransitar, ordenCompraProgresoItem } from './detail.component';
 import { OrdenCompraEstado } from '../../../core/models/orden-compra.model';
 
 describe('Detalle de orden de compra - reglas de estado', () => {
@@ -54,5 +54,24 @@ describe('Detalle de orden de compra - reglas de estado', () => {
         expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 0 })).toBe(0);
         expect(ordenCompraProgresoItem({ cantidad: 0, cantidad_recibida: 0 })).toBe(0);
         expect(ordenCompraProgresoItem({ cantidad: 10, cantidad_recibida: 15 })).toBe(100);
+    });
+
+    it('permite transicionar a y desde el estado Demorado', () => {
+        expect(ordenCompraPuedeTransitar('En Tránsito', 'Demorado')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Despachada', 'Demorado')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Demorado', 'En Tránsito')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Demorado', 'Recepción con Novedades (Bloqueada)')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Demorado', 'Cancelada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Demorado', 'Generada')).toBe(false);
+    });
+
+    it('permite recibir y cancelar directamente una orden Demorada', () => {
+        expect(ordenCompraPuedeRecibir('Demorado')).toBe(true);
+        expect(ordenCompraPuedeCancelar('Demorado')).toBe(true);
+    });
+
+    it('formatea una fecha como yyyy-mm-dd para el payload de reasignar tránsito', () => {
+        expect(ordenCompraFechaInput(new Date(2026, 8, 20))).toBe('2026-09-20');
+        expect(ordenCompraFechaInput(new Date(2027, 0, 5))).toBe('2027-01-05');
     });
 });

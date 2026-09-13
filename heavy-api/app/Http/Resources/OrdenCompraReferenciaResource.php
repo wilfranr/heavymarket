@@ -28,6 +28,7 @@ class OrdenCompraReferenciaResource extends JsonResource
     {
         $cantidad = (int) $this->cantidad;
         $cantidadRecibida = (int) $this->cantidad_recibida;
+        $cantidadDepurada = (int) $this->cantidad_depurada;
 
         return [
             'id' => $this->id,
@@ -37,8 +38,12 @@ class OrdenCompraReferenciaResource extends JsonResource
             'cantidad_original' => $this->cantidad_original,
             'motivo_faltante' => $this->motivo_faltante,
             'cantidad_recibida' => $this->cantidad_recibida,
-            'estado_item' => EstadoRecepcion::desdeCantidades($cantidadRecibida, $cantidad)->value,
-            'saldo_pendiente' => max($cantidad - $cantidadRecibida, 0),
+            'cantidad_depurada' => $this->cantidad_depurada,
+            'motivo_depuracion' => $this->motivo_depuracion,
+            'depurado_por' => $this->depurado_por,
+            'depurado_at' => $this->depurado_at?->toISOString(),
+            'estado_item' => EstadoRecepcion::desdeCantidades($cantidadRecibida + $cantidadDepurada, $cantidad)->value,
+            'saldo_pendiente' => max($cantidad - $cantidadRecibida - $cantidadDepurada, 0),
             'valor_unitario' => $this->valor_unitario,
             'valor_total' => $this->valor_total,
             'created_at' => $this->created_at?->toISOString(),
@@ -47,6 +52,7 @@ class OrdenCompraReferenciaResource extends JsonResource
             // Relaciones opcionales
             'orden_compra' => $this->whenLoaded('ordenCompra'),
             'referencia' => $this->whenLoaded('referencia'),
+            'depurado_por_usuario' => $this->whenLoaded('depuradoPor'),
         ];
     }
 }

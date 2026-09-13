@@ -10,6 +10,7 @@ describe('Listado de órdenes de compra - presentación de estados', () => {
         expect(ordenCompraEstadoSeverity('Despachada')).toBe('info');
         expect(ordenCompraEstadoSeverity('Recibida parcialmente')).toBe('warn');
         expect(ordenCompraEstadoSeverity('Cancelada')).toBe('danger');
+        expect(ordenCompraEstadoSeverity('Demorado')).toBe('danger');
     });
 
     it('mapea colores del semáforo a etiquetas legibles', () => {
@@ -19,6 +20,7 @@ describe('Listado de órdenes de compra - presentación de estados', () => {
         expect(ordenCompraColorTooltip('#9C27B0')).toBe('Pagada');
         expect(ordenCompraColorTooltip('#E91E63')).toBe('Despachada');
         expect(ordenCompraColorTooltip('#FF9800')).toBe('Recibida parcialmente');
+        expect(ordenCompraColorTooltip('#FF5722')).toBe('Demorado');
     });
 
     describe('ordenCompraRecepcionTooltip', () => {

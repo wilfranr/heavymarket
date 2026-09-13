@@ -6,7 +6,9 @@ use App\Models\OrdenCompraReferencia;
 use App\Models\Referencia;
 use App\Models\Tercero;
 use App\Models\Transportadora;
+use App\Notifications\SystemNotification;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
@@ -101,6 +103,7 @@ it('rechaza el registro de despacho si no se adjuntan fotos o guia', function ()
 });
 
 it('ejecuta comando de alerta de transito prolongado correctamente', function () {
+    Notification::fake();
     Role::firstOrCreate(['name' => 'Logistica', 'guard_name' => 'web']);
     $logisticaUser = createUserWithRole('Logistica');
 
@@ -125,6 +128,15 @@ it('ejecuta comando de alerta de transito prolongado correctamente', function ()
         ->expectsOutputToContain('Se encontraron 1 órdenes con tránsito prolongado')
         ->expectsOutputToContain('GUIA-PROLONGADA-99')
         ->assertSuccessful();
+
+    expect($ordenVencida->fresh()->estado)->toBe(OrdenCompraEstado::Demorado->value)
+        ->and($ordenReciente->fresh()->estado)->toBe(OrdenCompraEstado::EnTransito->value);
+
+    Notification::assertSentTo(
+        $logisticaUser,
+        SystemNotification::class,
+        fn (SystemNotification $notification) => $notification->data['orden_compra_id'] === $ordenVencida->id
+    );
 });
 
 it('permite al proveedor confirmar stock completo en orden pendiente de revision', function () {

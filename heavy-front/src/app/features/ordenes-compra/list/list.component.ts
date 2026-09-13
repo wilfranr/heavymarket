@@ -47,6 +47,7 @@ export function ordenCompraEstadoSeverity(estado: OrdenCompraEstado | null): 'su
         case 'Devuelta por Gerencia':
         case 'Recepción con Novedades (Bloqueada)':
         case 'Cancelada - Reembolso Pendiente':
+        case 'Demorado':
         case 'Cancelada':
             return 'danger';
         default:
@@ -81,6 +82,8 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
             return 'Despachada';
         case '#FF9800':
             return 'Recibida parcialmente';
+        case '#FF5722':
+            return 'Demorado';
         case '#00ff00':
             return 'Recibida';
         case '#ff0000':
@@ -208,6 +211,7 @@ export class ListComponent implements OnInit {
         { label: 'Pagada / Lista para Despacho', value: 'Pagada / Lista para Despacho' },
         { label: 'Cancelada - Reembolso Pendiente', value: 'Cancelada - Reembolso Pendiente' },
         { label: 'En Tránsito', value: 'En Tránsito' },
+        { label: 'Demorado', value: 'Demorado' },
         { label: 'Recepción con Novedades (Bloqueada)', value: 'Recepción con Novedades (Bloqueada)' },
         { label: 'Entregada / Cerrada', value: 'Entregada / Cerrada' },
         { label: 'Generada', value: 'Generada' },
@@ -227,6 +231,7 @@ export class ListComponent implements OnInit {
         { label: 'Púrpura (Pagada)', value: '#9C27B0' },
         { label: 'Rosa (Despachada)', value: '#E91E63' },
         { label: 'Naranja (Recibida parcialmente)', value: '#FF9800' },
+        { label: 'Naranja oscuro (Demorado)', value: '#FF5722' },
         { label: 'Verde (Recibida)', value: '#00ff00' },
         { label: 'Rojo (Cancelada)', value: '#ff0000' }
     ];

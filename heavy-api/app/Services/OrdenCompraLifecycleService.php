@@ -134,6 +134,14 @@ class OrdenCompraLifecycleService
                 $updates['fecha_despacho'] = $ordenCompra->fecha_despacho ?? now();
             }
 
+            if ($destino === OrdenCompraEstado::EnTransito && isset($data['transito_prorrogado_hasta'])) {
+                $updates['transito_prorrogado_hasta'] = $data['transito_prorrogado_hasta'];
+            }
+
+            if ($destino === OrdenCompraEstado::Demorado) {
+                $updates['transito_prorrogado_hasta'] = null;
+            }
+
             if (array_key_exists('observaciones', $data)) {
                 $updates['observaciones'] = $data['observaciones'];
             }
