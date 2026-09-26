@@ -155,6 +155,8 @@ class OrdenTrabajoController extends Controller
             'direccion',
             'user',
             'referencias.pedidoReferencia.proveedores.marca',
+            'referencias.pedidoReferencia.referencia.articulo',
+            'referencias.pedidoReferencia.referencia.marca',
             'recepcionesCompra.detalles.ordenCompraDetalle.referencia',
             'recepcionesCompra.ordenCompra.proveedor',
             'recepcionesCompra.recibidoPor',

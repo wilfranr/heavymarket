@@ -489,10 +489,14 @@ Rechazo: '.$motivo) : $cotizacion->observaciones,
     {
         $ordenTrabajo->load([
             'tercero.city',
-            'pedido.maquina',
+            'pedido.tercero.city',
+            'pedido.maquina.listas',
+            'pedido.maquina.fabricante',
             'cotizacion.user',
             'transportadora',
             'direccion',
+            'referencias.pedidoReferencia.marca',
+            'referencias.pedidoReferencia.proveedores.marca',
             'referencias.pedidoReferencia.referencia.articulo',
             'referencias.pedidoReferencia.referencia.marca',
         ]);

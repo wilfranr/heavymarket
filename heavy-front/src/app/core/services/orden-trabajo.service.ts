@@ -44,6 +44,15 @@ export class OrdenTrabajoService extends ApiService {
     }
 
     /**
+     * Descargar el PDF de la orden de trabajo
+     */
+    downloadPDF(id: number): Observable<Blob> {
+        return this.http.get(this.formatUrl(`${this.getBaseUrl()}/${id}/download-pdf`), {
+            responseType: 'blob'
+        });
+    }
+
+    /**
      * Registrar recepción física de repuestos desde la orden de trabajo
      */
     registrarRecepcionCompra(id: number, data: CreateRecepcionCompraDto): Observable<{ data: RecepcionCompra }> {

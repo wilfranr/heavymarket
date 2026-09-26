@@ -14,6 +14,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { TextareaModule } from 'primeng/textarea';
 import { ProgressBarModule } from 'primeng/progressbar';
+import { TooltipModule } from 'primeng/tooltip';
+import { MessageService } from 'primeng/api';
 import { loadOrdenTrabajoById, registrarRecepcionCompra, depurarReferencia } from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
 import * as OrdenesTrabajoSelectors from '../../../store/ordenes-trabajo/selectors/ordenes-trabajo.selectors';
 import { OrdenTrabajo, OrdenTrabajoReferencia, OrdenTrabajoCompletitud } from '../../../core/models/orden-trabajo.model';
@@ -35,7 +37,25 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
 @Component({
     selector: 'app-orden-trabajo-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, TableModule, DialogModule, InputNumberModule, InputTextModule, SelectModule, TextareaModule, ProgressBarModule, TerceroFormComponent, MaquinaDetailComponent],
+    imports: [
+        CommonModule,
+        FormsModule,
+        RouterModule,
+        CardModule,
+        ButtonModule,
+        TagModule,
+        DividerModule,
+        TableModule,
+        DialogModule,
+        InputNumberModule,
+        InputTextModule,
+        SelectModule,
+        TextareaModule,
+        ProgressBarModule,
+        TooltipModule,
+        TerceroFormComponent,
+        MaquinaDetailComponent
+    ],
     template: `
         <div class="px-4 py-8 md:px-6 lg:px-8">
             @if (loading()) {
@@ -66,7 +86,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                         @if (puedeRegistrarRecepcion()) {
                             <p-button label="Registrar recepción" icon="pi pi-box" (onClick)="openRecepcionDialog()"></p-button>
                         }
-                        <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="danger" [outlined]="true" (onClick)="downloadPDF()"></p-button>
+                        <p-button label="Descargar PDF" icon="pi pi-file-pdf" severity="danger" [outlined]="true" [loading]="downloadingPdf()" (onClick)="downloadPDF()"></p-button>
                         <p-button label="Editar" icon="pi pi-pencil" severity="warn" [outlined]="true" (onClick)="onEdit()"></p-button>
                     </div>
                 </div>
@@ -263,13 +283,13 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                 <td class="font-bold text-yellow-600 dark:text-yellow-500">
                                                     <div class="flex items-center">
                                                         <span>{{ item.referencia?.referencia || item.pedido_referencia?.referencia?.referencia || 'N/A' }}</span>
-                                                        <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [title]="'Información de referencia'"></i>
+                                                        <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [pTooltip]="getReferenciaTooltip(item)" tooltipPosition="top" tooltipStyleClass="whitespace-pre-line"></i>
                                                     </div>
                                                 </td>
                                                 <td class="text-color-secondary">
                                                     <div class="flex items-center">
-                                                        <span>{{ item.pedido_referencia?.definicion || item.referencia?.descripcion || 'N/A' }}</span>
-                                                        <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [title]="'Definición del artículo'"></i>
+                                                        <span class="line-clamp-2">{{ getDescripcion(item) }}</span>
+                                                        <i class="pi pi-question-circle text-[10px] text-muted-color ml-1 cursor-pointer" [pTooltip]="getDescripcionTooltip(item)" tooltipPosition="top" tooltipStyleClass="whitespace-pre-line"></i>
                                                     </div>
                                                 </td>
                                                 <td class="text-center font-semibold text-color">{{ item.cantidad_cotizada }}</td>
@@ -283,7 +303,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                     {{ getProveedorAprobado(item)?.valor_unidad || 0 | currency: 'COP' : 'symbol' : '1.0-0' }}
                                                 </td>
                                                 <td class="text-right font-bold text-color">
-                                                    {{ ((getProveedorAprobado(item)?.valor_unidad || 0) * item.cantidad_cotizada) | currency: 'COP' : 'symbol' : '1.0-0' }}
+                                                    {{ (getProveedorAprobado(item)?.valor_unidad || 0) * item.cantidad_cotizada | currency: 'COP' : 'symbol' : '1.0-0' }}
                                                 </td>
                                                 <td class="text-center">
                                                     @if (puedeDepurar() && item.cantidad_recibida + item.cantidad_depurada < item.cantidad_cotizada) {
@@ -460,9 +480,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
         <!-- Modal de depuración de faltantes -->
         <p-dialog header="Depurar faltante" [modal]="true" [visible]="depurarDialogVisible()" (visibleChange)="depurarDialogVisible.set($event)" [style]="{ width: 'min(520px, 95vw)' }">
             <div class="flex flex-col gap-4">
-                <p class="text-color-secondary m-0">
-                    Estos ítems serán excluidos de la orden final y no se le cobrarán al cliente. ¿Desea continuar?
-                </p>
+                <p class="text-color-secondary m-0">Estos ítems serán excluidos de la orden final y no se le cobrarán al cliente. ¿Desea continuar?</p>
                 <div class="field">
                     <label class="block mb-2 text-sm font-medium text-color">Cantidad a depurar</label>
                     <p-inputnumber [ngModel]="cantidadDepurar()" (ngModelChange)="cantidadDepurar.set($event)" [min]="1" [max]="saldoPendienteDepurar()" [showButtons]="true" styleClass="w-full"></p-inputnumber>
@@ -512,10 +530,12 @@ export class DetailComponent implements OnInit {
     private readonly ordenCompraService = inject(OrdenCompraService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly ordenTrabajoService = inject(OrdenTrabajoService);
+    private readonly messageService = inject(MessageService);
 
     ordenTrabajo = signal<OrdenTrabajo | null>(null);
     ordenTrabajoId = signal<number>(0);
     loading = signal(true);
+    downloadingPdf = signal(false);
     ordenesCompra = signal<OrdenCompra[]>([]);
     recepcionDialogVisible = signal(false);
     selectedOrdenCompraId = signal<number | null>(null);
@@ -747,7 +767,57 @@ export class DetailComponent implements OnInit {
     }
 
     downloadPDF(): void {
-        window.open(`/api/v1/ordenes-trabajo/${this.ordenTrabajoId()}/download-pdf`, '_blank');
+        const id = this.ordenTrabajoId();
+        if (!id) return;
+
+        this.downloadingPdf.set(true);
+        this.ordenTrabajoService.downloadPDF(id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `OT-${id}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.downloadingPdf.set(false);
+            },
+            error: () => {
+                this.downloadingPdf.set(false);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el PDF' });
+            }
+        });
+    }
+
+    /**
+     * Descripción del artículo asociado a la referencia: descripción específica,
+     * luego definición, y como último recurso la definición del pedido.
+     */
+    getDescripcion(item: OrdenTrabajoReferencia): string {
+        const articulo = item.pedido_referencia?.referencia?.articulo;
+        return articulo?.descripcionEspecifica || articulo?.definicion || item.pedido_referencia?.definicion || 'N/A';
+    }
+
+    getDescripcionTooltip(item: OrdenTrabajoReferencia): string {
+        const articulo = item.pedido_referencia?.referencia?.articulo;
+        if (!articulo) {
+            return `Referencia sin artículo asociado\n${item.pedido_referencia?.definicion || ''}`.trim();
+        }
+
+        const lineas = [`Artículo: ${articulo.definicion || 'N/A'}`];
+        if (articulo.descripcionEspecifica) {
+            lineas.push(`Descripción: ${articulo.descripcionEspecifica}`);
+        }
+        return lineas.join('\n');
+    }
+
+    getReferenciaTooltip(item: OrdenTrabajoReferencia): string {
+        const referencia = item.pedido_referencia?.referencia ?? item.referencia;
+        const marca = referencia?.marca?.nombre || item.pedido_referencia?.marca?.nombre;
+        const lineas = [`Referencia: ${referencia?.referencia || 'N/A'}`, `Marca: ${marca || 'N/A'}`, `Artículo: ${referencia?.articulo?.definicion || 'Sin artículo asociado'}`];
+        if (referencia?.comentario) {
+            lineas.push(`Comentario: ${referencia.comentario}`);
+        }
+        return lineas.join('\n');
     }
 
     getEstadoSeverity(estado: string): 'success' | 'info' | 'warn' | 'danger' | 'secondary' {
@@ -803,13 +873,13 @@ export class DetailComponent implements OnInit {
         if (recibida > 0 && recibida < cant) {
             return 'bg-orange-500'; // Llegó parcialmente (Naranja)
         }
-        
+
         // Si no llegó nada (recibida == 0)
         const estadoOT = this.ordenTrabajo()?.estado;
         if (estadoOT === 'Completado' || estadoOT === 'Cancelado' || item.estado === 'Cancelado' || item.estado === 'No Llegó') {
             return 'bg-red-500'; // No llegó
         }
-        
+
         return 'bg-yellow-500'; // Pendiente de recibido - En tránsito
     }
 
@@ -837,7 +907,7 @@ export class DetailComponent implements OnInit {
         return referencias.reduce((acc, item) => {
             const prov = this.getProveedorAprobado(item);
             const precio = prov?.valor_unitario || prov?.valor_unidad || 0;
-            return acc + (precio * item.cantidad_cotizada);
+            return acc + precio * item.cantidad_cotizada;
         }, 0);
     }
 

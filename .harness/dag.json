@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-26T10:00:00-05:00",
-  "issue": "dev-usuario-gerente-comercial",
+  "last_updated": "2026-09-26T15:00:00-05:00",
+  "issue": "fix-ot-detalle-descripcion-tooltips-pdf",
   "description": "Crear un usuario Gerente Comercial y habilitarle acceso exclusivo al modulo de Ordenes de Compra para analizar la fase de aprobacion gerencial.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "oc-asesor-espera-revision-gerencia",
+  "previous_issue": "dev-usuario-gerente-comercial",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -2998,6 +2998,50 @@
       ],
       "reviewed_by": "Reviewer",
       "review_notes": "Aprobado. La descripcion se calcula una vez en normalizarFila (descripcionEspecifica, luego definicion del articulo, luego definicion del pedido), no en la plantilla. Tipos estrictos, sin any. Gates: vitest 192/192; ng build OK; prettier OK. ng lint no tiene target. Revision hecha por el mismo agente que implemento."
+    },
+    {
+      "id": "fix-ot-detalle-descripcion-tooltips-pdf",
+      "description": "OT detalle: (1) la columna Descripcion debe mostrar la descripcion del articulo asociado a la referencia (descripcionEspecifica, luego definicion, luego pedido_referencia.definicion), en pantalla y en el PDF; (2) activar los tooltips de Referencia y Descripcion (hoy son title estaticos); (3) arreglar la descarga del PDF: window.open a /api/v1/... no usa la URL base del API ni el token Bearer; descargar como blob via OrdenTrabajoService. (4) Rediseñar el PDF de OT con el mismo diseño del PDF de OC (marco, encabezado con logo, bloque cliente + fechas, tabla Referencia/Item con marca, sin precios, y firmas).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "bugfix/ot-detalle-descripcion-tooltips-pdf",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/OrdenTrabajoController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/resources/views/pdf/orden_trabajo.blade.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/services/orden-trabajo.service.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenTrabajoPdfTest.php",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && vendor/bin/pint --test app/Http/Controllers/Api/V1/OrdenTrabajoController.php app/Services/CotizacionService.php tests/Feature/Api/OrdenTrabajoPdfTest.php",
+        "cd heavy-api && php -d memory_limit=1G vendor/bin/pest",
+        "cd heavy-api && php artisan scramble:analyze",
+        "cd heavy-front && npx prettier --check src/app/features/ordenes-trabajo/detail/detail.component.ts src/app/core/services/orden-trabajo.service.ts",
+        "cd heavy-front && npx vitest run",
+        "cd heavy-front && npx ng build"
+      ],
+      "review_notes": "Implementer: detalle OT carga pedidoReferencia.referencia.articulo/marca; columna Descripcion = articulo.descripcionEspecifica || definicion || pedido_referencia.definicion (pantalla y PDF). Tooltips: faltaba TooltipModule en el componente (tampoco funcionaban los de maquina/cliente); ahora pTooltip con referencia/marca/articulo/comentario y articulo/descripcion. PDF: se descarga como blob via OrdenTrabajoService.downloadPDF (antes window.open a /api/v1 sin base URL ni token). Extra: el PDF mostraba CANTIDAD vacia ($item->cantidad no existe) -> cantidad_cotizada; mb_strtoupper en descripcion. prettier --write aplicado al componente (deuda de formato preexistente). Gates: pint OK, pest --filter=OrdenTrabajo OK (141 asserts), vitest 192/192, ng build OK (warning preexistente pusher-js). Pendiente: el detalle de OC tiene los mismos tooltips title estaticos (fuera de alcance). Iteracion 2: el usuario rechazo el diseño del PDF de OT; se reescribio orden_trabajo.blade.php sobre la base de orden_compra.blade.php (mismo CSS/logo/estructura). Tabla: Referencia/Item (descripcion del articulo + ref + marca), Entrega, Precio, Cantidad, Total; precio = proveedor aprobado (estado 1) o el primero, igual que la pantalla; Subtotal/IVA 19%/Total cuadran con COT-24. Bloque extra Pedido/Cotizacion/Transportadora/Maquina (tipo via maquina.listas, antes mostraba el id 1964)/Observaciones. NIT ahora usa numero_documento (antes N/A). Se eliminan el footer de marcas y el texto legal. generarPDFOrdenTrabajo carga proveedores.marca, maquina.listas/fabricante, pedido.tercero.city. Iteracion 3: el usuario indico que la OT no lleva precios; se quitaron del PDF las columnas Precio/Total y el bloque Subtotal/IVA/Total. Tabla final: Referencia/Item, Entrega, Cantidad. REVIEWER (rechazo, vuelve a in_progress): Gates en verde: pest 550/550 (1812 asserts, memory_limit=1G), scramble:analyze OK, pint OK, prettier OK, vitest 192/192, ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Frontend validado: descarga blob via servicio (Observable), signals, pTooltip con escape por defecto, sin any nuevo. Motivo del rechazo: falta cobertura de pruebas. orden_trabajo.blade.php se reescribio completo y no hay ningun test que lo renderice; tampoco hay test de que show() exponga pedido_referencia.referencia.articulo. Requerido: crear tests/Feature/Api/OrdenTrabajoPdfTest.php con (1) GET /api/v1/ordenes-trabajo/{id}/download-pdf responde 200 y application/pdf para una OT con referencia con articulo y proveedor aprobado, y tambien para una referencia sin articulo ni proveedores (fallbacks null-safe); (2) el HTML renderizado de la vista pdf.orden_trabajo (view()->render) contiene la descripcionEspecifica del articulo y NO contiene precios ni Subtotal/IVA; (3) GET show incluye data.referencias.0.pedido_referencia.referencia.articulo. Observaciones no bloqueantes: el nodo toca 5 archivos (umbral de atomicidad >3), aceptado porque es un fix cohesivo iterado con el usuario; downloadPDF de OrdenTrabajoController no llama authorize() y expone e->getMessage() en el 500 (deuda preexistente, fuera de alcance); el detalle en pantalla sigue mostrando precios, pendiente de confirmacion del cliente. Implementer: se creo tests/Feature/Api/OrdenTrabajoPdfTest.php con las 4 pruebas pedidas por el Reviewer (descarga PDF con referencia completa, descarga PDF con referencia sin articulo/proveedores, contenido del HTML renderizado sin precios/Subtotal/IVA con la descripcion en mayusculas, y show() exponiendo pedido_referencia.referencia.articulo.descripcionEspecifica). Gates: pint OK (tras corregir fully_qualified_strict_types/ordered_imports), pest 554/554 (1825 asserts, memory_limit=1G), scramble:analyze OK. Frontend sin cambios en esta iteracion. REVIEWER (aprobado): tests/Feature/Api/OrdenTrabajoPdfTest.php cubre los 4 casos pedidos: PDF con referencia completa (200/application-pdf), PDF con referencia sin articulo ni proveedores (fallbacks null-safe, 200/application-pdf), contenido del HTML sin Precio/Subtotal/IVA con la descripcion en mayusculas, y show() exponiendo pedido_referencia.referencia.articulo.descripcionEspecifica. Verificado que la palabra Precio/Subtotal/IVA no aparece en ningun texto renderizado del template (la unica mencion de precios en el archivo es un comentario dentro de un bloque @php, que Blade no emite al HTML). Gates globales: pest 554/554 (1825 asserts, memory_limit=1G); scramble:analyze OK; pint OK en los 3 archivos objetivo; prettier OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Checklist: Controllers usa try-catch+response json de error (patron existente, no abort, aceptado por ser igual al resto del controller); Resources exponen solo pedido_referencia/referencia/articulo cargados explicitamente; Service con tipado de retorno; Frontend sin any nuevo, Observable tipado a Blob, signals para estado de carga. Nodo cerrado.",
+      "reviewed_by": "Reviewer"
     }
   ]
 }
