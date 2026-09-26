@@ -145,6 +145,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/submit-cost', [ProviderPortalController::class, 'submitCost']);
             Route::get('/purchase-orders', [ProviderPortalController::class, 'purchaseOrders']);
             Route::post('/purchase-orders/{id}/confirm', [ProviderPortalController::class, 'confirmPurchaseOrder']);
+            Route::get('/purchase-orders/{id}/download-pdf', [ProviderPortalController::class, 'downloadPDF']);
             Route::match(['put', 'post'], '/purchase-orders/{id}/dispatch', [ProviderPortalController::class, 'updateDispatch']);
         });
 

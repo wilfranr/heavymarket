@@ -56,4 +56,13 @@ export class ProviderPortalService extends ApiService {
     ): Observable<ApiResponse<OrdenCompra>> {
         return this.post<ApiResponse<OrdenCompra>>(`${this.endpoint}/purchase-orders/${ocId}/dispatch`, data);
     }
+
+    /**
+     * Descargar PDF de la Orden de Compra desde el portal de proveedores
+     */
+    downloadPDF(ocId: number): Observable<Blob> {
+        return this.http.get(this.formatUrl(`${this.endpoint}/purchase-orders/${ocId}/download-pdf`), {
+            responseType: 'blob'
+        });
+    }
 }

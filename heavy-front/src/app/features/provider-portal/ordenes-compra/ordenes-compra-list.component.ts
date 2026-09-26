@@ -11,6 +11,7 @@ import { TagModule } from 'primeng/tag';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
 import { TextareaModule } from 'primeng/textarea';
+import { TooltipModule } from 'primeng/tooltip';
 import { ProviderPortalService } from '../services/provider-portal.service';
 import { TransportadoraService } from '../../../core/services/transportadora.service';
 import { OrdenCompra, OrdenCompraEstado, ConfirmPurchaseOrderItemDto } from '../../../core/models/orden-compra.model';
@@ -45,7 +46,7 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
 @Component({
     selector: 'app-ordenes-compra-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule, SelectModule, TagModule, ToastModule, InputTextModule, InputNumberModule, TextareaModule],
+    imports: [CommonModule, FormsModule, ReactiveFormsModule, TableModule, ButtonModule, DialogModule, SelectModule, TagModule, ToastModule, InputTextModule, InputNumberModule, TextareaModule, TooltipModule],
     providers: [MessageService],
     template: `
         <div class="card">
@@ -74,6 +75,7 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                         </td>
                         <td class="text-center">
                             <div class="flex justify-center gap-2">
+                                <p-button icon="pi pi-file-pdf" [outlined]="true" severity="danger" (onClick)="onDownloadPDF(oc)" pTooltip="Descargar PDF" [loading]="downloadingPdfId() === oc.id"></p-button>
                                 <p-button icon="pi pi-eye" [outlined]="true" severity="secondary" (onClick)="viewDetails(oc)" pTooltip="Ver Detalles"></p-button>
                                 @if (proveedorPuedeConfirmarOrden(oc.estado)) {
                                     <p-button icon="pi pi-check" severity="success" (onClick)="openConfirmDialog(oc)" label="Confirmar Stock"></p-button>
@@ -158,7 +160,7 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
         </p-dialog>
 
         <!-- Diálogo de Detalles -->
-        <p-dialog [visible]="displayDetails()" (visibleChange)="displayDetails.set($event)" [header]="'Detalle de Orden OC-' + selectedOrder()?.id" [modal]="true" [style]="{ width: '700px' }">
+        <p-dialog [visible]="displayDetails()" (visibleChange)="displayDetails.set($event)" [header]="'Detalle de Orden OC-' + selectedOrder()?.id" [modal]="true" [style]="{ width: '850px' }">
             @if (selectedOrder(); as order) {
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div class="field">
@@ -182,10 +184,12 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                 </div>
 
                 <h4 class="mt-4 pb-2" style="border-bottom: 1px solid var(--p-surface-border)">Referencias Solicitadas</h4>
-                <p-table [value]="order.detalles || []" styleClass="p-datatable-sm">
+                <p-table [value]="order.detalles || []" styleClass="p-datatable-sm" responsiveLayout="scroll">
                     <ng-template pTemplate="header">
                         <tr>
                             <th>Referencia</th>
+                            <th>Descripción</th>
+                            <th>Marca</th>
                             <th class="text-center">Cantidad</th>
                             <th class="text-right">Costo unitario</th>
                             <th class="text-right">Subtotal</th>
@@ -193,16 +197,19 @@ export function proveedorPuedeDespacharOrden(estado: OrdenCompraEstado | null): 
                     </ng-template>
                     <ng-template pTemplate="body" let-det>
                         <tr>
-                            <td>{{ det.referencia?.referencia || 'N/A' }}</td>
+                            <td class="font-semibold">{{ det.referencia?.referencia || 'N/A' }}</td>
+                            <td>{{ det.referencia?.articulo?.definicion || det.referencia?.articulo_definicion || det.referencia?.descripcion || 'N/A' }}</td>
+                            <td>{{ det.referencia?.marca?.nombre || 'N/A' }}</td>
                             <td class="text-center">{{ det.cantidad }}</td>
                             <td class="text-right">{{ det.valor_unitario | currency }}</td>
-                            <td class="text-right">{{ det.valor_total | currency }}</td>
+                            <td class="text-right font-medium">{{ det.valor_total | currency }}</td>
                         </tr>
                     </ng-template>
                 </p-table>
 
-                <div class="flex justify-end mt-4">
-                    <p-button label="Cerrar" (onClick)="displayDetails.set(false)"></p-button>
+                <div class="flex justify-between items-center mt-5">
+                    <p-button icon="pi pi-file-pdf" label="Descargar PDF" severity="danger" [outlined]="true" [loading]="downloadingPdfId() === order.id" (onClick)="onDownloadPDF(order)"></p-button>
+                    <p-button label="Cerrar" severity="secondary" [outlined]="true" (onClick)="displayDetails.set(false)"></p-button>
                 </div>
             }
         </p-dialog>
@@ -281,6 +288,7 @@ export class OrdenesCompraListComponent implements OnInit {
     orders = signal<OrdenCompra[]>([]);
     loading = signal(false);
     submitting = signal(false);
+    downloadingPdfId = signal<number | null>(null);
     displayDetails = signal(false);
     displayDispatch = signal(false);
     displayConfirm = signal(false);
@@ -496,5 +504,25 @@ export class OrdenesCompraListComponent implements OnInit {
             default:
                 return 'secondary';
         }
+    }
+
+    onDownloadPDF(oc: OrdenCompra): void {
+        this.downloadingPdfId.set(oc.id);
+        this.providerPortalService.downloadPDF(oc.id).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `OC-${oc.id}.pdf`;
+                a.click();
+                window.URL.revokeObjectURL(url);
+                this.downloadingPdfId.set(null);
+                this.messageService.add({ severity: 'success', summary: 'Éxito', detail: 'PDF descargado exitosamente.' });
+            },
+            error: () => {
+                this.downloadingPdfId.set(null);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo descargar el PDF de la orden de compra.' });
+            }
+        });
     }
 }

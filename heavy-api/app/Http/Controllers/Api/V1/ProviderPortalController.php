@@ -9,6 +9,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProviderCosteoRequest;
 use App\Http\Resources\OrdenCompraResource;
 use App\Http\Resources\PedidoReferenciaResource;
+use App\Models\Empresa;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraDespachoArchivo;
 use App\Models\OrdenCompraReferencia;
@@ -16,8 +17,10 @@ use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
 use App\Models\Tercero;
 use App\Services\OrdenCompraLifecycleService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -256,7 +259,7 @@ class ProviderPortalController extends Controller
 
         $query = OrdenCompra::query()
             ->where('proveedor_id', $tercero->id)
-            ->with(['transportadora', 'detalles.referencia'])
+            ->with(['transportadora', 'detalles.referencia.articulo', 'detalles.referencia.marca'])
             ->orderBy('created_at', 'desc');
 
         $perPage = (int) $request->input('per_page', 15);
@@ -420,5 +423,41 @@ class ProviderPortalController extends Controller
             'message' => 'Despacho registrado correctamente.',
             'data' => new OrdenCompraResource($ordenCompra->load(['transportadora', 'archivosDespacho'])),
         ]);
+    }
+
+    /**
+     * Generar y descargar PDF de la orden de compra desde el portal de proveedores
+     */
+    public function downloadPDF(Request $request, int $id): Response
+    {
+        $user = $request->user();
+        $tercero = Tercero::where('user_id', $user->id)->first();
+
+        if (! $tercero) {
+            abort(404, 'Perfil no encontrado');
+        }
+
+        $ordenCompra = OrdenCompra::where('id', $id)
+            ->where('proveedor_id', $tercero->id)
+            ->firstOrFail();
+
+        $ordenCompra->load([
+            'proveedor.city',
+            'tercero',
+            'pedido',
+            'cotizacion',
+            'transportadora',
+            'detalles.referencia.marca',
+            'detalles.referencia.articulo',
+        ]);
+
+        $empresa = Empresa::where('siglas', 'HM')->first() ?? Empresa::where('id', 2)->first() ?? Empresa::first();
+
+        $pdf = Pdf::loadView('pdf.orden_compra', [
+            'ordenCompra' => $ordenCompra,
+            'empresa' => $empresa,
+        ]);
+
+        return $pdf->download("OC-{$ordenCompra->id}.pdf");
     }
 }

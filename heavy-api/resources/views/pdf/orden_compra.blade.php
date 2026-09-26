@@ -11,84 +11,112 @@
             font-family: 'Helvetica', 'Arial', sans-serif;
             margin: 0;
             padding: 0;
-            color: #1a1a1a;
-            font-size: 10px;
-            line-height: 1.2;
+            color: #1e293b;
+            font-size: 9px;
+            line-height: 1.3;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
 
+        .page-frame {
+            border: 1.4px solid #1e293b;
+            padding: 14px 16px 16px 16px;
+        }
+
         /* Header */
         .header-table {
-            margin-bottom: 5px;
+            margin-bottom: 14px;
+        }
+        .header-table td {
+            vertical-align: middle;
         }
         .logo-cell {
-            width: 35%;
+            width: 26%;
+            text-align: left;
         }
         .logo {
             max-width: 140px;
+            max-height: 65px;
+            object-fit: contain;
+        }
+        .company-cell {
+            width: 48%;
+            text-align: center;
         }
         .company-name {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
-            color: #334155;
-            margin: 0;
+            color: #0f172a;
+            margin: 0 0 3px 0;
         }
         .company-info {
-            font-size: 8px;
-            color: #4b5563;
+            font-size: 8.5px;
+            color: #334155;
+            line-height: 1.5;
         }
-        .doc-info {
+        .doc-cell {
+            width: 26%;
             text-align: right;
         }
         .doc-type {
-            font-size: 9px;
-            color: #4b5563;
-        }
-        .doc-number {
-            font-size: 14px;
-            font-weight: bold;
+            font-size: 10px;
             color: #334155;
         }
-
-        /* Supplier Info Block */
-        .supplier-block {
-            margin-top: 10px;
-            margin-bottom: 10px;
+        .doc-number {
+            font-size: 15px;
+            font-weight: bold;
+            color: #0f172a;
         }
-        .supplier-table {
-            width: 100%;
+
+        /* Supplier + dates block */
+        .supplier-outer {
+            margin-bottom: 12px;
+        }
+        .supplier-outer td {
+            vertical-align: top;
+            padding: 0;
+        }
+        .supplier-left {
+            width: 78%;
+        }
+        .supplier-right {
+            width: 22%;
+        }
+        .supplier-table, .dates-table {
             border: 1px solid #334155;
         }
-        .supplier-table td {
-            padding: 3px 6px;
+        .supplier-table td, .dates-table td {
             border: 0.5px solid #94a3b8;
-            font-size: 9px;
+            padding: 4px 6px;
+            font-size: 8.5px;
+            height: 12px;
         }
         .label-cell {
             background-color: #e5e7eb;
             font-weight: bold;
-            width: 80px;
+            width: 90px;
             text-transform: uppercase;
-            font-size: 8px;
+            font-size: 7.5px;
+            color: #334155;
         }
         .value-cell {
             background-color: #ffffff;
+            color: #0f172a;
         }
-        .dates-cell {
+        .dates-label {
             background-color: #e5e7eb;
             font-weight: bold;
-            font-size: 8px;
             text-transform: uppercase;
-            padding: 3px 6px;
-            border: 0.5px solid #94a3b8;
+            font-size: 7.5px;
+            color: #334155;
+            text-align: center;
         }
-        .date-value {
-            padding: 3px 6px;
-            border: 0.5px solid #94a3b8;
-            font-size: 9px;
+        .dates-value {
+            background-color: #ffffff;
+            color: #0f172a;
+            text-align: center;
         }
 
         /* Items Table */
@@ -97,22 +125,19 @@
             border: 1px solid #334155;
         }
         .items-table th {
-            background-color: #475569;
-            color: white;
+            background-color: #f1f5f9;
+            color: #1e293b;
             padding: 6px;
             font-weight: bold;
-            text-transform: uppercase;
             font-size: 9px;
-            border: 0.5px solid #1e293b;
+            border: 0.5px solid #cbd5e1;
         }
         .items-table td {
             padding: 6px;
-            border: 0.5px solid #94a3b8;
-            font-size: 9px;
+            border: 0.5px solid #cbd5e1;
+            font-size: 8.5px;
             height: 15px;
-        }
-        .alt-row {
-            background-color: #f8fafc;
+            color: #1e293b;
         }
         .text-right { text-align: right; }
         .text-center { text-align: center; }
@@ -122,214 +147,229 @@
             margin-top: 15px;
         }
         .totals-container {
-            width: 40%;
+            width: 45%;
             float: right;
         }
         .totals-table td {
             padding: 4px 8px;
-            font-size: 10px;
+            font-size: 9px;
         }
         .totals-label {
-            text-align: right;
+            text-align: left;
             font-weight: bold;
-            text-transform: uppercase;
-            padding-right: 15px;
+            color: #334155;
         }
-        .total-highlight {
-            background-color: #e5e7eb;
-            font-weight: bold;
-            font-size: 12px;
-        }
-        .total-highlight-value {
-            background-color: #475569;
-            color: white;
-            font-weight: bold;
-            font-size: 12px;
+        .totals-value {
             text-align: right;
-            padding: 6px 10px;
+            color: #0f172a;
+        }
+        .total-row td {
+            background-color: #9aa5b1;
+            color: #0f172a;
+            font-weight: bold;
+            font-size: 10.5px;
+            padding: 6px 8px;
         }
 
         /* Signatures */
         .signatures {
             clear: both;
-            margin-top: 40px;
+            margin-top: 45px;
             width: 100%;
         }
-        .signature-block {
-            width: 45%;
-            display: inline-block;
-            vertical-align: top;
-        }
-        .signature-label {
-            font-size: 8px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 20px;
+        .signatures-table td {
+            width: 50%;
+            padding: 0 10px;
         }
         .signature-line {
             border-top: 1px solid #334155;
-            padding-top: 3px;
-            font-size: 7px;
-            color: #6b7280;
+            margin-bottom: 4px;
         }
-
-        /* Footer */
-        .footer {
-            position: fixed;
-            bottom: 0;
-            width: 100%;
+        .signature-caption {
+            font-size: 7.5px;
+            font-weight: bold;
             text-align: center;
-            padding-bottom: 10px;
-        }
-        .brand-text {
-            font-weight: 900;
-            font-style: italic;
-            font-size: 12px;
             color: #334155;
-            margin: 0 10px;
-            display: inline-block;
+            text-transform: uppercase;
         }
     </style>
 </head>
 <body>
-    <!-- Header -->
-    <table class="header-table">
-        <tr>
-            <td class="logo-cell">
-                @if(isset($empresa->logo_dark))
-                    <img src="{{ public_path('storage/' . $empresa->logo_dark) }}" class="logo">
-                @elseif(isset($empresa->logo_light))
-                    <img src="{{ public_path('storage/' . $empresa->logo_light) }}" class="logo">
-                @else
-                    <div style="background: #334155; color: white; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; display: inline-block;">HEAVYMARKET</div>
-                @endif
-                <p class="company-name">{{ strtoupper($empresa->nombre ?? 'HEAVYMARKET S.A.S') }}</p>
-                <div class="company-info">
-                    NIT: {{ $empresa->nit ?? '901881206' }}<br>
-                    {{ $empresa->direccion ?? 'CRA 79 C 40 A 72' }}<br>
-                    TEL: {{ $empresa->telefono ?? '+573046292601' }}<br>
-                    {{ $empresa->email ?? 'contabilidad@heavymarket.net' }}
-                </div>
-            </td>
-            <td class="doc-info">
-                <div class="doc-type">Orden de compra</div>
-                <div class="doc-number">No. {{ $ordenCompra->id }}</div>
-            </td>
-        </tr>
-    </table>
 
-    <!-- Supplier Info -->
-    <div class="supplier-block">
-        <table class="supplier-table">
+    @php
+        $logoPath = null;
+        if (file_exists(public_path('images/logo-pdf.png'))) {
+            $logoPath = public_path('images/logo-pdf.png');
+        } elseif (isset($empresa->logo_dark) && file_exists(public_path('storage/' . $empresa->logo_dark))) {
+            $logoPath = public_path('storage/' . $empresa->logo_dark);
+        } elseif (isset($empresa->logo_light) && file_exists(public_path('storage/' . $empresa->logo_light))) {
+            $logoPath = public_path('storage/' . $empresa->logo_light);
+        } elseif (file_exists(public_path('images/logo.png'))) {
+            $logoPath = public_path('images/logo.png');
+        }
+    @endphp
+
+    <div class="page-frame">
+
+        <!-- Header -->
+        <table class="header-table">
             <tr>
-                <td class="label-cell">SEÑOR(ES)</td>
-                <td class="value-cell" colspan="3">{{ strtoupper($ordenCompra->proveedor->razon_social ?? $ordenCompra->proveedor->nombre ?? 'N/A') }}</td>
-                <td class="dates-cell">FECHA DE EXPEDICIÓN</td>
-                <td class="date-value">{{ $ordenCompra->fecha_expedicion ? $ordenCompra->fecha_expedicion->format('d/m/Y') : date('d/m/Y') }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">DIRECCIÓN</td>
-                <td class="value-cell">{{ strtoupper($ordenCompra->proveedor->direccion ?? 'N/A') }}</td>
-                <td class="label-cell">CIUDAD</td>
-                <td class="value-cell">{{ strtoupper($ordenCompra->proveedor->city->name ?? 'BOGOTÁ') }}</td>
-                <td class="dates-cell">FECHA DE ENTREGA</td>
-                <td class="date-value">{{ $ordenCompra->fecha_entrega ? $ordenCompra->fecha_entrega->format('d/m/Y') : 'Por definir' }}</td>
-            </tr>
-            <tr>
-                <td class="label-cell">TELÉFONO</td>
-                <td class="value-cell">{{ $ordenCompra->proveedor->telefono ?? $ordenCompra->proveedor->celular ?? 'N/A' }}</td>
-                <td class="label-cell">NIT</td>
-                <td class="value-cell">{{ $ordenCompra->proveedor->documento ?? 'N/A' }}</td>
-                <td class="dates-cell"></td>
-                <td class="date-value"></td>
+                <td class="logo-cell">
+                    @if($logoPath)
+                        <img src="{{ $logoPath }}" class="logo">
+                    @else
+                        <div style="background: #334155; color: white; padding: 10px; border-radius: 5px; font-weight: bold; text-align: center; display: inline-block;">HEAVYMARKET</div>
+                    @endif
+                </td>
+                <td class="company-cell">
+                    <div class="company-name">{{ strtoupper($empresa->nombre ?? 'HEAVYMARKET S.A.S') }}</div>
+                    <div class="company-info">
+                        {{ $empresa->nit ?? '901881206' }}<br>
+                        {{ $empresa->direccion ?? 'CRA 79 C 40 A 72' }}<br>
+                        {{ $empresa->telefono ?? '+573046292601' }}<br>
+                        {{ $empresa->email ?? 'contabilidad@heavymarket.net' }}
+                    </div>
+                </td>
+                <td class="doc-cell">
+                    <div class="doc-type">Orden de compra</div>
+                    <div class="doc-number">No. {{ $ordenCompra->id }}</div>
+                </td>
             </tr>
         </table>
-    </div>
 
-    <!-- Items Table -->
-    <table class="items-table">
-        <thead>
+        <!-- Supplier Info + Fechas -->
+        <table class="supplier-outer">
             <tr>
-                <th style="width: 50%;">Referencia / Ítem</th>
-                <th style="width: 15%;" class="text-right">Costo unitario</th>
-                <th style="width: 10%;" class="text-center">Cantidad</th>
-                <th style="width: 10%;" class="text-right">Descuento</th>
-                <th style="width: 15%;" class="text-right">Total</th>
+                <td class="supplier-left">
+                    <table class="supplier-table">
+                        <tr>
+                            <td class="label-cell">SEÑOR(ES)</td>
+                            <td class="value-cell" colspan="3">{{ strtoupper($ordenCompra->proveedor->razon_social ?? $ordenCompra->proveedor->nombre ?? 'N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">DIRECCIÓN</td>
+                            <td class="value-cell" colspan="3">{{ strtoupper($ordenCompra->proveedor->direccion ?? 'N/A') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">CIUDAD</td>
+                            <td class="value-cell" colspan="3">{{ strtoupper($ordenCompra->proveedor->city->name ?? 'BOGOTÁ') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="label-cell">TELÉFONO</td>
+                            <td class="value-cell">{{ $ordenCompra->proveedor->telefono ?? $ordenCompra->proveedor->celular ?? 'N/A' }}</td>
+                            <td class="label-cell" style="width: 50px;">NIT</td>
+                            <td class="value-cell">{{ $ordenCompra->proveedor->numero_documento ?? $ordenCompra->proveedor->documento ?? 'N/A' }}</td>
+                        </tr>
+                    </table>
+                </td>
+                <td class="supplier-right">
+                    <table class="dates-table">
+                        <tr>
+                            <td class="dates-label">FECHA DE EXPEDICIÓN</td>
+                        </tr>
+                        <tr>
+                            <td class="dates-value">{{ $ordenCompra->fecha_expedicion ? $ordenCompra->fecha_expedicion->format('d/m/Y') : date('d/m/Y') }}</td>
+                        </tr>
+                        <tr>
+                            <td class="dates-label">FECHA DE ENTREGA</td>
+                        </tr>
+                        <tr>
+                            <td class="dates-value">{{ $ordenCompra->fecha_entrega ? $ordenCompra->fecha_entrega->format('d/m/Y') : 'Por definir' }}</td>
+                        </tr>
+                    </table>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @php $itemCount = 0; @endphp
-            @foreach($ordenCompra->detalles as $detalle)
-                <tr class="{{ $itemCount % 2 == 0 ? '' : 'alt-row' }}">
-                    <td>
-                        {{ $detalle->referencia->referencia ?? 'N/A' }}
-                        @if($detalle->referencia->articulo)
-                            / {{ strtoupper($detalle->referencia->articulo->definicion ?? '') }}
-                        @endif
-                    </td>
-                    <td class="text-right">$ {{ number_format($detalle->valor_unitario ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-center">{{ $detalle->cantidad ?? 1 }}</td>
-                    <td class="text-right">0.00%</td>
-                    <td class="text-right">$ {{ number_format($detalle->valor_total ?? 0, 0, ',', '.') }}</td>
-                </tr>
-                @php $itemCount++; @endphp
-            @endforeach
-            @for($i = $itemCount; $i < 8; $i++)
-                <tr class="{{ $i % 2 == 0 ? '' : 'alt-row' }}">
-                    <td>&nbsp;</td>
-                    <td class="text-right"></td>
-                    <td class="text-center"></td>
-                    <td class="text-right"></td>
-                    <td class="text-right"></td>
-                </tr>
-            @endfor
-        </tbody>
-    </table>
+        </table>
 
-    <!-- Totals -->
-    <div class="bottom-section">
-        <div class="totals-container">
-            <table class="totals-table">
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
                 <tr>
-                    <td class="totals-label">Subtotal</td>
-                    <td class="text-right">$ {{ number_format($ordenCompra->valor_total ?? 0, 0, ',', '.') }}</td>
+                    <th style="width: 44%; text-align: left;">Referencia / Ítem</th>
+                    <th style="width: 16%;" class="text-right">Precio</th>
+                    <th style="width: 12%;" class="text-center">Cantidad</th>
+                    <th style="width: 13%;" class="text-center">Descuento</th>
+                    <th style="width: 15%;" class="text-right">Total</th>
                 </tr>
+            </thead>
+            <tbody>
+                @php $itemCount = 0; @endphp
+                @foreach($ordenCompra->detalles as $detalle)
+                    <tr>
+                        <td>
+                            @php
+                                $definicion = $detalle->referencia->articulo->definicion ?? $detalle->referencia->articulo_definicion ?? $detalle->referencia->descripcion ?? null;
+                                $refCodigo = $detalle->referencia->referencia ?? 'N/A';
+                                $marcaNombre = $detalle->referencia->marca->nombre ?? null;
+                            @endphp
+                            @if($definicion)
+                                {{ strtoupper($definicion) }} ({{ $refCodigo }})
+                            @else
+                                {{ $refCodigo }}
+                            @endif
+                            @if($marcaNombre)
+                                <span style="color: #64748b; font-size: 7.5px;"> - Marca: {{ strtoupper($marcaNombre) }}</span>
+                            @endif
+                        </td>
+                        <td class="text-right">$ {{ number_format($detalle->valor_unitario ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $detalle->cantidad ?? 1 }}</td>
+                        <td class="text-center">0.00%</td>
+                        <td class="text-right">$ {{ number_format($detalle->valor_total ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                    @php $itemCount++; @endphp
+                @endforeach
+                @for($i = $itemCount; $i < 8; $i++)
+                    <tr>
+                        <td>&nbsp;</td>
+                        <td class="text-right"></td>
+                        <td class="text-center"></td>
+                        <td class="text-center"></td>
+                        <td class="text-right"></td>
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="bottom-section">
+            <div class="totals-container">
+                <table class="totals-table">
+                    <tr>
+                        <td class="totals-label">Subtotal</td>
+                        <td class="totals-value">$ {{ number_format($ordenCompra->valor_total ?? 0, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">Descuento</td>
+                        <td class="totals-value">$ 0</td>
+                    </tr>
+                    <tr>
+                        <td class="totals-label">IVA (19.00%)</td>
+                        <td class="totals-value">$ {{ number_format(($ordenCompra->valor_total ?? 0) * 0.19, 0, ',', '.') }}</td>
+                    </tr>
+                    <tr class="total-row">
+                        <td class="totals-label">Total</td>
+                        <td class="totals-value">$ {{ number_format(($ordenCompra->valor_total ?? 0) * 1.19, 0, ',', '.') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <!-- Signatures -->
+        <div class="signatures">
+            <table class="signatures-table">
                 <tr>
-                    <td class="totals-label">Descuento</td>
-                    <td class="text-right">$ 0</td>
-                </tr>
-                <tr>
-                    <td class="totals-label">IVA (19.00%)</td>
-                    <td class="text-right">$ {{ number_format(($ordenCompra->valor_total ?? 0) * 0.19, 0, ',', '.') }}</td>
-                </tr>
-                <tr>
-                    <td class="total-highlight">Total</td>
-                    <td class="total-highlight-value">$ {{ number_format(($ordenCompra->valor_total ?? 0) * 1.19, 0, ',', '.') }}</td>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-caption">Elaborado por</div>
+                    </td>
+                    <td>
+                        <div class="signature-line"></div>
+                        <div class="signature-caption">Aceptada, firma y/o sello y fecha</div>
+                    </td>
                 </tr>
             </table>
         </div>
-    </div>
 
-    <!-- Signatures -->
-    <div class="signatures">
-        <div class="signature-block">
-            <div class="signature-label">Elaborado por</div>
-            <div class="signature-line">Firma y fecha</div>
-        </div>
-        <div class="signature-block" style="float: right;">
-            <div class="signature-label">Aceptada, firma y/o sello y fecha</div>
-            <div class="signature-line">Firma del proveedor</div>
-        </div>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <span class="brand-text" style="color: #facc15;">CAT</span>
-        <span class="brand-text" style="color: #2563eb;">KOMATSU</span>
-        <span class="brand-text" style="color: #ea580c;">HITACHI</span>
-        <span class="brand-text" style="color: #475569;">VOLVO</span>
-        <span class="brand-text" style="color: #dc2626;">TEREX</span>
-        <span class="brand-text" style="color: #0284c7;">KOBELCO</span>
     </div>
 </body>
 </html>

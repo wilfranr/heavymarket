@@ -1,6 +1,8 @@
 <?php
 
 use App\Enums\OrdenCompraEstado;
+use App\Models\Articulo;
+use App\Models\Lista;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraReferencia;
 use App\Models\Referencia;
@@ -246,4 +248,76 @@ it('no expone datos del cliente tercero en el listado de ordenes de compra del p
     // Validar que la relación tercero (cliente) no está cargada ni expuesta
     expect(array_key_exists('tercero', $data[0]))->toBeFalse();
     $response->assertDontSee('Cliente Confidencial SAS');
+});
+
+it('carga los datos de articulo y marca en los detalles de las ordenes de compra del proveedor', function () {
+    $articulo = Articulo::factory()->create([
+        'definicion' => 'FILTRO DE AIRE PRIMARIO',
+        'descripcionEspecifica' => 'Elemento filtrante de alta eficiencia',
+    ]);
+
+    $marca = Lista::factory()->create([
+        'tipo' => 'Marca',
+        'nombre' => 'DONALDSON',
+    ]);
+
+    $referencia = Referencia::factory()->create([
+        'referencia' => 'P550008',
+        'articulo_id' => $articulo->id,
+        'marca_id' => $marca->id,
+    ]);
+
+    $orden = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'estado' => OrdenCompraEstado::PagadaListaDespacho->value,
+    ]);
+
+    OrdenCompraReferencia::create([
+        'orden_compra_id' => $orden->id,
+        'referencia_id' => $referencia->id,
+        'cantidad' => 4,
+        'valor_unitario' => 50000,
+        'valor_total' => 200000,
+    ]);
+
+    $response = $this->actingAs($this->providerUser, 'sanctum')
+        ->getJson('/v1/provider/purchase-orders');
+
+    $response->assertOk();
+
+    $detalles = $response->json('data.0.detalles');
+    expect($detalles)->not->toBeEmpty();
+    expect($detalles[0]['referencia']['referencia'])->toBe('P550008');
+    expect(strtoupper($detalles[0]['referencia']['articulo']['definicion']))->toBe('FILTRO DE AIRE PRIMARIO');
+    expect(strtoupper($detalles[0]['referencia']['marca']['nombre']))->toBe('DONALDSON');
+});
+
+it('permite al proveedor descargar el PDF de su propia orden de compra', function () {
+    $orden = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'estado' => OrdenCompraEstado::Confirmada->value,
+    ]);
+
+    $response = $this->actingAs($this->providerUser, 'sanctum')
+        ->get("/v1/provider/purchase-orders/{$orden->id}/download-pdf");
+
+    $response->assertOk();
+    $response->assertHeader('content-type', 'application/pdf');
+    expect($response->headers->get('content-disposition'))->toContain("OC-{$orden->id}.pdf");
+});
+
+it('no permite al proveedor descargar el PDF de una orden que no le pertenece', function () {
+    $otroProveedor = Tercero::factory()->create([
+        'tipo' => 'Proveedor',
+    ]);
+
+    $ordenAjena = OrdenCompra::factory()->create([
+        'proveedor_id' => $otroProveedor->id,
+        'estado' => OrdenCompraEstado::Confirmada->value,
+    ]);
+
+    $response = $this->actingAs($this->providerUser, 'sanctum')
+        ->get("/v1/provider/purchase-orders/{$ordenAjena->id}/download-pdf");
+
+    $response->assertNotFound();
 });
