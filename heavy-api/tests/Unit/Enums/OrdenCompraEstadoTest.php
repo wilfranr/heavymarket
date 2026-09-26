@@ -68,6 +68,7 @@ it('permite transiciones válidas del flujo retrocompatible', function () {
 it('rechaza transiciones inválidas y terminales', function () {
     expect(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeFalse()
         ->and(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Enviada))->toBeFalse()
+        ->and(OrdenCompraEstado::PendienteRevisionStock->puedeTransitarA(OrdenCompraEstado::Confirmada))->toBeFalse()
         ->and(OrdenCompraEstado::RecibidaParcialmente->puedeTransitarA(OrdenCompraEstado::Cancelada))->toBeFalse()
         ->and(OrdenCompraEstado::Recibida->transicionesValidas())->toBeEmpty()
         ->and(OrdenCompraEstado::EntregadaCerrada->transicionesValidas())->toBeEmpty()

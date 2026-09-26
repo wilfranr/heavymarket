@@ -7,6 +7,7 @@ namespace App\Http\Requests;
 use App\Enums\OrdenCompraEstado;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\Validator;
 
 /**
  * Form Request para transiciones explícitas de Orden de Compra.
@@ -72,6 +73,34 @@ class TransitionOrdenCompraRequest extends FormRequest
             'notas_cierre' => ['nullable', 'string', 'max:2000'],
             'aprobacion_admin' => ['sometimes', 'boolean'],
             'observaciones' => ['nullable', 'string', 'max:1000'],
+        ];
+    }
+
+    /**
+     * Reglas de flujo que dependen del estado actual de la orden.
+     *
+     * @return array<int, callable>
+     */
+    public function after(): array
+    {
+        return [
+            function (Validator $validator): void {
+                $ordenCompra = $this->route('orden_compra');
+                $origen = OrdenCompraEstado::tryFrom((string) $ordenCompra?->estado);
+                $destino = OrdenCompraEstado::tryFrom((string) $this->input('estado_destino'));
+
+                if ($origen === OrdenCompraEstado::PendienteRevisionStock && $destino !== OrdenCompraEstado::Cancelada) {
+                    $validator->errors()->add('estado_destino', 'La orden está en revisión de stock. Debe esperar la confirmación del proveedor.');
+                }
+
+                if (
+                    $origen === OrdenCompraEstado::EnEsperaAprobacionGerencial
+                    && in_array($destino, [OrdenCompraEstado::PendienteDePago, OrdenCompraEstado::DevueltaPorGerencia], true)
+                    && ! $this->user()->can('manageGerencia', $ordenCompra)
+                ) {
+                    $validator->errors()->add('estado_destino', 'Solo Gerencia puede aprobar o devolver la orden de compra.');
+                }
+            },
         ];
     }
 

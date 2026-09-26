@@ -7,6 +7,7 @@ describe('Detalle de orden de compra - reglas de estado', () => {
         expect(ordenCompraPuedeTransitar('Generada', 'Enviada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Pendiente de Revisión de Stock', 'Stock Incompleto')).toBe(true);
         expect(ordenCompraPuedeTransitar('Pendiente de Revisión de Stock', 'En Espera de Aprobación Gerencial')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Pendiente de Revisión de Stock', 'Confirmada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Enviada', 'Confirmada')).toBe(true);
         expect(ordenCompraPuedeTransitar('Confirmada', 'Pagada')).toBe(true);
         expect(ordenCompraPuedeTransitar('Pagada', 'Despachada')).toBe(true);

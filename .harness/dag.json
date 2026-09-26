@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-26T08:00:00-05:00",
-  "issue": "oc-generada-solo-revision-stock",
-  "description": "Desde el estado Generada el asesor solo debe poder enviar la OC a Revision de Stock (o cancelarla); se elimina la transicion Generada -> Enviada. Ademas, el proveedor no debe ver la OC en su portal hasta que el asesor la envie a revision de stock.",
+  "last_updated": "2026-09-26T08:30:00-05:00",
+  "issue": "oc-asesor-espera-revision-gerencia",
+  "description": "Mientras la OC esta en Pendiente de Revision de Stock el asesor solo espera: la confirmacion de stock la hace el proveedor (Stock Incompleto si hay faltantes, En Espera de Aprobacion Gerencial si no). En En Espera de Aprobacion Gerencial solo Gerencia puede aprobar o devolver.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "oc-pdf-orden-compra-cliente",
+  "previous_issue": "oc-generada-solo-revision-stock",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -2694,6 +2694,65 @@
         "cd heavy-api && ./vendor/bin/pint --test app/Enums/OrdenCompraEstado.php app/Http/Controllers/Api/V1/ProviderPortalController.php tests/Unit/Enums/OrdenCompraEstadoTest.php tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
         "cd heavy-api && ./vendor/bin/pest --filter='OrdenCompra|RestrictLogistica|Recepcion|ProviderPortal'",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra/detail/detail.component.spec.ts"
+      ]
+    },
+    {
+      "id": "oc-asesor-espera-revision-gerencia",
+      "description": "Quitar Confirmada de las transiciones de Pendiente de Revision de Stock (enum y mapa del front); bloquear en TransitionOrdenCompraRequest las transiciones internas desde Pendiente de Revision de Stock (excepto Cancelada) y exigir manageGerencia para aprobar o devolver desde En Espera de Aprobacion Gerencial; ocultar el boton Enviar a Aprobacion Gerencial en revision de stock. Ajustar tests.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/TransitionOrdenCompraRequest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/OrdenCompraTransitionTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && ./vendor/bin/pint --test app/Enums/OrdenCompraEstado.php app/Http/Requests/TransitionOrdenCompraRequest.php tests/Unit/Enums/OrdenCompraEstadoTest.php tests/Feature/Api/OrdenCompraTransitionTest.php",
+        "cd heavy-api && ./vendor/bin/pest --filter='OrdenCompra|RestrictLogistica|Recepcion|ProviderPortal'",
+        "cd heavy-front && npx prettier --check src/app/features/ordenes-compra/detail/detail.component.ts src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+        "cd heavy-front && npx vitest run src/app/features/ordenes-compra"
+      ]
+    },
+    {
+      "id": "oc-asesor-espera-revision-gerencia.1",
+      "description": "UI: Mostrar en el detalle de la OC avisos informativos de espera: 'Esperando confirmacion de stock del proveedor' en Pendiente de Revision de Stock y 'Esperando aprobacion de Gerencia Comercial' en En Espera de Aprobacion Gerencial (solo a quien no puede aprobar), con el patron visual del aviso de Stock Incompleto (claro/oscuro).",
+      "status": "awaiting_review",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app/features/ordenes-compra/detail/detail.component.ts",
+        "cd heavy-front && npx vitest run src/app/features/ordenes-compra",
+        "cd heavy-front && npx ng build --configuration development"
       ]
     }
   ]

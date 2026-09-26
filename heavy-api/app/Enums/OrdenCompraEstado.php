@@ -47,7 +47,6 @@ enum OrdenCompraEstado: string
             self::PendienteRevisionStock => [
                 self::StockIncompleto,
                 self::EnEsperaAprobacionGerencial,
-                self::Confirmada,
                 self::Cancelada,
             ],
             self::StockIncompleto => [

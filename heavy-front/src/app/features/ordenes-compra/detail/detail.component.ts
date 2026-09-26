@@ -37,7 +37,7 @@ type MaquinaDetalle = Maquina | PedidoMaquina;
 
 const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> = {
     // Nuevos estados formales
-    'Pendiente de Revisión de Stock': ['Stock Incompleto', 'En Espera de Aprobación Gerencial', 'Confirmada', 'Cancelada'],
+    'Pendiente de Revisión de Stock': ['Stock Incompleto', 'En Espera de Aprobación Gerencial', 'Cancelada'],
     'Stock Incompleto': ['En Espera de Aprobación Gerencial', 'Cancelada'],
     'En Espera de Aprobación Gerencial': ['Pendiente de Pago', 'Devuelta por Gerencia', 'Cancelada'],
     'Devuelta por Gerencia': ['En Espera de Aprobación Gerencial', 'Pendiente de Revisión de Stock', 'Cancelada'],
@@ -258,6 +258,30 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                     <!-- Columna Izquierda: Info Principal -->
                     <div class="lg:col-span-2 flex flex-col gap-6">
+                        @if (ordenCompra()?.estado === 'Pendiente de Revisión de Stock') {
+                            <div class="p-4 rounded-xl bg-sky-50 dark:bg-sky-950/40 border-2 border-sky-300 dark:border-sky-700 shadow-sm flex items-start gap-3">
+                                <i class="pi pi-clock text-sky-600 dark:text-sky-400 text-2xl mt-0.5"></i>
+                                <div>
+                                    <h4 class="m-0 text-sky-900 dark:text-sky-200 font-bold text-base">Esperando confirmación de stock del proveedor</h4>
+                                    <p class="m-0 text-xs sm:text-sm text-sky-800 dark:text-sky-300 mt-1">
+                                        La orden fue enviada al proveedor para revisión de stock. Si confirma todo el stock, pasará a aprobación gerencial; si reporta faltantes, volverá a usted para revisar las cantidades disponibles.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+
+                        @if (ordenCompra()?.estado === 'En Espera de Aprobación Gerencial' && !puedeAprobarGerencia()) {
+                            <div class="p-4 rounded-xl bg-sky-50 dark:bg-sky-950/40 border-2 border-sky-300 dark:border-sky-700 shadow-sm flex items-start gap-3">
+                                <i class="pi pi-clock text-sky-600 dark:text-sky-400 text-2xl mt-0.5"></i>
+                                <div>
+                                    <h4 class="m-0 text-sky-900 dark:text-sky-200 font-bold text-base">Esperando aprobación de Gerencia Comercial</h4>
+                                    <p class="m-0 text-xs sm:text-sm text-sky-800 dark:text-sky-300 mt-1">
+                                        La orden está en revisión por Gerencia Comercial. Si la aprueba, pasará a pago; si la devuelve, volverá a usted con el motivo para corregirla.
+                                    </p>
+                                </div>
+                            </div>
+                        }
+
                         @if (ordenCompra()?.estado === 'Stock Incompleto') {
                             <div class="p-4 rounded-xl bg-amber-50 dark:bg-amber-950/40 border-2 border-amber-300 dark:border-amber-700 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                                 <div class="flex items-start gap-3">
@@ -449,7 +473,7 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                                 @if (puedePasarA('Pendiente de Revisión de Stock')) {
                                     <p-button label="Enviar a Revisión de Stock" icon="pi pi-send" severity="primary" (onClick)="openEnvioRevisionDialog()"></p-button>
                                 }
-                                @if (puedePasarA('En Espera de Aprobación Gerencial') && ordenCompra()?.estado !== 'Stock Incompleto') {
+                                @if (puedePasarA('En Espera de Aprobación Gerencial') && ordenCompra()?.estado !== 'Stock Incompleto' && ordenCompra()?.estado !== 'Pendiente de Revisión de Stock') {
                                     <p-button label="Enviar a Aprobación Gerencial" icon="pi pi-send" severity="success" (onClick)="transitionTo('En Espera de Aprobación Gerencial')"></p-button>
                                 }
                                 @if (puedePasarA('Enviada')) {

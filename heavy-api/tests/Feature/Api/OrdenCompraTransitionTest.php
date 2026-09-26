@@ -2,12 +2,13 @@
 
 use App\Enums\OrdenCompraEstado;
 use App\Models\OrdenCompra;
+use App\Models\Tercero;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Permission\Models\Role;
 
 beforeEach(function () {
-    foreach (['super_admin', 'Administrador', 'Logistica', 'Gerente Comercial', 'Contabilidad', 'Vendedor'] as $roleName) {
+    foreach (['super_admin', 'Administrador', 'Logistica', 'Gerente Comercial', 'Contabilidad', 'Vendedor', 'Proveedor'] as $roleName) {
         Role::firstOrCreate(['name' => $roleName, 'guard_name' => 'web']);
     }
 
@@ -160,17 +161,22 @@ it('permite transicionar de confirmada a pagada y luego a despachada', function 
 it('permite transicionar por el flujo formal completo del cliente', function () {
     $gerente = createUserWithRole('Gerente Comercial');
     $contabilidad = createUserWithRole('Contabilidad');
+    $proveedorUser = createUserWithRole('Proveedor');
+    $proveedor = Tercero::factory()->create([
+        'tipo' => 'Proveedor',
+        'user_id' => $proveedorUser->id,
+        'provider_access' => true,
+    ]);
 
     $orden = OrdenCompra::factory()->create([
+        'proveedor_id' => $proveedor->id,
         'estado' => OrdenCompraEstado::PendienteRevisionStock->value,
         'color' => OrdenCompraEstado::PendienteRevisionStock->color(),
     ]);
 
-    // 1. Stock Confirmado -> En Espera de Aprobación Gerencial
-    $r1 = $this->actingAs($this->admin, 'sanctum')
-        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
-            'estado_destino' => OrdenCompraEstado::EnEsperaAprobacionGerencial->value,
-        ]);
+    // 1. Proveedor confirma stock completo -> En Espera de Aprobación Gerencial
+    $r1 = $this->actingAs($proveedorUser, 'sanctum')
+        ->postJson("/v1/provider/purchase-orders/{$orden->id}/confirm", []);
     $r1->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::EnEsperaAprobacionGerencial->value);
 
     // 2. Gerente Comercial aprueba -> Pendiente de Pago
@@ -385,4 +391,63 @@ it('valida que transicionar a Pagada / Lista para Despacho exige comprobante_pag
         ]);
     $cancelPostPago->assertOk()->assertJsonPath('data.estado', OrdenCompraEstado::CanceladaReembolsoPendiente->value);
     expect($orden->fresh()->motivo_reembolso)->toContain('Reembolso total solicitado');
+});
+
+it('no permite al asesor avanzar una orden en revision de stock mientras espera al proveedor', function () {
+    $asesor = createUserWithRole('Vendedor');
+
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::PendienteRevisionStock->value,
+        'color' => OrdenCompraEstado::PendienteRevisionStock->color(),
+    ]);
+
+    foreach ([OrdenCompraEstado::EnEsperaAprobacionGerencial, OrdenCompraEstado::StockIncompleto, OrdenCompraEstado::Confirmada] as $destino) {
+        $this->actingAs($asesor, 'sanctum')
+            ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", ['estado_destino' => $destino->value])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('estado_destino');
+    }
+
+    expect($orden->fresh()->estado)->toBe(OrdenCompraEstado::PendienteRevisionStock->value);
+});
+
+it('permite al asesor cancelar una orden en revision de stock', function () {
+    $asesor = createUserWithRole('Vendedor');
+
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::PendienteRevisionStock->value,
+        'color' => OrdenCompraEstado::PendienteRevisionStock->color(),
+    ]);
+
+    $this->actingAs($asesor, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::Cancelada->value,
+            'motivo_cancelacion' => 'El cliente desistio de la compra.',
+        ])
+        ->assertOk()
+        ->assertJsonPath('data.estado', OrdenCompraEstado::Cancelada->value);
+});
+
+it('no permite al asesor aprobar ni devolver una orden en espera de aprobacion gerencial', function () {
+    $asesor = createUserWithRole('Vendedor');
+
+    $orden = OrdenCompra::factory()->create([
+        'estado' => OrdenCompraEstado::EnEsperaAprobacionGerencial->value,
+        'color' => OrdenCompraEstado::EnEsperaAprobacionGerencial->color(),
+    ]);
+
+    $this->actingAs($asesor, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", ['estado_destino' => OrdenCompraEstado::PendienteDePago->value])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('estado_destino');
+
+    $this->actingAs($asesor, 'sanctum')
+        ->patchJson("/v1/ordenes-compra/{$orden->id}/transition", [
+            'estado_destino' => OrdenCompraEstado::DevueltaPorGerencia->value,
+            'motivo_rechazo_gerencia' => 'Intento no autorizado.',
+        ])
+        ->assertStatus(422)
+        ->assertJsonValidationErrors('estado_destino');
+
+    expect($orden->fresh()->estado)->toBe(OrdenCompraEstado::EnEsperaAprobacionGerencial->value);
 });
