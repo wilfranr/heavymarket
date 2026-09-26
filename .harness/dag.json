@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-26T08:30:00-05:00",
-  "issue": "oc-asesor-espera-revision-gerencia",
-  "description": "Mientras la OC esta en Pendiente de Revision de Stock el asesor solo espera: la confirmacion de stock la hace el proveedor (Stock Incompleto si hay faltantes, En Espera de Aprobacion Gerencial si no). En En Espera de Aprobacion Gerencial solo Gerencia puede aprobar o devolver.",
+  "last_updated": "2026-09-26T09:00:00-05:00",
+  "issue": "dev-usuario-gerente-comercial",
+  "description": "Crear un usuario Gerente Comercial y habilitarle acceso exclusivo al modulo de Ordenes de Compra para analizar la fase de aprobacion gerencial.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "oc-generada-solo-revision-stock",
+  "previous_issue": "oc-asesor-espera-revision-gerencia",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -2752,6 +2752,90 @@
       "gates": [
         "cd heavy-front && npx prettier --check src/app/features/ordenes-compra/detail/detail.component.ts",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra",
+        "cd heavy-front && npx ng build --configuration development"
+      ]
+    },
+    {
+      "id": "dev-usuario-gerente-comercial",
+      "description": "Agregar el rol Gerente Comercial y los usuarios de desarrollo gerente@, contabilidad@ y logistica@heavymarket.net a DevBootstrapSeeder, y crearlos en la base local.",
+      "status": "awaiting_review",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-api/database/seeders/DevBootstrapSeeder.php",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && ./vendor/bin/pint --test database/seeders/DevBootstrapSeeder.php"
+      ]
+    },
+    {
+      "id": "dev-usuario-gerente-comercial.1",
+      "description": "Frontend: habilitar la ruta /app/ordenes-compra para Gerente Comercial, darle un menu propio con solo Ordenes de Compra y no cargar el filtro de proveedores (GET /v1/terceros) si el rol no tiene acceso a terceros.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-front/src/app.routes.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/layout/component/app.menu.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app.routes.ts src/app/layout/component/app.menu.ts src/app/features/ordenes-compra/list/list.component.ts",
+        "cd heavy-front && npx vitest run src/app/features/ordenes-compra src/app/layout",
+        "cd heavy-front && npx ng build --configuration development"
+      ]
+    },
+    {
+      "id": "dev-usuario-gerente-comercial.2",
+      "description": "Frontend: agregar Gerente Comercial a los roles asignables en Gestion de Usuarios.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/users/list/list.ts",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app/features/users/list/list.ts",
+        "cd heavy-front && npx ng build --configuration development"
+      ]
+    },
+    {
+      "id": "fix-guard-roles-oc-ot",
+      "description": "Bug: roleGuard de /app/ordenes-compra y /app/ordenes-trabajo bloquea a Logistica y Contabilidad aunque su menu muestra esos modulos. Habilitar Logistica y Contabilidad en OC, Logistica y Contabilidad en OT, y agregar Ordenes de Compra al menu de Contabilidad (registro de pago).",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/guard-roles-oc-ot",
+      "files": [
+        {
+          "path": "heavy-front/src/app.routes.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/layout/component/app.menu.ts",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app.routes.ts src/app/layout/component/app.menu.ts",
         "cd heavy-front && npx ng build --configuration development"
       ]
     }

@@ -30,6 +30,7 @@ export class AppMenu implements OnInit {
         const hasClienteRole = this.authService.hasAnyRole(['Cliente', 'cliente']);
         const hasProveedorRole = this.authService.hasAnyRole(['Proveedor', 'proveedor']);
         const hasContabilidadRole = this.authService.hasAnyRole(['Contabilidad', 'contabilidad']);
+        const hasGerenteComercialRole = this.authService.hasAnyRole(['Gerente Comercial']);
 
         // Caso 1: Sesión de Proveedor (Detección unificada)
         if (this.providerAuthService.isProvider() || hasProveedorRole) {
@@ -69,12 +70,30 @@ export class AppMenu implements OnInit {
             return;
         }
 
+        // Caso especial: Gerente Comercial ve solo Órdenes de Compra (aprobación gerencial)
+        if (hasGerenteComercialRole && !hasAdminRole) {
+            this.model = [
+                {
+                    label: 'Gerencia',
+                    items: [{ label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }]
+                },
+                {
+                    label: 'Perfil',
+                    items: [{ label: 'Cerrar Sesión', icon: 'pi pi-fw pi-sign-out', command: () => this.authService.logout() }]
+                }
+            ];
+            return;
+        }
+
         // Caso especial: Contabilidad ve solo la bandeja de Facturación
         if (hasContabilidadRole && !hasAdminRole) {
             this.model = [
                 {
                     label: 'Facturación',
-                    items: [{ label: 'Órdenes por Facturar', icon: 'pi pi-fw pi-file-invoice', routerLink: ['/app/ordenes-trabajo/facturacion'] }]
+                    items: [
+                        { label: 'Órdenes por Facturar', icon: 'pi pi-fw pi-file-invoice', routerLink: ['/app/ordenes-trabajo/facturacion'] },
+                        { label: 'Órdenes de Compra', icon: 'pi pi-fw pi-shopping-bag', routerLink: ['/app/ordenes-compra'] }
+                    ]
                 },
                 {
                     label: 'Perfil',

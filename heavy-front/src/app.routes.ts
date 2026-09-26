@@ -10,6 +10,8 @@ import { roleGuard } from './app/core/auth/guards/role.guard';
 
 const adminRoles = ['super_admin', 'Administrador'];
 const commonRoles = ['super_admin', 'Administrador', 'Analista', 'analista', 'Vendedor', 'vendedor'];
+const ordenesCompraRoles = [...commonRoles, 'Gerente Comercial', 'Logistica', 'Contabilidad'];
+const ordenesTrabajoRoles = [...commonRoles, 'Logistica', 'Contabilidad'];
 const noVendedorRoles = ['super_admin', 'Administrador', 'Analista', 'analista'];
 
 export const appRoutes: Routes = [
@@ -67,13 +69,13 @@ export const appRoutes: Routes = [
                 path: 'ordenes-compra',
                 loadChildren: () => import('./app/features/ordenes-compra/ordenes-compra.routes').then((m) => m.ordenesCompraRoutes),
                 canActivate: [roleGuard],
-                data: { roles: commonRoles }
+                data: { roles: ordenesCompraRoles }
             },
             {
                 path: 'ordenes-trabajo',
                 loadChildren: () => import('./app/features/ordenes-trabajo/ordenes-trabajo.routes').then((m) => m.ordenesTrabajoRoutes),
                 canActivate: [roleGuard],
-                data: { roles: commonRoles }
+                data: { roles: ordenesTrabajoRoles }
             },
             {
                 path: 'empresas',

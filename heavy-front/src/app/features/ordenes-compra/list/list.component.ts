@@ -18,6 +18,7 @@ import { OrdenCompra, OrdenCompraEstado, OrdenCompraColor, EstadoRecepcion } fro
 import * as OrdenesCompraActions from '../../../store/ordenes-compra/actions/ordenes-compra.actions';
 import * as OrdenesCompraSelectors from '../../../store/ordenes-compra/selectors/ordenes-compra.selectors';
 import { TerceroService } from '../../../core/services/tercero.service';
+import { AuthService } from '../../../core/auth/services/auth.service';
 import { estadoRecepcionLabel, estadoRecepcionSeverity } from '../../../core/utils/estado-recepcion';
 
 interface SelectOption<T> {
@@ -185,6 +186,7 @@ export class ListComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly confirmationService = inject(ConfirmationService);
     private readonly terceroService = inject(TerceroService);
+    private readonly authService = inject(AuthService);
 
     // Signals from Store
     ordenesCompra = toSignal(this.store.select(OrdenesCompraSelectors.selectAllOrdenesCompra), { initialValue: [] });
@@ -242,6 +244,11 @@ export class ListComponent implements OnInit {
     }
 
     private loadFilterOptions(): void {
+        // GET /v1/terceros solo está habilitado para estos roles en la API
+        if (!this.authService.hasAnyRole(['super_admin', 'Administrador', 'Vendedor', 'Logistica'])) {
+            return;
+        }
+
         this.terceroService.list({ per_page: 200, es_proveedor: true }).subscribe({
             next: (response) => {
                 this.proveedores.set(

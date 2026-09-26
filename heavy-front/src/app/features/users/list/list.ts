@@ -75,6 +75,7 @@ export class ListComponent implements OnInit {
         { label: 'Administrador', value: 'Administrador' },
         { label: 'Analista', value: 'Analista' },
         { label: 'Vendedor', value: 'Vendedor' },
+        { label: 'Gerente Comercial', value: 'Gerente Comercial' },
         { label: 'Logística', value: 'Logistica' },
         { label: 'Contabilidad', value: 'Contabilidad' },
         { label: 'Panel User', value: 'panel_user' }
