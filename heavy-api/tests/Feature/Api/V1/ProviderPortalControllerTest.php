@@ -391,6 +391,61 @@ class ProviderPortalControllerTest extends TestCase
     }
 
     /** @test */
+    public function test_provider_can_submit_cost_with_marca_list_without_associating_it_as_manufacturer()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $marca = Lista::create(['nombre' => 'Berco', 'tipo' => 'Marca']);
+
+        foreach ([1, 2] as $i) {
+            $ref = PedidoReferencia::factory()->create([
+                'pedido_id' => $pedido->id,
+                'marca_id' => $this->marca->id,
+                'categoria_comercial_id' => $this->categoria->id,
+            ]);
+
+            $this->actingAs($this->provider)
+                ->postJson('/v1/provider/submit-cost', [
+                    'pedido_referencia_id' => $ref->id,
+                    'costo_unidad' => 100,
+                    'dias_entrega' => 3,
+                    'marca_id' => $marca->id,
+                ])
+                ->assertStatus(201);
+
+            $this->assertDatabaseHas('pedido_referencia_proveedor', [
+                'pedido_referencia_id' => $ref->id,
+                'marca_id' => $marca->id,
+            ]);
+        }
+
+        $this->assertDatabaseMissing('tercero_fabricantes', [
+            'tercero_id' => $this->tercero->id,
+            'lista_id' => $marca->id,
+        ]);
+    }
+
+    /** @test */
+    public function test_provider_cannot_submit_cost_with_list_that_is_not_a_brand()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 100,
+                'dias_entrega' => 3,
+                'marca_id' => $this->categoria->id,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['marca_id']);
+    }
+
+    /** @test */
     public function test_provider_can_filter_opportunities_by_sent_status()
     {
         $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);

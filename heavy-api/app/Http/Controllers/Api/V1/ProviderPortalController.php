@@ -10,6 +10,7 @@ use App\Http\Requests\StoreProviderCosteoRequest;
 use App\Http\Resources\OrdenCompraResource;
 use App\Http\Resources\PedidoReferenciaResource;
 use App\Models\Empresa;
+use App\Models\Lista;
 use App\Models\OrdenCompra;
 use App\Models\OrdenCompraDespachoArchivo;
 use App\Models\OrdenCompraReferencia;
@@ -197,8 +198,9 @@ class ProviderPortalController extends Controller
             $marcaId = $validated['marca_id'] ?? $pedidoReferencia->marca_id;
             $esBackorder = $validated['es_backorder'] ?? false;
 
-            // Asociar automáticamente la marca al proveedor si no la tiene asociada
-            if ($marcaId && ! $tercero->fabricantes()->where('lista_id', $marcaId)->exists()) {
+            // Asociar automáticamente el fabricante al proveedor si no lo tiene asociado (las listas tipo Marca no van a tercero_fabricantes)
+            $esFabricante = $marcaId && Lista::whereKey($marcaId)->where('tipo', 'Fabricantes')->exists();
+            if ($esFabricante && ! $tercero->fabricantes()->where('lista_id', $marcaId)->exists()) {
                 $tercero->fabricantes()->attach($marcaId);
             }
 

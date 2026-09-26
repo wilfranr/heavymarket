@@ -2871,6 +2871,58 @@
       ],
       "review_notes": "Aprobado. Scope PedidoReferencia::coincideConProveedor replica exactamente el matching previo del listado (marca, categoria principal, pivote analysis_commercial_categories) y ahora lo usa tambien StoreProviderCosteoRequest: listado y validacion ya no pueden divergir. Tipado estricto y PHPDoc de Builder. Test de regresion verificado: falla con 422 con la validacion anterior y pasa con el fix; test negativo confirma que fuera de especialidad sigue dando 422. Gates: pest 547/547 (1798 asserts, via vendor/bin/pest con memory_limit=1G, artisan test no propaga el limite al proceso hijo); scramble:analyze OK; pint OK en los 4 archivos. No ejecutable: phpstan (no instalado). Observaciones no bloqueantes: (1) el nodo toca 4 archivos (umbral de atomicidad >3), aceptado porque uno es test y el cambio es de ~30 lineas; (2) deuda preexistente fuera de alcance: opportunities() expone trace en el 500 y StoreProviderCosteoRequest no controla $tercero null. Revision hecha por el mismo agente que implemento.",
       "reviewed_by": "Reviewer"
+    },
+    {
+      "id": "costeo-proveedor-marcas-backend",
+      "description": "Backend: submitCost debe aceptar marca_id de listas tipo Marca o Fabricantes (validacion restringida a esos tipos) y solo auto-asociar al proveedor en tercero_fabricantes cuando la lista es tipo Fabricantes (hoy una Marca inserta filas duplicadas invisibles en cada envio).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/costeo-proveedor-marcas-fabricantes",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreProviderCosteoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && vendor/bin/pint --test app/Http/Controllers/Api/V1/ProviderPortalController.php app/Http/Requests/StoreProviderCosteoRequest.php tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+        "cd heavy-api && php -d memory_limit=1G vendor/bin/pest",
+        "cd heavy-api && php artisan scramble:analyze"
+      ],
+      "reviewed_by": "Reviewer",
+      "review_notes": "Aprobado. submitCost solo asocia al proveedor en tercero_fabricantes las listas tipo Fabricantes. Antes, una lista tipo Marca (elegida, o tomada de la referencia del pedido cuando no se elige marca) insertaba una fila duplicada en cada envio, porque Tercero::fabricantes() filtra por tipo y la tabla no tiene indice unique. marca_id queda restringido a listas tipo Marca o Fabricantes, igual que StoreReferenciaRequest. Cotizacion, OC y PDF leen marca() sin filtrar por tipo: no hay impacto. Test de regresion verificado: falla con el controlador anterior y pasa con el fix. Gates: pest 549/549 (1806 asserts, php -d memory_limit=1G vendor/bin/pest); scramble:analyze OK; pint OK. No ejecutable: phpstan (no instalado). Deuda fuera de alcance: tercero_fabricantes no tiene unique(tercero_id, lista_id) y puede tener filas basura de envios anteriores. Revision hecha por el mismo agente que implemento."
+    },
+    {
+      "id": "costeo-proveedor-marcas-frontend",
+      "description": "Frontend: el select Marca del costeo proveedor usa ListaService.getMarcasYFabricantesParaReferencia() (marcas y fabricantes concatenados) en lugar de solo Fabricantes.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-proveedor-marcas-backend"
+      ],
+      "topic_key": "bugfix/costeo-proveedor-marcas-fabricantes",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+        "cd heavy-front && npx vitest run",
+        "cd heavy-front && npx ng build --configuration development"
+      ],
+      "reviewed_by": "Reviewer",
+      "review_notes": "Aprobado. El select Marca usa getMarcasYFabricantesParaReferencia() (Marca y Fabricantes, sin duplicados por nombre, se prefiere Fabricantes), igual que los modales de referencia, articulo y maquina. Los costeos ya enviados guardan ids de Fabricantes, que siempre se conservan al quitar duplicados, asi que se siguen mostrando bien. El endpoint listas/tipo/{tipo} no restringe por rol, asi que no hay problema de permisos para el proveedor. Gates: vitest 192/192; ng build OK; prettier OK. Nota: ng test falla por el builder @angular-devkit/build-angular:vitest (configuracion preexistente); se uso npx vitest run. ng lint no tiene target."
     }
   ]
 }

@@ -6,6 +6,7 @@ use App\Models\PedidoReferencia;
 use App\Models\Tercero;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreProviderCosteoRequest extends FormRequest
 {
@@ -58,7 +59,7 @@ class StoreProviderCosteoRequest extends FormRequest
             'costo_unidad' => ['required', 'numeric', 'min:0'],
             'dias_entrega' => ['nullable', 'integer', 'min:0', 'required_if:es_backorder,false'],
             'es_backorder' => ['required_without:dias_entrega', 'boolean'],
-            'marca_id' => ['nullable', 'integer', 'exists:listas,id'],
+            'marca_id' => ['nullable', 'integer', Rule::exists('listas', 'id')->whereIn('tipo', ['Marca', 'Fabricantes'])],
             'comentario' => ['nullable', 'string', 'max:500'],
         ];
     }

@@ -161,7 +161,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     }
 
     private loadMarcas(): void {
-        this.listaService.getByTipo('Fabricantes').subscribe({
+        this.listaService.getMarcasYFabricantesParaReferencia().subscribe({
             next: (marcas: Lista[]) => {
                 this.marcas = marcas.map((m: Lista) => ({ label: m.nombre, value: m.id }));
             }
