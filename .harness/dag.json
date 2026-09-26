@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-26T09:00:00-05:00",
+  "last_updated": "2026-09-26T10:00:00-05:00",
   "issue": "dev-usuario-gerente-comercial",
   "description": "Crear un usuario Gerente Comercial y habilitarle acceso exclusivo al modulo de Ordenes de Compra para analizar la fase de aprobacion gerencial.",
   "workflow": "harness-triage-multiagent",
@@ -268,7 +268,7 @@
     {
       "id": "oc-costo-generacion",
       "description": "Backend: congelar costo_unidad en el snapshot de cotización y usarlo como valor_unitario de las nuevas órdenes de compra.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": [
         "oc-logistica-review"
@@ -277,18 +277,20 @@
       "files": [
         {
           "path": "heavy-api/app/Services/CotizacionService.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "review_notes": "Aprobado. crearOrdenCompra usa snapshot_costo_unidad ?? costo_unidad como valor_unitario; snapshot congelado en snapshotReferenciaProveedor; campo en fillable y casts. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-costo-migracion",
       "description": "Datos: agregar snapshot_costo_unidad, backfill desde costeo y corregir importes de OCs automáticas existentes.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": [
         "oc-costo-generacion"
@@ -297,14 +299,16 @@
       "files": [
         {
           "path": "heavy-api/database/migrations/2026_08_05_164500_use_purchase_cost_in_orden_compra_referencias.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "review_notes": "Aprobado. Migracion idempotente (hasColumn), reversible (down restaura precio venta), por lotes, y solo modifica lineas cuyo valor coincide con el precio de venta. Ya ejecutada en local (batch 77). Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-costo-presentacion",
       "description": "UI/PDF: etiquetar el valor de las líneas de OC como costo unitario en detalle, portal proveedor y PDF.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "oc-costo-generacion"
@@ -313,22 +317,24 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/provider-portal/ordenes-compra/ordenes-compra-list.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/resources/views/pdf/orden_compra.blade.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "review_notes": "Aprobado. Detalle y portal proveedor muestran 'Costo unitario'. El PDF fue rediseñado despues (oc-pdf-orden-compra-cliente-diseno) y rotula 'Precio' segun diseño del cliente, pero sigue usando valor_unitario (costo). Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-costo-formularios",
       "description": "UI: aclarar que valor_unitario representa costo unitario en los formularios manuales de creación y edición de OC.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [
         "oc-costo-generacion"
@@ -337,18 +343,20 @@
       "files": [
         {
           "path": "heavy-front/src/app/features/ordenes-compra/create/create.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/edit/edit.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "review_notes": "Aprobado. Create y edit rotulan la columna como 'Costo unitario'. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-costo-tests",
       "description": "Tests: verificar que la OC use costo_unidad, no valor_unidad, y ejecutar gates dirigidos.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "automated_tester",
       "depends_on": [
         "oc-costo-generacion",
@@ -357,13 +365,14 @@
         "oc-costo-formularios"
       ],
       "topic_key": "arch/heavy-audit-history",
-      "review_notes": "Implementer: prueba funcional de costo congelado pasa; backend 34 assertions dirigidas pasan; frontend 7/7 tests; npm run build exitoso; Pint y git diff --check pasan. ProviderPortalOrdenCompraTest mantiene un fallo preexistente por transición Confirmada→Despachada, fuera del alcance de costo.",
+      "review_notes": "Aprobado. PedidoResponderTest cubre costo_unidad vs valor_unidad. El fallo preexistente citado por el Implementer ya no existe: ProviderPortalOrdenCompraTest pasa completo. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
       "files": [
         {
           "path": "heavy-api/tests/Feature/Api/PedidoResponderTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
-      ]
+      ],
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "cards-info-triage",
@@ -2660,73 +2669,75 @@
     {
       "id": "oc-generada-solo-revision-stock",
       "description": "Eliminar la transicion Generada -> Enviada (backend y frontend) y ocultar en el portal de proveedores (listado, PDF, confirmacion y despacho) las OC en estado Generada. Ajustar tests.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-api && ./vendor/bin/pint --test app/Enums/OrdenCompraEstado.php app/Http/Controllers/Api/V1/ProviderPortalController.php tests/Unit/Enums/OrdenCompraEstadoTest.php tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
         "cd heavy-api && ./vendor/bin/pest --filter='OrdenCompra|RestrictLogistica|Recepcion|ProviderPortal'",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra/detail/detail.component.spec.ts"
-      ]
+      ],
+      "review_notes": "Aprobado. Generada solo transita a PendienteRevisionStock o Cancelada (enum y mapa front). Portal proveedor excluye OC Generada en listado, PDF, confirmacion y despacho mediante ordenesVisiblesParaProveedor (404). Tests cubren listado y acceso directo. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-asesor-espera-revision-gerencia",
       "description": "Quitar Confirmada de las transiciones de Pendiente de Revision de Stock (enum y mapa del front); bloquear en TransitionOrdenCompraRequest las transiciones internas desde Pendiente de Revision de Stock (excepto Cancelada) y exigir manageGerencia para aprobar o devolver desde En Espera de Aprobacion Gerencial; ocultar el boton Enviar a Aprobacion Gerencial en revision de stock. Ajustar tests.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/app/Http/Requests/TransitionOrdenCompraRequest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-api/tests/Feature/Api/OrdenCompraTransitionTest.php",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
@@ -2734,110 +2745,122 @@
         "cd heavy-api && ./vendor/bin/pest --filter='OrdenCompra|RestrictLogistica|Recepcion|ProviderPortal'",
         "cd heavy-front && npx prettier --check src/app/features/ordenes-compra/detail/detail.component.ts src/app/features/ordenes-compra/detail/detail.component.spec.ts",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra"
-      ]
+      ],
+      "review_notes": "Aprobado. PendienteRevisionStock ya no transita a Confirmada. TransitionOrdenCompraRequest::after bloquea avances internos desde revision de stock (solo Cancelada) y exige policy manageGerencia para aprobar/devolver. Flujo completo en tests confirma stock desde el portal. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "oc-asesor-espera-revision-gerencia.1",
       "description": "UI: Mostrar en el detalle de la OC avisos informativos de espera: 'Esperando confirmacion de stock del proveedor' en Pendiente de Revision de Stock y 'Esperando aprobacion de Gerencia Comercial' en En Espera de Aprobacion Gerencial (solo a quien no puede aprobar), con el patron visual del aviso de Stock Incompleto (claro/oscuro).",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": [],
       "topic_key": "arch/heavy-ui-patterns",
       "files": [
         {
           "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-front && npx prettier --check src/app/features/ordenes-compra/detail/detail.component.ts",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra",
         "cd heavy-front && npx ng build --configuration development"
-      ]
+      ],
+      "review_notes": "Aprobado. Avisos de espera (revision de stock y aprobacion gerencial) con el patron visual del aviso Stock Incompleto, variantes dark: para tema oscuro. Correccion de prettier registrada en arch/heavy-audit-history. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "dev-usuario-gerente-comercial",
       "description": "Agregar el rol Gerente Comercial y los usuarios de desarrollo gerente@, contabilidad@ y logistica@heavymarket.net a DevBootstrapSeeder, y crearlos en la base local.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": "sql_query_analyst",
       "depends_on": [],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-api/database/seeders/DevBootstrapSeeder.php",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-api && ./vendor/bin/pint --test database/seeders/DevBootstrapSeeder.php"
-      ]
+      ],
+      "review_notes": "Aprobado. DevBootstrapSeeder crea rol Gerente Comercial y usuarios gerente/contabilidad/logistica con updateOrCreate + syncRoles, igual que los existentes. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "dev-usuario-gerente-comercial.1",
       "description": "Frontend: habilitar la ruta /app/ordenes-compra para Gerente Comercial, darle un menu propio con solo Ordenes de Compra y no cargar el filtro de proveedores (GET /v1/terceros) si el rol no tiene acceso a terceros.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-front/src/app.routes.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/layout/component/app.menu.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-front && npx prettier --check src/app.routes.ts src/app/layout/component/app.menu.ts src/app/features/ordenes-compra/list/list.component.ts",
         "cd heavy-front && npx vitest run src/app/features/ordenes-compra src/app/layout",
         "cd heavy-front && npx ng build --configuration development"
-      ]
+      ],
+      "review_notes": "Aprobado. Ruta OC habilitada para Gerente Comercial, menu propio solo con OC, y el listado no llama GET /v1/terceros para roles sin acceso (evita 403). Sin any; inject() y signals. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "dev-usuario-gerente-comercial.2",
       "description": "Frontend: agregar Gerente Comercial a los roles asignables en Gestion de Usuarios.",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "biz/roles",
       "files": [
         {
           "path": "heavy-front/src/app/features/users/list/list.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-front && npx prettier --check src/app/features/users/list/list.ts",
         "cd heavy-front && npx ng build --configuration development"
-      ]
+      ],
+      "review_notes": "Aprobado. Gerente Comercial asignable en Gestion de Usuarios; backend valida roles.* con exists:roles,name. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "fix-guard-roles-oc-ot",
       "description": "Bug: roleGuard de /app/ordenes-compra y /app/ordenes-trabajo bloquea a Logistica y Contabilidad aunque su menu muestra esos modulos. Habilitar Logistica y Contabilidad en OC, Logistica y Contabilidad en OT, y agregar Ordenes de Compra al menu de Contabilidad (registro de pago).",
-      "status": "awaiting_review",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "bugfix/guard-roles-oc-ot",
       "files": [
         {
           "path": "heavy-front/src/app.routes.ts",
-          "status": "implemented"
+          "status": "validated"
         },
         {
           "path": "heavy-front/src/app/layout/component/app.menu.ts",
-          "status": "implemented"
+          "status": "validated"
         }
       ],
       "gates": [
         "cd heavy-front && npx prettier --check src/app.routes.ts src/app/layout/component/app.menu.ts",
         "cd heavy-front && npx ng build --configuration development"
-      ]
+      ],
+      "review_notes": "Aprobado. Logistica y Contabilidad habilitados en las rutas de OC y OT; Contabilidad con OC en su menu para registro de pago. Verificado que la bandeja de facturacion no consume /v1/terceros. Gates globales: pest 545/545 (1791 asserts, memory_limit=1G); scramble:analyze OK; vitest 192/192; ng build OK (warning preexistente pusher-js). No ejecutables: phpstan (no instalado), ng lint (sin target). Pint global falla solo por deuda preexistente en 5 archivos ajenos a este nodo.",
+      "reviewed_by": "Reviewer"
     },
     {
       "id": "fix-costeo-proveedor-especialidad-pivote",
