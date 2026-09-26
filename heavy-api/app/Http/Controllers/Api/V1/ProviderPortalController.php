@@ -52,10 +52,6 @@ class ProviderPortalController extends Controller
                 ], 404);
             }
 
-            // Obtener marcas y categorías del proveedor
-            $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
-            $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
-
             $status = $request->input('status', 'pending');
 
             if ($status === 'sent' || $status === 'approved') {
@@ -145,13 +141,7 @@ class ProviderPortalController extends Controller
                 ->whereHas('pedido', function ($q) {
                     $q->where('estado', 'En_Costeo');
                 })
-                ->where(function ($q) use ($misMarcas, $misCategorias) {
-                    $q->whereIn('marca_id', $misMarcas)
-                        ->orWhereIn('categoria_comercial_id', $misCategorias)
-                        ->orWhereHas('categoriasComerciales', function ($sub) use ($misCategorias) {
-                            $sub->whereIn('listas.id', $misCategorias);
-                        });
-                })
+                ->coincideConProveedor($tercero)
                 // Excluir si ya fue costeado por este proveedor
                 ->whereDoesntHave('proveedores', function ($q) use ($tercero) {
                     $q->where('proveedor_id', $tercero->id);

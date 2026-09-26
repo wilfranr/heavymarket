@@ -2838,6 +2838,39 @@
         "cd heavy-front && npx prettier --check src/app.routes.ts src/app/layout/component/app.menu.ts",
         "cd heavy-front && npx ng build --configuration development"
       ]
+    },
+    {
+      "id": "fix-costeo-proveedor-especialidad-pivote",
+      "description": "Bug: el portal de proveedor lista referencias que coinciden solo por categorias multiples del analisis (pivote analysis_commercial_categories, #136), pero StoreProviderCosteoRequest las rechaza con \"no coincide con su especialidad\". Centralizar el criterio de matching en un scope de PedidoReferencia usado por el listado y la validacion, y cubrir con test.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [],
+      "topic_key": "bugfix/costeo-proveedor-especialidad-pivote",
+      "files": [
+        {
+          "path": "heavy-api/app/Models/PedidoReferencia.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreProviderCosteoRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && vendor/bin/pint --test app/Models/PedidoReferencia.php app/Http/Controllers/Api/V1/ProviderPortalController.php app/Http/Requests/StoreProviderCosteoRequest.php tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+        "cd heavy-api && php -d memory_limit=1G vendor/bin/pest",
+        "cd heavy-api && php artisan scramble:analyze"
+      ],
+      "review_notes": "Aprobado. Scope PedidoReferencia::coincideConProveedor replica exactamente el matching previo del listado (marca, categoria principal, pivote analysis_commercial_categories) y ahora lo usa tambien StoreProviderCosteoRequest: listado y validacion ya no pueden divergir. Tipado estricto y PHPDoc de Builder. Test de regresion verificado: falla con 422 con la validacion anterior y pasa con el fix; test negativo confirma que fuera de especialidad sigue dando 422. Gates: pest 547/547 (1798 asserts, via vendor/bin/pest con memory_limit=1G, artisan test no propaga el limite al proceso hijo); scramble:analyze OK; pint OK en los 4 archivos. No ejecutable: phpstan (no instalado). Observaciones no bloqueantes: (1) el nodo toca 4 archivos (umbral de atomicidad >3), aceptado porque uno es test y el cambio es de ~30 lineas; (2) deuda preexistente fuera de alcance: opportunities() expone trace en el 500 y StoreProviderCosteoRequest no controla $tercero null. Revision hecha por el mismo agente que implemento.",
+      "reviewed_by": "Reviewer"
     }
   ]
 }

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -78,6 +79,28 @@ class PedidoReferencia extends Model
     {
         // Aunque el campo se llama 'pedido_id', en realidad es el id de 'pedido_referencia'
         return $this->hasMany(PedidoReferenciaProveedor::class, 'pedido_referencia_id', 'id');
+    }
+
+    /**
+     * Referencias que coinciden con la especialidad del proveedor: por marca,
+     * por categoria comercial principal o por las categorias multiples del analisis.
+     * Fuente unica del matching para el listado de oportunidades y la validacion del costeo.
+     *
+     * @param  Builder<PedidoReferencia>  $query
+     * @return Builder<PedidoReferencia>
+     */
+    public function scopeCoincideConProveedor(Builder $query, Tercero $proveedor): Builder
+    {
+        $marcas = $proveedor->fabricantes()->pluck('lista_id')->all();
+        $categorias = $proveedor->categoriasComerciales()->pluck('lista_id')->all();
+
+        return $query->where(function (Builder $q) use ($marcas, $categorias) {
+            $q->whereIn('marca_id', $marcas)
+                ->orWhereIn('categoria_comercial_id', $categorias)
+                ->orWhereHas('categoriasComerciales', function (Builder $sub) use ($categorias) {
+                    $sub->whereIn('listas.id', $categorias);
+                });
+        });
     }
 
     /**

@@ -152,6 +152,57 @@ class ProviderPortalControllerTest extends TestCase
     }
 
     /** @test */
+    public function test_reference_matching_only_by_analysis_categories_is_listed_and_can_be_costed()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $otraMarca = Lista::create(['nombre' => 'Komatsu', 'tipo' => 'Fabricantes']);
+        $otraCat = Lista::create(['nombre' => 'Motores', 'tipo' => 'Categoría Comercial']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $otraMarca->id,
+            'categoria_comercial_id' => $otraCat->id,
+        ]);
+        $ref->categoriasComerciales()->attach($this->categoria->id);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities')
+            ->assertStatus(200)
+            ->assertJsonCount(1, 'data')
+            ->assertJsonPath('data.0.id', $ref->id);
+
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 233743,
+                'dias_entrega' => 0,
+            ])
+            ->assertStatus(201);
+    }
+
+    /** @test */
+    public function test_provider_cannot_cost_reference_outside_their_specialty()
+    {
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $otraMarca = Lista::create(['nombre' => 'Komatsu', 'tipo' => 'Fabricantes']);
+        $otraCat = Lista::create(['nombre' => 'Motores', 'tipo' => 'Categoría Comercial']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $otraMarca->id,
+            'categoria_comercial_id' => $otraCat->id,
+        ]);
+        $ref->categoriasComerciales()->attach($otraCat->id);
+
+        $this->actingAs($this->provider)
+            ->postJson('/v1/provider/submit-cost', [
+                'pedido_referencia_id' => $ref->id,
+                'costo_unidad' => 100,
+                'dias_entrega' => 5,
+            ])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors(['pedido_referencia_id']);
+    }
+
+    /** @test */
     public function test_provider_can_submit_backorder_and_see_it_in_sent_opportunities()
     {
         $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);

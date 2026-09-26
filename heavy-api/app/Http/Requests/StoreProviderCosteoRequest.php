@@ -49,11 +49,8 @@ class StoreProviderCosteoRequest extends FormRequest
                         $fail('Ya has enviado una oferta para esta referencia.');
                     }
 
-                    // 3. Validar matching de especialidad (Opcional pero recomendado para seguridad extra)
-                    $misMarcas = $tercero->fabricantes()->pluck('lista_id')->toArray();
-                    $misCategorias = $tercero->categoriasComerciales()->pluck('lista_id')->toArray();
-
-                    if (! in_array($ref->marca_id, $misMarcas) && ! in_array($ref->categoria_comercial_id, $misCategorias)) {
+                    // 3. Validar matching de especialidad (mismo criterio que el listado de oportunidades)
+                    if (! PedidoReferencia::whereKey($ref->id)->coincideConProveedor($tercero)->exists()) {
                         $fail('Esta referencia no coincide con su especialidad registrada.');
                     }
                 },
