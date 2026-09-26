@@ -18,6 +18,7 @@ use App\Models\PedidoReferenciaProveedor;
 use App\Models\Tercero;
 use App\Services\OrdenCompraLifecycleService;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -257,8 +258,7 @@ class ProviderPortalController extends Controller
             return response()->json(['message' => 'Perfil no encontrado'], 404);
         }
 
-        $query = OrdenCompra::query()
-            ->where('proveedor_id', $tercero->id)
+        $query = $this->ordenesVisiblesParaProveedor($tercero)
             ->with(['transportadora', 'detalles.referencia.articulo', 'detalles.referencia.marca'])
             ->orderBy('created_at', 'desc');
 
@@ -298,7 +298,7 @@ class ProviderPortalController extends Controller
             return response()->json(['message' => 'Perfil no encontrado'], 404);
         }
 
-        $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
+        $oc = $this->ordenesVisiblesParaProveedor($tercero)->findOrFail($id);
 
         $hayFaltantes = false;
 
@@ -365,7 +365,7 @@ class ProviderPortalController extends Controller
             return response()->json(['message' => 'Perfil no encontrado'], 404);
         }
 
-        $oc = OrdenCompra::where('proveedor_id', $tercero->id)->findOrFail($id);
+        $oc = $this->ordenesVisiblesParaProveedor($tercero)->findOrFail($id);
 
         $requiereFotos = $oc->estado === OrdenCompraEstado::PagadaListaDespacho->value;
 
@@ -437,9 +437,7 @@ class ProviderPortalController extends Controller
             abort(404, 'Perfil no encontrado');
         }
 
-        $ordenCompra = OrdenCompra::where('id', $id)
-            ->where('proveedor_id', $tercero->id)
-            ->firstOrFail();
+        $ordenCompra = $this->ordenesVisiblesParaProveedor($tercero)->findOrFail($id);
 
         $ordenCompra->load([
             'proveedor.city',
@@ -459,5 +457,16 @@ class ProviderPortalController extends Controller
         ]);
 
         return $pdf->download("OC-{$ordenCompra->id}.pdf");
+    }
+
+    /**
+     * Ordenes de compra del proveedor que ya fueron enviadas a revision de stock.
+     * Las OC en estado Generada aun no le han sido enviadas y no deben ser visibles.
+     */
+    private function ordenesVisiblesParaProveedor(Tercero $tercero): Builder
+    {
+        return OrdenCompra::query()
+            ->where('proveedor_id', $tercero->id)
+            ->where('estado', '!=', OrdenCompraEstado::Generada->value);
     }
 }

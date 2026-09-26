@@ -4,7 +4,7 @@ import { OrdenCompraEstado } from '../../../core/models/orden-compra.model';
 describe('Detalle de orden de compra - reglas de estado', () => {
     it('permite las transiciones principales del ciclo de vida', () => {
         expect(ordenCompraPuedeTransitar('Generada', 'Pendiente de Revisión de Stock')).toBe(true);
-        expect(ordenCompraPuedeTransitar('Generada', 'Enviada')).toBe(true);
+        expect(ordenCompraPuedeTransitar('Generada', 'Enviada')).toBe(false);
         expect(ordenCompraPuedeTransitar('Pendiente de Revisión de Stock', 'Stock Incompleto')).toBe(true);
         expect(ordenCompraPuedeTransitar('Pendiente de Revisión de Stock', 'En Espera de Aprobación Gerencial')).toBe(true);
         expect(ordenCompraPuedeTransitar('Enviada', 'Confirmada')).toBe(true);

@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-09-13T16:33:00-05:00",
-  "issue": "oc-pdf-orden-compra-cliente",
-  "description": "Adaptar la plantilla PDF de Orden de Compra (portal de proveedores) al diseño exacto solicitado por el cliente: encabezado centrado con marco, bloque de datos de proveedor/fechas en dos columnas, tabla de items y totales con estilo claro, y sección de firmas simplificada.",
+  "last_updated": "2026-09-26T08:00:00-05:00",
+  "issue": "oc-generada-solo-revision-stock",
+  "description": "Desde el estado Generada el asesor solo debe poder enviar la OC a Revision de Stock (o cancelarla); se elimina la transicion Generada -> Enviada. Ademas, el proveedor no debe ver la OC en su portal hasta que el asesor la envie a revision de stock.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "oc-proveedor-detalle-pdf",
+  "previous_issue": "oc-pdf-orden-compra-cliente",
   "nodes": [
     {
       "id": "oc-logistica-triage",
@@ -2656,6 +2656,45 @@
       ],
       "review_notes": "Aprobado. Gates ejecutados (pint --test OK; pest 10/10, 40 asserts OK). Verificacion visual manual: PDF generado con datos del mockup del cliente (pdftoppm) coincide en layout, colores y totales ($99.600 / $18.924 / $118.524). Sin salida sin escapar ({!! !!}), accesos null-safe con ?? en toda la vista. Controller/rutas no modificados (ya traian las relaciones necesarias). Pendiente no bloqueante: confirmar con el cliente si el formato de moneda debe usar coma en vez de punto de miles.",
       "reviewed_by": "Reviewer"
+    },
+    {
+      "id": "oc-generada-solo-revision-stock",
+      "description": "Eliminar la transicion Generada -> Enviada (backend y frontend) y ocultar en el portal de proveedores (listado, PDF, confirmacion y despacho) las OC en estado Generada. Ajustar tests.",
+      "status": "awaiting_review",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "files": [
+        {
+          "path": "heavy-api/app/Enums/OrdenCompraEstado.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Unit/Enums/OrdenCompraEstadoTest.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.spec.ts",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "implemented"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
+          "status": "implemented"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && ./vendor/bin/pint --test app/Enums/OrdenCompraEstado.php app/Http/Controllers/Api/V1/ProviderPortalController.php tests/Unit/Enums/OrdenCompraEstadoTest.php tests/Feature/Api/ProviderPortalOrdenCompraTest.php",
+        "cd heavy-api && ./vendor/bin/pest --filter='OrdenCompra|RestrictLogistica|Recepcion|ProviderPortal'",
+        "cd heavy-front && npx vitest run src/app/features/ordenes-compra/detail/detail.component.spec.ts"
+      ]
     }
   ]
 }

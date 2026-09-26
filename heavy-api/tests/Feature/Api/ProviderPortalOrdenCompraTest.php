@@ -321,3 +321,44 @@ it('no permite al proveedor descargar el PDF de una orden que no le pertenece', 
 
     $response->assertNotFound();
 });
+
+it('no muestra al proveedor las ordenes en estado Generada hasta que se envien a revision de stock', function () {
+    $generada = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'estado' => OrdenCompraEstado::Generada->value,
+    ]);
+
+    $enRevision = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'estado' => OrdenCompraEstado::PendienteRevisionStock->value,
+    ]);
+
+    $response = $this->actingAs($this->providerUser, 'sanctum')
+        ->getJson('/v1/provider/purchase-orders');
+
+    $response->assertOk();
+
+    $ids = collect($response->json('data'))->pluck('id')->all();
+    expect($ids)->toContain($enRevision->id)
+        ->and($ids)->not->toContain($generada->id);
+});
+
+it('no permite al proveedor acceder a una orden en estado Generada', function () {
+    $orden = OrdenCompra::factory()->create([
+        'proveedor_id' => $this->proveedor->id,
+        'estado' => OrdenCompraEstado::Generada->value,
+    ]);
+
+    $this->actingAs($this->providerUser, 'sanctum')
+        ->get("/v1/provider/purchase-orders/{$orden->id}/download-pdf")
+        ->assertNotFound();
+
+    $this->actingAs($this->providerUser, 'sanctum')
+        ->postJson("/v1/provider/purchase-orders/{$orden->id}/confirm", [])
+        ->assertNotFound();
+
+    $this->assertDatabaseHas('orden_compras', [
+        'id' => $orden->id,
+        'estado' => OrdenCompraEstado::Generada->value,
+    ]);
+});

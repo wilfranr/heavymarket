@@ -50,7 +50,7 @@ const ORDEN_COMPRA_TRANSICIONES: Record<OrdenCompraEstado, OrdenCompraEstado[]> 
     'Entregada / Cerrada': [],
 
     // Retrocompatibilidad
-    Generada: ['Pendiente de Revisión de Stock', 'Enviada', 'Cancelada'],
+    Generada: ['Pendiente de Revisión de Stock', 'Cancelada'],
     Enviada: ['Confirmada', 'Stock Incompleto', 'En Espera de Aprobación Gerencial', 'Cancelada'],
     Confirmada: ['Pendiente de Pago', 'En Espera de Aprobación Gerencial', 'Pagada', 'Despachada', 'En Tránsito', 'Cancelada'],
     Pagada: ['En Tránsito', 'Despachada', 'Cancelada - Reembolso Pendiente', 'Cancelada'],

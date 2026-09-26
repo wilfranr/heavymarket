@@ -102,7 +102,6 @@ enum OrdenCompraEstado: string
             // Ciclo existente (retrocompatibilidad operativa)
             self::Generada => [
                 self::PendienteRevisionStock,
-                self::Enviada,
                 self::Cancelada,
             ],
             self::Enviada => [

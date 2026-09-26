@@ -57,8 +57,7 @@ it('permite transiciones válidas desde y hacia el estado Demorado', function ()
 });
 
 it('permite transiciones válidas del flujo retrocompatible', function () {
-    expect(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Enviada))->toBeTrue()
-        ->and(OrdenCompraEstado::Enviada->puedeTransitarA(OrdenCompraEstado::Confirmada))->toBeTrue()
+    expect(OrdenCompraEstado::Enviada->puedeTransitarA(OrdenCompraEstado::Confirmada))->toBeTrue()
         ->and(OrdenCompraEstado::Confirmada->puedeTransitarA(OrdenCompraEstado::Pagada))->toBeTrue()
         ->and(OrdenCompraEstado::Pagada->puedeTransitarA(OrdenCompraEstado::Despachada))->toBeTrue()
         ->and(OrdenCompraEstado::Despachada->puedeTransitarA(OrdenCompraEstado::RecibidaParcialmente))->toBeTrue()
@@ -68,6 +67,7 @@ it('permite transiciones válidas del flujo retrocompatible', function () {
 
 it('rechaza transiciones inválidas y terminales', function () {
     expect(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Recibida))->toBeFalse()
+        ->and(OrdenCompraEstado::Generada->puedeTransitarA(OrdenCompraEstado::Enviada))->toBeFalse()
         ->and(OrdenCompraEstado::RecibidaParcialmente->puedeTransitarA(OrdenCompraEstado::Cancelada))->toBeFalse()
         ->and(OrdenCompraEstado::Recibida->transicionesValidas())->toBeEmpty()
         ->and(OrdenCompraEstado::EntregadaCerrada->transicionesValidas())->toBeEmpty()
