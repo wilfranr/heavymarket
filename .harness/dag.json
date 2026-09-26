@@ -2923,6 +2923,58 @@
       ],
       "reviewed_by": "Reviewer",
       "review_notes": "Aprobado. El select Marca usa getMarcasYFabricantesParaReferencia() (Marca y Fabricantes, sin duplicados por nombre, se prefiere Fabricantes), igual que los modales de referencia, articulo y maquina. Los costeos ya enviados guardan ids de Fabricantes, que siempre se conservan al quitar duplicados, asi que se siguen mostrando bien. El endpoint listas/tipo/{tipo} no restringe por rol, asi que no hay problema de permisos para el proveedor. Gates: vitest 192/192; ng build OK; prettier OK. Nota: ng test falla por el builder @angular-devkit/build-angular:vitest (configuracion preexistente); se uso npx vitest run. ng lint no tiene target."
+    },
+    {
+      "id": "costeo-proveedor-descripcion-backend",
+      "description": "Backend: en opportunities() con status sent/approved, incluir referencia.articulo (definicion, descripcionEspecifica) igual que la rama pending, para que el frontend pueda mostrar la descripcion del articulo.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "feature/costeo-proveedor-descripcion-articulo",
+      "files": [
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-api && vendor/bin/pint --test app/Http/Controllers/Api/V1/ProviderPortalController.php tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+        "cd heavy-api && php -d memory_limit=1G vendor/bin/pest",
+        "cd heavy-api && php artisan scramble:analyze"
+      ],
+      "reviewed_by": "Reviewer",
+      "review_notes": "Aprobado. La rama sent/approved de opportunities() ahora incluye referencia.articulo {definicion, descripcionEspecifica}, con la misma forma que ArticuloResource en la rama pending; si la referencia no tiene articulo, devuelve null. Solo se agrega un campo, sin cambios que rompan consumidores. Test verificado: falla sin el cambio y pasa con el. Gates: pest 550/550 (1812 asserts); scramble:analyze OK; pint OK. No ejecutable: phpstan (no instalado). Revision hecha por el mismo agente que implemento."
+    },
+    {
+      "id": "costeo-proveedor-descripcion-frontend",
+      "description": "Frontend: la columna Descripcion del costeo proveedor muestra articulo.descripcionEspecifica, si no articulo.definicion, si no la definicion del pedido.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [
+        "costeo-proveedor-descripcion-backend"
+      ],
+      "topic_key": "feature/costeo-proveedor-descripcion-articulo",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html",
+          "status": "validated"
+        }
+      ],
+      "gates": [
+        "cd heavy-front && npx prettier --check src/app/features/provider-portal/costing-opportunities/",
+        "cd heavy-front && npx vitest run",
+        "cd heavy-front && npx ng build --configuration development"
+      ],
+      "reviewed_by": "Reviewer",
+      "review_notes": "Aprobado. La descripcion se calcula una vez en normalizarFila (descripcionEspecifica, luego definicion del articulo, luego definicion del pedido), no en la plantilla. Tipos estrictos, sin any. Gates: vitest 192/192; ng build OK; prettier OK. ng lint no tiene target. Revision hecha por el mismo agente que implemento."
     }
   ]
 }

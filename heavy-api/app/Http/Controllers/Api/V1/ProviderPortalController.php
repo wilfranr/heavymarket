@@ -86,6 +86,10 @@ class ProviderPortalController extends Controller
                         'peso' => $pedidoReferencia?->referencia?->articulo?->peso ?? 0,
                         'referencia' => [
                             'referencia' => $pedidoReferencia?->referencia?->referencia ?? 'N/A',
+                            'articulo' => $pedidoReferencia?->referencia?->articulo ? [
+                                'definicion' => $pedidoReferencia->referencia->articulo->definicion,
+                                'descripcionEspecifica' => $pedidoReferencia->referencia->articulo->descripcionEspecifica,
+                            ] : null,
                         ],
                         'categoria_comercial' => [
                             'nombre' => $pedidoReferencia?->categoriaComercial?->nombre ?? 'General',

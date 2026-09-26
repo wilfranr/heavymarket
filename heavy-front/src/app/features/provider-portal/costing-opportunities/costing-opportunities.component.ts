@@ -34,8 +34,9 @@ interface ProviderCosteoRow {
     pedido_id?: number;
     cantidad: number;
     definicion?: string;
+    descripcion?: string;
     peso?: number;
-    referencia?: { referencia?: string; articulo?: { peso?: number } };
+    referencia?: { referencia?: string; articulo?: { peso?: number; definicion?: string | null; descripcionEspecifica?: string | null } | null };
     pedido?: ProviderPedidoSummary | null;
     form_costo: number | null;
     form_entrega?: EntregaValue;
@@ -149,6 +150,7 @@ export class CostingOpportunitiesComponent implements OnInit {
             ...item,
             pedido_id: item.pedido_id ?? item.pedido?.id,
             peso,
+            descripcion: item.referencia?.articulo?.descripcionEspecifica || item.referencia?.articulo?.definicion || item.definicion,
             form_costo: item.form_costo ?? null,
             form_entrega: entregaValueDesdePersistencia((item as { form_dias_entrega?: number | null }).form_dias_entrega, (item as { form_es_backorder?: boolean }).form_es_backorder),
             form_marca_id: item.form_marca_id ?? null,

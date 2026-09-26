@@ -3,11 +3,13 @@
 namespace Tests\Feature\Api\V1;
 
 use App\Enums\OrdenCompraEstado;
+use App\Models\Articulo;
 use App\Models\Lista;
 use App\Models\OrdenCompra;
 use App\Models\Pedido;
 use App\Models\PedidoReferencia;
 use App\Models\PedidoReferenciaProveedor;
+use App\Models\Referencia;
 use App\Models\Tercero;
 use App\Models\Transportadora;
 use App\Models\User;
@@ -443,6 +445,50 @@ class ProviderPortalControllerTest extends TestCase
             ])
             ->assertStatus(422)
             ->assertJsonValidationErrors(['marca_id']);
+    }
+
+    /** @test */
+    public function test_opportunities_include_article_description_in_pending_and_sent_status()
+    {
+        $articulo = Articulo::factory()->create([
+            'definicion' => 'Tuerca hexagonal',
+            'descripcionEspecifica' => 'Tuerca hexagonal 3/8',
+        ])->fresh();
+        $referencia = Referencia::factory()->create(['articulo_id' => $articulo->id]);
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'referencia_id' => $referencia->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+            'definicion' => 'Por Defecto',
+        ]);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.referencia.articulo.definicion', $articulo->definicion)
+            ->assertJsonPath('data.0.referencia.articulo.descripcionEspecifica', $articulo->descripcionEspecifica);
+
+        PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $ref->id,
+            'referencia_id' => $ref->referencia_id,
+            'proveedor_id' => $this->tercero->id,
+            'marca_id' => $this->marca->id,
+            'costo_unidad' => 120.00,
+            'dias_entrega' => 3,
+            'cantidad' => 1,
+            'estado' => 0,
+            'utilidad' => 0.00,
+            'ubicacion' => 'Nacional',
+            'Entrega' => 'Programada',
+        ]);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities?status=sent')
+            ->assertStatus(200)
+            ->assertJsonPath('data.0.referencia.articulo.definicion', $articulo->definicion)
+            ->assertJsonPath('data.0.referencia.articulo.descripcionEspecifica', $articulo->descripcionEspecifica);
     }
 
     /** @test */
