@@ -50,22 +50,35 @@ Cada vez que el Reviewer rechaza un cambio o el Implementer corrige un error det
 
 ## Verificación Post-Despliegue (Trello)
 
-El deploy a producción es **manual, bajo demanda** (`./scripts/deploy.sh` en el servidor, sin CI/CD que lo dispare). Por eso no hay un evento técnico de "deploy terminado" al que engancharse — el paso de verificación queda documentado acá para ejecutarse como parte del procedimiento, no como una automatización disparada por webhook.
+El deploy a producción es **manual, bajo demanda** (`./scripts/deploy.sh` en el servidor, sin CI/CD que lo dispare). Por eso no hay un evento técnico de "deploy terminado" al que engancharse — los pasos de abajo quedan documentados como parte del procedimiento, no como automatizaciones disparadas por webhook.
 
-**Herramientas ya construidas** (repo separado, en el servidor de automatizaciones): `/home/yoseth/automate/automations/trello_to_github/`
-- `deploy_verification.py <issue_1> <issue_2> ...`: mueve las tarjetas de Trello de esos issues a la lista "In Verification" y deja un comentario genérico de despliegue.
-- `comment_fix_summary.py <issue> "<mensaje>"`: deja un comentario detallado de qué se ajustó. **La fuente del mensaje es el campo `description` (o `review_notes` si existe y es más específico) del nodo correspondiente en `.harness/dag.json`** — no hay que inventar ni pedir ese texto, ya existe en el nodo.
-- Ambos requieren el venv del proyecto: `/home/yoseth/automate/.venv/bin/python <script>`.
+El tablero de Trello tiene dos etapas sucesivas después de implementado un fix: **In Process** (issue cerrado, corrección lista, pendiente de salir a producción) → **In Verification** (ya está en producción, el cliente puede confirmarlo). Cada una se dispara en un momento distinto y usa un comentario distinto.
+
+**Herramientas** (repo separado, en el servidor de automatizaciones): `/home/yoseth/automate/automations/trello_to_github/`, todas requieren `/home/yoseth/automate/.venv/bin/python <script>`.
+- `close_verification.py <issue> "<mensaje>"`: mueve la tarjeta a **In Process** (list id `62f9a8565b0e38348d3c35de`) y deja el comentario para el cliente. Se ejecuta **cuando se cierra el issue de GitHub** (en este flujo, al hacer `git push` con `Closes #N` — ver "Encadenamiento autónomo de roles" en `CLAUDE.md`).
+- `deploy_verification.py <issue_1> <issue_2> ...`: mueve las tarjetas a **In Verification** (list id `62f9a85f8961a7258b6b99cd`) y deja un comentario genérico de despliegue. Se ejecuta tras el deploy real a producción.
+- `comment_fix_summary.py <issue> "<mensaje>"`: opcional, deja un comentario adicional en la etapa de In Verification. Reutilizar el mismo `client_summary` del nodo, no el texto técnico.
+
+**Campo `client_summary` en el nodo (obligatorio si tiene `github_issue`):** texto corto para el cliente, redactado por el Reviewer al aprobar el nodo (`done`). Es la única fuente de texto para `close_verification.py` y, si aplica, `comment_fix_summary.py` — nunca usar `description` ni `review_notes` (son técnicos, con nombres de archivo/función).
+
+**Guía de redacción de `client_summary`:**
+- Tono formal e impersonal: sin "tú"/"vos", sin dirigirse al cliente ni decirle qué hacer. Describe la capacidad resultante ("ahora es posible...", "el sistema muestra...."), no una instrucción.
+- Sin emojis, sin jerga técnica (nada de nombres de archivo, función, variable o librería).
+- 1-2 frases. Formato: `Se corrigió: <qué cambia para el usuario, en términos de lo que ve/puede hacer>.`
+- Ejemplo real (issue #175): "Se corrigió: al pegar varias referencias al crear un pedido, ahora el sistema muestra el código que se escribe en vez de la descripción del artículo, así es posible verificar que quedó bien digitado."
 
 **Campo `deployed` en nodos del DAG:** todo nodo que el Reviewer pasa a `done` y tiene `github_issue` nace con `"deployed": false`. Esto es necesario porque los commits se acumulan sin push (ver `CLAUDE.md`), así que puede haber varios nodos `done` esperando a que el push y el deploy realmente ocurran.
 
+**Procedimiento al cerrar un issue (push con `Closes #N`):**
+1. Ejecutar `close_verification.py <issue> "<client_summary del nodo>"`.
+2. No tocar `deployed` todavía — eso es solo para la etapa de despliegue real.
+
 **Procedimiento tras un deploy a producción exitoso:**
 1. Identificar los nodos `done` con `github_issue` y `"deployed": false` que ya están en la rama desplegada (es decir, su commit ya llegó a producción, no solo a `main` local).
-2. Ejecutar una sola vez: `/home/yoseth/automate/.venv/bin/python /home/yoseth/automate/automations/trello_to_github/deploy_verification.py <issue_1> <issue_2> ...` con todos los issues de ese deploy juntos.
-3. Por cada issue, ejecutar: `/home/yoseth/automate/.venv/bin/python /home/yoseth/automate/automations/trello_to_github/comment_fix_summary.py <issue_N> "<description/review_notes del nodo>"`.
-4. Marcar cada nodo procesado como `"deployed": true` en `dag.json`.
+2. Ejecutar una sola vez: `deploy_verification.py <issue_1> <issue_2> ...` con todos los issues de ese deploy juntos.
+3. Marcar cada nodo procesado como `"deployed": true` en `dag.json`.
 
-Si un issue no tiene tarjeta de Trello mapeada (`deploy_verification.py` lo reporta en `not_found`), no es un error bloqueante: seguir con el resto y notificarlo en el resumen.
+Si un issue no tiene tarjeta de Trello mapeada (`not_found` en la salida del script), no es un error bloqueante: seguir con el resto y notificarlo en el resumen.
 
 ---
 
@@ -106,7 +119,7 @@ El flujo de trabajo se rige por un modelo de roles especializados. El agente **N
 - Ejecutar los gates de verificación obligatorios.
 - Aprobar (pasar a `done`) o rechazar (volver a `in_progress` con `review_notes`) el nodo.
 - Al aprobar: hacer `git commit` de los archivos del nodo (mensaje Conventional Commits) de forma automática. **No hacer `git push`** — queda acumulado para cuando el usuario pida subir.
-- Si el nodo tiene `github_issue`, agregar `"deployed": false` al aprobarlo (ver "Verificación Post-Despliegue (Trello)").
+- Si el nodo tiene `github_issue`, agregar `"deployed": false` y redactar `"client_summary"` (ver guía de redacción en "Verificación Post-Despliegue (Trello)") al aprobarlo.
 - Ejecutar `engram_mem_session_summary` al cerrar la revisión.
 **Prohibido:** Modificar código de implementación. Aprobar un nodo sin que todos los gates hayan pasado exitosamente. Hacer `git push` o cerrar issues de GitHub sin que el usuario lo pida explícitamente.
 
@@ -149,7 +162,7 @@ El Triage **DEBE** incluir el campo `required_skill` en cada nodo del DAG. El Im
 }
 ```
 
-Si el nodo tiene `github_issue` y el Reviewer lo aprueba (`done`), se le agrega `"deployed": false` (ver sección "Verificación Post-Despliegue (Trello)").
+Si el nodo tiene `github_issue` y el Reviewer lo aprueba (`done`), se le agregan `"deployed": false` y `"client_summary": "..."` (ver sección "Verificación Post-Despliegue (Trello)").
 
 **Mapeo de skills por tipo de cambio:**
 

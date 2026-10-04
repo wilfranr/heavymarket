@@ -16,6 +16,7 @@
       "topic_key": "bugfix/pedido-asesor-referencia",
       "github_issue": 175,
       "deployed": false,
+      "client_summary": "Se corrigió: al pegar varias referencias al crear un pedido, ahora el sistema muestra el código que se escribe en vez de la descripción del artículo, así es posible verificar que quedó bien digitado.",
       "review_notes": "Aprobado. Diff minimo y correcto: elimina unicamente la sobrescritura de definicion con articulo.definicion, logica de marca_id/lista_id/articulo_id/sistema_id/referencias intacta. Gates: build OK, suite completa 195/195 tests OK (incluye los 3 nuevos). Gate de lint no ejecutable: eslint.config.js usa sintaxis legacy (extends/overrides como string) invalida para flat config, preexistente al fix, no bloquea este nodo. Checklist no_any: la funcion extraida usa 'any' en data/referenciaData, consistente con el 100% del archivo (deuda preexistente, no introducida por este cambio). Pendiente verificacion manual visual en navegador (fuera del alcance automatizable).",
       "files": [
         {
