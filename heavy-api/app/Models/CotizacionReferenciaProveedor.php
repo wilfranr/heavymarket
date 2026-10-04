@@ -26,6 +26,7 @@ class CotizacionReferenciaProveedor extends Model
         'snapshot_costo_unidad',
         'snapshot_valor_unidad',
         'snapshot_valor_total',
+        'cantidad_aprobada',
         'estado_aprobacion',
         'fecha_aprobacion',
     ];
@@ -37,6 +38,7 @@ class CotizacionReferenciaProveedor extends Model
             'snapshot_marca_id' => 'integer',
             'snapshot_proveedor_id' => 'integer',
             'snapshot_cantidad' => 'integer',
+            'cantidad_aprobada' => 'integer',
             'snapshot_costo_unidad' => 'decimal:2',
             'snapshot_valor_unidad' => 'decimal:2',
             'snapshot_valor_total' => 'decimal:2',

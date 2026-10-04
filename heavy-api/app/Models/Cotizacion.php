@@ -19,6 +19,7 @@ use Illuminate\Support\Carbon;
  * @property int $user_id
  * @property int $tercero_id
  * @property int $pedido_id
+ * @property int|null $direccion_id
  * @property string $estado
  * @property Carbon|null $fecha_emision
  * @property Carbon|null $fecha_vencimiento
@@ -29,6 +30,7 @@ use Illuminate\Support\Carbon;
  * @property-read User $user
  * @property-read Tercero $tercero
  * @property-read Pedido $pedido
+ * @property-read Direccion|null $direccion
  * @property-read Collection|CotizacionReferenciaProveedor[] $referenciasProveedores
  */
 class Cotizacion extends Model
@@ -41,6 +43,7 @@ class Cotizacion extends Model
         'user_id',
         'tercero_id',
         'pedido_id',
+        'direccion_id',
         'estado',
         'fecha_emision',
         'fecha_vencimiento',
@@ -78,6 +81,14 @@ class Cotizacion extends Model
     public function pedido(): BelongsTo
     {
         return $this->belongsTo(Pedido::class);
+    }
+
+    /**
+     * Relación con el perfil de despacho (dirección) elegido al aprobar
+     */
+    public function direccion(): BelongsTo
+    {
+        return $this->belongsTo(Direccion::class);
     }
 
     /**

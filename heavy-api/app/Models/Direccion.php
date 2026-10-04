@@ -25,6 +25,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $transportadora_id
  * @property string|null $forma_pago
  * @property string|null $telefono
+ * @property string|null $correo
  * @property string|null $ciudad_texto
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -52,6 +53,7 @@ class Direccion extends Model
         'transportadora_id',
         'forma_pago',
         'telefono',
+        'correo',
         'ciudad_texto',
     ];
 
