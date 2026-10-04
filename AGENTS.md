@@ -54,12 +54,15 @@ El deploy a producción es **manual, bajo demanda** (`./scripts/deploy.sh` en el
 
 El tablero de Trello tiene dos etapas sucesivas después de implementado un fix: **In Process** (issue cerrado, corrección lista, pendiente de salir a producción) → **In Verification** (ya está en producción, el cliente puede confirmarlo). Cada una se dispara en un momento distinto y usa un comentario distinto.
 
-**Herramientas** (repo separado, en el servidor de automatizaciones): `/home/yoseth/automate/automations/trello_to_github/`, todas requieren `/home/yoseth/automate/.venv/bin/python <script>`.
-- `close_verification.py <issue> "<mensaje>"`: mueve la tarjeta a **In Process** (list id `62f9a8565b0e38348d3c35de`) y deja el comentario para el cliente. Se ejecuta **cuando se cierra el issue de GitHub** (en este flujo, al hacer `git push` con `Closes #N` — ver "Encadenamiento autónomo de roles" en `CLAUDE.md`).
-- `deploy_verification.py <issue_1> <issue_2> ...`: mueve las tarjetas a **In Verification** (list id `62f9a85f8961a7258b6b99cd`) y deja un comentario genérico de despliegue. Se ejecuta tras el deploy real a producción.
-- `comment_fix_summary.py <issue> "<mensaje>"`: opcional, deja un comentario adicional en la etapa de In Verification. Reutilizar el mismo `client_summary` del nodo, no el texto técnico.
+**Etapa 1 — In Process (automática, sin intervención del agente):** `.github/workflows/trello-close-verification.yml` + `.github/scripts/trello_close_verification.py`, en el propio repo `heavymarket`. Se dispara solo con el evento `issues: closed` de GitHub (corre en la nube de GitHub Actions, no depende de que este servidor esté prendido). Busca el nodo con ese `github_issue` en `.harness/dag.json` (o `dag_archive.json`), toma su `client_summary`, extrae el link de Trello del cuerpo del issue, y mueve la tarjeta a **In Process** (list id `62f9a8565b0e38348d3c35de`) dejando ese comentario. Requiere los secrets `TRELLO_API_KEY` y `TRELLO_TOKEN` ya cargados en el repo (`gh secret list --repo wilfranr/heavymarket`).
 
-**Campo `client_summary` en el nodo (obligatorio si tiene `github_issue`):** texto corto para el cliente, redactado por el Reviewer al aprobar el nodo (`done`). Es la única fuente de texto para `close_verification.py` y, si aplica, `comment_fix_summary.py` — nunca usar `description` ni `review_notes` (son técnicos, con nombres de archivo/función).
+**El agente NO debe ejecutar nada para esta etapa** — ni al aprobar el nodo, ni al pushear. Lo único que el Reviewer debe garantizar es que el nodo tenga `client_summary` bien redactado *antes* de que el push cierre el issue, porque el Action lee el `dag.json` tal como esté en ese momento.
+
+*(Nota histórica: se intentó primero con un poller por cron cada 10 min en `/home/yoseth/automate/`, descartado porque implicaba un proceso corriendo todo el tiempo incluso en días sin trabajo. El GitHub Action es puramente reactivo al evento, sin huella cuando no hay actividad.)*
+
+**Etapa 2 — In Verification (manual, tras un deploy real):** `/home/yoseth/automate/automations/trello_to_github/deploy_verification.py <issue_1> <issue_2> ...` (requiere `/home/yoseth/automate/.venv/bin/python`). Mueve las tarjetas a **In Verification** (list id `62f9a85f8961a7258b6b99cd`) y deja un comentario genérico de despliegue. Esta etapa sigue siendo manual porque el deploy a producción también lo es (ver más abajo) — no hay forma de engancharse a un evento real de "deploy terminado".
+
+**Campo `client_summary` en el nodo (obligatorio si tiene `github_issue`):** texto corto para el cliente, redactado por el Reviewer al aprobar el nodo (`done`). Es la única fuente de texto que usa el GitHub Action de la Etapa 1 — nunca usar `description` ni `review_notes` (son técnicos, con nombres de archivo/función).
 
 **Guía de redacción de `client_summary`:**
 - Tono formal e impersonal: sin "tú"/"vos", sin dirigirse al cliente ni decirle qué hacer. Describe la capacidad resultante ("ahora es posible...", "el sistema muestra...."), no una instrucción.
@@ -69,11 +72,9 @@ El tablero de Trello tiene dos etapas sucesivas después de implementado un fix:
 
 **Campo `deployed` en nodos del DAG:** todo nodo que el Reviewer pasa a `done` y tiene `github_issue` nace con `"deployed": false`. Esto es necesario porque los commits se acumulan sin push (ver `CLAUDE.md`), así que puede haber varios nodos `done` esperando a que el push y el deploy realmente ocurran.
 
-**Procedimiento al cerrar un issue (push con `Closes #N`):**
-1. Ejecutar `close_verification.py <issue> "<client_summary del nodo>"`.
-2. No tocar `deployed` todavía — eso es solo para la etapa de despliegue real.
+**Al cerrar un issue (push con `Closes #N`): no hay procedimiento manual.** El GitHub Action de la Etapa 1 se encarga solo. No tocar `deployed` en ese momento — eso es exclusivo de la etapa de despliegue real.
 
-**Procedimiento tras un deploy a producción exitoso:**
+**Procedimiento tras un deploy a producción exitoso (Etapa 2, sigue siendo manual):**
 1. Identificar los nodos `done` con `github_issue` y `"deployed": false` que ya están en la rama desplegada (es decir, su commit ya llegó a producción, no solo a `main` local).
 2. Ejecutar una sola vez: `deploy_verification.py <issue_1> <issue_2> ...` con todos los issues de ese deploy juntos.
 3. Marcar cada nodo procesado como `"deployed": true` en `dag.json`.
