@@ -51,6 +51,71 @@ it('permite crear tercero', function () {
         ->and(strtolower($creado->nombre))->toContain('empresa');
 });
 
+it('permite crear tercero con perfiles de despacho (direcciones)', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '900999999-1',
+            'nombre' => 'Empresa Con Despacho S.A.S.',
+            'tipo' => 'Cliente',
+            'direcciones' => [
+                ['destinatario' => 'Juan Pérez', 'direccion' => 'Calle 1 # 2-3', 'correo' => 'juan@empresa.com', 'forma_pago' => 'Pagamos'],
+            ],
+        ]);
+
+    $response->assertStatus(201)
+        ->assertJsonCount(1, 'data.direcciones')
+        ->assertJsonPath('data.direcciones.0.destinatario', 'Juan Pérez')
+        ->assertJsonPath('data.direcciones.0.correo', 'juan@empresa.com');
+
+    $tercero = Tercero::query()->where('numero_documento', '900999999-1')->first();
+    expectDatabaseHas('direcciones', [
+        'tercero_id' => $tercero->id,
+        'direccion' => 'Calle 1 # 2-3',
+        'correo' => 'juan@empresa.com',
+        'forma_pago' => 'Pagamos',
+    ]);
+});
+
+it('rechaza crear tercero con forma_pago de despacho invalida', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/terceros', [
+            'tipo_documento' => 'NIT',
+            'numero_documento' => '900888888-1',
+            'nombre' => 'Empresa Invalida S.A.S.',
+            'tipo' => 'Cliente',
+            'direcciones' => [
+                ['direccion' => 'Calle 1', 'forma_pago' => 'Contraentrega'],
+            ],
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['direcciones.0.forma_pago']);
+});
+
+it('permite actualizar los perfiles de despacho de un tercero (agregar, editar y eliminar)', function () {
+    $tercero = Tercero::factory()->create();
+    $direccionExistente = $tercero->direcciones()->create(['direccion' => 'Dirección original']);
+    $direccionAEliminar = $tercero->direcciones()->create(['direccion' => 'Se debe borrar']);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->putJson('/v1/terceros/'.$tercero->id, [
+            'nombre' => $tercero->nombre,
+            'tipo' => $tercero->tipo,
+            'direcciones' => [
+                ['id' => $direccionExistente->id, 'direccion' => 'Dirección editada', 'correo' => 'editada@empresa.com'],
+                ['direccion' => 'Perfil nuevo', 'ciudad_texto' => 'Medellín'],
+            ],
+        ]);
+
+    $response->assertStatus(200)
+        ->assertJsonCount(2, 'data.direcciones');
+
+    expectDatabaseHas('direcciones', ['id' => $direccionExistente->id, 'direccion' => 'Dirección editada', 'correo' => 'editada@empresa.com']);
+    expectDatabaseHas('direcciones', ['tercero_id' => $tercero->id, 'direccion' => 'Perfil nuevo', 'ciudad_texto' => 'Medellín']);
+    expectDatabaseMissing('direcciones', ['id' => $direccionAEliminar->id]);
+});
+
 it('rechaza crear tercero con documento duplicado', function () {
     Tercero::factory()->create(['numero_documento' => '900123456-7']);
 

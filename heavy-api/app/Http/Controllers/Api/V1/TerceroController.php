@@ -120,6 +120,13 @@ class TerceroController extends Controller
                     }
                 }
 
+                // Handle Perfiles de Despacho (direcciones)
+                if ($request->filled('direcciones')) {
+                    foreach ($request->input('direcciones') as $direccionData) {
+                        $tercero->direcciones()->create(Arr::except($direccionData, ['id']));
+                    }
+                }
+
                 // Handle Relationships
                 if ($request->filled('maquina_id')) {
                     $tercero->maquinas()->sync($request->input('maquina_id'));
@@ -139,7 +146,7 @@ class TerceroController extends Controller
                 }
 
                 return response()->json([
-                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas', 'contactos', 'categoriasComerciales'])),
+                    'data' => new TerceroResource($tercero->load(['maquinas', 'fabricantes', 'sistemas', 'contactos', 'direcciones', 'categoriasComerciales'])),
                     'message' => 'Tercero creado exitosamente',
                 ], 201);
 
@@ -220,6 +227,22 @@ class TerceroController extends Controller
                     }
                 }
 
+                // Handle Perfiles de Despacho (direcciones)
+                if ($request->has('direcciones')) {
+                    $direccionesInput = $request->input('direcciones', []);
+                    $keepIds = collect($direccionesInput)->pluck('id')->filter()->all();
+
+                    $tercero->direcciones()->whereNotIn('id', $keepIds)->delete();
+
+                    foreach ($direccionesInput as $direccionData) {
+                        if (isset($direccionData['id'])) {
+                            $tercero->direcciones()->where('id', $direccionData['id'])->update(Arr::except($direccionData, ['id']));
+                        } else {
+                            $tercero->direcciones()->create(Arr::except($direccionData, ['id']));
+                        }
+                    }
+                }
+
                 // Handle Relationships
                 if ($request->has('maquina_id')) {
                     $tercero->maquinas()->sync($request->input('maquina_id'));
@@ -238,7 +261,7 @@ class TerceroController extends Controller
                 $this->syncTerceroPortalAccess($tercero->fresh(), $portalPassword ?: null);
 
                 return response()->json([
-                    'data' => new TerceroResource($tercero->load(['contactos', 'maquinas', 'fabricantes', 'sistemas', 'categoriasComerciales'])),
+                    'data' => new TerceroResource($tercero->load(['contactos', 'direcciones', 'maquinas', 'fabricantes', 'sistemas', 'categoriasComerciales'])),
                     'message' => 'Tercero actualizado exitosamente',
                 ]);
 

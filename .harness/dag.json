@@ -210,15 +210,17 @@
     {
       "id": "tercero-direcciones-backend",
       "description": "Backend: TerceroController::store() y update() deben aceptar un array 'direcciones' y crearlas/sincronizarlas, replicando exactamente el patron ya usado para 'contactos' (store: foreach + $tercero->direcciones()->create(); update: diff por id -- borrar las que no vienen, actualizar las que traen id, crear las nuevas). Agregar validacion 'direcciones.*' en StoreTerceroRequest/UpdateTerceroRequest (destinatario/nit_cc/transportadora_id/forma_pago con Rule::in/direccion/telefono/correo/ciudad_texto, todo nullable, nada obligatorio) + 'direcciones.*.id' en Update (exists:direcciones,id). Agregar 'direcciones' al eager-load de las respuestas de store/update (hoy update() carga ['contactos','maquinas','fabricantes','sistemas','categoriasComerciales'] sin 'direcciones'; store() tampoco) para que el frontend reciba los perfiles recien creados sin tener que recargar.",
-      "status": "pending",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["direccion-request-layer-hardening"],
       "topic_key": "biz/roles",
       "github_issue": null,
+      "review_notes": "Aprobado. store()/update() manejan 'direcciones' con el mismo patron exacto que 'contactos': store crea cada perfil via $tercero->direcciones()->create(); update hace diff por id (borra los que no vienen, actualiza los que traen id, crea los nuevos). Validacion en Store/UpdateTerceroRequest reusa Rule::in(['Al cobro','Pagamos']) para forma_pago y valida correo como email, todo nullable (nada obligatorio, cumple el requisito explicito del issue). 'direcciones' se agrego al eager-load de las respuestas JSON de store y update (antes solo show() lo cargaba). 3 tests nuevos en TerceroTest.php: crear tercero con perfiles, rechazar forma_pago invalida, actualizar (agregar+editar+eliminar) perfiles existentes. Gates: pint PASS (3 archivos); pest TerceroTest 20/20 OK, sin regresiones en los 17 tests preexistentes.",
       "files": [
-        "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php",
-        "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
-        "heavy-api/app/Http/Requests/UpdateTerceroRequest.php"
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/TerceroTest.php", "status": "validated"}
       ]
     },
     {

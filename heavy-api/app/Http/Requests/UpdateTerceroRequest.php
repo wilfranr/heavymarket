@@ -124,6 +124,18 @@ class UpdateTerceroRequest extends FormRequest
             'contactos.*.email' => ['nullable', 'email', 'max:255'],
             'contactos.*.principal' => ['nullable', 'boolean'],
 
+            // Perfiles de Despacho (direcciones)
+            'direcciones' => ['nullable', 'array'],
+            'direcciones.*.id' => ['nullable', 'integer', 'exists:direcciones,id'],
+            'direcciones.*.destinatario' => ['nullable', 'string', 'max:255'],
+            'direcciones.*.nit_cc' => ['nullable', 'string', 'max:50'],
+            'direcciones.*.transportadora_id' => ['nullable', 'integer', 'exists:transportadoras,id'],
+            'direcciones.*.forma_pago' => ['nullable', Rule::in(['Al cobro', 'Pagamos'])],
+            'direcciones.*.direccion' => ['nullable', 'string', 'max:500'],
+            'direcciones.*.telefono' => ['nullable', 'string', 'max:50'],
+            'direcciones.*.correo' => ['nullable', 'email', 'max:255'],
+            'direcciones.*.ciudad_texto' => ['nullable', 'string', 'max:255'],
+
             // Acceso Landing
             'landing_access' => ['nullable', 'boolean'],
             'provider_access' => ['nullable', 'boolean'],
