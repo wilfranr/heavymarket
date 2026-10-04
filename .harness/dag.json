@@ -2,10 +2,10 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "feat-costeo-proveedor-y-fix-costeo-asesor",
-  "description": "GitHub #171 + #173 - El modulo de Costeo Proveedor (portal de proveedores) necesita: (a) una tabla de acceso a las oportunidades de costeo agrupadas por pedido, en vez del selector actual, para trabajar cada una ordenadamente; (b) el campo de Fletes del total (hoy hardcodeado a 0) debe calcularse igual que en el costeo del asesor, usando el peso de los articulos y la tarifa de flete del pais del proveedor. GitHub #178 - En el costeo del asesor, el selector de proveedor por referencia no muestra el proveedor que coloco una cotizacion cuando ese proveedor no cumple el filtro de marca/categoria comercial de esa fila especifica.",
+  "issue": "fix-separar-login-landing-app",
+  "description": "GitHub #182 (duplicado #160) - Un usuario con rol interno (ej. Logistica) reporta que no puede cerrar sesion. Root cause real (diagnosticado por el usuario/dueno de producto): existen 3 flujos de login independientes contra el mismo modelo User -- AuthController::login (app interna, token 'access_token'), ClientAuthController::login (landing, token 'clientToken') y ProviderAuthController::login (portal proveedor, token 'provider_access_token') -- y NINGUNO de los dos primeros valida el rol del usuario antes de emitir el token (ProviderAuthController si lo hace: exige hasRole('Proveedor')). Esto permite que un empleado inicie sesion por error en el login de la landing (pensado solo para Cliente), quedando con una sesion 'clientToken' activa que el boton de cerrar sesion de la app no toca, o viceversa. El usuario reporta no poder cerrar sesion porque esta cerrando la sesion del flujo equivocado.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "feat-aprobacion-cotizacion-cantidad-despacho",
+  "previous_issue": "feat-costeo-proveedor-y-fix-costeo-asesor",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -170,6 +170,24 @@
       "files": [
         {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts", "status": "validated"},
         {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "auth-separar-login-landing-app",
+      "description": "Backend: agregar validacion de rol en los dos login que hoy no la tienen, replicando el patron ya usado en ProviderAuthController::login (if (!$user->hasRole('Proveedor')) return 403). (a) AuthController::login (app interna, /v1/login): rechazar con 403 si $user->hasRole('Cliente') || $user->hasRole('Proveedor'), con mensaje indicando que debe usar el portal correspondiente. (b) ClientAuthController::login (landing, /v1/landing/auth/login): rechazar con 403 si !$user->hasRole('Cliente'), mismo patron exacto que ProviderAuthController. No se requieren cambios de frontend: ambos formularios de login (login.component.ts y auth-modal.component.ts) ya muestran generica mente 'error.error?.message' del backend. Roles internos de la app (no deben poder usar landing/provider login): super_admin, Administrador, Vendedor, Gerente Comercial, Analista, Logistica, Contabilidad, panel_user. Cierra GitHub #182 (y su duplicado #160).",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/logistica-cerrar-sesion",
+      "github_issue": 182,
+      "deployed": false,
+      "client_summary": "Ahora cada usuario solo puede iniciar sesión por el portal que le corresponde: los empleados (asesores, analistas, logística, administración) ya no pueden entrar por el portal de clientes, y los clientes no pueden entrar por el acceso interno de la empresa. Esto evita que alguien quede con dos sesiones abiertas a la vez sin darse cuenta, que era la causa real de que pareciera que la sesión de logística no se podía cerrar.",
+      "review_notes": "Aprobado. Se replico exactamente el patron de validacion que ya tenia ProviderAuthController::login (hasRole check -> 403 antes de emitir el token), que no estaba aplicado en los otros dos logins: AuthController::login (app) ahora rechaza si hasRole('Cliente') o hasRole('Proveedor'); ClientAuthController::login (landing) ahora rechaza si !hasRole('Cliente'). No se tocaron registros (register) porque esos crean usuarios nuevos con el rol correcto asignado automaticamente, no tienen el problema de cruce. No se requirieron cambios de frontend: login.component.ts y auth-modal.component.ts ya muestran 'error.error.message' del backend genericamente -- verificado en codigo antes de descartar el cambio. 6 tests nuevos (2 en AuthTest.php, 4 en nuevo ClientAuthControllerTest.php) cubren: Cliente/Proveedor rechazados en login de app, Cliente aceptado/Logistica y Proveedor rechazados en login de landing, usuario sin rol rechazado en landing. Gates: pint PASS (4 archivos); pest de los archivos tocados 16/16 OK; suite completa backend 565/565 OK, sin regresiones (el test preexistente 'permite login con credenciales correctas' usa un User sin roles, no se ve afectado por el nuevo check).",
+      "files": [
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"}
       ]
     }
   ]

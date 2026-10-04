@@ -96,6 +96,13 @@ class AuthController extends Controller
             ]);
         }
 
+        // Los roles Cliente y Proveedor tienen su propio portal de inicio de sesion
+        if ($user->hasRole('Cliente') || $user->hasRole('Proveedor')) {
+            return response()->json([
+                'message' => 'Este usuario debe iniciar sesión desde el portal de clientes o proveedores.',
+            ], 403);
+        }
+
         // Crear token de acceso
         $token = $user->createToken(
             $request->getDeviceName(),

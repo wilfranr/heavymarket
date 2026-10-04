@@ -78,6 +78,14 @@ class ClientAuthController extends Controller
             ]);
         }
 
+        // Solo clientes pueden iniciar sesión desde la landing; empleados y proveedores
+        // tienen sus propios portales de inicio de sesión.
+        if (! $user->hasRole('Cliente')) {
+            return response()->json([
+                'message' => 'Acceso denegado. Este usuario no tiene perfil de cliente.',
+            ], 403);
+        }
+
         $token = $user->createToken('client_auth_token')->plainTextToken;
 
         return response()->json([

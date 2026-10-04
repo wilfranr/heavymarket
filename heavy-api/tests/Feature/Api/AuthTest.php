@@ -75,6 +75,38 @@ it('permite login con credenciales correctas', function () {
         ]);
 });
 
+it('rechaza login en la app a un usuario con rol Cliente', function () {
+    Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
+    $user = User::factory()->create([
+        'email' => 'cliente@example.com',
+        'password' => 'password123',
+    ]);
+    $user->assignRole('Cliente');
+
+    $response = $this->postJson('/v1/login', [
+        'email' => 'cliente@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(403);
+});
+
+it('rechaza login en la app a un usuario con rol Proveedor', function () {
+    Role::firstOrCreate(['name' => 'Proveedor', 'guard_name' => 'web']);
+    $user = User::factory()->create([
+        'email' => 'proveedor@example.com',
+        'password' => 'password123',
+    ]);
+    $user->assignRole('Proveedor');
+
+    $response = $this->postJson('/v1/login', [
+        'email' => 'proveedor@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(403);
+});
+
 it('rechaza login con credenciales incorrectas', function () {
     User::factory()->create([
         'email' => 'test@example.com',
