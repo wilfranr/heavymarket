@@ -270,15 +270,17 @@
     },
     {
       "id": "orden-compra-quitar-boton-editar",
-      "description": "Frontend+Backend: eliminar el boton 'Editar' (y el metodo onEdit() ahora sin uso) de heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts (linea ~142 template / ~1044 metodo), unico caller confirmado por grep. A diferencia de Cotizacion, aqui si se endurece el backend: OrdenCompraPolicy::update() hoy permite editar en CUALQUIER estado a 6 roles sin ninguna verificacion -- hueco real ya que toda OC nace 'Generada' (OrdenCompraController::store linea 117), por lo que 'no editable despues de generada' equivale a 'nunca editable' en este sistema. Se cambia update() para retornar false siempre, documentando que la edicion formal de una OC ya no existe: los cambios de estado pasan por endpoints dedicados (transition, receive, depurarReferencia, reasignarTransito, upload-comprobante), ninguno de los cuales depende de esta policy. Cierra GitHub #176.",
-      "status": "pending",
+      "description": "Frontend: eliminar el boton 'Editar' (y el metodo onEdit() ahora sin uso) de heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts (linea ~142 template / ~1044 metodo), unico caller confirmado por grep. NOTA: se evaluo endurecer OrdenCompraPolicy::update() en backend (que hoy permite editar en cualquier estado sin verificacion), pero se descarto: OrdenCompraTest.php tiene un test real y pasante ('permite actualizar una orden de compra y sus referencias') que ejercita ese mismo endpoint para cambiar estado y reemplazar referencias -- es funcionalidad deliberada y probada, no un hueco accidental. El issue solo pide quitar el boton (alcance frontend), igual que #177; no se toca backend. Cierra GitHub #176.",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "bugfix/orden-compra-editar-sin-restriccion",
       "github_issue": 176,
+      "deployed": false,
+      "client_summary": "Se eliminó el botón de editar en la vista de detalle de órdenes de compra, ya que no corresponde modificar una orden formal desde ahí una vez generada.",
+      "review_notes": "Aprobado con alcance reducido respecto a lo planificado: se elimino el boton Editar y el metodo onEdit() ahora muerto (unico caller, confirmado por grep), igual que #177. Se evaluo endurecer OrdenCompraPolicy::update() en backend pero se descarto al encontrar OrdenCompraTest.php::'permite actualizar una orden de compra y sus referencias', un test real y pasante que ejercita ese mismo endpoint para reemplazar referencias y cambiar estado -- es funcionalidad deliberada, no un hueco accidental, y el issue solo pide quitar el boton (alcance frontend). No se toco ningun archivo backend. this.router sigue usado por otro metodo, sin inyeccion huerfana. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones; pest no se re-ejecuto porque no hubo cambios backend en este nodo.",
       "files": [
-        "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
-        "heavy-api/app/Policies/OrdenCompraPolicy.php"
+        {"path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts", "status": "validated"}
       ]
     }
   ]

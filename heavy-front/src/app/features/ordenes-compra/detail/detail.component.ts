@@ -139,7 +139,6 @@ export function ordenCompraProgresoItem(item: Pick<OrdenCompraReferencia, 'canti
                 </div>
                 <div class="flex gap-2">
                     <p-button label="Volver" icon="pi pi-arrow-left" severity="secondary" [text]="true" (onClick)="onBack()"></p-button>
-                    <p-button label="Editar" icon="pi pi-pencil" severity="warn" (onClick)="onEdit()"></p-button>
                 </div>
             </div>
 
@@ -1039,10 +1038,6 @@ export class DetailComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this.destroy$.next();
         this.destroy$.complete();
-    }
-
-    onEdit(): void {
-        this.router.navigate(['/app/ordenes-compra', this.ordenCompraId(), 'edit']);
     }
 
     onBack(): void {
