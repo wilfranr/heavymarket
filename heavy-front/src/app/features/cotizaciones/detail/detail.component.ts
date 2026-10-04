@@ -438,7 +438,6 @@ export function nuevoPerfilDespachoFormVacio(): NuevoPerfilDespachoForm {
                     <div class="flex flex-wrap justify-end gap-4 mt-4 mb-20 px-8">
                         <button type="button" class="btn-pill btn-outline flex items-center gap-2" (click)="onBack()"><i class="pi pi-arrow-left"></i> Volver al listado</button>
                         @if (cot.estado !== 'Anulada') {
-                            <button type="button" class="btn-pill btn-secondary flex items-center gap-2" (click)="onEdit()" style="background-color: #f1f5f9; color: #475569; border: 1px solid #cbd5e1;"><i class="pi pi-pencil"></i> Editar</button>
                             @if (cotizacionPermiteRespuesta(cot.estado)) {
                                 <button type="button" class="btn-pill flex items-center gap-2" (click)="onReject()" style="background-color: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;"><i class="pi pi-times"></i> Rechazar</button>
                                 <button type="button" class="btn-pill flex items-center gap-2" (click)="onApprove()" style="background-color: #dcfce7; color: #15803d; border: 1px solid #bbf7d0;"><i class="pi pi-check"></i> Aprobar</button>
@@ -954,10 +953,6 @@ export class DetailComponent implements OnInit {
 
     limpiarReferenciasAprobacion(): void {
         this.referenciasAprobadasSeleccionadas.set([]);
-    }
-
-    onEdit(): void {
-        this.router.navigate(['/app/cotizaciones', this.cotizacionId(), 'edit']);
     }
 
     onBack(): void {

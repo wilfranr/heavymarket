@@ -2,10 +2,10 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "feat-perfil-despacho-wizard-terceros",
-  "description": "GitHub #172 - Nuevo Modulo Perfil de Despacho: se debe integrar como paso 3 (despues de Contactos) en el wizard de creacion/edicion de Terceros, permitiendo multiples perfiles por tercero con destinatario/nit-cc/transportadora(select con creacion inline)/forma de pago flete(select Al cobro|Pagamos)/direccion/telefono/correo/ciudad, ninguno obligatorio. Reusa el modelo Direccion ya existente (NI del propio issue: 'revisar modulo existente Direcciones'). Durante la investigacion se encontraron 2 bugs reales en el trabajo ya cerrado de #179: el campo correo se descartaba silenciosamente al crear una Direccion (StoreDireccionRequest no lo validaba) y solo super_admin/Administrador podian crear una Direccion (authorize() dependia de una Policy que no existe, Vendedor recibia 403).",
+  "issue": "fix-quitar-boton-editar-cotizacion-y-orden-compra",
+  "description": "GitHub #177 - En las cotizaciones no se necesita el boton editar (se quita de la vista de detalle). GitHub #176 - No se debe poder editar las ordenes de compra despues de generadas; dado que toda OC nace en estado 'Generada' (no existe fase de borrador previa, confirmado en OrdenCompraController::store), el pedido equivale a quitar el boton siempre, igual que #177 -- ademas OrdenCompraPolicy::update() hoy es puramente por rol sin ninguna verificacion de estado, hueco de seguridad real que se corrige junto con el boton (CotizacionPolicy::update() en cambio ya tiene logica de estado correcta, no se toca).",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-separar-login-landing-app",
+  "previous_issue": "feat-perfil-despacho-wizard-terceros",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -251,6 +251,34 @@
       "files": [
         {"path": "heavy-front/src/app/features/direcciones/create/create.component.ts", "status": "validated"},
         {"path": "heavy-front/src/app/features/direcciones/edit/edit.component.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "cotizacion-quitar-boton-editar",
+      "description": "Frontend: eliminar el boton 'Editar' (y el metodo onEdit() ahora sin uso) de la vista de detalle de cotizaciones (heavy-front/src/app/features/cotizaciones/detail/detail.component.ts, linea ~441 template / ~959 metodo). Unico caller confirmado por grep. No se toca CotizacionPolicy::update() en backend: ya tiene logica de estado correcta (Analista limitado a Enviada/En_Proceso, Vendedor solo sus propias cotizaciones) a diferencia del caso de Orden de Compra. No se elimina la ruta/componente /cotizaciones/:id/edit en este nodo (fuera del alcance literal del issue), queda protegida por la policy existente si alguien navega ahi directamente. Cierra GitHub #177.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "github_issue": 177,
+      "deployed": false,
+      "client_summary": "Se eliminó el botón de editar en la vista de detalle de cotizaciones, ya que no corresponde modificar una cotización formal desde ahí.",
+      "review_notes": "Aprobado. Se elimino el boton Editar (unico caller de onEdit(), confirmado por grep) y el metodo ahora muerto. El resto del bloque condicional 'estado !== Anulada' (Rechazar/Aprobar/Descargar PDF) queda intacto. this.router sigue usado por otro metodo, sin inyeccion huerfana. No se toco backend (CotizacionPolicy::update ya tenia logica de estado correcta) ni se elimino la ruta /cotizaciones/:id/edit (fuera del alcance literal del issue, queda protegida por la policy existente). Gates: ng build OK; vitest spec 7/7 OK.",
+      "files": [
+        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "orden-compra-quitar-boton-editar",
+      "description": "Frontend+Backend: eliminar el boton 'Editar' (y el metodo onEdit() ahora sin uso) de heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts (linea ~142 template / ~1044 metodo), unico caller confirmado por grep. A diferencia de Cotizacion, aqui si se endurece el backend: OrdenCompraPolicy::update() hoy permite editar en CUALQUIER estado a 6 roles sin ninguna verificacion -- hueco real ya que toda OC nace 'Generada' (OrdenCompraController::store linea 117), por lo que 'no editable despues de generada' equivale a 'nunca editable' en este sistema. Se cambia update() para retornar false siempre, documentando que la edicion formal de una OC ya no existe: los cambios de estado pasan por endpoints dedicados (transition, receive, depurarReferencia, reasignarTransito, upload-comprobante), ninguno de los cuales depende de esta policy. Cierra GitHub #176.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/orden-compra-editar-sin-restriccion",
+      "github_issue": 176,
+      "files": [
+        "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+        "heavy-api/app/Policies/OrdenCompraPolicy.php"
       ]
     }
   ]
