@@ -84,8 +84,9 @@ El flujo de trabajo se rige por un modelo de roles especializados. El agente **N
 - Cambiar el estado de cada archivo a `validated` tras aprobar.
 - Ejecutar los gates de verificación obligatorios.
 - Aprobar (pasar a `done`) o rechazar (volver a `in_progress` con `review_notes`) el nodo.
+- Al aprobar: hacer `git commit` de los archivos del nodo (mensaje Conventional Commits) de forma automática. **No hacer `git push`** — queda acumulado para cuando el usuario pida subir.
 - Ejecutar `engram_mem_session_summary` al cerrar la revisión.
-**Prohibido:** Modificar código de implementación. Aprobar un nodo sin que todos los gates hayan pasado exitosamente.
+**Prohibido:** Modificar código de implementación. Aprobar un nodo sin que todos los gates hayan pasado exitosamente. Hacer `git push` o cerrar issues de GitHub sin que el usuario lo pida explícitamente.
 
 ---
 
@@ -194,11 +195,11 @@ Si un nodo cumple cualquiera de estas condiciones, la división en sub-nodos es 
 - **Ambigüedad**: El nodo tiene más de 3 "Y" en su descripción.
 
 **Protocolo de Self-Triage para el Implementer:**
-1. Pausar ejecución (no escribir código funcional).
+1. Pausar escritura de código funcional (no la ejecución general).
 2. Asumir rol de Triage Agent.
 3. Generar rama de sub-tareas en `dag.json` (ej. `nodo-1.1`).
-4. Notificar: "He atomizado el nodo X en N sub-tareas...".
-5. Ejecutar secuencialmente.
+4. Notificar: "He atomizado el nodo X en N sub-tareas..." (es un aviso, no una pregunta: el ciclo Triage → Implementer → Reviewer continúa solo sobre cada sub-nodo, sin esperar autorización).
+5. Ejecutar secuencialmente, encadenando los tres roles en cada sub-nodo (ver "Encadenamiento autónomo de roles" en `CLAUDE.md`).
 
 ---
 
@@ -206,8 +207,8 @@ Si un nodo cumple cualquiera de estas condiciones, la división en sub-nodos es 
 1. Siempre responder en español.
 2. No usar emojis.
 3. Comentarios en el código: Mínimos y esenciales.
-4. **No realizar acciones de Git** a menos que se solicite explícitamente.
-5. **Respetar el modelo de Harness Engineering:** Asumir un rol específico por fase.
+4. **Git**: el Reviewer hace `git commit` automáticamente al aprobar un nodo (pasarlo a `done`), sin pedir confirmación. **`git push` y cierre de issues en GitHub siguen requiriendo solicitud explícita del usuario** — los commits se acumulan localmente y se suben en lote cuando el usuario lo pide.
+5. **Respetar el modelo de Harness Engineering:** Asumir un rol específico por fase, encadenando Triage → Implementer → Reviewer de forma autónoma sin pausar a pedir confirmación entre fases (ver "Encadenamiento autónomo de roles" en `CLAUDE.md`). Esto aplica también a nodos que disparan la regla de atomicidad (Sección 4) — se subdividen y ejecutan solos, no es motivo para pausar.
 6. **El archivo `.harness/dag.json` es la fuente de verdad.**
 7. **Solo el Reviewer puede marcar tareas como `done`.**
 8. **Regla de Atomicidad Obligatoria**: Si el volumen es alto, el Implementer debe subdividir asumiendo el rol de Triage Agent temporalmente.
