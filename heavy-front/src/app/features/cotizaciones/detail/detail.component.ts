@@ -80,6 +80,49 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
 }
 
 /**
+ * Cantidad cotizada original de una referencia (tope superior al editar la cantidad aprobada).
+ */
+export function cotizacionReferenciaCantidadMaxima(item: CotizacionReferenciaProveedor): number {
+    const cantidad = Number(item.snapshot_cantidad ?? item.pedido_referencia_proveedor?.cantidad ?? 1);
+
+    return Number.isFinite(cantidad) && cantidad > 0 ? cantidad : 1;
+}
+
+export function cotizacionReferenciaValorUnitario(item: CotizacionReferenciaProveedor): number {
+    const valor = Number(item.snapshot_valor_unidad ?? item.pedido_referencia_proveedor?.valor_unidad ?? 0);
+
+    return Number.isFinite(valor) ? valor : 0;
+}
+
+/**
+ * Total de las referencias seleccionadas usando la cantidad editada por el aprobador
+ * (en vez del snapshot_valor_total original), para el recalculo en tiempo real del dialogo.
+ */
+export function calcularTotalReferenciasConCantidadesEditadas(
+    items: CotizacionReferenciaProveedor[],
+    referenciaIds: number[],
+    cantidadesEditadas: Record<number, number>
+): number {
+    const ids = new Set(referenciaIds);
+
+    return items.reduce((total, item) => {
+        if (!ids.has(item.id)) {
+            return total;
+        }
+
+        const cantidad = cantidadesEditadas[item.id] ?? cotizacionReferenciaCantidadMaxima(item);
+
+        return total + cotizacionReferenciaValorUnitario(item) * cantidad;
+    }, 0);
+}
+
+export const COTIZACION_IVA_PORCENTAJE = 19;
+
+export function calcularImpuestoCotizacion(subtotal: number, porcentajeIVA: number = COTIZACION_IVA_PORCENTAJE): number {
+    return Math.round(subtotal * (porcentajeIVA / 100));
+}
+
+/**
  * Componente de detalle de cotización
  * Rediseñado según mockup con soporte para modo claro/oscuro y arquitectura Zoneless
  */
@@ -393,7 +436,8 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                         <th style="width: 4rem" class="text-center">Aprobar</th>
                                         <th>Referencia</th>
                                         <th>Descripción</th>
-                                        <th class="text-center">Cant</th>
+                                        <th class="text-center" style="width: 9rem">Cantidad</th>
+                                        <th class="text-right">Valor unitario</th>
                                         <th class="text-right">Total</th>
                                     </tr>
                                 </ng-template>
@@ -408,16 +452,43 @@ export function cotizacionPermiteRespuesta(estado: string): boolean {
                                         <td class="text-slate-700 dark:text-slate-300">
                                             {{ item.pedido_referencia_proveedor?.referencia?.descripcion || item.snapshot_descripcion || item.pedido_referencia_proveedor?.referencia?.articulo?.definicion || 'N/A' }}
                                         </td>
-                                        <td class="text-center">{{ item.snapshot_cantidad || item.pedido_referencia_proveedor?.cantidad || 0 }}</td>
-                                        <td class="text-right font-bold">{{ valorTotalReferencia(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                        <td class="text-center">
+                                            <p-inputNumber
+                                                [ngModel]="cantidadEditada(item)"
+                                                (ngModelChange)="onCantidadEditadaChange(item, $event)"
+                                                [min]="1"
+                                                [max]="cantidadMaximaReferencia(item)"
+                                                [showButtons]="true"
+                                                buttonLayout="horizontal"
+                                                [step]="1"
+                                                inputStyleClass="w-14 text-center"
+                                                decrementButtonIcon="pi pi-minus"
+                                                incrementButtonIcon="pi pi-plus"
+                                                [disabled]="!itemAprobacionSeleccionado(item.id)"
+                                            ></p-inputNumber>
+                                            <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">de {{ cantidadMaximaReferencia(item) }} cotizadas</div>
+                                        </td>
+                                        <td class="text-right">{{ valorUnitarioReferencia(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
+                                        <td class="text-right font-bold">{{ valorTotalReferenciaEditado(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
                                     </tr>
                                 </ng-template>
                             </p-table>
                         </div>
 
-                        <div class="flex items-center justify-between rounded-lg bg-slate-100 px-4 py-3 dark:bg-slate-800">
-                            <span class="text-sm font-semibold uppercase text-slate-500 dark:text-slate-400">Total aprobado</span>
-                            <span class="text-2xl font-black text-yellow-600 dark:text-brand-yellow">{{ totalAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                        <div class="rounded-lg bg-slate-100 dark:bg-slate-800 px-4 py-3 space-y-2">
+                            <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+                                <span>Subtotal</span>
+                                <span class="font-semibold">{{ subtotalAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                            </div>
+                            <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-300">
+                                <span>IVA (19%)</span>
+                                <span class="font-semibold">{{ impuestoAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                            </div>
+                            <p-divider />
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold uppercase text-slate-500 dark:text-slate-400">Gran total</span>
+                                <span class="text-2xl font-black text-yellow-600 dark:text-brand-yellow">{{ granTotalAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
+                            </div>
                         </div>
                     </div>
 
@@ -570,7 +641,13 @@ export class DetailComponent implements OnInit {
     subtotal = signal<number>(0);
     approvalDialogVisible = signal(false);
     referenciasAprobadasSeleccionadas = signal<number[]>([]);
+    cantidadesEditadas = signal<Record<number, number>>({});
     totalAprobado = computed(() => calcularTotalReferenciasCotizacion(this.referenciasAprobacionDisponibles(), this.referenciasAprobadasSeleccionadas()));
+    subtotalAprobado = computed(() =>
+        calcularTotalReferenciasConCantidadesEditadas(this.referenciasAprobacionDisponibles(), this.referenciasAprobadasSeleccionadas(), this.cantidadesEditadas())
+    );
+    impuestoAprobado = computed(() => calcularImpuestoCotizacion(this.subtotalAprobado()));
+    granTotalAprobado = computed(() => this.subtotalAprobado() + this.impuestoAprobado());
     resumenAprobacion = computed(() => calcularResumenAprobacionCotizacion(this.referenciasAprobacionDisponibles()));
 
     // Modales
@@ -662,6 +739,29 @@ export class DetailComponent implements OnInit {
 
     valorTotalReferencia(item: CotizacionReferenciaProveedor): number {
         return cotizacionReferenciaValorTotal(item);
+    }
+
+    cantidadMaximaReferencia(item: CotizacionReferenciaProveedor): number {
+        return cotizacionReferenciaCantidadMaxima(item);
+    }
+
+    valorUnitarioReferencia(item: CotizacionReferenciaProveedor): number {
+        return cotizacionReferenciaValorUnitario(item);
+    }
+
+    cantidadEditada(item: CotizacionReferenciaProveedor): number {
+        return this.cantidadesEditadas()[item.id] ?? this.cantidadMaximaReferencia(item);
+    }
+
+    valorTotalReferenciaEditado(item: CotizacionReferenciaProveedor): number {
+        return this.valorUnitarioReferencia(item) * this.cantidadEditada(item);
+    }
+
+    onCantidadEditadaChange(item: CotizacionReferenciaProveedor, valor: number | null): void {
+        const maxima = this.cantidadMaximaReferencia(item);
+        const cantidad = Math.min(Math.max(1, Math.trunc(valor ?? maxima)), maxima);
+
+        this.cantidadesEditadas.update((mapa) => ({ ...mapa, [item.id]: cantidad }));
     }
 
     getAprobacionLabel(item: CotizacionReferenciaProveedor): string {
@@ -770,6 +870,9 @@ export class DetailComponent implements OnInit {
         }
 
         this.referenciasAprobadasSeleccionadas.set(referenciaIds);
+        this.cantidadesEditadas.set(
+            Object.fromEntries(this.referenciasAprobacionDisponibles().map((item) => [item.id, this.cantidadMaximaReferencia(item)]))
+        );
         this.approvalDialogVisible.set(true);
     }
 
@@ -778,7 +881,15 @@ export class DetailComponent implements OnInit {
         const referenciaIds = this.referenciasAprobadasSeleccionadas();
         if (!cot || referenciaIds.length === 0) return;
 
-        this.cotizacionService.approve(cot.id, { referencia_ids: referenciaIds }).subscribe({
+        const cantidadesEditadas = this.cantidadesEditadas();
+        const cantidades: Record<number, number> = {};
+        referenciaIds.forEach((id) => {
+            if (cantidadesEditadas[id] !== undefined) {
+                cantidades[id] = cantidadesEditadas[id];
+            }
+        });
+
+        this.cotizacionService.approve(cot.id, { referencia_ids: referenciaIds, cantidades }).subscribe({
             next: () => {
                 this.approvalDialogVisible.set(false);
                 this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada con las referencias seleccionadas. OT y OC generadas.' });

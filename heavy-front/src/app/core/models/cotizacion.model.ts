@@ -44,6 +44,7 @@ export interface CotizacionReferenciaProveedor {
     snapshot_cantidad: number | null;
     snapshot_valor_unidad: string | number | null;
     snapshot_valor_total: string | number | null;
+    cantidad_aprobada: number | null;
     estado_aprobacion: CotizacionReferenciaAprobacionEstado;
     aprobada: boolean;
     fecha_aprobacion: string | null;
@@ -62,6 +63,7 @@ export type CotizacionReferenciaAprobacionEstado = 'Pendiente' | 'Aprobada' | 'R
  */
 export interface ApproveCotizacionDto {
     referencia_ids?: number[];
+    cantidades?: Record<number, number>;
 }
 
 /**

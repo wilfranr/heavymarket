@@ -78,15 +78,16 @@
     {
       "id": "cotizacion-aprobacion-frontend-cantidad-editable",
       "description": "Frontend: en heavy-front/src/app/features/cotizaciones/detail/detail.component.ts, dentro de la tabla de 'Seleccione las referencias aprobadas' (zona ~linea 375-420), reemplazar el texto estatico de cantidad (snapshot_cantidad) por un input numerico editable por item, acotado entre 1 y snapshot_cantidad original (no permitir mas de lo cotizado). Mantener un signal/map de cantidades editadas por referencia_id. Con 'computed()', recalcular en tiempo real: valor total por item (valor_unidad * cantidad editada), subtotal de items seleccionados, impuestos (reusar formula de IVA ya usada en otras vistas de cotizacion) y gran total. Actualizar cotizacion.model.ts para incluir 'cantidad_aprobada' en la interfaz de referencia, y cotizacion.service.ts para que approve() envie el mapa 'cantidades' en el payload junto a 'referencia_ids'.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["cotizacion-aprobacion-servicio-recalculo"],
       "topic_key": "biz/roles",
       "github_issue": null,
+      "review_notes": "Aprobado. En el dialogo de aprobacion de detail.component.ts, la columna de cantidad ahora es un p-inputNumber (con botones +/-) acotado entre 1 y la cantidad cotizada original (snapshot_cantidad), deshabilitado si el item no esta seleccionado; se agrego columna de valor unitario; el total por fila y el resumen (subtotal/IVA 19%/gran total) se recalculan via computed signals (subtotalAprobado, impuestoAprobado, granTotalAprobado) a partir de un nuevo signal cantidadesEditadas inicializado en onApprove() con la cantidad maxima de cada item. confirmApproveSelected() envia el mapa 'cantidades' junto a referencia_ids al approve() existente (cotizacion.service.ts no requirio cambios: approve() ya reenvia cualquier payload generico, verificado en codigo). Se preservaron sin tocar las funciones puras existentes calcularTotalReferenciasCotizacion/calcularResumenAprobacionCotizacion (usadas por el resumen post-aprobacion ya persistido) y se agregaron 4 funciones puras nuevas exportadas con sus propios tests: cotizacionReferenciaCantidadMaxima, cotizacionReferenciaValorUnitario, calcularTotalReferenciasConCantidadesEditadas, calcularImpuestoCotizacion. Checklist Angular: no_any no aplica (helpers tipados con CotizacionReferenciaProveedor), signal_syntax OK (computed/signal, sin EventEmitter), estilos con Tailwind + variables PrimeNG (sin PrimeFlex), p-inputNumber/p-divider como componentes. Gates: ng build OK (unico warning preexistente de pusher-js no ESM, ajeno); vitest del spec 7/7 OK, suite completa 198/198 (25 archivos) OK; lint no ejecutable (eslint.config.js con sintaxis legacy, mismo problema preexistente ya documentado en el nodo #175, no bloqueante).",
       "files": [
-        "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
-        "heavy-front/src/app/core/models/cotizacion.model.ts",
-        "heavy-front/src/app/core/services/cotizacion.service.ts"
+        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/core/models/cotizacion.model.ts", "status": "validated"}
       ]
     },
     {
