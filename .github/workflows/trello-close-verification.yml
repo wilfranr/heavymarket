@@ -1,0 +1,19 @@
+name: Trello - mover a In Process al cerrar issue
+
+on:
+  issues:
+    types: [closed]
+
+jobs:
+  move-card:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mover tarjeta de Trello y comentar
+        env:
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+        run: python3 .github/scripts/trello_close_verification.py
