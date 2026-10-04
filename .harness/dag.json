@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-04T10:45:00-05:00",
-  "issue": "feat-aprobacion-cotizacion-cantidad-despacho",
-  "description": "GitHub #179 - Al aprobar una cotizacion debe poder editarse la cantidad de cada item aprobado (entre 1 y la cantidad cotizada original), recalculando en tiempo real valor unitario, valor total por item, subtotal, impuestos y gran total. Ademas debe aparecer un formulario para escoger o crear el perfil de despacho del cliente (destinatario, nit/cc, transportadora, forma de pago flete, direccion, telefono, correo, ciudad) que luego usara logistica para el label de despacho.",
+  "last_updated": "2026-10-04T17:00:00-05:00",
+  "issue": "feat-costeo-proveedor-y-fix-costeo-asesor",
+  "description": "GitHub #171 + #173 - El modulo de Costeo Proveedor (portal de proveedores) necesita: (a) una tabla de acceso a las oportunidades de costeo agrupadas por pedido, en vez del selector actual, para trabajar cada una ordenadamente; (b) el campo de Fletes del total (hoy hardcodeado a 0) debe calcularse igual que en el costeo del asesor, usando el peso de los articulos y la tarifa de flete del pais del proveedor. GitHub #178 - En el costeo del asesor, el selector de proveedor por referencia no muestra el proveedor que coloco una cotizacion cuando ese proveedor no cumple el filtro de marca/categoria comercial de esa fila especifica.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-pedido-asesor-referencia",
+  "previous_issue": "feat-aprobacion-cotizacion-cantidad-despacho",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -105,6 +105,59 @@
         {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"},
         {"path": "heavy-front/src/app/core/models/direccion.model.ts", "status": "validated"},
         {"path": "heavy-front/src/app/core/models/cotizacion.model.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "costeo-proveedor-oportunidades-lista",
+      "description": "Frontend: nuevo componente heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts (standalone, p-table como ordenes-compra-list.component.ts) que llama a ProviderPortalService.getOpportunities({status}) y agrupa las filas por pedido_id (funcion pura exportada agruparOportunidadesPorPedido) mostrando: Pedido #, cliente (pedido.user.name), maquina (marca+modelo), cantidad de items, y boton 'Ver / Costear' que navega a /provider/opportunities/:pedidoId?status=X. Incluye el filtro de estado (pending/sent/approved) que hoy esta en el componente de edicion. Actualizar provider-portal.routes.ts: 'opportunities' (sin parametro) pasa a cargar este nuevo componente; se agrega la ruta 'opportunities/:pedidoId' apuntando al componente de edicion existente (CostingOpportunitiesComponent), que se ajusta en el nodo siguiente.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "github_issue": null,
+      "review_notes": "Aprobado. Nuevo componente standalone con p-table (mismo patron que ordenes-compra-list.component.ts): filtro de estado, agrupa filas via funcion pura exportada agruparOportunidadesPorPedido (testeada: agrupa por pedido_id contando items, resuelve maquina 'marca modelo' o fallback, ordena por pedido mas reciente primero, ignora filas sin pedido_id resoluble). Boton 'Costear' navega a /provider/opportunities/:pedidoId con status como query param. provider-portal.routes.ts: 'opportunities' ahora carga el listado, se agrego 'opportunities/:pedidoId' para el componente de edicion existente (se ajusta en el nodo siguiente para leer el parametro). Checklist Angular: sin any explicito salvo el tipo de error generico ya usado en el resto del proveedor-portal, signal/computed, sin EventEmitter. Gates: ng build OK (mismo warning preexistente pusher-js); vitest 2/2 OK en el nuevo spec.",
+      "files": [
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/provider-portal.routes.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "costeo-proveedor-oportunidades-detalle-por-pedido",
+      "description": "Frontend: ajustar CostingOpportunitiesComponent (costing-opportunities.component.ts/.html) para leer ':pedidoId' y 'status' (query param) de ActivatedRoute al iniciar, fijando activePedidoId/activeStatus automaticamente en vez de requerir seleccion manual. Eliminar del template el selector 'Pedido' (ya no aplica, se llega desde la lista con un pedido ya elegido) y el selector de 'Estado de ofertas' si el status llega por query param; agregar un boton 'Volver a oportunidades' que navegue a /provider/opportunities. Cierra GitHub #173.",
+      "status": "pending",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["costeo-proveedor-oportunidades-lista"],
+      "topic_key": "biz/roles",
+      "github_issue": 173,
+      "files": [
+        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html"
+      ]
+    },
+    {
+      "id": "costeo-proveedor-flete-total",
+      "description": "Backend+Frontend: el total que ve el proveedor en su modulo de costeo debe incluir Fletes real (hoy calcularFletes() en costing-opportunities.component.ts devuelve siempre 0). Decision del usuario: reusar la misma formula que ya usa el asesor en heavy-front/src/app/features/pedidos/costeo/costeo.ts (peso_kg * 2.20462 = peso_lb; costo_flete_usd = peso_lb * tarifa_pais) e incluirlo en el Total que el proveedor confirma. Backend: ProviderPortalController::opportunities() debe agregar 'flete' => (float) ($tercero->country?->flete ?? 0) al objeto 'provider' en ambas ramas (pending y sent/approved). Frontend: ampliar el tipo de providerInfo con 'flete: number' (default 0) e implementar calcularFletes() sumando, por cada fila seleccionada, peso(kg, campo 'peso' ya existente en ProviderCosteoRow) * 2.20462 * cantidad_cotizada * providerInfo().flete, devolviendo 0 si providerInfo().is_national. No requiere cambios de HTML: el campo 'Fletes' ya esta en el template (costing-opportunities.component.html linea ~197) y calcularTotal() ya suma subtotal+impuestos+fletes. Cierra GitHub #171.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "github_issue": 171,
+      "files": [
+        "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts"
+      ]
+    },
+    {
+      "id": "costeo-asesor-proveedor-filtro-selector-fix",
+      "description": "Frontend: en heavy-front/src/app/features/pedidos/costeo/costeo.ts, getProveedoresFiltrados(refIndex) (linea ~315) filtra el dropdown de proveedor por marca/categoria comercial, pero ese dropdown es compartido por todas las filas de proveedor de esa referencia via [options] en costeo.html. Si el proveedor que ya cotizo esa referencia (proveedor_id ya seteado en el FormGroup, tipicamente porque cotizo desde el Portal de Proveedores) no cumple el filtro de marca/categoria de esa fila en particular, PrimeNG no puede resolver su label y el selector aparece vacio, aunque el dato este guardado correctamente -- root cause del bug reportado en #178 ('no me esta mostrando en todos el proveedor que hizo la cotizacion'). Fix: tras construir la lista filtrada, revisar los proveedor_id ya asignados en el FormArray 'proveedores' de esa referencia y agregar al array de opciones (si falta) cualquier proveedor ya asignado que no haya pasado el filtro, para que siempre se pueda mostrar su nombre. Extraer la logica de merge a una funcion pura exportada y testeable.",
+      "status": "pending",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/costeo-asesor-proveedor-no-visible",
+      "github_issue": 178,
+      "files": [
+        "heavy-front/src/app/features/pedidos/costeo/costeo.ts"
       ]
     }
   ]

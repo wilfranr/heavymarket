@@ -8,8 +8,13 @@ export const providerPortalRoutes: Routes = [
         children: [
             {
                 path: 'opportunities',
-                loadComponent: () => import('./costing-opportunities/costing-opportunities.component').then((m) => m.CostingOpportunitiesComponent),
+                loadComponent: () => import('./costing-opportunities/costing-opportunities-list.component').then((m) => m.CostingOpportunitiesListComponent),
                 title: 'Oportunidades de Costeo'
+            },
+            {
+                path: 'opportunities/:pedidoId',
+                loadComponent: () => import('./costing-opportunities/costing-opportunities.component').then((m) => m.CostingOpportunitiesComponent),
+                title: 'Costeo de Pedido'
             },
             {
                 path: 'ordenes-compra',
