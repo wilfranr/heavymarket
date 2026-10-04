@@ -20,4 +20,6 @@ Una vez que el usuario da luz verde a trabajar sobre un issue o nodo (ya sea con
 
 **Git**: al aprobar un nodo (Reviewer → `done`), el agente hace `git commit` de los archivos de ese nodo automáticamente, sin pedir confirmación. **No hace `git push`** — los commits se acumulan y el push se hace únicamente cuando el usuario lo pide explícitamente (igual que cerrar el issue en GitHub, que depende del push por el `Closes #N`).
 
+**Reporte final obligatorio sobre push/cierre:** el resumen de cierre de cada autopilot (aunque haya corrido sin pausas de fase a fase) debe decir explícitamente, en una línea aparte, que los commits quedaron locales y que el push + cierre del issue están pendientes de que el usuario lo pida — no asumir que se entiende implícito ni enterrarlo al final de un párrafo largo. Esto evita que el usuario interprete el push/cierre como un paso que "faltó" en vez de una decisión de diseño deliberada.
+
 Ver `AGENTS.md` para: convenciones de Engram (`topic_key` obligatorio), mapeo de skills por tipo de cambio, tabla de gates de verificación por capa (backend/frontend), y reglas de atomicidad/sub-tasking.
