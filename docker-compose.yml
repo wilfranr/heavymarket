@@ -42,23 +42,22 @@ services:
     volumes:
       - heavymarket_mysql_data:/var/lib/mysql
 
-  # phpMyAdmin para administrar la BD local
-  phpmyadmin:
-    image: phpmyadmin:latest
-    container_name: heavymarket-phpmyadmin
+  # Adminer para administrar la BD local (reemplaza phpMyAdmin: mas liviano, sin Apache, mas estable)
+  adminer:
+    image: adminer:latest
+    container_name: heavymarket-adminer
     restart: unless-stopped
     ports:
-      - "8080:80"
+      - "8080:8080"
     environment:
-      PMA_HOST: host.docker.internal
-      PMA_PORT: 3306
+      ADMINER_DEFAULT_SERVER: host.docker.internal
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
-  # Mailhog para desarrollo (servidor SMTP de prueba)
-  mailhog:
-    image: mailhog/mailhog:latest
-    container_name: heavymarket-mailhog
+  # Mailpit para desarrollo (sucesor mantenido de Mailhog, mismos puertos/uso)
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: heavymarket-mailpit
     restart: unless-stopped
     ports:
       - "1025:1025"  # SMTP
