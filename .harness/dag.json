@@ -159,13 +159,17 @@
     {
       "id": "costeo-asesor-proveedor-filtro-selector-fix",
       "description": "Frontend: en heavy-front/src/app/features/pedidos/costeo/costeo.ts, getProveedoresFiltrados(refIndex) (linea ~315) filtra el dropdown de proveedor por marca/categoria comercial, pero ese dropdown es compartido por todas las filas de proveedor de esa referencia via [options] en costeo.html. Si el proveedor que ya cotizo esa referencia (proveedor_id ya seteado en el FormGroup, tipicamente porque cotizo desde el Portal de Proveedores) no cumple el filtro de marca/categoria de esa fila en particular, PrimeNG no puede resolver su label y el selector aparece vacio, aunque el dato este guardado correctamente -- root cause del bug reportado en #178 ('no me esta mostrando en todos el proveedor que hizo la cotizacion'). Fix: tras construir la lista filtrada, revisar los proveedor_id ya asignados en el FormArray 'proveedores' de esa referencia y agregar al array de opciones (si falta) cualquier proveedor ya asignado que no haya pasado el filtro, para que siempre se pueda mostrar su nombre. Extraer la logica de merge a una funcion pura exportada y testeable.",
-      "status": "pending",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "bugfix/costeo-asesor-proveedor-no-visible",
       "github_issue": 178,
+      "deployed": false,
+      "client_summary": "En el costeo de pedidos, ahora siempre se muestra el nombre del proveedor que envió una cotización para cada artículo, incluso cuando ese proveedor no está configurado dentro de la categoría o marca habitual de ese artículo en particular.",
+      "review_notes": "Aprobado. Root cause confirmada: getProveedoresFiltrados(refIndex) devuelve una lista de opciones compartida por TODAS las filas de proveedor de esa referencia ([options] en costeo.html se indexa solo por refIndex); cuando filtra por marca/categoria comercial, un proveedor ya asignado (proveedor_id ya seteado, tipicamente porque cotizo desde el Portal de Proveedores) puede quedar fuera de esa lista filtrada para esa fila en particular, y PrimeNG no puede resolver su label aunque el dato este bien guardado -- el selector se ve vacio. Fix: nueva funcion pura exportada agregarProveedoresAsignadosFaltantes(opcionesFiltradas, proveedoresCompletos, idsAsignados) que agrega al final cualquier proveedor ya asignado en el FormArray que no haya pasado el filtro; getProveedoresFiltrados ahora la aplica antes de retornar. La rama sin filtro (!marcaId || categoriaComercialIds.length===0) no se tocó porque ya retorna this.proveedores() completo (mismo catalogo que proveedoresCompletos(), confirmado en loadProveedores()), por lo que nunca tuvo el bug. 3 tests nuevos cubren: no-modifica si ya esta presente, agrega el proveedor faltante preservando el orden, ignora ids null/undefined/sin match. Checklist: logica pura sin UI nueva (required_skill null correcto), sin any nuevo mas alla del que ya tenia el archivo. Gates: ng build OK; vitest costeo.spec.ts 9/9 OK, suite completa frontend 206/206 (27 archivos) OK.",
       "files": [
-        "heavy-front/src/app/features/pedidos/costeo/costeo.ts"
+        {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts", "status": "validated"}
       ]
     }
   ]

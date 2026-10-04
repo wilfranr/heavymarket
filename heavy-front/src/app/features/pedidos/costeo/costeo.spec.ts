@@ -1,5 +1,5 @@
 import { ENTREGA_OPTIONS, entregaPayload, entregaValueDesdePersistencia, formatearEntrega } from '../../../core/utils/entrega-plazo';
-import { observacionesCotizacionPayload } from './costeo';
+import { agregarProveedoresAsignadosFaltantes, observacionesCotizacionPayload } from './costeo';
 
 describe('Opciones de entrega de costeo', () => {
     it('expone las nueve opciones en el orden comercial requerido', () => {
@@ -40,5 +40,36 @@ describe('Opciones de entrega de costeo', () => {
     it('normaliza observaciones de cotización antes de enviarlas al backend', () => {
         expect(observacionesCotizacionPayload('  Observación comercial  ')).toBe('Observación comercial');
         expect(observacionesCotizacionPayload('   ')).toBeUndefined();
+    });
+});
+
+describe('agregarProveedoresAsignadosFaltantes (fix #178)', () => {
+    const proveedoresCompletos = [
+        { id: 1, nombre: 'Proveedor A' },
+        { id: 2, nombre: 'Proveedor B' },
+        { id: 3, nombre: 'Proveedor C (fuera de categoría)' }
+    ];
+
+    it('no modifica la lista si el proveedor asignado ya está en las opciones filtradas', () => {
+        const opciones = [{ label: 'Proveedor A', value: 1 }];
+
+        expect(agregarProveedoresAsignadosFaltantes(opciones, proveedoresCompletos, [1])).toEqual(opciones);
+    });
+
+    it('agrega el proveedor ya asignado aunque no cumpla el filtro de marca/categoría de esa fila', () => {
+        const opciones = [{ label: 'Proveedor A', value: 1 }];
+
+        const resultado = agregarProveedoresAsignadosFaltantes(opciones, proveedoresCompletos, [1, 3]);
+
+        expect(resultado).toEqual([
+            { label: 'Proveedor A', value: 1 },
+            { label: 'Proveedor C (fuera de categoría)', value: 3 }
+        ]);
+    });
+
+    it('ignora ids nulos, indefinidos o sin coincidencia en el catálogo completo', () => {
+        const opciones: { label: string; value: number }[] = [];
+
+        expect(agregarProveedoresAsignadosFaltantes(opciones, proveedoresCompletos, [null, undefined, 999])).toEqual([]);
     });
 });

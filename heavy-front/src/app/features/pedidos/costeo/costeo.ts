@@ -47,6 +47,31 @@ export function observacionesCotizacionPayload(observaciones: string): string | 
     return normalizadas || undefined;
 }
 
+export interface OpcionProveedor {
+    label: string;
+    value: number;
+}
+
+/**
+ * Garantiza que cualquier proveedor ya asignado a una referencia (p.ej. porque
+ * cotizo desde el Portal de Proveedores) siga apareciendo en las opciones del
+ * selector, aunque no cumpla el filtro de marca/categoria comercial de esa fila
+ * en particular -- de lo contrario PrimeNG no puede resolver su label y el
+ * selector se muestra vacio pese a que el dato esta guardado correctamente.
+ */
+export function agregarProveedoresAsignadosFaltantes(opcionesFiltradas: OpcionProveedor[], proveedoresCompletos: { id: number; nombre: string }[], idsAsignados: Array<number | null | undefined>): OpcionProveedor[] {
+    const idsPresentes = new Set(opcionesFiltradas.map((opcion) => opcion.value));
+    const idsFaltantes = new Set(idsAsignados.filter((id): id is number => !!id && !idsPresentes.has(id)));
+
+    if (idsFaltantes.size === 0) {
+        return opcionesFiltradas;
+    }
+
+    const opcionesFaltantes = proveedoresCompletos.filter((p) => idsFaltantes.has(p.id)).map((p) => ({ label: p.nombre, value: p.id }));
+
+    return [...opcionesFiltradas, ...opcionesFaltantes];
+}
+
 @Component({
     selector: 'app-pedido-costeo',
     standalone: true,
@@ -325,7 +350,7 @@ export class CosteoComponent implements OnInit {
         const ref = this.pedido()?.referencias?.[refIndex];
         const esMarca = ref?.marca?.tipo === 'Marca' || ref?.referencia?.marca?.tipo === 'Marca';
 
-        return this.proveedoresCompletos()
+        const opcionesFiltradas = this.proveedoresCompletos()
             .filter((p) => {
                 const tieneFabricante = esMarca || p.fabricante_ids?.length === 0 || p.fabricante_ids?.some((id) => Number(id) === Number(marcaId));
                 const tieneCategoria = p.categoria_comercial_ids?.some((id) => categoriaComercialIds.some((cId: any) => Number(id) === Number(cId)));
@@ -335,6 +360,10 @@ export class CosteoComponent implements OnInit {
                 label: p.nombre,
                 value: p.id
             }));
+
+        const idsAsignados = (refGroup.get('proveedores') as FormArray).controls.map((prov) => prov.get('proveedor_id')?.value as number | null | undefined);
+
+        return agregarProveedoresAsignadosFaltantes(opcionesFiltradas, this.proveedoresCompletos(), idsAsignados);
     }
 
     agregarProveedorListado(refIndex: number): void {
