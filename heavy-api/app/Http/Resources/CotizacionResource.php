@@ -29,6 +29,7 @@ class CotizacionResource extends JsonResource
             'user_id' => $this->user_id,
             'tercero_id' => $this->tercero_id,
             'pedido_id' => $this->pedido_id,
+            'direccion_id' => $this->direccion_id,
             'estado' => $this->estado,
             'fecha_emision' => $this->fecha_emision?->toISOString(),
             'fecha_vencimiento' => $this->fecha_vencimiento?->toISOString(),
@@ -44,6 +45,9 @@ class CotizacionResource extends JsonResource
             }),
             'pedido' => $this->whenLoaded('pedido', function () {
                 return new PedidoResource($this->pedido);
+            }),
+            'direccion' => $this->whenLoaded('direccion', function () {
+                return $this->direccion ? new DireccionResource($this->direccion) : null;
             }),
             'referencias_proveedores' => $this->whenLoaded('referenciasProveedores', function () {
                 return CotizacionReferenciaProveedorResource::collection($this->referenciasProveedores);

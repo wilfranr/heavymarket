@@ -165,10 +165,16 @@ class CotizacionService
      * - Orden de Compra (con referencias de proveedores)
      *
      * @param  array<int>|null  $referenciaIds
+     * @param  array<int, int>|null  $cantidadesAprobadas  Mapa referencia_id => cantidad aprobada (<= snapshot_cantidad)
      */
-    public function aprobar(Cotizacion $cotizacion, string $comentario = '', ?array $referenciaIds = null): Cotizacion
-    {
-        return DB::transaction(function () use ($cotizacion, $comentario, $referenciaIds) {
+    public function aprobar(
+        Cotizacion $cotizacion,
+        string $comentario = '',
+        ?array $referenciaIds = null,
+        ?array $cantidadesAprobadas = null,
+        ?int $direccionId = null
+    ): Cotizacion {
+        return DB::transaction(function () use ($cotizacion, $comentario, $referenciaIds, $cantidadesAprobadas, $direccionId) {
             $cotizacion->loadMissing(['pedido', 'referenciasProveedores.pedidoReferenciaProveedor']);
             $pedido = $cotizacion->pedido;
 
@@ -219,11 +225,31 @@ Aprobada: '.$comentario);
                     'fecha_aprobacion' => now(),
                 ]);
 
+            if ($cantidadesAprobadas !== null) {
+                foreach ($itemsCotizados->whereIn('id', $referenciaIdsAprobadas) as $item) {
+                    $cantidadEnviada = $cantidadesAprobadas[$item->id] ?? null;
+
+                    if ($cantidadEnviada === null) {
+                        continue;
+                    }
+
+                    $cantidadMaxima = (int) ($item->snapshot_cantidad ?? $cantidadEnviada);
+                    $cantidadAprobada = max(1, min((int) $cantidadEnviada, $cantidadMaxima));
+                    $valorUnidad = (float) ($item->snapshot_valor_unidad ?? 0);
+
+                    $item->update([
+                        'cantidad_aprobada' => $cantidadAprobada,
+                        'snapshot_valor_total' => round($valorUnidad * $cantidadAprobada, 2),
+                    ]);
+                }
+            }
+
             $cotizacion->refresh()->load(['pedido', 'tercero', 'user', 'referenciasProveedores.pedidoReferenciaProveedor']);
 
             $cotizacion->update([
                 'estado' => 'Aprobada',
                 'observaciones' => $observaciones ?: $cotizacion->observaciones,
+                'direccion_id' => $direccionId ?? $cotizacion->direccion_id,
                 'total' => $this->calcularTotalItemsAprobados($cotizacion),
             ]);
 

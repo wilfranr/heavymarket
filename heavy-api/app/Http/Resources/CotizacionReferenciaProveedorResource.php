@@ -40,6 +40,7 @@ class CotizacionReferenciaProveedorResource extends JsonResource
             'snapshot_cantidad' => $this->snapshot_cantidad,
             'snapshot_valor_unidad' => $this->snapshot_valor_unidad,
             'snapshot_valor_total' => $this->snapshot_valor_total,
+            'cantidad_aprobada' => $this->cantidad_aprobada,
             'estado_aprobacion' => $this->estado_aprobacion,
             'aprobada' => $this->estado_aprobacion === 'Aprobada',
             'fecha_aprobacion' => $this->fecha_aprobacion?->toISOString(),

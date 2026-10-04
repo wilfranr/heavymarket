@@ -62,15 +62,17 @@
     {
       "id": "cotizacion-aprobacion-servicio-recalculo",
       "description": "Backend (logica): CotizacionService::aprobar() debe aceptar ademas '?array $cantidadesAprobadas' (referencia_id => cantidad) y '?int $direccionId'. Al marcar cada item como 'Aprobada', fijar 'cantidad_aprobada' = cantidad enviada o snapshot_cantidad si no se envio, y recalcular 'snapshot_valor_total' = snapshot_valor_unidad * cantidad_aprobada (nunca confiar en un total calculado en el frontend). Asignar 'cotizacion.direccion_id' = $direccionId si viene. calcularTotalItemsAprobados() debe sumar los snapshot_valor_total ya recalculados (no requiere cambio de formula, solo que los datos que suma ya reflejen la cantidad aprobada). Exponer en CotizacionResource y CotizacionReferenciaProveedorResource los campos nuevos: 'cantidad_aprobada', y la relacion 'direccion' (whenLoaded) en CotizacionResource.",
-      "status": "pending",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["cotizacion-aprobacion-validacion-request"],
       "topic_key": "biz/roles",
       "github_issue": null,
+      "review_notes": "Aprobado. CotizacionService::aprobar() amplio su firma (cantidadesAprobadas, direccionId) sin romper llamadas existentes (parametros opcionales). Al aprobar cada item, si se envio cantidad se clampa entre 1 y snapshot_cantidad (defensa en el service, no solo en el FormRequest) y se persiste cantidad_aprobada + snapshot_valor_total recalculado (valor_unidad * cantidad_aprobada, nunca confiando en un total del frontend); direccion_id se asigna solo si vino en el request. calcularTotalItemsAprobados() no cambio de formula, solo ahora suma datos ya recalculados. Resources expuestos: cantidad_aprobada en CotizacionReferenciaProveedorResource, direccion_id + relacion direccion (via DireccionResource existente, reusado) en CotizacionResource. Se agregaron 4 tests Feature nuevos (cantidad editable + recalculo, limite de cantidad excedido, asignacion de direccion, direccion de otro tercero rechazada), los 4 en verde. Gates: pint PASS en los 4 archivos; pest --filter=Cotizacion 17/17 OK; suite completa 558/558 OK (23 passed + 535 deprecated preexistentes, sin fallos, mismo deprecation de PHP 8.4 ya documentado en nodos previos).",
       "files": [
-        "heavy-api/app/Services/CotizacionService.php",
-        "heavy-api/app/Http/Resources/CotizacionResource.php",
-        "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php"
+        {"path": "heavy-api/app/Services/CotizacionService.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Resources/CotizacionResource.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/CotizacionControllerTest.php", "status": "validated"}
       ]
     },
     {

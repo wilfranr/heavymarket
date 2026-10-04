@@ -2,6 +2,7 @@
 
 use App\Models\Cotizacion;
 use App\Models\CotizacionReferenciaProveedor;
+use App\Models\Direccion;
 use App\Models\OrdenCompraReferencia;
 use App\Models\OrdenTrabajoReferencia;
 use App\Models\Pedido;
@@ -225,4 +226,135 @@ it('rechaza aprobaciÃ³n parcial con referencias que no pertenecen a la cotizaciÃ
 
     $response->assertUnprocessable()
         ->assertJsonValidationErrors(['referencia_ids.0']);
+});
+
+it('permite editar la cantidad aprobada de un item y recalcula su valor total', function () {
+    $cliente = Tercero::factory()->create(['tipo' => 'Cliente']);
+    $proveedor = Tercero::factory()->create(['tipo' => 'Proveedor']);
+    $pedido = Pedido::factory()->create([
+        'estado' => 'En_Costeo',
+        'tercero_id' => $cliente->id,
+        'user_id' => $this->vendedor->id,
+    ]);
+    $cotizacion = Cotizacion::factory()->create([
+        'pedido_id' => $pedido->id,
+        'tercero_id' => $cliente->id,
+        'user_id' => $this->vendedor->id,
+        'estado' => 'Enviada',
+    ]);
+
+    $referencia = Referencia::factory()->create();
+    $pedidoReferencia = PedidoReferencia::factory()->create([
+        'pedido_id' => $pedido->id,
+        'referencia_id' => $referencia->id,
+        'cantidad' => 5,
+    ]);
+    $prp = PedidoReferenciaProveedor::create([
+        'pedido_referencia_id' => $pedidoReferencia->id,
+        'proveedor_id' => $proveedor->id,
+        'referencia_id' => $referencia->id,
+        'cantidad' => 5,
+        'valor_unidad' => 1000,
+        'valor_total' => 5000,
+    ]);
+    $item = CotizacionReferenciaProveedor::create([
+        'cotizacion_id' => $cotizacion->id,
+        'pedido_referencia_proveedor_id' => $prp->id,
+        'mostrar_referencia' => true,
+        'snapshot_cantidad' => 5,
+        'snapshot_valor_unidad' => 1000,
+        'snapshot_valor_total' => 5000,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/cotizaciones/{$cotizacion->id}/approve", [
+            'referencia_ids' => [$item->id],
+            'cantidades' => [$item->id => 3],
+        ]);
+
+    $response->assertOk()
+        ->assertJsonPath('data.total', 3000);
+
+    expect($item->fresh())
+        ->cantidad_aprobada->toBe(3)
+        ->snapshot_valor_total->toBe('3000.00');
+});
+
+it('rechaza una cantidad aprobada mayor a la cantidad cotizada originalmente', function () {
+    $cotizacion = Cotizacion::factory()->enviada()->create();
+    $pedidoReferencia = PedidoReferencia::factory()->create(['pedido_id' => $cotizacion->pedido_id]);
+    $prp = PedidoReferenciaProveedor::create([
+        'pedido_referencia_id' => $pedidoReferencia->id,
+        'proveedor_id' => Tercero::factory()->create(['tipo' => 'Proveedor'])->id,
+        'referencia_id' => $pedidoReferencia->referencia_id,
+        'cantidad' => 2,
+        'valor_unidad' => 1000,
+        'valor_total' => 2000,
+    ]);
+    $item = CotizacionReferenciaProveedor::create([
+        'cotizacion_id' => $cotizacion->id,
+        'pedido_referencia_proveedor_id' => $prp->id,
+        'mostrar_referencia' => true,
+        'snapshot_cantidad' => 2,
+        'snapshot_valor_unidad' => 1000,
+        'snapshot_valor_total' => 2000,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/cotizaciones/{$cotizacion->id}/approve", [
+            'referencia_ids' => [$item->id],
+            'cantidades' => [$item->id => 5],
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(["cantidades.{$item->id}"]);
+});
+
+it('permite asignar un perfil de despacho al aprobar la cotizacion', function () {
+    $cliente = Tercero::factory()->create(['tipo' => 'Cliente']);
+    $pedido = Pedido::factory()->create(['estado' => 'En_Costeo', 'tercero_id' => $cliente->id]);
+    $cotizacion = Cotizacion::factory()->create([
+        'pedido_id' => $pedido->id,
+        'tercero_id' => $cliente->id,
+        'estado' => 'Enviada',
+    ]);
+    $direccion = Direccion::factory()->create(['tercero_id' => $cliente->id]);
+    $pedidoReferencia = PedidoReferencia::factory()->create(['pedido_id' => $pedido->id]);
+    $prp = PedidoReferenciaProveedor::create([
+        'pedido_referencia_id' => $pedidoReferencia->id,
+        'proveedor_id' => Tercero::factory()->create(['tipo' => 'Proveedor'])->id,
+        'referencia_id' => $pedidoReferencia->referencia_id,
+        'cantidad' => 1,
+        'valor_unidad' => 1000,
+        'valor_total' => 1000,
+    ]);
+    $item = CotizacionReferenciaProveedor::create([
+        'cotizacion_id' => $cotizacion->id,
+        'pedido_referencia_proveedor_id' => $prp->id,
+        'mostrar_referencia' => true,
+        'snapshot_valor_total' => 1000,
+    ]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/cotizaciones/{$cotizacion->id}/approve", [
+            'referencia_ids' => [$item->id],
+            'direccion_id' => $direccion->id,
+        ]);
+
+    $response->assertOk();
+    expect($cotizacion->fresh()->direccion_id)->toBe($direccion->id);
+});
+
+it('rechaza un perfil de despacho que no pertenece al cliente de la cotizacion', function () {
+    $cotizacion = Cotizacion::factory()->enviada()->create();
+    $otroTercero = Tercero::factory()->create(['tipo' => 'Cliente']);
+    $direccionAjena = Direccion::factory()->create(['tercero_id' => $otroTercero->id]);
+
+    $response = $this->actingAs($this->admin, 'sanctum')
+        ->postJson("/v1/cotizaciones/{$cotizacion->id}/approve", [
+            'direccion_id' => $direccionAjena->id,
+        ]);
+
+    $response->assertUnprocessable()
+        ->assertJsonValidationErrors(['direccion_id']);
 });
