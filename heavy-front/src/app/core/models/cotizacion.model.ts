@@ -6,6 +6,7 @@ export interface Cotizacion {
     user_id: number;
     tercero_id: number;
     pedido_id: number;
+    direccion_id: number | null;
     estado: CotizacionEstado;
     fecha_emision: string | null;
     fecha_vencimiento: string | null;
@@ -18,6 +19,7 @@ export interface Cotizacion {
     user?: any;
     tercero?: any;
     pedido?: any;
+    direccion?: any;
     referencias_proveedores?: CotizacionReferenciaProveedor[];
 }
 
@@ -64,6 +66,7 @@ export type CotizacionReferenciaAprobacionEstado = 'Pendiente' | 'Aprobada' | 'R
 export interface ApproveCotizacionDto {
     referencia_ids?: number[];
     cantidades?: Record<number, number>;
+    direccion_id?: number | null;
 }
 
 /**

@@ -14,6 +14,7 @@ export interface Direccion {
     transportadora_id?: number | null;
     forma_pago?: string | null;
     telefono?: string | null;
+    correo?: string | null;
     ciudad_texto?: string | null;
     created_at: string;
     updated_at: string;
@@ -41,6 +42,7 @@ export interface CreateDireccionDto {
     transportadora_id?: number | null;
     forma_pago?: string | null;
     telefono?: string | null;
+    correo?: string | null;
     ciudad_texto?: string | null;
 }
 
@@ -59,5 +61,6 @@ export interface UpdateDireccionDto {
     transportadora_id?: number | null;
     forma_pago?: string | null;
     telefono?: string | null;
+    correo?: string | null;
     ciudad_texto?: string | null;
 }

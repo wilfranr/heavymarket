@@ -92,15 +92,19 @@
     },
     {
       "id": "cotizacion-aprobacion-frontend-perfil-despacho",
-      "description": "Frontend: en la misma vista de aprobacion (detail.component.ts), agregar un formulario/selector de 'Perfil de Despacho' del tercero de la cotizacion: un dropdown con las direcciones existentes de ese tercero (reusar DireccionService/store ya existente en heavy-front/src/app/core/services/direccion.service.ts y store/direcciones), y una opcion para crear una nueva direccion sin salir de la pantalla (reusar el componente/dialogo de creacion ya existente en features/direcciones/create en modo embebido o modal, en vez de duplicar el formulario). Al aprobar, enviar 'direccion_id' seleccionado en el payload de approve() (cotizacion.service.ts). Cierra el issue GitHub #179.",
-      "status": "pending",
+      "description": "Frontend: en la misma vista de aprobacion (detail.component.ts), agregar un selector de 'Perfil de Despacho' (direcciones) del tercero de la cotizacion via DireccionService.getAll({tercero_id}), con opcion de crear una nueva direccion inline (formulario compacto con Tailwind, no PrimeFlex) con destinatario/nit_cc/transportadora/forma_pago/direccion/telefono/correo/ciudad_texto, usando DireccionService.create() y TransportadoraService para el dropdown de transportadoras. Agregar 'correo' a direccion.model.ts (Direccion/CreateDireccionDto/UpdateDireccionDto). Al aprobar, enviar 'direccion_id' seleccionado en el payload de approve(). Cierra el issue GitHub #179.",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["cotizacion-aprobacion-frontend-cantidad-editable"],
       "topic_key": "biz/roles",
       "github_issue": 179,
+      "deployed": false,
+      "client_summary": "Al aprobar una cotización ahora es posible editar la cantidad de cada ítem (sin superar lo cotizado), viendo el recálculo inmediato de valores e impuestos, y asignar o crear en el momento el perfil de despacho (destinatario, dirección, transportadora, forma de pago, teléfono, correo y ciudad) que usará logística para el envío.",
+      "review_notes": "Aprobado. Se agrego seccion 'Perfil de despacho' en el dialogo de aprobacion de detail.component.ts: un p-select con las direcciones del tercero (cargadas via DireccionService.getAll({tercero_id}) al abrir el dialogo) con templates custom item/selectedItem (direccionLabel()), y un formulario inline alternable (Tailwind grid, sin PrimeFlex, patron class=field de AGENTS.md) para crear una nueva direccion sin salir de la pantalla, con destinatario/nit_cc/transportadora(p-select via TransportadoraService)/forma_pago/direccion/telefono/correo/ciudad_texto; al guardar, DireccionService.create() inserta y selecciona automaticamente el nuevo perfil. confirmApproveSelected() ahora envia 'direccion_id' en el payload de approve(). Se agrego 'correo' a Direccion/CreateDireccionDto/UpdateDireccionDto en direccion.model.ts, y 'direccion_id'/'direccion' a Cotizacion y ApproveCotizacionDto en cotizacion.model.ts. Checklist Angular: ngModel aceptable para formulario inline simple (regla 5 de heavy-front/AGENTS.md), sin EventEmitter, Tailwind + variables PrimeNG, sin PrimeFlex (a diferencia del CRUD legacy de features/direcciones/create que si usa clases PrimeFlex como deuda preexistente, no se replico ese patron). Gates: ng build OK (mismo warning preexistente de pusher-js); vitest spec 7/7 OK, suite completa 198/198 (25 archivos) OK; lint no ejecutable (mismo problema preexistente del eslint.config.js ya documentado). Cierra GitHub #179 (push y cierre del issue pendientes de que el usuario lo solicite explicitamente).",
       "files": [
-        "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
-        "heavy-front/src/app/core/services/cotizacion.service.ts"
+        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/core/models/direccion.model.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/core/models/cotizacion.model.ts", "status": "validated"}
       ]
     }
   ]

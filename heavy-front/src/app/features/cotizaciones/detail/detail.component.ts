@@ -15,12 +15,19 @@ import { InputNumberModule } from 'primeng/inputnumber';
 import { DialogModule } from 'primeng/dialog';
 import { ImageModule } from 'primeng/image';
 import { CheckboxModule } from 'primeng/checkbox';
+import { SelectModule } from 'primeng/select';
+import { InputTextModule } from 'primeng/inputtext';
+import { TextareaModule } from 'primeng/textarea';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { loadCotizacionById } from '../../../store/cotizaciones/actions/cotizaciones.actions';
 import * as CotizacionesSelectors from '../../../store/cotizaciones/selectors/cotizaciones.selectors';
 import { Cotizacion, CotizacionReferenciaProveedor } from '../../../core/models/cotizacion.model';
+import { Direccion } from '../../../core/models/direccion.model';
+import { Transportadora } from '../../../core/models/transportadora.model';
 import { MaquinaService } from '../../../core/services/maquina.service';
 import { CotizacionService } from '../../../core/services/cotizacion.service';
+import { DireccionService } from '../../../core/services/direccion.service';
+import { TransportadoraService } from '../../../core/services/transportadora.service';
 import { formatearEntrega } from '../../../core/utils/entrega-plazo';
 
 import { TerceroFormComponent } from '../../../shared/components/tercero-form/tercero-form.component';
@@ -123,6 +130,33 @@ export function calcularImpuestoCotizacion(subtotal: number, porcentajeIVA: numb
 }
 
 /**
+ * Formulario compacto para crear un nuevo perfil de despacho (dirección) sin salir del dialogo de aprobación.
+ */
+export interface NuevoPerfilDespachoForm {
+    destinatario: string;
+    nit_cc: string;
+    transportadora_id: number | null;
+    forma_pago: string;
+    direccion: string;
+    telefono: string;
+    correo: string;
+    ciudad_texto: string;
+}
+
+export function nuevoPerfilDespachoFormVacio(): NuevoPerfilDespachoForm {
+    return {
+        destinatario: '',
+        nit_cc: '',
+        transportadora_id: null,
+        forma_pago: '',
+        direccion: '',
+        telefono: '',
+        correo: '',
+        ciudad_texto: ''
+    };
+}
+
+/**
  * Componente de detalle de cotización
  * Rediseñado según mockup con soporte para modo claro/oscuro y arquitectura Zoneless
  */
@@ -145,6 +179,9 @@ export function calcularImpuestoCotizacion(subtotal: number, porcentajeIVA: numb
         DialogModule,
         ImageModule,
         CheckboxModule,
+        SelectModule,
+        InputTextModule,
+        TextareaModule,
         TerceroFormComponent,
         MaquinaDetailComponent,
         CurrencyPipe,
@@ -490,6 +527,84 @@ export function calcularImpuestoCotizacion(subtotal: number, porcentajeIVA: numb
                                 <span class="text-2xl font-black text-yellow-600 dark:text-brand-yellow">{{ granTotalAprobado() | currency: 'COP' : 'symbol' : '1.0-0' }}</span>
                             </div>
                         </div>
+
+                        <div class="rounded-lg border border-gray-200 dark:border-slate-700 px-4 py-4 space-y-3">
+                            <div class="flex items-center justify-between">
+                                <span class="text-sm font-semibold uppercase text-slate-500 dark:text-slate-400">Perfil de despacho</span>
+                                <p-button [label]="mostrarFormNuevoPerfilDespacho() ? 'Cancelar' : '+ Nuevo'" size="small" severity="secondary" [text]="true" (onClick)="toggleFormNuevoPerfilDespacho()"></p-button>
+                            </div>
+
+                            @if (!mostrarFormNuevoPerfilDespacho()) {
+                                <div class="field">
+                                    <p-select
+                                        [ngModel]="direccionSeleccionada()"
+                                        (ngModelChange)="direccionSeleccionada.set($event)"
+                                        [options]="direccionesDisponibles()"
+                                        optionLabel="direccion"
+                                        optionValue="id"
+                                        [filter]="true"
+                                        [showClear]="true"
+                                        placeholder="Seleccione un perfil de despacho (opcional)"
+                                        styleClass="w-full"
+                                    >
+                                        <ng-template let-direccion pTemplate="item">
+                                            {{ direccionLabel(direccion) }}
+                                        </ng-template>
+                                        <ng-template let-direccion pTemplate="selectedItem">
+                                            {{ direccionLabel(direccion) }}
+                                        </ng-template>
+                                    </p-select>
+                                </div>
+                            } @else {
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Destinatario</label>
+                                        <input pInputText class="w-full" [ngModel]="nuevoPerfilDespacho().destinatario" (ngModelChange)="actualizarNuevoPerfilDespacho('destinatario', $event)" />
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">NIT/CC</label>
+                                        <input pInputText class="w-full" [ngModel]="nuevoPerfilDespacho().nit_cc" (ngModelChange)="actualizarNuevoPerfilDespacho('nit_cc', $event)" />
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Transportadora</label>
+                                        <p-select
+                                            [ngModel]="nuevoPerfilDespacho().transportadora_id"
+                                            (ngModelChange)="actualizarNuevoPerfilDespacho('transportadora_id', $event)"
+                                            [options]="transportadoras()"
+                                            optionLabel="nombre"
+                                            optionValue="id"
+                                            [filter]="true"
+                                            [showClear]="true"
+                                            placeholder="Seleccione"
+                                            styleClass="w-full"
+                                        ></p-select>
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Forma de pago flete</label>
+                                        <input pInputText class="w-full" [ngModel]="nuevoPerfilDespacho().forma_pago" (ngModelChange)="actualizarNuevoPerfilDespacho('forma_pago', $event)" />
+                                    </div>
+                                    <div class="field md:col-span-2">
+                                        <label class="block text-sm font-medium mb-1">Dirección <span class="text-red-500">*</span></label>
+                                        <textarea pTextarea class="w-full" rows="2" [ngModel]="nuevoPerfilDespacho().direccion" (ngModelChange)="actualizarNuevoPerfilDespacho('direccion', $event)"></textarea>
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Teléfono</label>
+                                        <input pInputText class="w-full" [ngModel]="nuevoPerfilDespacho().telefono" (ngModelChange)="actualizarNuevoPerfilDespacho('telefono', $event)" />
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Correo electrónico</label>
+                                        <input pInputText class="w-full" type="email" [ngModel]="nuevoPerfilDespacho().correo" (ngModelChange)="actualizarNuevoPerfilDespacho('correo', $event)" />
+                                    </div>
+                                    <div class="field">
+                                        <label class="block text-sm font-medium mb-1">Ciudad</label>
+                                        <input pInputText class="w-full" [ngModel]="nuevoPerfilDespacho().ciudad_texto" (ngModelChange)="actualizarNuevoPerfilDespacho('ciudad_texto', $event)" />
+                                    </div>
+                                </div>
+                                <div class="flex justify-end">
+                                    <p-button label="Guardar perfil de despacho" size="small" icon="pi pi-check" [loading]="guardandoPerfilDespacho()" (onClick)="guardarNuevoPerfilDespacho()"></p-button>
+                                </div>
+                            }
+                        </div>
                     </div>
 
                     <ng-template pTemplate="footer">
@@ -629,6 +744,8 @@ export class DetailComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly cotizacionService = inject(CotizacionService);
     private readonly maquinaService = inject(MaquinaService);
+    private readonly direccionService = inject(DireccionService);
+    private readonly transportadoraService = inject(TransportadoraService);
     private readonly messageService = inject(MessageService);
     private readonly confirmationService = inject(ConfirmationService);
 
@@ -649,6 +766,14 @@ export class DetailComponent implements OnInit {
     impuestoAprobado = computed(() => calcularImpuestoCotizacion(this.subtotalAprobado()));
     granTotalAprobado = computed(() => this.subtotalAprobado() + this.impuestoAprobado());
     resumenAprobacion = computed(() => calcularResumenAprobacionCotizacion(this.referenciasAprobacionDisponibles()));
+
+    // Perfil de despacho
+    direccionesDisponibles = signal<Direccion[]>([]);
+    direccionSeleccionada = signal<number | null>(null);
+    transportadoras = signal<Transportadora[]>([]);
+    mostrarFormNuevoPerfilDespacho = signal(false);
+    nuevoPerfilDespacho = signal<NuevoPerfilDespachoForm>(nuevoPerfilDespachoFormVacio());
+    guardandoPerfilDespacho = signal(false);
 
     // Modales
     displayMaquinaDialog = signal(false);
@@ -873,7 +998,79 @@ export class DetailComponent implements OnInit {
         this.cantidadesEditadas.set(
             Object.fromEntries(this.referenciasAprobacionDisponibles().map((item) => [item.id, this.cantidadMaximaReferencia(item)]))
         );
+        this.direccionSeleccionada.set(cot.direccion_id ?? null);
+        this.mostrarFormNuevoPerfilDespacho.set(false);
+        this.nuevoPerfilDespacho.set(nuevoPerfilDespachoFormVacio());
+        this.cargarPerfilesDespacho(cot.tercero_id);
+        this.cargarTransportadoras();
         this.approvalDialogVisible.set(true);
+    }
+
+    private cargarPerfilesDespacho(terceroId: number): void {
+        this.direccionService.getAll({ tercero_id: terceroId, per_page: 100 }).subscribe({
+            next: (response) => this.direccionesDisponibles.set(response.data ?? []),
+            error: () => this.direccionesDisponibles.set([])
+        });
+    }
+
+    private cargarTransportadoras(): void {
+        if (this.transportadoras().length > 0) return;
+
+        this.transportadoraService.getAll({ per_page: 100 }).subscribe({
+            next: (response) => this.transportadoras.set(response.data ?? []),
+            error: () => this.transportadoras.set([])
+        });
+    }
+
+    direccionLabel(direccion: Direccion): string {
+        const partes = [direccion.destinatario, direccion.ciudad_texto || direccion.city?.name, direccion.direccion].filter((parte) => !!parte);
+
+        return partes.length > 0 ? partes.join(' — ') : `Dirección #${direccion.id}`;
+    }
+
+    toggleFormNuevoPerfilDespacho(): void {
+        this.mostrarFormNuevoPerfilDespacho.update((visible) => !visible);
+    }
+
+    actualizarNuevoPerfilDespacho(campo: keyof NuevoPerfilDespachoForm, valor: string | number | null): void {
+        this.nuevoPerfilDespacho.update((form) => ({ ...form, [campo]: valor }));
+    }
+
+    guardarNuevoPerfilDespacho(): void {
+        const cot = this.cotizacion();
+        const form = this.nuevoPerfilDespacho();
+        if (!cot || !form.direccion.trim()) {
+            this.messageService.add({ severity: 'warn', summary: 'Perfil de despacho', detail: 'La dirección es obligatoria' });
+            return;
+        }
+
+        this.guardandoPerfilDespacho.set(true);
+        this.direccionService
+            .create({
+                tercero_id: cot.tercero_id,
+                direccion: form.direccion,
+                destinatario: form.destinatario || null,
+                nit_cc: form.nit_cc || null,
+                transportadora_id: form.transportadora_id,
+                forma_pago: form.forma_pago || null,
+                telefono: form.telefono || null,
+                correo: form.correo || null,
+                ciudad_texto: form.ciudad_texto || null
+            })
+            .subscribe({
+                next: (response) => {
+                    this.guardandoPerfilDespacho.set(false);
+                    this.direccionesDisponibles.update((lista) => [...lista, response.data]);
+                    this.direccionSeleccionada.set(response.data.id);
+                    this.mostrarFormNuevoPerfilDespacho.set(false);
+                    this.nuevoPerfilDespacho.set(nuevoPerfilDespachoFormVacio());
+                    this.messageService.add({ severity: 'success', summary: 'Perfil de despacho', detail: 'Dirección creada y seleccionada' });
+                },
+                error: () => {
+                    this.guardandoPerfilDespacho.set(false);
+                    this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear el perfil de despacho' });
+                }
+            });
     }
 
     confirmApproveSelected(): void {
@@ -889,7 +1086,7 @@ export class DetailComponent implements OnInit {
             }
         });
 
-        this.cotizacionService.approve(cot.id, { referencia_ids: referenciaIds, cantidades }).subscribe({
+        this.cotizacionService.approve(cot.id, { referencia_ids: referenciaIds, cantidades, direccion_id: this.direccionSeleccionada() }).subscribe({
             next: () => {
                 this.approvalDialogVisible.set(false);
                 this.messageService.add({ severity: 'success', summary: 'Aprobada', detail: 'Cotización aprobada con las referencias seleccionadas. OT y OC generadas.' });
