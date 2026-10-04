@@ -9,12 +9,9 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Form Request para crear una nueva Dirección
- *
- * Valida los datos de entrada para la creación de direcciones
- * y define reglas de autorización.
+ * Form Request para actualizar una Dirección existente
  */
-class StoreDireccionRequest extends FormRequest
+class UpdateDireccionRequest extends FormRequest
 {
     /**
      * Determina si el usuario está autorizado para hacer esta petición.
@@ -32,8 +29,8 @@ class StoreDireccionRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tercero_id' => ['required', 'integer', 'exists:terceros,id'],
-            'direccion' => ['required', 'string', 'max:500'],
+            'tercero_id' => ['sometimes', 'integer', 'exists:terceros,id'],
+            'direccion' => ['sometimes', 'string', 'max:500'],
             'city_id' => ['nullable', 'integer', 'exists:cities,id'],
             'state_id' => ['nullable', 'integer', 'exists:states,id'],
             'country_id' => ['nullable', 'integer', 'exists:countries,id'],
@@ -45,20 +42,6 @@ class StoreDireccionRequest extends FormRequest
             'telefono' => ['nullable', 'string', 'max:50'],
             'correo' => ['nullable', 'email', 'max:255'],
             'ciudad_texto' => ['nullable', 'string', 'max:255'],
-        ];
-    }
-
-    /**
-     * Mensajes de error personalizados
-     *
-     * @return array<string, string>
-     */
-    public function messages(): array
-    {
-        return [
-            'tercero_id.required' => 'El tercero es obligatorio',
-            'tercero_id.exists' => 'El tercero seleccionado no existe',
-            'direccion.required' => 'La dirección es obligatoria',
         ];
     }
 }

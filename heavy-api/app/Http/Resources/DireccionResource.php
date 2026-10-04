@@ -37,6 +37,7 @@ class DireccionResource extends JsonResource
             'transportadora_id' => $this->transportadora_id,
             'forma_pago' => $this->forma_pago,
             'telefono' => $this->telefono,
+            'correo' => $this->correo,
             'ciudad_texto' => $this->ciudad_texto,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

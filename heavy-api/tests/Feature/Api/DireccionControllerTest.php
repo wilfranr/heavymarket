@@ -116,3 +116,80 @@ it('destroy elimina una direccion', function () {
         ->deleteJson('/v1/direcciones/'.$direccion->id)
         ->assertStatus(204);
 });
+
+it('store persiste el correo electronico del perfil de despacho', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/direcciones', [
+            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 100 #15-20',
+            'correo' => 'despachos@cliente.com',
+        ]);
+
+    $response->assertStatus(201)
+        ->assertJsonPath('data.correo', 'despachos@cliente.com');
+
+    expectDatabaseHas('direcciones', [
+        'tercero_id' => $this->tercero->id,
+        'correo' => 'despachos@cliente.com',
+    ]);
+});
+
+it('store permite a un Vendedor crear un perfil de despacho (regresion #179)', function () {
+    $vendedor = createUserWithRole('Vendedor');
+
+    $response = $this->actingAs($vendedor, 'sanctum')
+        ->postJson('/v1/direcciones', [
+            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 100 #15-20',
+        ]);
+
+    $response->assertStatus(201);
+});
+
+it('store rechaza a un rol sin permiso para crear direcciones', function () {
+    $logistica = createUserWithRole('Logistica');
+
+    $response = $this->actingAs($logistica, 'sanctum')
+        ->postJson('/v1/direcciones', [
+            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 100 #15-20',
+        ]);
+
+    $response->assertStatus(403);
+});
+
+it('store valida que forma_pago sea Al cobro o Pagamos', function () {
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/direcciones', [
+            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 100 #15-20',
+            'forma_pago' => 'Contraentrega',
+        ]);
+
+    $response->assertStatus(422)
+        ->assertJsonValidationErrors(['forma_pago']);
+
+    $response = $this->actingAs($this->user, 'sanctum')
+        ->postJson('/v1/direcciones', [
+            'tercero_id' => $this->tercero->id,
+            'direccion' => 'Calle 100 #15-20',
+            'forma_pago' => 'Pagamos',
+        ]);
+
+    $response->assertStatus(201)
+        ->assertJsonPath('data.forma_pago', 'Pagamos');
+});
+
+it('update permite modificar el correo y rechaza a un rol sin permiso', function () {
+    $direccion = Direccion::factory()->create(['tercero_id' => $this->tercero->id]);
+
+    $this->actingAs($this->user, 'sanctum')
+        ->putJson('/v1/direcciones/'.$direccion->id, ['correo' => 'nuevo@cliente.com'])
+        ->assertStatus(200)
+        ->assertJsonPath('data.correo', 'nuevo@cliente.com');
+
+    $logistica = createUserWithRole('Logistica');
+    $this->actingAs($logistica, 'sanctum')
+        ->putJson('/v1/direcciones/'.$direccion->id, ['correo' => 'otro@cliente.com'])
+        ->assertStatus(403);
+});

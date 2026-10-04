@@ -6,6 +6,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreDireccionRequest;
+use App\Http\Requests\UpdateDireccionRequest;
 use App\Http\Resources\DireccionResource;
 use App\Models\Direccion;
 use Illuminate\Http\JsonResponse;
@@ -106,22 +107,9 @@ class DireccionController extends Controller
     /**
      * Actualizar una dirección
      */
-    public function update(Request $request, Direccion $direccion): JsonResponse
+    public function update(UpdateDireccionRequest $request, Direccion $direccion): JsonResponse
     {
-        $validated = $request->validate([
-            'tercero_id' => ['sometimes', 'integer', 'exists:terceros,id'],
-            'direccion' => ['sometimes', 'string', 'max:500'],
-            'city_id' => ['nullable', 'integer', 'exists:cities,id'],
-            'state_id' => ['nullable', 'integer', 'exists:states,id'],
-            'country_id' => ['nullable', 'integer', 'exists:countries,id'],
-            'principal' => ['nullable', 'boolean'],
-            'destinatario' => ['nullable', 'string', 'max:255'],
-            'nit_cc' => ['nullable', 'string', 'max:50'],
-            'transportadora_id' => ['nullable', 'integer', 'exists:transportadoras,id'],
-            'forma_pago' => ['nullable', 'string', 'max:255'],
-            'telefono' => ['nullable', 'string', 'max:50'],
-            'ciudad_texto' => ['nullable', 'string', 'max:255'],
-        ]);
+        $validated = $request->validated();
 
         try {
             DB::beginTransaction();
