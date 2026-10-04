@@ -141,14 +141,19 @@
     {
       "id": "costeo-proveedor-flete-total",
       "description": "Backend+Frontend: el total que ve el proveedor en su modulo de costeo debe incluir Fletes real (hoy calcularFletes() en costing-opportunities.component.ts devuelve siempre 0). Decision del usuario: reusar la misma formula que ya usa el asesor en heavy-front/src/app/features/pedidos/costeo/costeo.ts (peso_kg * 2.20462 = peso_lb; costo_flete_usd = peso_lb * tarifa_pais) e incluirlo en el Total que el proveedor confirma. Backend: ProviderPortalController::opportunities() debe agregar 'flete' => (float) ($tercero->country?->flete ?? 0) al objeto 'provider' en ambas ramas (pending y sent/approved). Frontend: ampliar el tipo de providerInfo con 'flete: number' (default 0) e implementar calcularFletes() sumando, por cada fila seleccionada, peso(kg, campo 'peso' ya existente en ProviderCosteoRow) * 2.20462 * cantidad_cotizada * providerInfo().flete, devolviendo 0 si providerInfo().is_national. No requiere cambios de HTML: el campo 'Fletes' ya esta en el template (costing-opportunities.component.html linea ~197) y calcularTotal() ya suma subtotal+impuestos+fletes. Cierra GitHub #171.",
-      "status": "pending",
+      "status": "done",
       "required_skill": null,
       "depends_on": [],
       "topic_key": "biz/roles",
       "github_issue": 171,
+      "deployed": false,
+      "client_summary": "En el módulo de costeo del proveedor, el total ahora incluye el valor real del flete para proveedores internacionales (antes siempre aparecía en cero), calculado con el peso de los artículos y la tarifa configurada para el país del proveedor.",
+      "review_notes": "Aprobado. Backend: ProviderPortalController::opportunities() agrega 'flete' => (float)($tercero->country?->flete ?? 0) al objeto 'provider' en ambas ramas (pending y sent/approved); nuevo test test_provider_payload_includes_country_freight_rate_in_pending_and_sent_status verifica ambas. Frontend: providerInfo amplia su tipo con 'flete: number'; calcularFletes() delega en nueva funcion pura exportada calcularFletesSeleccion(filas, providerInfo) que replica la formula del asesor (peso_kg*2.20462*cantidad*tarifa_pais, 0 si es_nacional), con 3 tests cubriendo nacional=0, calculo internacional multi-fila y valores ausentes/invalidos=0. No se tocó el HTML (el campo Fletes y calcularTotal() ya sumaban subtotal+impuestos+fletes). Checklist backend: sin logica de negocio filtrada al controller (solo agrega un campo al payload), sin fugas de persistencia. Gates: pint PASS (2 archivos backend, tras corregir un uso de clase fully-qualified inline en el test nuevo); pest del archivo 18/18 OK, suite completa backend 559/559 OK; ng build OK; vitest 3/3 en el spec nuevo, suite completa frontend 203/203 (27 archivos) OK.",
       "files": [
-        "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
-        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts"
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.spec.ts", "status": "validated"}
       ]
     },
     {

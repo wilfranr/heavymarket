@@ -131,6 +131,7 @@ class ProviderPortalController extends Controller
                         'id' => $tercero->id,
                         'nombre' => $tercero->nombre,
                         'is_national' => (int) $tercero->country_id === 48,
+                        'flete' => (float) ($tercero->country?->flete ?? 0),
                     ],
                     'meta' => [
                         'current_page' => $costeos->currentPage(),
@@ -166,6 +167,7 @@ class ProviderPortalController extends Controller
                     'id' => $tercero->id,
                     'nombre' => $tercero->nombre,
                     'is_national' => (int) $tercero->country_id === 48,
+                    'flete' => (float) ($tercero->country?->flete ?? 0),
                 ],
                 'meta' => [
                     'current_page' => $referencias->currentPage(),

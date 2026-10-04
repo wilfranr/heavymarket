@@ -49,6 +49,27 @@ interface ProviderCosteoRow {
     already_costed: boolean;
 }
 
+const KG_A_LB = 2.20462;
+
+/**
+ * Calcula el flete total de las filas seleccionadas, replicando la formula que ya
+ * usa el asesor en pedidos/costeo/costeo.ts (peso_kg -> lb * tarifa_pais, por unidad).
+ * Los proveedores nacionales no pagan flete en esta pantalla (lo asume el asesor despues).
+ */
+export function calcularFletesSeleccion(filas: Pick<ProviderCosteoRow, 'peso' | 'form_cantidad_cotizada'>[], providerInfo: { is_national: boolean; flete: number }): number {
+    if (providerInfo.is_national) {
+        return 0;
+    }
+
+    return filas.reduce((total, fila) => {
+        const pesoKg = Number(fila.peso) || 0;
+        const cantidad = Number(fila.form_cantidad_cotizada) || 0;
+        const pesoLb = pesoKg * KG_A_LB;
+
+        return total + pesoLb * providerInfo.flete * cantidad;
+    }, 0);
+}
+
 @Component({
     selector: 'app-costing-opportunities',
     standalone: true,
@@ -66,7 +87,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     private readonly router = inject(Router);
 
     opportunities = signal<ProviderCosteoRow[]>([]);
-    providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean }>({ is_national: true });
+    providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean; flete: number }>({ is_national: true, flete: 0 });
     loading = signal(false);
     submitting = signal(false);
     activeStatus = signal<'pending' | 'sent' | 'approved'>('pending');
@@ -118,12 +139,12 @@ export class CostingOpportunitiesComponent implements OnInit {
     loadOpportunities(): void {
         this.loading.set(true);
         this.providerPortalService.getOpportunities({ status: this.activeStatus() }).subscribe({
-            next: (response: { data?: ProviderCosteoRow[]; provider?: { id?: number; nombre?: string; is_national: boolean } }) => {
+            next: (response: { data?: ProviderCosteoRow[]; provider?: { id?: number; nombre?: string; is_national: boolean; flete?: number } }) => {
                 const items = (response.data || []).map((item) => this.normalizarFila(item));
                 this.opportunities.set(items);
 
                 if (response.provider) {
-                    this.providerInfo.set(response.provider);
+                    this.providerInfo.set({ ...response.provider, flete: response.provider.flete ?? 0 });
                 }
 
                 const pedidoIds = items.map((item) => item.pedido_id ?? item.pedido?.id).filter((id): id is number => typeof id === 'number');
@@ -233,7 +254,7 @@ export class CostingOpportunitiesComponent implements OnInit {
     }
 
     calcularFletes(): number {
-        return 0;
+        return calcularFletesSeleccion(this.filasSeleccionadas(), this.providerInfo());
     }
 
     calcularTotal(): number {

@@ -4,6 +4,7 @@ namespace Tests\Feature\Api\V1;
 
 use App\Enums\OrdenCompraEstado;
 use App\Models\Articulo;
+use App\Models\Country;
 use App\Models\Lista;
 use App\Models\OrdenCompra;
 use App\Models\Pedido;
@@ -561,5 +562,43 @@ class ProviderPortalControllerTest extends TestCase
             ->assertJsonPath('data.0.already_costed', true);
 
         expect((float) $response->json('data.0.form_costo'))->toEqual(180.00);
+    }
+
+    /** @test */
+    public function test_provider_payload_includes_country_freight_rate_in_pending_and_sent_status()
+    {
+        $pais = Country::factory()->create(['flete' => 4.5]);
+        $this->tercero->update(['country_id' => $pais->id]);
+
+        $pedido = Pedido::factory()->create(['estado' => 'En_Costeo']);
+        $ref = PedidoReferencia::factory()->create([
+            'pedido_id' => $pedido->id,
+            'marca_id' => $this->marca->id,
+            'categoria_comercial_id' => $this->categoria->id,
+        ]);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities')
+            ->assertStatus(200)
+            ->assertJsonPath('provider.flete', 4.5);
+
+        PedidoReferenciaProveedor::create([
+            'pedido_referencia_id' => $ref->id,
+            'referencia_id' => $ref->referencia_id,
+            'proveedor_id' => $this->tercero->id,
+            'marca_id' => $this->marca->id,
+            'costo_unidad' => 120.00,
+            'dias_entrega' => 3,
+            'cantidad' => 1,
+            'estado' => 0,
+            'utilidad' => 0.00,
+            'ubicacion' => 'Internacional',
+            'Entrega' => 'Programada',
+        ]);
+
+        $this->actingAs($this->provider)
+            ->getJson('/v1/provider/opportunities?status=sent')
+            ->assertStatus(200)
+            ->assertJsonPath('provider.flete', 4.5);
     }
 }
