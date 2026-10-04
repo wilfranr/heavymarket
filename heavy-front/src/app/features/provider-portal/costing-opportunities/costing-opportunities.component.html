@@ -11,10 +11,13 @@
             <!-- Header -->
             <div class="flex justify-between items-center mb-6 px-8">
                 <div>
-                    <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">Costeo > Editar</div>
+                    <div class="text-slate-500 dark:text-slate-50 text-base font-medium mb-1">
+                        <a class="cursor-pointer hover:underline" (click)="volverAOportunidades()">Oportunidades de Costeo</a> > Editar
+                    </div>
                     <h1 class="text-3xl font-bold text-blue-600 dark:text-blue-500">Costeo proveedor</h1>
                 </div>
                 <div class="flex gap-4 items-center">
+                    <p-button label="Volver a oportunidades" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volverAOportunidades()"></p-button>
                     <button type="button" class="btn-pill btn-primary flex items-center gap-2" (click)="guardarSeleccion()" [disabled]="submitting() || !hayFilasEditables()">
                         <i class="pi pi-save"></i>
                         <span>Guardar</span>
@@ -27,18 +30,6 @@
                         <i class="pi pi-check-circle"></i>
                         <span>Finalizar</span>
                     </button>
-                </div>
-            </div>
-
-            <!-- Filtro de estado -->
-            <div class="px-8 mb-6">
-                <div class="flex flex-wrap items-center gap-4">
-                    <label class="text-sm font-medium" for="estadoCosteo">Estado de ofertas</label>
-                    <p-select inputId="estadoCosteo" [options]="estadoOptions" [ngModel]="activeStatus()" (ngModelChange)="onStatusChange($event)" optionLabel="label" optionValue="value" styleClass="min-w-[220px]"></p-select>
-                    @if (pedidosDisponibles().length > 1) {
-                        <label class="text-sm font-medium ml-4" for="pedidoActivo">Pedido</label>
-                        <p-select inputId="pedidoActivo" [options]="pedidosDisponibles()" [ngModel]="activePedidoId()" (ngModelChange)="onPedidoChange($event)" optionLabel="label" optionValue="value" styleClass="min-w-[220px]"></p-select>
-                    }
                 </div>
             </div>
 
@@ -232,7 +223,10 @@
                             <h3 class="text-xl font-bold text-gray-800 dark:text-white m-0">Sin oportunidades pendientes</h3>
                             <p class="text-gray-500 dark:text-gray-400 mt-2 max-w-md mx-auto">No hay piezas que coincidan con su especialidad en este momento.</p>
                         </div>
-                        <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
+                        <div class="flex gap-2">
+                            <p-button label="Verificar de nuevo" icon="pi pi-refresh" [text]="true" (onClick)="loadOpportunities()"></p-button>
+                            <p-button label="Volver a oportunidades" icon="pi pi-arrow-left" severity="secondary" [outlined]="true" (onClick)="volverAOportunidades()"></p-button>
+                        </div>
                     </div>
                 </div>
             }

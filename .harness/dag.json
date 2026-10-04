@@ -125,14 +125,17 @@
     {
       "id": "costeo-proveedor-oportunidades-detalle-por-pedido",
       "description": "Frontend: ajustar CostingOpportunitiesComponent (costing-opportunities.component.ts/.html) para leer ':pedidoId' y 'status' (query param) de ActivatedRoute al iniciar, fijando activePedidoId/activeStatus automaticamente en vez de requerir seleccion manual. Eliminar del template el selector 'Pedido' (ya no aplica, se llega desde la lista con un pedido ya elegido) y el selector de 'Estado de ofertas' si el status llega por query param; agregar un boton 'Volver a oportunidades' que navegue a /provider/opportunities. Cierra GitHub #173.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["costeo-proveedor-oportunidades-lista"],
       "topic_key": "biz/roles",
       "github_issue": 173,
+      "deployed": false,
+      "client_summary": "Al entrar a Oportunidades de Costeo, ahora se muestra primero una tabla con los pedidos pendientes de costeo, cada uno con un botón para abrir y cotizar sus ítems de forma ordenada, en vez de tener que buscarlos en un único listado mezclado.",
+      "review_notes": "Aprobado. CostingOpportunitiesComponent ahora lee ':pedidoId' (route param) y 'status' (query param) en ngOnInit para fijar activePedidoId/activeStatus automaticamente -- la condicion existente en loadOpportunities() que preserva activePedidoId si sigue en la lista de pedidoIds cargados ya cubre que el valor de la ruta se mantenga tras la carga, sin tocar esa logica. Se eliminaron del template los selectores 'Estado de ofertas' y 'Pedido' (y sus miembros ahora muertos: estadoOptions, pedidosDisponibles, onStatusChange, onPedidoChange) ya que ahora se llega con ambos valores resueltos desde la lista. Se agrego boton 'Volver a oportunidades' en el header y en el estado vacio (usando p-button existente, no se introdujo ninguna clase CSS nueva). Checklist Angular: sin EventEmitter, Tailwind + PrimeNG, sin PrimeFlex. Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 200/200 (26 archivos) OK, sin regresiones.",
       "files": [
-        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
-        "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html"
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html", "status": "validated"}
       ]
     },
     {

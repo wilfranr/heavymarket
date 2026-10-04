@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
 import { InputTextModule } from 'primeng/inputtext';
 import { InputNumberModule } from 'primeng/inputnumber';
@@ -61,6 +62,8 @@ export class CostingOpportunitiesComponent implements OnInit {
     private readonly listaService = inject(ListaService);
     private readonly maquinaService = inject(MaquinaService);
     private readonly messageService = inject(MessageService);
+    private readonly route = inject(ActivatedRoute);
+    private readonly router = inject(Router);
 
     opportunities = signal<ProviderCosteoRow[]>([]);
     providerInfo = signal<{ id?: number; nombre?: string; is_national: boolean }>({ is_national: true });
@@ -74,22 +77,6 @@ export class CostingOpportunitiesComponent implements OnInit {
 
     marcas: { label: string; value: number }[] = [];
     tiemposEntrega = ENTREGA_OPTIONS;
-    estadoOptions = [
-        { label: 'Pendientes', value: 'pending' as const },
-        { label: 'Enviados', value: 'sent' as const },
-        { label: 'Aprobados', value: 'approved' as const }
-    ];
-
-    pedidosDisponibles = computed(() => {
-        const pedidos = new Map<number, string>();
-        for (const row of this.opportunities()) {
-            const pedidoId = row.pedido_id ?? row.pedido?.id;
-            if (pedidoId) {
-                pedidos.set(pedidoId, `Pedido #${pedidoId}`);
-            }
-        }
-        return Array.from(pedidos.entries()).map(([value, label]) => ({ value, label }));
-    });
 
     pedidoActivo = computed<ProviderPedidoSummary | null>(() => {
         const pedidoId = this.activePedidoId();
@@ -109,8 +96,23 @@ export class CostingOpportunitiesComponent implements OnInit {
     });
 
     ngOnInit(): void {
+        const pedidoIdParam = this.route.snapshot.paramMap.get('pedidoId');
+        const statusParam = this.route.snapshot.queryParamMap.get('status');
+
+        if (statusParam === 'pending' || statusParam === 'sent' || statusParam === 'approved') {
+            this.activeStatus.set(statusParam);
+        }
+
+        if (pedidoIdParam) {
+            this.activePedidoId.set(Number(pedidoIdParam));
+        }
+
         this.loadOpportunities();
         this.loadMarcas();
+    }
+
+    volverAOportunidades(): void {
+        this.router.navigate(['/provider/opportunities']);
     }
 
     loadOpportunities(): void {
@@ -168,17 +170,6 @@ export class CostingOpportunitiesComponent implements OnInit {
                 this.marcas = marcas.map((m: Lista) => ({ label: m.nombre, value: m.id }));
             }
         });
-    }
-
-    onStatusChange(status: 'pending' | 'sent' | 'approved' | null): void {
-        if (status) {
-            this.activeStatus.set(status);
-            this.loadOpportunities();
-        }
-    }
-
-    onPedidoChange(pedidoId: number | null): void {
-        this.activePedidoId.set(pedidoId);
     }
 
     viewMaquina(maquina: any): void {
