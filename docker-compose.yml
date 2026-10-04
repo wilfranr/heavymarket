@@ -24,6 +24,24 @@ services:
     environment:
       - NODE_ENV=development
 
+  # MySQL para entornos sin base de datos nativa (ej. servidor de desarrollo).
+  # Opt-in via COMPOSE_PROFILES=server para no chocar con el MySQL nativo del laptop (puerto 3306).
+  mysql:
+    image: mysql:8.0
+    container_name: heavymarket-mysql
+    restart: unless-stopped
+    profiles:
+      - server
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-heavymarket}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-heavymarket}
+      MYSQL_USER: ${MYSQL_USER:-heavymarket}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:-heavymarket}
+    ports:
+      - "3306:3306"
+    volumes:
+      - heavymarket_mysql_data:/var/lib/mysql
+
   # phpMyAdmin para administrar la BD local
   phpmyadmin:
     image: phpmyadmin:latest
@@ -45,3 +63,6 @@ services:
     ports:
       - "1025:1025"  # SMTP
       - "8025:8025"  # Web UI
+
+volumes:
+  heavymarket_mysql_data:
