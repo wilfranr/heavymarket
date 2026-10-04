@@ -48,14 +48,15 @@
     {
       "id": "cotizacion-aprobacion-validacion-request",
       "description": "Backend (validacion): extender ApproveCotizacionRequest para aceptar, ademas de 'referencia_ids', un array 'cantidades' (mapa referencia_id => cantidad_aprobada) con regla por item: integer, min:1, y <= snapshot_cantidad de esa referencia_proveedor dentro de la cotizacion (regla custom, no Rule::exists generico); y un 'direccion_id' opcional, nullable, que debe existir en 'direcciones' y pertenecer al mismo tercero_id de la cotizacion (para evitar asignar el perfil de despacho de otro cliente). CotizacionController::approve() debe leer estos campos validados y pasarlos a CotizacionService::aprobar() (solo wiring de parametros, sin logica de recalculo aqui).",
-      "status": "pending",
+      "status": "done",
       "required_skill": null,
       "depends_on": ["cotizacion-aprobacion-schema-backend"],
       "topic_key": "biz/roles",
       "github_issue": null,
+      "review_notes": "Aprobado. ApproveCotizacionRequest ahora valida 'cantidades' (mapa referencia_id->cantidad, integer min:1) y, en withValidator()->after(), cada cantidad contra snapshot_cantidad real de esa referencia dentro de la cotizacion (rechaza exceder lo cotizado); 'direccion_id' opcional valida pertenencia al tercero_id de la cotizacion via Rule::exists con where. Controller solo hace wiring: pasa cantidades/direccion_id a CotizacionService::aprobar() (los parametros extra son ignorados por PHP hasta que el nodo siguiente amplie la firma del servicio, por eso el comportamiento actual no cambia todavia). Gates: pint PASS en los 2 archivos; pest --filter=Cotizacion 31/31 OK (mismas DEPR preexistentes ya documentadas en el nodo schema-backend).",
       "files": [
-        "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php",
-        "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php"
+        {"path": "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php", "status": "validated"}
       ]
     },
     {

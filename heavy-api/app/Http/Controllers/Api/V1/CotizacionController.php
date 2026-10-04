@@ -266,7 +266,9 @@ class CotizacionController extends Controller
             $cotizacion = $this->cotizacionService->aprobar(
                 $cotizacion,
                 '',
-                $validated['referencia_ids'] ?? null
+                $validated['referencia_ids'] ?? null,
+                $validated['cantidades'] ?? null,
+                $validated['direccion_id'] ?? null
             );
             $cotizacion->load(['pedido', 'tercero', 'user']);
 
