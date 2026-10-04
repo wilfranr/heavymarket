@@ -226,27 +226,31 @@
     {
       "id": "tercero-wizard-perfiles-despacho-frontend",
       "description": "Frontend: integrar 'Perfiles de Despacho' como paso 3 (indice 3, despues de Contactos) en el wizard de tercero-form.component.ts/.html, desplazando 'Documentos' al indice 4. FormArray 'direcciones' con destinatario/nit_cc/transportadora_id(p-select de TransportadoraService + boton '+' que abre un dialogo minimo para crear una transportadora nueva con solo el nombre, requerido por CreateTransportadoraDto)/forma_pago(p-select con las 2 opciones exactas 'Al cobro'/'Pagamos')/direccion/telefono/correo/ciudad_texto. Ningun campo obligatorio (isStepValid/markStepAsTouched no necesitan tocarse: el fallback 'return true' para pasos sin reglas explicitas ya cubre el nuevo paso y el desplazado). Cargar perfiles existentes en patchForm() (data.direcciones, ya viene de TerceroController::show() que eager-carga 'direcciones' y TerceroResource ya lo expone) y enviarlos en el payload de FormData como direcciones[i][...] (solo si direccion.direccion tiene valor, mismo criterio que contactos con nombre). Cierra GitHub #172.",
-      "status": "pending",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["tercero-direcciones-backend"],
       "topic_key": "biz/roles",
       "github_issue": 172,
+      "deployed": false,
+      "client_summary": "Al crear o editar un tercero, ahora aparece un nuevo paso llamado \"Perfiles de Despacho\" (justo después de Contactos) donde se pueden registrar uno o varios destinos de envío con destinatario, NIT/CC, transportadora, forma de pago del flete, dirección, teléfono, correo y ciudad. La transportadora se puede crear sin salir de la pantalla si todavía no existe en el sistema. Ningún campo es obligatorio.",
+      "review_notes": "Aprobado. Nuevo paso 'Perfiles de Despacho' insertado en indice 3 del wizard (Documentos pasa a indice 4); isStepValid/markStepAsTouched no requirieron cambios porque su fallback 'return true' ya cubre pasos sin reglas explicitas, consistente con que ningun campo de este paso es obligatorio (requisito explicito del issue). FormArray 'direcciones' sigue el mismo patron que 'contactos' (addDireccionDespacho/removeDireccionDespacho, carga en patchForm desde data.direcciones, reset en resetForm, payload FormData direcciones[i][...] gateado por que direccion.direccion tenga valor). Transportadora: p-select cargado via TransportadoraService + dialogo minimo (solo nombre, unico campo requerido por CreateTransportadoraDto) para crear una nueva sin salir del wizard, seleccionandola automaticamente al crearla. forma_pago reutiliza la constante exportada FORMAS_PAGO_FLETE (Al cobro/Pagamos) para no duplicar los valores permitidos. Se agrego FormsModule a los imports del componente (requerido por el ngModel del dialogo de nueva transportadora; el resto del formulario sigue siendo ReactiveForms). No se agregaron tests unitarios: no existe spec para tercero-form.component.ts ni para el patron equivalente 'contactos' ya en produccion, consistente con el house style existente -- verificacion manual visual pendiente (fuera de alcance automatizable). Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 206/206 (27 archivos) OK, sin regresiones.",
       "files": [
-        "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
-        "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html"
+        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html", "status": "validated"}
       ]
     },
     {
       "id": "direcciones-standalone-form-consistency",
       "description": "Frontend: el modulo standalone de Direcciones (features/direcciones/create y edit) no tiene campo de transportadora en absoluto, ni correo, y forma_pago es texto libre -- inconsistente con el modelo Direccion y con el nuevo paso del wizard. Agregar los mismos 3 campos (transportadora select via TransportadoraService, correo input, forma_pago select reusando la constante exportada FORMAS_PAGO_FLETE de tercero-form.component.ts) a create.component.ts y edit.component.ts, siguiendo el patron visual ya usado ahi (p-select, pInputText).",
-      "status": "pending",
+      "status": "done",
       "required_skill": "ui_ux_design_expert",
       "depends_on": ["tercero-wizard-perfiles-despacho-frontend"],
       "topic_key": "biz/roles",
       "github_issue": null,
+      "review_notes": "Aprobado. create.component.ts y edit.component.ts ahora tienen los mismos 3 campos agregados al wizard: transportadora (p-select via TransportadoraService), correo (input email con validacion) y forma_pago (p-select reusando FORMAS_PAGO_FLETE exportada de tercero-form.component.ts, en vez de texto libre). Se actualizaron los DTOs construidos manualmente en onSubmit() en ambos componentes para incluir los 2 campos nuevos (transportadora_id, correo) que antes no se enviaban en absoluto. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK.",
       "files": [
-        "heavy-front/src/app/features/direcciones/create/create.component.ts",
-        "heavy-front/src/app/features/direcciones/edit/edit.component.ts"
+        {"path": "heavy-front/src/app/features/direcciones/create/create.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/direcciones/edit/edit.component.ts", "status": "validated"}
       ]
     }
   ]

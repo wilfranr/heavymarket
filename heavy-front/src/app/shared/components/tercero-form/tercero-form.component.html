@@ -364,8 +364,79 @@
             </div>
         }
 
-        <!-- STEP 3: Documentos -->
+        <!-- STEP 3: Perfiles de Despacho -->
         @if (activeIndex === 3) {
+            <div class="animate-fade-in pt-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">Perfiles de Despacho</h3>
+                    <p-button label="Agregar Perfil" icon="pi pi-plus" size="small" (onClick)="addDireccionDespacho()" [disabled]="isViewMode"></p-button>
+                </div>
+
+                <div formArrayName="direcciones" class="space-y-4 max-h-[500px] overflow-y-auto pr-2">
+                    @for (perfil of direccionesDespacho.controls; track perfil; let i = $index) {
+                        <div [formGroupName]="i" class="border border-gray-700 rounded-lg p-4 bg-white/5 relative">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Destinatario</label>
+                                    <input pInputText formControlName="destinatario" class="w-full p-filled p-inputtext-sm" placeholder="Nombre del destinatario" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">NIT/CC</label>
+                                    <input pInputText formControlName="nit_cc" class="w-full p-filled p-inputtext-sm" placeholder="NIT o CC" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Transportadora</label>
+                                    <div class="flex gap-2">
+                                        <p-select formControlName="transportadora_id" [options]="transportadoras()" optionLabel="nombre" optionValue="id" [filter]="true" [showClear]="true" placeholder="Seleccione" styleClass="w-full"></p-select>
+                                        <p-button icon="pi pi-plus" severity="secondary" [outlined]="true" pTooltip="Crear nueva transportadora" (onClick)="abrirCrearTransportadora(i)" [disabled]="isViewMode"></p-button>
+                                    </div>
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Forma de pago flete</label>
+                                    <p-select formControlName="forma_pago" [options]="formasPagoFlete" optionLabel="label" optionValue="value" [showClear]="true" placeholder="Seleccione" styleClass="w-full"></p-select>
+                                </div>
+
+                                <div class="field md:col-span-2">
+                                    <label class="block mb-1 text-xs font-semibold">Dirección</label>
+                                    <input pInputText formControlName="direccion" class="w-full p-filled p-inputtext-sm" placeholder="Dirección de despacho" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Teléfono</label>
+                                    <input pInputText formControlName="telefono" class="w-full p-filled p-inputtext-sm" placeholder="Teléfono" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Correo electrónico</label>
+                                    <input pInputText type="email" formControlName="correo" class="w-full p-filled p-inputtext-sm" placeholder="correo@ejemplo.com" />
+                                </div>
+
+                                <div class="field">
+                                    <label class="block mb-1 text-xs font-semibold">Ciudad</label>
+                                    <input pInputText formControlName="ciudad_texto" class="w-full p-filled p-inputtext-sm" placeholder="Ciudad" />
+                                </div>
+                            </div>
+
+                            <div class="flex justify-end mt-2">
+                                <p-button icon="pi pi-trash" label="Quitar perfil" severity="danger" [text]="true" (onClick)="removeDireccionDespacho(i)" [disabled]="isViewMode"></p-button>
+                            </div>
+                        </div>
+                    } @empty {
+                        <div class="text-center py-8 border-2 border-dashed border-gray-700 rounded-lg bg-white/5">
+                            <i class="pi pi-truck text-4xl text-gray-500 mb-2"></i>
+                            <p class="text-gray-400">No hay perfiles de despacho agregados.</p>
+                            <p-button label="Agregar el primer perfil" [text]="true" (onClick)="addDireccionDespacho()" [disabled]="isViewMode"></p-button>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
+
+        <!-- STEP 4: Documentos -->
+        @if (activeIndex === 4) {
             <div class="animate-fade-in pt-4 hm-document-upload-panel">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     @for (doc of documentFieldsConfig; track doc.key) {
@@ -458,3 +529,14 @@
 </div>
 
 <app-maquina-create-modal [(visible)]="displayCreateMaquinaDialog" (onMaquinaCreated)="onMaquinaCreated($event)"> </app-maquina-create-modal>
+
+<p-dialog [(visible)]="displayCrearTransportadoraDialog" [modal]="true" [style]="{ width: '420px' }" [closable]="true" appendTo="body" header="Nueva transportadora">
+    <div class="field">
+        <label class="block text-sm font-medium mb-2">Nombre <span class="text-red-500">*</span></label>
+        <input pInputText class="w-full" [ngModel]="nuevaTransportadoraNombre()" (ngModelChange)="nuevaTransportadoraNombre.set($event)" [ngModelOptions]="{ standalone: true }" placeholder="Nombre de la transportadora" />
+    </div>
+    <ng-template pTemplate="footer">
+        <p-button label="Cancelar" severity="secondary" [outlined]="true" (onClick)="displayCrearTransportadoraDialog.set(false)"></p-button>
+        <p-button label="Crear" icon="pi pi-check" [loading]="creandoTransportadora()" (onClick)="confirmarCrearTransportadora()"></p-button>
+    </ng-template>
+</p-dialog>

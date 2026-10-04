@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, Input, Output, EventEmitter, OnChanges, SimpleChanges, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormArray } from '@angular/forms';
+import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, FormsModule, FormArray } from '@angular/forms';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { startWith } from 'rxjs/operators';
 import { ButtonModule } from 'primeng/button';
@@ -35,6 +35,7 @@ import {
 import { TooltipModule } from 'primeng/tooltip';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
 import { PasswordModule } from 'primeng/password';
+import { DialogModule } from 'primeng/dialog';
 
 import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
@@ -42,7 +43,14 @@ import { MaquinaService } from '../../../core/services/maquina.service';
 import { FabricanteService } from '../../../core/services/fabricante.service';
 import { SistemaService } from '../../../core/services/sistema.service';
 import { ListaService } from '../../../core/services/lista.service';
+import { TransportadoraService } from '../../../core/services/transportadora.service';
+import { Transportadora } from '../../../core/models/transportadora.model';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
+
+export const FORMAS_PAGO_FLETE = [
+    { label: 'Al cobro', value: 'Al cobro' },
+    { label: 'Pagamos', value: 'Pagamos' }
+];
 import { Tercero } from '../../../core/models/tercero.model';
 import { MaquinaCreateModalComponent } from '../maquina-create-modal/maquina-create-modal.component';
 import { AutoFocusDirective } from '../../directives/auto-focus.directive';
@@ -69,6 +77,7 @@ import {
         CommonModule,
         RouterModule,
         ReactiveFormsModule,
+        FormsModule,
         ButtonModule,
         InputTextModule,
         SelectModule,
@@ -86,6 +95,7 @@ import {
         MaquinaCreateModalComponent,
         ToggleSwitchModule,
         PasswordModule,
+        DialogModule,
         AutoFocusDirective
     ],
     templateUrl: './tercero-form.component.html',
@@ -206,6 +216,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     private readonly fabricanteService = inject(FabricanteService);
     private readonly sistemaService = inject(SistemaService);
     private readonly listaService = inject(ListaService);
+    private readonly transportadoraService = inject(TransportadoraService);
     private readonly messageService = inject(MessageService);
     private readonly authService = inject(AuthService);
     private readonly cdr = inject(ChangeDetectorRef);
@@ -239,6 +250,12 @@ export class TerceroFormComponent implements OnInit, OnChanges {
 
     // Wizard Data
     steps: MenuItem[] = [];
+    formasPagoFlete = FORMAS_PAGO_FLETE;
+    transportadoras = signal<Transportadora[]>([]);
+    displayCrearTransportadoraDialog = signal(false);
+    creandoTransportadora = signal(false);
+    nuevaTransportadoraNombre = signal('');
+    private direccionDespachoIndexParaTransportadora: number | null = null;
     activeIndex: number = 0;
 
     // Location Data
@@ -278,6 +295,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         this.loadMaquinas();
         this.loadFabricantes();
         this.loadCategoriasComerciales();
+        this.loadTransportadoras();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -335,6 +353,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             fabricante_id: data.fabricantes ? data.fabricantes.map((f: any) => f.id) : [],
             categoria_comercial_id: data.categorias_comerciales ? data.categorias_comerciales.map((c: any) => c.id) : [],
             contactos: [],
+            direcciones: [],
             landing_access: data.landing_access ?? false,
             provider_access: data.provider_access ?? false,
             landing_password: ''
@@ -344,6 +363,12 @@ export class TerceroFormComponent implements OnInit, OnChanges {
         this.contactos.clear();
         if (data.contactos && data.contactos.length > 0) {
             data.contactos.forEach((c: any) => this.addContacto(c));
+        }
+
+        // Set perfiles de despacho (direcciones)
+        this.direccionesDespacho.clear();
+        if (data.direcciones && data.direcciones.length > 0) {
+            data.direcciones.forEach((d: any) => this.addDireccionDespacho(d));
         }
 
         if (data.country_id) {
@@ -400,11 +425,72 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
 
     private initSteps(): void {
-        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Documentos' }];
+        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Perfiles de Despacho' }, { label: 'Documentos' }];
     }
 
     get contactos(): FormArray {
         return this.createTerceroForm.get('contactos') as FormArray;
+    }
+
+    get direccionesDespacho(): FormArray {
+        return this.createTerceroForm.get('direcciones') as FormArray;
+    }
+
+    addDireccionDespacho(data: any = null): void {
+        const direccionForm = this.fb.group({
+            id: [data?.id || null],
+            destinatario: [data?.destinatario || ''],
+            nit_cc: [data?.nit_cc || ''],
+            transportadora_id: [data?.transportadora_id || null],
+            forma_pago: [data?.forma_pago || null],
+            direccion: [data?.direccion || ''],
+            telefono: [data?.telefono || ''],
+            correo: [data?.correo || '', [Validators.email]],
+            ciudad_texto: [data?.ciudad_texto || '']
+        });
+        this.direccionesDespacho.push(direccionForm);
+    }
+
+    removeDireccionDespacho(index: number): void {
+        this.direccionesDespacho.removeAt(index);
+    }
+
+    private loadTransportadoras(): void {
+        this.transportadoraService.getAll({ per_page: 1000 }).subscribe({
+            next: (resp) => this.transportadoras.set(resp.data || []),
+            error: () => this.transportadoras.set([])
+        });
+    }
+
+    abrirCrearTransportadora(direccionIndex: number): void {
+        this.direccionDespachoIndexParaTransportadora = direccionIndex;
+        this.nuevaTransportadoraNombre.set('');
+        this.displayCrearTransportadoraDialog.set(true);
+    }
+
+    confirmarCrearTransportadora(): void {
+        const nombre = this.nuevaTransportadoraNombre().trim();
+        if (!nombre) {
+            this.messageService.add({ severity: 'warn', summary: 'Transportadora', detail: 'El nombre es obligatorio' });
+            return;
+        }
+
+        this.creandoTransportadora.set(true);
+        this.transportadoraService.create({ nombre }).subscribe({
+            next: (resp) => {
+                this.creandoTransportadora.set(false);
+                this.transportadoras.update((lista) => [...lista, resp.data]);
+                if (this.direccionDespachoIndexParaTransportadora !== null) {
+                    this.direccionesDespacho.at(this.direccionDespachoIndexParaTransportadora).get('transportadora_id')?.setValue(resp.data.id);
+                }
+                this.displayCrearTransportadoraDialog.set(false);
+                this.messageService.add({ severity: 'success', summary: 'Transportadora', detail: 'Creada y seleccionada' });
+            },
+            error: () => {
+                this.creandoTransportadora.set(false);
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo crear la transportadora' });
+            }
+        });
     }
 
     addContacto(contacto: any = null): void {
@@ -456,6 +542,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             camara_comercio: [null],
             cedula_representante_legal: [null],
             contactos: this.fb.array([]),
+            direcciones: this.fb.array([]),
             estado: ['activo'],
 
             // Acceso a portales
@@ -559,6 +646,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                 fabricante_id: [],
                 categoria_comercial_id: [],
                 contactos: [],
+                direcciones: [],
                 landing_access: false,
                 provider_access: false,
                 landing_password: ''
@@ -566,6 +654,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
             this.createTerceroForm.get('state_id')?.disable({ emitEvent: false });
             this.createTerceroForm.get('city_id')?.disable({ emitEvent: false });
             this.contactos.clear();
+            this.direccionesDespacho.clear();
             this.departamentos.set([]);
             this.ciudades.set([]);
         }
@@ -802,6 +891,22 @@ export class TerceroFormComponent implements OnInit, OnChanges {
                     if (contacto.id) {
                         formData.append(`contactos[${index}][id]`, contacto.id);
                     }
+                }
+            });
+        }
+
+        if (formValue.direcciones && Array.isArray(formValue.direcciones)) {
+            formValue.direcciones.forEach((perfil: any, index: number) => {
+                if (perfil.direccion) {
+                    formData.append(`direcciones[${index}][direccion]`, perfil.direccion);
+                    formData.append(`direcciones[${index}][destinatario]`, perfil.destinatario || '');
+                    formData.append(`direcciones[${index}][nit_cc]`, perfil.nit_cc || '');
+                    formData.append(`direcciones[${index}][telefono]`, perfil.telefono || '');
+                    formData.append(`direcciones[${index}][correo]`, perfil.correo || '');
+                    formData.append(`direcciones[${index}][ciudad_texto]`, perfil.ciudad_texto || '');
+                    if (perfil.transportadora_id) formData.append(`direcciones[${index}][transportadora_id]`, perfil.transportadora_id);
+                    if (perfil.forma_pago) formData.append(`direcciones[${index}][forma_pago]`, perfil.forma_pago);
+                    if (perfil.id) formData.append(`direcciones[${index}][id]`, perfil.id);
                 }
             });
         }

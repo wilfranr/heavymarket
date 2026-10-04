@@ -15,7 +15,10 @@ import { createDireccion } from '../../../store/direcciones/actions/direcciones.
 import { CreateDireccionDto } from '../../../core/models/direccion.model';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { TransportadoraService } from '../../../core/services/transportadora.service';
+import { Transportadora } from '../../../core/models/transportadora.model';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
+import { FORMAS_PAGO_FLETE } from '../../../shared/components/tercero-form/tercero-form.component';
 
 /**
  * Componente de creación de dirección
@@ -101,8 +104,21 @@ import { Country, State, City } from '../../../core/models/ubicacion.model';
                     </div>
 
                     <div class="col-12 md:col-6">
-                        <label for="forma_pago" class="block mb-2">Forma de Pago</label>
-                        <input type="text" formControlName="forma_pago" pInputText placeholder="Forma de pago" styleClass="w-full" />
+                        <label for="correo" class="block mb-2">Correo electrónico</label>
+                        <input type="email" formControlName="correo" pInputText placeholder="correo@ejemplo.com" styleClass="w-full" />
+                        @if (direccionForm.get('correo')?.invalid && direccionForm.get('correo')?.touched) {
+                            <small class="text-red-500">Correo inválido</small>
+                        }
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <label for="transportadora_id" class="block mb-2">Transportadora</label>
+                        <p-select formControlName="transportadora_id" [options]="transportadoras" optionLabel="nombre" optionValue="id" placeholder="Seleccione una transportadora" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
+                    </div>
+
+                    <div class="col-12 md:col-6">
+                        <label for="forma_pago" class="block mb-2">Forma de Pago Flete</label>
+                        <p-select formControlName="forma_pago" [options]="formasPagoFlete" optionLabel="label" optionValue="value" placeholder="Seleccione" [showClear]="true" styleClass="w-full"> </p-select>
                     </div>
 
                     <div class="col-12">
@@ -129,6 +145,7 @@ export class CreateComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly terceroService = inject(TerceroService);
     private readonly ubicacionService = inject(UbicacionService);
+    private readonly transportadoraService = inject(TransportadoraService);
 
     direccionForm!: FormGroup;
     loading = false;
@@ -136,11 +153,14 @@ export class CreateComponent implements OnInit {
     paises: Country[] = [];
     departamentos: State[] = [];
     ciudades: City[] = [];
+    transportadoras: Transportadora[] = [];
+    formasPagoFlete = FORMAS_PAGO_FLETE;
 
     ngOnInit(): void {
         this.initForm();
         this.loadTerceros();
         this.loadPaises();
+        this.loadTransportadoras();
     }
 
     private initForm(): void {
@@ -153,7 +173,9 @@ export class CreateComponent implements OnInit {
             destinatario: [''],
             nit_cc: [''],
             telefono: [''],
-            forma_pago: [''],
+            correo: ['', [Validators.email]],
+            transportadora_id: [null],
+            forma_pago: [null],
             principal: [false]
         });
     }
@@ -165,6 +187,14 @@ export class CreateComponent implements OnInit {
                     label: t.nombre || `Tercero ${t.id}`,
                     value: t.id
                 }));
+            }
+        });
+    }
+
+    private loadTransportadoras(): void {
+        this.transportadoraService.getAll({ per_page: 1000 }).subscribe({
+            next: (response) => {
+                this.transportadoras = response.data;
             }
         });
     }
@@ -237,6 +267,8 @@ export class CreateComponent implements OnInit {
             destinatario: formValue.destinatario || null,
             nit_cc: formValue.nit_cc || null,
             telefono: formValue.telefono || null,
+            correo: formValue.correo || null,
+            transportadora_id: formValue.transportadora_id || null,
             forma_pago: formValue.forma_pago || null,
             principal: formValue.principal || false
         };

@@ -16,7 +16,10 @@ import * as DireccionesSelectors from '../../../store/direcciones/selectors/dire
 import { UpdateDireccionDto } from '../../../core/models/direccion.model';
 import { TerceroService } from '../../../core/services/tercero.service';
 import { UbicacionService } from '../../../core/services/ubicacion.service';
+import { TransportadoraService } from '../../../core/services/transportadora.service';
+import { Transportadora } from '../../../core/models/transportadora.model';
 import { Country, State, City } from '../../../core/models/ubicacion.model';
+import { FORMAS_PAGO_FLETE } from '../../../shared/components/tercero-form/tercero-form.component';
 
 /**
  * Componente de edición de dirección
@@ -102,8 +105,18 @@ import { Country, State, City } from '../../../core/models/ubicacion.model';
                         </div>
 
                         <div class="col-12 md:col-6">
-                            <label for="forma_pago" class="block mb-2">Forma de Pago</label>
-                            <input type="text" formControlName="forma_pago" pInputText placeholder="Forma de pago" styleClass="w-full" />
+                            <label for="correo" class="block mb-2">Correo electrónico</label>
+                            <input type="email" formControlName="correo" pInputText placeholder="correo@ejemplo.com" styleClass="w-full" />
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <label for="transportadora_id" class="block mb-2">Transportadora</label>
+                            <p-select formControlName="transportadora_id" [options]="transportadoras" optionLabel="nombre" optionValue="id" placeholder="Seleccione una transportadora" [filter]="true" [showClear]="true" styleClass="w-full"> </p-select>
+                        </div>
+
+                        <div class="col-12 md:col-6">
+                            <label for="forma_pago" class="block mb-2">Forma de Pago Flete</label>
+                            <p-select formControlName="forma_pago" [options]="formasPagoFlete" optionLabel="label" optionValue="value" placeholder="Seleccione" [showClear]="true" styleClass="w-full"> </p-select>
                         </div>
 
                         <div class="col-12">
@@ -132,6 +145,7 @@ export class EditComponent implements OnInit {
     private readonly messageService = inject(MessageService);
     private readonly terceroService = inject(TerceroService);
     private readonly ubicacionService = inject(UbicacionService);
+    private readonly transportadoraService = inject(TransportadoraService);
 
     direccionForm!: FormGroup;
     direccionId = signal<number>(0);
@@ -141,11 +155,14 @@ export class EditComponent implements OnInit {
     paises: Country[] = [];
     departamentos: State[] = [];
     ciudades: City[] = [];
+    transportadoras: Transportadora[] = [];
+    formasPagoFlete = FORMAS_PAGO_FLETE;
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
         this.loadPaises();
         this.loadTerceros();
+        this.loadTransportadoras();
 
         if (id) {
             this.direccionId.set(+id);
@@ -168,6 +185,14 @@ export class EditComponent implements OnInit {
         this.ubicacionService.getCountries().subscribe({
             next: (response) => {
                 this.paises = response.data;
+            }
+        });
+    }
+
+    private loadTransportadoras(): void {
+        this.transportadoraService.getAll({ per_page: 1000 }).subscribe({
+            next: (response) => {
+                this.transportadoras = response.data;
             }
         });
     }
@@ -223,7 +248,9 @@ export class EditComponent implements OnInit {
             destinatario: [direccion.destinatario || ''],
             nit_cc: [direccion.nit_cc || ''],
             telefono: [direccion.telefono || ''],
-            forma_pago: [direccion.forma_pago || ''],
+            correo: [direccion.correo || '', [Validators.email]],
+            transportadora_id: [direccion.transportadora_id || null],
+            forma_pago: [direccion.forma_pago || null],
             principal: [direccion.principal || false]
         });
     }
@@ -287,6 +314,8 @@ export class EditComponent implements OnInit {
             destinatario: formValue.destinatario || null,
             nit_cc: formValue.nit_cc || null,
             telefono: formValue.telefono || null,
+            correo: formValue.correo || null,
+            transportadora_id: formValue.transportadora_id || null,
             forma_pago: formValue.forma_pago || null,
             principal: formValue.principal || false
         };
