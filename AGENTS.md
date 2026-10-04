@@ -14,7 +14,7 @@ Bienvenido al sistema de gestión de HeavyMarket. Este archivo sirve como el pun
 3. **UI/UX (Temas)**: El proyecto soporta temas Claro y Oscuro. Para cualquier desarrollo o ajuste de interfaz, es OBLIGATORIO invocar y seguir las directrices de la skill `ui_ux_design_expert`, que es la autoridad en estándares visuales e implementación de temas.
 4. **Reactividad**: Usar **Signals** para todo el estado del frontend; evitar observables para bindings de template. `output()` requiere `.emit()` tanto en TypeScript como en templates.
 5. **Arquitectura**: La aplicación es **Zoneless**. Es OBLIGATORIO invocar y seguir las directrices de la skill `software_architect` para cualquier cambio estructural, definición de nuevos patrones o ajustes en la arquitectura base.
-6. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`.
+6. **Despliegue**: Tras un `git pull` en servidor, ejecutar `./scripts/deploy.sh`. Ver sección "Verificación Post-Despliegue (Trello)" para el paso obligatorio posterior.
 7. **Inducción Quirúrgica**: Para entender, explicar o trabajar en un módulo funcional, el agente **DEBE** consultar primero la sección `## 🛠️ Mapa de Implementación` en su respectivo manual en `docs/`. Está prohibido realizar búsquedas ciegas en todo el repositorio si existe un mapa de archivos clave definido.
 
 ## Memoria persistente (Engram MCP)
@@ -45,6 +45,27 @@ El uso de Engram es **obligatorio** y debe seguir estas convenciones de `topic_k
 
 #### Memorias de Auditoría (Lessons Learned)
 Cada vez que el Reviewer rechaza un cambio o el Implementer corrige un error detectado por el linter, se debe generar una lección aprendida en `arch/heavy-audit-history`. No se permite marcar un nodo como `done` en el `dag.json` sin antes haber guardado las correcciones relevantes.
+
+---
+
+## Verificación Post-Despliegue (Trello)
+
+El deploy a producción es **manual, bajo demanda** (`./scripts/deploy.sh` en el servidor, sin CI/CD que lo dispare). Por eso no hay un evento técnico de "deploy terminado" al que engancharse — el paso de verificación queda documentado acá para ejecutarse como parte del procedimiento, no como una automatización disparada por webhook.
+
+**Herramientas ya construidas** (repo separado, en el servidor de automatizaciones): `/home/yoseth/automate/automations/trello_to_github/`
+- `deploy_verification.py <issue_1> <issue_2> ...`: mueve las tarjetas de Trello de esos issues a la lista "In Verification" y deja un comentario genérico de despliegue.
+- `comment_fix_summary.py <issue> "<mensaje>"`: deja un comentario detallado de qué se ajustó. **La fuente del mensaje es el campo `description` (o `review_notes` si existe y es más específico) del nodo correspondiente en `.harness/dag.json`** — no hay que inventar ni pedir ese texto, ya existe en el nodo.
+- Ambos requieren el venv del proyecto: `/home/yoseth/automate/.venv/bin/python <script>`.
+
+**Campo `deployed` en nodos del DAG:** todo nodo que el Reviewer pasa a `done` y tiene `github_issue` nace con `"deployed": false`. Esto es necesario porque los commits se acumulan sin push (ver `CLAUDE.md`), así que puede haber varios nodos `done` esperando a que el push y el deploy realmente ocurran.
+
+**Procedimiento tras un deploy a producción exitoso:**
+1. Identificar los nodos `done` con `github_issue` y `"deployed": false` que ya están en la rama desplegada (es decir, su commit ya llegó a producción, no solo a `main` local).
+2. Ejecutar una sola vez: `/home/yoseth/automate/.venv/bin/python /home/yoseth/automate/automations/trello_to_github/deploy_verification.py <issue_1> <issue_2> ...` con todos los issues de ese deploy juntos.
+3. Por cada issue, ejecutar: `/home/yoseth/automate/.venv/bin/python /home/yoseth/automate/automations/trello_to_github/comment_fix_summary.py <issue_N> "<description/review_notes del nodo>"`.
+4. Marcar cada nodo procesado como `"deployed": true` en `dag.json`.
+
+Si un issue no tiene tarjeta de Trello mapeada (`deploy_verification.py` lo reporta en `not_found`), no es un error bloqueante: seguir con el resto y notificarlo en el resumen.
 
 ---
 
@@ -85,6 +106,7 @@ El flujo de trabajo se rige por un modelo de roles especializados. El agente **N
 - Ejecutar los gates de verificación obligatorios.
 - Aprobar (pasar a `done`) o rechazar (volver a `in_progress` con `review_notes`) el nodo.
 - Al aprobar: hacer `git commit` de los archivos del nodo (mensaje Conventional Commits) de forma automática. **No hacer `git push`** — queda acumulado para cuando el usuario pida subir.
+- Si el nodo tiene `github_issue`, agregar `"deployed": false` al aprobarlo (ver "Verificación Post-Despliegue (Trello)").
 - Ejecutar `engram_mem_session_summary` al cerrar la revisión.
 **Prohibido:** Modificar código de implementación. Aprobar un nodo sin que todos los gates hayan pasado exitosamente. Hacer `git push` o cerrar issues de GitHub sin que el usuario lo pida explícitamente.
 
@@ -122,9 +144,12 @@ El Triage **DEBE** incluir el campo `required_skill` en cada nodo del DAG. El Im
   "status": "pending",
   "required_skill": "ui_ux_design_expert",
   "depends_on": [],
+  "github_issue": null,
   "files": ["ruta/archivo.ts"]
 }
 ```
+
+Si el nodo tiene `github_issue` y el Reviewer lo aprueba (`done`), se le agrega `"deployed": false` (ver sección "Verificación Post-Despliegue (Trello)").
 
 **Mapeo de skills por tipo de cambio:**
 
