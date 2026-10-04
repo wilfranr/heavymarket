@@ -64,6 +64,39 @@ type RowTiposCatalogEntry = {
 };
 
 /**
+ * Arma los datos de una fila del FormArray de referencias para el bulk import.
+ * "definicion" es el unico bind visible de la columna "Referencia" en create.html,
+ * por lo que debe conservar siempre el codigo digitado/pegado por el vendedor,
+ * nunca la descripcion del articulo coincidente (bug #175).
+ */
+export function mapReferenciaMasivaRowData(referenciaId: number | null, cantidad: number, codigo: string = '', referenciaData: any = null): any {
+    const data: any = {
+        referencia_id: referenciaId,
+        cantidad: cantidad,
+        definicion: codigo
+    };
+
+    if (referenciaData) {
+        data.marca_id = referenciaData.marca_id;
+        data.lista_id = referenciaData.lista_id;
+        data.articulo_id = referenciaData.articulo_id;
+
+        if (referenciaData.articulo?.sistema_id) {
+            data.sistema_id = referenciaData.articulo.sistema_id;
+        }
+
+        data.referencias = [
+            {
+                label: codigo,
+                value: referenciaId
+            }
+        ];
+    }
+
+    return data;
+}
+
+/**
  * Componente de creación de pedido con Wizard de 2 pasos
  */
 @Component({
@@ -1636,37 +1669,7 @@ export class CreateComponent implements OnInit {
      * Agrega una referencia al FormArray (método privado)
      */
     private agregarReferenciaAlFormArray(referenciaId: number | null, cantidad: number, codigo: string = '', referenciaData: any = null): void {
-        const data: any = {
-            referencia_id: referenciaId,
-            cantidad: cantidad,
-            definicion: codigo // Usamos el código como definición inicial
-        };
-
-        // Si tenemos la data completa de la referencia, podemos pre-cargar más campos
-        if (referenciaData) {
-            data.marca_id = referenciaData.marca_id;
-            data.lista_id = referenciaData.lista_id;
-            data.articulo_id = referenciaData.articulo_id;
-
-            // Si tiene artículo y sistema, los usamos
-            if (referenciaData.articulo) {
-                data.definicion = referenciaData.articulo.definicion;
-                // Si el backend retornó el sistema a través del artículo o directamente
-                if (referenciaData.articulo.sistema_id) {
-                    data.sistema_id = referenciaData.articulo.sistema_id;
-                }
-            }
-
-            // Para que el select de la fila tenga la opción disponible de inmediato
-            data.referencias = [
-                {
-                    label: codigo,
-                    value: referenciaId
-                }
-            ];
-        }
-
-        this.agregarReferencia(data);
+        this.agregarReferencia(mapReferenciaMasivaRowData(referenciaId, cantidad, codigo, referenciaData));
     }
 
     /**
