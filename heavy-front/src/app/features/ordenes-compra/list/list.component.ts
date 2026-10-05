@@ -168,7 +168,6 @@ export function ordenCompraColorTooltip(color: OrdenCompraColor | null): string 
                         <td class="text-center">
                             <div class="flex justify-center gap-1">
                                 <p-button icon="pi pi-eye" [rounded]="true" [text]="true" severity="info" (onClick)="onViewOrdenCompra(orden.id)"></p-button>
-                                <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditOrdenCompra(orden.id)"></p-button>
                                 <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteOrdenCompra(orden)"></p-button>
                             </div>
                         </td>
@@ -292,10 +291,6 @@ export class ListComponent implements OnInit {
 
     onViewOrdenCompra(id: number) {
         this.router.navigate(['/app/ordenes-compra', id]);
-    }
-
-    onEditOrdenCompra(id: number) {
-        this.router.navigate(['/app/ordenes-compra', id, 'edit']);
     }
 
     onDeleteOrdenCompra(orden: OrdenCompra) {

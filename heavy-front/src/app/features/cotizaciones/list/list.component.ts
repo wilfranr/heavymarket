@@ -92,7 +92,6 @@ import { CotizacionService } from '../../../core/services/cotizacion.service';
                                 <p-button icon="pi pi-check" [rounded]="true" [text]="true" severity="success" (onClick)="onApproveCotizacion(cotizacion)" pTooltip="Aprobar"> </p-button>
                                 <p-button icon="pi pi-times" [rounded]="true" [text]="true" severity="warn" (onClick)="onRejectCotizacion(cotizacion)" pTooltip="Rechazar"> </p-button>
                             }
-                            <p-button icon="pi pi-pencil" [rounded]="true" [text]="true" severity="warn" (onClick)="onEditCotizacion(cotizacion.id)" pTooltip="Editar"> </p-button>
                             <p-button icon="pi pi-trash" [rounded]="true" [text]="true" severity="danger" (onClick)="onDeleteCotizacion(cotizacion)" pTooltip="Eliminar"> </p-button>
                         </td>
                     </tr>
@@ -239,10 +238,6 @@ export class ListComponent implements OnInit {
 
     onViewCotizacion(id: number) {
         this.router.navigate(['/app/cotizaciones', id]);
-    }
-
-    onEditCotizacion(id: number) {
-        this.router.navigate(['/app/cotizaciones', id, 'edit']);
     }
 
     onDeleteCotizacion(cotizacion: Cotizacion) {
