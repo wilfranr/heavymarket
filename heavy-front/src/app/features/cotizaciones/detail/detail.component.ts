@@ -489,19 +489,33 @@ export function nuevoPerfilDespachoFormVacio(): NuevoPerfilDespachoForm {
                                             {{ item.pedido_referencia_proveedor?.referencia?.descripcion || item.snapshot_descripcion || item.pedido_referencia_proveedor?.referencia?.articulo?.definicion || 'N/A' }}
                                         </td>
                                         <td class="text-center">
-                                            <p-inputNumber
-                                                [ngModel]="cantidadEditada(item)"
-                                                (ngModelChange)="onCantidadEditadaChange(item, $event)"
-                                                [min]="1"
-                                                [max]="cantidadMaximaReferencia(item)"
-                                                [showButtons]="true"
-                                                buttonLayout="horizontal"
-                                                [step]="1"
-                                                inputStyleClass="w-14 text-center"
-                                                decrementButtonIcon="pi pi-minus"
-                                                incrementButtonIcon="pi pi-plus"
-                                                [disabled]="!itemAprobacionSeleccionado(item.id)"
-                                            ></p-inputNumber>
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button
+                                                    type="button"
+                                                    class="w-6 h-6 flex items-center justify-center rounded border border-gray-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    [disabled]="!itemAprobacionSeleccionado(item.id) || cantidadEditada(item) <= 1"
+                                                    (click)="onCantidadEditadaChange(item, cantidadEditada(item) - 1)"
+                                                >
+                                                    <i class="pi pi-minus text-xs"></i>
+                                                </button>
+                                                <input
+                                                    type="number"
+                                                    class="w-12 text-center bg-[#f4f5f9] dark:bg-[#343743] border border-gray-200 dark:border-none rounded h-7 text-sm"
+                                                    [value]="cantidadEditada(item)"
+                                                    [min]="1"
+                                                    [max]="cantidadMaximaReferencia(item)"
+                                                    [disabled]="!itemAprobacionSeleccionado(item.id)"
+                                                    (input)="onCantidadEditadaChange(item, $any($event.target).valueAsNumber)"
+                                                />
+                                                <button
+                                                    type="button"
+                                                    class="w-6 h-6 flex items-center justify-center rounded border border-gray-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    [disabled]="!itemAprobacionSeleccionado(item.id) || cantidadEditada(item) >= cantidadMaximaReferencia(item)"
+                                                    (click)="onCantidadEditadaChange(item, cantidadEditada(item) + 1)"
+                                                >
+                                                    <i class="pi pi-plus text-xs"></i>
+                                                </button>
+                                            </div>
                                             <div class="text-xs text-slate-400 dark:text-slate-500 mt-1">de {{ cantidadMaximaReferencia(item) }} cotizadas</div>
                                         </td>
                                         <td class="text-right">{{ valorUnitarioReferencia(item) | currency: 'COP' : 'symbol' : '1.0-0' }}</td>
@@ -882,8 +896,12 @@ export class DetailComponent implements OnInit {
     }
 
     onCantidadEditadaChange(item: CotizacionReferenciaProveedor, valor: number | null): void {
+        if (valor === null || Number.isNaN(valor)) {
+            return;
+        }
+
         const maxima = this.cantidadMaximaReferencia(item);
-        const cantidad = Math.min(Math.max(1, Math.trunc(valor ?? maxima)), maxima);
+        const cantidad = Math.min(Math.max(1, Math.trunc(valor)), maxima);
 
         this.cantidadesEditadas.update((mapa) => ({ ...mapa, [item.id]: cantidad }));
     }

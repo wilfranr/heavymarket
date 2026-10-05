@@ -2,10 +2,10 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "fix-login-landing-compartida-cliente-proveedor",
-  "description": "Segunda correccion sobre #182/#160: tras el fix de doble-rol (commit 09912d7), el usuario probo con una cuenta Proveedor real desde la landing y recibio 'no tiene perfil de cliente'. Investigando se confirmo que el modal de login de la landing (auth-modal.component.ts, via ClientAuthService/ClientAuthController) es COMPARTIDO por Cliente y Proveedor -- no hay ningun link separado a /auth/provider/login en la navbar de la landing. El fix de doble-rol habia restringido ClientAuthController::login a solo hasRole('Cliente'), rompiendo el login de proveedores legitimos que siempre usaron ese mismo modal. Se corrige a hasAnyRole(['Cliente','Proveedor']), manteniendo que un rol interno siempre bloquea el acceso.",
+  "issue": "fix-cantidad-editable-cotizacion-input-no-responde",
+  "description": "GitHub #179 (regresion): el usuario probo la edicion de cantidad al aprobar una cotizacion y reporto que los botones +/- no hacian nada y que escribir manualmente el numero lo devolvia al valor inicial. No se pudo reproducir en navegador (sin herramienta de browser disponible en este entorno); se investigo el bundle compilado de PrimeNG 21 InputNumber (BaseInput/BaseEditableHolder) sin encontrar una causa concluyente en el codigo fuente de HeavyMarket. Se reemplazo el p-inputNumber (binding split [ngModel]/(ngModelChange)) por un stepper manual con input nativo + 2 botones, sin ninguna dependencia de ControlValueAccessor/FormsModule para este campo, eliminando la superficie de ese posible bug de raiz.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-login-doble-rol-interno-externo",
+  "previous_issue": "fix-login-landing-compartida-cliente-proveedor",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -328,6 +328,21 @@
       "files": [
         {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
         {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"}
+      ]
+    },
+    {
+      "id": "cotizacion-cantidad-input-nativo-sin-primeng",
+      "description": "Frontend: en el dialogo de aprobacion de cotizaciones (detail.component.ts, ~linea 492), se reemplazo <p-inputNumber [ngModel]=... (ngModelChange)=...> por un stepper manual: un <input type=\"number\"> nativo con [value]=\"cantidadEditada(item)\" + (input)=\"onCantidadEditadaChange(item, $any($event.target).valueAsNumber)\", mas dos <button> planos para +/- que llaman onCantidadEditadaChange(item, cantidadEditada(item) +/- 1) directamente, deshabilitados en los limites (1 y la cantidad maxima). onCantidadEditadaChange() se endurece con un guard explicito contra null/NaN (puede ocurrir momentaneamente al borrar el campo mientras se escribe) para no corromper el signal cantidadesEditadas. Elimina toda dependencia de ControlValueAccessor/FormsModule para este campo especifico, evitando cualquier interaccion rara entre el ngModel split-binding y el motor de reactividad zoneless/signals de la app con la arquitectura interna de PrimeNG 21 InputNumber (BaseInput/BaseEditableHolder).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "github_issue": null,
+      "deployed": false,
+      "client_summary": "En la ventana de aprobación de cotizaciones, el campo de cantidad por ítem (con los botones + y -) ahora responde correctamente al hacer clic o escribir un número, en vez de quedarse en el valor original.",
+      "review_notes": "Aprobado con salvedad: no se pudo reproducir el bug en navegador (sin herramienta de browser en este entorno) ni confirmar la causa raiz exacta dentro del codigo fuente de HeavyMarket -- se investigo el bundle compilado de PrimeNG (updateModel/writeControlValue/spin en primeng-inputnumber.mjs) sin hallazgo concluyente. Se opto por eliminar la superficie del problema reemplazando el componente por un input nativo + botones bajo control total del propio codigo, un patron mucho mas simple y predecible (eventos DOM nativos (click)/(input), sin ControlValueAccessor de por medio) que no deberia poder fallar de la misma manera. Pendiente de que el usuario confirme en su prueba manual que el stepper responde correctamente. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones en el spec existente del componente.",
+      "files": [
+        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"}
       ]
     }
   ]
