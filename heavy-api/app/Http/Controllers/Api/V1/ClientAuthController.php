@@ -79,12 +79,12 @@ class ClientAuthController extends Controller
             ]);
         }
 
-        // Solo clientes pueden iniciar sesión desde la landing. Un rol interno
-        // (ej. super_admin) bloquea el acceso aunque el usuario tenga también
-        // el rol Cliente asignado -- el rol interno siempre gana.
-        if ($user->hasAnyRole(RolesInternos::LISTA) || ! $user->hasRole('Cliente')) {
+        // El modal de login de la landing es compartido por Cliente y Proveedor.
+        // Un rol interno (ej. super_admin) bloquea el acceso aunque el usuario
+        // tenga también uno de esos roles externos -- el rol interno siempre gana.
+        if ($user->hasAnyRole(RolesInternos::LISTA) || ! $user->hasAnyRole(['Cliente', 'Proveedor'])) {
             return response()->json([
-                'message' => 'Acceso denegado. Este usuario no tiene perfil de cliente.',
+                'message' => 'Acceso denegado. Este usuario no tiene perfil de cliente ni de proveedor.',
             ], 403);
         }
 

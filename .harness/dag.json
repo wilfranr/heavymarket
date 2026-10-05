@@ -2,10 +2,10 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "fix-login-doble-rol-interno-externo",
-  "description": "Correccion sobre #182/#160 (fix de login ya pusheado en 29268ea): el usuario probo manualmente y encontro que su propio usuario (wilfranr@gmail.com, con roles super_admin Y Cliente a la vez) SI podia entrar por la landing. El fix original de ClientAuthController solo verificaba 'tiene rol Cliente?' sin considerar que el usuario tambien tuviera un rol interno -- el chequeo correcto es 'tiene SOLO roles externos, ningun rol interno', para que el rol interno siempre gane en un caso de doble rol. Se aplica el mismo ajuste simetrico en AuthController (el rol interno debe permitir el login en la app aunque tambien tenga Cliente/Proveedor) y en ProviderAuthController (mismo gap que ClientAuthController, no reportado pero identico).",
+  "issue": "fix-login-landing-compartida-cliente-proveedor",
+  "description": "Segunda correccion sobre #182/#160: tras el fix de doble-rol (commit 09912d7), el usuario probo con una cuenta Proveedor real desde la landing y recibio 'no tiene perfil de cliente'. Investigando se confirmo que el modal de login de la landing (auth-modal.component.ts, via ClientAuthService/ClientAuthController) es COMPARTIDO por Cliente y Proveedor -- no hay ningun link separado a /auth/provider/login en la navbar de la landing. El fix de doble-rol habia restringido ClientAuthController::login a solo hasRole('Cliente'), rompiendo el login de proveedores legitimos que siempre usaron ese mismo modal. Se corrige a hasAnyRole(['Cliente','Proveedor']), manteniendo que un rol interno siempre bloquea el acceso.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-quitar-boton-editar-cotizacion-y-orden-compra",
+  "previous_issue": "fix-login-doble-rol-interno-externo",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -300,6 +300,20 @@
         {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
         {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"},
         {"path": "heavy-api/tests/Feature/Api/V1/ProviderAuthControllerTest.php", "status": "validated"}
+      ]
+    },
+    {
+      "id": "auth-landing-login-compartido-cliente-proveedor",
+      "description": "Backend: ClientAuthController::login rechazaba a cualquier usuario sin rol Cliente, pero el modal de login de la landing es compartido por Cliente y Proveedor (confirmado: no existe un link separado a /auth/provider/login en auth-modal.component.ts/navbar.ts de la landing, solo la pagina dedicada /auth/provider/login la usa via ProviderAuthService). Se corrige la condicion a hasAnyRole(['Cliente','Proveedor']) en vez de hasRole('Cliente'), manteniendo que un rol interno (RolesInternos::LISTA) siempre bloquea el acceso sin importar los roles externos que tenga. Se actualiza el test que antes esperaba 403 para un Proveedor en la landing (comportamiento incorrecto) para esperar 200, y se agrega un test de doble rol super_admin+Proveedor.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["auth-login-doble-rol-interno-gana"],
+      "topic_key": "bugfix/logistica-cerrar-sesion",
+      "github_issue": null,
+      "review_notes": "Aprobado. Corrige una regresion introducida por el nodo anterior (auth-login-doble-rol-interno-gana): ese fix habia restringido el modal compartido de la landing a solo Cliente, bloqueando proveedores legitimos. Ahora acepta Cliente o Proveedor, rechazando solo si tiene algun rol interno o ninguno de los dos externos. Test 'rechaza login a un proveedor desde la landing de clientes' (comportamiento incorrecto) se convirtio en 'permite login a un proveedor desde el mismo modal compartido de la landing' (200 esperado); se agrego test de doble rol super_admin+Proveedor (403 esperado). Gates: pint PASS (2 archivos); pest ClientAuthControllerTest 6/6 OK; suite completa backend pendiente de confirmar en este mismo turno.",
+      "files": [
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"}
       ]
     }
   ]
