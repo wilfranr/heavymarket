@@ -91,6 +91,23 @@ it('rechaza login en la app a un usuario con rol Cliente', function () {
     $response->assertStatus(403);
 });
 
+it('permite login en la app a un usuario con rol interno aunque tambien tenga rol Cliente (doble rol)', function () {
+    Role::firstOrCreate(['name' => 'super_admin', 'guard_name' => 'web']);
+    Role::firstOrCreate(['name' => 'Cliente', 'guard_name' => 'web']);
+    $user = User::factory()->create([
+        'email' => 'superadmin-cliente@example.com',
+        'password' => 'password123',
+    ]);
+    $user->assignRole(['super_admin', 'Cliente']);
+
+    $response = $this->postJson('/v1/login', [
+        'email' => 'superadmin-cliente@example.com',
+        'password' => 'password123',
+    ]);
+
+    $response->assertStatus(200);
+});
+
 it('rechaza login en la app a un usuario con rol Proveedor', function () {
     Role::firstOrCreate(['name' => 'Proveedor', 'guard_name' => 'web']);
     $user = User::factory()->create([

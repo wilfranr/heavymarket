@@ -54,6 +54,20 @@ it('rechaza login a un proveedor desde la landing de clientes', function () {
     $response->assertStatus(403);
 });
 
+it('rechaza login a un usuario con rol interno aunque tambien tenga rol Cliente (doble rol)', function () {
+    $user = User::factory()->create([
+        'email' => 'superadmin-cliente@example.com',
+    ]);
+    $user->assignRole(['super_admin', 'Cliente']);
+
+    $response = $this->postJson('/v1/landing/auth/login', [
+        'email' => 'superadmin-cliente@example.com',
+        'password' => 'password',
+    ]);
+
+    $response->assertStatus(403);
+});
+
 it('rechaza login a un usuario sin ningun rol asignado', function () {
     User::factory()->create([
         'email' => 'sin-rol@example.com',

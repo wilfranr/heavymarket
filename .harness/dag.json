@@ -2,10 +2,10 @@
   "version": "2.0",
   "project": "heavymarket",
   "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "fix-quitar-boton-editar-cotizacion-y-orden-compra",
-  "description": "GitHub #177 - En las cotizaciones no se necesita el boton editar (se quita de la vista de detalle). GitHub #176 - No se debe poder editar las ordenes de compra despues de generadas; dado que toda OC nace en estado 'Generada' (no existe fase de borrador previa, confirmado en OrdenCompraController::store), el pedido equivale a quitar el boton siempre, igual que #177 -- ademas OrdenCompraPolicy::update() hoy es puramente por rol sin ninguna verificacion de estado, hueco de seguridad real que se corrige junto con el boton (CotizacionPolicy::update() en cambio ya tiene logica de estado correcta, no se toca).",
+  "issue": "fix-login-doble-rol-interno-externo",
+  "description": "Correccion sobre #182/#160 (fix de login ya pusheado en 29268ea): el usuario probo manualmente y encontro que su propio usuario (wilfranr@gmail.com, con roles super_admin Y Cliente a la vez) SI podia entrar por la landing. El fix original de ClientAuthController solo verificaba 'tiene rol Cliente?' sin considerar que el usuario tambien tuviera un rol interno -- el chequeo correcto es 'tiene SOLO roles externos, ningun rol interno', para que el rol interno siempre gane en un caso de doble rol. Se aplica el mismo ajuste simetrico en AuthController (el rol interno debe permitir el login en la app aunque tambien tenga Cliente/Proveedor) y en ProviderAuthController (mismo gap que ClientAuthController, no reportado pero identico).",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "feat-perfil-despacho-wizard-terceros",
+  "previous_issue": "fix-quitar-boton-editar-cotizacion-y-orden-compra",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -281,6 +281,25 @@
       "review_notes": "Aprobado con alcance reducido respecto a lo planificado: se elimino el boton Editar y el metodo onEdit() ahora muerto (unico caller, confirmado por grep), igual que #177. Se evaluo endurecer OrdenCompraPolicy::update() en backend pero se descarto al encontrar OrdenCompraTest.php::'permite actualizar una orden de compra y sus referencias', un test real y pasante que ejercita ese mismo endpoint para reemplazar referencias y cambiar estado -- es funcionalidad deliberada, no un hueco accidental, y el issue solo pide quitar el boton (alcance frontend). No se toco ningun archivo backend. this.router sigue usado por otro metodo, sin inyeccion huerfana. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones; pest no se re-ejecuto porque no hubo cambios backend en este nodo.",
       "files": [
         {"path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts", "status": "validated"}
+      ]
+    },
+    {
+      "id": "auth-login-doble-rol-interno-gana",
+      "description": "Backend: corregir el chequeo de rol en los 3 controladores de login (AuthController, ClientAuthController, ProviderAuthController) para que un rol interno (super_admin/Administrador/Vendedor/Gerente Comercial/Analista/Logistica/Contabilidad/panel_user) siempre gane sobre un rol externo (Cliente/Proveedor) cuando el usuario tiene ambos a la vez. Nueva clase App\\Support\\RolesInternos::LISTA como fuente unica de la lista de roles internos, usada por los 3. AuthController::login ahora solo rechaza si el usuario tiene Cliente/Proveedor Y NINGUN rol interno (antes rechazaba por solo tener Cliente/Proveedor, bloqueando incorrectamente a un super_admin de prueba con rol Cliente). ClientAuthController::login y ProviderAuthController::login ahora rechazan tambien si el usuario tiene cualquier rol interno, incluso si ademas tiene el rol externo correspondiente (antes solo chequeaban 'tiene el rol externo?', dejando pasar a un super_admin+Cliente). Encontrado por el usuario probando manualmente con su propia cuenta (super_admin+Cliente) tras el fix de #182/#160 ya pusheado.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": [],
+      "topic_key": "bugfix/logistica-cerrar-sesion",
+      "github_issue": null,
+      "review_notes": "Aprobado. Creada App\\Support\\RolesInternos::LISTA como fuente unica de los 8 roles internos. AuthController::login: la condicion de rechazo ahora es (tiene Cliente o Proveedor) Y (no tiene ningun rol interno) -- permite correctamente a un super_admin+Cliente usar la app. ClientAuthController/ProviderAuthController::login: la condicion de rechazo ahora incluye 'tiene cualquier rol interno' con OR, ademas del chequeo de rol externo -- rechaza correctamente a un super_admin+Cliente/Proveedor en los portales externos. 3 tests nuevos (uno por controlador) cubren exactamente el escenario de doble rol reportado por el usuario con su propia cuenta. Gates: pint PASS (7 archivos); pest de los 3 archivos de auth 22/22 OK; suite completa backend 576/576 OK, sin regresiones.",
+      "files": [
+        {"path": "heavy-api/app/Support/RolesInternos.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ProviderAuthController.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ProviderAuthControllerTest.php", "status": "validated"}
       ]
     }
   ]

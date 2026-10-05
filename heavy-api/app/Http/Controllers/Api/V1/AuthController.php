@@ -10,6 +10,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Http\Resources\TerceroResource;
 use App\Models\Tercero;
 use App\Models\User;
+use App\Support\RolesInternos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -96,8 +97,13 @@ class AuthController extends Controller
             ]);
         }
 
-        // Los roles Cliente y Proveedor tienen su propio portal de inicio de sesion
-        if ($user->hasRole('Cliente') || $user->hasRole('Proveedor')) {
+        // Los roles Cliente y Proveedor tienen su propio portal de inicio de sesion.
+        // Si el usuario ADEMAS tiene un rol interno (ej. super_admin con Cliente de
+        // prueba), el rol interno gana y se le permite usar la app normalmente.
+        $esSoloExterno = ($user->hasRole('Cliente') || $user->hasRole('Proveedor'))
+            && ! $user->hasAnyRole(RolesInternos::LISTA);
+
+        if ($esSoloExterno) {
             return response()->json([
                 'message' => 'Este usuario debe iniciar sesión desde el portal de clientes o proveedores.',
             ], 403);

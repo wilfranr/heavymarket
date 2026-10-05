@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SocialIdentity;
 use App\Models\Tercero;
 use App\Models\User;
+use App\Support\RolesInternos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -78,9 +79,10 @@ class ClientAuthController extends Controller
             ]);
         }
 
-        // Solo clientes pueden iniciar sesión desde la landing; empleados y proveedores
-        // tienen sus propios portales de inicio de sesión.
-        if (! $user->hasRole('Cliente')) {
+        // Solo clientes pueden iniciar sesión desde la landing. Un rol interno
+        // (ej. super_admin) bloquea el acceso aunque el usuario tenga también
+        // el rol Cliente asignado -- el rol interno siempre gana.
+        if ($user->hasAnyRole(RolesInternos::LISTA) || ! $user->hasRole('Cliente')) {
             return response()->json([
                 'message' => 'Acceso denegado. Este usuario no tiene perfil de cliente.',
             ], 403);

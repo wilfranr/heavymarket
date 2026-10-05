@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Models\Tercero;
 use App\Models\User;
+use App\Support\RolesInternos;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -82,8 +83,10 @@ class ProviderAuthController extends Controller
             ]);
         }
 
-        // Verificar si tiene el rol de Proveedor
-        if (! $user->hasRole('Proveedor')) {
+        // Verificar si tiene el rol de Proveedor. Un rol interno (ej. super_admin)
+        // bloquea el acceso aunque el usuario tenga tambien el rol Proveedor
+        // asignado -- el rol interno siempre gana.
+        if ($user->hasAnyRole(RolesInternos::LISTA) || ! $user->hasRole('Proveedor')) {
             return response()->json([
                 'message' => 'Acceso denegado. Este usuario no tiene perfil de proveedor.',
             ], 403);

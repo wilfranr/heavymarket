@@ -89,4 +89,29 @@ class ProviderAuthControllerTest extends TestCase
         $response->assertStatus(403)
             ->assertJson(['message' => 'Su acceso al portal de proveedores aún no ha sido habilitado.']);
     }
+
+    /** @test */
+    public function test_rechaza_login_a_un_usuario_con_rol_interno_aunque_tambien_tenga_rol_proveedor()
+    {
+        Role::create(['name' => 'super_admin', 'guard_name' => 'web']);
+
+        $user = User::factory()->create([
+            'email' => 'superadmin-proveedor@example.com',
+            'password' => bcrypt('password123'),
+        ]);
+        $user->assignRole(['super_admin', 'Proveedor']);
+
+        Tercero::factory()->create([
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'provider_access' => true,
+        ]);
+
+        $response = $this->postJson('/v1/auth/provider/login', [
+            'email' => 'superadmin-proveedor@example.com',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(403);
+    }
 }
