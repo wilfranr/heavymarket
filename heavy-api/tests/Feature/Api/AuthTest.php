@@ -108,7 +108,7 @@ it('permite login en la app a un usuario con rol interno aunque tambien tenga ro
     $response->assertStatus(200);
 });
 
-it('rechaza login en la app a un usuario con rol Proveedor', function () {
+it('permite login en la app a un usuario con rol Proveedor (inicia sesion como los demas roles)', function () {
     Role::firstOrCreate(['name' => 'Proveedor', 'guard_name' => 'web']);
     $user = User::factory()->create([
         'email' => 'proveedor@example.com',
@@ -121,7 +121,7 @@ it('rechaza login en la app a un usuario con rol Proveedor', function () {
         'password' => 'password123',
     ]);
 
-    $response->assertStatus(403);
+    $response->assertStatus(200);
 });
 
 it('rechaza login con credenciales incorrectas', function () {

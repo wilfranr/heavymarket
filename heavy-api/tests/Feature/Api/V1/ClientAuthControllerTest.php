@@ -3,14 +3,14 @@
 use App\Models\User;
 
 /**
- * Tests de login desde la landing (modal compartido por Cliente y Proveedor).
+ * Tests de login desde la landing (modal exclusivo de Cliente).
  *
  * Root cause de #182/#160: antes de este fix, cualquier usuario (incluidos
  * empleados internos) podia iniciar sesion aqui sin validacion de rol,
  * quedando con una sesion de "clientToken" que el logout de la app interna
- * no revocaba, generando la confusion de "no puedo cerrar sesion". El modal
- * de la landing es compartido por Cliente y Proveedor (no hay un link aparte
- * a /auth/provider/login en la navbar) -- solo un rol interno debe bloquearlo.
+ * no revocaba, generando la confusion de "no puedo cerrar sesion". Proveedor
+ * inicia sesion desde la administracion (/auth/login), igual que los demas
+ * roles -- el modal de la landing es exclusivo de Cliente.
  */
 beforeEach(function () {
     seedRoles(['Proveedor']);
@@ -43,7 +43,7 @@ it('rechaza login a un empleado interno (rol Logistica) desde la landing', funct
     $response->assertStatus(403);
 });
 
-it('permite login a un proveedor desde el mismo modal compartido de la landing', function () {
+it('rechaza login a un proveedor desde la landing (debe usar la administracion)', function () {
     $user = createUserWithRole('Proveedor', [
         'email' => 'proveedor@example.com',
     ]);
@@ -53,8 +53,7 @@ it('permite login a un proveedor desde el mismo modal compartido de la landing',
         'password' => 'password',
     ]);
 
-    $response->assertStatus(200)
-        ->assertJsonStructure(['message', 'user' => ['id', 'name', 'email', 'roles'], 'token']);
+    $response->assertStatus(403);
 });
 
 it('rechaza login a un usuario con rol interno aunque tambien tenga rol Cliente (doble rol)', function () {

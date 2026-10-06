@@ -97,15 +97,17 @@ class AuthController extends Controller
             ]);
         }
 
-        // Los roles Cliente y Proveedor tienen su propio portal de inicio de sesion.
-        // Si el usuario ADEMAS tiene un rol interno (ej. super_admin con Cliente de
-        // prueba), el rol interno gana y se le permite usar la app normalmente.
-        $esSoloExterno = ($user->hasRole('Cliente') || $user->hasRole('Proveedor'))
+        // Solo Cliente tiene su propio portal exclusivo (la landing). Proveedor inicia
+        // sesión aqui mismo, igual que los demas roles de la administracion. Si el
+        // usuario ADEMAS tiene un rol interno o es Proveedor, se le permite usar la
+        // app normalmente -- el unico caso que se rechaza es Cliente puro.
+        $esSoloCliente = $user->hasRole('Cliente')
+            && ! $user->hasRole('Proveedor')
             && ! $user->hasAnyRole(RolesInternos::LISTA);
 
-        if ($esSoloExterno) {
+        if ($esSoloCliente) {
             return response()->json([
-                'message' => 'Este usuario debe iniciar sesión desde el portal de clientes o proveedores.',
+                'message' => 'Este usuario debe iniciar sesión desde el portal de clientes.',
             ], 403);
         }
 

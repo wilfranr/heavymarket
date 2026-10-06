@@ -405,6 +405,24 @@
         {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html", "status": "validated"},
         {"path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php", "status": "validated"}
       ]
+    },
+    {
+      "id": "auth-proveedor-via-administracion-no-landing",
+      "description": "Correccion de decision de producto sobre #182/#160: el usuario reconsidero y decidio que el login de la landing debe ser EXCLUSIVO de Cliente -- Proveedor no necesita entrar por ahi. Proveedor debe iniciar sesion desde la administracion (/auth/login), igual que los demas roles (Vendedor, Analista, Logistica, etc.), no desde un portal separado. Se revierte el cambio anterior que permitia Proveedor en ClientAuthController::login (vuelve a exigir hasRole('Cliente') exclusivamente) y se ajusta AuthController::login para que ya NO rechace a Proveedor (el unico rol externo que se sigue rechazando ahi es Cliente puro, sin rol interno ni Proveedor). Se revierte tambien un cambio especulativo que se habia hecho en el interceptor de auth (unificar clientToken/providerToken) y un link agregado al navbar de la landing, ambos innecesarios con la decision final: se confirmo que la ruta /provider/opportunities ya usa el mismo AppLayout y el mismo authGuard que la app interna (revisando app.routes.ts), por lo que un Proveedor logueado en /auth/login ya navega ahi sin configuracion adicional via el 'adminToken' que el interceptor ya prioriza primero.",
+      "status": "done",
+      "required_skill": null,
+      "depends_on": ["fix-login-doble-rol-interno-externo"],
+      "topic_key": "bugfix/logistica-cerrar-sesion",
+      "github_issue": null,
+      "review_notes": "Aprobado. AuthController::login: nueva condicion esSoloCliente = hasRole('Cliente') && !hasRole('Proveedor') && !hasAnyRole(RolesInternos::LISTA) -- Proveedor (puro o con rol interno) ya no es rechazado. ClientAuthController::login: vuelve a exigir hasRole('Cliente') exclusivamente (mas el bloqueo de rol interno ya existente). auth.interceptor.ts y navbar.html revertidos a su estado previo (sin el merge de tokens ni el link condicional, que ya no aplican). Tests actualizados: AuthTest.php invierte 'rechaza login...Proveedor' a 'permite login...Proveedor'; ClientAuthControllerTest.php invierte 'permite login a un proveedor...' a 'rechaza login a un proveedor...'. Gates: pint PASS (4 archivos backend); pest de los 3 archivos de auth 23/23 OK; ng build OK; vitest suite completa 206/206 (27 archivos) OK.",
+      "files": [
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
+        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
+        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"},
+        {"path": "heavy-front/src/app/core/auth/interceptors/auth.interceptor.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/landing/components/navbar/navbar.html", "status": "validated"}
+      ]
     }
   ]
 }
