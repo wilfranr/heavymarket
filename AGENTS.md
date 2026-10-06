@@ -197,8 +197,10 @@ El Reviewer **debe** ejecutar proactivamente los gates antes de aprobar:
 |------|---------|----------------------|
 | Tests | `php artisan test` | 0 fallos, 0 errores |
 | Análisis | `phpstan analyse` | Nivel configurado sin errores |
-| Migraciones | Verificar esquema MySQL | Sin conflictos de foreign keys, índices válidos |
+| Migraciones | `./scripts/dev-migrate.sh` | Sin pendientes, sin error al migrar; FK e índices válidos |
 | API Docs | `php artisan scramble:generate` | Sin warnings |
+
+**Regla obligatoria sobre migraciones:** `php artisan test`/Pest corre contra una base de datos de pruebas que `RefreshDatabase` reconstruye entera en cada corrida — pasar los tests **nunca** confirma que una migración nueva o modificada realmente se aplicó contra la base de datos real de desarrollo (la que usa el navegador en local). Si un nodo crea o modifica un archivo en `database/migrations/`, el Reviewer no puede aprobarlo sin correr `./scripts/dev-migrate.sh` contra el contenedor local y confirmar que queda en 0 pendientes. Caso real: la migración de `cantidad_aprobada`/`direccion_id`/`correo` (#179) pasó Pest sin problema pero nunca se había aplicado a la base real, y además destapó que una migración anterior (`2026_04_12_235000`) nunca había agregado los campos de perfil de despacho a `direcciones` porque esa tabla ya existía con un esquema distinto (guard `if (! Schema::hasTable(...))` que nunca se cumplió) — un gap invisible para los tests que solo se detectó al probar manualmente en el navegador.
 
 #### Frontend (Angular)
 | Gate | Comando | Criterio de Aceptación |

@@ -344,6 +344,51 @@
       "files": [
         {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"}
       ]
+    },
+    {
+      "id": "backup-db-docker-client-setup",
+      "description": "Infraestructura/Docker: agregar default-mysql-client al Dockerfile de heavy-api para proveer mysqldump al runtime de Laravel, e instalar spatie/laravel-backup en heavy-api/composer.json.",
+      "status": "done",
+      "required_skill": "devops_deployment_pro",
+      "depends_on": [],
+      "topic_key": "arch/heavy-api-logic",
+      "github_issue": null,
+      "review_notes": "Aprobado. Se añadió default-mysql-client a heavy-api/Dockerfile para asegurar la presencia de mysqldump en el contenedor Debian de PHP 8.4 y se instaló spatie/laravel-backup (^10.3) con composer en heavy-api.",
+      "files": [
+        {"path": "heavy-api/Dockerfile", "status": "validated"},
+        {"path": "heavy-api/composer.json", "status": "validated"},
+        {"path": "heavy-api/composer.lock", "status": "validated"}
+      ]
+    },
+    {
+      "id": "backup-db-configuracion-retencion-scheduler",
+      "description": "Backend (Laravel): publicar y ajustar config/backup.php para respaldo exclusivo de MySQL con retención estricta de días (7 días) y límite máximo en MB para proteger el disco. Programar backup:run --only-db y backup:clean en routes/console.php, e ignorar directorio de backups en gitignore.",
+      "status": "in_progress",
+      "required_skill": "software_architect",
+      "depends_on": ["backup-db-docker-client-setup"],
+      "topic_key": "arch/heavy-api-logic",
+      "github_issue": null,
+      "files": [
+        {"path": "heavy-api/config/backup.php", "status": "writing"},
+        {"path": "heavy-api/routes/console.php", "status": "writing"},
+        {".gitignore": "writing"}
+      ]
+    },
+    {
+      "id": "fix-migracion-real-dev-y-gate-obligatorio",
+      "description": "Correccion de causa raiz sobre la regresion de #179 reportada por el usuario ('Unknown column cantidad_aprobada' al aprobar). La migracion de #179 (2026_10_04_000001) nunca se habia corrido contra la base de datos REAL de desarrollo (heavymarket) -- solo contra heavymarket_test, que Pest/RefreshDatabase reconstruye entera en cada corrida, por lo que los tests jamas lo detectaron. Al correr 'php artisan migrate --force' manualmente se descubrio un segundo bug preexistente (no introducido en esta sesion): la migracion 2026_04_12_235000_create_personal_access_tokens_and_tercero_pivot_tables crea 'direcciones' completa solo si '!Schema::hasTable(direcciones)' -- en la DB real esa tabla ya existia desde antes con un esquema minimo, asi que quedo marcada 'Ran' sin agregar nunca destinatario/nit_cc/transportadora_id/forma_pago/telefono/ciudad_texto. Se creo una nueva migracion idempotente que agrega esas 6 columnas faltantes, se quito el ->after('telefono') de la migracion de #179 (dependia de una columna que no existia aun), se corrieron ambas contra la DB real, y se agrego scripts/dev-migrate.sh + una regla obligatoria en AGENTS.md: ningun nodo con migraciones se aprueba sin correr ese script contra el contenedor local, no solo Pest.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": [],
+      "topic_key": "decision/harness-autopilot-roles",
+      "github_issue": null,
+      "review_notes": "Aprobado. scripts/dev-migrate.sh creado y probado (detecta pendientes, migra, re-verifica). AGENTS.md actualizado con el gate 'Migraciones' obligatorio y una nota explicando por que Pest no es suficiente. Ambas migraciones (2026_10_04_000001 corregida + 2026_10_06_000001 nueva) corrieron exitosamente contra la base de datos real de desarrollo, confirmado por consulta directa de columnas via tinker. Pint PASS en ambos archivos de migracion. Nota: la corrida completa de pest en este momento muestra fallos masivos no relacionados (InvalidConfig de spatie/laravel-backup, vendor/spatie/laravel-backup/src/Exceptions/InvalidConfig.php) causados por el trabajo EN CURSO de otra sesion concurrente en este mismo repo (nodos backup-db-* de este mismo dag.json, config/backup.php aun sin terminar) -- no relacionado con este nodo; se confirmo corriendo los archivos de test especificos de este trabajo (DireccionControllerTest, TerceroTest) de forma aislada antes de que esa contaminacion apareciera, ambos en verde.",
+      "files": [
+        {"path": "scripts/dev-migrate.sh", "status": "validated"},
+        {"path": "AGENTS.md", "status": "validated"},
+        {"path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php", "status": "validated"},
+        {"path": "heavy-api/database/migrations/2026_10_06_000001_asegurar_columnas_perfil_despacho_en_direcciones.php", "status": "validated"}
+      ]
     }
   ]
 }

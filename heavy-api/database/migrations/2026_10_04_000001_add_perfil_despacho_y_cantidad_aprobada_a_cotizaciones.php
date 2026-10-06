@@ -12,7 +12,9 @@ return new class extends Migration
     {
         Schema::table('direcciones', function (Blueprint $table) {
             if (! Schema::hasColumn('direcciones', 'correo')) {
-                $table->string('correo')->nullable()->after('telefono');
+                // Sin ->after('telefono'): esa columna no existe en todas las bases
+                // (ver 2026_10_06_000001_asegurar_columnas_perfil_despacho_en_direcciones).
+                $table->string('correo')->nullable();
             }
         });
 
