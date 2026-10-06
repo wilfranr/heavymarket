@@ -390,6 +390,21 @@
         {"path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php", "status": "validated"},
         {"path": "heavy-api/database/migrations/2026_10_06_000001_asegurar_columnas_perfil_despacho_en_direcciones.php", "status": "validated"}
       ]
+    },
+    {
+      "id": "fix-perfil-despacho-wizard-ubicacion-y-nullable",
+      "description": "Dos correcciones sobre #172, encontradas por el usuario y por verificacion manual contra la DB real tras el gap de migraciones del nodo anterior. (a) Malentendido de UX: el usuario aclaro que 'Perfiles de Despacho como paso 3 despues de Contactos' significa una SECCION dentro del mismo paso de Contactos (Seccion 1: Contactos, Seccion 2: Despachos), no un paso nuevo separado del wizard. Se revierte tercero-form.component.ts a 4 pasos (Informacion general, Ubicacion, Contactos, Documentos) y se fusiona el contenido de Perfiles de Despacho dentro del paso 'Contactos' como segunda seccion visual, con Documentos de vuelta en el indice 3. (b) Se encontro que 'direcciones' en la DB real tenia city_id/state_id/country_id como NOT NULL sin default (y como varchar, no bigint, otro desfase de esa tabla legacy) -- bloqueaba crear CUALQUIER perfil de despacho sin pais/departamento/ciudad formales, contradiciendo que ninguno de esos campos deba ser obligatorio (para eso existe 'ciudad_texto' como alternativa libre). Nueva migracion con SQL crudo (MODIFY COLUMN) los vuelve nullable; verificado con una insercion real de prueba en la DB de desarrollo (creada y luego eliminada).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": ["fix-migracion-real-dev-y-gate-obligatorio"],
+      "topic_key": "biz/roles",
+      "github_issue": null,
+      "review_notes": "Aprobado. HTML: se fusionaron los bloques @if (activeIndex === 3) (Perfiles de Despacho) dentro de @if (activeIndex === 2) (Contactos) como 'Seccion 1'/'Seccion 2' con sus propios <div> de agrupacion visual (space-y-8 en el contenedor del paso); Documentos vuelve a activeIndex === 3. TS: steps[] vuelve a 4 elementos; isStepValid/markStepAsTouched no requirieron cambios (el paso 2 ya solo valida contactos.valid, direcciones sigue sin ningun campo obligatorio). Migracion 2026_10_06_000002 usa DB::statement con ALTER TABLE MODIFY crudo porque Blueprint::change() requiere doctrine/dbal, no instalado en el proyecto; probada contra la DB real creando y luego borrando una Direccion completa de prueba (incluyendo los 6 campos de despacho) para confirmar insert exitoso. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK; pint PASS en la migracion nueva (con un auto-fix de import order); dev-migrate.sh confirma 0 pendientes tras aplicarla.",
+      "files": [
+        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html", "status": "validated"},
+        {"path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php", "status": "validated"}
+      ]
     }
   ]
 }

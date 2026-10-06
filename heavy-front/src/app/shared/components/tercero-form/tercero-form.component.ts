@@ -425,7 +425,7 @@ export class TerceroFormComponent implements OnInit, OnChanges {
     }
 
     private initSteps(): void {
-        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Perfiles de Despacho' }, { label: 'Documentos' }];
+        this.steps = [{ label: 'Información general' }, { label: 'Ubicación' }, { label: 'Contactos' }, { label: 'Documentos' }];
     }
 
     get contactos(): FormArray {

@@ -298,11 +298,13 @@
             </div>
         }
 
-        <!-- STEP 2: Contactos -->
+        <!-- STEP 2: Contactos + Perfiles de Despacho -->
         @if (activeIndex === 2) {
-            <div class="animate-fade-in pt-4">
+            <div class="animate-fade-in pt-4 space-y-8">
+                <!-- Sección 1: Contactos -->
+                <div>
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold">Contactos del Tercero</h3>
+                    <h3 class="text-lg font-bold">Sección 1: Contactos del Tercero</h3>
                     <p-button label="Agregar Contacto" icon="pi pi-plus" size="small" (onClick)="addContacto()" [disabled]="isViewMode"></p-button>
                 </div>
 
@@ -361,14 +363,12 @@
                         </div>
                     }
                 </div>
-            </div>
-        }
+                </div>
 
-        <!-- STEP 3: Perfiles de Despacho -->
-        @if (activeIndex === 3) {
-            <div class="animate-fade-in pt-4">
+                <!-- Sección 2: Despachos -->
+                <div>
                 <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-lg font-bold">Perfiles de Despacho</h3>
+                    <h3 class="text-lg font-bold">Sección 2: Despachos</h3>
                     <p-button label="Agregar Perfil" icon="pi pi-plus" size="small" (onClick)="addDireccionDespacho()" [disabled]="isViewMode"></p-button>
                 </div>
 
@@ -432,11 +432,12 @@
                         </div>
                     }
                 </div>
+                </div>
             </div>
         }
 
-        <!-- STEP 4: Documentos -->
-        @if (activeIndex === 4) {
+        <!-- STEP 3: Documentos -->
+        @if (activeIndex === 3) {
             <div class="animate-fade-in pt-4 hm-document-upload-panel">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     @for (doc of documentFieldsConfig; track doc.key) {
