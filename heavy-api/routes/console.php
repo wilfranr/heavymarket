@@ -10,3 +10,7 @@ Artisan::command('inspire', function () {
 
 Schedule::command('trm:sync')->dailyAt('07:00');
 Schedule::command('compras:alertar-transito-prolongado')->dailyAt('08:00');
+
+// Respaldo diario de base de datos y rotación de copias antiguas (política de 7 días)
+Schedule::command('backup:run --only-db')->dailyAt('01:00');
+Schedule::command('backup:clean')->dailyAt('02:00');

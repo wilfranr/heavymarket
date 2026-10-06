@@ -363,15 +363,16 @@
     {
       "id": "backup-db-configuracion-retencion-scheduler",
       "description": "Backend (Laravel): publicar y ajustar config/backup.php para respaldo exclusivo de MySQL con retención estricta de días (7 días) y límite máximo en MB para proteger el disco. Programar backup:run --only-db y backup:clean en routes/console.php, e ignorar directorio de backups en gitignore.",
-      "status": "in_progress",
+      "status": "done",
       "required_skill": "software_architect",
       "depends_on": ["backup-db-docker-client-setup"],
       "topic_key": "arch/heavy-api-logic",
       "github_issue": null,
+      "review_notes": "Aprobado. Se configuró config/backup.php con GzipCompressor, política de retención estricta de 7 días (keep_all_backups_for_days=7, keep_daily_backups_for_days=7, weekly/monthly/yearly=0) y límite de disco de 2000 MB. Programado backup:run --only-db a la 01:00 y backup:clean a las 02:00 en routes/console.php. Ignorado directorio de backups en .gitignore. Gates: Pint PASS en config/backup.php y routes/console.php; ejecución real de backup:run --only-db completada con éxito (3.24 MB), backup:clean verificado y tests feature pasando.",
       "files": [
-        {"path": "heavy-api/config/backup.php", "status": "writing"},
-        {"path": "heavy-api/routes/console.php", "status": "writing"},
-        {".gitignore": "writing"}
+        {"path": "heavy-api/config/backup.php", "status": "validated"},
+        {"path": "heavy-api/routes/console.php", "status": "validated"},
+        {".gitignore": "validated"}
       ]
     },
     {

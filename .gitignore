@@ -51,3 +51,7 @@ heavy-api/public/hot
 # Database dumps and temporary files
 *.sql
 scratch/
+heavy-api/storage/app/backup-temp/
+heavy-api/storage/app/private/HeavyMarket/
+heavy-api/storage/app/private/Laravel/
+heavy-api/storage/app/private/*-backup/
