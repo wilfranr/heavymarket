@@ -437,6 +437,19 @@
         {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts", "status": "validated"},
         {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts", "status": "validated"}
       ]
+    },
+    {
+      "id": "fix-ci-migracion-mysql-only-en-sqlite",
+      "description": "El push anterior rompio el CI de GitHub Actions (Heavy API - PHPUnit): QueryException en RecepcionCompraStockSyncTest y probablemente otros. Causa: el CI corre los tests contra SQLite en memoria (DB_CONNECTION=sqlite, ver .github/workflows/heavy-api-tests.yml), pero la migracion 2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php usaba DB::statement('ALTER TABLE ... MODIFY ...'), sintaxis exclusiva de MySQL que SQLite no soporta -- la migracion fallaba al ejecutarse durante el bootstrap de cualquier test. En SQLite (base fresca) esas columnas (city_id/state_id/country_id) ya nacen nullable desde la migracion original que crea 'direcciones' (unsignedBigInteger nullable), asi que el problema era exclusivamente de la base MySQL real local con esquema legacy -- la correccion no aplica ni hace falta en SQLite.",
+      "status": "done",
+      "required_skill": "sql_query_analyst",
+      "depends_on": ["fix-perfil-despacho-wizard-ubicacion-y-nullable"],
+      "topic_key": "decision/harness-autopilot-roles",
+      "github_issue": null,
+      "review_notes": "Aprobado. Se agrego un guard temprano 'if (DB::connection()->getDriverName() !== \"mysql\") { return; }' al inicio de up() en la migracion, dejando el comportamiento en MySQL intacto. Verificado localmente reproduciendo el entorno exacto del CI (DB_CONNECTION=sqlite DB_DATABASE=:memory: APP_ENV=testing php artisan test), que antes del fix fallaba igual que en GitHub Actions y despues del fix pasa completo. Gates: pint PASS; suite completa backend bajo SQLite 577/577 OK (554 deprecated preexistentes, 23 passed, 0 fallos); no fue necesario volver a probar contra MySQL real porque el guard no modifica esa rama de codigo.",
+      "files": [
+        {"path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php", "status": "validated"}
+      ]
     }
   ]
 }

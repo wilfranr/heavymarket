@@ -21,6 +21,14 @@ return new class extends Migration
 {
     public function up(): void
     {
+        // 'MODIFY COLUMN' es sintaxis exclusiva de MySQL. En cualquier otro motor
+        // (ej. SQLite en CI/tests) estas columnas ya nacen nullable desde la
+        // migracion original que crea 'direcciones' -- no hay nada que corregir ahi,
+        // el problema es exclusivo de bases MySQL preexistentes con el esquema legacy.
+        if (DB::connection()->getDriverName() !== 'mysql') {
+            return;
+        }
+
         foreach (['city_id', 'state_id', 'country_id'] as $column) {
             if (Schema::hasColumn('direcciones', $column)) {
                 DB::statement("ALTER TABLE `direcciones` MODIFY `{$column}` VARCHAR(255) NULL DEFAULT NULL");
