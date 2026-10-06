@@ -15,7 +15,7 @@
       "depends_on": [],
       "topic_key": "bugfix/pedido-asesor-referencia",
       "github_issue": 175,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Se corrigió: al pegar varias referencias al crear un pedido, ahora el sistema muestra el código que se escribe en vez de la descripción del artículo, así es posible verificar que quedó bien digitado.",
       "review_notes": "Aprobado. Diff minimo y correcto: elimina unicamente la sobrescritura de definicion con articulo.definicion, logica de marca_id/lista_id/articulo_id/sistema_id/referencias intacta. Gates: build OK, suite completa 195/195 tests OK (incluye los 3 nuevos). Gate de lint no ejecutable: eslint.config.js usa sintaxis legacy (extends/overrides como string) invalida para flat config, preexistente al fix, no bloquea este nodo. Checklist no_any: la funcion extraida usa 'any' en data/referenciaData, consistente con el 100% del archivo (deuda preexistente, no introducida por este cambio). Pendiente verificacion manual visual en navegador (fuera del alcance automatizable).",
       "files": [
@@ -98,7 +98,7 @@
       "depends_on": ["cotizacion-aprobacion-frontend-cantidad-editable"],
       "topic_key": "biz/roles",
       "github_issue": 179,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Al aprobar una cotización ahora es posible editar la cantidad de cada ítem (sin superar lo cotizado), viendo el recálculo inmediato de valores e impuestos, y asignar o crear en el momento el perfil de despacho (destinatario, dirección, transportadora, forma de pago, teléfono, correo y ciudad) que usará logística para el envío.",
       "review_notes": "Aprobado. Se agrego seccion 'Perfil de despacho' en el dialogo de aprobacion de detail.component.ts: un p-select con las direcciones del tercero (cargadas via DireccionService.getAll({tercero_id}) al abrir el dialogo) con templates custom item/selectedItem (direccionLabel()), y un formulario inline alternable (Tailwind grid, sin PrimeFlex, patron class=field de AGENTS.md) para crear una nueva direccion sin salir de la pantalla, con destinatario/nit_cc/transportadora(p-select via TransportadoraService)/forma_pago/direccion/telefono/correo/ciudad_texto; al guardar, DireccionService.create() inserta y selecciona automaticamente el nuevo perfil. confirmApproveSelected() ahora envia 'direccion_id' en el payload de approve(). Se agrego 'correo' a Direccion/CreateDireccionDto/UpdateDireccionDto en direccion.model.ts, y 'direccion_id'/'direccion' a Cotizacion y ApproveCotizacionDto en cotizacion.model.ts. Checklist Angular: ngModel aceptable para formulario inline simple (regla 5 de heavy-front/AGENTS.md), sin EventEmitter, Tailwind + variables PrimeNG, sin PrimeFlex (a diferencia del CRUD legacy de features/direcciones/create que si usa clases PrimeFlex como deuda preexistente, no se replico ese patron). Gates: ng build OK (mismo warning preexistente de pusher-js); vitest spec 7/7 OK, suite completa 198/198 (25 archivos) OK; lint no ejecutable (mismo problema preexistente del eslint.config.js ya documentado). Cierra GitHub #179 (push y cierre del issue pendientes de que el usuario lo solicite explicitamente).",
       "files": [
@@ -130,7 +130,7 @@
       "depends_on": ["costeo-proveedor-oportunidades-lista"],
       "topic_key": "biz/roles",
       "github_issue": 173,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Al entrar a Oportunidades de Costeo, ahora se muestra primero una tabla con los pedidos pendientes de costeo, cada uno con un botón para abrir y cotizar sus ítems de forma ordenada, en vez de tener que buscarlos en un único listado mezclado.",
       "review_notes": "Aprobado. CostingOpportunitiesComponent ahora lee ':pedidoId' (route param) y 'status' (query param) en ngOnInit para fijar activePedidoId/activeStatus automaticamente -- la condicion existente en loadOpportunities() que preserva activePedidoId si sigue en la lista de pedidoIds cargados ya cubre que el valor de la ruta se mantenga tras la carga, sin tocar esa logica. Se eliminaron del template los selectores 'Estado de ofertas' y 'Pedido' (y sus miembros ahora muertos: estadoOptions, pedidosDisponibles, onStatusChange, onPedidoChange) ya que ahora se llega con ambos valores resueltos desde la lista. Se agrego boton 'Volver a oportunidades' en el header y en el estado vacio (usando p-button existente, no se introdujo ninguna clase CSS nueva). Checklist Angular: sin EventEmitter, Tailwind + PrimeNG, sin PrimeFlex. Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 200/200 (26 archivos) OK, sin regresiones.",
       "files": [
@@ -146,7 +146,7 @@
       "depends_on": [],
       "topic_key": "biz/roles",
       "github_issue": 171,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "En el módulo de costeo del proveedor, el total ahora incluye el valor real del flete para proveedores internacionales (antes siempre aparecía en cero), calculado con el peso de los artículos y la tarifa configurada para el país del proveedor.",
       "review_notes": "Aprobado. Backend: ProviderPortalController::opportunities() agrega 'flete' => (float)($tercero->country?->flete ?? 0) al objeto 'provider' en ambas ramas (pending y sent/approved); nuevo test test_provider_payload_includes_country_freight_rate_in_pending_and_sent_status verifica ambas. Frontend: providerInfo amplia su tipo con 'flete: number'; calcularFletes() delega en nueva funcion pura exportada calcularFletesSeleccion(filas, providerInfo) que replica la formula del asesor (peso_kg*2.20462*cantidad*tarifa_pais, 0 si es_nacional), con 3 tests cubriendo nacional=0, calculo internacional multi-fila y valores ausentes/invalidos=0. No se tocó el HTML (el campo Fletes y calcularTotal() ya sumaban subtotal+impuestos+fletes). Checklist backend: sin logica de negocio filtrada al controller (solo agrega un campo al payload), sin fugas de persistencia. Gates: pint PASS (2 archivos backend, tras corregir un uso de clase fully-qualified inline en el test nuevo); pest del archivo 18/18 OK, suite completa backend 559/559 OK; ng build OK; vitest 3/3 en el spec nuevo, suite completa frontend 203/203 (27 archivos) OK.",
       "files": [
@@ -164,7 +164,7 @@
       "depends_on": [],
       "topic_key": "bugfix/costeo-asesor-proveedor-no-visible",
       "github_issue": 178,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "En el costeo de pedidos, ahora siempre se muestra el nombre del proveedor que envió una cotización para cada artículo, incluso cuando ese proveedor no está configurado dentro de la categoría o marca habitual de ese artículo en particular.",
       "review_notes": "Aprobado. Root cause confirmada: getProveedoresFiltrados(refIndex) devuelve una lista de opciones compartida por TODAS las filas de proveedor de esa referencia ([options] en costeo.html se indexa solo por refIndex); cuando filtra por marca/categoria comercial, un proveedor ya asignado (proveedor_id ya seteado, tipicamente porque cotizo desde el Portal de Proveedores) puede quedar fuera de esa lista filtrada para esa fila en particular, y PrimeNG no puede resolver su label aunque el dato este bien guardado -- el selector se ve vacio. Fix: nueva funcion pura exportada agregarProveedoresAsignadosFaltantes(opcionesFiltradas, proveedoresCompletos, idsAsignados) que agrega al final cualquier proveedor ya asignado en el FormArray que no haya pasado el filtro; getProveedoresFiltrados ahora la aplica antes de retornar. La rama sin filtro (!marcaId || categoriaComercialIds.length===0) no se tocó porque ya retorna this.proveedores() completo (mismo catalogo que proveedoresCompletos(), confirmado en loadProveedores()), por lo que nunca tuvo el bug. 3 tests nuevos cubren: no-modifica si ya esta presente, agrega el proveedor faltante preservando el orden, ignora ids null/undefined/sin match. Checklist: logica pura sin UI nueva (required_skill null correcto), sin any nuevo mas alla del que ya tenia el archivo. Gates: ng build OK; vitest costeo.spec.ts 9/9 OK, suite completa frontend 206/206 (27 archivos) OK.",
       "files": [
@@ -180,7 +180,7 @@
       "depends_on": [],
       "topic_key": "bugfix/logistica-cerrar-sesion",
       "github_issue": 182,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Ahora cada usuario solo puede iniciar sesión por el portal que le corresponde: los empleados (asesores, analistas, logística, administración) ya no pueden entrar por el portal de clientes, y los clientes no pueden entrar por el acceso interno de la empresa. Esto evita que alguien quede con dos sesiones abiertas a la vez sin darse cuenta, que era la causa real de que pareciera que la sesión de logística no se podía cerrar.",
       "review_notes": "Aprobado. Se replico exactamente el patron de validacion que ya tenia ProviderAuthController::login (hasRole check -> 403 antes de emitir el token), que no estaba aplicado en los otros dos logins: AuthController::login (app) ahora rechaza si hasRole('Cliente') o hasRole('Proveedor'); ClientAuthController::login (landing) ahora rechaza si !hasRole('Cliente'). No se tocaron registros (register) porque esos crean usuarios nuevos con el rol correcto asignado automaticamente, no tienen el problema de cruce. No se requirieron cambios de frontend: login.component.ts y auth-modal.component.ts ya muestran 'error.error.message' del backend genericamente -- verificado en codigo antes de descartar el cambio. 6 tests nuevos (2 en AuthTest.php, 4 en nuevo ClientAuthControllerTest.php) cubren: Cliente/Proveedor rechazados en login de app, Cliente aceptado/Logistica y Proveedor rechazados en login de landing, usuario sin rol rechazado en landing. Gates: pint PASS (4 archivos); pest de los archivos tocados 16/16 OK; suite completa backend 565/565 OK, sin regresiones (el test preexistente 'permite login con credenciales correctas' usa un User sin roles, no se ve afectado por el nuevo check).",
       "files": [
@@ -231,7 +231,7 @@
       "depends_on": ["tercero-direcciones-backend"],
       "topic_key": "biz/roles",
       "github_issue": 172,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Al crear o editar un tercero, ahora aparece un nuevo paso llamado \"Perfiles de Despacho\" (justo después de Contactos) donde se pueden registrar uno o varios destinos de envío con destinatario, NIT/CC, transportadora, forma de pago del flete, dirección, teléfono, correo y ciudad. La transportadora se puede crear sin salir de la pantalla si todavía no existe en el sistema. Ningún campo es obligatorio.",
       "review_notes": "Aprobado. Nuevo paso 'Perfiles de Despacho' insertado en indice 3 del wizard (Documentos pasa a indice 4); isStepValid/markStepAsTouched no requirieron cambios porque su fallback 'return true' ya cubre pasos sin reglas explicitas, consistente con que ningun campo de este paso es obligatorio (requisito explicito del issue). FormArray 'direcciones' sigue el mismo patron que 'contactos' (addDireccionDespacho/removeDireccionDespacho, carga en patchForm desde data.direcciones, reset en resetForm, payload FormData direcciones[i][...] gateado por que direccion.direccion tenga valor). Transportadora: p-select cargado via TransportadoraService + dialogo minimo (solo nombre, unico campo requerido por CreateTransportadoraDto) para crear una nueva sin salir del wizard, seleccionandola automaticamente al crearla. forma_pago reutiliza la constante exportada FORMAS_PAGO_FLETE (Al cobro/Pagamos) para no duplicar los valores permitidos. Se agrego FormsModule a los imports del componente (requerido por el ngModel del dialogo de nueva transportadora; el resto del formulario sigue siendo ReactiveForms). No se agregaron tests unitarios: no existe spec para tercero-form.component.ts ni para el patron equivalente 'contactos' ya en produccion, consistente con el house style existente -- verificacion manual visual pendiente (fuera de alcance automatizable). Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 206/206 (27 archivos) OK, sin regresiones.",
       "files": [
@@ -261,7 +261,7 @@
       "depends_on": [],
       "topic_key": "biz/roles",
       "github_issue": 177,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Se eliminó el botón de editar en la vista de detalle de cotizaciones, ya que no corresponde modificar una cotización formal desde ahí.",
       "review_notes": "Aprobado. Se elimino el boton Editar (unico caller de onEdit(), confirmado por grep) y el metodo ahora muerto. El resto del bloque condicional 'estado !== Anulada' (Rechazar/Aprobar/Descargar PDF) queda intacto. this.router sigue usado por otro metodo, sin inyeccion huerfana. No se toco backend (CotizacionPolicy::update ya tenia logica de estado correcta) ni se elimino la ruta /cotizaciones/:id/edit (fuera del alcance literal del issue, queda protegida por la policy existente). Gates: ng build OK; vitest spec 7/7 OK.",
       "files": [
@@ -276,7 +276,7 @@
       "depends_on": [],
       "topic_key": "bugfix/orden-compra-editar-sin-restriccion",
       "github_issue": 176,
-      "deployed": false,
+      "deployed": true,
       "client_summary": "Se eliminó el botón de editar en la vista de detalle de órdenes de compra, ya que no corresponde modificar una orden formal desde ahí una vez generada.",
       "review_notes": "Aprobado con alcance reducido respecto a lo planificado: se elimino el boton Editar y el metodo onEdit() ahora muerto (unico caller, confirmado por grep), igual que #177. Se evaluo endurecer OrdenCompraPolicy::update() en backend pero se descarto al encontrar OrdenCompraTest.php::'permite actualizar una orden de compra y sus referencias', un test real y pasante que ejercita ese mismo endpoint para reemplazar referencias y cambiar estado -- es funcionalidad deliberada, no un hueco accidental, y el issue solo pide quitar el boton (alcance frontend). No se toco ningun archivo backend. this.router sigue usado por otro metodo, sin inyeccion huerfana. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones; pest no se re-ejecuto porque no hubo cambios backend en este nodo.",
       "files": [
