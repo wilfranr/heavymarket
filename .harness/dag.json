@@ -423,6 +423,20 @@
         {"path": "heavy-front/src/app/core/auth/interceptors/auth.interceptor.ts", "status": "validated"},
         {"path": "heavy-front/src/app/landing/components/navbar/navbar.html", "status": "validated"}
       ]
+    },
+    {
+      "id": "fix-costing-opportunities-list-columna-cliente-mal-etiquetada",
+      "description": "Correccion sobre #173, encontrada por el usuario revisando la tabla de oportunidades de costeo: la columna 'Cliente' en costing-opportunities-list.component.ts en realidad mostraba pedido.user.name, que es el Vendedor/Asesor que gestiona el pedido, no el cliente final -- el backend (ProviderPortalController::opportunities()) no expone el tercero/cliente real en ese payload en absoluto. Esto es consistente con el resto del sistema: pedido-info-card.component.html (componente compartido con la propia pantalla de detalle de costeo, justo debajo de esta lista) ya etiqueta ese mismo campo como 'Vendedor:'. Se corrige renombrando el campo/columna de 'cliente' a 'vendedor' en vez de inventar un dato de cliente que el backend no envia.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "biz/roles",
+      "github_issue": null,
+      "review_notes": "Aprobado. Renombrado 'cliente' -> 'vendedor' en la interface OportunidadCosteoPedidoResumen, en agruparOportunidadesPorPedido(), en el header de la tabla y en la celda del body. Se agrego un comentario explicando por que no es el cliente real y referenciando el componente compartido donde ese mismo campo ya se etiqueta correctamente. Spec actualizado con los nuevos nombres de campo. Gates: ng build OK; vitest spec 2/2 OK, suite completa 206/206 (27 archivos) OK.",
+      "files": [
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts", "status": "validated"},
+        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts", "status": "validated"}
+      ]
     }
   ]
 }

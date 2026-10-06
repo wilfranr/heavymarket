@@ -25,7 +25,7 @@ interface OportunidadCosteoRaw {
 export interface OportunidadCosteoPedidoResumen {
     pedidoId: number;
     estadoPedido: string;
-    cliente: string;
+    vendedor: string;
     maquina: string;
     cantidadItems: number;
 }
@@ -55,7 +55,11 @@ export function agruparOportunidadesPorPedido(filas: OportunidadCosteoRaw[]): Op
         resumenes.set(pedidoId, {
             pedidoId,
             estadoPedido: fila.pedido?.estado ?? 'N/A',
-            cliente: fila.pedido?.user?.name ?? 'N/A',
+            // pedido.user es el Vendedor/Asesor que gestiona el pedido (asi se
+            // etiqueta en pedido-info-card.component.html, compartido con la
+            // pantalla de detalle de costeo) -- el backend no expone el cliente
+            // (tercero) real en este endpoint, asi que no se puede mostrar aqui.
+            vendedor: fila.pedido?.user?.name ?? 'N/A',
             maquina: maquinaLabel,
             cantidadItems: 1
         });
@@ -84,7 +88,7 @@ export function agruparOportunidadesPorPedido(filas: OportunidadCosteoRaw[]): Op
                 <ng-template pTemplate="header">
                     <tr>
                         <th>Pedido #</th>
-                        <th>Cliente</th>
+                        <th>Vendedor</th>
                         <th>Máquina</th>
                         <th class="text-center">Ítems</th>
                         <th class="text-center">Acciones</th>
@@ -93,7 +97,7 @@ export function agruparOportunidadesPorPedido(filas: OportunidadCosteoRaw[]): Op
                 <ng-template pTemplate="body" let-resumen>
                     <tr>
                         <td class="font-bold">PED-{{ resumen.pedidoId }}</td>
-                        <td>{{ resumen.cliente }}</td>
+                        <td>{{ resumen.vendedor }}</td>
                         <td>{{ resumen.maquina }}</td>
                         <td class="text-center">
                             <p-tag [value]="resumen.cantidadItems" severity="info"></p-tag>
