@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-08T10:55:00-05:00",
-  "issue": "feat-orden-trabajo-recibida-depurada-en-tabla-referencias",
-  "description": "GitHub #181: en el detalle de Orden de Trabajo, la tarjeta '¿Por qué esta orden aún no está lista para facturar?' (tabla separada con columnas Linea/Cotizada/Recibida/Depurada/Cumple, alimentada por un signal 'completitud' y un endpoint dedicado getCompletitud) ocupaba mucho espacio vertical arriba de la tabla principal de Referencias. El cliente pidio mover Recibida y Depurada -- las unicas columnas que no estaban ya en la tabla principal -- junto a las referencias, abajo. Se confirmo que item.cantidad_recibida/item.cantidad_depurada ya estaban disponibles en cada fila de la tabla principal (usados internamente en la logica de depurar), por lo que no hizo falta el endpoint/signal separado.",
+  "last_updated": "2026-10-08T11:15:00-05:00",
+  "issue": "fix-orden-trabajo-edit-rediseno-y-campos-faltantes",
+  "description": "Pedido fuera del flujo de issues de Trello (ad-hoc del usuario): tras confirmar que la vista /app/ordenes-trabajo/{id}/edit SI es necesaria (es la unica via para asignar transportadora, guia, fechas de despacho y cancelar con motivo -- la tarjeta de logistica en el detalle es de solo lectura), el usuario pidio arreglar esa vista: tenia estilo PrimeFlex antiguo (clases col-12/md:col-6, justify-content-end, inexistentes en este proyecto) y le faltaban campos que el propio DTO/modelo ya soportan: transportadora_id y direccion_id (ambos presentes en UpdateOrdenTrabajoDto y validados en el backend, pero nunca enviados desde el formulario). Se descarto agregar el campo 'archivo' (comprobante de despacho): el backend lo valida como string simple (no como upload real), no hay ningun endpoint de carga de archivos wireado para el, y ningun otro lugar del frontend lo usa -- implementarlo requeriria una funcionalidad nueva de carga de archivos no solicitada, fuera de alcance de este fix.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "feat-juegos-articulo-crear-referencia-inline",
+  "previous_issue": "feat-orden-trabajo-recibida-depurada-en-tabla-referencias",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -905,6 +905,22 @@
       "deployed": false,
       "client_summary": "En la orden de trabajo, la información de unidades recibidas y depuradas ahora se muestra directamente en la tabla de referencias, en lugar de una sección aparte que ocupaba espacio extra en la pantalla.",
       "review_notes": "Aprobado. Se confirmo via grep que item.cantidad_recibida/item.cantidad_depurada ya estaban disponibles en cada fila de la tabla principal (usados en getIndicadorEstadoClass, la condicion del boton Depurar y el tag 'Depurado'), por lo que no hizo falta el endpoint/signal 'completitud' aparte para mostrar esas dos columnas -- se elimino por completo (signal, metodo loadCompletitud, llamada a ordenTrabajoService.getCompletitud, import de OrdenTrabajoCompletitud), confirmado sin otros consumidores en el repo (grep de OrdenTrabajoCompletitud/getCompletitud: solo modelo+servicio+este componente). Se agregaron columnas 'Recibida' y 'Depurada' en la tabla principal justo despues de 'Cant', y se ajusto el colspan del footer de SubTotal de 8 a 10 (de lo contrario el valor del subtotal hubiera quedado desalineado bajo las columnas nuevas). No se toco el servicio OrdenTrabajoService.getCompletitud() ni el modelo OrdenTrabajoCompletitud (fuera de alcance, podrian tener uso futuro o en backend; solo se removio el consumo muerto en este componente). Gates: spec propio 2/2 OK; suite completa 206/206 OK (27 archivos); ng build OK; ng serve en vivo recompilo limpio."
+    },
+    {
+      "id": "orden-trabajo-edit-rediseno-tailwind",
+      "description": "Frontend: reescribir heavy-front/src/app/features/ordenes-trabajo/edit/edit.component.ts (template inline) para eliminar las clases PrimeFlex (col-12/md:col-6, justify-content-end) y adoptar el patron Tailwind + figma-card ya usado en ordenes-trabajo/detail.component.ts (card con bg-surface-0/900, border-surface-200/700, grid grid-cols-1 md:grid-cols-2 gap-4, class='field' por campo). Agregar dos campos nuevos al formulario: Transportadora (p-select, TransportadoraService.getAll) y Dirección de despacho (p-select de los perfiles de despacho del tercero via DireccionService.getAll({tercero_id}), con el mismo formato de label 'destinatario — ciudad — direccion' ya usado en cotizaciones/detail.component.ts). Incluir ambos campos en el payload de UpdateOrdenTrabajoDto al enviar el formulario.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "github_issue": null,
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/edit/edit.component.ts",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Aprobado. Se reescribio el componente completo: template sin ninguna clase PrimeFlex (verificado por grep), usando card/grid/field consistente con el resto del modulo (mismas clases bg-surface-0/900, border-surface-200/700 que detail.component.ts). Transportadora: p-select con TransportadoraService.getAll({per_page:200}), mismo patron que el select de tercero-form. Direccion de despacho: p-select con DireccionService.getAll({tercero_id, per_page:200}) usando el tercero_id de la orden ya cargada, con el mismo direccionLabel() (destinatario - ciudad - direccion) que cotizaciones/detail.component.ts, mostrando aviso si el tercero no tiene perfiles registrados. Ambos campos se incluyen en el payload de UpdateOrdenTrabajoDto al enviar. Se descarto agregar 'archivo' (comprobante de despacho): el backend lo valida como string simple sin endpoint de carga wireado y ningun otro lugar del frontend lo usa; agregarlo real requeriria una funcionalidad de upload nueva no solicitada. Gates: no existe spec propio de este componente (no se quito cobertura existente); suite completa 206/206 OK (27 archivos); ng build OK (mismo warning preexistente de pusher-js); ng serve en vivo recompilo limpio."
     }
   ]
 }
