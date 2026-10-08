@@ -1763,6 +1763,27 @@ export class AnalysisComponent implements OnInit {
         return !!ref?.es_temporal;
     }
 
+    /**
+     * Copia al portapapeles el código de la referencia seleccionada en una parte (Issue #169).
+     */
+    copiarReferencia(itemIndex: number, parteIndex: number): void {
+        const parte = this.getPartesFormArray(itemIndex).at(parteIndex);
+        const refId = parte?.get('referencia_id')?.value;
+        if (!refId) return;
+
+        const codigo = this.getOpcionesReferenciaParaFila(itemIndex).find((r: any) => r.value === refId)?.label;
+        if (!codigo) return;
+
+        navigator.clipboard
+            .writeText(codigo)
+            .then(() => {
+                this.messageService.add({ severity: 'success', summary: 'Copiado', detail: `Referencia "${codigo}" copiada al portapapeles.` });
+            })
+            .catch(() => {
+                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo copiar la referencia al portapapeles.' });
+            });
+    }
+
     // --- Lógica de Popovers Técnicos ---
 
     showInfo(event: MouseEvent, type: string, id: number | null, popover: Popover, itemIndex?: number): void {

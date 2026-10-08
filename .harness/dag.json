@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-04T17:00:00-05:00",
-  "issue": "fix-cantidad-editable-cotizacion-input-no-responde",
-  "description": "GitHub #179 (regresion): el usuario probo la edicion de cantidad al aprobar una cotizacion y reporto que los botones +/- no hacian nada y que escribir manualmente el numero lo devolvia al valor inicial. No se pudo reproducir en navegador (sin herramienta de browser disponible en este entorno); se investigo el bundle compilado de PrimeNG 21 InputNumber (BaseInput/BaseEditableHolder) sin encontrar una causa concluyente en el codigo fuente de HeavyMarket. Se reemplazo el p-inputNumber (binding split [ngModel]/(ngModelChange)) por un stepper manual con input nativo + 2 botones, sin ninguna dependencia de ControlValueAccessor/FormsModule para este campo, eliminando la superficie de ese posible bug de raiz.",
+  "last_updated": "2026-10-08T08:30:00-05:00",
+  "issue": "feat-copiar-referencia-modulo-analisis",
+  "description": "GitHub #169: el cliente pide poder seleccionar/copiar rapido el texto de las referencias en el modulo de analisis de pedidos. Hoy la columna 'Referencia' de la tabla de requerimientos (analysis.html) usa un <p-select> (combobox buscable) para elegir/mostrar la referencia: el control intercepta el mousedown para abrir/cerrar el dropdown, por lo que arrastrar el mouse sobre el texto visible no selecciona nada -- no hay forma de copiar el codigo con Ctrl+C. El cliente menciona como referencia conceptual (no una pantalla existente en el repo) los catalogos de piezas de Caterpillar, que tienen un icono de copiar al lado o dentro del campo de la referencia; aclaro explicitamente que no es un componente que ya exista en HeavyMarket, solo el concepto UX. Solucion: agregar un boton icono de copiar (pi pi-copy) junto al p-select de cada fila de referencia en la tabla de analysis.html, que resuelva el codigo de la referencia seleccionada (reusando el patron de lookup ya usado en analysis.ts, ej. getOpcionesReferenciaParaFila(...).find(...)) y lo copie al portapapeles con navigator.clipboard.writeText(), mostrando un toast de confirmacion via el MessageService ya inyectado en el componente. Deshabilitar/ocultar el boton cuando la fila no tiene referencia_id seleccionado.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-login-landing-compartida-cliente-proveedor",
+  "previous_issue": "fix-cantidad-editable-cotizacion-input-no-responde",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -39,10 +39,22 @@
       "github_issue": null,
       "review_notes": "Aprobado. Migracion idempotente (hasColumn guards) agrega direccion_id nullable FK con nullOnDelete en cotizaciones, correo nullable en direcciones, cantidad_aprobada nullable unsignedInteger en cotizacion_referencia_proveedores; down() revierte las 3 en orden inverso. Modelos actualizados consistentemente (fillable, casts, relacion belongsTo Direccion en Cotizacion, docblocks @property). Gates: pint PASS en los 4 archivos; pest --filter=Cotizacion 31/31 OK (exit 0; aparecen como DEPR por un deprecation preexistente de PHP 8.4 'rtrim(): Passing null' ajeno a este cambio, no bloqueante). RefreshDatabase recreo el esquema completo con la nueva migracion sin conflictos de FK, validando la migracion de punta a punta.",
       "files": [
-        {"path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php", "status": "validated"},
-        {"path": "heavy-api/app/Models/Cotizacion.php", "status": "validated"},
-        {"path": "heavy-api/app/Models/Direccion.php", "status": "validated"},
-        {"path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php", "status": "validated"}
+        {
+          "path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Cotizacion.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/Direccion.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Models/CotizacionReferenciaProveedor.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -50,13 +62,21 @@
       "description": "Backend (validacion): extender ApproveCotizacionRequest para aceptar, ademas de 'referencia_ids', un array 'cantidades' (mapa referencia_id => cantidad_aprobada) con regla por item: integer, min:1, y <= snapshot_cantidad de esa referencia_proveedor dentro de la cotizacion (regla custom, no Rule::exists generico); y un 'direccion_id' opcional, nullable, que debe existir en 'direcciones' y pertenecer al mismo tercero_id de la cotizacion (para evitar asignar el perfil de despacho de otro cliente). CotizacionController::approve() debe leer estos campos validados y pasarlos a CotizacionService::aprobar() (solo wiring de parametros, sin logica de recalculo aqui).",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["cotizacion-aprobacion-schema-backend"],
+      "depends_on": [
+        "cotizacion-aprobacion-schema-backend"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. ApproveCotizacionRequest ahora valida 'cantidades' (mapa referencia_id->cantidad, integer min:1) y, en withValidator()->after(), cada cantidad contra snapshot_cantidad real de esa referencia dentro de la cotizacion (rechaza exceder lo cotizado); 'direccion_id' opcional valida pertenencia al tercero_id de la cotizacion via Rule::exists con where. Controller solo hace wiring: pasa cantidades/direccion_id a CotizacionService::aprobar() (los parametros extra son ignorados por PHP hasta que el nodo siguiente amplie la firma del servicio, por eso el comportamiento actual no cambia todavia). Gates: pint PASS en los 2 archivos; pest --filter=Cotizacion 31/31 OK (mismas DEPR preexistentes ya documentadas en el nodo schema-backend).",
       "files": [
-        {"path": "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Requests/ApproveCotizacionRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/CotizacionController.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -64,15 +84,29 @@
       "description": "Backend (logica): CotizacionService::aprobar() debe aceptar ademas '?array $cantidadesAprobadas' (referencia_id => cantidad) y '?int $direccionId'. Al marcar cada item como 'Aprobada', fijar 'cantidad_aprobada' = cantidad enviada o snapshot_cantidad si no se envio, y recalcular 'snapshot_valor_total' = snapshot_valor_unidad * cantidad_aprobada (nunca confiar en un total calculado en el frontend). Asignar 'cotizacion.direccion_id' = $direccionId si viene. calcularTotalItemsAprobados() debe sumar los snapshot_valor_total ya recalculados (no requiere cambio de formula, solo que los datos que suma ya reflejen la cantidad aprobada). Exponer en CotizacionResource y CotizacionReferenciaProveedorResource los campos nuevos: 'cantidad_aprobada', y la relacion 'direccion' (whenLoaded) en CotizacionResource.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["cotizacion-aprobacion-validacion-request"],
+      "depends_on": [
+        "cotizacion-aprobacion-validacion-request"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. CotizacionService::aprobar() amplio su firma (cantidadesAprobadas, direccionId) sin romper llamadas existentes (parametros opcionales). Al aprobar cada item, si se envio cantidad se clampa entre 1 y snapshot_cantidad (defensa en el service, no solo en el FormRequest) y se persiste cantidad_aprobada + snapshot_valor_total recalculado (valor_unidad * cantidad_aprobada, nunca confiando en un total del frontend); direccion_id se asigna solo si vino en el request. calcularTotalItemsAprobados() no cambio de formula, solo ahora suma datos ya recalculados. Resources expuestos: cantidad_aprobada en CotizacionReferenciaProveedorResource, direccion_id + relacion direccion (via DireccionResource existente, reusado) en CotizacionResource. Se agregaron 4 tests Feature nuevos (cantidad editable + recalculo, limite de cantidad excedido, asignacion de direccion, direccion de otro tercero rechazada), los 4 en verde. Gates: pint PASS en los 4 archivos; pest --filter=Cotizacion 17/17 OK; suite completa 558/558 OK (23 passed + 535 deprecated preexistentes, sin fallos, mismo deprecation de PHP 8.4 ya documentado en nodos previos).",
       "files": [
-        {"path": "heavy-api/app/Services/CotizacionService.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Resources/CotizacionResource.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/CotizacionControllerTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Services/CotizacionService.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/CotizacionResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/CotizacionReferenciaProveedorResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/CotizacionControllerTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -80,14 +114,25 @@
       "description": "Frontend: en heavy-front/src/app/features/cotizaciones/detail/detail.component.ts, dentro de la tabla de 'Seleccione las referencias aprobadas' (zona ~linea 375-420), reemplazar el texto estatico de cantidad (snapshot_cantidad) por un input numerico editable por item, acotado entre 1 y snapshot_cantidad original (no permitir mas de lo cotizado). Mantener un signal/map de cantidades editadas por referencia_id. Con 'computed()', recalcular en tiempo real: valor total por item (valor_unidad * cantidad editada), subtotal de items seleccionados, impuestos (reusar formula de IVA ya usada en otras vistas de cotizacion) y gran total. Actualizar cotizacion.model.ts para incluir 'cantidad_aprobada' en la interfaz de referencia, y cotizacion.service.ts para que approve() envie el mapa 'cantidades' en el payload junto a 'referencia_ids'.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["cotizacion-aprobacion-servicio-recalculo"],
+      "depends_on": [
+        "cotizacion-aprobacion-servicio-recalculo"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. En el dialogo de aprobacion de detail.component.ts, la columna de cantidad ahora es un p-inputNumber (con botones +/-) acotado entre 1 y la cantidad cotizada original (snapshot_cantidad), deshabilitado si el item no esta seleccionado; se agrego columna de valor unitario; el total por fila y el resumen (subtotal/IVA 19%/gran total) se recalculan via computed signals (subtotalAprobado, impuestoAprobado, granTotalAprobado) a partir de un nuevo signal cantidadesEditadas inicializado en onApprove() con la cantidad maxima de cada item. confirmApproveSelected() envia el mapa 'cantidades' junto a referencia_ids al approve() existente (cotizacion.service.ts no requirio cambios: approve() ya reenvia cualquier payload generico, verificado en codigo). Se preservaron sin tocar las funciones puras existentes calcularTotalReferenciasCotizacion/calcularResumenAprobacionCotizacion (usadas por el resumen post-aprobacion ya persistido) y se agregaron 4 funciones puras nuevas exportadas con sus propios tests: cotizacionReferenciaCantidadMaxima, cotizacionReferenciaValorUnitario, calcularTotalReferenciasConCantidadesEditadas, calcularImpuestoCotizacion. Checklist Angular: no_any no aplica (helpers tipados con CotizacionReferenciaProveedor), signal_syntax OK (computed/signal, sin EventEmitter), estilos con Tailwind + variables PrimeNG (sin PrimeFlex), p-inputNumber/p-divider como componentes. Gates: ng build OK (unico warning preexistente de pusher-js no ESM, ajeno); vitest del spec 7/7 OK, suite completa 198/198 (25 archivos) OK; lint no ejecutable (eslint.config.js con sintaxis legacy, mismo problema preexistente ya documentado en el nodo #175, no bloqueante).",
       "files": [
-        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/core/models/cotizacion.model.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -95,16 +140,27 @@
       "description": "Frontend: en la misma vista de aprobacion (detail.component.ts), agregar un selector de 'Perfil de Despacho' (direcciones) del tercero de la cotizacion via DireccionService.getAll({tercero_id}), con opcion de crear una nueva direccion inline (formulario compacto con Tailwind, no PrimeFlex) con destinatario/nit_cc/transportadora/forma_pago/direccion/telefono/correo/ciudad_texto, usando DireccionService.create() y TransportadoraService para el dropdown de transportadoras. Agregar 'correo' a direccion.model.ts (Direccion/CreateDireccionDto/UpdateDireccionDto). Al aprobar, enviar 'direccion_id' seleccionado en el payload de approve(). Cierra el issue GitHub #179.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["cotizacion-aprobacion-frontend-cantidad-editable"],
+      "depends_on": [
+        "cotizacion-aprobacion-frontend-cantidad-editable"
+      ],
       "topic_key": "biz/roles",
       "github_issue": 179,
       "deployed": true,
       "client_summary": "Al aprobar una cotización ahora es posible editar la cantidad de cada ítem (sin superar lo cotizado), viendo el recálculo inmediato de valores e impuestos, y asignar o crear en el momento el perfil de despacho (destinatario, dirección, transportadora, forma de pago, teléfono, correo y ciudad) que usará logística para el envío.",
       "review_notes": "Aprobado. Se agrego seccion 'Perfil de despacho' en el dialogo de aprobacion de detail.component.ts: un p-select con las direcciones del tercero (cargadas via DireccionService.getAll({tercero_id}) al abrir el dialogo) con templates custom item/selectedItem (direccionLabel()), y un formulario inline alternable (Tailwind grid, sin PrimeFlex, patron class=field de AGENTS.md) para crear una nueva direccion sin salir de la pantalla, con destinatario/nit_cc/transportadora(p-select via TransportadoraService)/forma_pago/direccion/telefono/correo/ciudad_texto; al guardar, DireccionService.create() inserta y selecciona automaticamente el nuevo perfil. confirmApproveSelected() ahora envia 'direccion_id' en el payload de approve(). Se agrego 'correo' a Direccion/CreateDireccionDto/UpdateDireccionDto en direccion.model.ts, y 'direccion_id'/'direccion' a Cotizacion y ApproveCotizacionDto en cotizacion.model.ts. Checklist Angular: ngModel aceptable para formulario inline simple (regla 5 de heavy-front/AGENTS.md), sin EventEmitter, Tailwind + variables PrimeNG, sin PrimeFlex (a diferencia del CRUD legacy de features/direcciones/create que si usa clases PrimeFlex como deuda preexistente, no se replico ese patron). Gates: ng build OK (mismo warning preexistente de pusher-js); vitest spec 7/7 OK, suite completa 198/198 (25 archivos) OK; lint no ejecutable (mismo problema preexistente del eslint.config.js ya documentado). Cierra GitHub #179 (push y cierre del issue pendientes de que el usuario lo solicite explicitamente).",
       "files": [
-        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/core/models/direccion.model.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/core/models/cotizacion.model.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/direccion.model.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/models/cotizacion.model.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -117,9 +173,18 @@
       "github_issue": null,
       "review_notes": "Aprobado. Nuevo componente standalone con p-table (mismo patron que ordenes-compra-list.component.ts): filtro de estado, agrupa filas via funcion pura exportada agruparOportunidadesPorPedido (testeada: agrupa por pedido_id contando items, resuelve maquina 'marca modelo' o fallback, ordena por pedido mas reciente primero, ignora filas sin pedido_id resoluble). Boton 'Costear' navega a /provider/opportunities/:pedidoId con status como query param. provider-portal.routes.ts: 'opportunities' ahora carga el listado, se agrego 'opportunities/:pedidoId' para el componente de edicion existente (se ajusta en el nodo siguiente para leer el parametro). Checklist Angular: sin any explicito salvo el tipo de error generico ya usado en el resto del proveedor-portal, signal/computed, sin EventEmitter. Gates: ng build OK (mismo warning preexistente pusher-js); vitest 2/2 OK en el nuevo spec.",
       "files": [
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/provider-portal.routes.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/provider-portal.routes.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -127,15 +192,23 @@
       "description": "Frontend: ajustar CostingOpportunitiesComponent (costing-opportunities.component.ts/.html) para leer ':pedidoId' y 'status' (query param) de ActivatedRoute al iniciar, fijando activePedidoId/activeStatus automaticamente en vez de requerir seleccion manual. Eliminar del template el selector 'Pedido' (ya no aplica, se llega desde la lista con un pedido ya elegido) y el selector de 'Estado de ofertas' si el status llega por query param; agregar un boton 'Volver a oportunidades' que navegue a /provider/opportunities. Cierra GitHub #173.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["costeo-proveedor-oportunidades-lista"],
+      "depends_on": [
+        "costeo-proveedor-oportunidades-lista"
+      ],
       "topic_key": "biz/roles",
       "github_issue": 173,
       "deployed": true,
       "client_summary": "Al entrar a Oportunidades de Costeo, ahora se muestra primero una tabla con los pedidos pendientes de costeo, cada uno con un botón para abrir y cotizar sus ítems de forma ordenada, en vez de tener que buscarlos en un único listado mezclado.",
       "review_notes": "Aprobado. CostingOpportunitiesComponent ahora lee ':pedidoId' (route param) y 'status' (query param) en ngOnInit para fijar activePedidoId/activeStatus automaticamente -- la condicion existente en loadOpportunities() que preserva activePedidoId si sigue en la lista de pedidoIds cargados ya cubre que el valor de la ruta se mantenga tras la carga, sin tocar esa logica. Se eliminaron del template los selectores 'Estado de ofertas' y 'Pedido' (y sus miembros ahora muertos: estadoOptions, pedidosDisponibles, onStatusChange, onPedidoChange) ya que ahora se llega con ambos valores resueltos desde la lista. Se agrego boton 'Volver a oportunidades' en el header y en el estado vacio (usando p-button existente, no se introdujo ninguna clase CSS nueva). Checklist Angular: sin EventEmitter, Tailwind + PrimeNG, sin PrimeFlex. Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 200/200 (26 archivos) OK, sin regresiones.",
       "files": [
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.html",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -150,10 +223,22 @@
       "client_summary": "En el módulo de costeo del proveedor, el total ahora incluye el valor real del flete para proveedores internacionales (antes siempre aparecía en cero), calculado con el peso de los artículos y la tarifa configurada para el país del proveedor.",
       "review_notes": "Aprobado. Backend: ProviderPortalController::opportunities() agrega 'flete' => (float)($tercero->country?->flete ?? 0) al objeto 'provider' en ambas ramas (pending y sent/approved); nuevo test test_provider_payload_includes_country_freight_rate_in_pending_and_sent_status verifica ambas. Frontend: providerInfo amplia su tipo con 'flete: number'; calcularFletes() delega en nueva funcion pura exportada calcularFletesSeleccion(filas, providerInfo) que replica la formula del asesor (peso_kg*2.20462*cantidad*tarifa_pais, 0 si es_nacional), con 3 tests cubriendo nacional=0, calculo internacional multi-fila y valores ausentes/invalidos=0. No se tocó el HTML (el campo Fletes y calcularTotal() ya sumaban subtotal+impuestos+fletes). Checklist backend: sin logica de negocio filtrada al controller (solo agrega un campo al payload), sin fugas de persistencia. Gates: pint PASS (2 archivos backend, tras corregir un uso de clase fully-qualified inline en el test nuevo); pest del archivo 18/18 OK, suite completa backend 559/559 OK; ng build OK; vitest 3/3 en el spec nuevo, suite completa frontend 203/203 (27 archivos) OK.",
       "files": [
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.spec.ts", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderPortalController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderPortalControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities.component.spec.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -168,8 +253,14 @@
       "client_summary": "En el costeo de pedidos, ahora siempre se muestra el nombre del proveedor que envió una cotización para cada artículo, incluso cuando ese proveedor no está configurado dentro de la categoría o marca habitual de ese artículo en particular.",
       "review_notes": "Aprobado. Root cause confirmada: getProveedoresFiltrados(refIndex) devuelve una lista de opciones compartida por TODAS las filas de proveedor de esa referencia ([options] en costeo.html se indexa solo por refIndex); cuando filtra por marca/categoria comercial, un proveedor ya asignado (proveedor_id ya seteado, tipicamente porque cotizo desde el Portal de Proveedores) puede quedar fuera de esa lista filtrada para esa fila en particular, y PrimeNG no puede resolver su label aunque el dato este bien guardado -- el selector se ve vacio. Fix: nueva funcion pura exportada agregarProveedoresAsignadosFaltantes(opcionesFiltradas, proveedoresCompletos, idsAsignados) que agrega al final cualquier proveedor ya asignado en el FormArray que no haya pasado el filtro; getProveedoresFiltrados ahora la aplica antes de retornar. La rama sin filtro (!marcaId || categoriaComercialIds.length===0) no se tocó porque ya retorna this.proveedores() completo (mismo catalogo que proveedoresCompletos(), confirmado en loadProveedores()), por lo que nunca tuvo el bug. 3 tests nuevos cubren: no-modifica si ya esta presente, agrega el proveedor faltante preservando el orden, ignora ids null/undefined/sin match. Checklist: logica pura sin UI nueva (required_skill null correcto), sin any nuevo mas alla del que ya tenia el archivo. Gates: ng build OK; vitest costeo.spec.ts 9/9 OK, suite completa frontend 206/206 (27 archivos) OK.",
       "files": [
-        {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/costeo/costeo.spec.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -184,10 +275,22 @@
       "client_summary": "Ahora cada usuario solo puede iniciar sesión por el portal que le corresponde: los empleados (asesores, analistas, logística, administración) ya no pueden entrar por el portal de clientes, y los clientes no pueden entrar por el acceso interno de la empresa. Esto evita que alguien quede con dos sesiones abiertas a la vez sin darse cuenta, que era la causa real de que pareciera que la sesión de logística no se podía cerrar.",
       "review_notes": "Aprobado. Se replico exactamente el patron de validacion que ya tenia ProviderAuthController::login (hasRole check -> 403 antes de emitir el token), que no estaba aplicado en los otros dos logins: AuthController::login (app) ahora rechaza si hasRole('Cliente') o hasRole('Proveedor'); ClientAuthController::login (landing) ahora rechaza si !hasRole('Cliente'). No se tocaron registros (register) porque esos crean usuarios nuevos con el rol correcto asignado automaticamente, no tienen el problema de cruce. No se requirieron cambios de frontend: login.component.ts y auth-modal.component.ts ya muestran 'error.error.message' del backend genericamente -- verificado en codigo antes de descartar el cambio. 6 tests nuevos (2 en AuthTest.php, 4 en nuevo ClientAuthControllerTest.php) cubren: Cliente/Proveedor rechazados en login de app, Cliente aceptado/Logistica y Proveedor rechazados en login de landing, usuario sin rol rechazado en landing. Gates: pint PASS (4 archivos); pest de los archivos tocados 16/16 OK; suite completa backend 565/565 OK, sin regresiones (el test preexistente 'permite login con credenciales correctas' usa un User sin roles, no se ve afectado por el nuevo check).",
       "files": [
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/AuthTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -200,11 +303,26 @@
       "github_issue": null,
       "review_notes": "Aprobado. authorize() ya no depende de una Policy inexistente; se replico el patron exacto de StoreTerceroRequest (hasAnyRole con Vendedor incluido). UpdateDireccionRequest nuevo centraliza la misma regla (antes el controller validaba inline sin ningun authorize, cualquier usuario autenticado podia editar cualquier direccion). correo validado como email nullable en ambos requests y expuesto en el Resource. forma_pago usa Rule::in con los 2 valores exactos del issue. 9 tests nuevos en DireccionControllerTest.php cubren: correo persistido y expuesto, Vendedor puede crear (regresion #179), Logistica rechazado con 403 en create y en update, forma_pago invalido rechazado con 422 y valido aceptado. Gates: pint PASS (5 archivos); pest DireccionControllerTest 14/14 OK, Cotizacion* 35/35 OK (sin romper el uso de DireccionResource en CotizacionResource.direccion de #179).",
       "files": [
-        {"path": "heavy-api/app/Http/Requests/StoreDireccionRequest.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Requests/UpdateDireccionRequest.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/DireccionController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Resources/DireccionResource.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/DireccionControllerTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Requests/StoreDireccionRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateDireccionRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/DireccionController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Resources/DireccionResource.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/DireccionControllerTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -212,15 +330,29 @@
       "description": "Backend: TerceroController::store() y update() deben aceptar un array 'direcciones' y crearlas/sincronizarlas, replicando exactamente el patron ya usado para 'contactos' (store: foreach + $tercero->direcciones()->create(); update: diff por id -- borrar las que no vienen, actualizar las que traen id, crear las nuevas). Agregar validacion 'direcciones.*' en StoreTerceroRequest/UpdateTerceroRequest (destinatario/nit_cc/transportadora_id/forma_pago con Rule::in/direccion/telefono/correo/ciudad_texto, todo nullable, nada obligatorio) + 'direcciones.*.id' en Update (exists:direcciones,id). Agregar 'direcciones' al eager-load de las respuestas de store/update (hoy update() carga ['contactos','maquinas','fabricantes','sistemas','categoriasComerciales'] sin 'direcciones'; store() tampoco) para que el frontend reciba los perfiles recien creados sin tener que recargar.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["direccion-request-layer-hardening"],
+      "depends_on": [
+        "direccion-request-layer-hardening"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. store()/update() manejan 'direcciones' con el mismo patron exacto que 'contactos': store crea cada perfil via $tercero->direcciones()->create(); update hace diff por id (borra los que no vienen, actualiza los que traen id, crea los nuevos). Validacion en Store/UpdateTerceroRequest reusa Rule::in(['Al cobro','Pagamos']) para forma_pago y valida correo como email, todo nullable (nada obligatorio, cumple el requisito explicito del issue). 'direcciones' se agrego al eager-load de las respuestas JSON de store y update (antes solo show() lo cargaba). 3 tests nuevos en TerceroTest.php: crear tercero con perfiles, rechazar forma_pago invalida, actualizar (agregar+editar+eliminar) perfiles existentes. Gates: pint PASS (3 archivos); pest TerceroTest 20/20 OK, sin regresiones en los 17 tests preexistentes.",
       "files": [
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/TerceroTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/TerceroController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/StoreTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Requests/UpdateTerceroRequest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/TerceroTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -228,15 +360,23 @@
       "description": "Frontend: integrar 'Perfiles de Despacho' como paso 3 (indice 3, despues de Contactos) en el wizard de tercero-form.component.ts/.html, desplazando 'Documentos' al indice 4. FormArray 'direcciones' con destinatario/nit_cc/transportadora_id(p-select de TransportadoraService + boton '+' que abre un dialogo minimo para crear una transportadora nueva con solo el nombre, requerido por CreateTransportadoraDto)/forma_pago(p-select con las 2 opciones exactas 'Al cobro'/'Pagamos')/direccion/telefono/correo/ciudad_texto. Ningun campo obligatorio (isStepValid/markStepAsTouched no necesitan tocarse: el fallback 'return true' para pasos sin reglas explicitas ya cubre el nuevo paso y el desplazado). Cargar perfiles existentes en patchForm() (data.direcciones, ya viene de TerceroController::show() que eager-carga 'direcciones' y TerceroResource ya lo expone) y enviarlos en el payload de FormData como direcciones[i][...] (solo si direccion.direccion tiene valor, mismo criterio que contactos con nombre). Cierra GitHub #172.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["tercero-direcciones-backend"],
+      "depends_on": [
+        "tercero-direcciones-backend"
+      ],
       "topic_key": "biz/roles",
       "github_issue": 172,
       "deployed": true,
       "client_summary": "Al crear o editar un tercero, ahora aparece un nuevo paso llamado \"Perfiles de Despacho\" (justo después de Contactos) donde se pueden registrar uno o varios destinos de envío con destinatario, NIT/CC, transportadora, forma de pago del flete, dirección, teléfono, correo y ciudad. La transportadora se puede crear sin salir de la pantalla si todavía no existe en el sistema. Ningún campo es obligatorio.",
       "review_notes": "Aprobado. Nuevo paso 'Perfiles de Despacho' insertado en indice 3 del wizard (Documentos pasa a indice 4); isStepValid/markStepAsTouched no requirieron cambios porque su fallback 'return true' ya cubre pasos sin reglas explicitas, consistente con que ningun campo de este paso es obligatorio (requisito explicito del issue). FormArray 'direcciones' sigue el mismo patron que 'contactos' (addDireccionDespacho/removeDireccionDespacho, carga en patchForm desde data.direcciones, reset en resetForm, payload FormData direcciones[i][...] gateado por que direccion.direccion tenga valor). Transportadora: p-select cargado via TransportadoraService + dialogo minimo (solo nombre, unico campo requerido por CreateTransportadoraDto) para crear una nueva sin salir del wizard, seleccionandola automaticamente al crearla. forma_pago reutiliza la constante exportada FORMAS_PAGO_FLETE (Al cobro/Pagamos) para no duplicar los valores permitidos. Se agrego FormsModule a los imports del componente (requerido por el ngModel del dialogo de nueva transportadora; el resto del formulario sigue siendo ReactiveForms). No se agregaron tests unitarios: no existe spec para tercero-form.component.ts ni para el patron equivalente 'contactos' ya en produccion, consistente con el house style existente -- verificacion manual visual pendiente (fuera de alcance automatizable). Gates: ng build OK (mismo warning preexistente pusher-js); vitest suite completa 206/206 (27 archivos) OK, sin regresiones.",
       "files": [
-        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -244,13 +384,21 @@
       "description": "Frontend: el modulo standalone de Direcciones (features/direcciones/create y edit) no tiene campo de transportadora en absoluto, ni correo, y forma_pago es texto libre -- inconsistente con el modelo Direccion y con el nuevo paso del wizard. Agregar los mismos 3 campos (transportadora select via TransportadoraService, correo input, forma_pago select reusando la constante exportada FORMAS_PAGO_FLETE de tercero-form.component.ts) a create.component.ts y edit.component.ts, siguiendo el patron visual ya usado ahi (p-select, pInputText).",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["tercero-wizard-perfiles-despacho-frontend"],
+      "depends_on": [
+        "tercero-wizard-perfiles-despacho-frontend"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. create.component.ts y edit.component.ts ahora tienen los mismos 3 campos agregados al wizard: transportadora (p-select via TransportadoraService), correo (input email con validacion) y forma_pago (p-select reusando FORMAS_PAGO_FLETE exportada de tercero-form.component.ts, en vez de texto libre). Se actualizaron los DTOs construidos manualmente en onSubmit() en ambos componentes para incluir los 2 campos nuevos (transportadora_id, correo) que antes no se enviaban en absoluto. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK.",
       "files": [
-        {"path": "heavy-front/src/app/features/direcciones/create/create.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/direcciones/edit/edit.component.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/direcciones/create/create.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/direcciones/edit/edit.component.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -265,7 +413,10 @@
       "client_summary": "Se eliminó el botón de editar en la vista de detalle de cotizaciones, ya que no corresponde modificar una cotización formal desde ahí.",
       "review_notes": "Aprobado. Se elimino el boton Editar (unico caller de onEdit(), confirmado por grep) y el metodo ahora muerto. El resto del bloque condicional 'estado !== Anulada' (Rechazar/Aprobar/Descargar PDF) queda intacto. this.router sigue usado por otro metodo, sin inyeccion huerfana. No se toco backend (CotizacionPolicy::update ya tenia logica de estado correcta) ni se elimino la ruta /cotizaciones/:id/edit (fuera del alcance literal del issue, queda protegida por la policy existente). Gates: ng build OK; vitest spec 7/7 OK.",
       "files": [
-        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -280,7 +431,10 @@
       "client_summary": "Se eliminó el botón de editar en la vista de detalle de órdenes de compra, ya que no corresponde modificar una orden formal desde ahí una vez generada.",
       "review_notes": "Aprobado con alcance reducido respecto a lo planificado: se elimino el boton Editar y el metodo onEdit() ahora muerto (unico caller, confirmado por grep), igual que #177. Se evaluo endurecer OrdenCompraPolicy::update() en backend pero se descarto al encontrar OrdenCompraTest.php::'permite actualizar una orden de compra y sus referencias', un test real y pasante que ejercita ese mismo endpoint para reemplazar referencias y cambiar estado -- es funcionalidad deliberada, no un hueco accidental, y el issue solo pide quitar el boton (alcance frontend). No se toco ningun archivo backend. this.router sigue usado por otro metodo, sin inyeccion huerfana. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones; pest no se re-ejecuto porque no hubo cambios backend en este nodo.",
       "files": [
-        {"path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/detail/detail.component.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -288,13 +442,22 @@
       "description": "Correccion sobre #177 y #176: el usuario probo manualmente y encontro que el boton Editar seguia presente en las vistas de LISTADO de cotizaciones y ordenes de compra -- los nodos anteriores solo revisaron la vista de detalle (grep se limito a los archivos detail.component.ts, sin verificar list.component.ts de cada modulo). Se elimina el boton 'Editar' (icono pi-pencil) y el metodo ahora sin uso (onEditCotizacion/onEditOrdenCompra) de heavy-front/src/app/features/cotizaciones/list/list.component.ts y heavy-front/src/app/features/ordenes-compra/list/list.component.ts, mismo criterio que en el detalle: sin restriccion de estado en ninguno de los dos listados (estaban siempre visibles), unico caller confirmado por grep en ambos.",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["cotizacion-quitar-boton-editar", "orden-compra-quitar-boton-editar"],
+      "depends_on": [
+        "cotizacion-quitar-boton-editar",
+        "orden-compra-quitar-boton-editar"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. Se elimino el boton Editar y el metodo asociado (onEditCotizacion/onEditOrdenCompra, unico caller cada uno) en ambos listados, mismo alcance que el detalle (solo frontend, sin tocar backend). Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones.",
       "files": [
-        {"path": "heavy-front/src/app/features/cotizaciones/list/list.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/list/list.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/ordenes-compra/list/list.component.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -307,13 +470,34 @@
       "github_issue": null,
       "review_notes": "Aprobado. Creada App\\Support\\RolesInternos::LISTA como fuente unica de los 8 roles internos. AuthController::login: la condicion de rechazo ahora es (tiene Cliente o Proveedor) Y (no tiene ningun rol interno) -- permite correctamente a un super_admin+Cliente usar la app. ClientAuthController/ProviderAuthController::login: la condicion de rechazo ahora incluye 'tiene cualquier rol interno' con OR, ademas del chequeo de rol externo -- rechaza correctamente a un super_admin+Cliente/Proveedor en los portales externos. 3 tests nuevos (uno por controlador) cubren exactamente el escenario de doble rol reportado por el usuario con su propia cuenta. Gates: pint PASS (7 archivos); pest de los 3 archivos de auth 22/22 OK; suite completa backend 576/576 OK, sin regresiones.",
       "files": [
-        {"path": "heavy-api/app/Support/RolesInternos.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ProviderAuthController.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ProviderAuthControllerTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Support/RolesInternos.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ProviderAuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/AuthTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ProviderAuthControllerTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -321,13 +505,21 @@
       "description": "Backend: ClientAuthController::login rechazaba a cualquier usuario sin rol Cliente, pero el modal de login de la landing es compartido por Cliente y Proveedor (confirmado: no existe un link separado a /auth/provider/login en auth-modal.component.ts/navbar.ts de la landing, solo la pagina dedicada /auth/provider/login la usa via ProviderAuthService). Se corrige la condicion a hasAnyRole(['Cliente','Proveedor']) en vez de hasRole('Cliente'), manteniendo que un rol interno (RolesInternos::LISTA) siempre bloquea el acceso sin importar los roles externos que tenga. Se actualiza el test que antes esperaba 403 para un Proveedor en la landing (comportamiento incorrecto) para esperar 200, y se agrega un test de doble rol super_admin+Proveedor.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["auth-login-doble-rol-interno-gana"],
+      "depends_on": [
+        "auth-login-doble-rol-interno-gana"
+      ],
       "topic_key": "bugfix/logistica-cerrar-sesion",
       "github_issue": null,
       "review_notes": "Aprobado. Corrige una regresion introducida por el nodo anterior (auth-login-doble-rol-interno-gana): ese fix habia restringido el modal compartido de la landing a solo Cliente, bloqueando proveedores legitimos. Ahora acepta Cliente o Proveedor, rechazando solo si tiene algun rol interno o ninguno de los dos externos. Test 'rechaza login a un proveedor desde la landing de clientes' (comportamiento incorrecto) se convirtio en 'permite login a un proveedor desde el mismo modal compartido de la landing' (200 esperado); se agrego test de doble rol super_admin+Proveedor (403 esperado). Gates: pint PASS (2 archivos); pest ClientAuthControllerTest 6/6 OK; suite completa backend pendiente de confirmar en este mismo turno.",
       "files": [
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -342,7 +534,10 @@
       "client_summary": "En la ventana de aprobación de cotizaciones, el campo de cantidad por ítem (con los botones + y -) ahora responde correctamente al hacer clic o escribir un número, en vez de quedarse en el valor original.",
       "review_notes": "Aprobado con salvedad: no se pudo reproducir el bug en navegador (sin herramienta de browser en este entorno) ni confirmar la causa raiz exacta dentro del codigo fuente de HeavyMarket -- se investigo el bundle compilado de PrimeNG (updateModel/writeControlValue/spin en primeng-inputnumber.mjs) sin hallazgo concluyente. Se opto por eliminar la superficie del problema reemplazando el componente por un input nativo + botones bajo control total del propio codigo, un patron mucho mas simple y predecible (eventos DOM nativos (click)/(input), sin ControlValueAccessor de por medio) que no deberia poder fallar de la misma manera. Pendiente de que el usuario confirme en su prueba manual que el stepper responde correctamente. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK, sin regresiones en el spec existente del componente.",
       "files": [
-        {"path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/cotizaciones/detail/detail.component.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -355,9 +550,18 @@
       "github_issue": null,
       "review_notes": "Aprobado. Se añadió default-mysql-client a heavy-api/Dockerfile para asegurar la presencia de mysqldump en el contenedor Debian de PHP 8.4 y se instaló spatie/laravel-backup (^10.3) con composer en heavy-api.",
       "files": [
-        {"path": "heavy-api/Dockerfile", "status": "validated"},
-        {"path": "heavy-api/composer.json", "status": "validated"},
-        {"path": "heavy-api/composer.lock", "status": "validated"}
+        {
+          "path": "heavy-api/Dockerfile",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/composer.json",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/composer.lock",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -365,14 +569,24 @@
       "description": "Backend (Laravel): publicar y ajustar config/backup.php para respaldo exclusivo de MySQL con retención estricta de días (7 días) y límite máximo en MB para proteger el disco. Programar backup:run --only-db y backup:clean en routes/console.php, e ignorar directorio de backups en gitignore.",
       "status": "done",
       "required_skill": "software_architect",
-      "depends_on": ["backup-db-docker-client-setup"],
+      "depends_on": [
+        "backup-db-docker-client-setup"
+      ],
       "topic_key": "arch/heavy-api-logic",
       "github_issue": null,
       "review_notes": "Aprobado. Se configuró config/backup.php con GzipCompressor, política de retención estricta de 7 días (keep_all_backups_for_days=7, keep_daily_backups_for_days=7, weekly/monthly/yearly=0) y límite de disco de 2000 MB. Programado backup:run --only-db a la 01:00 y backup:clean a las 02:00 en routes/console.php. Ignorado directorio de backups en .gitignore. Gates: Pint PASS en config/backup.php y routes/console.php; ejecución real de backup:run --only-db completada con éxito (3.24 MB), backup:clean verificado y tests feature pasando.",
       "files": [
-        {"path": "heavy-api/config/backup.php", "status": "validated"},
-        {"path": "heavy-api/routes/console.php", "status": "validated"},
-        {".gitignore": "validated"}
+        {
+          "path": "heavy-api/config/backup.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/routes/console.php",
+          "status": "validated"
+        },
+        {
+          ".gitignore": "validated"
+        }
       ]
     },
     {
@@ -385,10 +599,22 @@
       "github_issue": null,
       "review_notes": "Aprobado. scripts/dev-migrate.sh creado y probado (detecta pendientes, migra, re-verifica). AGENTS.md actualizado con el gate 'Migraciones' obligatorio y una nota explicando por que Pest no es suficiente. Ambas migraciones (2026_10_04_000001 corregida + 2026_10_06_000001 nueva) corrieron exitosamente contra la base de datos real de desarrollo, confirmado por consulta directa de columnas via tinker. Pint PASS en ambos archivos de migracion. Nota: la corrida completa de pest en este momento muestra fallos masivos no relacionados (InvalidConfig de spatie/laravel-backup, vendor/spatie/laravel-backup/src/Exceptions/InvalidConfig.php) causados por el trabajo EN CURSO de otra sesion concurrente en este mismo repo (nodos backup-db-* de este mismo dag.json, config/backup.php aun sin terminar) -- no relacionado con este nodo; se confirmo corriendo los archivos de test especificos de este trabajo (DireccionControllerTest, TerceroTest) de forma aislada antes de que esa contaminacion apareciera, ambos en verde.",
       "files": [
-        {"path": "scripts/dev-migrate.sh", "status": "validated"},
-        {"path": "AGENTS.md", "status": "validated"},
-        {"path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php", "status": "validated"},
-        {"path": "heavy-api/database/migrations/2026_10_06_000001_asegurar_columnas_perfil_despacho_en_direcciones.php", "status": "validated"}
+        {
+          "path": "scripts/dev-migrate.sh",
+          "status": "validated"
+        },
+        {
+          "path": "AGENTS.md",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_10_04_000001_add_perfil_despacho_y_cantidad_aprobada_a_cotizaciones.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_10_06_000001_asegurar_columnas_perfil_despacho_en_direcciones.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -396,14 +622,25 @@
       "description": "Dos correcciones sobre #172, encontradas por el usuario y por verificacion manual contra la DB real tras el gap de migraciones del nodo anterior. (a) Malentendido de UX: el usuario aclaro que 'Perfiles de Despacho como paso 3 despues de Contactos' significa una SECCION dentro del mismo paso de Contactos (Seccion 1: Contactos, Seccion 2: Despachos), no un paso nuevo separado del wizard. Se revierte tercero-form.component.ts a 4 pasos (Informacion general, Ubicacion, Contactos, Documentos) y se fusiona el contenido de Perfiles de Despacho dentro del paso 'Contactos' como segunda seccion visual, con Documentos de vuelta en el indice 3. (b) Se encontro que 'direcciones' en la DB real tenia city_id/state_id/country_id como NOT NULL sin default (y como varchar, no bigint, otro desfase de esa tabla legacy) -- bloqueaba crear CUALQUIER perfil de despacho sin pais/departamento/ciudad formales, contradiciendo que ninguno de esos campos deba ser obligatorio (para eso existe 'ciudad_texto' como alternativa libre). Nueva migracion con SQL crudo (MODIFY COLUMN) los vuelve nullable; verificado con una insercion real de prueba en la DB de desarrollo (creada y luego eliminada).",
       "status": "done",
       "required_skill": "ui_ux_design_expert",
-      "depends_on": ["fix-migracion-real-dev-y-gate-obligatorio"],
+      "depends_on": [
+        "fix-migracion-real-dev-y-gate-obligatorio"
+      ],
       "topic_key": "biz/roles",
       "github_issue": null,
       "review_notes": "Aprobado. HTML: se fusionaron los bloques @if (activeIndex === 3) (Perfiles de Despacho) dentro de @if (activeIndex === 2) (Contactos) como 'Seccion 1'/'Seccion 2' con sus propios <div> de agrupacion visual (space-y-8 en el contenedor del paso); Documentos vuelve a activeIndex === 3. TS: steps[] vuelve a 4 elementos; isStepValid/markStepAsTouched no requirieron cambios (el paso 2 ya solo valida contactos.valid, direcciones sigue sin ningun campo obligatorio). Migracion 2026_10_06_000002 usa DB::statement con ALTER TABLE MODIFY crudo porque Blueprint::change() requiere doctrine/dbal, no instalado en el proyecto; probada contra la DB real creando y luego borrando una Direccion completa de prueba (incluyendo los 6 campos de despacho) para confirmar insert exitoso. Gates: ng build OK; vitest suite completa 206/206 (27 archivos) OK; pint PASS en la migracion nueva (con un auto-fix de import order); dev-migrate.sh confirma 0 pendientes tras aplicarla.",
       "files": [
-        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html", "status": "validated"},
-        {"path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/tercero-form/tercero-form.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -411,17 +648,37 @@
       "description": "Correccion de decision de producto sobre #182/#160: el usuario reconsidero y decidio que el login de la landing debe ser EXCLUSIVO de Cliente -- Proveedor no necesita entrar por ahi. Proveedor debe iniciar sesion desde la administracion (/auth/login), igual que los demas roles (Vendedor, Analista, Logistica, etc.), no desde un portal separado. Se revierte el cambio anterior que permitia Proveedor en ClientAuthController::login (vuelve a exigir hasRole('Cliente') exclusivamente) y se ajusta AuthController::login para que ya NO rechace a Proveedor (el unico rol externo que se sigue rechazando ahi es Cliente puro, sin rol interno ni Proveedor). Se revierte tambien un cambio especulativo que se habia hecho en el interceptor de auth (unificar clientToken/providerToken) y un link agregado al navbar de la landing, ambos innecesarios con la decision final: se confirmo que la ruta /provider/opportunities ya usa el mismo AppLayout y el mismo authGuard que la app interna (revisando app.routes.ts), por lo que un Proveedor logueado en /auth/login ya navega ahi sin configuracion adicional via el 'adminToken' que el interceptor ya prioriza primero.",
       "status": "done",
       "required_skill": null,
-      "depends_on": ["fix-login-doble-rol-interno-externo"],
+      "depends_on": [
+        "fix-login-doble-rol-interno-externo"
+      ],
       "topic_key": "bugfix/logistica-cerrar-sesion",
       "github_issue": null,
       "review_notes": "Aprobado. AuthController::login: nueva condicion esSoloCliente = hasRole('Cliente') && !hasRole('Proveedor') && !hasAnyRole(RolesInternos::LISTA) -- Proveedor (puro o con rol interno) ya no es rechazado. ClientAuthController::login: vuelve a exigir hasRole('Cliente') exclusivamente (mas el bloqueo de rol interno ya existente). auth.interceptor.ts y navbar.html revertidos a su estado previo (sin el merge de tokens ni el link condicional, que ya no aplican). Tests actualizados: AuthTest.php invierte 'rechaza login...Proveedor' a 'permite login...Proveedor'; ClientAuthControllerTest.php invierte 'permite login a un proveedor...' a 'rechaza login a un proveedor...'. Gates: pint PASS (4 archivos backend); pest de los 3 archivos de auth 23/23 OK; ng build OK; vitest suite completa 206/206 (27 archivos) OK.",
       "files": [
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php", "status": "validated"},
-        {"path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/AuthTest.php", "status": "validated"},
-        {"path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php", "status": "validated"},
-        {"path": "heavy-front/src/app/core/auth/interceptors/auth.interceptor.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/landing/components/navbar/navbar.html", "status": "validated"}
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/AuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/app/Http/Controllers/Api/V1/ClientAuthController.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/AuthTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-api/tests/Feature/Api/V1/ClientAuthControllerTest.php",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/core/auth/interceptors/auth.interceptor.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/landing/components/navbar/navbar.html",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -434,8 +691,14 @@
       "github_issue": null,
       "review_notes": "Aprobado. Renombrado 'cliente' -> 'vendedor' en la interface OportunidadCosteoPedidoResumen, en agruparOportunidadesPorPedido(), en el header de la tabla y en la celda del body. Se agrego un comentario explicando por que no es el cliente real y referenciando el componente compartido donde ese mismo campo ya se etiqueta correctamente. Spec actualizado con los nuevos nombres de campo. Gates: ng build OK; vitest spec 2/2 OK, suite completa 206/206 (27 archivos) OK.",
       "files": [
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts", "status": "validated"},
-        {"path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts", "status": "validated"}
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.ts",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/provider-portal/costing-opportunities/costing-opportunities-list.component.spec.ts",
+          "status": "validated"
+        }
       ]
     },
     {
@@ -443,13 +706,41 @@
       "description": "El push anterior rompio el CI de GitHub Actions (Heavy API - PHPUnit): QueryException en RecepcionCompraStockSyncTest y probablemente otros. Causa: el CI corre los tests contra SQLite en memoria (DB_CONNECTION=sqlite, ver .github/workflows/heavy-api-tests.yml), pero la migracion 2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php usaba DB::statement('ALTER TABLE ... MODIFY ...'), sintaxis exclusiva de MySQL que SQLite no soporta -- la migracion fallaba al ejecutarse durante el bootstrap de cualquier test. En SQLite (base fresca) esas columnas (city_id/state_id/country_id) ya nacen nullable desde la migracion original que crea 'direcciones' (unsignedBigInteger nullable), asi que el problema era exclusivamente de la base MySQL real local con esquema legacy -- la correccion no aplica ni hace falta en SQLite.",
       "status": "done",
       "required_skill": "sql_query_analyst",
-      "depends_on": ["fix-perfil-despacho-wizard-ubicacion-y-nullable"],
+      "depends_on": [
+        "fix-perfil-despacho-wizard-ubicacion-y-nullable"
+      ],
       "topic_key": "decision/harness-autopilot-roles",
       "github_issue": null,
       "review_notes": "Aprobado. Se agrego un guard temprano 'if (DB::connection()->getDriverName() !== \"mysql\") { return; }' al inicio de up() en la migracion, dejando el comportamiento en MySQL intacto. Verificado localmente reproduciendo el entorno exacto del CI (DB_CONNECTION=sqlite DB_DATABASE=:memory: APP_ENV=testing php artisan test), que antes del fix fallaba igual que en GitHub Actions y despues del fix pasa completo. Gates: pint PASS; suite completa backend bajo SQLite 577/577 OK (554 deprecated preexistentes, 23 passed, 0 fallos); no fue necesario volver a probar contra MySQL real porque el guard no modifica esa rama de codigo.",
       "files": [
-        {"path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php", "status": "validated"}
+        {
+          "path": "heavy-api/database/migrations/2026_10_06_000002_hacer_nullable_ubicacion_en_direcciones.php",
+          "status": "validated"
+        }
       ]
+    },
+    {
+      "id": "analysis-referencia-boton-copiar",
+      "description": "Frontend: en heavy-front/src/app/features/pedidos/analysis/ (analysis.html linea ~235-257, celda 'Referencia' de la fila de parte dentro del FormArray; analysis.ts), agregar un boton icono (p-button icon=\"pi pi-copy\" [text]=\"true\") junto al <p-select> de referencia_id en cada fila de la tabla de requerimientos. El boton debe: (1) estar deshabilitado/oculto si la fila no tiene referencia_id con valor; (2) al click, resolver el codigo de referencia de esa fila reusando el patron de busqueda ya existente en el componente (ver resolucion por value en getOpcionesReferenciaParaFila/listas de referencias ya cargadas) y llamar navigator.clipboard.writeText(codigo); (3) mostrar confirmacion con el MessageService ya inyectado en el componente (severity success, ej. 'Copiado'). No tocar el comportamiento interno del p-select (abrir/cerrar dropdown) para evitar romper la seleccion existente.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "github_issue": 169,
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        }
+      ],
+      "implementer_notes": "Agregado metodo copiarReferencia(itemIndex, parteIndex) en analysis.ts (junto a isReferenciaTemporal): resuelve el codigo via getOpcionesReferenciaParaFila(itemIndex).find(r => r.value === refId)?.label (mismo catalogo que alimenta el p-select, garantiza que el texto copiado coincide exactamente con lo mostrado) y usa navigator.clipboard.writeText con toast success/error via el MessageService ya inyectado. En analysis.html se agrego un <p-button icon=\"pi pi-copy\" [rounded]=\"true\" [text]=\"true\"> junto al p-select de referencia_id en cada fila, deshabilitado si la fila no tiene referencia_id. No se modifico el comportamiento interno del p-select. Gates ejecutados dentro del contenedor heavymarket-frontend (node_modules via pnpm, no hay script 'lint' configurado en package.json y eslint.config.js no matchea los archivos .ts de features -- gap preexistente, no introducido por este cambio): vitest run src/app/features/pedidos/analysis/analysis.spec.ts -> 1/1 OK; vitest run completo -> 206/206 OK (27 archivos); ng build -> OK (unico warning preexistente de pusher-js no ESM, no relacionado).",
+      "deployed": false,
+      "client_summary": "Ahora es posible copiar con un clic el código de cada referencia en el módulo de análisis de pedidos, mediante un botón de copiar ubicado junto al selector, sin necesidad de intentar seleccionar el texto manualmente.",
+      "review_notes": "Aprobado. Diff minimo (2 archivos, <30 lineas): analysis.ts agrega copiarReferencia(itemIndex, parteIndex), que reutiliza getOpcionesReferenciaParaFila(itemIndex) (el mismo catalogo que alimenta el p-select, garantizando que el codigo copiado coincide exactamente con el label mostrado) y usa navigator.clipboard.writeText con toast success/error via el MessageService ya inyectado en el componente; no se toco el comportamiento interno del p-select (riesgo evitado deliberadamente). analysis.html agrega un p-button icon=pi-copy junto al select de cada fila, deshabilitado si la fila no tiene referencia_id, siguiendo el mismo patron visual (rounded, text, pTooltip) que los botones de Acciones ya existentes en la misma tabla (pi-pencil/pi-minus) -- consistente con ui_ux_design_expert (PrimeNG + Tailwind, sin PrimeFlex, compatible dark/light por heredar las variables de tema del boton). Checklist frontend: no_any aceptable por consistencia con el resto del archivo (getOpcionesReferenciaParaFila e isReferenciaTemporal ya usan (r: any) en el mismo patron de busqueda); no aplica i18n_keys (el componente completo no usa pipe translate, es consistente); no hay signals/outputs nuevos ni llamadas HTTP que evaluar. Gates: vitest run del spec de analysis 1/1 OK; vitest run completo 206/206 OK (27 archivos); ng build OK (unico warning preexistente de pusher-js no ESM, no relacionado). No existe script 'lint' en package.json y eslint.config.js no matchea los .ts de features (gap preexistente del repo, no introducido por este cambio, no bloqueante)."
     }
   ]
 }

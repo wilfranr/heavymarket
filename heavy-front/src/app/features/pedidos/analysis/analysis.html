@@ -253,6 +253,16 @@
                                             @if (isReferenciaTemporal(i, j)) {
                                             <i class="pi pi-exclamation-triangle text-amber-400 text-lg shrink-0 animate-pulse" pTooltip="Referencia temporal — Requiere revisión del analista" tooltipPosition="top"></i>
                                             }
+                                            <p-button
+                                                icon="pi pi-copy"
+                                                [rounded]="true"
+                                                [text]="true"
+                                                severity="secondary"
+                                                pTooltip="Copiar referencia"
+                                                tooltipPosition="top"
+                                                [disabled]="!parte.get('referencia_id')?.value"
+                                                (onClick)="copiarReferencia(i, j)"
+                                            />
                                         </div>
                                     </td>
                                     <td class="p-2">
