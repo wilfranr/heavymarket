@@ -464,9 +464,9 @@
                                                     @for (juego of articuloJuegos.controls; track $index) {
                                                     <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-surface-hover transition-colors group">
                                                         <td class="px-4 py-2">
-                                                            @if (editingReferenciaJuegoIndex() === $index) {
+                                                            @if (editingReferenciaJuegoIndex() === $index || creatingReferenciaJuegoIndex() === $index) {
                                                             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                                                <input pInputText formControlName="referencia" class="w-full" />
+                                                                <input pInputText formControlName="referencia" placeholder="Código de referencia..." class="w-full" />
                                                                 <p-select
                                                                     formControlName="marca_id"
                                                                     [options]="marcasReferencias()"
@@ -507,7 +507,9 @@
                                                                         [text]="true"
                                                                         severity="secondary"
                                                                         styleClass="h-full w-full p-0 text-gray-500 hover:text-[#fdb831]"
-                                                                        (onClick)="abrirCrearReferenciaJuegos($index)"
+                                                                        (onClick)="iniciarCreacionReferenciaJuego($index)"
+                                                                        pTooltip="Crear referencia nueva"
+                                                                        tooltipPosition="top"
                                                                     ></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
@@ -534,6 +536,9 @@
                                                                 @if (editingReferenciaJuegoIndex() === $index) {
                                                                 <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarEdicionReferenciaJuego($index)" pTooltip="Guardar" tooltipPosition="top" />
                                                                 <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarEdicionReferenciaJuego()" pTooltip="Cancelar" tooltipPosition="top" />
+                                                                } @else if (creatingReferenciaJuegoIndex() === $index) {
+                                                                <p-button icon="pi pi-check" severity="success" [text]="true" [rounded]="true" (onClick)="guardarCreacionReferenciaJuego($index)" pTooltip="Crear y asociar" tooltipPosition="top" />
+                                                                <p-button icon="pi pi-times" severity="danger" [text]="true" [rounded]="true" (onClick)="cancelarCreacionReferenciaJuego()" pTooltip="Cancelar" tooltipPosition="top" />
                                                                 } @else {
                                                                 <p-button
                                                                     icon="pi pi-pencil"
@@ -627,5 +632,3 @@
 <!-- Modal genérico para listas de medidas -->
 <app-lista-create-modal [(visible)]="showListaModal" [tipoDefault]="currentListaTipo" [title]="'Nuevo Item: ' + currentListaTipo" (onListaCreated)="onListaGeneralCreated($event)"> </app-lista-create-modal>
 
-<!-- Modal para crear nueva Referencia sobre la marcha -->
-<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [articuloId]="articuloId" (onReferenciaCreada)="onReferenciaCreada($event)"> </app-referencia-create-modal>

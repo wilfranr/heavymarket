@@ -28,7 +28,6 @@ import { Referencia, CreateReferenciaDto, UpdateReferenciaDto } from '../../../c
 import { ReferenciaService } from '../../../core/services/referencia.service';
 import { ArticuloService } from '../../../core/services/articulo.service';
 import { ListaCreateModalComponent } from '../../../shared/components/lista-create-modal/lista-create-modal.component';
-import { ReferenciaCreateModalComponent } from '../../../shared/components/referencia-create-modal/referencia-create-modal.component';
 import { ImageUploadComponent } from '../../../shared/components/image-upload/image-upload.component';
 
 import { FallbackImageDirective } from '../../../core/directives/fallback-image.directive';
@@ -62,7 +61,6 @@ import { AutoFocusDirective } from '../../../shared/directives/auto-focus.direct
         AutoFocusDirective,
         FallbackImageDirective,
         ListaCreateModalComponent,
-        ReferenciaCreateModalComponent,
         ImageUploadComponent
     ],
     providers: [MessageService],
@@ -80,7 +78,6 @@ export class CreateComponent implements OnInit {
     tipos: Lista[] = [];
     referenciasDisponibles: Referencia[] = [];
     referenciasJuegosDisponibles: Referencia[] = [];
-    referenciaJuegosIndex: number | null = null;
     referenciaService = inject(ReferenciaService);
     articuloService = inject(ArticuloService);
 
@@ -102,12 +99,11 @@ export class CreateComponent implements OnInit {
     showListaModal = false;
     currentListaTipo: ListaTipo = 'Unidad de Medida';
 
-    // Variables para el modal de creación de referencia
-    showReferenciaModal = false;
     marcasReferencias = signal<Lista[]>([]);
     editingReferenciaIndex = signal<number | null>(null);
     creatingReferenciaIndex = signal<number | null>(null);
     editingReferenciaJuegoIndex = signal<number | null>(null);
+    creatingReferenciaJuegoIndex = signal<number | null>(null);
 
     // Tipo seleccionado para previsualización
     selectedTipoData: Lista | null = null;
@@ -368,40 +364,6 @@ export class CreateComponent implements OnInit {
         this.showListaModal = false;
     }
 
-    /**
-     * Abre el modal para crear una nueva referencia desde Juegos
-     * @param index Índice del FormArray
-     */
-    abrirCrearReferenciaJuegos(index: number): void {
-        this.referenciaJuegosIndex = index;
-        this.showReferenciaModal = true;
-    }
-
-    /**
-     * Maneja la creación exitosa de una referencia
-     */
-    onReferenciaCreada(nuevaRef: any): void {
-        // Añadir inmediatamente a las listas locales para que el renderizado sea instantáneo
-        if (nuevaRef) {
-            if (!this.referenciasDisponibles.find((r) => r.id === nuevaRef.id)) {
-                this.referenciasDisponibles = [...this.referenciasDisponibles, nuevaRef];
-            }
-            if (!this.referenciasJuegosDisponibles.find((r) => r.id === nuevaRef.id)) {
-                this.referenciasJuegosDisponibles = [...this.referenciasJuegosDisponibles, nuevaRef];
-            }
-        }
-
-        if (this.referenciaJuegosIndex !== null) {
-            const control = this.articuloJuegos.at(this.referenciaJuegosIndex);
-            control.patchValue({ referencia_id: nuevaRef.id });
-            this.referenciaJuegosIndex = null;
-        }
-
-        this.cargarReferencias(); // Sincronizar con el servidor
-        this.cargarReferenciasJuegos();
-        this.showReferenciaModal = false;
-    }
-
     iniciarEdicionReferencia(index: number): void {
         const referencia = this.getReferenciaDetail(this.referenciasCruzadas.at(index)?.get('referencia_id')?.value);
         if (!referencia) {
@@ -657,6 +619,7 @@ export class CreateComponent implements OnInit {
         }
 
         this.cancelarEdicionReferenciaJuego();
+        this.cancelarCreacionReferenciaJuego();
 
         const row = this.articuloJuegos.at(index) as FormGroup;
         row.addControl('referencia', this.fb.control(referencia.referencia, [Validators.required, Validators.maxLength(255)]));
@@ -707,6 +670,70 @@ export class CreateComponent implements OnInit {
         row?.removeControl('referencia');
         row?.removeControl('marca_id');
         this.editingReferenciaJuegoIndex.set(null);
+    }
+
+    iniciarCreacionReferenciaJuego(index: number): void {
+        this.cancelarEdicionReferenciaJuego();
+        this.cancelarCreacionReferenciaJuego();
+
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        row.addControl('referencia', this.fb.control('', [Validators.required, Validators.maxLength(255)]));
+        row.addControl('marca_id', this.fb.control(null));
+        this.creatingReferenciaJuegoIndex.set(index);
+    }
+
+    guardarCreacionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup;
+        const referenciaControl = row.get('referencia');
+
+        if (referenciaControl?.invalid) {
+            referenciaControl.markAsTouched();
+            return;
+        }
+
+        const data: CreateReferenciaDto = {
+            referencia: referenciaControl?.value,
+            marca_id: row.get('marca_id')?.value ?? null,
+            articulo_id: null,
+            comentario: null
+        };
+
+        this.referenciaService.create(data).subscribe({
+            next: ({ data: creada }) => {
+                if (!this.referenciasJuegosDisponibles.some((referencia) => referencia.id === creada.id)) {
+                    this.referenciasJuegosDisponibles = [...this.referenciasJuegosDisponibles, creada];
+                }
+                row.patchValue({ referencia_id: creada.id });
+                this.finalizarCreacionReferenciaJuego(index);
+                this.messageService.add({
+                    severity: 'success',
+                    summary: 'Referencia creada',
+                    detail: 'La referencia se creó y asoció correctamente.'
+                });
+            },
+            error: (error) => {
+                console.error('Error al crear referencia de juego:', error);
+                this.messageService.add({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: error.error?.message || 'No se pudo crear la referencia'
+                });
+            }
+        });
+    }
+
+    cancelarCreacionReferenciaJuego(): void {
+        const index = this.creatingReferenciaJuegoIndex();
+        if (index !== null) {
+            this.finalizarCreacionReferenciaJuego(index);
+        }
+    }
+
+    private finalizarCreacionReferenciaJuego(index: number): void {
+        const row = this.articuloJuegos.at(index) as FormGroup | null;
+        row?.removeControl('referencia');
+        row?.removeControl('marca_id');
+        this.creatingReferenciaJuegoIndex.set(null);
     }
 
     getReferenciaJuegoDetail(id: number): Referencia | undefined {

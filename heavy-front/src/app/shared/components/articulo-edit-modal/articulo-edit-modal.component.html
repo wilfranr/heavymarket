@@ -376,7 +376,7 @@
                                             @for (juego of articuloJuegos.controls; track $index) {
                                                 <tr [formGroupName]="$index" class="border-t border-surface-border hover:bg-white/5 transition-colors group">
                                                     <td class="px-4 py-2">
-                                                        @if (editingReferenciaJuegoIndex() === $index) {
+                                                        @if (editingReferenciaJuegoIndex() === $index || creatingReferenciaJuegoIndex() === $index) {
                                                             <div class="flex flex-col gap-2 py-1">
                                                                 <input pInputText formControlName="referencia" placeholder="Código..." class="w-full bg-surface-card border-surface-border text-color h-9 rounded-lg px-2" />
                                                                 <p-select
@@ -419,7 +419,9 @@
                                                                         [text]="true"
                                                                         severity="secondary"
                                                                         styleClass="h-full w-full p-0 text-surface-400 dark:text-surface-500 hover:text-[#fdb831]"
-                                                                        (onClick)="abrirCrearReferenciaJuegos($index)"
+                                                                        (onClick)="iniciarCreacionReferenciaJuego($index)"
+                                                                        pTooltip="Crear referencia nueva"
+                                                                        tooltipPosition="top"
                                                                     ></p-button>
                                                                 </p-inputgroup-addon>
                                                             </p-inputgroup>
@@ -457,6 +459,27 @@
                                                                     [text]="true"
                                                                     [rounded]="true"
                                                                     (onClick)="cancelarEdicionReferenciaJuego()"
+                                                                    pTooltip="Cancelar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8"
+                                                                />
+                                                            } @else if (creatingReferenciaJuegoIndex() === $index) {
+                                                                <p-button
+                                                                    icon="pi pi-check"
+                                                                    severity="success"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    (onClick)="guardarCreacionReferenciaJuego($index)"
+                                                                    pTooltip="Crear y asociar"
+                                                                    tooltipPosition="top"
+                                                                    styleClass="p-0 h-8 w-8"
+                                                                />
+                                                                <p-button
+                                                                    icon="pi pi-times"
+                                                                    severity="danger"
+                                                                    [text]="true"
+                                                                    [rounded]="true"
+                                                                    (onClick)="cancelarCreacionReferenciaJuego()"
                                                                     pTooltip="Cancelar"
                                                                     tooltipPosition="top"
                                                                     styleClass="p-0 h-8 w-8"
@@ -543,9 +566,6 @@
 
 <!-- Modal genérico para listas de medidas -->
 <app-lista-create-modal [(visible)]="showListaModal" [tipoDefault]="currentListaTipo" [title]="'Nuevo Item: ' + currentListaTipo" (onListaCreated)="onListaGeneralCreated($event)"> </app-lista-create-modal>
-
-<!-- Modal para crear nueva Referencia sobre la marcha -->
-<app-referencia-create-modal [(visible)]="showReferenciaModal" title="Nueva Referencia" [hideArticuloField]="true" (onReferenciaCreated)="onReferenciaCreada($event)"> </app-referencia-create-modal>
 
 <!-- Diálogo para Medida Técnica -->
 <p-dialog [(visible)]="showMedidaDialog" [header]="isEditingMedida ? 'Editar Medida' : 'Nueva Medida'" [modal]="true" [style]="{ width: '950px' }" styleClass="p-fluid overflow-hidden" [breakpoints]="{ '960px': '75vw', '640px': '95vw' }">
