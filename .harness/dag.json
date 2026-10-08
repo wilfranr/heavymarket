@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-08T09:45:00-05:00",
-  "issue": "feat-pedido-detalle-vista-tabla-tipo-ordenes-trabajo",
-  "description": "GitHub #170 (Asesor - Pedido): el cliente pidio cambiar el estilo de la vista de detalle de un Pedido (pedidos.show) de tarjetas a tabla, similar a como se ve en Ordenes de Trabajo. Confirmado con el usuario (via AskUserQuestion) que se refiere exactamente a heavy-front/src/app/features/pedidos/detail/ (no a create/edit). El usuario tambien describio el layout deseado: en ordenes de trabajo hay 3 tarjetas arriba (info de pedido, maquina, tercero), abajo la tabla de referencias, y a la derecha un resumen -- deja el detalle de columnas/resumen a criterio del agente.",
+  "last_updated": "2026-10-08T10:00:00-05:00",
+  "issue": "feat-costeo-maquina-tarjeta-estilo-ordenes-trabajo",
+  "description": "GitHub #174: el cliente pidio que en Costeo proveedor-asesor se use la misma tarjeta de informacion de maquina que en Ordenes de Trabajo. Investigacion: Costeo (asesor: pedidos/costeo/costeo.html; proveedor: provider-portal/costing-opportunities) ya usa el componente compartido app-maquina-info-card (heavy-front/src/app/shared/components/maquina-info-card/), con el mismo contenido y estructura que la tarjeta de Ordenes de Trabajo (Maquina/Fabricante/Serie/ID adicional + aviso 'por revisar'), pero con un tema visual antiguo (texto amarillo marca 'brand-yellow', fondo gris/blanco 'bg-gray-50/white'), mientras que Ordenes de Trabajo usa un tema mas nuevo (texto azul 'blue-500', fondo 'surface-0/50/900'). No son tarjetas distintas en contenido, es una diferencia puramente de tema visual entre un componente viejo y uno nuevo.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "feat-copiar-referencia-modulo-analisis",
+  "previous_issue": "feat-pedido-detalle-vista-tabla-tipo-ordenes-trabajo",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -783,6 +783,28 @@
       "deployed": false,
       "client_summary": "Se actualizó la vista de detalle de un pedido: ahora la información del pedido, la máquina y el cliente se muestra en tres tarjetas en la parte superior, y los ítems requeridos y artículos cotizados se presentan en tablas, con el mismo estilo que ya se usa en Órdenes de Trabajo.",
       "review_notes": "Aprobado. detail.html: agregada fila superior de 3 tarjetas (Pedido/Maquina/Tercero) con las clases 'figma-card' exactas ya usadas en ordenes-trabajo/detail (h-[290px], header con icono, filas label:valor en azul), eliminadas las tarjetas 'Cliente' y 'Maquinaria' redundantes del sidebar derecho (su contenido se preservo integro: nombre, documento, ciudad, contacto, telefono, email, direccion de entrega; maquina: tipo/marca/modelo/serie/id_interno/estado_revision; fabricante independiente de maquina). Pestañas 'Items Requeridos' y 'Articulos Cotizados' convertidas de listas de tarjetas a <p-table> (p-datatable-sm p-datatable-striped), mismas columnas que la informacion ya mostrada antes (Referencia/Sistema/Descripcion/Cant/Estado/Comentarios/Imagen y Codigo/Descripcion/Cantidad respectivamente), sin perder funcionalidad (comentarios con badge+tooltip via nuevo metodo resumenComentariosItem() en detail.ts, que reutiliza comentariosDeItem() ya existente; imagen como thumbnail clickeable que abre el original). Columna derecha 'Resumen del Pedido' sin cambios. Alcance confirmado explicitamente con el usuario (AskUserQuestion): pedidos.show (detail), no create/edit. Imports agregados en detail.ts: TableModule, TooltipModule. Checklist frontend: no_any no aplica (no se introdujo any nuevo mas alla del existente 'let-item'/'let-articulo' de p-table, mismo patron que ordenes-trabajo); no hay i18n_keys en este componente (consistente con el resto del archivo); no hay signals/outputs nuevos; no hay llamadas HTTP nuevas. Gates ejecutados dentro del contenedor heavymarket-frontend con npx (no pnpm, lección del incidente anterior): vitest run completo 206/206 OK (27 archivos); ng build OK (mismo warning preexistente de pusher-js); el ng serve en vivo recompilo 3 veces sin errores tras los cambios (logs verificados)."
+    },
+    {
+      "id": "maquina-info-card-restyle-surface",
+      "description": "Frontend: restylear heavy-front/src/app/shared/components/maquina-info-card/ (maquina-info-card.component.html/.scss) para que coincida visualmente con la tarjeta 'Informacion de la maquina' ya usada en ordenes-trabajo/detail.component.ts: reemplazar texto 'text-brand-yellow' por 'text-blue-500', fondo 'bg-white/bg-gray-50' por 'bg-surface-0/bg-surface-50' (dark: surface-900/800), borde 'border-gray-200' por 'border-surface-200' (dark: surface-700), shadow-md por shadow-sm, y el aviso 'por revisar' de amber a orange (mismos tokens que ordenes-trabajo). Vaciar el .scss del componente (el box-shadow fijo no dark-aware y .text-brand-yellow quedan sin uso) para que dependa solo de clases Tailwind, igual que ordenes-trabajo. No tocar la logica/bindings del componente (modo edit/view, select de maquina, outputs editMaquina/viewMaquina) ni los componentes hermanos pedido-info-card/tercero-info-card (fuera del alcance literal del issue, que solo menciona la tarjeta de maquina). Este componente es compartido por 4 vistas (costeo asesor, costing-opportunities proveedor, pedidos/edit, pedidos/analysis) -- el cambio aplica consistentemente a las 4, no solo a Costeo, por ser una unica fuente de verdad visual.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "github_issue": 174,
+      "files": [
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/shared/components/maquina-info-card/maquina-info-card.component.scss",
+          "status": "validated"
+        }
+      ],
+      "deployed": false,
+      "client_summary": "Se actualizó la tarjeta de información de la máquina en Costeo (asesor y proveedor) para que use el mismo estilo visual que ya se usa en Órdenes de Trabajo.",
+      "review_notes": "Aprobado. maquina-info-card.component.html: reemplazadas clases de color (text-brand-yellow->text-blue-500, bg-white/gray-50->bg-surface-0/50, dark:surface-900/800, border-gray-200->border-surface-200/surface-700, shadow-md->shadow-sm, amber->orange en el aviso 'por revisar'), sin tocar bindings/logica (mode edit/view, select+control, outputs editMaquina/viewMaquina, showDetailButton). .scss vaciado (box-shadow fijo no dark-aware y .text-brand-yellow quedaban sin uso; ahora depende solo de Tailwind, igual que ordenes-trabajo). Verificado que ningun spec dependia de las clases viejas (grep sin resultados). Efecto: el cambio se refleja automaticamente en los 4 consumidores del componente compartido (costeo asesor, costing-opportunities proveedor, pedidos/edit, pedidos/analysis), lo cual es el comportamiento correcto para un componente compartido -- no se duplico logica para 'limitarlo' solo a Costeo. Fuera de alcance deliberadamente: pedido-info-card y tercero-info-card (mismos componentes hermanos, mismo tema viejo) quedan sin cambios porque el issue #174 menciona explicitamente solo la tarjeta de maquina; si el usuario quiere extender el mismo restyle a esos dos, es un issue/decision aparte. Gates: vitest run completo 206/206 OK (27 archivos); ng build OK (mismo warning preexistente de pusher-js); ng serve en vivo recompilo 2 veces sin errores."
     }
   ]
 }
