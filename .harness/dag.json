@@ -922,6 +922,22 @@
         }
       ],
       "review_notes": "Aprobado. Se reescribio el componente completo: template sin ninguna clase PrimeFlex (verificado por grep), usando card/grid/field consistente con el resto del modulo (mismas clases bg-surface-0/900, border-surface-200/700 que detail.component.ts). Transportadora: p-select con TransportadoraService.getAll({per_page:200}), mismo patron que el select de tercero-form. Direccion de despacho: p-select con DireccionService.getAll({tercero_id, per_page:200}) usando el tercero_id de la orden ya cargada, con el mismo direccionLabel() (destinatario - ciudad - direccion) que cotizaciones/detail.component.ts, mostrando aviso si el tercero no tiene perfiles registrados. Ambos campos se incluyen en el payload de UpdateOrdenTrabajoDto al enviar. Se descarto agregar 'archivo' (comprobante de despacho): el backend lo valida como string simple sin endpoint de carga wireado y ningun otro lugar del frontend lo usa; agregarlo real requeriria una funcionalidad de upload nueva no solicitada. Gates: no existe spec propio de este componente (no se quito cobertura existente); suite completa 206/206 OK (27 archivos); ng build OK (mismo warning preexistente de pusher-js); ng serve en vivo recompilo limpio."
+    },
+    {
+      "id": "doc-modulo-ordenes-trabajo-actualizacion",
+      "description": "Documentacion: reescribir docs/modulo_ordenes_trabajo.md para que refleje la implementacion real del modulo (estaba desactualizado desde mayo 2026: describia un flujo de semaforizacion simple que nunca existio en el codigo). Investigar y documentar: modelo de datos real (orden_trabajos/orden_trabajo_referencias con cantidad_cotizada/recibida/depurada, columnas de facturacion), enum real de estados (App\\Enums\\OrdenTrabajoEstado), servicios de dominio (OrdenTrabajoLifecycleService, OrdenTrabajoDepuracionService, OrdenTrabajoFacturacionService, RecepcionCompraService), evento/listener de recalculo de completitud, endpoints reales de routes/api.php, permisos reales por rol, y las 5 vistas frontend reales (list/create/detail/edit/facturacion).",
+      "status": "done",
+      "required_skill": "technical_writer",
+      "depends_on": [],
+      "topic_key": "docs/modulo-ordenes-trabajo",
+      "github_issue": null,
+      "files": [
+        {
+          "path": "docs/modulo_ordenes_trabajo.md",
+          "status": "validated"
+        }
+      ],
+      "review_notes": "Aprobado. Documento reescrito por completo a partir de la lectura directa del codigo (modelos, migraciones, enum, controller, requests, policy, servicios de dominio, evento/listener, y los 5 componentes frontend reales), no por extrapolacion del doc viejo. Verificado por muestreo cruzado contra el codigo real: enum App\\Enums\\OrdenTrabajoEstado (valores exactos Pendiente/En Proceso/Lista para Facturar/Completado/Cerrada/Cancelado) y las rutas de routes/api.php (recepciones-compra, referencias/{id}/depurar, completitud, resumen-facturacion, facturar, download-pdf) coinciden exactamente con lo documentado. Dos puntos quedaron marcados explicitamente como 'pendiente de confirmar' en vez de inventados: si UpdateOrdenTrabajoRequest es codigo muerto (la ruta update no lo inyecta, valida inline) y si create.component.ts tiene wireado el selector de transportadora. No se modificaron datos de negocio ni codigo de implementacion, solo el markdown de documentacion."
     }
   ]
 }
