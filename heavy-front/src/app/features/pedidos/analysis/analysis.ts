@@ -1774,14 +1774,37 @@ export class AnalysisComponent implements OnInit {
         const codigo = this.getOpcionesReferenciaParaFila(itemIndex).find((r: any) => r.value === refId)?.label;
         if (!codigo) return;
 
-        navigator.clipboard
-            .writeText(codigo)
-            .then(() => {
-                this.messageService.add({ severity: 'success', summary: 'Copiado', detail: `Referencia "${codigo}" copiada al portapapeles.` });
-            })
-            .catch(() => {
-                this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo copiar la referencia al portapapeles.' });
-            });
+        this.copiarTextoAlPortapapeles(codigo);
+    }
+
+    /**
+     * Copia texto al portapapeles. navigator.clipboard solo existe en contextos seguros
+     * (HTTPS o localhost estricto); si no está disponible (ej. acceso por IP/HTTP en
+     * desarrollo), usa un fallback con un textarea oculto + execCommand('copy').
+     */
+    private copiarTextoAlPortapapeles(texto: string): void {
+        const onSuccess = () => this.messageService.add({ severity: 'success', summary: 'Copiado', detail: `Referencia "${texto}" copiada al portapapeles.` });
+        const onError = () => this.messageService.add({ severity: 'error', summary: 'Error', detail: 'No se pudo copiar la referencia al portapapeles.' });
+
+        if (navigator.clipboard?.writeText) {
+            navigator.clipboard.writeText(texto).then(onSuccess).catch(onError);
+            return;
+        }
+
+        try {
+            const textarea = document.createElement('textarea');
+            textarea.value = texto;
+            textarea.style.position = 'fixed';
+            textarea.style.opacity = '0';
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            const copiado = document.execCommand('copy');
+            document.body.removeChild(textarea);
+            copiado ? onSuccess() : onError();
+        } catch {
+            onError();
+        }
     }
 
     // --- Lógica de Popovers Técnicos ---

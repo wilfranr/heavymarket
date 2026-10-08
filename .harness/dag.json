@@ -1,7 +1,7 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-08T08:30:00-05:00",
+  "last_updated": "2026-10-08T09:05:00-05:00",
   "issue": "feat-copiar-referencia-modulo-analisis",
   "description": "GitHub #169: el cliente pide poder seleccionar/copiar rapido el texto de las referencias en el modulo de analisis de pedidos. Hoy la columna 'Referencia' de la tabla de requerimientos (analysis.html) usa un <p-select> (combobox buscable) para elegir/mostrar la referencia: el control intercepta el mousedown para abrir/cerrar el dropdown, por lo que arrastrar el mouse sobre el texto visible no selecciona nada -- no hay forma de copiar el codigo con Ctrl+C. El cliente menciona como referencia conceptual (no una pantalla existente en el repo) los catalogos de piezas de Caterpillar, que tienen un icono de copiar al lado o dentro del campo de la referencia; aclaro explicitamente que no es un componente que ya exista en HeavyMarket, solo el concepto UX. Solucion: agregar un boton icono de copiar (pi pi-copy) junto al p-select de cada fila de referencia en la tabla de analysis.html, que resuelva el codigo de la referencia seleccionada (reusando el patron de lookup ya usado en analysis.ts, ej. getOpcionesReferenciaParaFila(...).find(...)) y lo copie al portapapeles con navigator.clipboard.writeText(), mostrando un toast de confirmacion via el MessageService ya inyectado en el componente. Deshabilitar/ocultar el boton cuando la fila no tiene referencia_id seleccionado.",
   "workflow": "harness-triage-multiagent",
@@ -741,6 +741,26 @@
       "deployed": false,
       "client_summary": "Ahora es posible copiar con un clic el código de cada referencia en el módulo de análisis de pedidos, mediante un botón de copiar ubicado junto al selector, sin necesidad de intentar seleccionar el texto manualmente.",
       "review_notes": "Aprobado. Diff minimo (2 archivos, <30 lineas): analysis.ts agrega copiarReferencia(itemIndex, parteIndex), que reutiliza getOpcionesReferenciaParaFila(itemIndex) (el mismo catalogo que alimenta el p-select, garantizando que el codigo copiado coincide exactamente con el label mostrado) y usa navigator.clipboard.writeText con toast success/error via el MessageService ya inyectado en el componente; no se toco el comportamiento interno del p-select (riesgo evitado deliberadamente). analysis.html agrega un p-button icon=pi-copy junto al select de cada fila, deshabilitado si la fila no tiene referencia_id, siguiendo el mismo patron visual (rounded, text, pTooltip) que los botones de Acciones ya existentes en la misma tabla (pi-pencil/pi-minus) -- consistente con ui_ux_design_expert (PrimeNG + Tailwind, sin PrimeFlex, compatible dark/light por heredar las variables de tema del boton). Checklist frontend: no_any aceptable por consistencia con el resto del archivo (getOpcionesReferenciaParaFila e isReferenciaTemporal ya usan (r: any) en el mismo patron de busqueda); no aplica i18n_keys (el componente completo no usa pipe translate, es consistente); no hay signals/outputs nuevos ni llamadas HTTP que evaluar. Gates: vitest run del spec de analysis 1/1 OK; vitest run completo 206/206 OK (27 archivos); ng build OK (unico warning preexistente de pusher-js no ESM, no relacionado). No existe script 'lint' en package.json y eslint.config.js no matchea los .ts de features (gap preexistente del repo, no introducido por este cambio, no bloqueante)."
+    },
+    {
+      "id": "analysis-referencia-boton-copiar-fix-clipboard-sin-https",
+      "description": "Correccion sobre analysis-referencia-boton-copiar (#169): el usuario probo el boton de copiar en su navegador y obtuvo 'TypeError: Cannot read properties of undefined (reading writeText)' en analysis.ts:1778. Causa: navigator.clipboard solo existe en contextos seguros (HTTPS o localhost estricto); al acceder por IP de red o HTTP, el navegador no expone esa API y navigator.clipboard queda undefined -- no se valido esto en el nodo original porque los gates automatizados (vitest/ng build) no ejecutan el boton en un navegador real. Fix: agregar un fallback con textarea oculto + document.execCommand('copy') cuando navigator.clipboard?.writeText no existe.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [
+        "analysis-referencia-boton-copiar"
+      ],
+      "topic_key": "arch/heavy-audit-history",
+      "github_issue": 169,
+      "deployed": false,
+      "client_summary": "Se corrigió: el botón para copiar el código de referencia en el módulo de análisis ahora funciona también al acceder desde una dirección sin conexión segura, donde antes no respondía.",
+      "review_notes": "Aprobado. copiarReferencia() delega en nuevo metodo privado copiarTextoAlPortapapeles(texto): usa navigator.clipboard.writeText cuando esta disponible (navigator.clipboard?.writeText, evita el TypeError original) y cae a un fallback con textarea oculto + document.execCommand('copy') en caso contrario, manteniendo el mismo toast success/error via MessageService en ambas rutas. Gates: vitest run del spec de analysis 1/1 OK; ng build OK (mismo warning preexistente de pusher-js, no relacionado). No se repitio la suite completa (cambio acotado a un metodo privado nuevo sin tocar otras dependencias).",
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/analysis/analysis.ts",
+          "status": "validated"
+        }
+      ]
     }
   ]
 }
