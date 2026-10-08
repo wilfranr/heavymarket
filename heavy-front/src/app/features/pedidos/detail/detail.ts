@@ -20,6 +20,8 @@ import { InputTextModule } from 'primeng/inputtext';
 import { TextareaModule } from 'primeng/textarea';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { ConfirmationService } from 'primeng/api';
+import { TableModule } from 'primeng/table';
+import { TooltipModule } from 'primeng/tooltip';
 
 import { Pedido, PedidoReferencia } from '../../../core/models/pedido.model';
 import { pedidoEstadoEtiqueta, pedidoEstadoTagClass } from '../../../core/utils/pedido-estado-tag';
@@ -44,7 +46,7 @@ export interface ComentarioReferenciaVista {
 @Component({
     selector: 'app-pedido-detail',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, SkeletonModule, ToastModule, TabsModule, DataViewModule, PanelModule, DialogModule, InputTextModule, TextareaModule, ConfirmDialogModule],
+    imports: [CommonModule, FormsModule, RouterModule, CardModule, ButtonModule, TagModule, DividerModule, SkeletonModule, ToastModule, TabsModule, DataViewModule, PanelModule, DialogModule, InputTextModule, TextareaModule, ConfirmDialogModule, TableModule, TooltipModule],
     providers: [MessageService, ConfirmationService],
     templateUrl: './detail.html',
     styleUrl: './detail.scss'
@@ -336,6 +338,16 @@ export class DetailComponent implements OnInit {
     /** Comentarios de un ítem requerido para vista (parsea JSON o texto plano). */
     comentariosDeItem(item: PedidoReferencia): ComentarioReferenciaVista[] {
         return this.parseComentariosRaw(item?.comentario);
+    }
+
+    /** Resumen (cantidad + texto para tooltip) de los comentarios de un ítem, para la columna de la tabla. */
+    resumenComentariosItem(item: PedidoReferencia): { count: number; texto: string } {
+        const entradas = this.comentariosDeItem(item);
+        if (!entradas.length) {
+            return { count: 0, texto: '' };
+        }
+        const texto = entradas.map((c) => (c.origen ? `[${c.origen}] ${c.comentario}` : c.comentario)).join('\n\n');
+        return { count: entradas.length, texto };
     }
 
     /** Notas generales del pedido (mismo formato que comentarios por ítem). */

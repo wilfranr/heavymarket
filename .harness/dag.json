@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-08T09:05:00-05:00",
-  "issue": "feat-copiar-referencia-modulo-analisis",
-  "description": "GitHub #169: el cliente pide poder seleccionar/copiar rapido el texto de las referencias en el modulo de analisis de pedidos. Hoy la columna 'Referencia' de la tabla de requerimientos (analysis.html) usa un <p-select> (combobox buscable) para elegir/mostrar la referencia: el control intercepta el mousedown para abrir/cerrar el dropdown, por lo que arrastrar el mouse sobre el texto visible no selecciona nada -- no hay forma de copiar el codigo con Ctrl+C. El cliente menciona como referencia conceptual (no una pantalla existente en el repo) los catalogos de piezas de Caterpillar, que tienen un icono de copiar al lado o dentro del campo de la referencia; aclaro explicitamente que no es un componente que ya exista en HeavyMarket, solo el concepto UX. Solucion: agregar un boton icono de copiar (pi pi-copy) junto al p-select de cada fila de referencia en la tabla de analysis.html, que resuelva el codigo de la referencia seleccionada (reusando el patron de lookup ya usado en analysis.ts, ej. getOpcionesReferenciaParaFila(...).find(...)) y lo copie al portapapeles con navigator.clipboard.writeText(), mostrando un toast de confirmacion via el MessageService ya inyectado en el componente. Deshabilitar/ocultar el boton cuando la fila no tiene referencia_id seleccionado.",
+  "last_updated": "2026-10-08T09:45:00-05:00",
+  "issue": "feat-pedido-detalle-vista-tabla-tipo-ordenes-trabajo",
+  "description": "GitHub #170 (Asesor - Pedido): el cliente pidio cambiar el estilo de la vista de detalle de un Pedido (pedidos.show) de tarjetas a tabla, similar a como se ve en Ordenes de Trabajo. Confirmado con el usuario (via AskUserQuestion) que se refiere exactamente a heavy-front/src/app/features/pedidos/detail/ (no a create/edit). El usuario tambien describio el layout deseado: en ordenes de trabajo hay 3 tarjetas arriba (info de pedido, maquina, tercero), abajo la tabla de referencias, y a la derecha un resumen -- deja el detalle de columnas/resumen a criterio del agente.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "fix-cantidad-editable-cotizacion-input-no-responde",
+  "previous_issue": "feat-copiar-referencia-modulo-analisis",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -761,6 +761,28 @@
           "status": "validated"
         }
       ]
+    },
+    {
+      "id": "pedido-detalle-vista-tabla",
+      "description": "Frontend: en heavy-front/src/app/features/pedidos/detail/ (detail.html/detail.ts), reestructurar la vista siguiendo el patron ya existente en heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts: (1) agregar una fila superior de 3 tarjetas estilo 'figma-card' (Informacion del pedido / Informacion de la maquina / Informacion de tercero), reemplazando las tarjetas 'Cliente' y 'Maquinaria' que estaban en el sidebar derecho; (2) convertir la pestaña 'Items Requeridos' (hoy una lista vertical de tarjetas grandes por referencia) en un <p-table> compacto con columnas Referencia/Sistema/Descripcion/Cant/Estado/Comentarios/Imagen, reutilizando el patron de badge+tooltip de comentarios ya usado en pedidos-list.component; (3) convertir tambien la pestaña 'Articulos Cotizados' a <p-table> (Codigo/Descripcion/Cantidad despachada) por consistencia visual entre ambas pestañas; (4) mantener intacta la columna derecha con la tarjeta 'Resumen del Pedido' (Total Items/Articulos + boton Generar Cotizacion) y el resto del comportamiento (botones de accion del header, dialogo de devolucion, estado no encontrado, skeleton de carga).",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "github_issue": 170,
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.html",
+          "status": "validated"
+        },
+        {
+          "path": "heavy-front/src/app/features/pedidos/detail/detail.ts",
+          "status": "validated"
+        }
+      ],
+      "deployed": false,
+      "client_summary": "Se actualizó la vista de detalle de un pedido: ahora la información del pedido, la máquina y el cliente se muestra en tres tarjetas en la parte superior, y los ítems requeridos y artículos cotizados se presentan en tablas, con el mismo estilo que ya se usa en Órdenes de Trabajo.",
+      "review_notes": "Aprobado. detail.html: agregada fila superior de 3 tarjetas (Pedido/Maquina/Tercero) con las clases 'figma-card' exactas ya usadas en ordenes-trabajo/detail (h-[290px], header con icono, filas label:valor en azul), eliminadas las tarjetas 'Cliente' y 'Maquinaria' redundantes del sidebar derecho (su contenido se preservo integro: nombre, documento, ciudad, contacto, telefono, email, direccion de entrega; maquina: tipo/marca/modelo/serie/id_interno/estado_revision; fabricante independiente de maquina). Pestañas 'Items Requeridos' y 'Articulos Cotizados' convertidas de listas de tarjetas a <p-table> (p-datatable-sm p-datatable-striped), mismas columnas que la informacion ya mostrada antes (Referencia/Sistema/Descripcion/Cant/Estado/Comentarios/Imagen y Codigo/Descripcion/Cantidad respectivamente), sin perder funcionalidad (comentarios con badge+tooltip via nuevo metodo resumenComentariosItem() en detail.ts, que reutiliza comentariosDeItem() ya existente; imagen como thumbnail clickeable que abre el original). Columna derecha 'Resumen del Pedido' sin cambios. Alcance confirmado explicitamente con el usuario (AskUserQuestion): pedidos.show (detail), no create/edit. Imports agregados en detail.ts: TableModule, TooltipModule. Checklist frontend: no_any no aplica (no se introdujo any nuevo mas alla del existente 'let-item'/'let-articulo' de p-table, mismo patron que ordenes-trabajo); no hay i18n_keys en este componente (consistente con el resto del archivo); no hay signals/outputs nuevos; no hay llamadas HTTP nuevas. Gates ejecutados dentro del contenedor heavymarket-frontend con npx (no pnpm, lección del incidente anterior): vitest run completo 206/206 OK (27 archivos); ng build OK (mismo warning preexistente de pusher-js); el ng serve en vivo recompilo 3 veces sin errores tras los cambios (logs verificados)."
     }
   ]
 }
