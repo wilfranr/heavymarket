@@ -18,7 +18,7 @@ import { TooltipModule } from 'primeng/tooltip';
 import { MessageService } from 'primeng/api';
 import { loadOrdenTrabajoById, registrarRecepcionCompra, depurarReferencia } from '../../../store/ordenes-trabajo/actions/ordenes-trabajo.actions';
 import * as OrdenesTrabajoSelectors from '../../../store/ordenes-trabajo/selectors/ordenes-trabajo.selectors';
-import { OrdenTrabajo, OrdenTrabajoReferencia, OrdenTrabajoCompletitud } from '../../../core/models/orden-trabajo.model';
+import { OrdenTrabajo, OrdenTrabajoReferencia } from '../../../core/models/orden-trabajo.model';
 import { OrdenCompra, OrdenCompraReferencia } from '../../../core/models/orden-compra.model';
 import { AuthService } from '../../../core/auth/services/auth.service';
 import { OrdenCompraService } from '../../../core/services/orden-compra.service';
@@ -101,37 +101,6 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                     </div>
                 }
 
-                @if (completitud(); as c) {
-                    <div class="figma-card p-4 mb-6 bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 shadow-sm rounded-lg">
-                        <span class="font-semibold text-color text-sm block mb-2">¿Por qué esta orden aún no está lista para facturar?</span>
-                        <div class="overflow-hidden rounded-xl border border-surface-200 dark:border-surface-700">
-                            <table class="w-full text-sm">
-                                <thead class="bg-surface-50 dark:bg-surface-800">
-                                    <tr>
-                                        <th class="text-left text-color font-bold uppercase text-xs p-2">Línea</th>
-                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Cotizada</th>
-                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Recibida</th>
-                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Depurada</th>
-                                        <th class="text-center text-color font-bold uppercase text-xs p-2">Cumple</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @for (linea of c.lineas; track linea.referencia_id) {
-                                        <tr class="border-t border-surface-200 dark:border-surface-700">
-                                            <td class="p-2 text-color-secondary">#{{ linea.referencia_id }}</td>
-                                            <td class="p-2 text-center text-color">{{ linea.cotizada }}</td>
-                                            <td class="p-2 text-center text-color">{{ linea.recibida }}</td>
-                                            <td class="p-2 text-center text-color">{{ linea.depurada }}</td>
-                                            <td class="p-2 text-center">
-                                                <i class="pi" [ngClass]="linea.cumple ? 'pi-check-circle text-green-500' : 'pi-times-circle text-orange-500'"></i>
-                                            </td>
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                }
 
                 <!-- Fila Superior de Tarjetas Informativas (Tipo Costeo) -->
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
@@ -263,6 +232,8 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                 <th class="text-color font-bold uppercase text-xs">Referencia</th>
                                                 <th class="text-color font-bold uppercase text-xs">Descripción</th>
                                                 <th class="text-center text-color font-bold uppercase text-xs">Cant</th>
+                                                <th class="text-center text-color font-bold uppercase text-xs">Recibida</th>
+                                                <th class="text-center text-color font-bold uppercase text-xs">Depurada</th>
                                                 <th class="text-color font-bold uppercase text-xs">Marca</th>
                                                 <th class="text-color font-bold uppercase text-xs">Entrega</th>
                                                 <th class="text-right text-color font-bold uppercase text-xs">Precio</th>
@@ -293,6 +264,8 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                                     </div>
                                                 </td>
                                                 <td class="text-center font-semibold text-color">{{ item.cantidad_cotizada }}</td>
+                                                <td class="text-center text-color-secondary">{{ item.cantidad_recibida || 0 }}</td>
+                                                <td class="text-center text-color-secondary">{{ item.cantidad_depurada || 0 }}</td>
                                                 <td class="text-color-secondary">
                                                     {{ getProveedorAprobado(item)?.marca?.nombre || item.pedido_referencia?.marca?.nombre || 'N/A' }}
                                                 </td>
@@ -314,7 +287,7 @@ export { recepcionCompraLineaValida } from '../../../core/utils/recepcion-lines.
                                         </ng-template>
                                         <ng-template pTemplate="footer">
                                             <tr class="dark:bg-surface-800/30">
-                                                <td colspan="8" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
+                                                <td colspan="10" class="text-right border-0 pt-6"><span class="text-base font-bold uppercase text-muted-color">SubTotal</span></td>
                                                 <td class="text-right border-0 pt-6">
                                                     <div class="px-3 py-2 text-base font-bold text-color">
                                                         {{ calcularSubtotal() | currency: 'COP' : 'symbol' : '1.0-0' }}
@@ -554,8 +527,6 @@ export class DetailComponent implements OnInit {
     selectedMaquina = signal<any>(null);
     selectedTercero = signal<any>(null);
 
-    completitud = signal<OrdenTrabajoCompletitud | null>(null);
-
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) {
@@ -572,19 +543,7 @@ export class DetailComponent implements OnInit {
                 this.ordenTrabajo.set(ordenTrabajo);
                 this.loading.set(false);
                 this.loadOrdenesCompraRelacionadas(ordenTrabajo);
-
-                if (ordenTrabajo.estado === 'Pendiente' || ordenTrabajo.estado === 'En Proceso') {
-                    this.loadCompletitud(id);
-                } else {
-                    this.completitud.set(null);
-                }
             }
-        });
-    }
-
-    private loadCompletitud(id: number): void {
-        this.ordenTrabajoService.getCompletitud(id).subscribe((completitud) => {
-            this.completitud.set(completitud);
         });
     }
 

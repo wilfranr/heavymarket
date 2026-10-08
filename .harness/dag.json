@@ -1,11 +1,11 @@
 {
   "version": "2.0",
   "project": "heavymarket",
-  "last_updated": "2026-10-08T10:45:00-05:00",
-  "issue": "feat-juegos-articulo-crear-referencia-inline",
-  "description": "GitHub #180: crear referencia desde el bloque 'Juegos (Kits)' de un articulo debe usar select+input de creacion inline (igual que ya funciona en 'Referencias Cruzadas' desde fd8511e), no el modal emergente app-referencia-create-modal que Juegos todavia usa. Afecta 4 componentes casi duplicados (patron copy-paste preexistente): articulos/create, articulos/edit, shared/articulo-create-modal, shared/articulo-edit-modal -- cada uno con su propio par editingReferenciaJuegoIndex/editingReferenciaIndex+creatingReferenciaIndex ya implementado para Referencias Cruzadas, pero sin el equivalente creatingReferenciaJuegoIndex para Juegos. Regla de atomicidad (>3 archivos): se divide en 4 sub-nodos, uno por componente (2 archivos html+ts cada uno), ejecutados secuencialmente sin pausa.",
+  "last_updated": "2026-10-08T10:55:00-05:00",
+  "issue": "feat-orden-trabajo-recibida-depurada-en-tabla-referencias",
+  "description": "GitHub #181: en el detalle de Orden de Trabajo, la tarjeta '¿Por qué esta orden aún no está lista para facturar?' (tabla separada con columnas Linea/Cotizada/Recibida/Depurada/Cumple, alimentada por un signal 'completitud' y un endpoint dedicado getCompletitud) ocupaba mucho espacio vertical arriba de la tabla principal de Referencias. El cliente pidio mover Recibida y Depurada -- las unicas columnas que no estaban ya en la tabla principal -- junto a las referencias, abajo. Se confirmo que item.cantidad_recibida/item.cantidad_depurada ya estaban disponibles en cada fila de la tabla principal (usados internamente en la logica de depurar), por lo que no hizo falta el endpoint/signal separado.",
   "workflow": "harness-triage-multiagent",
-  "previous_issue": "feat-costeo-maquina-tarjeta-estilo-ordenes-trabajo",
+  "previous_issue": "feat-juegos-articulo-crear-referencia-inline",
   "nodes": [
     {
       "id": "fix-pedido-asesor-referencia",
@@ -887,6 +887,24 @@
       "review_notes": "Aprobado. Se agrego el signal creatingReferenciaJuegoIndex y los metodos iniciarCreacionReferenciaJuego/guardarCreacionReferenciaJuego/cancelarCreacionReferenciaJuego/finalizarCreacionReferenciaJuego, mismo cuerpo que sus pares ya probados de 'Referencias Cruzadas' (iniciarCreacionReferencia/guardarCreacionReferencia/...) pero operando sobre articuloJuegos/referenciasJuegosDisponibles, con articulo_id siempre null (una pieza de un kit no es el mismo articulo que el kit). iniciarEdicionReferenciaJuego ahora cancela tambien el modo creacion. HTML: el boton '+' invoca iniciarCreacionReferenciaJuego($index) con tooltip 'Crear referencia nueva'; la condicion del input inline incluye creatingReferenciaJuegoIndex(); la columna Accion agrega la rama @else if con botones Guardar/Cancelar, mismo patron visual que su fila hermana de edicion. Eliminado codigo muerto confirmado sin otros usos en el archivo (grep previo): abrirCrearReferenciaJuegos, onReferenciaCreada, referenciaJuegosIndex, showReferenciaModal, el tag <app-referencia-create-modal> y su import/registro en @Component.imports. Gates: spec propio del componente OK; suite completa 206/206 OK (27 archivos); ng build OK; ng serve en vivo recompilo limpio como estado final (errores transitorios intermedios durante la secuencia de ediciones .ts/.html, resueltos). Spec: src/app/shared/components/articulo-edit-modal/articulo-edit-modal.component.spec.ts (8/8 OK).",
       "deployed": false,
       "client_summary": "Se corrigió: al crear una referencia nueva desde el bloque de Juegos (Kits) de un artículo, ahora se puede escribir el código directamente junto al selector (igual que ya funcionaba en Referencias Cruzadas), sin que se abra una ventana emergente aparte. Aplica tanto en las pantallas de crear/editar artículo como en sus versiones de ventana modal."
+    },
+    {
+      "id": "orden-trabajo-recibida-depurada-columnas",
+      "description": "Frontend: en heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts, eliminar la tarjeta/tabla separada de completitud (signal completitud, metodo loadCompletitud, llamada a ordenTrabajoService.getCompletitud, import de OrdenTrabajoCompletitud) y agregar dos columnas nuevas 'Recibida' y 'Depurada' a la tabla principal de Referencias (p-table), justo despues de 'Cant', usando item.cantidad_recibida/item.cantidad_depurada ya presentes en cada item. Ajustar el colspan del footer (SubTotal) de 8 a 10 por las 2 columnas nuevas.",
+      "status": "done",
+      "required_skill": "ui_ux_design_expert",
+      "depends_on": [],
+      "topic_key": "arch/heavy-ui-patterns",
+      "github_issue": 181,
+      "files": [
+        {
+          "path": "heavy-front/src/app/features/ordenes-trabajo/detail/detail.component.ts",
+          "status": "validated"
+        }
+      ],
+      "deployed": false,
+      "client_summary": "En la orden de trabajo, la información de unidades recibidas y depuradas ahora se muestra directamente en la tabla de referencias, en lugar de una sección aparte que ocupaba espacio extra en la pantalla.",
+      "review_notes": "Aprobado. Se confirmo via grep que item.cantidad_recibida/item.cantidad_depurada ya estaban disponibles en cada fila de la tabla principal (usados en getIndicadorEstadoClass, la condicion del boton Depurar y el tag 'Depurado'), por lo que no hizo falta el endpoint/signal 'completitud' aparte para mostrar esas dos columnas -- se elimino por completo (signal, metodo loadCompletitud, llamada a ordenTrabajoService.getCompletitud, import de OrdenTrabajoCompletitud), confirmado sin otros consumidores en el repo (grep de OrdenTrabajoCompletitud/getCompletitud: solo modelo+servicio+este componente). Se agregaron columnas 'Recibida' y 'Depurada' en la tabla principal justo despues de 'Cant', y se ajusto el colspan del footer de SubTotal de 8 a 10 (de lo contrario el valor del subtotal hubiera quedado desalineado bajo las columnas nuevas). No se toco el servicio OrdenTrabajoService.getCompletitud() ni el modelo OrdenTrabajoCompletitud (fuera de alcance, podrian tener uso futuro o en backend; solo se removio el consumo muerto en este componente). Gates: spec propio 2/2 OK; suite completa 206/206 OK (27 archivos); ng build OK; ng serve en vivo recompilo limpio."
     }
   ]
 }
